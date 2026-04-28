@@ -1,0 +1,447 @@
+---
+import config from '../../configs/navbars/navbar-stacked-brand.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavItem { label: string; url: string; type?: 'link' | 'button' | 'dropdown' }
+interface NavData {
+  homeUrl?: string;
+  labels?: { menuToggle?: string };
+  brand?: { name?: string; logoUrl?: string; fallbackIcon?: string };
+  menu?: NavItem[];
+  settings?: { sticky?: boolean };
+}
+interface Props { data?: NavData }
+
+const { data } = Astro.props;
+const navData: NavData = data ?? (config as NavData);
+
+// SVG Icon Helper
+const getIconSvg = (type?: string) => {
+  if (type === 'button') {
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>`;
+  }
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+};
+---
+
+<header class:list={['nav-stack', navData.settings?.sticky && 'nav-stack--sticky']} data-nav-stack>
+  <div class="nav-stack__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-stack__container">
+    
+    <div class="nav-stack__header">
+      <BrandMark
+        href={navData.homeUrl ?? '/'}
+        brand={navData.brand}
+        brandClass="nav-stack__brand"
+        logoClass="nav-stack__brand-logo"
+        titleClass="nav-stack__brand-title"
+      />
+
+      <button class="nav-stack__toggle" type="button" aria-expanded="false" aria-label={navData.labels?.menuToggle ?? 'Open menu'} data-nav-toggle>
+        <span class="nav-stack__toggle-box">
+          <span class="nav-stack__toggle-inner"></span>
+        </span>
+      </button>
+    </div>
+
+    <nav class="nav-stack__panel" aria-label="Primary navigation" data-nav-menu>
+      
+      <div class="nav-stack__drawer-header">
+        {navData.brand?.name && <span class="nav-stack__brand-title">{navData.brand.name}</span>}
+      </div>
+
+      <ul class="nav-stack__list">
+        {(navData.menu ?? []).map((item) => (
+          <li class="nav-stack__item">
+            {item.type === 'button' ? (
+              <a class="nav-stack__cta" href={item.url}>
+                <span class="nav-stack__cta-text">{item.label}</span>
+                <span class="nav-stack__icon" set:html={getIconSvg(item.type)}></span>
+              </a>
+            ) : (
+              <a class="nav-stack__link" href={item.url}>
+                <span class="nav-stack__link-text">{item.label}</span>
+                <span class="nav-stack__icon" set:html={getIconSvg(item.type)}></span>
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-stack]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    
+    if (!toggle || !panel || !overlay) return;
+
+    const closeMenu = () => {
+      panel.classList.remove('nav-stack__panel--open');
+      overlay.classList.remove('nav-stack__overlay--visible');
+      toggle.classList.remove('nav-stack__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-stack__panel--open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        panel.classList.add('nav-stack__panel--open');
+        overlay.classList.add('nav-stack__overlay--visible');
+        toggle.classList.add('nav-stack__toggle--active');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    overlay.addEventListener('click', closeMenu);
+    
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 992) closeMenu();
+    });
+  });
+</script>
+
+<style>
+  /* --- Base & Variables --- */
+  .nav-stack {
+    --nav-bg: var(--bg);
+    --nav-border: color-mix(in srgb, var(--text) 10%, transparent);
+    --nav-hover-bg: color-mix(in srgb, var(--text) 5%, transparent);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--nav-border);
+  }
+
+  .nav-stack--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  /* --- Desktop Layout: Column Stack --- */
+  .nav-stack__container {
+    max-width: 86rem;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1.5rem;
+    padding-bottom: 1rem;
+    gap: 1.25rem;
+  }
+
+  /* --- Top Tier: Header / Brand --- */
+  .nav-stack__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .nav-stack__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-stack__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-stack__brand-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+
+  .nav-stack__brand-title {
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  /* --- Bottom Tier: Navigation --- */
+  .nav-stack__panel {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .nav-stack__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .nav-stack__item {
+    display: flex;
+  }
+
+  /* Links */
+  .nav-stack__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: color-mix(in srgb, var(--text) 85%, transparent);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .nav-stack__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--accent);
+  }
+
+  .nav-stack__link:hover {
+    background: var(--nav-hover-bg);
+    color: var(--text);
+  }
+
+  .nav-stack__link:hover .nav-stack__icon {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* CTA Button */
+  .nav-stack__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    background: var(--text);
+    color: var(--bg);
+    padding: 0.6rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-left: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid transparent;
+  }
+
+  .nav-stack__cta .nav-stack__icon {
+    opacity: 1;
+    transform: none;
+    color: var(--bg);
+    transition: transform 0.2s ease;
+  }
+
+  .nav-stack__cta:hover {
+    background: var(--accent);
+    color: var(--bg);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+
+  .nav-stack__cta:hover .nav-stack__icon {
+    transform: translateX(4px);
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-stack__toggle {
+    display: none; /* Hidden on desktop */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 102;
+  }
+
+  .nav-stack__toggle-box {
+    width: 26px;
+    height: 20px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-stack__toggle-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+  }
+
+  .nav-stack__toggle-inner, 
+  .nav-stack__toggle-inner::before, 
+  .nav-stack__toggle-inner::after {
+    width: 26px;
+    height: 2px;
+    background-color: var(--text);
+    position: absolute;
+    transition-property: transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+    border-radius: 4px;
+  }
+
+  .nav-stack__toggle-inner::before, 
+  .nav-stack__toggle-inner::after {
+    content: "";
+    display: block;
+  }
+
+  .nav-stack__toggle-inner::before { top: -8px; }
+  .nav-stack__toggle-inner::after { bottom: -8px; }
+
+  /* Hamburger Active Animation */
+  .nav-stack__toggle--active .nav-stack__toggle-inner {
+    transform: rotate(45deg);
+  }
+  .nav-stack__toggle--active .nav-stack__toggle-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .nav-stack__toggle--active .nav-stack__toggle-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  /* Hide Drawer Header & Overlay on Desktop */
+  .nav-stack__drawer-header {
+    display: none;
+  }
+  
+  .nav-stack__overlay {
+    display: none;
+  }
+
+  /* --- Responsive Breakpoint (Tablet/Mobile) --- */
+  @media (max-width: 991px) {
+    /* Transform container to horizontal layout */
+    .nav-stack__container {
+      padding: 1rem 1.25rem;
+      gap: 0;
+    }
+
+    .nav-stack__header {
+      justify-content: space-between;
+    }
+
+    .nav-stack__brand-logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    .nav-stack__brand-title {
+      font-size: 1.2rem;
+    }
+
+    .nav-stack__toggle {
+      display: block;
+    }
+
+    /* Full Screen Dark Overlay */
+    .nav-stack__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--text) 25%, transparent);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-stack__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Slide-out Sidebar Drawer */
+    .nav-stack__panel {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: min(85vw, 360px);
+      height: 100dvh;
+      background: var(--bg);
+      border-right: 1px solid var(--nav-border);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      pointer-events: auto;
+      box-shadow: 20px 0 40px rgba(0,0,0,0.1);
+    }
+
+    .nav-stack__panel--open {
+      left: 0;
+    }
+
+    .nav-stack__drawer-header {
+      display: flex;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--nav-border);
+      background: var(--nav-bg);
+      margin-bottom: 1rem;
+    }
+
+    /* Mobile Link Adjustments */
+    .nav-stack__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+      padding-inline: 1rem;
+    }
+
+    .nav-stack__item {
+      width: 100%;
+    }
+
+    .nav-stack__link {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.15rem;
+      border-radius: 12px;
+      justify-content: space-between;
+    }
+
+    /* Force icon visible on mobile */
+    .nav-stack__link .nav-stack__icon {
+      opacity: 1;
+      transform: none;
+    }
+
+    .nav-stack__cta {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 1.5rem;
+      padding: 1.15rem 1rem;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      justify-content: space-between;
+    }
+  }
+</style>

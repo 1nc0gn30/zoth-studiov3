@@ -1,0 +1,118 @@
+---
+import type { StatsData } from '../../configs/stats';
+
+interface Props {
+  data?: StatsData;
+  config?: StatsData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: StatsData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+const items = Array.isArray(section.items) ? section.items : [];
+---
+
+<section class="stats-ribbon" aria-labelledby="stats-ribbon-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="stats-ribbon-heading">{section.heading}</h2>
+    {section.subtext && <p class="stats-ribbon__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="stats-ribbon__grid">
+    {items.map((item) => (
+      <article class="stats-ribbon__card">
+        <strong>{item.value}</strong>
+        <h3>{item.label}</h3>
+        {item.description && <p>{item.description}</p>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .stats-ribbon {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .stats-ribbon h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stats-ribbon__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .stats-ribbon__grid {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+  }
+
+  .stats-ribbon__card {
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bgColor) 96%, white 4%),
+      color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%)
+    );
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stats-ribbon__card strong {
+    display: block;
+    font-size: clamp(1.6rem, 3.6vw, 2.2rem);
+    line-height: 1;
+    color: var(--accentColor);
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stats-ribbon__card h3 {
+    margin: 0.45rem 0 0;
+    font-size: 0.95rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stats-ribbon__card p {
+    margin: 0.35rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+
+  @media (min-width: 720px) {
+    .stats-ribbon__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 980px) {
+    .stats-ribbon__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

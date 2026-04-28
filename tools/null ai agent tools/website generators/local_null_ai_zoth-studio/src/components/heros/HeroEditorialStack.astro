@@ -1,0 +1,296 @@
+---
+interface HeroEditorialButton {
+  label: string;
+  url: string;
+  variant: 'primary' | 'secondary';
+}
+
+interface HeroEditorialHighlight {
+  title: string;
+  description: string;
+}
+
+interface HeroEditorialStat {
+  label: string;
+  value: string;
+}
+
+interface HeroEditorialMedia {
+  desktopSrc: string;
+  mobileSrc: string;
+  fallbackSrc: string;
+  alt: string;
+}
+
+interface HeroEditorialStackConfig {
+  eyebrow: string;
+  heading: string;
+  headingAccent: string;
+  subtext: string;
+  buttons: HeroEditorialButton[];
+  highlights: HeroEditorialHighlight[];
+  stats: HeroEditorialStat[];
+  media: HeroEditorialMedia;
+}
+
+interface Props {
+  config: HeroEditorialStackConfig;
+  data?: Partial<HeroEditorialStackConfig> & {
+    image?: {
+      src?: string;
+      alt?: string;
+    };
+    media?: Partial<HeroEditorialMedia> & {
+      src?: string;
+      alt?: string;
+    };
+  };
+}
+
+const { config, data = {} } = Astro.props;
+
+const hero: HeroEditorialStackConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  headingAccent: data.headingAccent ?? config.headingAccent,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  highlights: data.highlights ?? config.highlights,
+  stats: data.stats ?? config.stats,
+  media: {
+    desktopSrc: data.media?.desktopSrc ?? data.media?.src ?? data.image?.src ?? config.media.desktopSrc ?? config.media.fallbackSrc,
+    mobileSrc: data.media?.mobileSrc ?? data.media?.src ?? data.image?.src ?? config.media.mobileSrc ?? config.media.desktopSrc,
+    fallbackSrc: data.media?.fallbackSrc ?? data.media?.src ?? data.image?.src ?? config.media.fallbackSrc ?? config.media.desktopSrc,
+    alt: data.media?.alt ?? data.image?.alt ?? config.media.alt,
+  },
+};
+---
+
+<section class="h2" aria-labelledby="h2-title">
+  <div class="h2__inner h2__reveal">
+    <p class="h2__eyebrow">{hero.eyebrow}</p>
+    <h1 id="h2-title">
+      {hero.heading}
+      <em>{hero.headingAccent}</em>
+    </h1>
+    <p class="h2__subtext">{hero.subtext}</p>
+
+    <div class="h2__media">
+      <picture>
+        <source media="(max-width: 767px)" srcset={hero.media.mobileSrc} />
+        <img
+          src={hero.media.desktopSrc}
+          alt={hero.media.alt}
+          loading="lazy"
+          decoding="async"
+          onerror={`this.onerror=null;this.src='${hero.media.fallbackSrc}'`}
+        />
+      </picture>
+    </div>
+
+    <div class="h2__actions">
+      {hero.buttons.map((button) => (
+        <a href={button.url} class={`h2__btn ${button.variant}`}>
+          {button.label}
+        </a>
+      ))}
+    </div>
+
+    <div class="h2__rail">
+      {hero.highlights.slice(0, 2).map((item) => (
+        <article>
+          <h2>{item.title}</h2>
+          <p>{item.description}</p>
+        </article>
+      ))}
+    </div>
+
+    <div class="h2__stats" aria-label="Performance stats">
+      {hero.stats.slice(0, 3).map((stat) => (
+        <article>
+          <strong>{stat.value}</strong>
+          <span>{stat.label}</span>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .h2 {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) 1rem;
+  }
+
+  .h2__inner {
+    border: 1px solid color-mix(in srgb, var(--textColor) 16%, transparent);
+    border-radius: 22px;
+    padding: clamp(1.4rem, 3vw, 2.2rem);
+    background: linear-gradient(130deg, color-mix(in srgb, var(--bgColor) 88%, #fff 12%), color-mix(in srgb, var(--accentColor) 12%, var(--bgColor)));
+    box-shadow: 0 28px 70px -56px color-mix(in srgb, var(--accentColor) 70%, #000 30%);
+  }
+
+  .h2__eyebrow {
+    margin: 0;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--textColor) 72%, transparent);
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0.65rem 0 0;
+    max-width: 14ch;
+    font-size: clamp(2rem, 6vw, 4.1rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+
+  h1 em {
+    display: block;
+    font-style: normal;
+    background: linear-gradient(90deg, var(--accentColor), #66d9ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .h2__subtext {
+    margin: 1rem 0 0;
+    max-width: 62ch;
+    line-height: 1.7;
+    font-size: 1.02rem;
+    color: color-mix(in srgb, var(--textColor) 86%, transparent);
+  }
+
+  .h2__media {
+    margin-top: 1rem;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--textColor) 16%, transparent);
+    aspect-ratio: 21 / 9;
+  }
+
+  .h2__media picture,
+  .h2__media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .h2__media img {
+    object-fit: cover;
+  }
+
+  .h2__actions {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  .h2__btn {
+    text-decoration: none;
+    padding: 0.72rem 1.12rem;
+    border-radius: 999px;
+    font-weight: 700;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .h2__btn.primary {
+    background: linear-gradient(135deg, var(--accentColor), #66d9ff);
+    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--accentColor) 76%, #000 24%);
+    box-shadow: 0 20px 38px -24px color-mix(in srgb, var(--accentColor) 72%, #000 28%);
+  }
+
+  .h2__btn.secondary {
+    background: transparent;
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 24%, transparent);
+  }
+
+  .h2__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .h2__rail {
+    margin-top: 1.3rem;
+    display: grid;
+    gap: 0.7rem;
+    grid-template-columns: 1fr;
+  }
+
+  .h2__rail article {
+    border-left: 4px solid var(--accentColor);
+    padding: 0.55rem 0.7rem;
+    border-radius: 0 10px 10px 0;
+    background: color-mix(in srgb, var(--bgColor) 94%, var(--accentColor) 6%);
+  }
+
+  .h2__rail h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .h2__rail p {
+    margin: 0.35rem 0 0;
+    font-size: 0.93rem;
+    line-height: 1.55;
+  }
+
+  .h2__stats {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .h2__stats article {
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--textColor) 5%);
+    border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+    border-radius: 12px;
+    padding: 0.75rem;
+    display: grid;
+    gap: 0.22rem;
+  }
+
+  .h2__stats strong {
+    font-size: 1.05rem;
+    color: var(--accentColor);
+  }
+
+  .h2__stats span {
+    font-size: 0.82rem;
+  }
+
+  .h2__reveal {
+    opacity: 0;
+    animation: h2-fade 0.7s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+
+  @keyframes h2-fade {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .h2__stats {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 760px) {
+    .h2__rail {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

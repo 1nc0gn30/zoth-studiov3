@@ -1,0 +1,274 @@
+---
+interface HeroMosaicButton {
+  label: string;
+  url: string;
+  variant: 'primary' | 'secondary';
+}
+
+interface HeroMosaicHighlight {
+  title: string;
+  description: string;
+}
+
+interface HeroMosaicMedia {
+  desktopSrc: string;
+  mobileSrc: string;
+  fallbackSrc: string;
+  alt: string;
+}
+
+interface HeroMosaicPanelConfig {
+  eyebrow: string;
+  heading: string;
+  headingAccent: string;
+  subtext: string;
+  buttons: HeroMosaicButton[];
+  highlights: HeroMosaicHighlight[];
+  proofPoints: string[];
+  media: HeroMosaicMedia;
+}
+
+interface Props {
+  config: HeroMosaicPanelConfig;
+  data?: Partial<HeroMosaicPanelConfig> & {
+    image?: {
+      src?: string;
+      alt?: string;
+    };
+    media?: Partial<HeroMosaicMedia> & {
+      src?: string;
+      alt?: string;
+    };
+  };
+}
+
+const { config, data = {} } = Astro.props;
+
+const hero: HeroMosaicPanelConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  headingAccent: data.headingAccent ?? config.headingAccent,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  highlights: data.highlights ?? config.highlights,
+  proofPoints: data.proofPoints ?? config.proofPoints,
+  media: {
+    desktopSrc: data.media?.desktopSrc ?? data.media?.src ?? data.image?.src ?? config.media.desktopSrc ?? config.media.fallbackSrc,
+    mobileSrc: data.media?.mobileSrc ?? data.media?.src ?? data.image?.src ?? config.media.mobileSrc ?? config.media.desktopSrc,
+    fallbackSrc: data.media?.fallbackSrc ?? data.media?.src ?? data.image?.src ?? config.media.fallbackSrc ?? config.media.desktopSrc,
+    alt: data.media?.alt ?? data.image?.alt ?? config.media.alt,
+  },
+};
+---
+
+<section class="h7" aria-labelledby="h7-title">
+  <div class="h7__copy h7__reveal">
+    <p>{hero.eyebrow}</p>
+    <h1 id="h7-title">
+      {hero.heading}
+      <span>{hero.headingAccent}</span>
+    </h1>
+    <p class="h7__subtext">{hero.subtext}</p>
+
+    <div class="h7__actions">
+      {hero.buttons.map((button) => (
+        <a href={button.url} class={`h7__btn ${button.variant}`}>
+          {button.label}
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="h7__mosaic h7__reveal-delay">
+    <article class="h7__media-card">
+      <picture>
+        <source media="(max-width: 767px)" srcset={hero.media.mobileSrc} />
+        <img
+          src={hero.media.desktopSrc}
+          alt={hero.media.alt}
+          loading="lazy"
+          decoding="async"
+          onerror={`this.onerror=null;this.src='${hero.media.fallbackSrc}'`}
+        />
+      </picture>
+    </article>
+    {hero.highlights.slice(0, 4).map((item) => (
+      <article>
+        <h2>{item.title}</h2>
+        <p>{item.description}</p>
+      </article>
+    ))}
+
+    {hero.proofPoints.slice(0, 2).map((point) => (
+      <article class="note">
+        <p>{point}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .h7 {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) 1rem;
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: 1fr;
+  }
+
+  .h7__copy,
+  .h7__mosaic {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+    padding: clamp(1rem, 2.3vw, 1.7rem);
+  }
+
+  .h7__copy p {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0.65rem 0 0;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    font-size: clamp(1.95rem, 5vw, 3.4rem);
+    max-width: 14ch;
+  }
+
+  h1 span {
+    display: block;
+    background: linear-gradient(90deg, var(--accentColor), #5fdaff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .h7__subtext {
+    margin: 0.95rem 0 0;
+    max-width: 58ch;
+    line-height: 1.65;
+    color: color-mix(in srgb, var(--textColor) 84%, transparent);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .h7__actions {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .h7__btn {
+    text-decoration: none;
+    padding: 0.67rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    transition: transform 0.2s ease;
+  }
+
+  .h7__btn.primary {
+    background: linear-gradient(135deg, var(--accentColor), #5fdaff);
+    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--accentColor) 75%, #000 25%);
+  }
+
+  .h7__btn.secondary {
+    background: transparent;
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 20%, transparent);
+  }
+
+  .h7__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .h7__mosaic {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .h7__mosaic article {
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 97%, transparent);
+    padding: 0.75rem;
+  }
+
+  .h7__mosaic h2 {
+    margin: 0;
+    font-size: 0.98rem;
+  }
+
+  .h7__mosaic p {
+    margin: 0.3rem 0 0;
+    line-height: 1.52;
+    font-size: 0.9rem;
+  }
+
+  .h7__mosaic .note {
+    background: color-mix(in srgb, var(--accentColor) 12%, var(--bgColor));
+  }
+
+  .h7__media-card {
+    grid-column: 1 / -1;
+    overflow: hidden;
+    padding: 0;
+    aspect-ratio: 21 / 9;
+  }
+
+  .h7__media-card picture,
+  .h7__media-card img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .h7__media-card img {
+    object-fit: cover;
+  }
+
+  .h7__reveal,
+  .h7__reveal-delay {
+    opacity: 0;
+    animation: h7-fade 0.7s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+
+  .h7__reveal-delay {
+    animation-delay: 0.1s;
+  }
+
+  @keyframes h7-fade {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .h7__mosaic {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 980px) {
+    .h7 {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+  }
+</style>

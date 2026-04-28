@@ -1,0 +1,111 @@
+---
+import footerInlineBarConfig from '../../configs/footers/footer-inline-bar.json';
+
+interface FooterSocialItem {
+  platform: string;
+  url: string;
+}
+
+interface FooterInlineBarConfig {
+  socialNavAria: string;
+  copyright: string;
+  showStatus: boolean;
+  statusText: string;
+  socials: FooterSocialItem[];
+}
+
+interface Props {
+  data?: Partial<FooterInlineBarConfig>;
+}
+
+const { data } = Astro.props;
+const baseConfig = footerInlineBarConfig as FooterInlineBarConfig;
+const footerData: FooterInlineBarConfig = {
+  ...baseConfig,
+  ...data,
+  socials: data?.socials ?? baseConfig.socials,
+};
+---
+<footer class="f1" role="contentinfo">
+  <div class="wrap">
+    <p class="copy">{footerData.copyright}</p>
+    {footerData.showStatus && <span class="status">{footerData.statusText}</span>}
+    <nav aria-label={footerData.socialNavAria}>
+      <ul>
+        {footerData.socials.map((s) => (
+          <li><a href={s.url} target="_blank" rel="noreferrer noopener">{s.platform}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .f1 {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--bg) 92%, black 8%), var(--bg));
+    color: var(--text);
+    border-top: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 1rem;
+    align-items: center;
+  }
+  .copy {
+    margin: 0;
+    color: color-mix(in srgb, var(--text) 76%, white 24%);
+  }
+  .status {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    font-size: 0.82rem;
+    font-weight: 600;
+    justify-self: start;
+  }
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  a {
+    color: color-mix(in srgb, var(--text) 88%, white 12%);
+    text-decoration: none;
+    padding: 0.36rem 0.68rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    border-radius: 999px;
+    transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+  }
+  a:hover,
+  a:focus-visible {
+    outline: none;
+    transform: translateY(-1px);
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+  @media (max-width: 780px) {
+    .wrap {
+      grid-template-columns: 1fr;
+      text-align: center;
+      gap: 0.8rem;
+    }
+    .status {
+      justify-self: center;
+    }
+    ul {
+      justify-content: center;
+    }
+  }
+</style>

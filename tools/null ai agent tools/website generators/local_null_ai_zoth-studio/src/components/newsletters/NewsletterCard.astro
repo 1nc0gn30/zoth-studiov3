@@ -1,0 +1,204 @@
+---
+import type { NewsletterData } from '../../configs/newsletter';
+
+interface Props {
+  data?: NewsletterData;
+  config?: NewsletterData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: NewsletterData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  placeholder: data.placeholder ?? config.placeholder,
+  buttonLabel: data.buttonLabel ?? config.buttonLabel,
+  privacyText: data.privacyText ?? config.privacyText,
+  action: data.action ?? config.action,
+  netlify: data.netlify ?? config.netlify,
+  netlifyName: data.netlifyName ?? config.netlifyName,
+};
+
+const formAction = section.action || '#';
+const netlifyAttrs = section.netlify
+  ? { 'data-netlify': 'true', name: section.netlifyName || 'newsletter-card' }
+  : {};
+---
+
+<section class="newsletter-card" aria-labelledby="newsletter-card-heading">
+  <div class="newsletter-card__inner">
+    <header>
+      {section.eyebrow && <p>{section.eyebrow}</p>}
+      <h2 id="newsletter-card-heading">{section.heading}</h2>
+      {section.subtext && <p class="newsletter-card__subtext">{section.subtext}</p>}
+    </header>
+
+    <form
+      class="newsletter-card__form"
+      action={formAction}
+      method="POST"
+      {...netlifyAttrs}
+    >
+      {section.netlify && <input type="hidden" name="form-name" value={netlifyAttrs.name} />}
+      <label class="newsletter-card__field" for="newsletter-card-email">
+        <span class="sr-only">{section.placeholder || 'Email address'}</span>
+        <input
+          id="newsletter-card-email"
+          type="email"
+          name="email"
+          placeholder={section.placeholder || 'Email address'}
+          required
+          aria-required="true"
+        />
+      </label>
+      <button type="submit">{section.buttonLabel || 'Subscribe'}</button>
+    </form>
+
+    {section.privacyText && <p class="newsletter-card__privacy">{section.privacyText}</p>}
+  </div>
+</section>
+
+<style>
+  .newsletter-card {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .newsletter-card__inner {
+    border-radius: 22px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--bgColor) 94%, white 6%),
+      color-mix(in srgb, var(--bgColor) 88%, var(--accentColor) 12%)
+    );
+    padding: clamp(2rem, 5vw, 3.2rem) clamp(1.2rem, 4vw, 2.5rem);
+    box-shadow: 0 24px 50px -28px color-mix(in srgb, var(--accentColor) 55%, black 45%);
+  }
+
+  .newsletter-card header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .newsletter-card h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+    line-height: 1.08;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .newsletter-card__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+    max-width: 56ch;
+  }
+
+  .newsletter-card__form {
+    margin-top: 1.4rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .newsletter-card__field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .newsletter-card__field input {
+    min-height: 52px;
+    width: 100%;
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 18%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 96%, var(--accentColor) 4%);
+    color: var(--textColor);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .newsletter-card__field input::placeholder {
+    color: color-mix(in srgb, var(--textColor) 55%, transparent);
+  }
+
+  .newsletter-card__field input:hover {
+    border-color: color-mix(in srgb, var(--accentColor) 46%, transparent);
+  }
+
+  .newsletter-card__field input:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--accentColor) 72%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 25%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .newsletter-card__form button {
+    min-height: 52px;
+    border: 0;
+    border-radius: 14px;
+    padding: 0.85rem 1.6rem;
+    background: linear-gradient(120deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 60%, black 40%));
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+  }
+
+  .newsletter-card__form button:hover {
+    transform: translateY(-1px);
+    filter: saturate(1.07);
+    box-shadow: 0 12px 22px -14px color-mix(in srgb, var(--accentColor) 75%, black 25%);
+  }
+
+  .newsletter-card__form button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 28%, transparent);
+  }
+
+  .newsletter-card__privacy {
+    margin: 0.7rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--textColor) 65%, transparent);
+    max-width: 56ch;
+  }
+
+  @media (min-width: 640px) {
+    .newsletter-card__form {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .newsletter-card__field input,
+    .newsletter-card__form button {
+      transition: none;
+    }
+  }
+</style>

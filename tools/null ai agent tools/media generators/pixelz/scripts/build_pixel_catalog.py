@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import re
+from collections import Counter
+from pathlib import Path
+
+
+def tokenize(text: str):
+    return [t for t in re.split(r"[^a-z0-9]+", text.lower()) if t]
+
+
+def collect_items(root: Path, scan_root: Path):
+    items = []
+    for p in sorted(scan_root.rglob("*.png")):
+        if not p.is_file():
+            continue
+        rel = p.relative_to(root).as_posix()
+        source = scan_root.name
+        tags = set(tokenize(p.stem))
+        tags.update(tokenize("/".join(p.parts[-4:-1])))
+        items.append(
+            {
+                "name": p.stem,
+                "file": rel,
+                "source": source,
+                "tags": sorted(tags),
+            }
+        )
+    return items
+
+
+HTML = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pixel Library Catalog</title>
+  <style>
+    :root { --bg:#0b0f14; --panel:#121821; --text:#e6edf3; --muted:#93a1b1; --line:#253040; --accent:#4ade80; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: radial-gradient(circle at 20% 0%, #162230 0%, var(--bg) 42%); color: var(--text); }
+    .wrap { max-width: 1500px; margin: 0 auto; padding: 16px; }
+    .panel { background: rgba(18,24,33,.92); border:1px solid var(--line); border-radius: 12px; padding: 12px; position: sticky; top: 12px; z-index: 5; }
+    .row { display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
+    input, select { background:#0c1219; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+    input { min-width: 260px; flex:1; }
+    .stats { color: var(--muted); font-size: 13px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:10px; margin-top:14px; }
+    .card { background: var(--panel); border:1px solid var(--line); border-radius: 10px; padding:8px; }
+    .card img { width:100%; aspect-ratio:1/1; image-rendering: pixelated; background:#06090d; border-radius:8px; border:1px solid #202a38; }
+    .meta { font-size:11px; color:var(--muted); margin-top:6px; line-height:1.35; word-break: break-word; }
+    .name { color:var(--text); font-size:12px; margin-bottom:3px; }
+    .tag { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="row">
+        <input id="q" placeholder="Search name/tags (e.g. skull, pixel, platformer, ui)" />
+        <select id="source"></select>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+  <script>
+  const state = { items: [], filtered: [] };
+  const q = document.getElementById('q');
+  const sourceSel = document.getElementById('source');
+  const grid = document.getElementById('grid');
+  const stats = document.getElementById('stats');
+
+  function el(tag, cls, txt) { const n=document.createElement(tag); if(cls) n.className=cls; if(txt) n.textContent=txt; return n; }
+  function render() {
+    const query = q.value.trim().toLowerCase();
+    const src = sourceSel.value;
+    state.filtered = state.items.filter(item => {
+      if (src !== 'all' && item.source !== src) return false;
+      if (!query) return true;
+      const hay = (item.name + ' ' + item.tags.join(' ') + ' ' + item.source).toLowerCase();
+      return hay.includes(query);
+    });
+    grid.innerHTML = '';
+    for (const item of state.filtered.slice(0, 3000)) {
+      const card = el('div', 'card');
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.src = '../' + item.file;
+      img.alt = item.name;
+      card.appendChild(img);
+      const meta = el('div', 'meta');
+      meta.appendChild(el('div', 'name', item.name));
+      meta.appendChild(el('div', '', 'source: ' + item.source));
+      meta.appendChild(el('div', 'tag', '#' + item.tags.slice(0, 5).join(' #')));
+      card.appendChild(meta);
+      grid.appendChild(card);
+    }
+    stats.textContent = `Showing ${state.filtered.length.toLocaleString()} / ${state.items.length.toLocaleString()} icons (render capped at 3,000 for speed).`;
+  }
+
+  fetch('./catalog.json').then(r => r.json()).then(data => {
+    state.items = data.items;
+    const sources = ['all', ...data.sources];
+    for (const s of sources) {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s;
+      sourceSel.appendChild(o);
+    }
+    render();
+  });
+  q.addEventListener('input', render);
+  sourceSel.addEventListener('change', render);
+  </script>
+</body>
+</html>
+"""
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Build searchable local pixel icon catalog.")
+    parser.add_argument(
+        "--root",
+        default="/home/neo/pixelz/output",
+        help="Project output root.",
+    )
+    parser.add_argument(
+        "--scan-dirs",
+        nargs="+",
+        required=True,
+        help="Directories under root to scan for PNG files.",
+    )
+    parser.add_argument(
+        "--out-dir",
+        default="/home/neo/pixelz/output/pixel-catalog",
+        help="Catalog output directory.",
+    )
+    args = parser.parse_args()
+
+    root = Path(args.root)
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    items = []
+    for d in args.scan_dirs:
+        scan_root = root / d
+        if scan_root.exists():
+            items.extend(collect_items(root, scan_root))
+
+    sources = sorted(set(i["source"] for i in items))
+    tag_counts = Counter(t for i in items for t in i["tags"])
+    catalog = {
+        "count": len(items),
+        "sources": sources,
+        "top_tags": tag_counts.most_common(80),
+        "items": items,
+    }
+
+    (out_dir / "catalog.json").write_text(json.dumps(catalog, indent=2), encoding="utf-8")
+    (out_dir / "index.html").write_text(HTML, encoding="utf-8")
+    print(f"catalog_count={len(items)}")
+    print(f"catalog_dir={out_dir}")
+
+
+if __name__ == "__main__":
+    main()

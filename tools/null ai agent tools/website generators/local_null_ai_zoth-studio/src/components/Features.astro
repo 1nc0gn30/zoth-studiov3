@@ -1,0 +1,37 @@
+---
+import type { FeaturesData } from '../configs/features';
+import featuresDefaultGridConfig from '../configs/features/features-default-grid.json';
+import featuresSplitShowcaseConfig from '../configs/features/features-split-showcase.json';
+import featuresStepsRailConfig from '../configs/features/features-steps-rail.json';
+import FeaturesDefaultGrid from './features/FeaturesDefaultGrid.astro';
+import FeaturesSplitShowcase from './features/FeaturesSplitShowcase.astro';
+import FeaturesStepsRail from './features/FeaturesStepsRail.astro';
+
+interface Props {
+  data?: FeaturesData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  default: FeaturesDefaultGrid,
+  split: FeaturesSplitShowcase,
+  steps: FeaturesStepsRail,
+} as const;
+
+type FeaturesVariant = keyof typeof variants;
+
+const variantConfigs = {
+  default: featuresDefaultGridConfig,
+  split: featuresSplitShowcaseConfig,
+  steps: featuresStepsRailConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'default') as FeaturesVariant;
+const resolvedVariant = (requested in variants ? requested : 'default') as FeaturesVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.default;
+---
+
+<VariantComponent data={data as any} config={config as any} />

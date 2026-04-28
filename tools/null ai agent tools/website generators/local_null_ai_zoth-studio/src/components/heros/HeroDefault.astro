@@ -1,0 +1,408 @@
+---
+interface HeroDefaultButton {
+  label: string;
+  url: string;
+  variant: 'primary' | 'secondary';
+}
+
+interface HeroDefaultHighlight {
+  title: string;
+  description: string;
+}
+
+interface HeroDefaultStat {
+  label: string;
+  value: string;
+}
+
+interface HeroDefaultMedia {
+  desktopSrc: string;
+  mobileSrc: string;
+  fallbackSrc: string;
+  alt: string;
+}
+
+interface HeroDefaultConfig {
+  eyebrow: string;
+  heading: string;
+  headingAccent: string;
+  subtext: string;
+  proofPoints: string[];
+  buttons: HeroDefaultButton[];
+  panelKicker: string;
+  highlights: HeroDefaultHighlight[];
+  stats: HeroDefaultStat[];
+  media: HeroDefaultMedia;
+}
+
+interface Props {
+  config: HeroDefaultConfig;
+  data?: Partial<HeroDefaultConfig> & {
+    image?: {
+      src?: string;
+      alt?: string;
+    };
+    media?: Partial<HeroDefaultMedia> & {
+      src?: string;
+      alt?: string;
+    };
+  };
+}
+
+const { config, data = {} } = Astro.props;
+
+const hero: HeroDefaultConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  headingAccent: data.headingAccent ?? config.headingAccent,
+  subtext: data.subtext ?? config.subtext,
+  proofPoints: data.proofPoints ?? config.proofPoints,
+  buttons: data.buttons ?? config.buttons,
+  panelKicker: data.panelKicker ?? config.panelKicker,
+  highlights: data.highlights ?? config.highlights,
+  stats: data.stats ?? config.stats,
+  media: {
+    desktopSrc: data.media?.desktopSrc ?? data.media?.src ?? data.image?.src ?? config.media.desktopSrc ?? config.media.fallbackSrc,
+    mobileSrc: data.media?.mobileSrc ?? data.media?.src ?? data.image?.src ?? config.media.mobileSrc ?? config.media.desktopSrc,
+    fallbackSrc: data.media?.fallbackSrc ?? data.media?.src ?? data.image?.src ?? config.media.fallbackSrc ?? config.media.desktopSrc,
+    alt: data.media?.alt ?? data.image?.alt ?? config.media.alt,
+  },
+};
+---
+
+<section class="hero-default" aria-labelledby="hero-default-heading">
+  <div class="hero-default__stage" aria-hidden="true"></div>
+
+  <div class="hero-default__layout">
+    <div class="hero-default__copy reveal">
+      <p class="hero-default__eyebrow">{hero.eyebrow}</p>
+      <h1 id="hero-default-heading" class="hero-default__title">
+        {hero.heading}
+        <span>{hero.headingAccent}</span>
+      </h1>
+      <p class="hero-default__subtext">{hero.subtext}</p>
+
+      <ul class="hero-default__points" aria-label="Key benefits">
+        {hero.proofPoints.map((point) => (
+          <li>{point}</li>
+        ))}
+      </ul>
+
+      <div class="hero-default__actions">
+        {hero.buttons.map((button) => (
+          <a href={button.url} class={`hero-default__btn ${button.variant}`}>
+            {button.label}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <aside class="hero-default__aside reveal-delay" aria-label="Platform highlights">
+      <p class="hero-default__kicker">{hero.panelKicker}</p>
+
+      <div class="hero-default__media-wrap">
+        <picture>
+          <source media="(max-width: 767px)" srcset={hero.media.mobileSrc} />
+          <img
+            src={hero.media.desktopSrc}
+            alt={hero.media.alt}
+            loading="lazy"
+            decoding="async"
+            onerror={`this.onerror=null;this.src='${hero.media.fallbackSrc}'`}
+          />
+        </picture>
+      </div>
+
+      <ul class="hero-default__highlights">
+        {hero.highlights.map((item) => (
+          <li>
+            <h2>{item.title}</h2>
+            <p>{item.description}</p>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  </div>
+
+  <div class="hero-default__stats" aria-label="Performance stats">
+    {hero.stats.map((stat) => (
+      <article class="hero-default__stat reveal-rise">
+        <h2>{stat.value}</h2>
+        <p>{stat.label}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .hero-default {
+    --card-bg: color-mix(in srgb, var(--bgColor) 90%, var(--accentColor) 10%);
+    --card-edge: color-mix(in srgb, var(--textColor) 12%, transparent);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5.25rem) clamp(1rem, 4vw, 2.5rem);
+    position: relative;
+  }
+
+  .hero-default__stage {
+    position: absolute;
+    inset: 5% -18% auto;
+    height: clamp(220px, 35vw, 420px);
+    background:
+      radial-gradient(circle at 12% 24%, color-mix(in srgb, var(--accentColor) 32%, transparent), transparent 52%),
+      radial-gradient(circle at 82% 18%, color-mix(in srgb, #4dc8ff 24%, transparent), transparent 48%);
+    filter: blur(14px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-default__layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  .hero-default__copy,
+  .hero-default__aside {
+    border-radius: 20px;
+    border: 1px solid var(--card-edge);
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--bgColor) 84%, white 16%),
+      color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%)
+    );
+    padding: clamp(1.2rem, 2.8vw, 2rem);
+    box-shadow: 0 30px 80px -62px color-mix(in srgb, var(--accentColor) 60%, #000 40%);
+    backdrop-filter: blur(8px);
+  }
+
+  .hero-default__eyebrow {
+    margin: 0;
+    font-size: 0.77rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .hero-default__title {
+    margin: 0.7rem 0 0;
+    font-size: clamp(2rem, 6vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    max-width: 14ch;
+  }
+
+  .hero-default__title span {
+    display: block;
+    background: linear-gradient(90deg, var(--accentColor), color-mix(in srgb, #56ccf2 72%, var(--accentColor) 28%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-default__subtext {
+    margin: 1rem 0 0;
+    max-width: 60ch;
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--textColor) 83%, transparent);
+  }
+
+  .hero-default__points {
+    list-style: none;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .hero-default__points li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: color-mix(in srgb, var(--textColor) 88%, transparent);
+    font-size: 0.95rem;
+  }
+
+  .hero-default__points li::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: linear-gradient(140deg, var(--accentColor), #56ccf2);
+    flex-shrink: 0;
+  }
+
+  .hero-default__actions {
+    margin-top: 1.3rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  .hero-default__btn {
+    text-decoration: none;
+    border-radius: 12px;
+    padding: 0.73rem 1.08rem;
+    font-weight: 700;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+  }
+
+  .hero-default__btn.primary {
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, #56ccf2 65%, var(--accentColor) 35%));
+    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--accentColor) 75%, #000 25%);
+    box-shadow: 0 16px 35px -22px color-mix(in srgb, var(--accentColor) 68%, #000 32%);
+  }
+
+  .hero-default__btn.secondary {
+    background: color-mix(in srgb, var(--bgColor) 88%, white 12%);
+    border: 1px solid color-mix(in srgb, var(--textColor) 22%, transparent);
+    color: var(--textColor);
+  }
+
+  .hero-default__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .hero-default__btn.primary:hover {
+    box-shadow: 0 24px 48px -24px color-mix(in srgb, var(--accentColor) 70%, #000 30%);
+  }
+
+  .hero-default__kicker {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--textColor) 72%, transparent);
+  }
+
+  .hero-default__media-wrap {
+    margin-top: 0.9rem;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    aspect-ratio: 16 / 9;
+  }
+
+  .hero-default__media-wrap picture,
+  .hero-default__media-wrap img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .hero-default__media-wrap img {
+    object-fit: cover;
+  }
+
+  .hero-default__highlights {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .hero-default__highlights li {
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 10%, transparent);
+    background: var(--card-bg);
+    padding: 0.75rem;
+  }
+
+  .hero-default__highlights h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .hero-default__highlights p {
+    margin: 0.35rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.58;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .hero-default__stats {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .hero-default__stat {
+    border: 1px solid var(--card-edge);
+    border-radius: 14px;
+    padding: 0.9rem;
+    background: color-mix(in srgb, var(--bgColor) 93%, var(--accentColor) 7%);
+  }
+
+  .hero-default__stat h2 {
+    margin: 0;
+    font-size: clamp(1.2rem, 3vw, 1.72rem);
+    color: var(--accentColor);
+    line-height: 1;
+  }
+
+  .hero-default__stat p {
+    margin: 0.42rem 0 0;
+    font-size: 0.84rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .reveal,
+  .reveal-delay,
+  .reveal-rise {
+    opacity: 0;
+    animation: hero-fade-up 0.7s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+
+  .reveal-delay {
+    animation-delay: 0.12s;
+  }
+
+  .reveal-rise {
+    animation-delay: 0.2s;
+  }
+
+  @keyframes hero-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 980px) {
+    .hero-default__layout {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    }
+
+    .hero-default__stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .reveal-delay,
+    .reveal-rise {
+      opacity: 1;
+      animation: none;
+    }
+
+    .hero-default__btn {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NULL AI Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; color: #fff; }
+  .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px; }
+  .error-bar { background: var(--red); color: #fff; padding: 8px 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 8px; }
+  .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9rem; }
+  .stat-row .label { color: var(--text-dim); }
+  .stat-row .value { font-weight: 600; color: #fff; }
+  .badge {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 0.75rem; font-weight: 600;
+  }
+  .badge.green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge.red { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge.yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .badge.blue { background: rgba(88,166,255,0.15); color: var(--blue); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; padding: 8px 8px; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 500; }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+  .tool-name { font-weight: 500; color: #fff; cursor: pointer; }
+  .tool-name:hover { color: var(--blue); }
+  .detail-panel {
+    display: none; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px; margin-top: 4px; font-size: 0.8rem;
+  }
+  .detail-panel.open { display: block; }
+  .detail-panel pre { white-space: pre-wrap; color: var(--text-dim); margin-top: 4px; }
+  .rt-badge { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 2px; }
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+  .loading { color: var(--text-dim); text-align: center; padding: 40px; }
+  .chains-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chain-item { background: rgba(88,166,255,0.1); border: 1px solid var(--blue); border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; }
+  .chain-item .chain-name { color: var(--blue); font-weight: 600; }
+  .chain-item .chain-steps { color: var(--text-dim); margin-top: 2px; }
+  .search-box { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem; margin-bottom: 12px; }
+  .search-box:focus { outline: none; border-color: var(--blue); }
+  .footer { text-align: center; color: var(--text-dim); font-size: 0.75rem; padding: 20px 0; }
+</style>
+</head>
+<body>
+  <h1>⎔ NULL AI Agent Framework</h1>
+  <div class="subtitle" id="subtitle">Loading...</div>
+  <div class="error-bar" id="errorBar"></div>
+
+  <!-- Stats -->
+  <div class="grid" id="statsGrid">
+    <div class="card"><h2>Tools</h2><div id="statTools" class="loading pulse">loading...</div></div>
+    <div class="card"><h2>System</h2><div id="statSystem" class="loading pulse">loading...</div></div>
+    <div class="card"><h2>Chains</h2><div id="statChains" class="loading pulse">loading...</div></div>
+    <div class="card"><h2>Quick Links</h2><div id="statLinks" style="font-size:0.85rem">
+      <a href="#" onclick="runCmd('dashboard')" style="color:var(--blue);display:block;padding:2px 0">dashboard</a>
+      <a href="#" onclick="runCmd('doctor')" style="color:var(--blue);display:block;padding:2px 0">doctor</a>
+      <a href="#" onclick="runCmd('list --summary')" style="color:var(--blue);display:block;padding:2px 0">list --summary</a>
+      <a href="#" onclick="runCmd('smoke --limit 10')" style="color:var(--blue);display:block;padding:2px 0">smoke --limit 10</a>
+      <a href="/dashboard/" target="_blank" style="color:var(--purple);display:block;padding:2px 0">✦ AstroStudio Dashboard →</a>
+    </div></div>
+  </div>
+
+  <!-- Tool List -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h2 style="margin-bottom:0">Tools</h2>
+      <div>
+        <select id="catFilter" onchange="filterTools()" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:0.8rem">
+          <option value="">All Categories</option>
+        </select>
+        <select id="rtFilter" onchange="filterTools()" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:0.8rem;margin-left:4px">
+          <option value="">All Runtimes</option>
+        </select>
+      </div>
+    </div>
+    <input type="text" class="search-box" id="searchBox" placeholder="Search tools..." oninput="filterTools()">
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th style="width:30%">Tool</th>
+          <th style="width:15%">Category</th>
+          <th style="width:12%">Runtime</th>
+          <th style="width:15%">Tags</th>
+          <th style="width:10%">Entrypoints</th>
+          <th style="width:10%">Health</th>
+          <th style="width:8%"></th>
+        </tr></thead>
+        <tbody id="toolTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    NULL AI Agent Framework · Parrot OS · <span id="footerTime"></span>
+  </div>
+
+  <script>
+  const API = window.location.origin + window.location.pathname.replace(/\/dashboard\.html$/, '');
+  let allTools = [];
+  let allChains = [];
+  let systemInfo = {};
+
+  function showError(msg) {
+    const bar = document.getElementById('errorBar');
+    bar.textContent = msg;
+    bar.style.display = 'block';
+  }
+
+  function fmt(s) { return typeof s === 'string' ? s : JSON.stringify(s); }
+
+  async function api(endpoint) {
+    const url = `${document.location.protocol}//${document.location.hostname}:8485${endpoint}`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`API ${endpoint}: ${resp.status}`);
+    return resp.json();
+  }
+
+  function rtStyle(rt) {
+    const colors = {python:'#3572A5',node:'#339933',vite:'#646CFF',astro:'#FF5D01',go:'#00ADD8',streamlit:'#FF4B4B',frontend:'#563D7C',shell:'#89E051'};
+    const c = colors[rt] || '#888';
+    return `<span class="rt-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${rt}</span>`;
+  }
+
+  function renderTool(t) {
+    const rts = (t.runtimes || []).map(rtStyle).join('');
+    const tags = (t.tags || []).slice(0,3).map(t => `<span class="badge blue">${t}</span>`).join(' ');
+    const eps = (t.entrypoints || []).length;
+    const healthy = (t.runtimes || []).length > 0 ? '<span class="badge green">✓</span>' : '<span class="badge yellow">⚠</span>';
+    return `<tr>
+      <td><span class="tool-name" onclick="toggleDetail('${t.id}')">${t.name || t.id}</span></td>
+      <td>${t.category || '—'}</td>
+      <td>${rts || '<span class="badge yellow">unknown</span>'}</td>
+      <td>${tags || '—'}</td>
+      <td>${eps > 0 ? `<span class="badge green">${eps}</span>` : '<span class="badge yellow">0</span>'}</td>
+      <td>${healthy}</td>
+      <td><a href="#" onclick="toggleDetail('${t.id}');return false" style="color:var(--text-dim);font-size:0.75rem">details</a></td>
+    </tr>
+    <tr id="detail-${t.id}" style="display:none"><td colspan="7">
+      <div class="detail-panel open">
+        <div><strong>ID:</strong> ${t.id}</div>
+        <div><strong>Path:</strong> ${t.relative_path || '—'}</div>
+        ${t.readme ? `<div><strong>README:</strong> ${t.readme}</div>` : ''}
+        ${(t.entrypoints || []).length ? `<div><strong>Entrypoints:</strong><pre>${(t.entrypoints || []).join('\\n')}</pre></div>` : ''}
+        ${t.package_scripts && Object.keys(t.package_scripts).length ? `<div><strong>npm scripts:</strong><pre>${Object.entries(t.package_scripts).map(([k,v]) => `${k}: ${v}`).join('\\n')}</pre></div>` : ''}
+      </div>
+    </td></tr>`;
+  }
+
+  function toggleDetail(id) {
+    const row = document.getElementById('detail-' + id);
+    if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+  }
+
+  function filterTools() {
+    const q = document.getElementById('searchBox').value.toLowerCase();
+    const cat = document.getElementById('catFilter').value;
+    const rt = document.getElementById('rtFilter').value;
+    const filtered = allTools.filter(t => {
+      if (cat && (t.category || '') !== cat) return false;
+      if (rt && !(t.runtimes || []).includes(rt)) return false;
+      if (q && !(t.name || '').toLowerCase().includes(q) && !(t.id || '').toLowerCase().includes(q)) return false;
+      return true;
+    });
+    document.getElementById('toolTable').innerHTML = filtered.map(renderTool).join('');
+  }
+
+  function populateFilters() {
+    const cats = [...new Set(allTools.map(t => t.category).filter(Boolean))];
+    const rts = [...new Set(allTools.flatMap(t => t.runtimes || []))].sort();
+    const catSel = document.getElementById('catFilter');
+    cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+    const rtSel = document.getElementById('rtFilter');
+    rts.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; rtSel.appendChild(o); });
+  }
+
+  async function load() {
+    try {
+      // Load all endpoints in parallel
+      const [dashboard, tools, chains] = await Promise.all([
+        api('/api/dashboard'),
+        api('/api/tools'),
+        api('/api/chains'),
+      ]);
+
+      allTools = tools.tools || [];
+      allChains = chains.chains || [];
+      systemInfo = dashboard.system || {};
+
+      // Stats
+      document.getElementById('statTools').innerHTML = `
+        <div class="stat-row"><span class="label">Total</span><span class="value">${dashboard.tool_count || 0}</span></div>
+        <div class="stat-row"><span class="label">Unknown runtime</span><span class="value">${dashboard.unknown_runtime || 0}</span></div>
+        <div class="stat-row"><span class="label">Categories</span><span class="value">${Object.keys(dashboard.by_category || {}).length}</span></div>
+      `;
+
+      const sys = dashboard.system || {};
+      const hw = sys.hardware || {};
+      document.getElementById('statSystem').innerHTML = `
+        <div class="stat-row"><span class="label">OS</span><span class="value">${(sys.os || {}).name || '—'}</span></div>
+        <div class="stat-row"><span class="label">CPU</span><span class="value">${hw.cpu_cores || '?'} cores</span></div>
+        <div class="stat-row"><span class="label">RAM</span><span class="value">${hw.ram_total_gb || '?'} GB</span></div>
+        <div class="stat-row"><span class="label">Tools avail</span><span class="value">${sys.tools_available || 0}/${sys.tools_total || 0}</span></div>
+      `;
+
+      document.getElementById('statChains').innerHTML = allChains.length
+        ? `<div class="chains-list">${allChains.map(c => `
+          <div class="chain-item">
+            <div class="chain-name">${c.name || c.id}</div>
+            <div class="chain-steps">${(c.steps || []).map(s => s.tool_id).join(' → ')}</div>
+          </div>`).join('')}</div>`
+        : '<div class="stat-row"><span class="label">No chains</span></div>';
+
+      document.getElementById('subtitle').textContent =
+        `${dashboard.tool_count || 0} tools · ${Object.keys(dashboard.by_category || {}).length} categories · ${(sys.os || {}).name || ''}`;
+
+      // Tool table
+      populateFilters();
+      filterTools();
+
+    } catch (e) {
+      showError(`API error: ${e.message}. Make sure \`python3 orchestrator.py serve\` is running on :8485`);
+      document.getElementById('subtitle').textContent = 'Connection error — start the API server';
+    }
+  }
+
+  function runCmd(cmd) {
+    showError(`Run in terminal: python3 orchestrator.py ${cmd}`);
+  }
+
+  document.getElementById('footerTime').textContent = new Date().toLocaleString();
+  load();
+  </script>
+</body>
+</html>

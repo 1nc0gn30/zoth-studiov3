@@ -1,0 +1,163 @@
+---
+import sparklesIcon from 'lucide-static/icons/sparkles.svg?raw';
+import rocketIcon from 'lucide-static/icons/rocket.svg?raw';
+import orbitIcon from 'lucide-static/icons/orbit.svg?raw';
+import gridIcon from 'lucide-static/icons/grid-2x2.svg?raw';
+import layersIcon from 'lucide-static/icons/layers.svg?raw';
+import compassIcon from 'lucide-static/icons/compass.svg?raw';
+import apertureIcon from 'lucide-static/icons/aperture.svg?raw';
+import shieldIcon from 'lucide-static/icons/shield.svg?raw';
+import activityIcon from 'lucide-static/icons/activity.svg?raw';
+import panelLeftIcon from 'lucide-static/icons/panel-left.svg?raw';
+import boxesIcon from 'lucide-static/icons/boxes.svg?raw';
+
+interface BrandData {
+  name?: string;
+  logoUrl?: string;
+  fallbackIcon?: string;
+}
+
+interface Props {
+  href: string;
+  ariaLabel?: string;
+  brand?: BrandData;
+  brandClass?: string;
+  logoClass?: string;
+  titleClass?: string;
+}
+
+const iconMap: Record<string, string> = {
+  sparkles: sparklesIcon,
+  rocket: rocketIcon,
+  orbit: orbitIcon,
+  grid: gridIcon,
+  layers: layersIcon,
+  compass: compassIcon,
+  aperture: apertureIcon,
+  shield: shieldIcon,
+  activity: activityIcon,
+  panel: panelLeftIcon,
+  boxes: boxesIcon,
+};
+
+// Added default empty strings to prevent class="undefined"
+const { 
+  href, 
+  ariaLabel, 
+  brand, 
+  brandClass = '', 
+  logoClass = '', 
+  titleClass = '' 
+} = Astro.props;
+
+const hasLogo = Boolean(brand?.logoUrl);
+const fallbackSvg = iconMap[brand?.fallbackIcon ?? 'sparkles'] ?? sparklesIcon;
+---
+
+<a 
+  class={`brand-link ${brandClass}`} 
+  href={href} 
+  aria-label={ariaLabel || brand?.name || 'Home'}
+>
+  <span class="brand-media" data-logo-missing={hasLogo ? 'false' : 'true'}>
+    {hasLogo && (
+      <img
+        class={`brand-logo ${logoClass}`}
+        src={brand?.logoUrl}
+        alt={brand?.name ?? 'Brand logo'}
+        loading="lazy"
+        decoding="async"
+        onerror="this.closest('.brand-media').setAttribute('data-logo-missing','true'); this.remove();"
+      />
+    )}
+    <span class={`brand-fallback ${logoClass}`} set:html={fallbackSvg} aria-hidden="true"></span>
+  </span>
+  
+  {brand?.name && <span class={`brand-title ${titleClass}`}>{brand.name}</span>}
+</a>
+
+<style>
+  /* Scoped styles for the layout structure. 
+    This prevents your navbar styles from leaking elsewhere.
+  */
+  .brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem; /* Gives breathing room between logo and text */
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    user-select: none;
+  }
+
+  /* Smooth interaction feedback */
+  .brand-link:hover {
+    opacity: 0.85;
+  }
+  .brand-link:active {
+    transform: scale(0.98);
+  }
+
+  .brand-media {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    /* Default sizing you can override via parent CSS variables */
+    width: var(--logo-size, 2.25rem);
+    height: var(--logo-size, 2.25rem);
+  }
+
+  .brand-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Stops awkward stretching of non-square logos */
+    border-radius: var(--logo-radius, 0.375rem);
+  }
+
+  .brand-fallback {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Fallbacks for variables in case --accent isn't set */
+    background: color-mix(in srgb, var(--accent, #6366f1) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 25%, transparent);
+    color: var(--accent, #6366f1);
+    
+    border-radius: var(--logo-radius, 0.5rem);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle depth */
+  }
+
+  /* Hide fallback when image is successful */
+  .brand-media[data-logo-missing='false'] .brand-fallback {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .brand-title {
+    font-weight: 600;
+    font-size: 1.125rem;
+    letter-spacing: -0.025em; /* Tightens text slightly for a cleaner look */
+    white-space: nowrap; /* Prevents text from wrapping under the logo in tight spaces */
+  }
+</style>
+
+<style is:global>
+  /* Keep global ONLY for the injected SVG styling */
+  .brand-fallback svg {
+    width: 55%;
+    height: 55%;
+    stroke-width: 2.25; /* Slightly thicker for better legibility inside the small box */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Fun little playful pop on the icon when the user hovers the link */
+  .brand-link:hover .brand-fallback svg {
+    transform: scale(1.1) rotate(-4deg); 
+  }
+</style>

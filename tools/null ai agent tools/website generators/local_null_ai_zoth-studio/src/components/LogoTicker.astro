@@ -1,0 +1,33 @@
+---
+import type { LogoTickerData } from '../configs/logoTicker';
+import logoTickerMarqueeConfig from '../configs/logoTickers/logo-ticker-marquee.json';
+import logoTickerGridConfig from '../configs/logoTickers/logo-ticker-grid.json';
+import LogoTickerMarquee from './logoTickers/LogoTickerMarquee.astro';
+import LogoTickerGrid from './logoTickers/LogoTickerGrid.astro';
+
+interface Props {
+  data?: LogoTickerData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  marquee: LogoTickerMarquee,
+  grid: LogoTickerGrid,
+} as const;
+
+type LogoTickerVariant = keyof typeof variants;
+
+const variantConfigs = {
+  marquee: logoTickerMarqueeConfig,
+  grid: logoTickerGridConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'marquee') as LogoTickerVariant;
+const resolvedVariant = (requested in variants ? requested : 'marquee') as LogoTickerVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.marquee;
+---
+
+<VariantComponent data={data as any} config={config as any} />

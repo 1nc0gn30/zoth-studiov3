@@ -1,0 +1,202 @@
+---
+import Hero from './Hero.astro';
+import Gallery from './Gallery.astro';
+import Content from './Content.astro';
+import Form from './Form.astro';
+import Features from './Features.astro';
+import SocialLinks from './SocialLinks.astro';
+import UIKit from './UIKit.astro';
+import Cta from './Cta.astro';
+import Stats from './Stats.astro';
+import Team from './Team.astro';
+import Blog from './Blog.astro';
+import LogoTicker from './LogoTicker.astro';
+import Newsletter from './Newsletter.astro';
+import Faq from './Faq.astro';
+import Timeline from './Timeline.astro';
+import Testimonial from './Testimonial.astro';
+import Pricing from './Pricing.astro';
+import type { ContentData } from '../configs/content';
+import type { GalleryData } from '../configs/gallery';
+import type { HeroData } from '../configs/hero';
+import type { FormData } from '../configs/form';
+import type { FeaturesData } from '../configs/features';
+import type { SocialLinksData } from '../configs/social-links';
+import type { UIKitData } from '../configs/ui-kit';
+import type { CTAData } from '../configs/cta';
+import type { StatsData } from '../configs/stats';
+import type { TeamData } from '../configs/team';
+import type { BlogData } from '../configs/blog';
+import type { LogoTickerData } from '../configs/logoTicker';
+import type { NewsletterData } from '../configs/newsletter';
+import type { FAQData } from '../configs/faq';
+import type { TimelineData } from '../configs/timeline';
+import type { TestimonialData } from '../configs/testimonial';
+import type { PricingData } from '../configs/pricing';
+
+interface SectionConstraints {
+  wrapperClass?: string;
+  wrapperStyle?: string;
+  containerClass?: string;
+}
+
+interface BaseSection {
+  type: string;
+  id?: string;
+  cvariant?: string;
+  constraints?: SectionConstraints;
+  [key: string]: unknown;
+}
+
+type HeroSection = BaseSection & HeroData;
+type FormSection = BaseSection & FormData;
+type GallerySection = BaseSection & GalleryData;
+type ContentSection = BaseSection & ContentData;
+type FeaturesSection = BaseSection & FeaturesData;
+type SocialLinksSection = BaseSection & SocialLinksData;
+type UIKitSection = BaseSection & UIKitData;
+type CTASection = BaseSection & CTAData;
+type StatsSection = BaseSection & StatsData;
+type TeamSection = BaseSection & TeamData;
+type BlogSection = BaseSection & BlogData;
+type LogoTickerSection = BaseSection & LogoTickerData;
+type NewsletterSection = BaseSection & NewsletterData;
+type TestimonialSection = BaseSection & TestimonialData;
+type PricingSection = BaseSection & PricingData;
+
+export type SectionData = HeroSection | GallerySection | ContentSection | FormSection | FeaturesSection | SocialLinksSection | UIKitSection | CTASection | StatsSection | TeamSection | BlogSection | LogoTickerSection | NewsletterSection | TestimonialSection | PricingSection;
+export type SectionType = 'hero' | 'gallery' | 'content' | 'form' | 'features' | 'social-links' | 'ui-kit' | 'cta' | 'stats' | 'team' | 'blog' | 'logoTicker' | 'newsletter' | 'faq' | 'timeline' | 'testimonial' | 'pricing';
+
+type SectionComponentMap = Partial<Record<SectionType, any>>;
+
+interface SectionOverride {
+  cvariant?: string;
+  constraints?: SectionConstraints;
+  component?: any;
+  props?: Record<string, unknown>;
+}
+
+interface Props {
+  section: SectionData;
+  components?: SectionComponentMap;
+  override?: SectionOverride;
+}
+
+const { section, components = {}, override = {} } = Astro.props;
+
+const resolvedConstraints: SectionConstraints = {
+  ...(section.constraints ?? {}),
+  ...(override.constraints ?? {}),
+};
+
+const resolvedVariant = override.cvariant ?? section.cvariant;
+const wrapperClass = resolvedConstraints.wrapperClass;
+const containerClass = resolvedConstraints.containerClass;
+const hasWrapper = Boolean(wrapperClass || resolvedConstraints.wrapperStyle || containerClass);
+
+const KNOWN_SECTION_TYPES: SectionType[] = ['hero', 'gallery', 'content', 'form', 'features', 'social-links', 'ui-kit', 'cta', 'stats', 'team', 'blog', 'logoTicker', 'newsletter', 'faq', 'timeline', 'testimonial', 'pricing'];
+
+const defaultComponents: Record<SectionType, any> = {
+  hero: Hero,
+  gallery: Gallery,
+  content: Content,
+  form: Form,
+  features: Features,
+  'social-links': SocialLinks,
+  'ui-kit': UIKit,
+  cta: Cta,
+  stats: Stats,
+  team: Team,
+  blog: Blog,
+  logoTicker: LogoTicker,
+  newsletter: Newsletter,
+  faq: Faq,
+  timeline: Timeline,
+  testimonial: Testimonial,
+  pricing: Pricing,
+};
+
+const sectionType = section.type as SectionType;
+const isKnownType = KNOWN_SECTION_TYPES.includes(sectionType);
+const defaultComponent = isKnownType ? defaultComponents[sectionType] : undefined;
+const componentByType = isKnownType ? components[sectionType] : undefined;
+const explicitComponent = override.component;
+const ComponentToRender = (explicitComponent ?? componentByType ?? defaultComponent) as any;
+
+const mergedProps = { ...(section as Record<string, unknown>), ...(override.props ?? {}) };
+---
+
+{KNOWN_SECTION_TYPES.includes(sectionType) && (
+  <>
+    {hasWrapper ? (
+      <section
+        class={wrapperClass}
+        style={resolvedConstraints.wrapperStyle}
+        data-section-type={section.type}
+        data-section-id={section.id}
+      >
+        {containerClass ? (
+          <div class={containerClass}>
+            {sectionType === 'hero' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'gallery' && <ComponentToRender data={mergedProps} />}
+            {sectionType === 'content' && <ComponentToRender data={mergedProps} />}
+            {sectionType === 'form' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'features' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'social-links' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'ui-kit' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'cta' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'stats' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'team' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'blog' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'logoTicker' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'newsletter' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'faq' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'timeline' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'testimonial' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'pricing' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+          </div>
+        ) : (
+          <>
+            {sectionType === 'hero' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'gallery' && <ComponentToRender data={mergedProps} />}
+            {sectionType === 'content' && <ComponentToRender data={mergedProps} />}
+            {sectionType === 'form' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'features' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'social-links' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'ui-kit' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'cta' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'stats' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'team' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'blog' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'logoTicker' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'newsletter' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'faq' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'timeline' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'testimonial' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+            {sectionType === 'pricing' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+          </>
+        )}
+      </section>
+    ) : (
+      <>
+        {sectionType === 'hero' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'gallery' && <ComponentToRender data={mergedProps} />}
+        {sectionType === 'content' && <ComponentToRender data={mergedProps} />}
+        {sectionType === 'form' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'features' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'social-links' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'ui-kit' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'cta' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'stats' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'team' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'blog' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'logoTicker' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'newsletter' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'faq' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'timeline' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'testimonial' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+        {sectionType === 'pricing' && <ComponentToRender data={mergedProps} cvariant={resolvedVariant} />}
+      </>
+    )}
+  </>
+)}

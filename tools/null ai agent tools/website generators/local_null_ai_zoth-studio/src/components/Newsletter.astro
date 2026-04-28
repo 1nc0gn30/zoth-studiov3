@@ -1,0 +1,33 @@
+---
+import type { NewsletterData } from '../configs/newsletter';
+import newsletterInlineConfig from '../configs/newsletters/newsletter-inline.json';
+import newsletterCardConfig from '../configs/newsletters/newsletter-card.json';
+import NewsletterInline from './newsletters/NewsletterInline.astro';
+import NewsletterCard from './newsletters/NewsletterCard.astro';
+
+interface Props {
+  data?: NewsletterData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  inline: NewsletterInline,
+  card: NewsletterCard,
+} as const;
+
+type NewsletterVariant = keyof typeof variants;
+
+const variantConfigs = {
+  inline: newsletterInlineConfig,
+  card: newsletterCardConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'inline') as NewsletterVariant;
+const resolvedVariant = (requested in variants ? requested : 'inline') as NewsletterVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.inline;
+---
+
+<VariantComponent data={data as any} config={config as any} />

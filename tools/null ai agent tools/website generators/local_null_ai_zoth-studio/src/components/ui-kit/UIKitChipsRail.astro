@@ -1,0 +1,106 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+---
+
+<section class="ui-kit" aria-label="Chip rail showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="rail" role="list" aria-label="Filter chip rail">
+    {items.map((item) => (
+      <div role="listitem" class={`rail-chip rail-chip--${item.badge ?? 'neutral'}`}>
+        <strong>{item.title}</strong>
+        {item.meta && <small>{item.meta}</small>}
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .rail {
+    display: flex;
+    gap: 0.6rem;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+    scrollbar-width: thin;
+  }
+
+  .rail-chip {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    padding: 0.42rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--textColor) 13%, transparent);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    white-space: nowrap;
+    background: color-mix(in srgb, var(--surfaceColor) 88%, white 12%);
+  }
+
+  .rail-chip strong {
+    font-size: 0.82rem;
+  }
+
+  .rail-chip small {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--textColor) 72%, transparent);
+  }
+
+  .rail-chip--solid {
+    background: color-mix(in srgb, var(--accentColor) 86%, black 14%);
+    color: var(--accentContrastColor, #fff);
+    border-color: transparent;
+  }
+
+  .rail-chip--soft {
+    background: color-mix(in srgb, var(--accentColor) 18%, transparent);
+    color: var(--accentColor);
+  }
+
+  .rail-chip--accent {
+    background: linear-gradient(130deg, color-mix(in srgb, var(--accentColor) 24%, transparent), color-mix(in srgb, var(--accentColor) 8%, white 92%));
+  }
+</style>

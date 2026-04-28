@@ -1,0 +1,47 @@
+---
+interface IconItem { title: string; description: string; kicker?: string; icon?: string; }
+interface IconConfig { eyebrow: string; heading: string; subtext: string; items: IconItem[]; }
+interface Props { config: IconConfig; data?: Partial<IconConfig>; }
+const { config, data = {} } = Astro.props;
+const section: IconConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+---
+
+<section class="icon-grid" aria-labelledby="icon-title">
+  <header>
+    <p class="ig-eyebrow">{section.eyebrow}</p>
+    <h2 id="icon-title">{section.heading}</h2>
+    <p class="ig-subtext">{section.subtext}</p>
+  </header>
+  <div class="ig-cards">
+    {section.items.map((item) => (
+      <article class="ig-card">
+        <div class="ig-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        {item.kicker && <small>{item.kicker}</small>}
+        <h3>{item.title}</h3>
+        <p>{item.description}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .icon-grid { max-width: 1160px; margin: 0 auto; padding: clamp(2.2rem, 6vw, 4.2rem) 1rem; font-family: var(--fontBody, var(--fontFamily)); }
+  .ig-eyebrow { margin: 0; color: var(--accentColor); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  h2 { margin: 0.65rem 0 0; font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.08; font-family: var(--fontDisplay, var(--fontFamily)); }
+  .ig-subtext { margin-top: 0.85rem; max-width: 62ch; line-height: 1.64; color: color-mix(in srgb, var(--textColor) 84%, transparent); }
+  .ig-cards { margin-top: 1.5rem; display: grid; gap: 1rem; grid-template-columns: 1fr; }
+  .ig-card { border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent); border-radius: 16px; padding: 1.2rem; background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%); }
+  .ig-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--accentColor) 14%, transparent); color: var(--accentColor); margin-bottom: 0.7rem; }
+  small { color: var(--accentColor); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 700; }
+  h3 { margin: 0.3rem 0 0; font-family: var(--fontDisplay, var(--fontFamily)); font-size: 1rem; }
+  .ig-card p { margin: 0.3rem 0 0; line-height: 1.55; color: color-mix(in srgb, var(--textColor) 82%, transparent); font-size: 0.92rem; }
+  @media (min-width: 640px) { .ig-cards { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 920px) { .ig-cards { grid-template-columns: repeat(3, 1fr); } }
+</style>

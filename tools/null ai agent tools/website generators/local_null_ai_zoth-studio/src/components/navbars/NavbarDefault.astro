@@ -1,0 +1,752 @@
+---
+import config from '../../configs/navbars/navbar-default.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavChildItem {
+  label: string;
+  url: string;
+}
+
+interface NavItem {
+  label: string;
+  url: string;
+  type?: 'link' | 'button' | 'dropdown';
+  children?: NavChildItem[];
+}
+
+interface NavbarDefaultConfig {
+  homeUrl: string;
+  labels: {
+    homeAria: string;
+    menuToggle: string;
+    menuSrOnly: string;
+    primaryNav: string;
+  };
+  brand: {
+    name: string;
+    logoUrl: string;
+    showLogo: boolean;
+    showTitle: boolean;
+    fallbackIcon?: string;
+  };
+  settings: {
+    sticky: boolean;
+    glassmorphism: boolean;
+    mobileBreakpoint: string;
+  };
+  menu: NavItem[];
+  cta?: {
+    label: string;
+    url: string;
+    style: string;
+  };
+}
+
+interface Props {
+  data?: NavbarDefaultConfig;
+}
+
+const { data } = Astro.props;
+const navData: NavbarDefaultConfig = data ?? (config as NavbarDefaultConfig);
+const pathname = new URL(Astro.request.url).pathname;
+const mobileBreakpoint = navData.settings.mobileBreakpoint?.trim() || '992px';
+const mobileBreakpointPx = Number.parseInt(mobileBreakpoint, 10) || 992;
+---
+
+<header
+  class:list={[
+    'nav-default',
+    navData.settings.sticky && 'nav-default--sticky',
+    navData.settings.glassmorphism && 'nav-default--glass',
+  ]}
+  data-nav-default
+  data-mobile-breakpoint={mobileBreakpointPx}
+>
+  <div class="nav-default__container">
+    <BrandMark
+      href={navData.homeUrl}
+      ariaLabel={navData.labels.homeAria}
+      brand={{
+        name: navData.brand.showTitle ? navData.brand.name : undefined,
+        logoUrl: navData.brand.showLogo ? navData.brand.logoUrl : undefined,
+        fallbackIcon: navData.brand.fallbackIcon,
+      }}
+      brandClass="nav-default__brand"
+      logoClass="nav-default__brand-logo"
+      titleClass="nav-default__brand-title"
+    />
+
+    <button
+      class="nav-default__toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-default-panel"
+      aria-label={navData.labels.menuToggle}
+      data-nav-toggle
+    >
+      <span class="nav-default__sr-only">{navData.labels.menuSrOnly}</span>
+      <span class="nav-default__hamburger" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+
+    <nav class="nav-default__panel" id="nav-default-panel" aria-label={navData.labels.primaryNav} data-nav-menu>
+
+      <!-- Mobile-only top bar inside drawer -->
+      <div class="nav-default__drawer-header">
+        <BrandMark
+          href={navData.homeUrl}
+          brand={{
+            name: navData.brand.showTitle ? navData.brand.name : undefined,
+            logoUrl: navData.brand.showLogo ? navData.brand.logoUrl : undefined,
+            fallbackIcon: navData.brand.fallbackIcon,
+          }}
+          brandClass="nav-default__brand"
+          logoClass="nav-default__brand-logo"
+          titleClass="nav-default__brand-title"
+        />
+      </div>
+
+      <ul class="nav-default__list">
+        {navData.menu.map((item, i) => (
+          <li class="nav-default__item" style={`--i: ${i}`}>
+            {item.type === 'dropdown' ? (
+              <div class="nav-default__dropdown" data-dropdown>
+                <button class="nav-default__dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+                  <span>{item.label}</span>
+                  <span class="nav-default__dropdown-chevron" aria-hidden="true">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M1.5 3.5L5 7l3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </button>
+                <ul class="nav-default__dropdown-menu">
+                  {item.children?.map((child) => (
+                    <li>
+                      <a
+                        href={child.url}
+                        class:list={[
+                          'nav-default__dropdown-link',
+                          pathname === child.url && 'nav-default__dropdown-link--active',
+                        ]}
+                      >
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <a
+                href={item.url}
+                class:list={[
+                  'nav-default__link',
+                  pathname === item.url && 'nav-default__link--active',
+                ]}
+              >
+                {item.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {navData.cta && (
+        <div class="nav-default__cta-wrapper">
+          <a href={navData.cta.url} class="nav-default__cta">
+            {navData.cta.label}
+          </a>
+        </div>
+      )}
+    </nav>
+  </div>
+
+  <div class="nav-default__overlay" aria-hidden="true" data-nav-overlay></div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-default]').forEach((root) => {
+    const MOBILE_BP = Number.parseInt(root.dataset.mobileBreakpoint ?? '992', 10) || 992;
+    const toggles = root.querySelectorAll<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    const dropdownToggles = root.querySelectorAll<HTMLButtonElement>('.nav-default__dropdown-toggle');
+    const closeOnClickLinks = root.querySelectorAll<HTMLAnchorElement>('.nav-default__link, .nav-default__dropdown-link, .nav-default__cta');
+
+    if (!panel || !overlay) return;
+
+    const isMobileViewport = () => window.innerWidth <= MOBILE_BP;
+
+    const closeMenu = () => {
+      root.classList.remove('nav-default--open');
+      overlay.classList.remove('is-visible');
+      toggles.forEach(t => t.setAttribute('aria-expanded', 'false'));
+      document.body.classList.remove('nav-default-open');
+    };
+
+    const openMenu = () => {
+      root.classList.add('nav-default--open');
+      overlay.classList.add('is-visible');
+      toggles.forEach(t => t.setAttribute('aria-expanded', 'true'));
+      document.body.classList.add('nav-default-open');
+    };
+
+    toggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        if (!isMobileViewport()) return;
+        const isOpen = root.classList.contains('nav-default--open');
+        if (isOpen) closeMenu(); else openMenu();
+      });
+    });
+
+    overlay.addEventListener('click', closeMenu);
+    closeOnClickLinks.forEach((link) => {
+      link.addEventListener('click', closeMenu);
+    });
+
+    dropdownToggles.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        dropdownToggles.forEach(other => other !== btn && other.setAttribute('aria-expanded', 'false'));
+        btn.setAttribute('aria-expanded', String(!expanded));
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      if (!isMobileViewport()) closeMenu();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && root.classList.contains('nav-default--open')) closeMenu();
+    });
+  });
+</script>
+
+<style>
+  /* --- Base & Variables --- */
+  .nav-default {
+    position: relative;
+    z-index: 70;
+    max-width: 100%;
+    isolation: isolate;
+    overflow-x: clip;
+    background: color-mix(in srgb, var(--bg, var(--bgColor)) 93%, var(--accent, var(--accentColor)) 7%);
+    border-bottom: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 10%, transparent);
+    box-shadow: 0 8px 24px -12px color-mix(in srgb, var(--text, var(--textColor)) 20%, transparent);
+  }
+
+  .nav-default--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-default--glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--bg, var(--bgColor)) 84%, transparent);
+  }
+
+  .nav-default__container {
+    max-width: 78rem;
+    margin-inline: auto;
+    padding: 0.88rem clamp(1rem, 2.2vw, 2rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .nav-default__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    min-height: 44px;
+    padding: 0.32rem 0.52rem 0.32rem 0.36rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 10%, transparent);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--bg, var(--bgColor)) 90%, white 10%),
+      color-mix(in srgb, var(--accent, var(--accentColor)) 10%, var(--bg, var(--bgColor)))
+    );
+    box-shadow: 0 10px 24px -20px color-mix(in srgb, var(--accent, var(--accentColor)) 65%, #000 35%);
+    z-index: 72;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .nav-default__brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: color-mix(in srgb, var(--bg, var(--bgColor)) 92%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 10%, transparent);
+  }
+
+  .nav-default__brand-title {
+    font-size: 0.97rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    color: var(--text, var(--textColor));
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* --- Toggle / Hamburger --- */
+  .nav-default__toggle {
+    display: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 15%, transparent);
+    background: color-mix(in srgb, var(--text, var(--textColor)) 5%, transparent);
+    color: var(--text, var(--textColor));
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 72;
+    transition: background 0.2s ease;
+  }
+
+  .nav-default__toggle:hover {
+    background: color-mix(in srgb, var(--text, var(--textColor)) 10%, transparent);
+  }
+
+  .nav-default__toggle:focus-visible,
+  .nav-default__link:focus-visible,
+  .nav-default__dropdown-toggle:focus-visible,
+  .nav-default__dropdown-link:focus-visible,
+  .nav-default__cta:focus-visible,
+  .nav-default__brand:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent, var(--accentColor)) 70%, white 30%);
+    outline-offset: 2px;
+  }
+
+  .nav-default__hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 20px;
+  }
+
+  .nav-default__hamburger span {
+    display: block;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.25s ease, opacity 0.25s ease, width 0.25s ease;
+    transform-origin: center;
+  }
+
+  .nav-default__hamburger span:nth-child(2) {
+    width: 75%;
+  }
+
+  .nav-default__toggle[aria-expanded='true'] .nav-default__hamburger span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .nav-default__toggle[aria-expanded='true'] .nav-default__hamburger span:nth-child(2) {
+    opacity: 0;
+    width: 0;
+  }
+
+  .nav-default__toggle[aria-expanded='true'] .nav-default__hamburger span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* --- Desktop Nav Panel --- */
+  .nav-default__drawer-header {
+    display: none;
+  }
+
+  .nav-default__panel {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .nav-default__list {
+    margin: 0;
+    padding: 0.28rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 12%, transparent);
+    background: color-mix(in srgb, var(--bg, var(--bgColor)) 86%, var(--accent, var(--accentColor)) 14%);
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .nav-default__item {
+    min-width: 0;
+  }
+
+  .nav-default__link,
+  .nav-default__dropdown-toggle {
+    border: 0;
+    background: transparent;
+    color: color-mix(in srgb, var(--text, var(--textColor)) 80%, transparent);
+    text-decoration: none;
+    border-radius: 999px;
+    min-height: 36px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: color 0.18s ease, background-color 0.18s ease;
+  }
+
+  .nav-default__link:hover,
+  .nav-default__dropdown-toggle:hover {
+    color: var(--text, var(--textColor));
+    background: color-mix(in srgb, var(--text, var(--textColor)) 8%, transparent);
+  }
+
+  .nav-default__link--active {
+    background: var(--accent, var(--accentColor));
+    color: #fff !important;
+  }
+
+  /* --- Dropdown --- */
+  .nav-default__dropdown {
+    position: relative;
+  }
+
+  .nav-default__dropdown-chevron {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+  }
+
+  .nav-default__dropdown-toggle[aria-expanded='true'] .nav-default__dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-default__dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    min-width: 14rem;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 12%, transparent);
+    background: var(--bg, var(--bgColor));
+    box-shadow: 0 16px 40px -16px color-mix(in srgb, var(--text, var(--textColor)) 50%, transparent);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    z-index: 3;
+  }
+
+  .nav-default__dropdown:hover .nav-default__dropdown-menu,
+  .nav-default__dropdown:focus-within .nav-default__dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .nav-default__dropdown-link {
+    display: block;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    color: color-mix(in srgb, var(--text, var(--textColor)) 80%, transparent);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .nav-default__dropdown-link:hover,
+  .nav-default__dropdown-link--active {
+    background: color-mix(in srgb, var(--accent, var(--accentColor)) 12%, transparent);
+    color: var(--accent, var(--accentColor));
+  }
+
+  /* --- CTA --- */
+  .nav-default__cta-wrapper {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .nav-default__cta {
+    min-height: 38px;
+    border-radius: 10px;
+    text-decoration: none;
+    padding: 0.55rem 1.1rem;
+    color: #fff;
+    background: var(--accent, var(--accentColor));
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--accent, var(--accentColor)) 60%, transparent);
+    transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .nav-default__cta:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--accent, var(--accentColor)) 60%, transparent);
+  }
+
+  /* --- Overlay --- */
+  .nav-default__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 68;
+    background: color-mix(in srgb, var(--text, var(--textColor)) 40%, transparent);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .nav-default__overlay.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* --- SR Only --- */
+  .nav-default__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  /* MOBILE — ≤ 992px                  */
+  /* ================================= */
+  @media (max-width: 992px) {
+    .nav-default__container {
+      gap: 0.75rem;
+      padding-inline: 0.85rem;
+    }
+
+    .nav-default--glass {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      background: color-mix(in srgb, var(--bg, var(--bgColor)) 97%, var(--accent, var(--accentColor)) 3%);
+    }
+
+    .nav-default__brand {
+      flex: 1 1 auto;
+      max-width: calc(100% - 3.5rem);
+    }
+
+    .nav-default__brand-title {
+      max-width: 100%;
+    }
+
+    .nav-default__toggle {
+      display: inline-flex;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    /* === Slide-in Drawer === */
+    .nav-default__panel {
+      position: fixed;
+      inset: 0 0 0 auto;
+      width: min(92vw, 360px);
+      max-width: 100%;
+      height: 100vh;
+      height: 100svh;
+      height: 100dvh;
+      z-index: 71;
+      background: var(--bg, var(--bgColor));
+      border-left: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 10%, transparent);
+      box-shadow: -32px 0 64px -32px color-mix(in srgb, var(--text, var(--textColor)) 30%, transparent);
+      border-radius: 18px 0 0 18px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+
+    .nav-default--open .nav-default__panel {
+      transform: translateX(0);
+    }
+
+    /* === Drawer Header === */
+    .nav-default__drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: max(1.1rem, calc(env(safe-area-inset-top) + 0.75rem)) 1.25rem 1.1rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 8%, transparent);
+      flex-shrink: 0;
+      background: color-mix(in srgb, var(--bg, var(--bgColor)) 94%, var(--accent, var(--accentColor)) 6%);
+    }
+
+    /* === Menu List === */
+    .nav-default__list {
+      width: 100%;
+      border-radius: 0;
+      border: none;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+      padding: 0.75rem 1rem;
+      background: transparent;
+      flex-wrap: nowrap;
+    }
+
+    .nav-default--open .nav-default__item {
+      animation: slideInItem 0.3s ease forwards;
+      animation-delay: calc(var(--i, 0) * 0.05s + 0.1s);
+      opacity: 0;
+    }
+
+    @keyframes slideInItem {
+      from { opacity: 0; transform: translateX(12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* === Nav Links — mobile === */
+    .nav-default__link,
+    .nav-default__dropdown-toggle {
+      width: 100%;
+      border-radius: 12px;
+      justify-content: space-between;
+      padding: 0.95rem 1rem;
+      font-size: 0.975rem;
+      font-weight: 600;
+      color: var(--text, var(--textColor));
+      background: transparent;
+      min-height: 46px;
+    }
+
+    .nav-default__link:hover,
+    .nav-default__dropdown-toggle:hover {
+      background: color-mix(in srgb, var(--text, var(--textColor)) 6%, transparent);
+    }
+
+    /* FIX: Solid readable active state */
+    .nav-default__link--active {
+      background: var(--accent, var(--accentColor));
+      color: #fff !important; 
+    }
+
+    .nav-default__item + .nav-default__item {
+      border-top: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 6%, transparent);
+    }
+
+    /* === Dropdown — mobile === */
+    .nav-default__dropdown {
+      width: 100%;
+    }
+
+    /* FIX: Prevent desktop hover transform from yanking the menu off-screen on mobile */
+    .nav-default__dropdown:hover .nav-default__dropdown-menu,
+    .nav-default__dropdown:focus-within .nav-default__dropdown-menu {
+      transform: none;
+    }
+
+    /* FIX: Removed muddy background, added clean hierarchy indent */
+    .nav-default__dropdown-menu {
+      position: static;
+      min-width: 0;
+      box-shadow: none;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      display: none;
+      background: transparent;
+      padding: 0 0 0 1rem; 
+      margin: 0.5rem 0 0.5rem 0.75rem;
+      border: none;
+      border-left: 2px solid color-mix(in srgb, var(--text, var(--textColor)) 12%, transparent);
+      border-radius: 0;
+      left: auto;
+    }
+
+    .nav-default__dropdown-toggle[aria-expanded='true'] + .nav-default__dropdown-menu {
+      display: block;
+    }
+
+    /* FIX: Readable text colors and subtle hover states */
+    .nav-default__dropdown-link {
+      font-size: 0.92rem;
+      padding: 0.65rem 0.85rem;
+      font-weight: 500;
+      color: color-mix(in srgb, var(--text, var(--textColor)) 75%, transparent);
+      border-radius: 8px;
+    }
+
+    .nav-default__dropdown-link:hover,
+    .nav-default__dropdown-link--active {
+      background: color-mix(in srgb, var(--text, var(--textColor)) 6%, transparent);
+      color: var(--text, var(--textColor)); /* Bold, solid text instead of invisible accent */
+    }
+
+    /* === CTA — pinned to bottom === */
+    .nav-default__cta-wrapper {
+      margin-top: auto;
+      padding: 1.25rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
+      flex-shrink: 0;
+      border-top: 1px solid color-mix(in srgb, var(--text, var(--textColor)) 8%, transparent);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg, var(--bgColor)) 90%, transparent),
+        color-mix(in srgb, var(--accent, var(--accentColor)) 8%, var(--bg, var(--bgColor)))
+      );
+    }
+
+    .nav-default__cta {
+      width: 100%;
+      justify-content: center;
+      padding: 0.9rem 1rem;
+      font-size: 1rem;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .nav-default__brand {
+      padding-right: 0.35rem;
+    }
+
+    .nav-default__brand-title {
+      display: none;
+    }
+  }
+
+  :global(body.nav-default-open) {
+    overflow: hidden;
+    touch-action: none;
+  }
+</style>

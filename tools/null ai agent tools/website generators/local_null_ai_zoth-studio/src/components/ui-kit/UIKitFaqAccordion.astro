@@ -1,0 +1,126 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+---
+
+<section class="ui-kit" aria-label="FAQ showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="faq-list">
+    {items.map((item) => (
+      <details class="faq-item">
+        <summary>
+          <div class="summary-main">
+            <h3>{item.title}</h3>
+            {item.badge && <small>{item.badge}</small>}
+          </div>
+          {item.meta && <span>{item.meta}</span>}
+        </summary>
+        {item.description && <p>{item.description}</p>}
+      </details>
+    ))}
+  </div>
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .faq-list {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .faq-item {
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: color-mix(in srgb, var(--surfaceColor) 90%, white 10%);
+    padding: 0.25rem 0.8rem;
+  }
+
+  .faq-item summary {
+    list-style: none;
+    cursor: pointer;
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.65rem 0;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .summary-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  .summary-main h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .summary-main small {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  .faq-item summary > span {
+    margin: 0;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--textColor) 68%, transparent);
+  }
+
+  .faq-item p {
+    margin: 0 0 0.8rem;
+    color: color-mix(in srgb, var(--textColor) 77%, transparent);
+    line-height: 1.58;
+  }
+</style>

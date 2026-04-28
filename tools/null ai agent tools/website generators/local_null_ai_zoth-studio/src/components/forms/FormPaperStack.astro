@@ -1,0 +1,121 @@
+---
+interface FormPaperStackField {
+  type: 'text' | 'email' | 'tel' | 'textarea';
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
+
+interface FormPaperStackConfig {
+  title: string;
+  description: string;
+  fields: FormPaperStackField[];
+  submitButtonText: string;
+}
+
+interface Props {
+  config: FormPaperStackConfig;
+}
+
+const { config } = Astro.props as Props;
+---
+<section class="f07" aria-labelledby="f07-title">
+  <div class="sheet back" aria-hidden="true"></div>
+  <form class="sheet" action="#" method="post">
+    <h2 id="f07-title">{config.title}</h2>
+    <p>{config.description}</p>
+    {config.fields.map((field) => (
+      <label>
+        <span>{field.label}</span>
+        {field.type === 'textarea' ? <textarea name={field.label.toLowerCase().replace(/\s+/g, '-')} required={field.required} placeholder={field.placeholder}></textarea> : <input type={field.type} name={field.label.toLowerCase().replace(/\s+/g, '-')} required={field.required} placeholder={field.placeholder} />}
+      </label>
+    ))}
+    <button type="submit">{config.submitButtonText}</button>
+  </form>
+</section>
+<style>
+.f07 {
+  position: relative;
+  max-width: 740px;
+  margin: 0 auto;
+  padding: clamp(1.9rem, 2.7vw, 2.7rem) 1rem;
+}
+.sheet {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+  border-radius: 14px;
+  background: var(--bgColor);
+  padding: 1rem;
+  display: grid;
+  gap: 0.66rem;
+}
+.back {
+  position: absolute;
+  inset: 2.65rem 1.45rem auto auto;
+  height: calc(100% - 3rem);
+  width: calc(100% - 2rem);
+  transform: rotate(-2deg);
+  background: color-mix(in srgb, var(--accentColor) 10%, var(--bgColor));
+  z-index: 0;
+}
+form.sheet {
+  z-index: 1;
+  transform: rotate(0.3deg);
+  box-shadow: 0 16px 30px -24px color-mix(in srgb, var(--textColor) 65%, transparent);
+}
+h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3.3vw, 2rem);
+}
+p {
+  margin: 0;
+  line-height: 1.65;
+}
+label {
+  display: grid;
+  gap: 0.26rem;
+}
+span {
+  font-weight: 600;
+}
+input,
+textarea {
+  padding: 0.64rem 0.72rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--textColor) 20%, transparent);
+  background: color-mix(in srgb, var(--bgColor) 98%, transparent);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+input:hover,
+textarea:hover {
+  border-color: color-mix(in srgb, var(--accentColor) 50%, transparent);
+}
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accentColor) 74%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 24%, transparent);
+  transform: translateY(-1px);
+}
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 0.7rem 0.92rem;
+  background: linear-gradient(120deg, var(--textColor), color-mix(in srgb, var(--textColor) 72%, var(--accentColor) 28%));
+  color: var(--bgColor);
+  font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 20px -14px color-mix(in srgb, var(--textColor) 72%, transparent);
+}
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 26%, transparent);
+}
+</style>

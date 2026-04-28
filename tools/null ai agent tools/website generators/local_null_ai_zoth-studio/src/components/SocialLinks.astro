@@ -1,0 +1,37 @@
+---
+import type { SocialLinksData } from '../configs/social-links';
+import socialLinksDefaultConfig from '../configs/social-links/social-links-default.json';
+import socialLinksOrbitConfig from '../configs/social-links/social-links-orbit.json';
+import socialLinksCompactBarConfig from '../configs/social-links/social-links-compact-bar.json';
+import SocialLinksDefault from './social-links/SocialLinksDefault.astro';
+import SocialLinksOrbit from './social-links/SocialLinksOrbit.astro';
+import SocialLinksCompactBar from './social-links/SocialLinksCompactBar.astro';
+
+interface Props {
+  data?: SocialLinksData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  default: SocialLinksDefault,
+  orbit: SocialLinksOrbit,
+  compact: SocialLinksCompactBar,
+} as const;
+
+type SocialVariant = keyof typeof variants;
+
+const variantConfigs = {
+  default: socialLinksDefaultConfig,
+  orbit: socialLinksOrbitConfig,
+  compact: socialLinksCompactBarConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'default') as SocialVariant;
+const resolvedVariant = (requested in variants ? requested : 'default') as SocialVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.default;
+---
+
+<VariantComponent data={data as any} config={config as any} />

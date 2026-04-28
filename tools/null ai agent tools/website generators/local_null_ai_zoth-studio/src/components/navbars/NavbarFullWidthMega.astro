@@ -1,0 +1,581 @@
+---
+import config from '../../configs/navbars/navbar-full-width-mega.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavChildItem { label: string; url: string }
+interface NavItem { label: string; url: string; type?: 'link' | 'button' | 'dropdown'; children?: NavChildItem[] }
+interface NavData {
+  homeUrl?: string;
+  labels?: { menuToggle?: string };
+  brand?: { name?: string; logoUrl?: string; fallbackIcon?: string };
+  menu?: NavItem[];
+  settings?: { sticky?: boolean };
+}
+interface Props { data?: NavData }
+
+const { data } = Astro.props;
+const navData: NavData = data ?? (config as NavData);
+---
+
+<header class:list={['nav-mega', navData.settings?.sticky && 'nav-mega--sticky']} data-nav-mega>
+  <div class="nav-mega__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-mega__shell">
+    
+    <BrandMark
+      href={navData.homeUrl ?? '/'}
+      brand={navData.brand}
+      brandClass="nav-mega__brand"
+      logoClass="nav-mega__brand-logo"
+      titleClass="nav-mega__brand-title"
+    />
+
+    <nav class="nav-mega__panel" aria-label="Primary navigation" data-nav-menu>
+      
+      <div class="nav-mega__mobile-header">
+        {navData.brand?.name && <span class="nav-mega__brand-title">{navData.brand.name}</span>}
+      </div>
+
+      <ul class="nav-mega__list">
+        {(navData.menu ?? []).map((item) => (
+          <li class="nav-mega__item">
+            {item.type === 'dropdown' ? (
+              <details class="nav-mega__drop" data-dropdown>
+                <summary class="nav-mega__link nav-mega__link--drop">
+                  {item.label}
+                  <svg class="nav-mega__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </summary>
+                
+                <div class="nav-mega__drop-panel">
+                  <div class="nav-mega__drop-inner">
+                    {(item.children ?? [{ label: `${item.label} Overview`, url: item.url }]).map((child) => (
+                      <a class="nav-mega__drop-link" href={child.url}>
+                        <div class="nav-mega__drop-icon">
+                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                        </div>
+                        <div class="nav-mega__drop-text">
+                          <span class="nav-mega__drop-label">{child.label}</span>
+                          <span class="nav-mega__drop-desc">Explore {child.label.toLowerCase()} resources</span>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </details>
+            ) : item.type === 'button' ? (
+              <a class="nav-mega__cta" href={item.url}>
+                {item.label}
+              </a>
+            ) : (
+              <a class="nav-mega__link" href={item.url}>
+                {item.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <button class="nav-mega__toggle" type="button" aria-expanded="false" aria-label={navData.labels?.menuToggle ?? 'Open menu'} data-nav-toggle>
+      <span class="nav-mega__toggle-box">
+        <span class="nav-mega__toggle-inner"></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-mega]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    const dropdowns = root.querySelectorAll<HTMLDetailsElement>('[data-dropdown]');
+    
+    if (!toggle || !panel || !overlay) return;
+
+    // Mobile Menu Toggle
+    const closeMenu = () => {
+      panel.classList.remove('nav-mega__panel--open');
+      overlay.classList.remove('nav-mega__overlay--visible');
+      toggle.classList.remove('nav-mega__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      
+      // Close all dropdowns when mobile menu closes
+      dropdowns.forEach(d => d.removeAttribute('open'));
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-mega__panel--open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        panel.classList.add('nav-mega__panel--open');
+        overlay.classList.add('nav-mega__overlay--visible');
+        toggle.classList.add('nav-mega__toggle--active');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    overlay.addEventListener('click', closeMenu);
+
+    // Dropdown Logic: Close when clicking outside, or clicking another dropdown
+    document.addEventListener('click', (event) => {
+      const target = event.target as Node;
+      dropdowns.forEach((dropdown) => {
+        // If click is outside the dropdown, close it
+        if (!dropdown.contains(target)) {
+          dropdown.removeAttribute('open');
+        } else if (target.nodeName === 'SUMMARY') {
+          // If a summary is clicked, close ALL OTHER open dropdowns
+          dropdowns.forEach(other => {
+            if (other !== dropdown) other.removeAttribute('open');
+          });
+        }
+      });
+    });
+    
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        closeMenu();
+      }
+    });
+  });
+</script>
+
+<style>
+  /* --- Base & Variables --- */
+  .nav-mega {
+    --nav-border: color-mix(in srgb, var(--text) 10%, transparent);
+    --nav-bg: color-mix(in srgb, var(--bg) 98%, transparent);
+    --nav-mega-bg: var(--bg);
+    --nav-hover: color-mix(in srgb, var(--text) 4%, transparent);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--nav-border);
+  }
+
+  .nav-mega--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-mega__shell {
+    max-width: 86rem; /* Standardizing wide layout for mega menus */
+    margin-inline: auto;
+    padding: 0.85rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  /* --- Branding --- */
+  .nav-mega__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text);
+    z-index: 102; /* Stay above mobile overlay */
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-mega__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-mega__brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+
+  .nav-mega__brand-title {
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  /* --- Navigation Panel --- */
+  .nav-mega__panel {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .nav-mega__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-mega__item {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Standard Links */
+  .nav-mega__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: color-mix(in srgb, var(--text) 85%, transparent);
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+  }
+
+  .nav-mega__link:hover {
+    background: var(--nav-hover);
+    color: var(--accent);
+  }
+
+  /* CTA Button */
+  .nav-mega__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--bg);
+    background: var(--text);
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-left: 0.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  .nav-mega__cta:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+
+  /* --- Mega Dropdown Desktop Logic --- */
+  .nav-mega__drop {
+    /* position: static allows the absolute panel to span the entire header */
+  }
+
+  .nav-mega__drop summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  
+  .nav-mega__drop summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-mega__chevron {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.7;
+    margin-left: 2px;
+  }
+
+  .nav-mega__drop[open] .nav-mega__chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-mega__drop[open] .nav-mega__link {
+    background: var(--nav-hover);
+    color: var(--text);
+  }
+
+  /* The Full Width Panel */
+  .nav-mega__drop-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--nav-mega-bg);
+    border-bottom: 1px solid var(--nav-border);
+    box-shadow: 0 20px 40px -20px color-mix(in srgb, var(--text) 15%, transparent);
+    z-index: -1; /* Slide behind the border of the header */
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: megaFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes megaFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .nav-mega__drop-inner {
+    max-width: 86rem; /* Match the shell */
+    margin-inline: auto;
+    padding: 2.5rem 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .nav-mega__drop-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--text);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    background: color-mix(in srgb, var(--text) 2%, transparent);
+  }
+
+  .nav-mega__drop-link:hover {
+    background: var(--bg);
+    border-color: var(--nav-border);
+    box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--text) 10%, transparent);
+    transform: translateY(-2px);
+  }
+
+  .nav-mega__drop-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .nav-mega__drop-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .nav-mega__drop-label {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  .nav-mega__drop-desc {
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--text) 60%, transparent);
+    line-height: 1.4;
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-mega__toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 102;
+  }
+
+  .nav-mega__toggle-box {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-mega__toggle-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+  }
+
+  .nav-mega__toggle-inner, 
+  .nav-mega__toggle-inner::before, 
+  .nav-mega__toggle-inner::after {
+    width: 24px;
+    height: 2px;
+    background-color: var(--text);
+    position: absolute;
+    transition-property: transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+    border-radius: 4px;
+  }
+
+  .nav-mega__toggle-inner::before, 
+  .nav-mega__toggle-inner::after {
+    content: "";
+    display: block;
+  }
+
+  .nav-mega__toggle-inner::before { top: -8px; }
+  .nav-mega__toggle-inner::after { bottom: -8px; }
+
+  /* Hamburger Active Animation */
+  .nav-mega__toggle--active .nav-mega__toggle-inner {
+    transform: rotate(45deg);
+  }
+  .nav-mega__toggle--active .nav-mega__toggle-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .nav-mega__toggle--active .nav-mega__toggle-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  .nav-mega__mobile-header {
+    display: none;
+  }
+
+  .nav-mega__overlay {
+    display: none;
+  }
+
+  /* --- Responsive Breakpoint (Tablet/Mobile) --- */
+  @media (max-width: 1023px) {
+    .nav-mega__shell {
+      padding: 1rem 1.25rem;
+    }
+
+    .nav-mega__toggle {
+      display: block;
+    }
+
+    /* Full Screen Dark Overlay */
+    .nav-mega__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--text) 30%, transparent);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-mega__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Slide-out Sidebar */
+    .nav-mega__panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(85vw, 400px);
+      height: 100dvh;
+      background: var(--bg);
+      border-left: 1px solid var(--nav-border);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      pointer-events: auto;
+      box-shadow: -20px 0 40px rgba(0,0,0,0.1);
+    }
+
+    .nav-mega__panel--open {
+      right: 0;
+    }
+
+    .nav-mega__mobile-header {
+      display: flex;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--nav-border);
+      background: var(--nav-bg);
+      margin-bottom: 1rem;
+    }
+
+    /* Mobile Link Adjustments */
+    .nav-mega__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+      padding-inline: 1rem;
+    }
+
+    .nav-mega__item {
+      width: 100%;
+    }
+
+    .nav-mega__link {
+      width: 100%;
+      padding: 1.15rem 1rem;
+      font-size: 1.15rem;
+      border-radius: 12px;
+      justify-content: space-between;
+    }
+
+    .nav-mega__cta {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 1.5rem;
+      margin-bottom: 2rem;
+      padding: 1.25rem;
+      font-size: 1.15rem;
+      border-radius: 12px;
+    }
+
+    /* Mobile Dropdown (Accordion) Adjustments */
+    .nav-mega__drop {
+      width: 100%;
+    }
+
+    .nav-mega__drop-panel {
+      position: static;
+      opacity: 1;
+      transform: none;
+      animation: none;
+      box-shadow: none;
+      border: none;
+      background: transparent;
+      padding: 0;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .nav-mega__drop-inner {
+      padding: 0 0 0 1rem;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      border-left: 2px solid var(--nav-border);
+      margin-left: 1rem;
+    }
+
+    .nav-mega__drop-link {
+      padding: 0.75rem;
+      background: transparent;
+      border: none;
+    }
+
+    .nav-mega__drop-link:hover {
+      background: var(--nav-hover);
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .nav-mega__drop-icon {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .nav-mega__drop-desc {
+      display: none; /* Hide descriptions on mobile for cleaner look */
+    }
+  }
+</style>

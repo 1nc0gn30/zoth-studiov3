@@ -1,0 +1,45 @@
+---
+import footerConfig from '../configs/footer.json';
+import type { FooterData } from '../configs/footer';
+import FooterDefault from './footers/FooterDefault.astro';
+import FooterInlineBar from './footers/FooterInlineBar.astro';
+import FooterCenteredStack from './footers/FooterCenteredStack.astro';
+import FooterSplitColumns from './footers/FooterSplitColumns.astro';
+import FooterFloatingCard from './footers/FooterFloatingCard.astro';
+import FooterAccentBand from './footers/FooterAccentBand.astro';
+import FooterGlassRow from './footers/FooterGlassRow.astro';
+import FooterDockedPills from './footers/FooterDockedPills.astro';
+import FooterGridPanel from './footers/FooterGridPanel.astro';
+import FooterDenseLine from './footers/FooterDenseLine.astro';
+import FooterStackedCards from './footers/FooterStackedCards.astro';
+
+interface Props {
+  weight: number;
+  data?: FooterData;
+  cvariant?: string;
+}
+
+const { weight, data, cvariant } = Astro.props;
+const footerData: FooterData = data ?? (footerConfig as FooterData);
+
+const variants = {
+  default: FooterDefault,
+  inline: FooterInlineBar,
+  centered: FooterCenteredStack,
+  split: FooterSplitColumns,
+  floating: FooterFloatingCard,
+  accent: FooterAccentBand,
+  glass: FooterGlassRow,
+  docked: FooterDockedPills,
+  grid: FooterGridPanel,
+  dense: FooterDenseLine,
+  cards: FooterStackedCards,
+} as const;
+
+type FooterVariant = keyof typeof variants;
+
+const requested = (cvariant ?? footerData?.cvariant ?? 'default') as FooterVariant;
+const VariantComponent = variants[requested] ?? variants.default;
+---
+
+<VariantComponent data={footerData} weight={weight} />

@@ -1,0 +1,33 @@
+---
+import type { BlogData } from '../configs/blog';
+import blogGridConfig from '../configs/blogs/blog-grid.json';
+import blogMagazineConfig from '../configs/blogs/blog-magazine.json';
+import BlogGrid from './blogs/BlogGrid.astro';
+import BlogMagazine from './blogs/BlogMagazine.astro';
+
+interface Props {
+  data?: BlogData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  grid: BlogGrid,
+  magazine: BlogMagazine,
+} as const;
+
+type BlogVariant = keyof typeof variants;
+
+const variantConfigs = {
+  grid: blogGridConfig,
+  magazine: blogMagazineConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'grid') as BlogVariant;
+const resolvedVariant = (requested in variants ? requested : 'grid') as BlogVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.grid;
+---
+
+<VariantComponent data={data as any} config={config as any} />

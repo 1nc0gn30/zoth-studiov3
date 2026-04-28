@@ -1,0 +1,946 @@
+---
+// Z0TH Studio — Multi-Agent Website Builder
+// Standalone full-screen dashboard (no MainLayout wrapper)
+---
+
+<style is:global>
+  /* ─── Prevent FOUC ─── */
+  .zoth-dash {
+    --zd-bg: #080b14;
+    --zd-surface: #0d1120;
+    --zd-surface-2: #12172e;
+    --zd-surface-3: #181f3a;
+    --zd-border: #1e2747;
+    --zd-border-active: #6b84ff;
+    --zd-text: #e4e8f8;
+    --zd-text-muted: #7a84b0;
+    --zd-text-dim: #4a5480;
+    --zd-accent: #6b84ff;
+    --zd-accent-glow: rgba(107, 132, 255, 0.15);
+    --zd-accent-soft: rgba(107, 132, 255, 0.08);
+    --zd-green: #34d399;
+    --zd-yellow: #fbbf24;
+    --zd-red: #f87171;
+    --zd-code-bg: #0a0e1a;
+
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--zd-bg);
+    color: var(--zd-text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--zd-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--zd-text-muted); }
+</style>
+
+<!-- ═══════════ TOP BAR ═══════════ -->
+<header class="zd-topbar">
+  <div class="zd-topbar-left">
+    <span class="zd-logo-mark">◈</span>
+    <span class="zd-logo-text">Z0TH Studio</span>
+    <span class="zd-topbar-badge">v1.0</span>
+  </div>
+  <div class="zd-topbar-center">
+    <button class="zd-tab active" data-tab="studio">Studio</button>
+    <button class="zd-tab" data-tab="agents">Agents</button>
+    <button class="zd-tab" data-tab="library">Library</button>
+  </div>
+  <div class="zd-topbar-right">
+    <span class="zd-status-dot"></span>
+    <span class="zd-status-text">All Systems Ready</span>
+  </div>
+</header>
+
+<!-- ═══════════ MAIN DASHBOARD ═══════════ -->
+<main class="zd-main" id="zoth-dashboard">
+
+  <!-- ─── Step 0: Agent Selection ─── -->
+  <section class="zd-step active" data-step="0">
+    <div class="zd-step-progress">
+      <span class="zd-step-num active">01</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num">02</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num">03</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num">04</span>
+    </div>
+    <div class="zd-step-head">
+      <h1 class="zd-step-title">Choose Your Agent</h1>
+      <p class="zd-step-desc">Select the AI agent that will plan your project. Each has a different specialty.</p>
+    </div>
+    <div class="zd-agent-grid" id="agent-grid">
+      <div class="zd-agent-card" data-agent="codex">
+        <div class="zd-agent-card-bg"></div>
+        <div class="zd-agent-icon">🤖</div>
+        <div class="zd-agent-name">Codex</div>
+        <div class="zd-agent-role">Production Architect</div>
+        <div class="zd-agent-desc">Structured, production-minded planning with focus on SEO, performance, and best practices.</div>
+        <div class="zd-agent-tags">
+          <span>astro</span>
+          <span>react</span>
+          <span>seo</span>
+          <span>production</span>
+        </div>
+      </div>
+      <div class="zd-agent-card" data-agent="hermes">
+        <div class="zd-agent-card-bg"></div>
+        <div class="zd-agent-icon">⚡</div>
+        <div class="zd-agent-name">Hermes</div>
+        <div class="zd-agent-role">Rapid Prototyper</div>
+        <div class="zd-agent-desc">Fast, creative planning for landing pages, MVPs, and visually-driven projects.</div>
+        <div class="zd-agent-tags">
+          <span>design</span>
+          <span>vue</span>
+          <span>speed</span>
+          <span>mvp</span>
+        </div>
+      </div>
+      <div class="zd-agent-card" data-agent="openclaw">
+        <div class="zd-agent-card-bg"></div>
+        <div class="zd-agent-icon">🐉</div>
+        <div class="zd-agent-name">OpenClaw</div>
+        <div class="zd-agent-role">Full-Stack Architect</div>
+        <div class="zd-agent-desc">Complex multi-page architectures with custom integrations and data layers.</div>
+        <div class="zd-agent-tags">
+          <span>fullstack</span>
+          <span>svelte</span>
+          <span>next</span>
+          <span>backend</span>
+        </div>
+      </div>
+      <div class="zd-agent-card" data-agent="custom">
+        <div class="zd-agent-card-bg"></div>
+        <div class="zd-agent-icon">🧩</div>
+        <div class="zd-agent-name">Custom</div>
+        <div class="zd-agent-role">Define Your Own</div>
+        <div class="zd-agent-desc">Build a custom agent with specific skills, tone, and focus areas.</div>
+        <div class="zd-agent-tags">
+          <span>customizable</span>
+          <span>flexible</span>
+        </div>
+      </div>
+    </div>
+    <div class="zd-custom-form" id="custom-agent-form">
+      <input type="text" id="custom-name" placeholder="Agent name (e.g. 'Design Pro')" />
+      <textarea id="custom-desc" rows="2" placeholder="Describe the agent's role and focus..."></textarea>
+      <div id="custom-skills">
+        <div class="zd-skill-row">
+          <input type="text" class="zd-skill-input" placeholder="Skill (e.g. 'SEO optimization')" />
+          <button class="zd-btn-sm" onclick="addSkill()">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="zd-step-actions">
+      <button class="zd-btn zd-btn-primary" id="step0-next" disabled onclick="goToFramework()">
+        Choose Framework →
+      </button>
+    </div>
+  </section>
+
+  <!-- ─── Step 1: Framework Selection ─── -->
+  <section class="zd-step" data-step="1">
+    <div class="zd-step-progress">
+      <span class="zd-step-num done">✓</span>
+      <span class="zd-step-line done"></span>
+      <span class="zd-step-num active">02</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num">03</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num">04</span>
+    </div>
+    <div class="zd-step-head">
+      <h1 class="zd-step-title">Select Framework</h1>
+      <p class="zd-step-desc">Choose the tech stack for your new site. Astro has full reusable component support.</p>
+    </div>
+    <div class="zd-note" id="maturity-note">
+      ⚠ Only Astro has a mature component library ready. Other frameworks will use assets but components need building.
+    </div>
+    <div class="zd-fw-grid" id="framework-grid">
+      <div class="zd-fw-card" data-fw="astro">
+        <span class="zd-fw-icon">🚀</span>
+        <span class="zd-fw-name">Astro</span>
+        <span class="zd-fw-badge">Components Ready</span>
+      </div>
+      <div class="zd-fw-card" data-fw="vite-react">
+        <span class="zd-fw-icon">⚛️</span>
+        <span class="zd-fw-name">Vite + React</span>
+        <span class="zd-fw-badge">SPA</span>
+      </div>
+      <div class="zd-fw-card" data-fw="vite-vue">
+        <span class="zd-fw-icon">💚</span>
+        <span class="zd-fw-name">Vite + Vue</span>
+        <span class="zd-fw-badge">SPA</span>
+      </div>
+      <div class="zd-fw-card" data-fw="vite-svelte">
+        <span class="zd-fw-icon">🟠</span>
+        <span class="zd-fw-name">Vite + Svelte</span>
+        <span class="zd-fw-badge">SPA</span>
+      </div>
+      <div class="zd-fw-card" data-fw="vanilla">
+        <span class="zd-fw-icon">🌐</span>
+        <span class="zd-fw-name">Vanilla JS</span>
+        <span class="zd-fw-badge">Zero Deps</span>
+      </div>
+      <div class="zd-fw-card" data-fw="nextjs">
+        <span class="zd-fw-icon">▲</span>
+        <span class="zd-fw-name">Next.js</span>
+        <span class="zd-fw-badge">SSR</span>
+      </div>
+      <div class="zd-fw-card" data-fw="nuxt">
+        <span class="zd-fw-icon">🟢</span>
+        <span class="zd-fw-name">Nuxt.js</span>
+        <span class="zd-fw-badge">SSR</span>
+      </div>
+      <div class="zd-fw-card" data-fw="sveltekit">
+        <span class="zd-fw-icon">🧡</span>
+        <span class="zd-fw-name">SvelteKit</span>
+        <span class="zd-fw-badge">SSR</span>
+      </div>
+      <div class="zd-fw-card" data-fw="remix">
+        <span class="zd-fw-icon">📡</span>
+        <span class="zd-fw-name">Remix</span>
+        <span class="zd-fw-badge">Edge</span>
+      </div>
+      <div class="zd-fw-card" data-fw="gatsby">
+        <span class="zd-fw-icon">💜</span>
+        <span class="zd-fw-name">Gatsby</span>
+        <span class="zd-fw-badge">Static</span>
+      </div>
+    </div>
+    <div class="zd-step-actions">
+      <button class="zd-btn zd-btn-ghost" onclick="goToStep(0)">← Back</button>
+      <button class="zd-btn zd-btn-primary" id="step1-next" disabled onclick="goToChat()">Start Session →</button>
+    </div>
+  </section>
+
+  <!-- ─── Step 2: Chat Terminal ─── -->
+  <section class="zd-step" data-step="2">
+    <div class="zd-step-progress">
+      <span class="zd-step-num done">✓</span>
+      <span class="zd-step-line done"></span>
+      <span class="zd-step-num done">✓</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num active">03</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num">04</span>
+    </div>
+    <div class="zd-step-head">
+      <h1 class="zd-step-title">Discovery Session</h1>
+      <p class="zd-step-desc" id="chat-subtitle">Answer the agent's questions. Be thorough — it will ask follow-ups if needed.</p>
+    </div>
+    <div class="zd-terminal">
+      <div class="zd-terminal-bar">
+        <span class="zd-term-dot red"></span>
+        <span class="zd-term-dot yellow"></span>
+        <span class="zd-term-dot green"></span>
+        <span class="zd-term-title" id="chat-title">agent session — codex</span>
+        <span class="zd-term-qs" id="chat-qs">Q1/3</span>
+      </div>
+      <div class="zd-terminal-body" id="chat-messages">
+        <div class="zd-term-welcome">
+          <span class="zd-term-prompt">zoth@studio:~$</span> Connecting to agent...
+        </div>
+      </div>
+      <div class="zd-terminal-input-row">
+        <span class="zd-term-prompt">zoth@studio:~$</span>
+        <input type="text" class="zd-terminal-input" id="chat-input" placeholder="type your response..." autocomplete="off" disabled />
+        <button class="zd-term-send" id="chat-send" disabled>↵</button>
+      </div>
+    </div>
+    <div class="zd-step-actions">
+      <button class="zd-btn zd-btn-ghost" onclick="goToStep(1)">← Back</button>
+    </div>
+  </section>
+
+  <!-- ─── Step 3: Artifacts ─── -->
+  <section class="zd-step" data-step="3">
+    <div class="zd-step-progress">
+      <span class="zd-step-num done">✓</span>
+      <span class="zd-step-line done"></span>
+      <span class="zd-step-num done">✓</span>
+      <span class="zd-step-line done"></span>
+      <span class="zd-step-num done">✓</span>
+      <span class="zd-step-line"></span>
+      <span class="zd-step-num active">04</span>
+    </div>
+    <div class="zd-step-head">
+      <h1 class="zd-step-title">Master Blueprint Ready</h1>
+      <p class="zd-step-desc">Copy these artifacts and hand them to the build agent to construct your site.</p>
+    </div>
+    <div class="zd-artifacts">
+      <div class="zd-artifact">
+        <div class="zd-artifact-header">
+          <span>📋 Master Prompt</span>
+          <button class="zd-copy-btn" onclick="copyArtifact('prompt')">Copy</button>
+        </div>
+        <pre class="zd-artifact-body" id="artifact-prompt">Generating...</pre>
+      </div>
+      <div class="zd-artifact">
+        <div class="zd-artifact-header">
+          <span>📐 Master Instructions</span>
+          <button class="zd-copy-btn" onclick="copyArtifact('instructions')">Copy</button>
+        </div>
+        <pre class="zd-artifact-body" id="artifact-instructions">Generating...</pre>
+      </div>
+      <div class="zd-artifact">
+        <div class="zd-artifact-header">
+          <span>🏗️ Master Blueprint</span>
+          <button class="zd-copy-btn" onclick="copyArtifact('blueprint')">Copy</button>
+        </div>
+        <pre class="zd-artifact-body" id="artifact-blueprint">Generating...</pre>
+      </div>
+    </div>
+    <div class="zd-build-instructions">
+      <h3>🚀 Build Instructions</h3>
+      <ol>
+        <li>Copy all three artifacts (click <strong>Copy</strong> on each card).</li>
+        <li>Scaffold: <code>npm create astro@latest my-site -- --template basics</code></li>
+        <li>Copy assets from <code>public/assets/default-library/</code> into your project's <code>public/</code> folder.</li>
+        <li>Give the build agent the <strong>Master Prompt</strong>, then <strong>Instructions</strong>, then <strong>Blueprint</strong>.</li>
+        <li>Let the agent build pages, wire components, and iterate until complete.</li>
+        <li>Run <code>npm run build</code> and deploy.</li>
+      </ol>
+      <div class="zd-asset-summary" id="asset-summary">Loading asset library...</div>
+    </div>
+    <div class="zd-step-actions">
+      <button class="zd-btn zd-btn-primary" onclick="startOver()">Start New Project</button>
+      <button class="zd-btn zd-btn-outline" onclick="exportAll()">📥 Export All</button>
+    </div>
+  </section>
+</main>
+
+<script is:inline>
+(function() {
+  'use strict';
+
+  // ─── State ───
+  const S = {
+    agent: null,
+    agentType: null,
+    fw: null,
+    fwLabel: 'Astro',
+    messages: [],
+    qIdx: 0,
+    answers: [],
+    followupQ: [false, false, false],
+    followupN: [0, 0, 0],
+    generating: false,
+  };
+
+  const QUESTIONS = [
+    {
+      q: "What type of website or project are you building? Describe its purpose, target audience, and the main goals you want to achieve.",
+      followups: [
+        "Who exactly will use this site? What problem does it solve?",
+        "Is this business, personal, portfolio, or something else?",
+        "What's the single most important action you want visitors to take?"
+      ]
+    },
+    {
+      q: "What pages, content sections, and key messaging do you need? Describe the structure — homepage, about, services, contact, etc.",
+      followups: [
+        "What are the 3-5 most important pages?",
+        "What tone: professional, casual, playful, educational?",
+        "Do you have existing copy or should it be placeholder for now?"
+      ]
+    },
+    {
+      q: "What's your visual direction? Any brand colors, style references, design preferences, or websites you admire?",
+      followups: [
+        "Do you have a logo or brand colors?",
+        "Minimal, bold, futuristic, warm, or something else?",
+        "Any theme from our library (38+ variants) that fits?"
+      ]
+    }
+  ];
+
+  const AGENTS = {
+    codex: { name: 'Codex', style: 'Structured, production-minded architect.' },
+    hermes: { name: 'Hermes', style: 'Fast, creative, design-focused.' },
+    openclaw: { name: 'OpenClaw', style: 'Full-stack, integration-aware.' },
+    custom: null
+  };
+
+  const FW = {
+    astro: 'Astro', 'vite-react': 'Vite + React', 'vite-vue': 'Vite + Vue',
+    'vite-svelte': 'Vite + Svelte', vanilla: 'Vanilla HTML/CSS/JS',
+    nextjs: 'Next.js', nuxt: 'Nuxt.js', sveltekit: 'SvelteKit',
+    remix: 'Remix', gatsby: 'Gatsby'
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  // ─── Agent Selection ───
+  document.querySelectorAll('.zd-agent-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.zd-agent-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      S.agentType = card.dataset.agent;
+      if (card.dataset.agent === 'custom') {
+        $('custom-agent-form').classList.add('open');
+        S.agent = null;
+        $('step0-next').disabled = true;
+      } else {
+        $('custom-agent-form').classList.remove('open');
+        S.agent = AGENTS[card.dataset.agent];
+        $('step0-next').disabled = false;
+      }
+    });
+  });
+
+  // ─── Custom Agent ───
+  window.addSkill = function() {
+    const c = $('custom-skills');
+    const e = document.createElement('div');
+    e.className = 'zd-skill-row';
+    e.innerHTML = '<input type="text" class="zd-skill-input" placeholder="Skill..." /><button class="zd-btn-sm" onclick="this.parentElement.remove()">✕</button>';
+    c.appendChild(e);
+    e.querySelector('input').focus();
+    checkCustom();
+  };
+  function checkCustom() {
+    const n = ($('custom-name').value || '').trim();
+    const d = ($('custom-desc').value || '').trim();
+    const sk = [...document.querySelectorAll('.zd-skill-input')].map(i => i.value.trim()).filter(Boolean);
+    if (n && d) {
+      S.agent = { name: n, style: d, skills: sk };
+      $('step0-next').disabled = false;
+    } else {
+      S.agent = null;
+      $('step0-next').disabled = true;
+    }
+  }
+  ['custom-name', 'custom-desc'].forEach(id => {
+    $(id)?.addEventListener('input', checkCustom);
+  });
+  document.addEventListener('input', e => {
+    if (e.target.classList.contains('zd-skill-input')) checkCustom();
+  });
+
+  // ─── Framework Selection ───
+  // Show maturity note by default (hidden for astro)
+  $('maturity-note').style.display = 'none';
+  document.querySelectorAll('.zd-fw-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.zd-fw-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      S.fw = card.dataset.fw;
+      S.fwLabel = FW[card.dataset.fw] || card.dataset.fw;
+      $('step1-next').disabled = false;
+      $('maturity-note').style.display = card.dataset.fw === 'astro' ? 'none' : 'block';
+    });
+  });
+
+  // ─── Step Nav ───
+  window.goToStep = function(n) {
+    document.querySelectorAll('.zd-step').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.zd-step[data-step="${n}"]`).classList.add('active');
+  };
+  window.goToFramework = () => goToStep(1);
+  window.goToChat = () => { goToStep(2); startChat(); };
+
+  // ─── Chat Terminal ───
+  function termMsg(text, type) {
+    const m = $('chat-messages');
+    const d = document.createElement('div');
+    d.className = 'zd-term-msg ' + type;
+    if (type === 'agent') {
+      d.innerHTML = `<span class="zd-term-prompt">${S.agent?.name || 'agent'}@zoth:~$</span> ${escHtml(text)}`;
+    } else if (type === 'system') {
+      d.innerHTML = `<span class="zd-term-prompt">system@zoth:~$</span> ${escHtml(text)}`;
+    } else {
+      d.innerHTML = `<span class="zd-term-prompt">you@zoth:~$</span> ${escHtml(text)}`;
+    }
+    m.appendChild(d);
+    m.scrollTop = m.scrollHeight;
+  }
+
+  function escHtml(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+  }
+
+  let typingTimer = null;
+  function showTyping() {
+    const m = $('chat-messages');
+    const d = document.createElement('div');
+    d.className = 'zd-term-msg system';
+    d.id = 'zd-typing';
+    d.innerHTML = '<span class="zd-term-prompt">agent@zoth:~$</span> <span class="zd-typing-anim"><span>.</span><span>.</span><span>.</span></span>';
+    m.appendChild(d);
+    m.scrollTop = m.scrollHeight;
+  }
+  function hideTyping() {
+    const e = document.getElementById('zd-typing');
+    if (e) e.remove();
+  }
+
+  function askNext() {
+    if (S.qIdx >= QUESTIONS.length) { genArtifacts(); return; }
+    const q = QUESTIONS[S.qIdx];
+    let text = q.q;
+    if (S.answers[S.qIdx] && S.followupQ[S.qIdx]) {
+      const i = Math.min(S.followupN[S.qIdx], q.followups.length - 1);
+      text = q.followups[i];
+    }
+    if (S.answers[S.qIdx] && S.answers[S.qIdx].split(/\s+/).length < 8 && !S.followupQ[S.qIdx]) {
+      S.followupQ[S.qIdx] = true;
+      text = q.followups[0];
+    }
+    const name = S.agent?.name || 'Agent';
+    const tag = S.agentType === 'custom' ? name : name;
+    termMsg(`[${tag}] ${text}`, 'agent');
+    $('chat-qs').textContent = S.followupQ[S.qIdx] ? `F${S.followupN[S.qIdx]+1}/${S.qIdx+1}` : `Q${S.qIdx+1}/3`;
+    $('chat-input').disabled = false;
+    $('chat-send').disabled = false;
+    $('chat-input').focus();
+  }
+
+  function handleAnswer() {
+    const inp = $('chat-input');
+    const a = inp.value.trim();
+    if (!a) return;
+    termMsg(a, 'user');
+    inp.value = '';
+
+    const qi = S.qIdx;
+    S.answers[qi] = S.answers[qi] ? S.answers[qi] + '\n' + a : a;
+    const wc = a.split(/\s+/).length;
+    const needs = wc < 6;
+
+    if (!S.followupQ[qi] && needs) {
+      S.followupQ[qi] = true;
+      S.followupN[qi] = 0;
+      disableInput();
+      showTyping();
+      setTimeout(() => { hideTyping(); askNext(); }, 800);
+    } else if (S.followupQ[qi] && S.followupN[qi] < 2 && needs) {
+      S.followupN[qi]++;
+      disableInput();
+      showTyping();
+      setTimeout(() => { hideTyping(); askNext(); }, 800);
+    } else {
+      S.qIdx++;
+      S.followupQ[S.qIdx] = false;
+      S.followupN[S.qIdx] = 0;
+      disableInput();
+      showTyping();
+      setTimeout(() => {
+        hideTyping();
+        S.qIdx >= QUESTIONS.length ? genArtifacts() : askNext();
+      }, 1000);
+    }
+  }
+
+  function disableInput() {
+    $('chat-input').disabled = true;
+    $('chat-send').disabled = true;
+  }
+
+  function startChat() {
+    const an = S.agent?.name || 'Agent';
+    $('chat-title').textContent = `agent session — ${an} · ${S.fwLabel}`;
+    $('chat-subtitle').textContent = `Session active with ${an}. Answer each question thoroughly.`;
+    S.qIdx = 0;
+    termMsg(`Session started. Agent: ${an} | Framework: ${S.fwLabel}`, 'system');
+    disableInput();
+    showTyping();
+    setTimeout(() => { hideTyping(); askNext(); }, 1200);
+  }
+
+  $('chat-send').addEventListener('click', handleAnswer);
+  $('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleAnswer(); });
+
+  // ─── Artifacts ───
+  function genArtifacts() {
+    if (S.generating) return;
+    S.generating = true;
+    disableInput();
+    termMsg('Generating master blueprint...', 'system');
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      renderArtifacts();
+    }, 1800);
+  }
+
+  function renderArtifacts() {
+    const an = S.agent?.name || 'Agent';
+    const fw = S.fwLabel;
+    const ans = S.answers;
+    const desc = ans[0] || 'A website project';
+    const pages = ans[1] || 'Homepage with key sections';
+    const style = ans[2] || 'Modern, clean design';
+
+    const prompt = `You are building a complete "${desc}" website using ${fw}.
+
+PLANNING AGENT: ${an}
+PROJECT: ${desc}
+VISUAL: ${style}
+FRAMEWORK: ${fw}
+
+ASSETS: Copy public/assets/default-library/ into new project's public/ folder
+- icons/ — 2,000+ Bootstrap Icons
+- logos/ — Brand logo templates
+- illustrations/ — Vector illustrations
+- patterns/ — Background patterns
+- lottie/ — Animation files
+- three-d/ — 3D assets
+
+COMPONENTS: Reference Z0TH Studio's src/components/ and src/configs/ for patterns
+
+DELIVERABLE: Fully developed multi-page website, production-ready, responsive, accessible, SEO-optimized.`;
+
+    const instructions = `## Project: ${desc}
+
+## Architecture
+- Framework: ${fw}
+- All pages must have: title, meta description, canonical URL, heading hierarchy, alt text
+
+## Pages & Sections
+${pages}
+
+## Design System
+- ${style}
+- Responsive: mobile-first (640px, 768px, 1024px)
+- Dark mode support
+
+## Quality
+- Semantic HTML
+- No placeholder content
+- SEO per-page metadata
+- Production-ready build
+
+## Process
+1. npm create project
+2. Copy assets into public/
+3. Build each page
+4. Apply design tokens
+5. Add responsive styles
+6. Iterate until complete`;
+
+    const blueprint = `MASTER BLUEPRINT — ${desc.toUpperCase()}
+
+Agent: ${an}
+Framework: ${fw}
+Style: ${style}
+
+=== CONTENT ===
+${pages}
+
+=== DESIGN ===
+${style}
+Reference: Z0TH Studio themes (38+ variants)
+
+=== ASSETS ===
+Source: public/assets/default-library/ → copy to new project's public/
+
+=== BUILD ===
+npm create ${fw === 'Astro' ? 'astro@latest my-site -- --template basics' : fw === 'Vite + React' ? 'vite@latest my-site -- --template react' : fw === 'Vite + Vue' ? 'vite@latest my-site -- --template vue' : fw === 'Vite + Svelte' ? 'vite@latest my-site -- --template svelte' : fw} my-site
+cd my-site
+# Copy assets, build pages, apply design tokens, run build, deploy`;
+
+    $('artifact-prompt').textContent = prompt;
+    $('artifact-instructions').textContent = instructions;
+    $('artifact-blueprint').textContent = blueprint;
+
+    // Asset summary
+    $('asset-summary').innerHTML = `
+      <strong>Asset Library</strong><br/>
+      📁 icons/ — 2,000+ Bootstrap Icons (SVG)<br/>
+      📁 logos/ — Brand logo templates<br/>
+      📁 illustrations/ — Vector illustrations<br/>
+      📁 patterns/ — Background patterns (SVG)<br/>
+      📁 lottie/ — Lottie animation files<br/>
+      📁 three-d/ — 3D model assets<br/>
+      📁 pixel/ — Pixel art assets<br/>
+      📄 public/assets/logo.svg — Z0TH Studio brand logo
+    `;
+
+    goToStep(3);
+    termMsg('✅ Master blueprint generated. See artifacts above.', 'system');
+    S.generating = false;
+  }
+
+  window.copyArtifact = function(type) {
+    const el = $(`artifact-${type}`);
+    navigator.clipboard.writeText(el.textContent).then(() => {
+      const btn = el.parentElement.querySelector('.zd-copy-btn');
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = el.textContent;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    });
+  };
+
+  window.exportAll = function() {
+    const parts = ['=== MASTER PROMPT ===\n\n', $('artifact-prompt').textContent, '\n\n',
+      '=== MASTER INSTRUCTIONS ===\n\n', $('artifact-instructions').textContent, '\n\n',
+      '=== MASTER BLUEPRINT ===\n\n', $('artifact-blueprint').textContent];
+    const b = new Blob(parts, { type: 'text/plain' });
+    const u = URL.createObjectURL(b);
+    const a = document.createElement('a');
+    a.href = u;
+    a.download = `zoth-blueprint-${S.fw || 'astro'}.txt`;
+    a.click();
+    URL.revokeObjectURL(u);
+  };
+
+  window.startOver = function() {
+    S.messages = []; S.qIdx = 0; S.answers = [];
+    S.followupQ = [false,false,false]; S.followupN = [0,0,0];
+    S.generating = false;
+    $('chat-messages').innerHTML = '<div class="zd-term-welcome"><span class="zd-term-prompt">zoth@studio:~$</span> Connecting to agent...</div>';
+    goToStep(0);
+    document.querySelectorAll('.zd-agent-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.zd-fw-card').forEach(c => c.classList.remove('selected'));
+    S.agent = null; S.fw = null;
+    $('step0-next').disabled = true;
+    $('step1-next').disabled = true;
+  };
+})();
+</script>
+
+<style is:global>
+  /* ═══════════ TOPBAR ═══════════ */
+  .zd-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 1.25rem;
+    background: var(--zd-surface);
+    border-bottom: 1px solid var(--zd-border);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .zd-topbar-left { display: flex; align-items: center; gap: 0.5rem; }
+  .zd-logo-mark { font-size: 1.3rem; color: var(--zd-accent); }
+  .zd-logo-text { font-weight: 700; font-size: 0.95rem; letter-spacing: 0.02em; }
+  .zd-topbar-badge {
+    font-size: 0.6rem; background: var(--zd-accent-soft); color: var(--zd-accent);
+    padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600;
+  }
+  .zd-topbar-center { display: flex; gap: 0.25rem; }
+  .zd-tab {
+    background: none; border: none; color: var(--zd-text-muted); font-size: 0.8rem;
+    padding: 0.35rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .zd-tab:hover { color: var(--zd-text); background: var(--zd-surface-2); }
+  .zd-tab.active { color: var(--zd-accent); background: var(--zd-accent-soft); }
+  .zd-topbar-right { display: flex; align-items: center; gap: 0.4rem; }
+  .zd-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--zd-green); display: inline-block; }
+  .zd-status-text { font-size: 0.75rem; color: var(--zd-text-muted); }
+
+  /* ═══════════ MAIN LAYOUT ═══════════ */
+  .zd-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ═══════════ STEPS ═══════════ */
+  .zd-step { display: none; }
+  .zd-step.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .zd-step-progress { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; }
+  .zd-step-num {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 0.7rem; font-weight: 700;
+    background: var(--zd-surface-2); border: 1px solid var(--zd-border); color: var(--zd-text-dim);
+    flex-shrink: 0;
+  }
+  .zd-step-num.active { border-color: var(--zd-accent); color: var(--zd-accent); background: var(--zd-accent-soft); }
+  .zd-step-num.done { border-color: var(--zd-green); color: var(--zd-green); background: rgba(52, 211, 153, 0.08); }
+  .zd-step-line { flex: 1; height: 1px; background: var(--zd-border); }
+  .zd-step-line.done { background: var(--zd-green); }
+
+  .zd-step-head { margin-bottom: 1.75rem; }
+  .zd-step-title { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+  .zd-step-desc { font-size: 0.9rem; color: var(--zd-text-muted); }
+
+  /* ═══════════ AGENT CARDS ═══════════ */
+  .zd-agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .zd-agent-card {
+    position: relative; background: var(--zd-surface); border: 1px solid var(--zd-border);
+    border-radius: 14px; padding: 1.5rem 1.25rem; cursor: pointer; overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  .zd-agent-card:hover { border-color: var(--zd-accent); transform: translateY(-2px); }
+  .zd-agent-card.selected { border-color: var(--zd-accent); box-shadow: 0 0 0 1px var(--zd-accent), 0 8px 32px rgba(107,132,255,0.08); }
+  .zd-agent-card-bg {
+    position: absolute; top: 0; right: 0; width: 120px; height: 120px;
+    background: radial-gradient(circle at 100% 0%, var(--zd-accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .zd-agent-icon { font-size: 2rem; margin-bottom: 0.5rem; position: relative; }
+  .zd-agent-name { font-weight: 700; font-size: 1.05rem; }
+  .zd-agent-role { font-size: 0.75rem; color: var(--zd-accent); font-weight: 600; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .zd-agent-desc { font-size: 0.82rem; color: var(--zd-text-muted); line-height: 1.45; margin-bottom: 0.75rem; }
+  .zd-agent-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .zd-agent-tags span { font-size: 0.62rem; padding: 0.15rem 0.45rem; border-radius: 4px; background: var(--zd-accent-soft); color: var(--zd-accent); }
+
+  .zd-custom-form { display: none; margin-top: 0.5rem; background: var(--zd-surface); border: 1px solid var(--zd-border); border-radius: 12px; padding: 1.25rem; }
+  .zd-custom-form.open { display: block; }
+  .zd-custom-form input, .zd-custom-form textarea {
+    width: 100%; background: var(--zd-surface-2); border: 1px solid var(--zd-border);
+    border-radius: 8px; padding: 0.6rem 0.85rem; color: var(--zd-text); font-size: 0.85rem; margin-bottom: 0.6rem;
+  }
+  .zd-custom-form input:focus, .zd-custom-form textarea:focus { outline: none; border-color: var(--zd-accent); }
+  .zd-skill-row { display: flex; gap: 0.4rem; margin-bottom: 0.4rem; }
+  .zd-skill-row input { flex: 1; margin-bottom: 0; }
+
+  /* ═══════════ FRAMEWORK GRID ═══════════ */
+  .zd-fw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.65rem; margin-bottom: 1rem; }
+  .zd-fw-card {
+    background: var(--zd-surface); border: 1px solid var(--zd-border); border-radius: 10px;
+    padding: 0.85rem 0.65rem; text-align: center; cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+  }
+  .zd-fw-card:hover { border-color: var(--zd-accent); background: var(--zd-surface-2); }
+  .zd-fw-card.selected { border-color: var(--zd-accent); background: var(--zd-accent-soft); box-shadow: inset 0 0 0 1px var(--zd-accent); }
+  .zd-fw-icon { font-size: 1.5rem; }
+  .zd-fw-name { font-weight: 600; font-size: 0.82rem; }
+  .zd-fw-badge { font-size: 0.62rem; color: var(--zd-text-dim); }
+
+  .zd-note { display: none; font-size: 0.78rem; background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.12); border-radius: 8px; padding: 0.6rem 0.9rem; margin-bottom: 1rem; color: var(--zd-yellow); }
+
+  /* ═══════════ TERMINAL ═══════════ */
+  .zd-terminal {
+    background: #060a14; border: 1px solid var(--zd-border); border-radius: 12px; overflow: hidden;
+    font-family: var(--font-mono); font-size: 0.82rem;
+  }
+  .zd-terminal-bar {
+    display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem;
+    background: var(--zd-surface-2); border-bottom: 1px solid var(--zd-border);
+  }
+  .zd-term-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .zd-term-dot.red { background: var(--zd-red); }
+  .zd-term-dot.yellow { background: var(--zd-yellow); }
+  .zd-term-dot.green { background: var(--zd-green); }
+  .zd-term-title { flex: 1; text-align: center; font-size: 0.7rem; color: var(--zd-text-dim); font-weight: 500; }
+  .zd-term-qs { font-size: 0.65rem; color: var(--zd-accent); font-weight: 600; }
+  .zd-terminal-body {
+    height: 320px; overflow-y: auto; padding: 0.75rem 1rem;
+    display: flex; flex-direction: column; gap: 0.4rem;
+  }
+  .zd-term-msg {
+    padding: 0.25rem 0; line-height: 1.55;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .zd-term-msg.system { color: var(--zd-text-muted); font-style: italic; }
+  .zd-term-msg.agent { color: var(--zd-text); }
+  .zd-term-msg.user { color: var(--zd-green); }
+  .zd-term-prompt { color: var(--zd-accent); font-weight: 600; margin-right: 0.4rem; }
+  .zd-term-welcome { color: var(--zd-text-dim); font-style: italic; padding: 0.25rem 0; }
+  .zd-typing-anim span { animation: blink 1s infinite; }
+  .zd-typing-anim span:nth-child(2) { animation-delay: 0.15s; }
+  .zd-typing-anim span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes blink { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  .zd-terminal-input-row {
+    display: flex; align-items: center; gap: 0.3rem; padding: 0.55rem 1rem;
+    border-top: 1px solid var(--zd-border); background: #060a14;
+  }
+  .zd-terminal-input {
+    flex: 1; background: none; border: none; color: var(--zd-green); font-family: var(--font-mono);
+    font-size: 0.82rem; outline: none;
+  }
+  .zd-terminal-input::placeholder { color: var(--zd-text-dim); }
+  .zd-terminal-input:disabled { opacity: 0.4; }
+  .zd-term-send {
+    background: var(--zd-accent); border: none; color: #fff; width: 24px; height: 24px;
+    border-radius: 6px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center;
+    justify-content: center; transition: opacity 0.15s;
+  }
+  .zd-term-send:disabled { opacity: 0.3; cursor: not-allowed; }
+  .zd-term-send:hover:not(:disabled) { opacity: 0.85; }
+
+  /* ═══════════ ARTIFACTS ═══════════ */
+  .zd-artifacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+  .zd-artifact { background: var(--zd-surface); border: 1px solid var(--zd-border); border-radius: 12px; overflow: hidden; }
+  .zd-artifact-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.6rem 1rem; background: var(--zd-surface-2); border-bottom: 1px solid var(--zd-border);
+    font-weight: 700; font-size: 0.82rem;
+  }
+  .zd-artifact-body {
+    padding: 1rem; font-size: 0.78rem; line-height: 1.5;
+    max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+    background: var(--zd-code-bg); color: var(--zd-text-muted); font-family: var(--font-mono);
+  }
+  .zd-copy-btn {
+    background: transparent; border: 1px solid var(--zd-border); color: var(--zd-text-muted);
+    border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; font-weight: 500;
+  }
+  .zd-copy-btn:hover { border-color: var(--zd-accent); color: var(--zd-accent); }
+  .zd-copy-btn.copied { border-color: var(--zd-green); color: var(--zd-green); }
+
+  /* ═══════════ BUILD INSTRUCTIONS ═══════════ */
+  .zd-build-instructions {
+    background: var(--zd-surface); border: 1px solid var(--zd-border); border-radius: 12px;
+    padding: 1.25rem; margin-bottom: 1rem;
+  }
+  .zd-build-instructions h3 { font-size: 1rem; margin-bottom: 0.75rem; }
+  .zd-build-instructions ol { padding-left: 1.25rem; }
+  .zd-build-instructions li { margin-bottom: 0.5rem; font-size: 0.85rem; line-height: 1.45; }
+  .zd-build-instructions code { background: var(--zd-code-bg); padding: 0.1rem 0.35rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; }
+  .zd-asset-summary { font-size: 0.82rem; color: var(--zd-text-muted); margin-top: 0.75rem; line-height: 1.6; }
+
+  /* ═══════════ BUTTONS ═══════════ */
+  .zd-step-actions { display: flex; gap: 0.7rem; margin-top: 1.25rem; flex-wrap: wrap; }
+  .zd-btn {
+    padding: 0.6rem 1.35rem; border-radius: 9px; font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.15s; border: none;
+  }
+  .zd-btn-primary { background: var(--zd-accent); color: #fff; }
+  .zd-btn-primary:hover { opacity: 0.85; }
+  .zd-btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+  .zd-btn-ghost { background: transparent; border: 1px solid var(--zd-border); color: var(--zd-text-muted); }
+  .zd-btn-ghost:hover { border-color: var(--zd-text-muted); color: var(--zd-text); }
+  .zd-btn-outline { background: transparent; border: 1px solid var(--zd-accent); color: var(--zd-accent); }
+  .zd-btn-outline:hover { background: var(--zd-accent-soft); }
+  .zd-btn-sm { background: transparent; border: 1px solid var(--zd-border); color: var(--zd-text-muted); border-radius: 6px; padding: 0.35rem 0.7rem; cursor: pointer; font-size: 0.75rem; white-space: nowrap; }
+  .zd-btn-sm:hover { border-color: var(--zd-accent); color: var(--zd-accent); }
+
+  @media (max-width: 640px) {
+    .zd-main { padding: 1rem; }
+    .zd-agent-grid { grid-template-columns: 1fr; }
+    .zd-fw-grid { grid-template-columns: repeat(2, 1fr); }
+    .zd-artifacts { grid-template-columns: 1fr; }
+    .zd-terminal-body { height: 240px; }
+    .zd-topbar-center { display: none; }
+    .zd-topbar-right .zd-status-text { display: none; }
+  }
+</style>

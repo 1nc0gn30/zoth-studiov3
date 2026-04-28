@@ -1,0 +1,185 @@
+---
+import type { TimelineData } from '../../configs/timeline';
+
+interface Props {
+  data?: TimelineData;
+  config?: TimelineData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: TimelineData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+const items = Array.isArray(section.items) ? section.items : [];
+---
+
+<section class="timeline-vertical" aria-labelledby="timeline-vertical-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="timeline-vertical-heading">{section.heading}</h2>
+    {section.subtext && <p class="timeline-vertical__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="timeline-vertical__track" role="list">
+    {items.map((item) => (
+      <article class={`timeline-vertical__item ${item.milestone ? 'is-milestone' : ''}`} role="listitem">
+        <div class="timeline-vertical__marker" aria-hidden="true"></div>
+        <div class="timeline-vertical__content">
+          <span class="timeline-vertical__date">{item.date}</span>
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+          {item.image && (
+            <img
+              src={item.image}
+              alt={item.title}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .timeline-vertical {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .timeline-vertical header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .timeline-vertical h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .timeline-vertical__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .timeline-vertical__track {
+    margin-top: 1.6rem;
+    position: relative;
+    padding-left: 1.5rem;
+  }
+
+  .timeline-vertical__track::before {
+    content: '';
+    position: absolute;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    left: 0.35rem;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accentColor) 55%, transparent),
+      color-mix(in srgb, var(--textColor) 22%, transparent)
+    );
+    border-radius: 2px;
+  }
+
+  .timeline-vertical__item {
+    position: relative;
+    padding-left: 1.4rem;
+    padding-bottom: 1.6rem;
+  }
+
+  .timeline-vertical__item:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline-vertical__marker {
+    position: absolute;
+    left: -1.15rem;
+    top: 0.35rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accentColor);
+    border: 2px solid var(--bgColor);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accentColor) 40%, transparent);
+  }
+
+  .timeline-vertical__item.is-milestone .timeline-vertical__marker {
+    width: 20px;
+    height: 20px;
+    left: -1.35rem;
+    top: 0.15rem;
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 65%, #7fe4ff 35%));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 35%, transparent);
+  }
+
+  .timeline-vertical__date {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+    margin-bottom: 0.35rem;
+  }
+
+  .timeline-vertical__content h3 {
+    margin: 0;
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    line-height: 1.3;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .timeline-vertical__content p {
+    margin: 0.35rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .timeline-vertical__content img {
+    margin-top: 0.75rem;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    display: block;
+  }
+
+  @media (min-width: 720px) {
+    .timeline-vertical__track {
+      padding-left: 2.2rem;
+    }
+
+    .timeline-vertical__track::before {
+      left: 0.55rem;
+    }
+
+    .timeline-vertical__item {
+      padding-left: 2rem;
+    }
+
+    .timeline-vertical__marker {
+      left: -1.65rem;
+      top: 0.4rem;
+    }
+
+    .timeline-vertical__item.is-milestone .timeline-vertical__marker {
+      left: -1.85rem;
+      top: 0.2rem;
+    }
+  }
+</style>

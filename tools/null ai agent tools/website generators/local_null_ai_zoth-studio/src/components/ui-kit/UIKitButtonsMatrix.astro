@@ -1,0 +1,120 @@
+---
+import type { UIKitAction, UIKitData } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = {
+  ...(config ?? {}),
+  ...(data ?? {}),
+} as UIKitData;
+const actions: UIKitAction[] = Array.isArray(resolved.actions) ? resolved.actions : [];
+const notes = Array.isArray(resolved.notes) ? resolved.notes : [];
+---
+
+<section class="ui-kit ui-kit--buttons" aria-label="Button styles showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  {actions.length > 0 && (
+    <div class="button-grid">
+      {actions.map((action) => (
+        <a href={action.url} class={`btn btn--${action.style ?? 'primary'}`}>
+          {action.label}
+        </a>
+      ))}
+    </div>
+  )}
+
+  {notes.length > 0 && (
+    <ul>
+      {notes.map((note) => (
+        <li>{note}</li>
+      ))}
+    </ul>
+  )}
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ui-kit header p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  .ui-kit h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .ui-kit span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .button-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .btn {
+    text-decoration: none;
+    border-radius: 999px;
+    font-weight: 700;
+    padding: 0.7rem 1rem;
+    border: 1px solid transparent;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn--primary {
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 60%, black 40%));
+    color: var(--accentContrastColor, #fff);
+    box-shadow: 0 14px 28px -18px color-mix(in srgb, var(--accentColor) 70%, black 30%);
+  }
+
+  .btn--secondary {
+    background: color-mix(in srgb, var(--surfaceColor) 82%, white 18%);
+    color: var(--textColor);
+    border-color: color-mix(in srgb, var(--textColor) 16%, transparent);
+  }
+
+  .btn--ghost {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--accentColor) 45%, transparent);
+    color: var(--accentColor);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.35rem;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+</style>

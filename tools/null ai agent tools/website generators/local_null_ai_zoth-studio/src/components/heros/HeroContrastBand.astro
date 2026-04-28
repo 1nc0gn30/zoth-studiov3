@@ -1,0 +1,288 @@
+---
+interface HeroContrastButton {
+  label: string;
+  url: string;
+  variant: 'primary' | 'secondary';
+}
+
+interface HeroContrastStat {
+  label: string;
+  value: string;
+}
+
+interface HeroContrastMedia {
+  desktopSrc: string;
+  mobileSrc: string;
+  fallbackSrc: string;
+  alt: string;
+}
+
+interface HeroContrastBandConfig {
+  eyebrow: string;
+  heading: string;
+  headingAccent: string;
+  subtext: string;
+  buttons: HeroContrastButton[];
+  proofPoints: string[];
+  stats: HeroContrastStat[];
+  media: HeroContrastMedia;
+}
+
+interface Props {
+  config: HeroContrastBandConfig;
+  data?: Partial<HeroContrastBandConfig> & {
+    image?: {
+      src?: string;
+      alt?: string;
+    };
+    media?: Partial<HeroContrastMedia> & {
+      src?: string;
+      alt?: string;
+    };
+  };
+}
+
+const { config, data = {} } = Astro.props;
+
+const hero: HeroContrastBandConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  headingAccent: data.headingAccent ?? config.headingAccent,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  proofPoints: data.proofPoints ?? config.proofPoints,
+  stats: data.stats ?? config.stats,
+  media: {
+    desktopSrc: data.media?.desktopSrc ?? data.media?.src ?? data.image?.src ?? config.media.desktopSrc ?? config.media.fallbackSrc,
+    mobileSrc: data.media?.mobileSrc ?? data.media?.src ?? data.image?.src ?? config.media.mobileSrc ?? config.media.desktopSrc,
+    fallbackSrc: data.media?.fallbackSrc ?? data.media?.src ?? data.image?.src ?? config.media.fallbackSrc ?? config.media.desktopSrc,
+    alt: data.media?.alt ?? data.image?.alt ?? config.media.alt,
+  },
+};
+---
+
+<section class="h8" aria-labelledby="h8-title">
+  <div class="h8__band">
+    <div class="h8__copy h8__reveal">
+      <p>{hero.eyebrow}</p>
+      <h1 id="h8-title">
+        {hero.heading}
+        <span>{hero.headingAccent}</span>
+      </h1>
+      <p class="h8__subtext">{hero.subtext}</p>
+
+      <div class="h8__media">
+        <picture>
+          <source media="(max-width: 767px)" srcset={hero.media.mobileSrc} />
+          <img
+            src={hero.media.desktopSrc}
+            alt={hero.media.alt}
+            loading="lazy"
+            decoding="async"
+            onerror={`this.onerror=null;this.src='${hero.media.fallbackSrc}'`}
+          />
+        </picture>
+      </div>
+
+      <div class="h8__actions">
+        {hero.buttons.map((button) => (
+          <a href={button.url} class={`h8__btn ${button.variant}`}>
+            {button.label}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="h8__meta h8__reveal-delay">
+      <ul>
+        {hero.proofPoints.slice(0, 4).map((point) => <li>{point}</li>)}
+      </ul>
+
+      <div class="h8__stats">
+        {hero.stats.slice(0, 3).map((stat) => (
+          <article>
+            <strong>{stat.value}</strong>
+            <span>{stat.label}</span>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .h8 {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(2.6rem, 6vw, 5.3rem) 1rem;
+  }
+
+  .h8__band {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .h8__copy {
+    padding: clamp(1.2rem, 2.7vw, 2rem);
+    background: linear-gradient(140deg, color-mix(in srgb, var(--textColor) 92%, #000 8%), color-mix(in srgb, #10213b 70%, var(--textColor) 30%));
+    color: #fff;
+  }
+
+  .h8__copy p {
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, #fff 75%, var(--accentColor) 25%);
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0.7rem 0 0;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    max-width: 14ch;
+  }
+
+  h1 span {
+    display: block;
+    background: linear-gradient(90deg, #fff, #85e8ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .h8__subtext {
+    margin: 0.95rem 0 0;
+    max-width: 58ch;
+    line-height: 1.64;
+    color: color-mix(in srgb, #fff 86%, transparent);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    font-size: 1rem;
+  }
+
+  .h8__actions {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .h8__media {
+    margin-top: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border: 1px solid color-mix(in srgb, #fff 30%, transparent);
+  }
+
+  .h8__media picture,
+  .h8__media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .h8__media img {
+    object-fit: cover;
+  }
+
+  .h8__btn {
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 0.68rem 1rem;
+    font-weight: 700;
+    transition: transform 0.2s ease;
+  }
+
+  .h8__btn.primary {
+    background: #fff;
+    color: #111;
+    border: 1px solid #fff;
+  }
+
+  .h8__btn.secondary {
+    background: transparent;
+    color: #fff;
+    border: 1px solid color-mix(in srgb, #fff 55%, transparent);
+  }
+
+  .h8__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .h8__meta {
+    padding: clamp(1rem, 2.4vw, 1.5rem);
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+  }
+
+  .h8__meta ul {
+    margin: 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .h8__stats {
+    margin-top: 0.85rem;
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .h8__stats article {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 10px;
+    padding: 0.65rem;
+  }
+
+  .h8__stats strong {
+    font-size: 1.05rem;
+    color: var(--accentColor);
+  }
+
+  .h8__stats span {
+    display: block;
+    margin-top: 0.18rem;
+    font-size: 0.8rem;
+  }
+
+  .h8__reveal,
+  .h8__reveal-delay {
+    opacity: 0;
+    animation: h8-fade 0.72s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+
+  .h8__reveal-delay {
+    animation-delay: 0.12s;
+  }
+
+  @keyframes h8-fade {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .h8__stats {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 960px) {
+    .h8__band {
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+  }
+</style>

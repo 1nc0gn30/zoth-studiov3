@@ -1,0 +1,25 @@
+---
+import type { TestimonialData } from '../configs/testimonial';
+import TestimonialCards from './testimonials/TestimonialCards.astro';
+import TestimonialWall from './testimonials/TestimonialWall.astro';
+
+interface Props {
+  data?: TestimonialData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  cards: TestimonialCards,
+  wall: TestimonialWall,
+} as const;
+
+type TestimonialVariant = keyof typeof variants;
+
+const requested = (cvariant ?? data?.cvariant ?? 'cards') as TestimonialVariant;
+const resolvedVariant = (requested in variants ? requested : 'cards') as TestimonialVariant;
+const VariantComponent = variants[resolvedVariant];
+---
+
+<VariantComponent data={data} />

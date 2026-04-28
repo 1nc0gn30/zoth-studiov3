@@ -1,0 +1,130 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+---
+
+<section class="ui-kit" aria-label="Feature matrix showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="matrix">
+    {items.map((item) => (
+      <article class="matrix-card">
+        <div>
+          <h3>{item.title}</h3>
+          {item.description && <p>{item.description}</p>}
+        </div>
+        <div class="meta-stack">
+          {item.badge && <strong>{item.badge}</strong>}
+          {item.meta && <small>{item.meta}</small>}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .matrix {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .matrix-card {
+    display: grid;
+    gap: 0.5rem;
+    background: color-mix(in srgb, var(--surfaceColor) 88%, white 12%);
+    padding: 0.95rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--textColor) 10%, transparent);
+  }
+
+  .matrix-card:last-child {
+    border-bottom: 0;
+  }
+
+  .matrix-card h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .matrix-card p {
+    margin: 0.35rem 0 0;
+    color: color-mix(in srgb, var(--textColor) 76%, transparent);
+  }
+
+  .meta-stack {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .meta-stack strong,
+  .meta-stack small {
+    border-radius: 999px;
+    padding: 0.32rem 0.58rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+
+  .meta-stack strong {
+    color: var(--accentContrastColor, #fff);
+    background: color-mix(in srgb, var(--accentColor) 88%, black 12%);
+  }
+
+  .meta-stack small {
+    color: color-mix(in srgb, var(--textColor) 74%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 90%, white 10%);
+  }
+
+  @media (min-width: 900px) {
+    .matrix-card {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+  }
+</style>

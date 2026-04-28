@@ -1,0 +1,175 @@
+---
+interface FeatureButton {
+  label: string;
+  url: string;
+  variant?: 'primary' | 'secondary';
+}
+
+interface FeatureItem {
+  title: string;
+  description: string;
+  kicker?: string;
+  metric?: string;
+}
+
+interface FeaturesConfig {
+  eyebrow: string;
+  heading: string;
+  subtext: string;
+  buttons: FeatureButton[];
+  items: FeatureItem[];
+}
+
+interface Props {
+  config: FeaturesConfig;
+  data?: Partial<FeaturesConfig>;
+}
+
+const { config, data = {} } = Astro.props;
+const section: FeaturesConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  items: data.items ?? config.items,
+};
+---
+
+<section class="feat-split" aria-labelledby="feat-split-title">
+  <div class="feat-split__copy">
+    <p>{section.eyebrow}</p>
+    <h2 id="feat-split-title">{section.heading}</h2>
+    <p class="feat-split__subtext">{section.subtext}</p>
+    <div class="feat-split__actions">
+      {section.buttons.map((button) => (
+        <a href={button.url} class={`feat-split__btn ${button.variant ?? 'primary'}`}>{button.label}</a>
+      ))}
+    </div>
+  </div>
+
+  <div class="feat-split__list">
+    {section.items.map((item) => (
+      <article>
+        <div>
+          {item.kicker && <small>{item.kicker}</small>}
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </div>
+        {item.metric && <strong>{item.metric}</strong>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .feat-split {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 6vw, 4.2rem) 1rem;
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: 1fr;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .feat-split__copy,
+  .feat-split__list {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+    padding: clamp(1rem, 2.4vw, 1.6rem);
+  }
+
+  .feat-split__copy > p {
+    margin: 0;
+    color: var(--accentColor);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.65rem 0 0;
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.05;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .feat-split__subtext {
+    margin: 0.85rem 0 0;
+    line-height: 1.62;
+    color: color-mix(in srgb, var(--textColor) 84%, transparent);
+  }
+
+  .feat-split__actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .feat-split__btn {
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 0.72rem 1rem;
+    font-weight: 700;
+  }
+
+  .feat-split__btn.primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 62%, #80e2ff 38%));
+  }
+
+  .feat-split__btn.secondary {
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 18%, transparent);
+  }
+
+  .feat-split__list {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .feat-split__list article {
+    border: 1px solid color-mix(in srgb, var(--textColor) 10%, transparent);
+    border-radius: 12px;
+    padding: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: flex-start;
+  }
+
+  small {
+    color: var(--accentColor);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+
+  h3 {
+    margin: 0.3rem 0 0;
+    font-family: var(--fontDisplay, var(--fontFamily));
+    font-size: 1.02rem;
+  }
+
+  article p {
+    margin: 0.32rem 0 0;
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  strong {
+    color: var(--accentColor);
+    white-space: nowrap;
+    font-size: 0.92rem;
+  }
+
+  @media (min-width: 980px) {
+    .feat-split {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+  }
+</style>

@@ -1,0 +1,192 @@
+---
+interface FeatureButton {
+  label: string;
+  url: string;
+  variant?: 'primary' | 'secondary';
+}
+
+interface FeatureItem {
+  title: string;
+  description: string;
+  kicker?: string;
+  metric?: string;
+}
+
+interface FeaturesConfig {
+  eyebrow: string;
+  heading: string;
+  subtext: string;
+  buttons: FeatureButton[];
+  items: FeatureItem[];
+}
+
+interface Props {
+  config: FeaturesConfig;
+  data?: Partial<FeaturesConfig>;
+}
+
+const { config, data = {} } = Astro.props;
+const section: FeaturesConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  items: data.items ?? config.items,
+};
+---
+
+<section class="feat-steps" aria-labelledby="feat-steps-title">
+  <header>
+    <p>{section.eyebrow}</p>
+    <h2 id="feat-steps-title">{section.heading}</h2>
+    <p class="feat-steps__subtext">{section.subtext}</p>
+    <div class="feat-steps__actions">
+      {section.buttons.map((button) => (
+        <a href={button.url} class={`feat-steps__btn ${button.variant ?? 'primary'}`}>{button.label}</a>
+      ))}
+    </div>
+  </header>
+
+  <ol>
+    {section.items.map((item, index) => (
+      <li>
+        <span>{String(index + 1).padStart(2, '0')}</span>
+        <div>
+          {item.kicker && <small>{item.kicker}</small>}
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </div>
+        {item.metric && <strong>{item.metric}</strong>}
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+  .feat-steps {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 6vw, 4.2rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  header p {
+    margin: 0;
+    color: var(--accentColor);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.65rem 0 0;
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.08;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .feat-steps__subtext {
+    margin: 0.85rem 0 0;
+    line-height: 1.62;
+    color: color-mix(in srgb, var(--textColor) 84%, transparent);
+    max-width: 62ch;
+  }
+
+  .feat-steps__actions {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .feat-steps__btn {
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 0.72rem 1rem;
+    font-weight: 700;
+  }
+
+  .feat-steps__btn.primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 64%, #7ce4ff 36%));
+  }
+
+  .feat-steps__btn.secondary {
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 18%, transparent);
+  }
+
+  ol {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 16px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    padding: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--textColor) 8%, transparent);
+  }
+
+  li:first-child {
+    border-top: 0;
+  }
+
+  li > span {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--accentColor) 18%, transparent);
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  small {
+    color: color-mix(in srgb, var(--textColor) 75%, transparent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  h3 {
+    margin: 0.22rem 0 0;
+    font-size: 1.03rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  li p {
+    margin: 0.32rem 0 0;
+    line-height: 1.54;
+    color: color-mix(in srgb, var(--textColor) 83%, transparent);
+  }
+
+  strong {
+    margin-top: 0.5rem;
+    display: block;
+    color: var(--accentColor);
+    font-size: 0.9rem;
+  }
+
+  @media (min-width: 860px) {
+    li {
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+    }
+
+    strong {
+      margin-top: 0;
+      align-self: center;
+      white-space: nowrap;
+    }
+  }
+</style>

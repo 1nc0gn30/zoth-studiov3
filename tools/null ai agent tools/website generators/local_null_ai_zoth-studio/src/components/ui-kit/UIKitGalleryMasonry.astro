@@ -1,0 +1,127 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = {
+  ...(config ?? {}),
+  ...(data ?? {}),
+} as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+---
+
+<section class="ui-kit ui-kit--gallery" aria-label="Gallery layout showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="masonry">
+    {items.map((item) => (
+      <article class="tile">
+        {item.badge && <small>{item.badge}</small>}
+        <h3>{item.title}</h3>
+        {item.description && <p>{item.description}</p>}
+        {item.meta && <strong>{item.meta}</strong>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ui-kit header p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  .ui-kit h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .ui-kit span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .masonry {
+    display: grid;
+    gap: 0.8rem;
+    grid-template-columns: 1fr;
+  }
+
+  .tile {
+    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--bgColor) 94%, white 6%), color-mix(in srgb, var(--bgColor) 89%, var(--accentColor) 11%));
+    padding: 1rem;
+  }
+
+  .tile:nth-child(4n + 1) {
+    min-height: 200px;
+  }
+
+  .tile:nth-child(4n + 2) {
+    min-height: 150px;
+  }
+
+  .tile small {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  .tile h3 {
+    margin: 0.35rem 0 0;
+    font-size: 1.12rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .tile p {
+    margin: 0.5rem 0 0;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+
+  .tile strong {
+    display: inline-block;
+    margin-top: 0.7rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--textColor) 70%, transparent);
+  }
+
+  @media (min-width: 840px) {
+    .masonry {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1120px) {
+    .masonry {
+      grid-template-columns: 1.4fr 1fr 1fr;
+    }
+  }
+</style>

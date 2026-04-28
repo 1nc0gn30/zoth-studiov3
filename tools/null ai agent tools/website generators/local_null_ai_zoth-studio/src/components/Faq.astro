@@ -1,0 +1,33 @@
+---
+import type { FAQData } from '../configs/faq';
+import faqAccordionConfig from '../configs/faqs/faq-accordion.json';
+import faqListConfig from '../configs/faqs/faq-list.json';
+import FaqAccordion from './faqs/FaqAccordion.astro';
+import FaqList from './faqs/FaqList.astro';
+
+interface Props {
+  data?: FAQData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  accordion: FaqAccordion,
+  list: FaqList,
+} as const;
+
+type FaqVariant = keyof typeof variants;
+
+const variantConfigs = {
+  accordion: faqAccordionConfig,
+  list: faqListConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'accordion') as FaqVariant;
+const resolvedVariant = (requested in variants ? requested : 'accordion') as FaqVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.accordion;
+---
+
+<VariantComponent data={data as any} config={config as any} />

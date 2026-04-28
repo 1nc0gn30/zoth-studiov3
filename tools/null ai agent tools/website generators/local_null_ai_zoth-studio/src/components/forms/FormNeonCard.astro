@@ -1,0 +1,158 @@
+---
+interface FormNeonCardField {
+  type: 'text' | 'email' | 'tel' | 'textarea';
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
+
+interface FormNeonCardConfig {
+  eyebrow: string;
+  title: string;
+  description: string;
+  fields: FormNeonCardField[];
+  submitButtonText: string;
+}
+
+interface Props {
+  config: FormNeonCardConfig;
+}
+
+const { config } = Astro.props as Props;
+---
+<section class="f02" aria-labelledby="f02-title">
+  <form action="#" method="post">
+    <p>{config.eyebrow}</p>
+    <h2 id="f02-title">{config.title}</h2>
+    <small>{config.description}</small>
+    <div class="grid">
+      {config.fields.map((field) => (
+        <label class:list={['field', field.type === 'textarea' && 'full']}>
+          {field.type === 'textarea' ? (
+            <textarea name={field.label.toLowerCase().replace(/\s+/g, '-')} required={field.required} placeholder={field.placeholder} aria-label={field.label}></textarea>
+          ) : (
+            <input type={field.type} name={field.label.toLowerCase().replace(/\s+/g, '-')} required={field.required} placeholder={field.placeholder} aria-label={field.label} />
+          )}
+          <span>{field.label}</span>
+        </label>
+      ))}
+    </div>
+    <button type="submit">{config.submitButtonText}</button>
+  </form>
+</section>
+<style>
+.f02 {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: clamp(1.75rem, 2.8vw, 2.8rem) 1rem;
+}
+form {
+  border: 1px solid color-mix(in srgb, var(--accentColor) 42%, transparent);
+  border-radius: 20px;
+  padding: clamp(1rem, 2.2vw, 1.4rem);
+  background:
+    radial-gradient(130% 120% at 85% -10%, color-mix(in srgb, var(--accentColor) 22%, transparent), transparent 58%),
+    linear-gradient(145deg, color-mix(in srgb, var(--bgColor) 95%, transparent), color-mix(in srgb, var(--accentColor) 12%, transparent));
+  box-shadow:
+    0 20px 48px -28px color-mix(in srgb, var(--accentColor) 75%, black 25%),
+    inset 0 1px 0 color-mix(in srgb, white 15%, transparent);
+}
+p {
+  margin: 0;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accentColor);
+  font-weight: 700;
+}
+h2 {
+  margin: 0.45rem 0 0;
+  font-size: clamp(1.4rem, 3.4vw, 2.15rem);
+  line-height: 1.2;
+}
+small {
+  display: block;
+  margin-top: 0.6rem;
+  line-height: 1.65;
+  color: color-mix(in srgb, var(--textColor) 82%, transparent);
+}
+.grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+.field {
+  position: relative;
+}
+.field.full {
+  grid-column: 1 / -1;
+}
+input,
+textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--textColor) 20%, transparent);
+  background: color-mix(in srgb, var(--bgColor) 96%, var(--accentColor) 4%);
+  color: var(--textColor);
+  padding: 1.2rem 0.8rem 0.58rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+.field span {
+  position: absolute;
+  left: 0.8rem;
+  top: 0.8rem;
+  font-size: 0.9rem;
+  color: color-mix(in srgb, var(--textColor) 65%, transparent);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform 180ms ease, color 180ms ease;
+}
+input:hover,
+textarea:hover {
+  border-color: color-mix(in srgb, var(--accentColor) 50%, transparent);
+}
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accentColor) 76%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 26%, transparent);
+  transform: translateY(-1px);
+}
+input:focus-visible + span,
+input:not(:placeholder-shown) + span,
+textarea:focus-visible + span,
+textarea:not(:placeholder-shown) + span {
+  transform: translateY(-0.52rem) scale(0.84);
+  color: color-mix(in srgb, var(--accentColor) 78%, var(--textColor) 22%);
+}
+button {
+  margin-top: 0.9rem;
+  border: 0;
+  border-radius: 12px;
+  padding: 0.78rem 1rem;
+  background: linear-gradient(110deg, var(--textColor), color-mix(in srgb, var(--textColor) 72%, var(--accentColor) 28%));
+  color: var(--bgColor);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 12px 24px -14px color-mix(in srgb, var(--textColor) 70%, transparent);
+}
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 26%, transparent);
+}
+@media (min-width: 760px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+</style>

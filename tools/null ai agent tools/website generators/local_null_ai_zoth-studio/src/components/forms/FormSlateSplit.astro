@@ -1,0 +1,132 @@
+---
+interface FormSlateSplitField {
+  type: 'text' | 'email' | 'tel' | 'textarea';
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
+
+interface FormSlateSplitConfig {
+  eyebrow: string;
+  title: string;
+  description: string;
+  fields: FormSlateSplitField[];
+  submitButtonText: string;
+}
+
+interface Props {
+  config: FormSlateSplitConfig;
+}
+
+const { config } = Astro.props as Props;
+---
+<section class="f01" aria-labelledby="f01-title">
+  <div class="f01__copy">
+    <p class="kicker">{config.eyebrow}</p>
+    <h2 id="f01-title">{config.title}</h2>
+    <p>{config.description}</p>
+  </div>
+  <form class="f01__form" action="#" method="post">
+    {config.fields.map((field) => (
+      <label>
+        <span>{field.label}</span>
+        {field.type === 'textarea' ? <textarea name={field.label.toLowerCase().replace(/\s+/g, '-')} placeholder={field.placeholder} required={field.required}></textarea> : <input type={field.type} name={field.label.toLowerCase().replace(/\s+/g, '-')} placeholder={field.placeholder} required={field.required} />}
+      </label>
+    ))}
+    <button type="submit">{config.submitButtonText}</button>
+  </form>
+</section>
+<style>
+.f01 {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(1.75rem, 2.5vw, 2.7rem) 1rem;
+  display: grid;
+  gap: 1rem;
+}
+.f01__copy,
+.f01__form {
+  border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+  border-radius: 18px;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--bgColor) 94%, var(--accentColor) 6%);
+}
+.kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accentColor);
+  font-weight: 700;
+}
+h2 {
+  margin: 0.45rem 0 0;
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+}
+.f01__copy p {
+  margin: 0.7rem 0 0;
+  line-height: 1.65;
+}
+.f01__form {
+  display: grid;
+  gap: 0.7rem;
+  box-shadow: 0 16px 28px -22px color-mix(in srgb, var(--accentColor) 66%, black 34%);
+}
+label {
+  display: grid;
+  gap: 0.32rem;
+}
+span {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+input,
+textarea {
+  width: 100%;
+  padding: 0.68rem 0.74rem;
+  border: 1px solid color-mix(in srgb, var(--textColor) 20%, transparent);
+  border-radius: 10px;
+  background: var(--bgColor);
+  color: var(--textColor);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+input:hover,
+textarea:hover {
+  border-color: color-mix(in srgb, var(--accentColor) 50%, transparent);
+}
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accentColor) 74%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 26%, transparent);
+  transform: translateY(-1px);
+}
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+button {
+  margin-top: 0.25rem;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.72rem 1rem;
+  background: linear-gradient(120deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 65%, black 35%));
+  color: #fff;
+  font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px -12px color-mix(in srgb, var(--accentColor) 72%, black 28%);
+}
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 26%, transparent);
+}
+@media (min-width: 900px) {
+  .f01 {
+    grid-template-columns: 0.9fr 1.1fr;
+    align-items: start;
+  }
+}
+</style>

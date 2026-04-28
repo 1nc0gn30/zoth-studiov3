@@ -1,0 +1,180 @@
+---
+import type { TeamData } from '../../configs/team';
+
+interface Props {
+  data?: TeamData;
+  config?: TeamData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: TeamData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  members: data.members ?? config.members,
+};
+const members = Array.isArray(section.members) ? section.members : [];
+---
+
+<section class="team-list" aria-labelledby="team-list-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="team-list-heading">{section.heading}</h2>
+    {section.subtext && <p class="team-list__subtext">{section.subtext}</p>}
+  </header>
+
+  <ul class="team-list__items">
+    {members.map((member) => (
+      <li class="team-list__item">
+        {member.avatar && (
+          <div class="team-list__avatar">
+            <img src={member.avatar} alt={member.avatarAlt || member.name} loading="lazy" decoding="async" />
+          </div>
+        )}
+        <div class="team-list__body">
+          <h3>{member.name}</h3>
+          <span class="team-list__role">{member.role}</span>
+          {member.bio && <p>{member.bio}</p>}
+          {member.socials && member.socials.length > 0 && (
+            <ul class="team-list__socials" aria-label={`${member.name} social links`}>
+              {member.socials.map((s) => (
+                <li>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer">{s.platform}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .team-list {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .team-list h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .team-list__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .team-list__items {
+    list-style: none;
+    margin: 1.2rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+  }
+
+  .team-list__item {
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bgColor) 96%, white 4%),
+      color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%)
+    );
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .team-list__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+    background: color-mix(in srgb, var(--surfaceColor) 80%, transparent);
+    flex-shrink: 0;
+  }
+
+  .team-list__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .team-list__body {
+    min-width: 0;
+  }
+
+  .team-list__body h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .team-list__role {
+    display: block;
+    margin-top: 0.1rem;
+    font-size: 0.78rem;
+    color: var(--accentColor);
+    font-weight: 600;
+  }
+
+  .team-list__body p {
+    margin: 0.25rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+
+  .team-list__socials {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .team-list__socials a {
+    font-size: 0.74rem;
+    color: color-mix(in srgb, var(--textColor) 72%, transparent);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--textColor) 24%, transparent);
+    transition: color 0.2s ease;
+  }
+
+  .team-list__socials a:hover {
+    color: var(--accentColor);
+  }
+
+  @media (min-width: 720px) {
+    .team-list__items {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .team-list__socials a {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,100 @@
+---
+import footerAccentBandConfig from '../../configs/footers/footer-accent-band.json';
+
+interface FooterSocialItem {
+  platform: string;
+  url: string;
+}
+
+interface FooterAccentBandConfig {
+  socialNavAria: string;
+  copyright: string;
+  showStatus: boolean;
+  statusText: string;
+  socials: FooterSocialItem[];
+}
+
+interface Props {
+  data?: Partial<FooterAccentBandConfig>;
+}
+
+const { data } = Astro.props;
+const baseConfig = footerAccentBandConfig as FooterAccentBandConfig;
+const footerData: FooterAccentBandConfig = {
+  ...baseConfig,
+  ...data,
+  socials: data?.socials ?? baseConfig.socials,
+};
+---
+<footer class="f5" role="contentinfo">
+  <div class="band">
+    <p class="copy">{footerData.copyright}</p>
+    <nav aria-label={footerData.socialNavAria}>
+      <ul>
+        {footerData.socials.map((s) => (
+          <li><a href={s.url} target="_blank" rel="noreferrer noopener">{s.platform}</a></li>
+        ))}
+      </ul>
+    </nav>
+    {footerData.showStatus && <p class="status">{footerData.statusText}</p>}
+  </div>
+</footer>
+
+<style>
+  .f5 {
+    background: var(--bg);
+    color: var(--text);
+  }
+  .band {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.1rem 1.25rem;
+    border-top: 3px solid var(--accent);
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 1rem;
+  }
+  .copy {
+    margin: 0;
+    color: color-mix(in srgb, var(--text) 72%, white 28%);
+  }
+  ul {
+    list-style: none;
+    display: flex;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+  }
+  a {
+    color: color-mix(in srgb, var(--text) 90%, white 10%);
+    text-decoration: none;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    padding: 0.35rem 0.68rem;
+    transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  }
+  a:hover,
+  a:focus-visible {
+    outline: none;
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    background: color-mix(in srgb, var(--accent) 13%, transparent);
+  }
+  .status {
+    margin: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  @media (max-width: 860px) {
+    .band {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+    ul {
+      justify-content: center;
+    }
+  }
+</style>

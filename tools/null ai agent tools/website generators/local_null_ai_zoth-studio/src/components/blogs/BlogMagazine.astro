@@ -1,0 +1,301 @@
+---
+import type { BlogData } from '../../configs/blog';
+
+interface Props {
+  data?: BlogData;
+  config?: BlogData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: BlogData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  posts: data.posts ?? config.posts,
+};
+const posts = Array.isArray(section.posts) ? section.posts : [];
+const featured = posts[0];
+const rest = posts.slice(1);
+---
+
+<section class="blog-magazine" aria-labelledby="blog-magazine-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="blog-magazine-heading">{section.heading}</h2>
+    {section.subtext && <p class="blog-magazine__subtext">{section.subtext}</p>}
+  </header>
+
+  {featured && (
+    <div class="blog-magazine__layout">
+      <article class="blog-magazine__featured">
+        {featured.image && (
+          <a href={featured.url || '#'} class="blog-magazine__media">
+            <img src={featured.image} alt={featured.imageAlt || featured.title} loading="eager" decoding="async" />
+          </a>
+        )}
+        <div class="blog-magazine__body">
+          {featured.tags && featured.tags.length > 0 && (
+            <ul class="blog-magazine__tags" aria-label="Featured tags">
+              {featured.tags.map((tag) => (
+                <li><span>{tag}</span></li>
+              ))}
+            </ul>
+          )}
+          <h3>
+            <a href={featured.url || '#'}>{featured.title}</a>
+          </h3>
+          <p>{featured.excerpt}</p>
+          <footer class="blog-magazine__meta">
+            <span>{featured.date}</span>
+            <span>{featured.author}</span>
+          </footer>
+        </div>
+      </article>
+
+      {rest.length > 0 && (
+        <ul class="blog-magazine__secondary">
+          {rest.map((post) => (
+            <li class="blog-magazine__side">
+              {post.image && (
+                <a href={post.url || '#'} class="blog-magazine__thumb">
+                  <img src={post.image} alt={post.imageAlt || post.title} loading="lazy" decoding="async" />
+                </a>
+              )}
+              <div class="blog-magazine__side-body">
+                {post.tags && post.tags.length > 0 && (
+                  <ul class="blog-magazine__tags" aria-label="Tags">
+                    {post.tags.slice(0, 2).map((tag) => (
+                      <li><span>{tag}</span></li>
+                    ))}
+                  </ul>
+                )}
+                <h4>
+                  <a href={post.url || '#'}>{post.title}</a>
+                </h4>
+                <footer class="blog-magazine__meta">
+                  <span>{post.date}</span>
+                  <span>{post.author}</span>
+                </footer>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )}
+</section>
+
+<style>
+  .blog-magazine {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .blog-magazine h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .blog-magazine__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .blog-magazine__layout {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: 1fr;
+  }
+
+  .blog-magazine__featured {
+    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bgColor) 96%, white 4%),
+      color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%)
+    );
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .blog-magazine__media {
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--surfaceColor) 80%, transparent);
+  }
+
+  .blog-magazine__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  .blog-magazine__media:hover img {
+    transform: scale(1.03);
+  }
+
+  .blog-magazine__body {
+    padding: 1rem;
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+
+  .blog-magazine__tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .blog-magazine__tags li span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    background: color-mix(in srgb, var(--accentColor) 12%, transparent);
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  .blog-magazine__body h3 {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .blog-magazine__body h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .blog-magazine__body h3 a:hover {
+    color: var(--accentColor);
+  }
+
+  .blog-magazine__body > p {
+    margin: 0.25rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+
+  .blog-magazine__meta {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    color: color-mix(in srgb, var(--textColor) 68%, transparent);
+  }
+
+  .blog-magazine__secondary {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .blog-magazine__side {
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bgColor) 96%, white 4%),
+      color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%)
+    );
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+  }
+
+  .blog-magazine__thumb {
+    display: block;
+    height: 100%;
+    min-height: 100px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--surfaceColor) 80%, transparent);
+  }
+
+  .blog-magazine__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .blog-magazine__side-body {
+    padding: 0.75rem;
+    display: grid;
+    gap: 0.25rem;
+    align-content: center;
+  }
+
+  .blog-magazine__side-body h4 {
+    margin: 0.1rem 0 0;
+    font-size: 0.95rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .blog-magazine__side-body h4 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .blog-magazine__side-body h4 a:hover {
+    color: var(--accentColor);
+  }
+
+  @media (min-width: 900px) {
+    .blog-magazine__layout {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .blog-magazine__featured {
+      grid-template-rows: none;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+
+    .blog-magazine__media {
+      aspect-ratio: auto;
+      height: 100%;
+    }
+
+    .blog-magazine__body {
+      padding: 1.2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blog-magazine__media img {
+      transition: none;
+    }
+  }
+</style>

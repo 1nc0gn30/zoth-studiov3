@@ -1,0 +1,108 @@
+---
+import type { UIKitAction, UIKitData } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const actions: UIKitAction[] = Array.isArray(resolved.actions) ? resolved.actions : [];
+const notes = Array.isArray(resolved.notes) ? resolved.notes : [];
+---
+
+<section class="ui-kit" aria-label="Stacked button showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="stack">
+    {actions.map((action) => (
+      <a href={action.url} class={`stack-btn stack-btn--${action.style ?? 'primary'}`}>
+        {action.label}
+      </a>
+    ))}
+  </div>
+
+  <div class="note-list">
+    {notes.map((note) => (
+      <p>{note}</p>
+    ))}
+  </div>
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  header > p {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .stack {
+    display: grid;
+    gap: 0.6rem;
+    max-width: 360px;
+  }
+
+  .stack-btn {
+    text-decoration: none;
+    border-radius: 14px;
+    padding: 0.85rem 0.95rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    text-align: center;
+  }
+
+  .stack-btn--primary {
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 62%, black 38%));
+    color: var(--accentContrastColor, #fff);
+  }
+
+  .stack-btn--secondary {
+    background: color-mix(in srgb, var(--surfaceColor) 90%, white 10%);
+    border-color: color-mix(in srgb, var(--textColor) 15%, transparent);
+    color: var(--textColor);
+  }
+
+  .stack-btn--ghost {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--accentColor) 45%, transparent);
+    color: var(--accentColor);
+  }
+
+  .note-list {
+    display: grid;
+    gap: 0.35rem;
+    color: color-mix(in srgb, var(--textColor) 75%, transparent);
+  }
+</style>

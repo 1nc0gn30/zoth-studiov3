@@ -1,0 +1,33 @@
+---
+import type { TimelineData } from '../configs/timeline';
+import timelineVerticalConfig from '../configs/timelines/timeline-vertical.json';
+import timelineHorizontalConfig from '../configs/timelines/timeline-horizontal.json';
+import TimelineVertical from './timelines/TimelineVertical.astro';
+import TimelineHorizontal from './timelines/TimelineHorizontal.astro';
+
+interface Props {
+  data?: TimelineData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  vertical: TimelineVertical,
+  horizontal: TimelineHorizontal,
+} as const;
+
+type TimelineVariant = keyof typeof variants;
+
+const variantConfigs = {
+  vertical: timelineVerticalConfig,
+  horizontal: timelineHorizontalConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'vertical') as TimelineVariant;
+const resolvedVariant = (requested in variants ? requested : 'vertical') as TimelineVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.vertical;
+---
+
+<VariantComponent data={data as any} config={config as any} />

@@ -1,0 +1,82 @@
+---
+import type { HeroData } from '../configs/hero';
+import heroDefaultConfig from '../configs/heros/hero-default.json';
+import heroAuroraSplitConfig from '../configs/heros/hero-aurora-split.json';
+import heroEditorialStackConfig from '../configs/heros/hero-editorial-stack.json';
+import heroFrameShowcaseConfig from '../configs/heros/hero-frame-showcase.json';
+import heroMetricGridConfig from '../configs/heros/hero-metric-grid.json';
+import heroStepsTimelineConfig from '../configs/heros/hero-steps-timeline.json';
+import heroDockedCardsConfig from '../configs/heros/hero-docked-cards.json';
+import heroMosaicPanelConfig from '../configs/heros/hero-mosaic-panel.json';
+import heroContrastBandConfig from '../configs/heros/hero-contrast-band.json';
+import heroDiagonalSpotlightConfig from '../configs/heros/hero-diagonal-spotlight.json';
+import heroCompactLaunchpadConfig from '../configs/heros/hero-compact-launchpad.json';
+import HeroDefault from './heros/HeroDefault.astro';
+import HeroAuroraSplit from './heros/HeroAuroraSplit.astro';
+import HeroEditorialStack from './heros/HeroEditorialStack.astro';
+import HeroFrameShowcase from './heros/HeroFrameShowcase.astro';
+import HeroMetricGrid from './heros/HeroMetricGrid.astro';
+import HeroStepsTimeline from './heros/HeroStepsTimeline.astro';
+import HeroDockedCards from './heros/HeroDockedCards.astro';
+import HeroMosaicPanel from './heros/HeroMosaicPanel.astro';
+import HeroContrastBand from './heros/HeroContrastBand.astro';
+import HeroDiagonalSpotlight from './heros/HeroDiagonalSpotlight.astro';
+import HeroCompactLaunchpad from './heros/HeroCompactLaunchpad.astro';
+
+interface Props {
+  data: HeroData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  default: HeroDefault,
+  aurora: HeroAuroraSplit,
+  editorial: HeroEditorialStack,
+  frame: HeroFrameShowcase,
+  metrics: HeroMetricGrid,
+  timeline: HeroStepsTimeline,
+  docked: HeroDockedCards,
+  mosaic: HeroMosaicPanel,
+  contrast: HeroContrastBand,
+  diagonal: HeroDiagonalSpotlight,
+  compact: HeroCompactLaunchpad,
+} as const;
+
+type HeroVariant = keyof typeof variants;
+
+const variantConfigs = {
+  default: heroDefaultConfig,
+  aurora: heroAuroraSplitConfig,
+  editorial: heroEditorialStackConfig,
+  frame: heroFrameShowcaseConfig,
+  metrics: heroMetricGridConfig,
+  timeline: heroStepsTimelineConfig,
+  docked: heroDockedCardsConfig,
+  mosaic: heroMosaicPanelConfig,
+  contrast: heroContrastBandConfig,
+  diagonal: heroDiagonalSpotlightConfig,
+  compact: heroCompactLaunchpadConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'default') as HeroVariant;
+const resolvedVariant = (requested in variants ? requested : 'default') as HeroVariant;
+const VariantComponent = (variants[resolvedVariant] ?? variants.default) as any;
+const variantConfig = variantConfigs[resolvedVariant] ?? variantConfigs.default;
+---
+
+<div class="hero-stack">
+  <VariantComponent data={data as any} config={variantConfig as any} />
+</div>
+
+<style>
+  .hero-stack {
+    font-family: var(--fontBody, var(--fontFamily));
+    color: var(--textColor);
+  }
+
+  .hero-stack :is(h1, h2, h3, strong) {
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+</style>

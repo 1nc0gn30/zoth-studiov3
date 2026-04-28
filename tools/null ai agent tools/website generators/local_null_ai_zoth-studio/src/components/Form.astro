@@ -1,0 +1,86 @@
+---
+import type { FormData } from '../configs/form';
+import formCapsuleInlineConfig from '../configs/forms/form-capsule-inline.json';
+import formGlassFloatConfig from '../configs/forms/form-glass-float.json';
+import formMonoStackConfig from '../configs/forms/form-mono-stack.json';
+import formNeonCardConfig from '../configs/forms/form-neon-card.json';
+import formPanelGridConfig from '../configs/forms/form-panel-grid.json';
+import formPaperStackConfig from '../configs/forms/form-paper-stack.json';
+import formQuickInlineConfig from '../configs/forms/form-quick-inline.json';
+import formSidebarTicketConfig from '../configs/forms/form-sidebar-ticket.json';
+import formSlateSplitConfig from '../configs/forms/form-slate-split.json';
+import formUnderlineFlowConfig from '../configs/forms/form-underline-flow.json';
+import FormSlateSplit from './forms/FormSlateSplit.astro';
+import FormNeonCard from './forms/FormNeonCard.astro';
+import FormUnderlineFlow from './forms/FormUnderlineFlow.astro';
+import FormSidebarTicket from './forms/FormSidebarTicket.astro';
+import FormGlassFloat from './forms/FormGlassFloat.astro';
+import FormCapsuleInline from './forms/FormCapsuleInline.astro';
+import FormPaperStack from './forms/FormPaperStack.astro';
+import FormPanelGrid from './forms/FormPanelGrid.astro';
+import FormMonoStack from './forms/FormMonoStack.astro';
+import FormQuickInline from './forms/FormQuickInline.astro';
+import { normalizeFormField } from '../configs/form';
+
+interface Props {
+  data: FormData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  slate: FormSlateSplit,
+  neon: FormNeonCard,
+  underline: FormUnderlineFlow,
+  sidebar: FormSidebarTicket,
+  glass: FormGlassFloat,
+  capsule: FormCapsuleInline,
+  paper: FormPaperStack,
+  panel: FormPanelGrid,
+  mono: FormMonoStack,
+  quick: FormQuickInline,
+} as const;
+
+type FormVariant = keyof typeof variants;
+
+const requested = (cvariant ?? data?.cvariant ?? 'slate') as FormVariant;
+const resolvedVariant = (requested in variants ? requested : 'slate') as FormVariant;
+const VariantComponent = variants[resolvedVariant] ?? variants.slate;
+const variantConfigs = {
+  slate: formSlateSplitConfig,
+  neon: formNeonCardConfig,
+  underline: formUnderlineFlowConfig,
+  sidebar: formSidebarTicketConfig,
+  glass: formGlassFloatConfig,
+  capsule: formCapsuleInlineConfig,
+  paper: formPaperStackConfig,
+  panel: formPanelGridConfig,
+  mono: formMonoStackConfig,
+  quick: formQuickInlineConfig,
+} as const;
+const baseConfig = variantConfigs[resolvedVariant] as Record<string, unknown>;
+const normalizedFields = data?.fields?.map((field) => {
+  const normalized = normalizeFormField(field);
+
+  return {
+    type: normalized.type === 'select' ? 'text' : normalized.type,
+    label: normalized.label,
+    placeholder: normalized.placeholder ?? `Enter ${normalized.label.toLowerCase()}`,
+    required: normalized.required ?? true,
+    options: normalized.options,
+  };
+});
+
+const config = {
+  ...baseConfig,
+  eyebrow: data?.subheading ?? data?.note ?? baseConfig.eyebrow,
+  title: data?.heading ?? data?.subheading ?? baseConfig.title,
+  description: data?.description ?? data?.note ?? baseConfig.description,
+  note: data?.note ?? baseConfig.note,
+  fields: normalizedFields && normalizedFields.length > 0 ? normalizedFields : baseConfig.fields,
+  submitButtonText: data?.submitLabel ?? baseConfig.submitButtonText,
+};
+---
+
+<VariantComponent config={config} />

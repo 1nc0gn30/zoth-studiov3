@@ -1,0 +1,109 @@
+---
+import type { TeamData } from '../../configs/team';
+
+interface Props {
+  data?: TeamData;
+  config?: TeamData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: TeamData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  members: data.members ?? config.members,
+};
+const members = Array.isArray(section.members) ? section.members : [];
+---
+
+<section class="team-cards" aria-labelledby="team-cards-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="team-cards-heading">{section.heading}</h2>
+    {section.subtext && <p class="team-cards__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="team-cards__list">
+    {members.map((member) => (
+      <article class="team-cards__card">
+        {member.avatar && (
+          <img class="team-cards__avatar" src={member.avatar} alt={member.avatarAlt || member.name} loading="lazy" decoding="async" />
+        )}
+        <h3>{member.name}</h3>
+        <span class="team-cards__role">{member.role}</span>
+        {member.bio && <p class="team-cards__bio">{member.bio}</p>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .team-cards {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+  .team-cards header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+  .team-cards h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+  .team-cards__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+  .team-cards__list {
+    margin-top: 1.6rem;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  .team-cards__card {
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bgColor) 96%, white 4%), color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%));
+    padding: 1.4rem;
+    text-align: center;
+  }
+  .team-cards__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 0.6rem;
+    display: block;
+    border: 2px solid color-mix(in srgb, var(--accentColor) 40%, transparent);
+  }
+  .team-cards__card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+  .team-cards__role {
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--textColor) 72%, transparent);
+  }
+  .team-cards__bio {
+    margin: 0.5rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+  @media (min-width: 640px) {
+    .team-cards__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 980px) {
+    .team-cards__list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+</style>

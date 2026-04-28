@@ -1,0 +1,125 @@
+---
+import type { LogoTickerData } from '../../configs/logoTicker';
+
+interface Props {
+  data?: LogoTickerData;
+  config?: LogoTickerData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: LogoTickerData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+const items = Array.isArray(section.items) ? section.items : [];
+const duped = [...items, ...items];
+---
+
+<section class="logo-ticker-marquee" aria-labelledby="logo-ticker-marquee-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="logo-ticker-marquee-heading">{section.heading}</h2>
+    {section.subtext && <p class="logo-ticker-marquee__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="logo-ticker-marquee__track" role="list" aria-label="Partner logos">
+    <div class="logo-ticker-marquee__inner">
+      {duped.map((logo, idx) => (
+        <div class="logo-ticker-marquee__item" role="listitem">
+          {logo.url ? (
+            <a href={logo.url} target="_blank" rel="noopener noreferrer" aria-label={logo.alt || logo.name}>
+              <img src={logo.src} alt={logo.alt || logo.name} loading="lazy" decoding="async" />
+            </a>
+          ) : (
+            <img src={logo.src} alt={logo.alt || logo.name} loading="lazy" decoding="async" />
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .logo-ticker-marquee {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .logo-ticker-marquee header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .logo-ticker-marquee h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .logo-ticker-marquee__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .logo-ticker-marquee__track {
+    margin-top: 1.6rem;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  }
+
+  .logo-ticker-marquee__inner {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: scroll 30s linear infinite;
+  }
+
+  .logo-ticker-marquee__track:hover .logo-ticker-marquee__inner {
+    animation-play-state: paused;
+  }
+
+  .logo-ticker-marquee__item {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem;
+  }
+
+  .logo-ticker-marquee__item img {
+    height: clamp(28px, 4vw, 40px);
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    filter: grayscale(100%) brightness(1.1);
+    opacity: 0.8;
+    transition: filter 0.25s ease, opacity 0.25s ease;
+  }
+
+  .logo-ticker-marquee__item a:hover img,
+  .logo-ticker-marquee__item:hover img {
+    filter: grayscale(0%) brightness(1);
+    opacity: 1;
+  }
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .logo-ticker-marquee__inner {
+      animation: none;
+    }
+  }
+</style>

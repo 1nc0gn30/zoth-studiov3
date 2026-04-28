@@ -1,0 +1,126 @@
+---
+import type { StatsData } from '../../configs/stats';
+
+interface Props {
+  data?: StatsData;
+  config?: StatsData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: StatsData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+const items = Array.isArray(section.items) ? section.items : [];
+---
+
+<section class="stats-mosaic" aria-labelledby="stats-mosaic-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="stats-mosaic-heading">{section.heading}</h2>
+    {section.subtext && <p class="stats-mosaic__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="stats-mosaic__grid">
+    {items.map((item, idx) => (
+      <article class={`stats-mosaic__tile ${idx === 0 ? 'stats-mosaic__tile--lead' : ''}`}>
+        <strong>{item.value}</strong>
+        <h3>{item.label}</h3>
+        {item.description && <p>{item.description}</p>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .stats-mosaic {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .stats-mosaic h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stats-mosaic__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .stats-mosaic__grid {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+  }
+
+  .stats-mosaic__tile {
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--bgColor) 94%, white 6%),
+      color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%)
+    );
+    padding: 1.1rem;
+  }
+
+  .stats-mosaic__tile strong {
+    display: block;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1;
+    color: var(--accentColor);
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stats-mosaic__tile h3 {
+    margin: 0.4rem 0 0;
+    font-size: 1rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stats-mosaic__tile p {
+    margin: 0.35rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+
+  @media (min-width: 720px) {
+    .stats-mosaic__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stats-mosaic__tile--lead {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 980px) {
+    .stats-mosaic__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stats-mosaic__tile--lead {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+</style>

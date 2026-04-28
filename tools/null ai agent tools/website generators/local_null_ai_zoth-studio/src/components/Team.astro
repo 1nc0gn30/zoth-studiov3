@@ -1,0 +1,33 @@
+---
+import type { TeamData } from '../configs/team';
+import teamGridConfig from '../configs/teams/team-grid.json';
+import teamListConfig from '../configs/teams/team-list.json';
+import TeamGrid from './teams/TeamGrid.astro';
+import TeamList from './teams/TeamList.astro';
+
+interface Props {
+  data?: TeamData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  grid: TeamGrid,
+  list: TeamList,
+} as const;
+
+type TeamVariant = keyof typeof variants;
+
+const variantConfigs = {
+  grid: teamGridConfig,
+  list: teamListConfig,
+} as const;
+
+const requested = (cvariant ?? data?.cvariant ?? 'grid') as TeamVariant;
+const resolvedVariant = (requested in variants ? requested : 'grid') as TeamVariant;
+const VariantComponent = variants[resolvedVariant] as any;
+const config = variantConfigs[resolvedVariant] ?? variantConfigs.grid;
+---
+
+<VariantComponent data={data as any} config={config as any} />

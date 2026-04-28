@@ -1,0 +1,220 @@
+---
+import type { TimelineData } from '../../configs/timeline';
+
+interface Props {
+  data?: TimelineData;
+  config?: TimelineData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: TimelineData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+const items = Array.isArray(section.items) ? section.items : [];
+---
+
+<section class="timeline-horizontal" aria-labelledby="timeline-horizontal-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="timeline-horizontal-heading">{section.heading}</h2>
+    {section.subtext && <p class="timeline-horizontal__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="timeline-horizontal__track" role="list">
+    {items.map((item) => (
+      <article class={`timeline-horizontal__item ${item.milestone ? 'is-milestone' : ''}`} role="listitem">
+        <div class="timeline-horizontal__content">
+          <span class="timeline-horizontal__date">{item.date}</span>
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+          {item.image && (
+            <img
+              src={item.image}
+              alt={item.title}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .timeline-horizontal {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .timeline-horizontal header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .timeline-horizontal h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .timeline-horizontal__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .timeline-horizontal__track {
+    margin-top: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .timeline-horizontal__item {
+    position: relative;
+    flex: 1 0 auto;
+    padding-left: 2.2rem;
+    padding-bottom: 1.4rem;
+  }
+
+  .timeline-horizontal__item:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline-horizontal__item::before {
+    content: '';
+    position: absolute;
+    left: 0.15rem;
+    top: 0.35rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accentColor);
+    border: 2px solid var(--bgColor);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accentColor) 40%, transparent);
+  }
+
+  .timeline-horizontal__item.is-milestone::before {
+    width: 18px;
+    height: 18px;
+    left: -0.1rem;
+    top: 0.15rem;
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 65%, #7fe4ff 35%));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 35%, transparent);
+  }
+
+  .timeline-horizontal__item::after {
+    content: '';
+    position: absolute;
+    left: 0.2rem;
+    top: 0.9rem;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accentColor) 55%, transparent),
+      color-mix(in srgb, var(--textColor) 22%, transparent)
+    );
+    border-radius: 2px;
+  }
+
+  .timeline-horizontal__item:last-child::after {
+    display: none;
+  }
+
+  .timeline-horizontal__date {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+    margin-bottom: 0.3rem;
+  }
+
+  .timeline-horizontal__content h3 {
+    margin: 0;
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    line-height: 1.3;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .timeline-horizontal__content p {
+    margin: 0.35rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .timeline-horizontal__content img {
+    margin-top: 0.75rem;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    display: block;
+  }
+
+  @media (min-width: 768px) {
+    .timeline-horizontal__track {
+      flex-direction: row;
+      overflow-x: auto;
+      padding-top: 1.2rem;
+      gap: 0;
+    }
+
+    .timeline-horizontal__item {
+      flex: 1 0 clamp(220px, 28vw, 320px);
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    .timeline-horizontal__item::before {
+      left: 50%;
+      top: -0.75rem;
+      transform: translateX(-50%);
+    }
+
+    .timeline-horizontal__item.is-milestone::before {
+      left: 50%;
+      top: -0.9rem;
+      transform: translateX(-50%);
+    }
+
+    .timeline-horizontal__item::after {
+      left: 50%;
+      top: -0.65rem;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--accentColor) 55%, transparent),
+        color-mix(in srgb, var(--textColor) 22%, transparent)
+      );
+    }
+
+    .timeline-horizontal__item:last-child::after {
+      display: none;
+    }
+
+    .timeline-horizontal__date {
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-horizontal__content img {
+      max-width: 100%;
+    }
+  }
+</style>

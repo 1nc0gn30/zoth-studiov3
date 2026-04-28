@@ -1,0 +1,313 @@
+---
+interface HeroTimelineButton {
+  label: string;
+  url: string;
+  variant: 'primary' | 'secondary';
+}
+
+interface HeroTimelineHighlight {
+  title: string;
+  description: string;
+}
+
+interface HeroTimelineMedia {
+  desktopSrc: string;
+  mobileSrc: string;
+  fallbackSrc: string;
+  alt: string;
+}
+
+interface HeroStepsTimelineConfig {
+  eyebrow: string;
+  heading: string;
+  headingAccent: string;
+  subtext: string;
+  buttons: HeroTimelineButton[];
+  highlights: HeroTimelineHighlight[];
+  pointsHeading: string;
+  proofPoints: string[];
+  media: HeroTimelineMedia;
+}
+
+interface Props {
+  config: HeroStepsTimelineConfig;
+  data?: Partial<HeroStepsTimelineConfig> & {
+    image?: {
+      src?: string;
+      alt?: string;
+    };
+    media?: Partial<HeroTimelineMedia> & {
+      src?: string;
+      alt?: string;
+    };
+  };
+}
+
+const { config, data = {} } = Astro.props;
+
+const hero: HeroStepsTimelineConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  headingAccent: data.headingAccent ?? config.headingAccent,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  highlights: data.highlights ?? config.highlights,
+  pointsHeading: data.pointsHeading ?? config.pointsHeading,
+  proofPoints: data.proofPoints ?? config.proofPoints,
+  media: {
+    desktopSrc: data.media?.desktopSrc ?? data.media?.src ?? data.image?.src ?? config.media.desktopSrc ?? config.media.fallbackSrc,
+    mobileSrc: data.media?.mobileSrc ?? data.media?.src ?? data.image?.src ?? config.media.mobileSrc ?? config.media.desktopSrc,
+    fallbackSrc: data.media?.fallbackSrc ?? data.media?.src ?? data.image?.src ?? config.media.fallbackSrc ?? config.media.desktopSrc,
+    alt: data.media?.alt ?? data.image?.alt ?? config.media.alt,
+  },
+};
+---
+
+<section class="h5" aria-labelledby="h5-title">
+  <div class="h5__top h5__reveal">
+    <div>
+      <p class="h5__eyebrow">{hero.eyebrow}</p>
+      <h1 id="h5-title">
+        {hero.heading}
+        <span>{hero.headingAccent}</span>
+      </h1>
+      <p class="h5__subtext">{hero.subtext}</p>
+    </div>
+
+    <div class="h5__actions">
+      {hero.buttons.map((button) => (
+        <a href={button.url} class={`h5__btn ${button.variant}`}>
+          {button.label}
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="h5__lane h5__reveal-delay">
+    <ol>
+      {hero.highlights.slice(0, 4).map((item, index: number) => (
+        <li>
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <div>
+            <h2>{item.title}</h2>
+            <p>{item.description}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <aside>
+      <div class="h5__media">
+        <picture>
+          <source media="(max-width: 767px)" srcset={hero.media.mobileSrc} />
+          <img
+            src={hero.media.desktopSrc}
+            alt={hero.media.alt}
+            loading="lazy"
+            decoding="async"
+            onerror={`this.onerror=null;this.src='${hero.media.fallbackSrc}'`}
+          />
+        </picture>
+      </div>
+      <h2>{hero.pointsHeading}</h2>
+      <ul>
+        {hero.proofPoints.map((point) => <li>{point}</li>)}
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .h5 {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) 1rem;
+  }
+
+  .h5__top {
+    display: grid;
+    gap: 1rem;
+    align-items: end;
+  }
+
+  .h5__eyebrow {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    font-size: 0.8rem;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0.6rem 0 0;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 14ch;
+  }
+
+  h1 span {
+    display: block;
+    background: linear-gradient(90deg, var(--accentColor), #74e0ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .h5__subtext {
+    margin: 0.9rem 0 0;
+    max-width: 60ch;
+    line-height: 1.65;
+  }
+
+  .h5__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .h5__btn {
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-weight: 700;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .h5__btn.primary {
+    background: linear-gradient(135deg, var(--accentColor), #74e0ff);
+    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--accentColor) 74%, #000 26%);
+    box-shadow: 0 17px 36px -23px color-mix(in srgb, var(--accentColor) 70%, #000 30%);
+  }
+
+  .h5__btn.secondary {
+    background: transparent;
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 20%, transparent);
+  }
+
+  .h5__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .h5__lane {
+    margin-top: 1.1rem;
+    display: grid;
+    gap: 0.8rem;
+    grid-template-columns: 1fr;
+  }
+
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    padding: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--textColor) 8%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+  }
+
+  li:first-child {
+    border-top: 0;
+  }
+
+  li > span {
+    min-width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    display: inline-grid;
+    place-items: center;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--accentColor) 18%, transparent);
+    color: var(--accentColor);
+  }
+
+  li h2 {
+    margin: 0.15rem 0 0;
+    font-size: 1rem;
+  }
+
+  li p {
+    margin: 0.33rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  aside {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 16px;
+    padding: 0.95rem;
+    background: color-mix(in srgb, var(--bgColor) 96%, transparent);
+  }
+
+  aside h2 {
+    margin: 0.8rem 0 0;
+    font-size: 1rem;
+  }
+
+  .h5__media {
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+  }
+
+  .h5__media picture,
+  .h5__media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .h5__media img {
+    object-fit: cover;
+  }
+
+  aside ul {
+    margin: 0.68rem 0 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .h5__reveal,
+  .h5__reveal-delay {
+    opacity: 0;
+    animation: h5-fade 0.72s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+
+  .h5__reveal-delay {
+    animation-delay: 0.12s;
+  }
+
+  @keyframes h5-fade {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 920px) {
+    .h5__top {
+      grid-template-columns: 1fr auto;
+    }
+
+    .h5__lane {
+      grid-template-columns: 1.25fr 0.75fr;
+    }
+  }
+</style>

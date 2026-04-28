@@ -1,0 +1,285 @@
+---
+interface HeroCompactButton {
+  label: string;
+  url: string;
+  variant: 'primary' | 'secondary';
+}
+
+interface HeroCompactStat {
+  label: string;
+  value: string;
+}
+
+interface HeroCompactMedia {
+  desktopSrc: string;
+  mobileSrc: string;
+  fallbackSrc: string;
+  alt: string;
+}
+
+interface HeroCompactLaunchpadConfig {
+  eyebrow: string;
+  heading: string;
+  headingAccent: string;
+  subtext: string;
+  proofPoints: string[];
+  buttons: HeroCompactButton[];
+  stats: HeroCompactStat[];
+  media: HeroCompactMedia;
+}
+
+interface Props {
+  config: HeroCompactLaunchpadConfig;
+  data?: Partial<HeroCompactLaunchpadConfig> & {
+    image?: {
+      src?: string;
+      alt?: string;
+    };
+    media?: Partial<HeroCompactMedia> & {
+      src?: string;
+      alt?: string;
+    };
+  };
+}
+
+const { config, data = {} } = Astro.props;
+
+const hero: HeroCompactLaunchpadConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  headingAccent: data.headingAccent ?? config.headingAccent,
+  subtext: data.subtext ?? config.subtext,
+  proofPoints: data.proofPoints ?? config.proofPoints,
+  buttons: data.buttons ?? config.buttons,
+  stats: data.stats ?? config.stats,
+  media: {
+    desktopSrc: data.media?.desktopSrc ?? data.media?.src ?? data.image?.src ?? config.media.desktopSrc ?? config.media.fallbackSrc,
+    mobileSrc: data.media?.mobileSrc ?? data.media?.src ?? data.image?.src ?? config.media.mobileSrc ?? config.media.desktopSrc,
+    fallbackSrc: data.media?.fallbackSrc ?? data.media?.src ?? data.image?.src ?? config.media.fallbackSrc ?? config.media.desktopSrc,
+    alt: data.media?.alt ?? data.image?.alt ?? config.media.alt,
+  },
+};
+---
+
+<section class="h10" aria-labelledby="h10-title">
+  <div class="h10__main h10__reveal">
+    <div>
+      <p>{hero.eyebrow}</p>
+      <h1 id="h10-title">
+        {hero.heading}
+        <span>{hero.headingAccent}</span>
+      </h1>
+      <p class="h10__subtext">{hero.subtext}</p>
+
+      <div class="h10__media">
+        <picture>
+          <source media="(max-width: 767px)" srcset={hero.media.mobileSrc} />
+          <img
+            src={hero.media.desktopSrc}
+            alt={hero.media.alt}
+            loading="lazy"
+            decoding="async"
+            onerror={`this.onerror=null;this.src='${hero.media.fallbackSrc}'`}
+          />
+        </picture>
+      </div>
+
+      <ul class="h10__points">
+        {hero.proofPoints.map((point) => <li>{point}</li>)}
+      </ul>
+    </div>
+
+    <div class="h10__stats">
+      {hero.stats.slice(0, 4).map((stat) => (
+        <article>
+          <strong>{stat.value}</strong>
+          <span>{stat.label}</span>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <div class="h10__actions h10__reveal-delay">
+    {hero.buttons.map((button) => (
+      <a href={button.url} class={`h10__btn ${button.variant}`}>
+        {button.label}
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .h10 {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 4.8rem) 1rem;
+  }
+
+  .h10__main {
+    border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+    padding: clamp(1.1rem, 2.4vw, 1.8rem);
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: 1fr;
+  }
+
+  .h10 p {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accentColor);
+    font-size: 0.79rem;
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0.65rem 0 0;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-size: clamp(1.95rem, 5vw, 3.4rem);
+    max-width: 15ch;
+  }
+
+  h1 span {
+    display: block;
+    background: linear-gradient(90deg, var(--accentColor), #70deff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .h10__subtext {
+    margin: 0.9rem 0 0;
+    max-width: 56ch;
+    line-height: 1.62;
+    text-transform: none;
+    letter-spacing: 0;
+    color: color-mix(in srgb, var(--textColor) 84%, transparent);
+    font-weight: 400;
+    font-size: 1rem;
+  }
+
+  .h10__points {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.48rem;
+  }
+
+  .h10__media {
+    margin-top: 0.95rem;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 16 / 7;
+    border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+  }
+
+  .h10__media picture,
+  .h10__media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .h10__media img {
+    object-fit: cover;
+  }
+
+  .h10__points li::before {
+    content: '•';
+    color: var(--accentColor);
+    margin-right: 0.5rem;
+    font-weight: 700;
+  }
+
+  .h10__stats {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .h10__stats article {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 10px;
+    padding: 0.72rem;
+    background: color-mix(in srgb, var(--bgColor) 97%, transparent);
+  }
+
+  .h10__stats strong {
+    font-size: 1.02rem;
+    color: var(--accentColor);
+  }
+
+  .h10__stats span {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+  }
+
+  .h10__actions {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .h10__btn {
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    font-weight: 700;
+    transition: transform 0.2s ease;
+  }
+
+  .h10__btn.primary {
+    background: linear-gradient(135deg, var(--textColor), color-mix(in srgb, var(--textColor) 80%, var(--accentColor) 20%));
+    color: var(--bgColor);
+    border: 1px solid var(--textColor);
+  }
+
+  .h10__btn.secondary {
+    background: transparent;
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 20%, transparent);
+  }
+
+  .h10__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .h10__reveal,
+  .h10__reveal-delay {
+    opacity: 0;
+    animation: h10-fade 0.68s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+
+  .h10__reveal-delay {
+    animation-delay: 0.1s;
+  }
+
+  @keyframes h10-fade {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 920px) {
+    .h10__main {
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: start;
+    }
+
+    .h10__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      height: 100%;
+    }
+  }
+</style>

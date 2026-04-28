@@ -1,0 +1,169 @@
+---
+interface FeatureButton {
+  label: string;
+  url: string;
+  variant?: 'primary' | 'secondary';
+}
+
+interface FeatureItem {
+  title: string;
+  description: string;
+  kicker?: string;
+  metric?: string;
+}
+
+interface FeaturesConfig {
+  eyebrow: string;
+  heading: string;
+  subtext: string;
+  buttons: FeatureButton[];
+  items: FeatureItem[];
+}
+
+interface Props {
+  config: FeaturesConfig;
+  data?: Partial<FeaturesConfig>;
+}
+
+const { config, data = {} } = Astro.props;
+const section: FeaturesConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  items: data.items ?? config.items,
+};
+---
+
+<section class="feat-grid" aria-labelledby="feat-grid-title">
+  <header>
+    <p>{section.eyebrow}</p>
+    <h2 id="feat-grid-title">{section.heading}</h2>
+    <p class="feat-grid__subtext">{section.subtext}</p>
+  </header>
+
+  <div class="feat-grid__actions">
+    {section.buttons.map((button) => (
+      <a href={button.url} class={`feat-grid__btn ${button.variant ?? 'primary'}`}>{button.label}</a>
+    ))}
+  </div>
+
+  <div class="feat-grid__cards">
+    {section.items.map((item) => (
+      <article>
+        {item.kicker && <small>{item.kicker}</small>}
+        <h3>{item.title}</h3>
+        <p>{item.description}</p>
+        {item.metric && <strong>{item.metric}</strong>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .feat-grid {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 6vw, 4.2rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  header p {
+    margin: 0;
+    color: var(--accentColor);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.65rem 0 0;
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.08;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .feat-grid__subtext {
+    margin-top: 0.85rem;
+    max-width: 62ch;
+    line-height: 1.64;
+    color: color-mix(in srgb, var(--textColor) 84%, transparent);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    font-size: 1rem;
+  }
+
+  .feat-grid__actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .feat-grid__btn {
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 0.72rem 1rem;
+    font-weight: 700;
+  }
+
+  .feat-grid__btn.primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 65%, #7fe4ff 35%));
+  }
+
+  .feat-grid__btn.secondary {
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 16%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 94%, var(--accentColor) 6%);
+  }
+
+  .feat-grid__cards {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.7rem;
+    grid-template-columns: 1fr;
+  }
+
+  .feat-grid__cards article {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 14px;
+    padding: 0.9rem;
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+  }
+
+  small {
+    color: var(--accentColor);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  h3 {
+    margin: 0.35rem 0 0;
+    font-family: var(--fontDisplay, var(--fontFamily));
+    font-size: 1.05rem;
+  }
+
+  article p {
+    margin: 0.35rem 0 0;
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  strong {
+    display: block;
+    margin-top: 0.55rem;
+    color: var(--accentColor);
+    font-size: 0.92rem;
+  }
+
+  @media (min-width: 920px) {
+    .feat-grid__cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

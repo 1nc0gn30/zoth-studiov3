@@ -1,0 +1,115 @@
+---
+import type { TestimonialData } from '../../configs/testimonial';
+
+interface Props {
+  data?: TestimonialData;
+  config?: TestimonialData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: TestimonialData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+const items = Array.isArray(section.items) ? section.items : [];
+---
+
+<section class="testimonial-cards" aria-labelledby="testimonial-cards-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="testimonial-cards-heading">{section.heading}</h2>
+    {section.subtext && <p class="testimonial-cards__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="testimonial-cards__grid">
+    {items.map((item) => (
+      <blockquote class="testimonial-cards__card">
+        <p class="testimonial-cards__quote">"{item.quote}"</p>
+        <footer class="testimonial-cards__author">
+          {item.avatar && <img src={item.avatar} alt={item.avatarAlt || item.author} loading="lazy" />}
+          <div>
+            <strong>{item.author}</strong>
+            <span>{item.role}{item.company && `, ${item.company}`}</span>
+          </div>
+        </footer>
+      </blockquote>
+    ))}
+  </div>
+</section>
+
+<style>
+  .testimonial-cards {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+  .testimonial-cards header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+  .testimonial-cards h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+  .testimonial-cards__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+  .testimonial-cards__grid {
+    margin-top: 1.6rem;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+  .testimonial-cards__card {
+    margin: 0;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bgColor) 96%, white 4%), color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%));
+    padding: 1.4rem;
+  }
+  .testimonial-cards__quote {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.55;
+    font-style: italic;
+    color: color-mix(in srgb, var(--textColor) 92%, transparent);
+  }
+  .testimonial-cards__author {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .testimonial-cards__author img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid color-mix(in srgb, var(--accentColor) 40%, transparent);
+  }
+  .testimonial-cards__author strong {
+    display: block;
+    font-size: 0.9rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+  .testimonial-cards__author span {
+    font-size: 0.78rem;
+    color: color-mix(in srgb, var(--textColor) 68%, transparent);
+  }
+  @media (min-width: 640px) {
+    .testimonial-cards__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+const repeated = items.length > 0 ? [...items, ...items] : [];
+---
+
+<section class="ui-kit" aria-label="Logo ticker showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="ticker-shell">
+    <div class="ticker-track">
+      {repeated.map((item) => (
+        <article class="logo-pill">
+          <strong>{item.title}</strong>
+          {item.meta && <small>{item.meta}</small>}
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .ticker-shell {
+    overflow: hidden;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: color-mix(in srgb, var(--surfaceColor) 90%, white 10%);
+    padding: 0.7rem;
+  }
+
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    gap: 0.6rem;
+    animation: ticker-slide 24s linear infinite;
+  }
+
+  .logo-pill {
+    min-width: 150px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accentColor) 30%, transparent);
+    padding: 0.48rem 0.78rem;
+    background: color-mix(in srgb, var(--bgColor) 88%, white 12%);
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .logo-pill strong {
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .logo-pill small {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--textColor) 68%, transparent);
+  }
+
+  @keyframes ticker-slide {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track {
+      animation: none;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+  }
+</style>

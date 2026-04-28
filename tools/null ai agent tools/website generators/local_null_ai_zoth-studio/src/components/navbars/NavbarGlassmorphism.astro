@@ -1,0 +1,648 @@
+---
+import config from '../../configs/navbars/navbar-glassmorphism.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavChildItem {
+  label: string;
+  url: string;
+}
+
+interface NavItem {
+  label: string;
+  url: string;
+  type?: 'link' | 'button' | 'dropdown';
+  children?: NavChildItem[];
+}
+
+interface NavbarGlassmorphismConfig {
+  homeUrl: string;
+  labels: {
+    menuToggle: string;
+    dropdownPrefix: string;
+  };
+  brand: {
+    name: string;
+    logoUrl: string;
+    fallbackIcon?: string;
+  };
+  menu: NavItem[];
+  settings: {
+    sticky: boolean;
+    stickyOffset?: string;
+  };
+}
+
+interface Props {
+  data?: NavbarGlassmorphismConfig;
+}
+
+const { data } = Astro.props;
+const navData: NavbarGlassmorphismConfig = data ?? (config as NavbarGlassmorphismConfig);
+const pathname = new URL(Astro.request.url).pathname;
+const iconFor = (type?: string) => (type === 'button' ? '✦' : type === 'dropdown' ? '▾' : '→');
+---
+
+<header
+  class:list={['nav-glass', navData.settings.sticky && 'nav-glass--sticky']}
+  data-nav-glass
+>
+  <div class="nav-glass__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-glass__container">
+    
+    <BrandMark
+      href={navData.homeUrl}
+      ariaLabel="Home"
+      brand={navData.brand}
+      brandClass="nav-glass__brand"
+      logoClass="nav-glass__brand-logo"
+      titleClass="nav-glass__brand-title"
+    />
+
+    <nav class="nav-glass__panel" id="nav-glass-panel" aria-label="Primary navigation" data-nav-menu>
+      
+      <div class="nav-glass__mobile-header">
+        <BrandMark
+          href={navData.homeUrl}
+          brand={navData.brand}
+          brandClass="nav-glass__brand"
+          logoClass="nav-glass__brand-logo"
+          titleClass="nav-glass__brand-title"
+        />
+      </div>
+
+      <ul class="nav-glass__list">
+        {navData.menu.map((item) => (
+          <li class="nav-glass__item">
+            {item.type === 'dropdown' ? (
+              <div class="nav-glass__dropdown" data-dropdown>
+                <button class="nav-glass__dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                  <span class="nav-glass__item-icon" aria-hidden="true">{iconFor(item.type)}</span>
+                  <span>{item.label}</span>
+                  <svg class="nav-glass__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <ul class="nav-glass__dropdown-menu">
+                  {(item.children ?? [{ label: `${navData.labels.dropdownPrefix} ${item.label}`, url: item.url }]).map((child) => (
+                    <li>
+                      <a
+                        href={child.url}
+                        class:list={[
+                          'nav-glass__dropdown-link',
+                          pathname === child.url && 'nav-glass__dropdown-link--active',
+                        ]}
+                      >
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <a
+                href={item.url}
+                class:list={[
+                  item.type === 'button' ? 'nav-glass__cta' : 'nav-glass__link',
+                  pathname === item.url && item.type !== 'button' && 'nav-glass__link--active',
+                ]}
+              >
+                <span class="nav-glass__item-icon" aria-hidden="true">{iconFor(item.type)}</span>
+                {item.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <button
+      class="nav-glass__toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-glass-panel"
+      aria-label={navData.labels.menuToggle}
+      data-nav-toggle
+    >
+      <span class="nav-glass__toggle-box">
+        <span class="nav-glass__toggle-inner"></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-glass]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    const dropdowns = root.querySelectorAll<HTMLElement>('[data-dropdown]');
+
+    if (!toggle || !panel || !overlay) return;
+
+    const closeMenu = () => {
+      panel.classList.remove('nav-glass__panel--open');
+      overlay.classList.remove('nav-glass__overlay--visible');
+      toggle.classList.remove('nav-glass__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      
+      // Close all dropdowns
+      dropdowns.forEach((d) => {
+        const btn = d.querySelector('.nav-glass__dropdown-toggle');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      });
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-glass__panel--open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        panel.classList.add('nav-glass__panel--open');
+        overlay.classList.add('nav-glass__overlay--visible');
+        toggle.classList.add('nav-glass__toggle--active');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    overlay.addEventListener('click', closeMenu);
+
+    // Dropdown Logic
+    dropdowns.forEach((dropdown) => {
+      const btn = dropdown.querySelector('.nav-glass__dropdown-toggle');
+      if (!btn) return;
+      
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        
+        // Close others
+        dropdowns.forEach((other) => {
+          if (other !== dropdown) {
+            const otherBtn = other.querySelector('.nav-glass__dropdown-toggle');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        
+        btn.setAttribute('aria-expanded', String(!isExpanded));
+      });
+    });
+
+    // Close dropdowns on outside click (desktop)
+    document.addEventListener('click', (event) => {
+      const target = event.target as Node;
+      let clickedInsideDropdown = false;
+      dropdowns.forEach(d => {
+        if (d.contains(target)) clickedInsideDropdown = true;
+      });
+      if (!clickedInsideDropdown && !toggle.contains(target)) {
+        dropdowns.forEach(d => {
+          const btn = d.querySelector('.nav-glass__dropdown-toggle');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 992) closeMenu();
+    });
+  });
+</script>
+
+<style define:vars={{ navGlassStickyOffset: navData.settings.stickyOffset ?? '1rem' }}>
+  /* --- Box Sizing Reset to prevent overflow --- */
+  .nav-glass, 
+  .nav-glass *, 
+  .nav-glass *::before, 
+  .nav-glass *::after {
+    box-sizing: border-box;
+  }
+
+  /* --- Base & Variables --- */
+  .nav-glass {
+    --nav-glass-bg: color-mix(in srgb, var(--bg, #fff) 60%, transparent);
+    --nav-border: color-mix(in srgb, var(--text, #111) 10%, transparent);
+    --nav-border-light: color-mix(in srgb, #ffffff 15%, transparent);
+    --nav-hover: color-mix(in srgb, var(--text, #111) 6%, transparent);
+    --nav-shadow: 0 24px 40px -12px color-mix(in srgb, var(--text, #111) 15%, transparent);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    padding-top: var(--navGlassStickyOffset);
+    pointer-events: none; /* Let clicks pass through empty space outside the pill */
+  }
+
+  .nav-glass--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  /* --- Glass Container --- */
+  .nav-glass__container {
+    position: relative; /* Setup for the pseudo element */
+    pointer-events: auto;
+    width: min(82rem, 92%);
+    margin-inline: auto;
+    padding: 0.65rem 0.65rem 0.65rem 1.25rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+
+  /* FIX: The pseudo element handles the blur filter.
+    If applied directly to the container, it breaks position: fixed for the mobile drawer!
+  */
+  .nav-glass__container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1; /* Puts it behind the content */
+    border-radius: inherit;
+    background: var(--nav-glass-bg);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--nav-border);
+    box-shadow: 
+      var(--nav-shadow),
+      inset 0 1px 0 0 var(--nav-border-light);
+    pointer-events: none;
+  }
+
+  /* --- Branding --- */
+  .nav-glass__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text, #111);
+    z-index: 102; /* Stay above mobile overlay */
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-glass__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-glass__brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    object-fit: contain;
+    box-shadow: 0 4px 10px -2px color-mix(in srgb, var(--text, #111) 20%, transparent);
+  }
+
+  .nav-glass__brand-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+  }
+
+  /* --- Desktop Links Panel --- */
+  .nav-glass__panel {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-glass__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+  }
+
+  .nav-glass__item {
+    position: relative;
+    display: flex;
+  }
+
+  /* Standard Links */
+  .nav-glass__link,
+  .nav-glass__dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: color-mix(in srgb, var(--text, #111) 85%, transparent);
+    background: transparent;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .nav-glass__item-icon {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .nav-glass__link:hover,
+  .nav-glass__dropdown-toggle:hover {
+    background: var(--nav-hover);
+    color: var(--accent, #0055ff);
+  }
+
+  .nav-glass__link--active {
+    background: color-mix(in srgb, var(--accent, #0055ff) 10%, transparent);
+    color: var(--accent, #0055ff);
+  }
+
+  /* --- Dropdown Styling --- */
+  .nav-glass__chevron {
+    margin-left: 2px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0.7;
+  }
+
+  .nav-glass__dropdown-toggle[aria-expanded="true"] .nav-glass__chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-glass__dropdown-toggle[aria-expanded="true"] {
+    background: var(--nav-hover);
+    color: var(--text, #111);
+  }
+
+  .nav-glass__dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    min-width: 200px;
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem;
+    border-radius: 16px;
+    background: var(--bg, #fff);
+    border: 1px solid var(--nav-border);
+    box-shadow: var(--nav-shadow);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+  }
+
+  .nav-glass__dropdown-toggle[aria-expanded="true"] + .nav-glass__dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .nav-glass__dropdown-link {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    color: var(--text, #111);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+  }
+
+  .nav-glass__dropdown-link:hover,
+  .nav-glass__dropdown-link--active {
+    background: var(--nav-hover);
+    color: var(--accent, #0055ff);
+  }
+
+  /* --- CTA Button --- */
+  .nav-glass__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--bg, #fff);
+    background: var(--text, #111);
+    padding: 0.65rem 1.4rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-left: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--text, #111) 40%, transparent);
+    border: 1px solid transparent;
+  }
+
+  .nav-glass__cta:hover {
+    background: var(--accent, #0055ff);
+    color: var(--bg, #fff);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--accent, #0055ff) 60%, transparent);
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-glass__toggle {
+    display: none;
+    background: color-mix(in srgb, var(--text, #111) 4%, transparent);
+    border: 1px solid var(--nav-border);
+    cursor: pointer;
+    padding: 0.6rem;
+    border-radius: 12px;
+    z-index: 102;
+    transition: background 0.2s ease;
+  }
+
+  .nav-glass__toggle:hover {
+    background: color-mix(in srgb, var(--text, #111) 8%, transparent);
+  }
+
+  .nav-glass__toggle-box {
+    width: 22px;
+    height: 18px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-glass__toggle-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+  }
+
+  .nav-glass__toggle-inner, 
+  .nav-glass__toggle-inner::before, 
+  .nav-glass__toggle-inner::after {
+    width: 22px;
+    height: 2px;
+    background-color: var(--text, #111);
+    position: absolute;
+    transition-property: transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+    border-radius: 4px;
+  }
+
+  .nav-glass__toggle-inner::before, 
+  .nav-glass__toggle-inner::after {
+    content: "";
+    display: block;
+  }
+
+  .nav-glass__toggle-inner::before { top: -7px; }
+  .nav-glass__toggle-inner::after { bottom: -7px; }
+
+  .nav-glass__toggle--active .nav-glass__toggle-inner {
+    transform: rotate(45deg);
+  }
+  .nav-glass__toggle--active .nav-glass__toggle-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .nav-glass__toggle--active .nav-glass__toggle-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  .nav-glass__mobile-header {
+    display: none;
+  }
+
+  .nav-glass__overlay {
+    display: none;
+  }
+
+  /* ================================= */
+  /* MOBILE — ≤ 991px                  */
+  /* ================================= */
+  @media (max-width: 991px) {
+    .nav-glass__container {
+      padding: 0.65rem 0.65rem 0.65rem 1.25rem;
+    }
+
+    .nav-glass__toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Full Screen Dark Overlay */
+    .nav-glass__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--bg, #fff) 60%, black);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-glass__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Slide-out Sidebar */
+    .nav-glass__panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(85vw, 380px);
+      height: 100dvh;
+      background: var(--bg, #fff);
+      border-left: 1px solid var(--nav-border);
+      z-index: 101; /* Above the container */
+      display: flex;
+      flex-direction: column;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      pointer-events: auto;
+      box-shadow: -20px 0 40px rgba(0,0,0,0.1);
+    }
+
+    .nav-glass__panel--open {
+      right: 0;
+    }
+
+    .nav-glass__mobile-header {
+      display: flex;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--nav-border);
+      background: var(--nav-glass-bg);
+      margin-bottom: 1rem;
+    }
+
+    /* Mobile Link Adjustments */
+    .nav-glass__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.25rem;
+      padding: 0 1.25rem 2rem;
+    }
+
+    .nav-glass__item {
+      width: 100%;
+      flex-direction: column;
+    }
+
+    /* Replaced ugly bottom borders with clean rounded hover states */
+    .nav-glass__link,
+    .nav-glass__dropdown-toggle {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      font-size: 1.05rem;
+      border-radius: 12px;
+      border: none;
+      justify-content: space-between;
+    }
+    
+    .nav-glass__dropdown-toggle[aria-expanded="true"] {
+      background: transparent;
+    }
+
+    .nav-glass__cta {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 1.5rem;
+      padding: 1.15rem;
+      font-size: 1.1rem;
+      border-radius: 12px;
+    }
+
+    /* Clean left-border indent mobile dropdown */
+    .nav-glass__dropdown-menu {
+      position: static;
+      transform: none;
+      width: 100%;
+      box-shadow: none;
+      border: none;
+      background: transparent;
+      padding: 0 0 0 1rem;
+      margin: 0.25rem 0 0.5rem 0.75rem;
+      border-left: 2px solid var(--nav-border);
+      border-radius: 0;
+      display: none;
+    }
+
+    .nav-glass__dropdown-toggle[aria-expanded="true"] + .nav-glass__dropdown-menu {
+      display: block;
+      opacity: 1;
+      visibility: visible;
+      transform: none; /* override desktop transform */
+    }
+
+    .nav-glass__dropdown-link {
+      font-size: 0.95rem;
+      padding: 0.65rem 0.85rem;
+      color: color-mix(in srgb, var(--text, #111) 75%, transparent);
+    }
+    
+    .nav-glass__dropdown-link:hover,
+    .nav-glass__dropdown-link--active {
+      background: color-mix(in srgb, var(--text, #111) 6%, transparent);
+      color: var(--text, #111);
+    }
+  }
+</style>

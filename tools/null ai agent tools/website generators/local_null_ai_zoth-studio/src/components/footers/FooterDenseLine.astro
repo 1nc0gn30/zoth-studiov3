@@ -1,0 +1,122 @@
+---
+import footerDenseLineConfig from '../../configs/footers/footer-dense-line.json';
+
+interface FooterSocialItem {
+  platform: string;
+  url: string;
+}
+
+interface FooterDenseLineConfig {
+  socialNavAria: string;
+  copyright: string;
+  showStatus: boolean;
+  statusText: string;
+  divider: string;
+  socials: FooterSocialItem[];
+}
+
+interface Props {
+  data?: Partial<FooterDenseLineConfig>;
+}
+
+const { data } = Astro.props;
+const baseConfig = footerDenseLineConfig as FooterDenseLineConfig;
+const footerData: FooterDenseLineConfig = {
+  ...baseConfig,
+  ...data,
+  socials: data?.socials ?? baseConfig.socials,
+};
+---
+<footer class="f9" role="contentinfo">
+  <div class="line">
+    <p>{footerData.copyright}</p>
+    <span class="divider" aria-hidden="true">{footerData.divider}</span>
+    {footerData.showStatus && (
+      <>
+        <p class="status">{footerData.statusText}</p>
+        <span class="divider" aria-hidden="true">{footerData.divider}</span>
+      </>
+    )}
+    <nav aria-label={footerData.socialNavAria}>
+      <ul>
+        {footerData.socials.map((s, index) => (
+          <li>
+            {index > 0 && <span class="divider" aria-hidden="true">{footerData.divider}</span>}
+            <a href={s.url} target="_blank" rel="noreferrer noopener">{s.platform}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .f9 {
+    background: var(--bg);
+    color: var(--text);
+    border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  .line {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.9rem 1.2rem;
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+  p {
+    margin: 0;
+    color: color-mix(in srgb, var(--text) 76%, white 24%);
+  }
+  .divider {
+    opacity: 0.42;
+  }
+  .status {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+  }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  a {
+    color: color-mix(in srgb, var(--text) 88%, white 12%);
+    text-decoration: none;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    padding: 0.25rem 0.58rem;
+    transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  }
+  a:hover,
+  a:focus-visible {
+    outline: none;
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 72%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  @media (max-width: 640px) {
+    .line {
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    nav ul {
+      justify-content: center;
+    }
+    li .divider {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,195 @@
+---
+import themeConfig from '../../configs/theme.json';
+import footerDefaultConfig from '../../configs/footers/footer-default.json';
+
+interface FooterLinkItem {
+  label: string;
+  url: string;
+}
+
+interface FooterColumn {
+  title: string;
+  links: FooterLinkItem[];
+}
+
+interface FooterSocialItem {
+  platform: string;
+  url: string;
+}
+
+interface FooterStatus {
+  label: string;
+  modeSuffix: string;
+  buildLabel: string;
+}
+
+interface FooterBrand {
+  name: string;
+  tagline: string;
+  ariaLabel: string;
+}
+
+interface FooterDefaultConfig {
+  brand: FooterBrand;
+  socialNavAria: string;
+  copyright: string;
+  showStatus: boolean;
+  status: FooterStatus;
+  columns: FooterColumn[];
+  socials: FooterSocialItem[];
+}
+
+interface Props {
+  weight: number;
+  data?: Partial<FooterDefaultConfig>;
+}
+
+const { weight, data } = Astro.props;
+const baseConfig = footerDefaultConfig as FooterDefaultConfig;
+const footerData: FooterDefaultConfig = {
+  ...baseConfig,
+  ...data,
+  brand: { ...baseConfig.brand, ...(data?.brand ?? {}) },
+  status: { ...baseConfig.status, ...(data?.status ?? {}) },
+  columns: data?.columns ?? baseConfig.columns,
+  socials: data?.socials ?? baseConfig.socials,
+};
+---
+<footer class="score-footer">
+  <div class="footer-main">
+    <section class="brand" aria-label={footerData.brand.ariaLabel}>
+      <p class="company">{footerData.brand.name}</p>
+      <p class="tagline">{footerData.brand.tagline}</p>
+      <ul class="socials" aria-label={footerData.socialNavAria}>
+        {footerData.socials.map((social) => (
+          <li>
+            <a href={social.url} target="_blank" rel="noreferrer noopener">
+              {social.platform}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+    <div class="columns">
+      {footerData.columns.map((column) => (
+        <nav aria-label={column.title}>
+          <p class="column-title">{column.title}</p>
+          <ul>
+            {column.links.map((link) => (
+              <li><a href={link.url}>{link.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>{footerData.copyright}</div>
+    {footerData.showStatus && (
+      <div class="status">
+        {footerData.status.label}: {themeConfig.activeTheme.toUpperCase()}{footerData.status.modeSuffix}
+        {' // '}
+        {footerData.status.buildLabel}: {weight}PTS
+      </div>
+    )}
+  </div>
+</footer>
+
+<style>
+  .score-footer {
+    margin-top: 4rem;
+    padding: 2.2rem 1.25rem 1.25rem;
+    border-top: 1px solid color-mix(in srgb, var(--accentColor) 40%, transparent);
+    background:
+      radial-gradient(circle at 5% 10%, color-mix(in srgb, var(--accentColor) 14%, transparent), transparent 42%),
+      radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--accentColor) 10%, transparent), transparent 34%),
+      color-mix(in srgb, var(--bgColor) 90%, black 10%);
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+  .footer-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    gap: 1.8rem;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+    padding-bottom: 1.5rem;
+  }
+  .brand .company {
+    margin: 0;
+    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--textColor) 88%, white 12%);
+  }
+  .brand .tagline {
+    margin: 0.55rem 0 1rem;
+    max-width: 34ch;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--textColor) 76%, white 24%);
+  }
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+  .column-title {
+    margin: 0 0 0.55rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--textColor) 68%, white 32%);
+  }
+  nav ul,
+  .socials {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  nav a,
+  .socials a {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: color-mix(in srgb, var(--textColor) 85%, white 15%);
+    border: 1px solid color-mix(in srgb, var(--accentColor) 26%, transparent);
+    border-radius: 999px;
+    padding: 0.34rem 0.68rem;
+    transition: transform 140ms ease, color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  }
+  nav a:hover,
+  nav a:focus-visible,
+  .socials a:hover,
+  .socials a:focus-visible {
+    outline: none;
+    transform: translateY(-1px);
+    color: var(--accentColor);
+    border-color: color-mix(in srgb, var(--accentColor) 72%, transparent);
+    background: color-mix(in srgb, var(--accentColor) 17%, transparent);
+  }
+  .footer-bottom {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-top: 1rem;
+    border-top: 1px dashed color-mix(in srgb, var(--accentColor) 45%, transparent);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.2rem;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: color-mix(in srgb, var(--textColor) 70%, white 30%);
+  }
+  .status { font-weight: 600; }
+  @media (max-width: 800px) {
+    .footer-main,
+    .columns {
+      grid-template-columns: 1fr;
+    }
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

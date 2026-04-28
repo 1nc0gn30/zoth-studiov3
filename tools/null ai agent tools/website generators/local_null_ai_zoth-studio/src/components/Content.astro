@@ -1,0 +1,210 @@
+---
+import type { ContentColumn, ContentData, ContentStat } from '../configs/content';
+
+interface Props {
+  data?: ContentData;
+}
+
+const { data } = Astro.props;
+const paragraphs = Array.isArray(data?.paragraphs) ? data.paragraphs : [];
+const columns: ContentColumn[] = Array.isArray(data?.columns) ? data.columns : [];
+const stats: ContentStat[] = Array.isArray(data?.stats) ? data.stats : [];
+---
+
+<section class="content-shell" aria-labelledby="content-title">
+  <div class="content-shell__lead">
+    <div class="content-shell__header">
+      {data?.eyebrow && <p class="content-shell__eyebrow">{data.eyebrow}</p>}
+      {data?.heading && <h2 id="content-title">{data.heading}</h2>}
+      {data?.intro && <p class="content-shell__intro">{data.intro}</p>}
+    </div>
+
+    {(paragraphs.length > 0 || data?.cta) && (
+      <div class="content-shell__body">
+        {paragraphs.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+
+        {data?.cta && (
+          <a href={data.cta.url} class="content-shell__cta">
+            {data.cta.label}
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+
+  {(columns.length > 0 || stats.length > 0) && (
+    <div class="content-shell__grid">
+      {columns.length > 0 && (
+        <div class="content-shell__columns">
+          {columns.map((column) => (
+            <article class="content-shell__card">
+              {column.eyebrow && <p class="content-shell__card-eyebrow">{column.eyebrow}</p>}
+              <h3>{column.title}</h3>
+              <p>{column.text}</p>
+              {column.items && column.items.length > 0 && (
+                <ul>
+                  {column.items.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+
+      {stats.length > 0 && (
+        <aside class="content-shell__stats">
+          {stats.map((stat) => (
+            <div class="content-shell__stat">
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </div>
+          ))}
+        </aside>
+      )}
+    </div>
+  )}
+</section>
+
+<style>
+  .content-shell {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.4rem, 6vw, 5rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .content-shell__lead {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .content-shell__eyebrow,
+  .content-shell__card-eyebrow {
+    margin: 0;
+    color: var(--accentColor);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .content-shell h2,
+  .content-shell h3,
+  .content-shell strong {
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .content-shell h2 {
+    margin: 0.65rem 0 0;
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.05;
+  }
+
+  .content-shell__intro,
+  .content-shell__body p,
+  .content-shell__card p,
+  .content-shell__card li,
+  .content-shell__stat span {
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+    line-height: 1.65;
+  }
+
+  .content-shell__body {
+    display: grid;
+    gap: 0.9rem;
+    max-width: 46rem;
+  }
+
+  .content-shell__body p,
+  .content-shell__card p {
+    margin: 0;
+  }
+
+  .content-shell__cta {
+    width: fit-content;
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 0.78rem 1.1rem;
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 62%, black 38%));
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .content-shell__grid {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .content-shell__columns {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .content-shell__card,
+  .content-shell__stat {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 20px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--bgColor) 96%, white 4%), color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%));
+    box-shadow: 0 24px 44px -34px color-mix(in srgb, var(--accentColor) 55%, black 45%);
+  }
+
+  .content-shell__card {
+    padding: 1rem;
+  }
+
+  .content-shell__card h3 {
+    margin: 0.45rem 0 0;
+    font-size: 1.2rem;
+  }
+
+  .content-shell__card ul {
+    margin: 0.75rem 0 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .content-shell__stats {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .content-shell__stat {
+    padding: 1rem;
+  }
+
+  .content-shell__stat strong {
+    display: block;
+    font-size: clamp(1.35rem, 4vw, 2rem);
+    color: var(--accentColor);
+  }
+
+  .content-shell__stat span {
+    display: block;
+    margin-top: 0.35rem;
+  }
+
+  @media (min-width: 860px) {
+    .content-shell__lead {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      align-items: start;
+    }
+
+    .content-shell__columns {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 980px) {
+    .content-shell__grid {
+      grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr);
+      align-items: start;
+    }
+  }
+</style>

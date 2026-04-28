@@ -1,0 +1,411 @@
+---
+import config from '../../configs/navbars/navbar-icon-driven.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavItem { label: string; url: string; type?: 'link' | 'button' | 'dropdown' }
+interface NavData {
+  homeUrl?: string;
+  labels?: { menuToggle?: string };
+  brand?: { name?: string; logoUrl?: string; fallbackIcon?: string };
+  menu?: NavItem[];
+  settings?: { sticky?: boolean };
+}
+interface Props { data?: NavData }
+
+const { data } = Astro.props;
+const navData: NavData = data ?? (config as NavData);
+
+// Upgraded SVG Icon Mapper
+const getIconSvg = (type?: string) => {
+  if (type === 'button') {
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>`;
+  }
+  if (type === 'dropdown') {
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>`;
+  }
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>`;
+};
+---
+
+<header class:list={['nav-icon', navData.settings?.sticky && 'nav-icon--sticky']} data-nav-icon>
+  <div class="nav-icon__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-icon__shell">
+    
+    <BrandMark
+      href={navData.homeUrl ?? '/'}
+      brand={navData.brand}
+      brandClass="nav-icon__brand"
+      logoClass="nav-icon__brand-logo"
+      titleClass="nav-icon__brand-title"
+    />
+
+    <nav class="nav-icon__panel" aria-label="Primary navigation" data-nav-menu>
+      
+      <div class="nav-icon__mobile-header">
+        {navData.brand?.name && <span class="nav-icon__brand-title">{navData.brand.name}</span>}
+      </div>
+
+      <ul class="nav-icon__list">
+        {(navData.menu ?? []).map((item) => (
+          <li class="nav-icon__item-wrapper">
+            <a class:list={['nav-icon__link', item.type === 'button' && 'nav-icon__link--cta']} href={item.url}>
+              <span class="nav-icon__icon-box" set:html={getIconSvg(item.type)}></span>
+              <span class="nav-icon__label">{item.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <button class="nav-icon__toggle" type="button" aria-expanded="false" aria-label={navData.labels?.menuToggle ?? 'Open menu'} data-nav-toggle>
+      <span class="nav-icon__toggle-box">
+        <span class="nav-icon__toggle-inner"></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-icon]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    
+    if (!toggle || !panel || !overlay) return;
+
+    const closeMenu = () => {
+      panel.classList.remove('nav-icon__panel--open');
+      overlay.classList.remove('nav-icon__overlay--visible');
+      toggle.classList.remove('nav-icon__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-icon__panel--open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        panel.classList.add('nav-icon__panel--open');
+        overlay.classList.add('nav-icon__overlay--visible');
+        toggle.classList.add('nav-icon__toggle--active');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    overlay.addEventListener('click', closeMenu);
+    
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 992) closeMenu();
+    });
+  });
+</script>
+
+<style>
+  /* --- Base & Variables --- */
+  .nav-icon {
+    --nav-bg: color-mix(in srgb, var(--bg) 96%, var(--text) 4%);
+    --nav-border: color-mix(in srgb, var(--text) 10%, transparent);
+    --nav-hover-bg: color-mix(in srgb, var(--text) 5%, transparent);
+    --icon-box-bg: color-mix(in srgb, var(--text) 8%, transparent);
+    --icon-box-hover: color-mix(in srgb, var(--accent) 15%, transparent);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--nav-border);
+  }
+
+  .nav-icon--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-icon__shell {
+    max-width: 84rem;
+    margin-inline: auto;
+    padding: 0.85rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  /* --- Branding --- */
+  .nav-icon__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text);
+    z-index: 102; /* Above mobile overlay */
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-icon__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-icon__brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+
+  .nav-icon__brand-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* --- Navigation Panel --- */
+  .nav-icon__panel {
+    margin-left: auto;
+  }
+
+  .nav-icon__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-icon__item-wrapper {
+    display: flex;
+  }
+
+  /* Standard Icon Links */
+  .nav-icon__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: color-mix(in srgb, var(--text) 90%, transparent);
+    padding: 0.4rem 0.8rem 0.4rem 0.4rem; /* Asymmetric padding to wrap the icon box tightly */
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .nav-icon__icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--icon-box-bg);
+    color: color-mix(in srgb, var(--text) 70%, transparent);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Hover States */
+  .nav-icon__link:hover {
+    background: var(--nav-hover-bg);
+    color: var(--text);
+  }
+
+  .nav-icon__link:hover .nav-icon__icon-box {
+    background: var(--icon-box-hover);
+    color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  /* --- CTA Button --- */
+  .nav-icon__link--cta {
+    background: var(--text);
+    color: var(--bg);
+    padding-right: 1.1rem;
+    margin-left: 0.5rem;
+  }
+
+  .nav-icon__link--cta .nav-icon__icon-box {
+    background: color-mix(in srgb, var(--bg) 20%, transparent);
+    color: var(--bg);
+  }
+
+  .nav-icon__link--cta:hover {
+    background: var(--accent);
+    color: var(--bg);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+
+  .nav-icon__link--cta:hover .nav-icon__icon-box {
+    background: color-mix(in srgb, var(--bg) 30%, transparent);
+    color: var(--bg);
+    transform: scale(1); /* Disable scale on CTA for cleaner look */
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-icon__toggle {
+    display: none;
+    background: color-mix(in srgb, var(--text) 6%, transparent);
+    border: 1px solid var(--nav-border);
+    cursor: pointer;
+    padding: 0.6rem;
+    border-radius: 10px;
+    z-index: 102;
+    transition: background 0.2s ease;
+  }
+
+  .nav-icon__toggle:hover {
+    background: color-mix(in srgb, var(--text) 10%, transparent);
+  }
+
+  .nav-icon__toggle-box {
+    width: 22px;
+    height: 18px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-icon__toggle-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+  }
+
+  .nav-icon__toggle-inner, 
+  .nav-icon__toggle-inner::before, 
+  .nav-icon__toggle-inner::after {
+    width: 22px;
+    height: 2px;
+    background-color: var(--text);
+    position: absolute;
+    transition-property: transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+    border-radius: 4px;
+  }
+
+  .nav-icon__toggle-inner::before, 
+  .nav-icon__toggle-inner::after {
+    content: "";
+    display: block;
+  }
+
+  .nav-icon__toggle-inner::before { top: -7px; }
+  .nav-icon__toggle-inner::after { bottom: -7px; }
+
+  /* Hamburger Active Animation */
+  .nav-icon__toggle--active .nav-icon__toggle-inner {
+    transform: rotate(45deg);
+  }
+  .nav-icon__toggle--active .nav-icon__toggle-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .nav-icon__toggle--active .nav-icon__toggle-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  .nav-icon__mobile-header {
+    display: none;
+  }
+
+  .nav-icon__overlay {
+    display: none;
+  }
+
+  /* --- Responsive Breakpoint (Tablet/Mobile) --- */
+  @media (max-width: 991px) {
+    .nav-icon__shell {
+      padding: 1rem 1.25rem;
+    }
+
+    .nav-icon__toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Full Screen Dark Overlay */
+    .nav-icon__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--text) 25%, transparent);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-icon__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Slide-out Sidebar */
+    .nav-icon__panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(85vw, 360px);
+      height: 100dvh;
+      background: var(--bg);
+      border-left: 1px solid var(--nav-border);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      pointer-events: auto;
+      box-shadow: -20px 0 40px rgba(0,0,0,0.1);
+    }
+
+    .nav-icon__panel--open {
+      right: 0;
+    }
+
+    .nav-icon__mobile-header {
+      display: flex;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--nav-border);
+      background: var(--nav-bg);
+      margin-bottom: 1rem;
+    }
+
+    /* Mobile Link Adjustments */
+    .nav-icon__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+      padding-inline: 1rem;
+    }
+
+    .nav-icon__item-wrapper {
+      width: 100%;
+    }
+
+    .nav-icon__link {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1.15rem;
+      border-radius: 12px;
+    }
+    
+    .nav-icon__icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    .nav-icon__link--cta {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 1.5rem;
+      padding-right: 1rem;
+    }
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+interface SocialItem {
+  label: string;
+  url: string;
+  handle?: string;
+  description?: string;
+  platform?: string;
+}
+
+interface SocialLinksConfig {
+  eyebrow: string;
+  heading: string;
+  subtext: string;
+  links: SocialItem[];
+}
+
+interface Props {
+  config: SocialLinksConfig;
+  data?: Partial<SocialLinksConfig>;
+}
+
+const { config, data = {} } = Astro.props;
+const section: SocialLinksConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  links: data.links ?? config.links,
+};
+---
+
+<section class="social-compact" aria-labelledby="social-compact-title">
+  <header>
+    <p>{section.eyebrow}</p>
+    <h2 id="social-compact-title">{section.heading}</h2>
+    <p class="social-compact__subtext">{section.subtext}</p>
+  </header>
+
+  <div class="social-compact__bar">
+    {section.links.map((link) => (
+      <a href={link.url} target="_blank" rel="noreferrer" class="social-compact__chip">
+        <strong>{link.label}</strong>
+        {link.handle && <span>{link.handle}</span>}
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .social-compact {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(1.9rem, 5vw, 3.2rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  header p {
+    margin: 0;
+    color: var(--accentColor);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.5rem, 4vw, 2.3rem);
+    line-height: 1.08;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .social-compact__subtext {
+    margin: 0.72rem 0 0;
+    line-height: 1.58;
+    color: color-mix(in srgb, var(--textColor) 83%, transparent);
+  }
+
+  .social-compact__bar {
+    margin-top: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+    padding: 0.35rem;
+    display: grid;
+    gap: 0.35rem;
+    grid-template-columns: 1fr;
+  }
+
+  .social-compact__chip {
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--textColor);
+    padding: 0.6rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--textColor) 8%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 97%, transparent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .social-compact__chip strong {
+    font-family: var(--fontDisplay, var(--fontFamily));
+    font-size: 0.96rem;
+  }
+
+  .social-compact__chip span {
+    color: var(--accentColor);
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  @media (min-width: 860px) {
+    .social-compact__bar {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

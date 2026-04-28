@@ -1,0 +1,153 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+const notes = Array.isArray(resolved.notes) ? resolved.notes : [];
+---
+
+<section class="ui-kit" aria-label="Layout orchestration showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="timeline">
+    {items.map((item, index) => (
+      <article class="step">
+        <div class="step-index">0{index + 1}</div>
+        <div class="step-body">
+          <div class="step-head">
+            <h3>{item.title}</h3>
+            {item.badge && <small>{item.badge}</small>}
+          </div>
+          {item.description && <p>{item.description}</p>}
+          {item.meta && <strong>{item.meta}</strong>}
+        </div>
+      </article>
+    ))}
+  </div>
+
+  {notes.length > 0 && (
+    <ul class="notes">
+      {notes.map((note) => (
+        <li>{note}</li>
+      ))}
+    </ul>
+  )}
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .timeline {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.7rem;
+    padding: 0.9rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: color-mix(in srgb, var(--surfaceColor) 90%, white 10%);
+  }
+
+  .step-index {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: var(--accentColor);
+    background: color-mix(in srgb, var(--accentColor) 18%, transparent);
+  }
+
+  .step-head {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .step h3 {
+    margin: 0;
+    font-size: 1.03rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .step small {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  .step p {
+    margin: 0.45rem 0 0;
+    color: color-mix(in srgb, var(--textColor) 76%, transparent);
+  }
+
+  .step strong {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--textColor) 68%, transparent);
+  }
+
+  .notes {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.32rem;
+    color: color-mix(in srgb, var(--textColor) 75%, transparent);
+  }
+
+  @media (min-width: 980px) {
+    .timeline {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,281 @@
+---
+interface HeroMetricButton {
+  label: string;
+  url: string;
+  variant: 'primary' | 'secondary';
+}
+
+interface HeroMetricStat {
+  label: string;
+  value: string;
+}
+
+interface HeroMetricMedia {
+  desktopSrc: string;
+  mobileSrc: string;
+  fallbackSrc: string;
+  alt: string;
+}
+
+interface HeroMetricGridConfig {
+  eyebrow: string;
+  heading: string;
+  headingAccent: string;
+  subtext: string;
+  buttons: HeroMetricButton[];
+  stats: HeroMetricStat[];
+  pointsHeading: string;
+  proofPoints: string[];
+  media: HeroMetricMedia;
+}
+
+interface Props {
+  config: HeroMetricGridConfig;
+  data?: Partial<HeroMetricGridConfig> & {
+    image?: {
+      src?: string;
+      alt?: string;
+    };
+    media?: Partial<HeroMetricMedia> & {
+      src?: string;
+      alt?: string;
+    };
+  };
+}
+
+const { config, data = {} } = Astro.props;
+
+const hero: HeroMetricGridConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  headingAccent: data.headingAccent ?? config.headingAccent,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  stats: data.stats ?? config.stats,
+  pointsHeading: data.pointsHeading ?? config.pointsHeading,
+  proofPoints: data.proofPoints ?? config.proofPoints,
+  media: {
+    desktopSrc: data.media?.desktopSrc ?? data.media?.src ?? data.image?.src ?? config.media.desktopSrc ?? config.media.fallbackSrc,
+    mobileSrc: data.media?.mobileSrc ?? data.media?.src ?? data.image?.src ?? config.media.mobileSrc ?? config.media.desktopSrc,
+    fallbackSrc: data.media?.fallbackSrc ?? data.media?.src ?? data.image?.src ?? config.media.fallbackSrc ?? config.media.desktopSrc,
+    alt: data.media?.alt ?? data.image?.alt ?? config.media.alt,
+  },
+};
+---
+
+<section class="h4" aria-labelledby="h4-title">
+  <header class="h4__reveal">
+    <p>{hero.eyebrow}</p>
+    <h1 id="h4-title">
+      {hero.heading}
+      <span>{hero.headingAccent}</span>
+    </h1>
+    <p class="h4__subtext">{hero.subtext}</p>
+  </header>
+
+  <div class="h4__actions h4__reveal">
+    {hero.buttons.map((button) => (
+      <a href={button.url} class={`h4__btn ${button.variant}`}>
+        {button.label}
+      </a>
+    ))}
+  </div>
+
+  <div class="h4__body">
+    <div class="h4__stats" aria-label="Performance stats">
+      {hero.stats.slice(0, 6).map((stat) => (
+        <article>
+          <strong>{stat.value}</strong>
+          <span>{stat.label}</span>
+        </article>
+      ))}
+    </div>
+
+    <aside class="h4__points">
+      <div class="h4__media">
+        <picture>
+          <source media="(max-width: 767px)" srcset={hero.media.mobileSrc} />
+          <img
+            src={hero.media.desktopSrc}
+            alt={hero.media.alt}
+            loading="lazy"
+            decoding="async"
+            onerror={`this.onerror=null;this.src='${hero.media.fallbackSrc}'`}
+          />
+        </picture>
+      </div>
+      <h2>{hero.pointsHeading}</h2>
+      <ul>
+        {hero.proofPoints.map((point) => <li>{point}</li>)}
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .h4 {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.6rem, 6vw, 5rem) 1rem;
+  }
+
+  header p {
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0.6rem 0 0;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    max-width: 14ch;
+  }
+
+  h1 span {
+    display: block;
+    background: linear-gradient(90deg, var(--accentColor), #79e0ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .h4__subtext {
+    margin-top: 0.9rem;
+    max-width: 62ch;
+    line-height: 1.65;
+  }
+
+  .h4__actions {
+    margin-top: 1.1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .h4__btn {
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 0.68rem 1rem;
+    font-weight: 700;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .h4__btn.primary {
+    border: 1px solid color-mix(in srgb, var(--accentColor) 75%, #000 25%);
+    background: linear-gradient(135deg, var(--accentColor), #79e0ff);
+    color: #fff;
+    box-shadow: 0 16px 34px -24px color-mix(in srgb, var(--accentColor) 70%, #000 30%);
+  }
+
+  .h4__btn.secondary {
+    background: transparent;
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 20%, transparent);
+  }
+
+  .h4__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .h4__body {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.8rem;
+    grid-template-columns: 1fr;
+  }
+
+  .h4__stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .h4__stats article {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 14px;
+    padding: 0.85rem;
+    background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+    min-height: 88px;
+    display: grid;
+    align-content: center;
+  }
+
+  .h4__stats strong {
+    font-size: 1.2rem;
+    color: var(--accentColor);
+  }
+
+  .h4__stats span {
+    font-size: 0.86rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .h4__points {
+    border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+    border-radius: 14px;
+    padding: 0.95rem;
+    background: color-mix(in srgb, var(--bgColor) 96%, transparent);
+  }
+
+  .h4__points h2 {
+    margin: 0.8rem 0 0;
+    font-size: 1rem;
+  }
+
+  .h4__media {
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+  }
+
+  .h4__media picture,
+  .h4__media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .h4__media img {
+    object-fit: cover;
+  }
+
+  .h4__points ul {
+    margin: 0.7rem 0 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .h4__reveal {
+    opacity: 0;
+    animation: h4-fade 0.72s cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+
+  @keyframes h4-fade {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: 980px) {
+    .h4__body {
+      grid-template-columns: 1.25fr 0.75fr;
+      align-items: start;
+    }
+
+    .h4__stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

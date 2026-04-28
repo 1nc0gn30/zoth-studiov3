@@ -1,0 +1,25 @@
+---
+import type { CTAData } from '../configs/cta';
+import CtaBanner from './ctas/CtaBanner.astro';
+import CtaSplit from './ctas/CtaSplit.astro';
+
+interface Props {
+  data?: CTAData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  banner: CtaBanner,
+  split: CtaSplit,
+} as const;
+
+type CtaVariant = keyof typeof variants;
+
+const requested = (cvariant ?? data?.cvariant ?? 'banner') as CtaVariant;
+const resolvedVariant = (requested in variants ? requested : 'banner') as CtaVariant;
+const VariantComponent = variants[resolvedVariant];
+---
+
+<VariantComponent data={data} />

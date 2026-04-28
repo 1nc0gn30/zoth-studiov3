@@ -1,0 +1,25 @@
+---
+import type { StatsData } from '../configs/stats';
+import StatsRibbon from './stats/StatsRibbon.astro';
+import StatsMosaic from './stats/StatsMosaic.astro';
+
+interface Props {
+  data?: StatsData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  ribbon: StatsRibbon,
+  mosaic: StatsMosaic,
+} as const;
+
+type StatsVariant = keyof typeof variants;
+
+const requested = (cvariant ?? data?.cvariant ?? 'ribbon') as StatsVariant;
+const resolvedVariant = (requested in variants ? requested : 'ribbon') as StatsVariant;
+const VariantComponent = variants[resolvedVariant];
+---
+
+<VariantComponent data={data} />

@@ -1,0 +1,132 @@
+---
+import type { GalleryData, GalleryItem } from '../configs/gallery';
+
+interface Props {
+  data?: GalleryData;
+}
+
+const { data } = Astro.props;
+const items: GalleryItem[] = Array.isArray(data?.items) ? data.items : [];
+---
+
+<section class="gallery-shell" aria-labelledby="gallery-title">
+  {(data?.eyebrow || data?.heading || data?.subtext) && (
+    <header class="gallery-shell__header">
+      {data?.eyebrow && <p class="gallery-shell__eyebrow">{data.eyebrow}</p>}
+      {data?.heading && <h2 id="gallery-title">{data.heading}</h2>}
+      {data?.subtext && <p class="gallery-shell__subtext">{data.subtext}</p>}
+    </header>
+  )}
+
+  {items.length > 0 && (
+    <div class="gallery-shell__grid">
+      {items.map((item) => {
+        const CardTag = item.href ? 'a' : 'article';
+
+        return (
+          <CardTag class="gallery-shell__card" href={item.href}>
+            <img src={item.src} alt={item.alt} loading="lazy" />
+            {(item.eyebrow || item.title || item.description) && (
+              <div class="gallery-shell__copy">
+                {item.eyebrow && <p>{item.eyebrow}</p>}
+                {item.title && <h3>{item.title}</h3>}
+                {item.description && <span>{item.description}</span>}
+              </div>
+            )}
+          </CardTag>
+        );
+      })}
+    </div>
+  )}
+</section>
+
+<style>
+  .gallery-shell {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.4rem, 6vw, 4.8rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .gallery-shell__header {
+    max-width: 48rem;
+  }
+
+  .gallery-shell__eyebrow,
+  .gallery-shell__copy p {
+    margin: 0;
+    color: var(--accentColor);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .gallery-shell h2 {
+    margin: 0.65rem 0 0;
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.05;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .gallery-shell__subtext {
+    margin: 0.9rem 0 0;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+    line-height: 1.65;
+  }
+
+  .gallery-shell__grid {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-shell__card {
+    display: block;
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--bgColor) 96%, white 4%), color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%));
+    color: var(--textColor);
+    text-decoration: none;
+    box-shadow: 0 24px 44px -34px color-mix(in srgb, var(--accentColor) 55%, black 45%);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .gallery-shell__card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 28px 52px -34px color-mix(in srgb, var(--accentColor) 62%, black 38%);
+  }
+
+  .gallery-shell__card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    background: color-mix(in srgb, var(--bgColor) 88%, var(--accentColor) 12%);
+  }
+
+  .gallery-shell__copy {
+    padding: 1rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .gallery-shell__copy h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .gallery-shell__copy span {
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+    line-height: 1.55;
+  }
+
+  @media (min-width: 900px) {
+    .gallery-shell__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

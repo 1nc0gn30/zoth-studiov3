@@ -1,0 +1,25 @@
+---
+import type { PricingData } from '../configs/pricing';
+import PricingTiered from './pricings/PricingTiered.astro';
+import PricingComparison from './pricings/PricingComparison.astro';
+
+interface Props {
+  data?: PricingData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+
+const variants = {
+  tiered: PricingTiered,
+  comparison: PricingComparison,
+} as const;
+
+type PricingVariant = keyof typeof variants;
+
+const requested = (cvariant ?? data?.cvariant ?? 'tiered') as PricingVariant;
+const resolvedVariant = (requested in variants ? requested : 'tiered') as PricingVariant;
+const VariantComponent = variants[resolvedVariant];
+---
+
+<VariantComponent data={data} />

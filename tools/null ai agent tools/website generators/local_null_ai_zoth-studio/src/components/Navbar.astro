@@ -1,0 +1,45 @@
+---
+import type { NavData } from '../configs/nav';
+import navigationConfig from '../configs/navigation.json';
+import NavbarDefault from './navbars/NavbarDefault.astro';
+import NavbarCenteredBrand from './navbars/NavbarCenteredBrand.astro';
+import NavbarMinimalistSidebar from './navbars/NavbarMinimalistSidebar.astro';
+import NavbarBoldCTA from './navbars/NavbarBoldCTA.astro';
+import NavbarCleanUnderline from './navbars/NavbarCleanUnderline.astro';
+import NavbarGlassmorphism from './navbars/NavbarGlassmorphism.astro';
+import NavbarDoubleDecker from './navbars/NavbarDoubleDecker.astro';
+import NavbarIconDriven from './navbars/NavbarIconDriven.astro';
+import NavbarFullWidthMega from './navbars/NavbarFullWidthMega.astro';
+import NavbarFloatingIsland from './navbars/NavbarFloatingIsland.astro';
+import NavbarStackedBrand from './navbars/NavbarStackedBrand.astro';
+
+interface Props {
+  data?: NavData;
+  cvariant?: string;
+}
+
+const { data, cvariant } = Astro.props;
+const navData = (data ?? (navigationConfig as NavData)) as NavData;
+
+const variants = {
+  default: NavbarDefault,
+  centered: NavbarCenteredBrand,
+  sidebar: NavbarMinimalistSidebar,
+  bold: NavbarBoldCTA,
+  underline: NavbarCleanUnderline,
+  glass: NavbarGlassmorphism,
+  double: NavbarDoubleDecker,
+  icon: NavbarIconDriven,
+  mega: NavbarFullWidthMega,
+  floating: NavbarFloatingIsland,
+  stacked: NavbarStackedBrand,
+} as const;
+
+type NavbarVariant = keyof typeof variants;
+
+const requested = (cvariant ?? navData?.cvariant ?? 'default') as NavbarVariant;
+const VariantComponent = variants[requested] ?? variants.default;
+const ResolvedNavbar = VariantComponent as any;
+---
+
+<ResolvedNavbar data={navData as any} />

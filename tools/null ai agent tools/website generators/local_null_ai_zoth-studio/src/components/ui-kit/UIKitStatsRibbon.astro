@@ -1,0 +1,113 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+---
+
+<section class="ui-kit" aria-label="Stats ribbon showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="stats-grid">
+    {items.map((item) => (
+      <article class="stat-card">
+        {item.badge && <strong>{item.badge}</strong>}
+        <h3>{item.title}</h3>
+        {item.description && <p>{item.description}</p>}
+        {item.meta && <small>{item.meta}</small>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .stats-grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--accentColor) 28%, transparent);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--surfaceColor) 88%, white 12%),
+      color-mix(in srgb, var(--bgColor) 90%, black 10%)
+    );
+    padding: 0.9rem;
+  }
+
+  .stat-card strong {
+    font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+    line-height: 1;
+    color: var(--accentColor);
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stat-card h3 {
+    margin: 0.35rem 0 0;
+    font-size: 0.98rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .stat-card p {
+    margin: 0.45rem 0 0;
+    color: color-mix(in srgb, var(--textColor) 77%, transparent);
+    font-size: 0.9rem;
+  }
+
+  .stat-card small {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--textColor) 68%, transparent);
+  }
+
+  @media (min-width: 820px) {
+    .stats-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

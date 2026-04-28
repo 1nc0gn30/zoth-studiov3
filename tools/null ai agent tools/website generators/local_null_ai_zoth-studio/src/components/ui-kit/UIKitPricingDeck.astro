@@ -1,0 +1,142 @@
+---
+import type { UIKitAction, UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+const actions: UIKitAction[] = Array.isArray(resolved.actions) ? resolved.actions : [];
+---
+
+<section class="ui-kit" aria-label="Pricing deck showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="pricing-grid">
+    {items.map((item, index) => (
+      <article class={`tier ${index === 1 ? 'tier--featured' : ''}`}>
+        {item.badge && <strong>{item.badge}</strong>}
+        <h3>{item.title}</h3>
+        {item.description && <p>{item.description}</p>}
+        {item.meta && <small>{item.meta}</small>}
+      </article>
+    ))}
+  </div>
+
+  {actions.length > 0 && (
+    <div class="actions">
+      {actions.map((action) => (
+        <a href={action.url} class={action.style === 'secondary' ? 'action action--secondary' : 'action'}>{action.label}</a>
+      ))}
+    </div>
+  )}
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .pricing-grid {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .tier {
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: color-mix(in srgb, var(--surfaceColor) 90%, white 10%);
+    padding: 1rem;
+  }
+
+  .tier--featured {
+    border-color: color-mix(in srgb, var(--accentColor) 52%, transparent);
+    box-shadow: 0 18px 36px -28px color-mix(in srgb, var(--accentColor) 70%, black 30%);
+  }
+
+  .tier strong {
+    font-size: 1.15rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+    color: var(--accentColor);
+  }
+
+  .tier h3 {
+    margin: 0.45rem 0 0;
+    font-size: 1.05rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .tier p {
+    margin: 0.45rem 0 0;
+    color: color-mix(in srgb, var(--textColor) 77%, transparent);
+  }
+
+  .tier small {
+    display: inline-block;
+    margin-top: 0.62rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--textColor) 70%, transparent);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .action {
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 0.68rem 1rem;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--accentColor) 88%, black 12%);
+    color: var(--accentContrastColor, #fff);
+  }
+
+  .action--secondary {
+    background: color-mix(in srgb, var(--surfaceColor) 84%, white 16%);
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+  }
+
+  @media (min-width: 940px) {
+    .pricing-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

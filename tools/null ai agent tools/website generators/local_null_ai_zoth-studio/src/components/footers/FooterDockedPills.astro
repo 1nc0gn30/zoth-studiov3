@@ -1,0 +1,104 @@
+---
+import footerDockedPillsConfig from '../../configs/footers/footer-docked-pills.json';
+
+interface FooterSocialItem {
+  platform: string;
+  url: string;
+}
+
+interface FooterDockedPillsConfig {
+  socialNavAria: string;
+  copyright: string;
+  showStatus: boolean;
+  statusText: string;
+  socials: FooterSocialItem[];
+}
+
+interface Props {
+  data?: Partial<FooterDockedPillsConfig>;
+}
+
+const { data } = Astro.props;
+const baseConfig = footerDockedPillsConfig as FooterDockedPillsConfig;
+const footerData: FooterDockedPillsConfig = {
+  ...baseConfig,
+  ...data,
+  socials: data?.socials ?? baseConfig.socials,
+};
+---
+<footer class="f7" role="contentinfo">
+  <div class="dock">
+    <p>{footerData.copyright}</p>
+    <nav aria-label={footerData.socialNavAria}>
+      <ul>
+        {footerData.socials.map((s) => (
+          <li><a href={s.url} target="_blank" rel="noreferrer noopener">{s.platform}</a></li>
+        ))}
+      </ul>
+    </nav>
+    {footerData.showStatus && <span class="pill">{footerData.statusText}</span>}
+  </div>
+</footer>
+
+<style>
+  .f7 {
+    padding: 1rem;
+    background: var(--bg);
+  }
+  .dock {
+    max-width: 1100px;
+    margin: 0 auto;
+    color: var(--text);
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  p {
+    margin: 0;
+    color: color-mix(in srgb, var(--text) 74%, white 26%);
+  }
+  ul {
+    display: flex;
+    gap: 0.55rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+  }
+  a {
+    display: inline-block;
+    padding: 0.38rem 0.72rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    border-radius: 999px;
+    color: color-mix(in srgb, var(--text) 88%, white 12%);
+    text-decoration: none;
+    transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  }
+  a:hover,
+  a:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--accent) 74%, transparent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .pill {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    color: var(--accent);
+    font-size: 0.84rem;
+    font-weight: 600;
+  }
+  @media (max-width: 860px) {
+    .dock {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+    ul {
+      justify-content: center;
+    }
+  }
+</style>

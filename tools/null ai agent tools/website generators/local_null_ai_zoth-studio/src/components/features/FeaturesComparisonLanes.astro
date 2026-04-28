@@ -1,0 +1,34 @@
+---
+interface CI { title: string; description: string; kicker?: string; metric?: string; }
+interface CC { eyebrow: string; heading: string; subtext: string; items: CI[]; }
+interface Props { config: CC; data?: Partial<CC>; }
+const { config, data = {} } = Astro.props;
+const s: CC = { eyebrow: data.eyebrow ?? config.eyebrow, heading: data.heading ?? config.heading, subtext: data.subtext ?? config.subtext, items: data.items ?? config.items, };
+---
+
+<section class="cl">
+  <header>
+    <p class="cl-eyebrow">{s.eyebrow}</p>
+    <h2>{s.heading}</h2>
+    <p class="cl-subtext">{s.subtext}</p>
+  </header>
+  <div class="cl-table">
+    <div class="cl-hdr"><div class="cl-lbl">Feature</div>{s.items.map(i => <div class="cl-val">{i.kicker || "Our Approach"}</div>)}</div>
+    <div class="cl-r"><div class="cl-lbl">Description</div>{s.items.map(i => <div class="cl-desc">{i.description}</div>)}</div>
+    <div class="cl-r"><div class="cl-lbl">Result</div>{s.items.map(i => <div class="cl-hl">{i.metric || i.title}</div>)}</div>
+  </div>
+</section>
+<style>
+  .cl { max-width: 1160px; margin: 0 auto; padding: clamp(2.2rem, 6vw, 4.2rem) 1rem; font-family: var(--fontBody, var(--fontFamily)); }
+  .cl-eyebrow { margin: 0; color: var(--accentColor); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  h2 { margin: 0.65rem 0 0; font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.08; font-family: var(--fontDisplay, var(--fontFamily)); }
+  .cl-subtext { margin-top: 0.85rem; max-width: 62ch; line-height: 1.64; color: color-mix(in srgb, var(--textColor) 84%, transparent); }
+  .cl-table { margin-top: 1.5rem; border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent); border-radius: 14px; overflow: hidden; }
+  .cl-hdr, .cl-r { display: grid; grid-template-columns: 140px repeat(auto-fit, minmax(0, 1fr)); }
+  .cl-hdr { background: color-mix(in srgb, var(--bgColor) 90%, var(--accentColor) 10%); }
+  .cl-r { border-top: 1px solid color-mix(in srgb, var(--textColor) 8%, transparent); }
+  .cl-lbl, .cl-val, .cl-desc, .cl-hl { padding: 0.85rem 1rem; font-size: 0.88rem; line-height: 1.5; }
+  .cl-lbl { font-weight: 700; color: color-mix(in srgb, var(--textColor) 55%, transparent); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .cl-val { font-weight: 600; } .cl-hl { color: var(--accentColor); font-weight: 700; }
+  @media (max-width: 640px) { .cl-hdr, .cl-r { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,437 @@
+---
+import config from '../../configs/navbars/navbar-centered-brand.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavItem { label: string; url: string; type?: 'link' | 'button' | 'dropdown' }
+interface NavData {
+  homeUrl?: string;
+  labels?: { menuToggle?: string };
+  brand?: { name?: string; logoUrl?: string; fallbackIcon?: string };
+  menu?: NavItem[];
+  settings?: { sticky?: boolean };
+}
+interface Props { data?: NavData }
+
+const { data } = Astro.props;
+const navData: NavData = data ?? (config as NavData);
+const links = (navData.menu ?? []).filter((m) => m.type !== 'button');
+const buttons = (navData.menu ?? []).filter((m) => m.type === 'button');
+const mid = Math.ceil(links.length / 2);
+const left = links.slice(0, mid);
+const right = links.slice(mid);
+---
+
+<header class:list={['nav-center', navData.settings?.sticky && 'nav-center--sticky']} data-nav-center>
+  <div class="nav-center__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-center__shell">
+    
+    <BrandMark
+      href={navData.homeUrl ?? '/'}
+      brand={navData.brand}
+      brandClass="nav-center__brand nav-center__brand--mobile"
+      logoClass="nav-center__brand-logo"
+      titleClass="nav-center__brand-title"
+    />
+
+    <button class="nav-center__toggle" type="button" aria-expanded="false" aria-label={navData.labels?.menuToggle ?? 'Open menu'} data-nav-toggle>
+      <span class="nav-center__toggle-box">
+        <span class="nav-center__toggle-inner"></span>
+      </span>
+    </button>
+
+    <nav class="nav-center__panel" aria-label="Primary navigation" data-nav-menu>
+      
+      <div class="nav-center__group nav-center__group--left">
+        {left.map((item) => (
+          <a class="nav-center__link" href={item.url}>
+            <span class="nav-center__icon">◦</span>
+            <span class="nav-center__link-text">{item.label}</span>
+          </a>
+        ))}
+      </div>
+
+      <BrandMark
+        href={navData.homeUrl ?? '/'}
+        brand={navData.brand}
+        brandClass="nav-center__brand nav-center__brand--desktop"
+        logoClass="nav-center__brand-logo"
+        titleClass="nav-center__brand-title"
+      />
+
+      <div class="nav-center__group nav-center__group--right">
+        {right.map((item) => (
+          <a class="nav-center__link" href={item.url}>
+            <span class="nav-center__icon">◦</span>
+            <span class="nav-center__link-text">{item.label}</span>
+          </a>
+        ))}
+        {buttons.map((item) => (
+          <a class="nav-center__cta" href={item.url}>
+            {item.label}
+          </a>
+        ))}
+      </div>
+
+    </nav>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-center]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    
+    if (!toggle || !panel || !overlay) return;
+
+    const closeMenu = () => {
+      panel.classList.remove('nav-center__panel--open');
+      overlay.classList.remove('nav-center__overlay--visible');
+      toggle.classList.remove('nav-center__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-center__panel--open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        panel.classList.add('nav-center__panel--open');
+        overlay.classList.add('nav-center__overlay--visible');
+        toggle.classList.add('nav-center__toggle--active');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    overlay.addEventListener('click', closeMenu);
+    
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 992) closeMenu();
+    });
+  });
+</script>
+
+<style>
+  /* --- Base & Variables --- */
+  .nav-center {
+    --nav-border: color-mix(in srgb, var(--text) 10%, transparent);
+    --nav-bg: color-mix(in srgb, var(--bg) 85%, transparent);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--nav-border);
+    transition: background-color 0.3s ease;
+  }
+
+  .nav-center--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-center__shell {
+    max-width: 86rem;
+    margin-inline: auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* --- Branding --- */
+  .nav-center__brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--text);
+    z-index: 102;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .nav-center__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-center__brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+
+  .nav-center__brand-title {
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
+
+  .nav-center__brand--mobile {
+    display: none;
+  }
+
+  /* --- Desktop Navigation Panel --- */
+  .nav-center__panel {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+  }
+
+  .nav-center__group {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .nav-center__group--left {
+    justify-content: flex-end;
+  }
+
+  .nav-center__group--right {
+    justify-content: flex-start;
+  }
+
+  /* --- Links & Interactions --- */
+  .nav-center__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: color-mix(in srgb, var(--text) 85%, transparent);
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+  }
+
+  .nav-center__icon {
+    font-size: 0.6rem;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: all 0.3s ease;
+  }
+
+  .nav-center__link-text {
+    position: relative;
+  }
+
+  /* Animated Underline */
+  .nav-center__link-text::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--accent);
+    transform-origin: bottom right;
+    transition: transform 0.3s cubic-bezier(0.86, 0, 0.07, 1);
+  }
+
+  .nav-center__link:hover {
+    color: var(--text);
+  }
+
+  .nav-center__link:hover .nav-center__icon {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .nav-center__link:hover .nav-center__link-text::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+
+  /* --- Call to Action Button --- */
+  .nav-center__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: var(--text);
+    color: var(--bg);
+    padding: 0.6rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  .nav-center__cta:hover {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--text);
+    transform: translateY(-2px);
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-center__toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 102;
+  }
+
+  .nav-center__toggle-box {
+    width: 28px;
+    height: 24px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-center__toggle-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+  }
+
+  .nav-center__toggle-inner, 
+  .nav-center__toggle-inner::before, 
+  .nav-center__toggle-inner::after {
+    width: 28px;
+    height: 2px;
+    background-color: var(--text);
+    position: absolute;
+    transition-property: transform, opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+    border-radius: 4px;
+  }
+
+  .nav-center__toggle-inner::before, 
+  .nav-center__toggle-inner::after {
+    content: "";
+    display: block;
+  }
+
+  .nav-center__toggle-inner::before { top: -8px; }
+  .nav-center__toggle-inner::after { bottom: -8px; }
+
+  /* Hamburger Active Animation */
+  .nav-center__toggle--active .nav-center__toggle-inner {
+    transform: rotate(45deg);
+  }
+  .nav-center__toggle--active .nav-center__toggle-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .nav-center__toggle--active .nav-center__toggle-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  .nav-center__overlay {
+    display: none;
+  }
+
+  /* --- Responsive Breakpoint (Tablet/Mobile) --- */
+  @media (max-width: 991px) {
+    .nav-center__shell {
+      padding: 1rem;
+    }
+
+    /* Swap Brand Display */
+    .nav-center__brand--desktop { display: none; }
+    .nav-center__brand--mobile { display: inline-flex; }
+    .nav-center__toggle { display: block; }
+
+    /* Full Screen Dark Overlay */
+    .nav-center__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--bg) 70%, black);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-center__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Slide-out Sidebar */
+    .nav-center__panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(100vw, 380px);
+      height: 100dvh;
+      background: var(--bg);
+      border-left: 1px solid var(--nav-border);
+      z-index: 101;
+      padding: 6rem 2rem 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 1.5rem;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      pointer-events: auto;
+      box-shadow: -20px 0 40px rgba(0,0,0,0.1);
+    }
+
+    .nav-center__panel--open {
+      right: 0;
+    }
+
+    /* Stack Links */
+    .nav-center__group {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+      gap: 0.5rem;
+    }
+
+    .nav-center__link {
+      width: 100%;
+      padding: 1rem 0;
+      font-size: 1.25rem;
+      border-bottom: 1px solid var(--nav-border);
+    }
+
+    .nav-center__icon {
+      opacity: 1;
+      transform: translateX(0);
+      font-size: 0.8rem;
+    }
+
+    .nav-center__link-text::after {
+      display: none; /* Remove animated underline on mobile */
+    }
+
+    .nav-center__link:hover {
+      padding-left: 0.5rem;
+    }
+
+    .nav-center__cta {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 2rem;
+      padding: 1.2rem;
+      font-size: 1.1rem;
+      border-radius: 12px;
+    }
+  }
+</style>

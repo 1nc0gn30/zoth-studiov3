@@ -1,0 +1,389 @@
+---
+import config from '../../configs/navbars/navbar-clean-underline.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavItem { label: string; url: string; type?: 'link' | 'button' | 'dropdown' }
+interface NavData {
+  homeUrl?: string;
+  labels?: { menuToggle?: string };
+  brand?: { name?: string; logoUrl?: string; fallbackIcon?: string };
+  menu?: NavItem[];
+  settings?: { sticky?: boolean };
+}
+interface Props { data?: NavData }
+
+const { data } = Astro.props;
+const navData: NavData = data ?? (config as NavData);
+---
+
+<header class:list={['nav-clean', navData.settings?.sticky && 'nav-clean--sticky']} data-nav-clean>
+  <div class="nav-clean__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-clean__shell">
+    
+    <BrandMark
+      href={navData.homeUrl ?? '/'}
+      brand={navData.brand}
+      brandClass="nav-clean__brand"
+      logoClass="nav-clean__brand-logo"
+      titleClass="nav-clean__brand-title"
+    />
+
+    <nav class="nav-clean__panel" aria-label="Primary navigation" data-nav-menu>
+      <ul class="nav-clean__list">
+        {(navData.menu ?? []).map((item) => (
+          <li class="nav-clean__item">
+            {item.type === 'button' ? (
+              <a class="nav-clean__cta" href={item.url}>
+                {item.label}
+                <svg class="nav-clean__cta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </a>
+            ) : (
+              <a class="nav-clean__link" href={item.url}>
+                {item.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <button class="nav-clean__toggle" type="button" aria-expanded="false" aria-label={navData.labels?.menuToggle ?? 'Open menu'} data-nav-toggle>
+      <span class="nav-clean__toggle-box">
+        <span class="nav-clean__toggle-inner"></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-clean]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    
+    if (!toggle || !panel || !overlay) return;
+
+    const closeMenu = () => {
+      panel.classList.remove('nav-clean__panel--open');
+      overlay.classList.remove('nav-clean__overlay--visible');
+      toggle.classList.remove('nav-clean__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-clean__panel--open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        panel.classList.add('nav-clean__panel--open');
+        overlay.classList.add('nav-clean__overlay--visible');
+        toggle.classList.add('nav-clean__toggle--active');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    overlay.addEventListener('click', closeMenu);
+    
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 992) closeMenu();
+    });
+  });
+</script>
+
+<style>
+  /* --- Base & Variables --- */
+  .nav-clean {
+    --nav-border: color-mix(in srgb, var(--text) 10%, transparent);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    background: var(--bg);
+    border-bottom: 1px solid var(--nav-border);
+    transition: background-color 0.3s ease;
+  }
+
+  .nav-clean--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-clean__shell {
+    max-width: 84rem;
+    margin-inline: auto;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  /* --- Branding --- */
+  .nav-clean__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text);
+    z-index: 102; /* Above mobile menu */
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-clean__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-clean__brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
+  }
+
+  .nav-clean__brand-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+  }
+
+  /* --- Navigation Panel --- */
+  .nav-clean__panel {
+    margin-left: auto;
+  }
+
+  .nav-clean__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .nav-clean__item {
+    display: flex;
+    align-items: center;
+  }
+
+  /* --- Clean Underline Links --- */
+  .nav-clean__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.25rem 0;
+    transition: color 0.3s ease;
+  }
+
+  /* The Sweep Underline Animation */
+  .nav-clean__link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+  }
+
+  .nav-clean__link:hover {
+    color: var(--accent);
+  }
+
+  .nav-clean__link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* --- CTA Button --- */
+  .nav-clean__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    background: var(--text);
+    color: var(--bg);
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+  }
+
+  .nav-clean__cta-icon {
+    transition: transform 0.3s ease;
+  }
+
+  .nav-clean__cta:hover {
+    background: var(--accent);
+    color: var(--bg);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -10px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+
+  .nav-clean__cta:hover .nav-clean__cta-icon {
+    transform: translateX(4px);
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-clean__toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 102;
+  }
+
+  .nav-clean__toggle-box {
+    width: 26px;
+    height: 24px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-clean__toggle-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+  }
+
+  .nav-clean__toggle-inner, 
+  .nav-clean__toggle-inner::before, 
+  .nav-clean__toggle-inner::after {
+    width: 26px;
+    height: 2px;
+    background-color: var(--text);
+    position: absolute;
+    transition-property: transform;
+    transition-duration: 0.25s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 4px;
+  }
+
+  .nav-clean__toggle-inner::before, 
+  .nav-clean__toggle-inner::after {
+    content: "";
+    display: block;
+  }
+
+  .nav-clean__toggle-inner::before { top: -8px; }
+  .nav-clean__toggle-inner::after { bottom: -8px; }
+
+  /* Hamburger Active Animation */
+  .nav-clean__toggle--active .nav-clean__toggle-inner {
+    transform: rotate(225deg);
+  }
+  .nav-clean__toggle--active .nav-clean__toggle-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .nav-clean__toggle--active .nav-clean__toggle-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  .nav-clean__overlay {
+    display: none;
+  }
+
+  /* --- Responsive Breakpoint (Tablet/Mobile) --- */
+  @media (max-width: 991px) {
+    .nav-clean__shell {
+      padding: 1rem 1.25rem;
+    }
+
+    .nav-clean__toggle {
+      display: block;
+    }
+
+    /* Full Screen Dark Overlay */
+    .nav-clean__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--text) 20%, transparent);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-clean__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Slide-out Sidebar */
+    .nav-clean__panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: min(100vw, 360px);
+      height: 100dvh;
+      background: var(--bg);
+      border-left: 1px solid var(--nav-border);
+      z-index: 101;
+      padding: 6rem 2rem 3rem;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      pointer-events: auto;
+      box-shadow: -20px 0 40px rgba(0,0,0,0.1);
+    }
+
+    .nav-clean__panel--open {
+      right: 0;
+    }
+
+    /* Mobile Link Adjustments */
+    .nav-clean__list {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      width: 100%;
+    }
+
+    .nav-clean__item {
+      width: 100%;
+      border-bottom: 1px solid var(--nav-border);
+    }
+
+    .nav-clean__link {
+      width: 100%;
+      padding: 1.25rem 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      justify-content: space-between;
+    }
+
+    /* Adjust underline for mobile so it doesn't span full width */
+    .nav-clean__link::after {
+      width: 30px;
+      bottom: 15px;
+    }
+
+    .nav-clean__link:hover {
+      padding-left: 0.5rem;
+    }
+
+    /* Mobile CTA */
+    .nav-clean__cta {
+      width: 100%;
+      justify-content: center;
+      margin-top: 2rem;
+      padding: 1rem;
+      font-size: 1.1rem;
+    }
+  }
+</style>

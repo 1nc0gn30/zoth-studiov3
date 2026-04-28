@@ -1,0 +1,132 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = { ...(config ?? {}), ...(data ?? {}) } as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+const notes = Array.isArray(resolved.notes) ? resolved.notes : [];
+---
+
+<section class="ui-kit" aria-label="Testimonials showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="wall">
+    {items.map((item) => (
+      <article class="quote-card">
+        <p class="quote">"{item.description}"</p>
+        <h3>{item.title}</h3>
+        <div class="meta">
+          {item.badge && <strong>{item.badge}</strong>}
+          {item.meta && <small>{item.meta}</small>}
+        </div>
+      </article>
+    ))}
+  </div>
+
+  {notes.length > 0 && (
+    <ul class="notes">
+      {notes.map((note) => (
+        <li>{note}</li>
+      ))}
+    </ul>
+  )}
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .wall {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .quote-card {
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: color-mix(in srgb, var(--surfaceColor) 90%, white 10%);
+    padding: 1rem;
+  }
+
+  .quote {
+    margin: 0;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+    line-height: 1.55;
+  }
+
+  .quote-card h3 {
+    margin: 0.75rem 0 0;
+    font-size: 1rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .meta {
+    margin-top: 0.45rem;
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .meta strong {
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accentColor);
+  }
+
+  .meta small {
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--textColor) 70%, transparent);
+  }
+
+  .notes {
+    margin: 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.3rem;
+    color: color-mix(in srgb, var(--textColor) 74%, transparent);
+  }
+
+  @media (min-width: 940px) {
+    .wall {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

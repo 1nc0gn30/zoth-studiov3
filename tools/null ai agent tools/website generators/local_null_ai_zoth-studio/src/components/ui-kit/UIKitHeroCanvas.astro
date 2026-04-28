@@ -1,0 +1,142 @@
+---
+import type { UIKitData, UIKitItem } from '../../configs/ui-kit';
+
+interface Props {
+  data?: UIKitData;
+  config?: UIKitData;
+}
+
+const { data, config } = Astro.props;
+const resolved = {
+  ...(config ?? {}),
+  ...(data ?? {}),
+} as UIKitData;
+const items: UIKitItem[] = Array.isArray(resolved.items) ? resolved.items : [];
+const actions = Array.isArray(resolved.actions) ? resolved.actions : [];
+---
+
+<section class="ui-kit ui-kit--hero" aria-label="Hero layout showcase">
+  <header>
+    {resolved.eyebrow && <p>{resolved.eyebrow}</p>}
+    {resolved.heading && <h2>{resolved.heading}</h2>}
+    {resolved.subtext && <span>{resolved.subtext}</span>}
+  </header>
+
+  <div class="hero-cards">
+    {items.map((item) => (
+      <article class="hero-card">
+        {item.badge && <small>{item.badge}</small>}
+        <h3>{item.title}</h3>
+        {item.description && <p>{item.description}</p>}
+        {item.meta && <strong>{item.meta}</strong>}
+      </article>
+    ))}
+  </div>
+
+  {actions.length > 0 && (
+    <div class="actions">
+      {actions.map((action) => (
+        <a href={action.url} class={action.style === 'secondary' ? 'action action--secondary' : 'action'}>{action.label}</a>
+      ))}
+    </div>
+  )}
+</section>
+
+<style>
+  .ui-kit {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(1.8rem, 4vw, 3rem) 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ui-kit header p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  .ui-kit h2 {
+    margin: 0.45rem 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .ui-kit span {
+    display: block;
+    margin-top: 0.65rem;
+    color: color-mix(in srgb, var(--textColor) 80%, transparent);
+  }
+
+  .hero-cards {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .hero-card {
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    border-radius: 22px;
+    padding: 1rem;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--bgColor) 92%, white 8%), color-mix(in srgb, var(--bgColor) 88%, var(--accentColor) 12%));
+  }
+
+  .hero-card small {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accentColor);
+    font-weight: 700;
+  }
+
+  .hero-card h3 {
+    margin: 0.4rem 0 0;
+    font-size: 1.2rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .hero-card p {
+    margin: 0.55rem 0 0;
+    color: color-mix(in srgb, var(--textColor) 78%, transparent);
+  }
+
+  .hero-card strong {
+    display: inline-block;
+    margin-top: 0.8rem;
+    font-size: 0.78rem;
+    color: color-mix(in srgb, var(--textColor) 72%, transparent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .action {
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 0.68rem 1rem;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--accentColor) 88%, black 12%);
+    color: var(--accentContrastColor, #fff);
+  }
+
+  .action--secondary {
+    background: color-mix(in srgb, var(--surfaceColor) 82%, white 18%);
+    color: var(--textColor);
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+  }
+
+  @media (min-width: 900px) {
+    .hero-cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

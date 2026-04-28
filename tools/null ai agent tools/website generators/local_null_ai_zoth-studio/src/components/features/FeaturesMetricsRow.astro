@@ -1,0 +1,28 @@
+---
+interface MI { title: string; description: string; kicker?: string; metric?: string; }
+interface MC { eyebrow: string; heading: string; subtext: string; items: MI[]; }
+interface Props { config: MC; data?: Partial<MC>; }
+const { config, data = {} } = Astro.props;
+const s: MC = { eyebrow: data.eyebrow ?? config.eyebrow, heading: data.heading ?? config.heading, subtext: data.subtext ?? config.subtext, items: data.items ?? config.items, };
+---
+
+<section class="mr" style="text-align:center">
+  <header>
+    <p class="mr-eyebrow">{s.eyebrow}</p>
+    <h2>{s.heading}</h2>
+    <p class="mr-subtext">{s.subtext}</p>
+  </header>
+  <div class="mr-grid">{s.items.map(i => <article><strong class="mr-num">{i.metric}</strong><h3>{i.title}</h3><p>{i.description}</p></article>)}</div>
+</section>
+<style>
+  .mr { max-width: 1160px; margin: 0 auto; padding: clamp(2.2rem, 6vw, 4.2rem) 1rem; font-family: var(--fontBody, var(--fontFamily)); }
+  .mr-eyebrow { margin: 0; color: var(--accentColor); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  h2 { margin: 0.65rem 0 0; font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.08; font-family: var(--fontDisplay, var(--fontFamily)); }
+  .mr-subtext { margin: 0.85rem auto 0; max-width: 62ch; line-height: 1.64; color: color-mix(in srgb, var(--textColor) 84%, transparent); }
+  .mr-grid { margin-top: 2rem; display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+  .mr-num { display: block; font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; line-height: 1; color: var(--accentColor); font-family: var(--fontDisplay, var(--fontFamily)); }
+  h3 { margin: 0.5rem 0 0; font-family: var(--fontDisplay, var(--fontFamily)); font-size: 1.1rem; }
+  .mr-grid p { margin: 0.3rem auto 0; line-height: 1.55; color: color-mix(in srgb, var(--textColor) 82%, transparent); max-width: 28ch; }
+  @media (min-width: 640px) { .mr-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 920px) { .mr-grid { grid-template-columns: repeat(4, 1fr); } }
+</style>

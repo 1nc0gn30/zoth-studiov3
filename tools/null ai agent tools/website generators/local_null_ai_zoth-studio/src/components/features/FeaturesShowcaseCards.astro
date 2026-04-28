@@ -1,0 +1,49 @@
+---
+interface SCItem { title: string; description: string; kicker?: string; metric?: string; }
+interface SCConfig { eyebrow: string; heading: string; subtext: string; items: SCItem[]; }
+interface Props { config: SCConfig; data?: Partial<SCConfig>; }
+const { config, data = {} } = Astro.props;
+const section: SCConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  items: data.items ?? config.items,
+};
+---
+
+<section class="showcase" aria-labelledby="sc-title">
+  <header>
+    <p class="sc-eyebrow">{section.eyebrow}</p>
+    <h2 id="sc-title">{section.heading}</h2>
+    <p class="sc-subtext">{section.subtext}</p>
+  </header>
+  <div class="sc-cards">
+    {section.items.map((item) => (
+      <article class="sc-card">
+        <div class="sc-glow" aria-hidden="true"></div>
+        {item.kicker && <small>{item.kicker}</small>}
+        <h3>{item.title}</h3>
+        <p>{item.description}</p>
+        {item.metric && <div class="sc-badge"><span>{item.metric}</span></div>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .showcase { max-width: 1160px; margin: 0 auto; padding: clamp(2.2rem, 6vw, 4.2rem) 1rem; font-family: var(--fontBody, var(--fontFamily)); }
+  .sc-eyebrow { margin: 0; color: var(--accentColor); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  h2 { margin: 0.65rem 0 0; font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.08; font-family: var(--fontDisplay, var(--fontFamily)); }
+  .sc-subtext { margin-top: 0.85rem; max-width: 62ch; line-height: 1.64; color: color-mix(in srgb, var(--textColor) 84%, transparent); }
+  .sc-cards { margin-top: 1.5rem; display: grid; gap: 1rem; grid-template-columns: 1fr; }
+  .sc-card { position: relative; border: 1px solid color-mix(in srgb, var(--textColor) 10%, transparent); border-radius: 18px; padding: 1.5rem; background: color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%); overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+  .sc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px color-mix(in srgb, var(--accentColor) 14%, transparent); }
+  .sc-glow { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accentColor) 6%, transparent) 0%, transparent 60%); pointer-events: none; }
+  small { color: var(--accentColor); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700; position: relative; }
+  h3 { margin: 0.4rem 0 0; font-family: var(--fontDisplay, var(--fontFamily)); font-size: 1.1rem; position: relative; }
+  .sc-card p { margin: 0.35rem 0 0; line-height: 1.55; color: color-mix(in srgb, var(--textColor) 82%, transparent); position: relative; font-size: 0.92rem; }
+  .sc-badge { margin-top: 0.7rem; position: relative; }
+  .sc-badge span { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 20px; background: color-mix(in srgb, var(--accentColor) 14%, transparent); color: var(--accentColor); font-size: 0.78rem; font-weight: 700; }
+  @media (min-width: 640px) { .sc-cards { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 920px) { .sc-cards { grid-template-columns: repeat(4, 1fr); } }
+</style>

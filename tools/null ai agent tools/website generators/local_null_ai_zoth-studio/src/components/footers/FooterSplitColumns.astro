@@ -1,0 +1,114 @@
+---
+import footerSplitColumnsConfig from '../../configs/footers/footer-split-columns.json';
+
+interface FooterSocialItem {
+  platform: string;
+  url: string;
+}
+
+interface FooterSplitColumnsConfig {
+  socialNavAria: string;
+  copyright: string;
+  showStatus: boolean;
+  statusText: string;
+  socials: FooterSocialItem[];
+}
+
+interface Props {
+  data?: Partial<FooterSplitColumnsConfig>;
+}
+
+const { data } = Astro.props;
+const baseConfig = footerSplitColumnsConfig as FooterSplitColumnsConfig;
+const footerData: FooterSplitColumnsConfig = {
+  ...baseConfig,
+  ...data,
+  socials: data?.socials ?? baseConfig.socials,
+};
+---
+<footer class="f3" role="contentinfo">
+  <div class="wrap">
+    <div class="left">
+      <p>{footerData.copyright}</p>
+      {footerData.showStatus && <small>{footerData.statusText}</small>}
+    </div>
+    <nav class="right" aria-label={footerData.socialNavAria}>
+      <ul>
+        {footerData.socials.map((s) => (
+          <li><a href={s.url} target="_blank" rel="noreferrer noopener">{s.platform}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .f3 {
+    background: var(--bg);
+    color: var(--text);
+    padding: 1.25rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.1rem;
+    align-items: center;
+  }
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  p,
+  small {
+    margin: 0;
+  }
+  p {
+    color: color-mix(in srgb, var(--text) 74%, white 26%);
+  }
+  small {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  ul {
+    list-style: none;
+    display: flex;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  a {
+    color: color-mix(in srgb, var(--text) 88%, white 12%);
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    border-radius: 999px;
+    padding: 0.34rem 0.7rem;
+    transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+  }
+  a:hover,
+  a:focus-visible {
+    outline: none;
+    transform: translateY(-1px);
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+  @media (max-width: 760px) {
+    .wrap {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .left {
+      align-items: center;
+    }
+    .right ul {
+      justify-content: center;
+    }
+  }
+</style>

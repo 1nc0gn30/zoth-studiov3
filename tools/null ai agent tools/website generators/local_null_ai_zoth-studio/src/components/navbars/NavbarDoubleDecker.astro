@@ -1,0 +1,663 @@
+---
+import config from '../../configs/navbars/navbar-double-decker.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavChildItem {
+  label: string;
+  url: string;
+}
+
+interface NavItem {
+  label: string;
+  url: string;
+  type?: 'link' | 'button' | 'dropdown';
+  children?: NavChildItem[];
+}
+
+interface NavData {
+  homeUrl?: string;
+  labels?: { menuToggle?: string };
+  brand?: { name?: string; logoUrl?: string; fallbackIcon?: string };
+  menu?: NavItem[];
+  settings?: { sticky?: boolean };
+}
+
+interface Props {
+  data?: NavData;
+}
+
+const { data } = Astro.props;
+const navData: NavData = data ?? (config as NavData);
+const links = (navData.menu ?? []).filter((m) => m.type !== 'button');
+const buttons = (navData.menu ?? []).filter((m) => m.type === 'button');
+
+// Use the first two links for the top utility bar. 
+const utility = links.slice(0, 2);
+---
+
+<header class:list={['nav-double', navData.settings?.sticky && 'nav-double--sticky']} data-nav-double>
+  <div class="nav-double__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-double__top">
+    <div class="nav-double__shell nav-double__shell--top">
+      
+      <BrandMark
+        href={navData.homeUrl ?? '/'}
+        brand={navData.brand}
+        brandClass="nav-double__brand"
+        logoClass="nav-double__brand-logo"
+        titleClass="nav-double__brand-title"
+      />
+
+      <div class="nav-double__top-actions">
+        <div class="nav-double__utility">
+          {utility.map((item) => (
+            <a class="nav-double__utility-link" href={item.url}>
+              {item.label}
+              <svg class="nav-double__utility-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+          ))}
+        </div>
+
+        <button class="nav-double__toggle" type="button" aria-expanded="false" aria-label={navData.labels?.menuToggle ?? 'Open menu'} data-nav-toggle>
+          <span class="nav-double__toggle-box">
+            <span class="nav-double__toggle-inner"></span>
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <nav class="nav-double__panel" aria-label="Primary navigation" data-nav-menu>
+    <div class="nav-double__shell nav-double__shell--bottom">
+      
+      <div class="nav-double__mobile-header">
+        <BrandMark
+          href={navData.homeUrl ?? '/'}
+          brand={navData.brand}
+          brandClass="nav-double__brand"
+          logoClass="nav-double__brand-logo"
+          titleClass="nav-double__brand-title"
+        />
+      </div>
+
+      <ul class="nav-double__list">
+        {(navData.menu ?? []).map((item) => (
+          <li class:list={['nav-double__item', utility.includes(item) && 'nav-double__item--mobile-only']}>
+            
+            {item.type === 'button' ? (
+              <a class="nav-double__cta" href={item.url}>
+                {item.label}
+              </a>
+            ) : item.type === 'dropdown' ? (
+              <div class="nav-double__dropdown" data-dropdown>
+                <button class="nav-double__dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+                  <span>{item.label}</span>
+                  <span class="nav-double__dropdown-chevron" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </span>
+                </button>
+                <ul class="nav-double__dropdown-menu">
+                  {item.children?.map((child) => (
+                    <li>
+                      <a href={child.url} class="nav-double__dropdown-link">
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <a class="nav-double__link" href={item.url}>
+                {item.label}
+              </a>
+            )}
+
+          </li>
+        ))}
+      </ul>
+
+    </div>
+  </nav>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-double]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    const dropdownToggles = root.querySelectorAll<HTMLButtonElement>('.nav-double__dropdown-toggle');
+    const closeOnClickLinks = root.querySelectorAll<HTMLAnchorElement>('.nav-double__link, .nav-double__dropdown-link, .nav-double__cta, .nav-double__utility-link');
+    
+    if (!toggle || !panel || !overlay) return;
+
+    const closeMenu = () => {
+      panel.classList.remove('nav-double__panel--open');
+      overlay.classList.remove('nav-double__overlay--visible');
+      toggle.classList.remove('nav-double__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+
+    const openMenu = () => {
+      panel.classList.add('nav-double__panel--open');
+      overlay.classList.add('nav-double__overlay--visible');
+      toggle.classList.add('nav-double__toggle--active');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-double__panel--open');
+      if (isOpen) closeMenu(); else openMenu();
+    });
+
+    overlay.addEventListener('click', closeMenu);
+    
+    closeOnClickLinks.forEach((link) => {
+      link.addEventListener('click', closeMenu);
+    });
+
+    // Mobile Dropdown Accordion Logic
+    dropdownToggles.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        dropdownToggles.forEach(other => {
+          if (other !== btn) other.setAttribute('aria-expanded', 'false');
+        });
+        btn.setAttribute('aria-expanded', String(!expanded));
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 992) closeMenu();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && panel.classList.contains('nav-double__panel--open')) closeMenu();
+    });
+  });
+</script>
+
+<style>
+  /* --- Box Sizing Reset for Overflow Fix --- */
+  .nav-double, 
+  .nav-double *, 
+  .nav-double *::before, 
+  .nav-double *::after {
+    box-sizing: border-box;
+  }
+
+  /* --- Base & Variables --- */
+  .nav-double {
+    --nav-border: color-mix(in srgb, var(--text, #111) 10%, transparent);
+    --nav-top-bg: color-mix(in srgb, var(--bg, #fff) 96%, var(--text, #111) 4%);
+    --nav-bottom-bg: var(--bg, #fff);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-double--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-double__shell {
+    max-width: 86rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+    width: 100%;
+  }
+
+  /* --- Top Tier --- */
+  .nav-double__top {
+    background: var(--nav-top-bg);
+    border-bottom: 1px solid var(--nav-border);
+    width: 100%;
+  }
+
+  .nav-double__shell--top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 0.65rem;
+  }
+
+  /* Branding */
+  .nav-double__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text, #111);
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-double__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-double__brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
+  }
+
+  .nav-double__brand-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* Utility Links */
+  .nav-double__top-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .nav-double__utility {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .nav-double__utility-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: color-mix(in srgb, var(--text, #111) 75%, transparent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .nav-double__utility-icon {
+    transition: transform 0.2s ease;
+    opacity: 0.7;
+  }
+
+  .nav-double__utility-link:hover {
+    color: var(--text, #111);
+  }
+
+  .nav-double__utility-link:hover .nav-double__utility-icon {
+    transform: translateX(3px);
+    opacity: 1;
+  }
+
+  /* --- Bottom Tier (Desktop Panel) --- */
+  .nav-double__panel {
+    background: var(--nav-bottom-bg);
+    border-bottom: 1px solid var(--nav-border);
+    box-shadow: 0 4px 20px -10px color-mix(in srgb, var(--text, #111) 5%, transparent);
+    width: 100%;
+  }
+
+  .nav-double__shell--bottom {
+    display: flex;
+    justify-content: center;
+    padding-block: 0.5rem;
+  }
+
+  .nav-double__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-double__item {
+    display: flex;
+    position: relative; /* For dropdown positioning */
+  }
+
+  /* Main Links & Dropdown Toggles */
+  .nav-double__link,
+  .nav-double__dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    color: color-mix(in srgb, var(--text, #111) 85%, transparent);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .nav-double__link:hover,
+  .nav-double__dropdown-toggle:hover {
+    background: color-mix(in srgb, var(--text, #111) 6%, transparent);
+    color: var(--accent, #0055ff);
+  }
+
+  .nav-double__dropdown-chevron {
+    display: inline-flex;
+    transition: transform 0.2s ease;
+  }
+
+  .nav-double__dropdown-toggle[aria-expanded="true"] .nav-double__dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Dropdown Menu (Desktop) */
+  .nav-double__dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    min-width: 14rem;
+    margin: 0;
+    padding: 0.5rem;
+    list-style: none;
+    background: var(--nav-bottom-bg);
+    border: 1px solid var(--nav-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--text, #111) 20%, transparent);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+  }
+
+  .nav-double__dropdown:hover .nav-double__dropdown-menu,
+  .nav-double__dropdown:focus-within .nav-double__dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .nav-double__dropdown-link {
+    display: block;
+    padding: 0.6rem 0.8rem;
+    color: color-mix(in srgb, var(--text, #111) 80%, transparent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-double__dropdown-link:hover {
+    background: color-mix(in srgb, var(--accent, #0055ff) 10%, transparent);
+    color: var(--accent, #0055ff);
+  }
+
+  /* Hide utility links from bottom tier on desktop */
+  .nav-double__item--mobile-only {
+    display: none;
+  }
+
+  /* CTA Button */
+  .nav-double__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--bg, #fff);
+    background: var(--text, #111);
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .nav-double__cta:hover {
+    background: var(--accent, #0055ff);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px -5px color-mix(in srgb, var(--accent, #0055ff) 50%, transparent);
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-double__toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: -0.5rem; /* Offsets the internal padding so it aligns flush right */
+    z-index: 102;
+  }
+
+  .nav-double__toggle-box {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-double__toggle-inner {
+    display: block;
+    top: 50%;
+    margin-top: -1px;
+  }
+
+  .nav-double__toggle-inner, 
+  .nav-double__toggle-inner::before, 
+  .nav-double__toggle-inner::after {
+    width: 24px;
+    height: 2px;
+    background-color: var(--text, #111);
+    position: absolute;
+    transition-property: transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+    border-radius: 4px;
+  }
+
+  .nav-double__toggle-inner::before, 
+  .nav-double__toggle-inner::after {
+    content: "";
+    display: block;
+  }
+
+  .nav-double__toggle-inner::before { top: -7px; }
+  .nav-double__toggle-inner::after { bottom: -7px; }
+
+  .nav-double__toggle--active .nav-double__toggle-inner {
+    transform: rotate(45deg);
+  }
+  .nav-double__toggle--active .nav-double__toggle-inner::before {
+    top: 0;
+    opacity: 0;
+  }
+  .nav-double__toggle--active .nav-double__toggle-inner::after {
+    bottom: 0;
+    transform: rotate(-90deg);
+  }
+
+  .nav-double__mobile-header {
+    display: none;
+  }
+
+  .nav-double__overlay {
+    display: none;
+  }
+
+  /* ================================= */
+  /* MOBILE — ≤ 991px                  */
+  /* ================================= */
+  @media (max-width: 991px) {
+    .nav-double__shell {
+      padding-inline: 1.25rem;
+    }
+
+    .nav-double__shell--top {
+      padding-block: 0.85rem;
+    }
+
+    /* Hide desktop UI elements */
+    .nav-double__utility {
+      display: none;
+    }
+
+    .nav-double__toggle {
+      display: block;
+    }
+
+    /* Full Screen Overlay */
+    .nav-double__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--text, #111) 40%, transparent);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-double__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Slide-out Sidebar - Converted from Desktop Panel */
+    .nav-double__panel {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: min(85vw, 360px);
+      height: 100dvh;
+      background: var(--bg, #fff);
+      border: none; /* Kill desktop bottom border */
+      border-right: 1px solid var(--nav-border);
+      box-shadow: 20px 0 40px rgba(0,0,0,0.08);
+      z-index: 101;
+      transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+    }
+
+    .nav-double__panel--open {
+      left: 0;
+    }
+
+    /* Override the shell styling for the mobile vertical scroll */
+    .nav-double__shell--bottom {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 0;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .nav-double__mobile-header {
+      display: flex;
+      flex-shrink: 0;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--nav-border);
+      background: var(--nav-top-bg);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Mobile List Structure */
+    .nav-double__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.25rem;
+      padding: 0.5rem 1rem 2rem;
+    }
+
+    .nav-double__item {
+      width: 100%;
+      flex-direction: column;
+    }
+
+    .nav-double__item--mobile-only {
+      display: flex; /* Restore utility links for mobile drawer */
+    }
+
+    /* Mobile Links & Toggles */
+    .nav-double__link,
+    .nav-double__dropdown-toggle {
+      width: 100%;
+      justify-content: space-between;
+      padding: 0.9rem 1rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text, #111);
+      border-radius: 12px;
+    }
+
+    .nav-double__link:hover,
+    .nav-double__dropdown-toggle:hover {
+      background: color-mix(in srgb, var(--text, #111) 6%, transparent);
+      color: var(--text, #111);
+    }
+
+    /* Mobile Dropdown Implementation */
+    .nav-double__dropdown {
+      width: 100%;
+    }
+
+    .nav-double__dropdown-menu {
+      position: static;
+      min-width: 0;
+      box-shadow: none;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      display: none;
+      background: transparent;
+      padding: 0 0 0 1rem; 
+      margin: 0.25rem 0 0.5rem 0.75rem;
+      border: none;
+      border-left: 2px solid var(--nav-border);
+      border-radius: 0;
+    }
+
+    /* PREVENT desktop hover behavior from hijacking the mobile dropdown */
+    .nav-double__dropdown:hover .nav-double__dropdown-menu,
+    .nav-double__dropdown:focus-within .nav-double__dropdown-menu {
+      transform: none;
+    }
+
+    .nav-double__dropdown-toggle[aria-expanded='true'] + .nav-double__dropdown-menu {
+      display: block;
+    }
+
+    .nav-double__dropdown-link {
+      font-size: 0.95rem;
+      padding: 0.65rem 0.85rem;
+      font-weight: 500;
+      color: color-mix(in srgb, var(--text, #111) 75%, transparent);
+      border-radius: 8px;
+    }
+
+    .nav-double__dropdown-link:hover {
+      background: color-mix(in srgb, var(--text, #111) 6%, transparent);
+      color: var(--text, #111);
+    }
+
+    /* Mobile CTA */
+    .nav-double__cta {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 1rem;
+      padding: 1rem;
+      font-size: 1.05rem;
+      border-radius: 12px;
+    }
+  }
+</style>

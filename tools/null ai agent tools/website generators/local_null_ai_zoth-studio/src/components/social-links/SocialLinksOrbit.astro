@@ -1,0 +1,143 @@
+---
+interface SocialItem {
+  label: string;
+  url: string;
+  handle?: string;
+  description?: string;
+  platform?: string;
+}
+
+interface SocialLinksConfig {
+  eyebrow: string;
+  heading: string;
+  subtext: string;
+  links: SocialItem[];
+}
+
+interface Props {
+  config: SocialLinksConfig;
+  data?: Partial<SocialLinksConfig>;
+}
+
+const { config, data = {} } = Astro.props;
+const section: SocialLinksConfig = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  links: data.links ?? config.links,
+};
+---
+
+<section class="social-orbit" aria-labelledby="social-orbit-title">
+  <div class="social-orbit__halo" aria-hidden="true"></div>
+  <header>
+    <p>{section.eyebrow}</p>
+    <h2 id="social-orbit-title">{section.heading}</h2>
+    <p class="social-orbit__subtext">{section.subtext}</p>
+  </header>
+
+  <ul>
+    {section.links.map((link) => (
+      <li>
+        <a href={link.url} target="_blank" rel="noreferrer">
+          <strong>{link.label}</strong>
+          {link.handle && <span>{link.handle}</span>}
+          {link.description && <small>{link.description}</small>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .social-orbit {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 3.8rem) 1rem;
+    position: relative;
+    overflow: clip;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .social-orbit__halo {
+    position: absolute;
+    inset: -20% -20% auto;
+    height: 280px;
+    background:
+      radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accentColor) 30%, transparent), transparent 45%),
+      radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--textColor) 10%, transparent), transparent 40%);
+    filter: blur(10px);
+    pointer-events: none;
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+  }
+
+  header p {
+    margin: 0;
+    color: var(--accentColor);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  h2 {
+    margin: 0.62rem 0 0;
+    font-size: clamp(1.7rem, 4.2vw, 2.7rem);
+    line-height: 1.06;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .social-orbit__subtext {
+    margin: 0.8rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 84%, transparent);
+  }
+
+  ul {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  li a {
+    display: block;
+    text-decoration: none;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 94%, var(--accentColor) 6%);
+    padding: 0.9rem;
+    color: var(--textColor);
+  }
+
+  li strong {
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  li span {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--accentColor);
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  li small {
+    display: block;
+    margin-top: 0.3rem;
+    color: color-mix(in srgb, var(--textColor) 74%, transparent);
+  }
+
+  @media (min-width: 860px) {
+    ul {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

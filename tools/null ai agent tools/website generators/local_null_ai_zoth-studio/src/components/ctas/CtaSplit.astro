@@ -1,0 +1,150 @@
+---
+import type { CTAData } from '../../configs/cta';
+
+interface Props {
+  data?: CTAData;
+  config?: CTAData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: CTAData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  buttons: data.buttons ?? config.buttons,
+  backgroundImage: data.backgroundImage ?? config.backgroundImage,
+  backgroundAlt: data.backgroundAlt ?? config.backgroundAlt,
+};
+
+const hasMedia = Boolean(section.backgroundImage);
+---
+
+<section class="cta-split" aria-labelledby="cta-split-heading">
+  <div class="cta-split__copy">
+    {section.eyebrow && <p class="cta-split__eyebrow">{section.eyebrow}</p>}
+    <h2 id="cta-split-heading">{section.heading}</h2>
+    {section.subtext && <p class="cta-split__subtext">{section.subtext}</p>}
+
+    {section.buttons && section.buttons.length > 0 && (
+      <div class="cta-split__actions">
+        {section.buttons.map((btn) => (
+          <a href={btn.url} class={`cta-split__btn ${btn.variant ?? 'primary'}`}>{btn.label}</a>
+        ))}
+      </div>
+    )}
+  </div>
+
+  {hasMedia && (
+    <aside class="cta-split__media" aria-hidden="true">
+      <img src={section.backgroundImage} alt={section.backgroundAlt || ''} loading="lazy" decoding="async" />
+    </aside>
+  )}
+</section>
+
+<style>
+  .cta-split {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) clamp(1rem, 4vw, 2.5rem);
+    display: grid;
+    gap: 1.2rem;
+    align-items: center;
+    grid-template-columns: 1fr;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .cta-split__copy {
+    max-width: 56ch;
+  }
+
+  .cta-split__eyebrow {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .cta-split h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.5rem, 3.8vw, 2.4rem);
+    line-height: 1.12;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .cta-split__subtext {
+    margin: 0.7rem 0 0;
+    line-height: 1.65;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .cta-split__actions {
+    margin-top: 1.1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  .cta-split__btn {
+    text-decoration: none;
+    border-radius: 12px;
+    padding: 0.72rem 1.05rem;
+    font-weight: 700;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cta-split__btn.primary {
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 65%, #7fe4ff 35%));
+    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--accentColor) 75%, #000 25%);
+    box-shadow: 0 16px 35px -22px color-mix(in srgb, var(--accentColor) 68%, #000 32%);
+  }
+
+  .cta-split__btn.secondary {
+    background: color-mix(in srgb, var(--bgColor) 88%, white 12%);
+    border: 1px solid color-mix(in srgb, var(--textColor) 22%, transparent);
+    color: var(--textColor);
+  }
+
+  .cta-split__btn.ghost {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--textColor) 28%, transparent);
+    color: var(--textColor);
+  }
+
+  .cta-split__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .cta-split__media {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    aspect-ratio: 16 / 10;
+  }
+
+  .cta-split__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @media (min-width: 900px) {
+    .cta-split {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-split__btn {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,124 @@
+---
+interface FormPanelGridField {
+  type: 'text' | 'email' | 'tel' | 'textarea';
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
+
+interface FormPanelGridConfig {
+  eyebrow: string;
+  title: string;
+  description: string;
+  fields: FormPanelGridField[];
+  submitButtonText: string;
+}
+
+interface Props {
+  config: FormPanelGridConfig;
+}
+
+const { config } = Astro.props as Props;
+---
+<section class="f08" aria-labelledby="f08-title">
+  <div class="head">
+    <p>{config.eyebrow}</p>
+    <h2 id="f08-title">{config.title}</h2>
+    <small>{config.description}</small>
+  </div>
+  <form action="#" method="post">
+    {config.fields.map((field) => (
+      <label class:list={[field.type === 'textarea' && 'full']}>
+        <span>{field.label}</span>
+        {field.type === 'textarea' ? <textarea name={field.label.toLowerCase().replace(/\s+/g, '-')} required={field.required} placeholder={field.placeholder}></textarea> : <input type={field.type} name={field.label.toLowerCase().replace(/\s+/g, '-')} required={field.required} placeholder={field.placeholder} />}
+      </label>
+    ))}
+    <button class="full" type="submit">{config.submitButtonText}</button>
+  </form>
+</section>
+<style>
+.f08 {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: clamp(1.8rem, 2.6vw, 2.6rem) 1rem;
+  border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bgColor) 95%, var(--accentColor) 5%);
+}
+.head p {
+  margin: 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accentColor);
+  font-weight: 700;
+}
+h2 {
+  margin: 0.45rem 0 0;
+  font-size: clamp(1.4rem, 3.4vw, 2.1rem);
+}
+.head small {
+  display: block;
+  margin-top: 0.55rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--textColor) 80%, transparent);
+}
+form {
+  margin-top: 0.95rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+label {
+  display: grid;
+  gap: 0.25rem;
+  background: var(--bgColor);
+  border: 1px solid color-mix(in srgb, var(--textColor) 14%, transparent);
+  border-radius: 10px;
+  padding: 0.58rem;
+}
+label.full,
+.full {
+  grid-column: 1 / -1;
+}
+span {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+input,
+textarea {
+  border: 0;
+  background: transparent;
+  outline: none;
+}
+label:focus-within {
+  border-color: color-mix(in srgb, var(--accentColor) 62%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 20%, transparent);
+}
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.74rem 0.98rem;
+  background: linear-gradient(120deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 64%, black 36%));
+  color: #fff;
+  font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px -14px color-mix(in srgb, var(--accentColor) 76%, black 24%);
+}
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 28%, transparent);
+}
+@media (min-width: 840px) {
+  form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+</style>

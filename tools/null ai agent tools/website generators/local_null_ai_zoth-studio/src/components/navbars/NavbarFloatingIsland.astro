@@ -1,0 +1,616 @@
+---
+import config from '../../configs/navbars/navbar-floating-island.json';
+import BrandMark from './BrandMark.astro';
+
+interface NavChildItem {
+  label: string;
+  url: string;
+}
+
+interface NavItem {
+  label: string;
+  url: string;
+  type?: 'link' | 'button' | 'dropdown';
+  children?: NavChildItem[];
+}
+
+interface NavData {
+  homeUrl?: string;
+  labels?: { menuToggle?: string; dropdownPrefix?: string };
+  brand?: { name?: string; logoUrl?: string; fallbackIcon?: string };
+  menu?: NavItem[];
+  settings?: { sticky?: boolean };
+}
+
+interface Props {
+  data?: NavData;
+}
+
+const { data } = Astro.props;
+const navData: NavData = data ?? (config as NavData);
+const pathname = new URL(Astro.request.url).pathname;
+---
+
+<header class:list={['nav-float', navData.settings?.sticky && 'nav-float--sticky']} data-nav-float>
+  <div class="nav-float__overlay" aria-hidden="true" data-nav-overlay></div>
+
+  <div class="nav-float__shell">
+    
+    <BrandMark
+      href={navData.homeUrl ?? '/'}
+      brand={navData.brand}
+      brandClass="nav-float__brand"
+      logoClass="nav-float__brand-logo"
+      titleClass="nav-float__brand-title"
+    />
+
+    <nav class="nav-float__panel" aria-label="Primary navigation" data-nav-menu>
+      
+      <button class="nav-float__close" type="button" aria-label="Close menu" data-nav-close>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <ul class="nav-float__list">
+        {(navData.menu ?? []).map((item) => (
+          <li class="nav-float__item">
+            {item.type === 'button' ? (
+              <a class="nav-float__cta" href={item.url}>
+                {item.label}
+              </a>
+            ) : item.type === 'dropdown' ? (
+              <div class="nav-float__dropdown" data-dropdown>
+                <button class="nav-float__dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                  <span>{item.label}</span>
+                  <svg class="nav-float__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <ul class="nav-float__dropdown-menu">
+                  {(item.children ?? []).map((child) => (
+                    <li>
+                      <a
+                        href={child.url}
+                        class:list={[
+                          'nav-float__dropdown-link',
+                          pathname === child.url && 'nav-float__dropdown-link--active',
+                        ]}
+                      >
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <a 
+                class:list={['nav-float__link', pathname === item.url && 'nav-float__link--active']} 
+                href={item.url}
+              >
+                {item.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <button class="nav-float__toggle" type="button" aria-expanded="false" aria-label={navData.labels?.menuToggle ?? 'Open menu'} data-nav-toggle>
+      <span class="nav-float__toggle-box">
+        <span class="nav-float__toggle-inner"></span>
+      </span>
+    </button>
+    
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav-float]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    const closeBtn = root.querySelector<HTMLButtonElement>('[data-nav-close]');
+    const panel = root.querySelector<HTMLElement>('[data-nav-menu]');
+    const overlay = root.querySelector<HTMLElement>('[data-nav-overlay]');
+    const dropdowns = root.querySelectorAll<HTMLElement>('[data-dropdown]');
+    const closeOnClickLinks = root.querySelectorAll<HTMLAnchorElement>('.nav-float__link, .nav-float__dropdown-link, .nav-float__cta');
+
+    if (!toggle || !panel || !overlay) return;
+
+    const closeMenu = () => {
+      panel.classList.remove('nav-float__panel--open');
+      overlay.classList.remove('nav-float__overlay--visible');
+      toggle.classList.remove('nav-float__toggle--active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      
+      dropdowns.forEach((d) => {
+        const btn = d.querySelector('.nav-float__dropdown-toggle');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      });
+    };
+
+    const openMenu = () => {
+      panel.classList.add('nav-float__panel--open');
+      overlay.classList.add('nav-float__overlay--visible');
+      toggle.classList.add('nav-float__toggle--active');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = panel.classList.contains('nav-float__panel--open');
+      if (isOpen) closeMenu(); else openMenu();
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+    overlay.addEventListener('click', closeMenu);
+    
+    closeOnClickLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+    // Dropdown Logic
+    dropdowns.forEach((dropdown) => {
+      const btn = dropdown.querySelector('.nav-float__dropdown-toggle');
+      if (!btn) return;
+      
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        
+        dropdowns.forEach((other) => {
+          if (other !== dropdown) {
+            const otherBtn = other.querySelector('.nav-float__dropdown-toggle');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        
+        btn.setAttribute('aria-expanded', String(!isExpanded));
+      });
+    });
+
+    // Close dropdowns on outside click (desktop)
+    document.addEventListener('click', (event) => {
+      const target = event.target as Node;
+      let clickedInsideDropdown = false;
+      dropdowns.forEach(d => {
+        if (d.contains(target)) clickedInsideDropdown = true;
+      });
+      if (!clickedInsideDropdown && !toggle.contains(target)) {
+        dropdowns.forEach(d => {
+          const btn = d.querySelector('.nav-float__dropdown-toggle');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 992) closeMenu();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu();
+    });
+  });
+</script>
+
+<style>
+  /* --- Box Sizing Reset --- */
+  .nav-float, 
+  .nav-float *, 
+  .nav-float *::before, 
+  .nav-float *::after {
+    box-sizing: border-box;
+  }
+
+  /* --- Base Wrapper --- */
+  .nav-float {
+    --nav-glass-bg: color-mix(in srgb, var(--bg, #fff) 75%, transparent);
+    --nav-border: color-mix(in srgb, var(--text, #111) 8%, transparent);
+    --nav-shadow-color: color-mix(in srgb, var(--text, #111) 12%, transparent);
+    
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    padding-top: 1.5rem;
+    pointer-events: none;
+  }
+
+  .nav-float--sticky {
+    position: sticky;
+    top: 0;
+  }
+
+  /* --- The Island (Shell) --- */
+  .nav-float__shell {
+    position: relative;
+    pointer-events: auto;
+    width: min(78rem, 92%);
+    margin-inline: auto;
+    padding: 0.6rem 0.6rem 0.6rem 1.5rem;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+  }
+
+  /* Filter applied to pseudo-element to prevent fixed-positioning bug */
+  .nav-float__shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--nav-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--nav-border);
+    box-shadow: 0 20px 40px -15px var(--nav-shadow-color),
+                0 0 0 1px color-mix(in srgb, var(--bg, #fff) 50%, transparent) inset;
+    pointer-events: none;
+  }
+
+  /* --- Branding --- */
+  .nav-float__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--text, #111);
+    z-index: 102;
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-float__brand:hover {
+    opacity: 0.8;
+  }
+
+  .nav-float__brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    object-fit: contain;
+    box-shadow: 0 4px 10px -2px color-mix(in srgb, var(--text, #111) 20%, transparent);
+  }
+
+  .nav-float__brand-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+  }
+
+  /* --- Desktop Links Panel --- */
+  .nav-float__panel {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-float__close {
+    display: none; /* Mobile only */
+  }
+
+  .nav-float__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  .nav-float__item {
+    display: flex;
+    position: relative; /* For dropdown */
+  }
+
+  /* Standard Links & Dropdown Toggles */
+  .nav-float__link,
+  .nav-float__dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    text-decoration: none;
+    color: color-mix(in srgb, var(--text, #111) 85%, transparent);
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .nav-float__link:hover,
+  .nav-float__dropdown-toggle:hover {
+    background: color-mix(in srgb, var(--text, #111) 6%, transparent);
+    color: var(--accent, #0055ff);
+  }
+
+  .nav-float__link--active {
+    background: color-mix(in srgb, var(--accent, #0055ff) 10%, transparent);
+    color: var(--accent, #0055ff);
+  }
+
+  /* Dropdown Chevron */
+  .nav-float__chevron {
+    transition: transform 0.2s ease;
+  }
+  .nav-float__dropdown-toggle[aria-expanded="true"] .nav-float__chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Dropdown Menu (Desktop Floating Pill Style) */
+  .nav-float__dropdown-menu {
+    position: absolute;
+    top: calc(100% + 1rem); /* Floats further away */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    min-width: 14rem;
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem;
+    border-radius: 24px; /* Matches pill shape */
+    background: var(--bg, #fff);
+    border: 1px solid var(--nav-border);
+    box-shadow: 0 16px 32px -12px var(--nav-shadow-color);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+  }
+
+  .nav-float__dropdown-toggle[aria-expanded="true"] + .nav-float__dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .nav-float__dropdown-link {
+    display: block;
+    padding: 0.65rem 1rem;
+    color: color-mix(in srgb, var(--text, #111) 85%, transparent);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border-radius: 18px; /* Inner pill shape */
+    transition: all 0.2s ease;
+    text-align: center; /* Center text to fit the bubble vibe */
+  }
+
+  .nav-float__dropdown-link:hover,
+  .nav-float__dropdown-link--active {
+    background: color-mix(in srgb, var(--text, #111) 6%, transparent);
+    color: var(--accent, #0055ff);
+  }
+
+  /* CTA Button inside Nav */
+  .nav-float__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--bg, #fff);
+    background: var(--text, #111);
+    padding: 0.65rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-left: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--text, #111) 40%, transparent);
+  }
+
+  .nav-float__cta:hover {
+    background: var(--accent, #0055ff);
+    color: var(--bg, #fff);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--accent, #0055ff) 60%, transparent);
+  }
+
+  /* --- Mobile Hamburger Toggle --- */
+  .nav-float__toggle {
+    display: none;
+    background: color-mix(in srgb, var(--text, #111) 4%, transparent);
+    border: 1px solid var(--nav-border);
+    cursor: pointer;
+    padding: 0.6rem;
+    border-radius: 50%;
+    z-index: 102;
+    transition: background 0.2s ease;
+  }
+
+  .nav-float__toggle:hover {
+    background: color-mix(in srgb, var(--text, #111) 8%, transparent);
+  }
+
+  .nav-float__toggle-box {
+    width: 20px;
+    height: 18px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .nav-float__toggle-inner, 
+  .nav-float__toggle-inner::before, 
+  .nav-float__toggle-inner::after {
+    width: 20px;
+    height: 2px;
+    background-color: var(--text, #111);
+    position: absolute;
+    transition: transform 0.2s ease;
+    border-radius: 4px;
+    display: block;
+    content: "";
+  }
+  .nav-float__toggle-inner { top: 50%; margin-top: -1px; }
+  .nav-float__toggle-inner::before { top: -6px; }
+  .nav-float__toggle-inner::after { bottom: -6px; }
+
+  .nav-float__overlay {
+    display: none;
+  }
+
+  /* ================================= */
+  /* MOBILE — ≤ 991px                  */
+  /* ================================= */
+  @media (max-width: 991px) {
+    .nav-float {
+      padding-top: 1rem;
+    }
+
+    .nav-float__shell {
+      padding: 0.6rem 0.6rem 0.6rem 1.25rem;
+    }
+
+    .nav-float__toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Full Screen Dark Overlay */
+    .nav-float__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--bg, #fff) 40%, black);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-float__overlay--visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Floating Modal Island (Replaces edge-attached drawer) */
+    .nav-float__panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -45%) scale(0.95);
+      width: min(90vw, 400px);
+      max-height: 85dvh;
+      background: var(--bg, #fff);
+      border: 1px solid var(--nav-border);
+      border-radius: 32px;
+      z-index: 101;
+      padding: 3.5rem 1.5rem 2rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      pointer-events: none;
+      box-shadow: 0 30px 60px -20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-float__panel--open {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Modal Close Button */
+    .nav-float__close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--text, #111) 4%, transparent);
+      border: none;
+      color: var(--text, #111);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .nav-float__close:hover {
+      background: color-mix(in srgb, var(--text, #111) 8%, transparent);
+    }
+
+    /* Mobile Link Adjustments */
+    .nav-float__list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .nav-float__item {
+      width: 100%;
+      flex-direction: column;
+    }
+
+    .nav-float__link,
+    .nav-float__dropdown-toggle {
+      width: 100%;
+      padding: 1.1rem;
+      font-size: 1.1rem;
+      border-radius: 20px;
+      justify-content: space-between;
+      text-align: left;
+    }
+    
+    .nav-float__dropdown-toggle[aria-expanded="true"] {
+      background: color-mix(in srgb, var(--text, #111) 4%, transparent);
+    }
+
+    /* Floating Sub-menu inside the Modal */
+    .nav-float__dropdown-menu {
+      position: static;
+      transform: none;
+      width: 100%;
+      box-shadow: none;
+      border: none;
+      background: transparent;
+      padding: 0 0.5rem;
+      margin: 0.25rem 0 0.5rem;
+      display: none;
+    }
+
+    /* Prevent desktop hover */
+    .nav-float__dropdown:hover .nav-float__dropdown-menu,
+    .nav-float__dropdown:focus-within .nav-float__dropdown-menu {
+      transform: none;
+    }
+
+    .nav-float__dropdown-toggle[aria-expanded="true"] + .nav-float__dropdown-menu {
+      display: block;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-float__dropdown-link {
+      font-size: 1rem;
+      padding: 0.8rem;
+      border-radius: 14px;
+      text-align: left; /* Revert center alignment for mobile */
+      color: color-mix(in srgb, var(--text, #111) 75%, transparent);
+    }
+
+    .nav-float__dropdown-link:hover,
+    .nav-float__dropdown-link--active {
+      background: color-mix(in srgb, var(--text, #111) 6%, transparent);
+      color: var(--text, #111);
+    }
+
+    /* Modal CTA */
+    .nav-float__cta {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 1.5rem;
+      padding: 1.15rem;
+      font-size: 1.1rem;
+      border-radius: 999px;
+    }
+  }
+</style>

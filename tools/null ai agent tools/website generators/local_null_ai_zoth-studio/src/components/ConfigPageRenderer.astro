@@ -1,0 +1,116 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import SectionRenderer from './SectionRenderer.astro';
+import type { SectionData, SectionType } from './SectionRenderer.astro';
+
+interface SEOData {
+  title: string;
+  description: string;
+  ogImage?: string;
+  keywords?: string[];
+  author?: string;
+}
+
+interface PageConfig {
+  weight: number;
+  sections: SectionData[];
+  themeVariant?: string;
+  seo?: SEOData;
+}
+
+interface SectionOverride {
+  cvariant?: string;
+  constraints?: {
+    wrapperClass?: string;
+    wrapperStyle?: string;
+    containerClass?: string;
+  };
+  component?: any;
+  props?: Record<string, unknown>;
+}
+
+type SectionOverrides = Record<string, SectionOverride>;
+type SectionComponents = Partial<Record<SectionType, any>>;
+type BetweenComponentMap = Record<string, any>;
+type BetweenPropsMap = Record<string, Record<string, unknown>>;
+
+interface Props {
+  config: PageConfig;
+  seo?: SEOData;
+  layout?: any;
+  layoutProps?: Record<string, unknown>;
+  navVariant?: string;
+  footerVariant?: string;
+  themeVariant?: string;
+  sectionOverrides?: SectionOverrides;
+  sectionComponents?: SectionComponents;
+  beforeSections?: BetweenComponentMap;
+  afterSections?: BetweenComponentMap;
+  beforeSectionProps?: BetweenPropsMap;
+  afterSectionProps?: BetweenPropsMap;
+}
+
+const {
+  config,
+  seo,
+  layout,
+  layoutProps = {},
+  navVariant,
+  footerVariant,
+  themeVariant,
+  sectionOverrides = {},
+  sectionComponents = {},
+  beforeSections = {},
+  afterSections = {},
+  beforeSectionProps = {},
+  afterSectionProps = {},
+} = Astro.props;
+
+const PageLayout = (layout ?? MainLayout) as typeof MainLayout;
+const resolvedThemeVariant = themeVariant ?? config.themeVariant;
+const resolvedSeo = {
+  title: 'Untitled Page',
+  description: '',
+  ...(seo ?? {}),
+  ...(config.seo ?? {}),
+};
+
+function resolveOverride(section: SectionData, index: number): SectionOverride | undefined {
+  const indexKey = String(index);
+  const idKey = section.id ? `id:${section.id}` : undefined;
+  const typeKey = `type:${section.type}`;
+
+  return sectionOverrides[indexKey] ?? (idKey ? sectionOverrides[idKey] : undefined) ?? sectionOverrides[typeKey];
+}
+---
+
+<PageLayout
+  seo={resolvedSeo}
+  weight={config.weight}
+  navVariant={navVariant}
+  footerVariant={footerVariant}
+  themeVariant={resolvedThemeVariant}
+  {...layoutProps}
+>
+  {config.sections.map((section, index) => {
+    const indexKey = String(index);
+    const BeforeSection = beforeSections[indexKey];
+    const AfterSection = afterSections[indexKey];
+
+    return (
+      <>
+        {BeforeSection && <BeforeSection {...(beforeSectionProps[indexKey] ?? {})} />}
+
+        <SectionRenderer
+          section={section}
+          components={sectionComponents}
+          override={resolveOverride(section, index)}
+        />
+
+        {AfterSection && <AfterSection {...(afterSectionProps[indexKey] ?? {})} />}
+      </>
+    );
+  })}
+
+  <slot />
+</PageLayout>

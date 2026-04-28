@@ -1,0 +1,181 @@
+---
+import type { PricingData } from '../../configs/pricing';
+
+interface Props {
+  data?: PricingData;
+  config?: PricingData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: PricingData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  tiers: data.tiers ?? config.tiers,
+};
+const tiers = Array.isArray(section.tiers) ? section.tiers : [];
+---
+
+<section class="pricing-tiered" aria-labelledby="pricing-tiered-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="pricing-tiered-heading">{section.heading}</h2>
+    {section.subtext && <p class="pricing-tiered__subtext">{section.subtext}</p>}
+  </header>
+
+  <div class="pricing-tiered__grid">
+    {tiers.map((tier) => (
+      <article class={`pricing-tiered__card ${tier.popular ? 'popular' : ''}`}>
+        {tier.popular && <span class="pricing-tiered__badge">Most Popular</span>}
+        <h3>{tier.name}</h3>
+        <div class="pricing-tiered__price">
+          <strong>{tier.price}</strong>
+          {tier.period && <span>{tier.period}</span>}
+        </div>
+        {tier.description && <p class="pricing-tiered__desc">{tier.description}</p>}
+        <ul class="pricing-tiered__features">
+          {tier.features.map((f) => (
+            <li><span>✓</span> {f}</li>
+          ))}
+        </ul>
+        <a href="#" class={`pricing-tiered__cta ${tier.popular ? 'primary' : ''}`}>{tier.cta}</a>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .pricing-tiered {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+  .pricing-tiered header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+  .pricing-tiered h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+  .pricing-tiered__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+  .pricing-tiered__grid {
+    margin-top: 1.6rem;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .pricing-tiered__card {
+    position: relative;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 12%, transparent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bgColor) 96%, white 4%), color-mix(in srgb, var(--bgColor) 92%, var(--accentColor) 8%));
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .pricing-tiered__card.popular {
+    border-color: var(--accentColor);
+    box-shadow: 0 0 0 1px var(--accentColor), 0 16px 40px -20px color-mix(in srgb, var(--accentColor) 30%, transparent);
+  }
+  .pricing-tiered__badge {
+    position: absolute;
+    top: -10px;
+    right: 16px;
+    background: var(--accentColor);
+    color: var(--accentContrastColor, #fff);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pricing-tiered__card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+  .pricing-tiered__price {
+    margin-top: 0.6rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+  }
+  .pricing-tiered__price strong {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-family: var(--fontDisplay, var(--fontFamily));
+    color: var(--accentColor);
+  }
+  .pricing-tiered__price span {
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--textColor) 68%, transparent);
+  }
+  .pricing-tiered__desc {
+    margin: 0.3rem 0 0;
+    font-size: 0.82rem;
+    color: color-mix(in srgb, var(--textColor) 72%, transparent);
+  }
+  .pricing-tiered__features {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  .pricing-tiered__features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: color-mix(in srgb, var(--textColor) 88%, transparent);
+  }
+  .pricing-tiered__features li span {
+    color: var(--accentColor);
+    flex-shrink: 0;
+  }
+  .pricing-tiered__cta {
+    margin-top: 1.2rem;
+    display: block;
+    text-align: center;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.88rem;
+    background: color-mix(in srgb, var(--bgColor) 88%, white 12%);
+    border: 1px solid color-mix(in srgb, var(--textColor) 22%, transparent);
+    color: var(--textColor);
+    transition: all 0.2s ease;
+  }
+  .pricing-tiered__cta.primary {
+    background: linear-gradient(135deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 65%, #7fe4ff 35%));
+    color: #fff;
+    border-color: color-mix(in srgb, var(--accentColor) 75%, #000 25%);
+  }
+  .pricing-tiered__cta:hover {
+    transform: translateY(-2px);
+  }
+  @media (min-width: 720px) {
+    .pricing-tiered__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .pricing-tiered__card.popular {
+      transform: scale(1.02);
+    }
+  }
+</style>

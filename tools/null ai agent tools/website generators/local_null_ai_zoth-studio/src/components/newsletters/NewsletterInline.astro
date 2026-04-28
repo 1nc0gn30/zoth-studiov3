@@ -1,0 +1,188 @@
+---
+import type { NewsletterData } from '../../configs/newsletter';
+
+interface Props {
+  data?: NewsletterData;
+  config?: NewsletterData;
+}
+
+const { data = {}, config = {} } = Astro.props;
+const section: NewsletterData = {
+  eyebrow: data.eyebrow ?? config.eyebrow,
+  heading: data.heading ?? config.heading,
+  subtext: data.subtext ?? config.subtext,
+  placeholder: data.placeholder ?? config.placeholder,
+  buttonLabel: data.buttonLabel ?? config.buttonLabel,
+  privacyText: data.privacyText ?? config.privacyText,
+  action: data.action ?? config.action,
+  netlify: data.netlify ?? config.netlify,
+  netlifyName: data.netlifyName ?? config.netlifyName,
+};
+
+const formAction = section.action || '#';
+const netlifyAttrs = section.netlify
+  ? { 'data-netlify': 'true', name: section.netlifyName || 'newsletter-inline' }
+  : {};
+---
+
+<section class="newsletter-inline" aria-labelledby="newsletter-inline-heading">
+  <header>
+    {section.eyebrow && <p>{section.eyebrow}</p>}
+    <h2 id="newsletter-inline-heading">{section.heading}</h2>
+    {section.subtext && <p class="newsletter-inline__subtext">{section.subtext}</p>}
+  </header>
+
+  <form
+    class="newsletter-inline__form"
+    action={formAction}
+    method="POST"
+    {...netlifyAttrs}
+  >
+    {section.netlify && <input type="hidden" name="form-name" value={netlifyAttrs.name} />}
+    <label class="newsletter-inline__field" for="newsletter-inline-email">
+      <span class="sr-only">{section.placeholder || 'Email address'}</span>
+      <input
+        id="newsletter-inline-email"
+        type="email"
+        name="email"
+        placeholder={section.placeholder || 'Email address'}
+        required
+        aria-required="true"
+      />
+    </label>
+    <button type="submit">{section.buttonLabel || 'Subscribe'}</button>
+  </form>
+
+  {section.privacyText && <p class="newsletter-inline__privacy">{section.privacyText}</p>}
+</section>
+
+<style>
+  .newsletter-inline {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(2.2rem, 5vw, 4rem) 1rem;
+    font-family: var(--fontBody, var(--fontFamily));
+  }
+
+  .newsletter-inline header > p {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accentColor);
+  }
+
+  .newsletter-inline h2 {
+    margin: 0.55rem 0 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.1;
+    font-family: var(--fontDisplay, var(--fontFamily));
+  }
+
+  .newsletter-inline__subtext {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--textColor) 82%, transparent);
+  }
+
+  .newsletter-inline__form {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .newsletter-inline__field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .newsletter-inline__field input {
+    min-height: 48px;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--textColor) 18%, transparent);
+    background: color-mix(in srgb, var(--bgColor) 96%, var(--accentColor) 4%);
+    color: var(--textColor);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .newsletter-inline__field input::placeholder {
+    color: color-mix(in srgb, var(--textColor) 55%, transparent);
+  }
+
+  .newsletter-inline__field input:hover {
+    border-color: color-mix(in srgb, var(--accentColor) 46%, transparent);
+  }
+
+  .newsletter-inline__field input:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--accentColor) 72%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 25%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .newsletter-inline__form button {
+    min-height: 48px;
+    border: 0;
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(120deg, var(--accentColor), color-mix(in srgb, var(--accentColor) 60%, black 40%));
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+  }
+
+  .newsletter-inline__form button:hover {
+    transform: translateY(-1px);
+    filter: saturate(1.07);
+    box-shadow: 0 10px 18px -12px color-mix(in srgb, var(--accentColor) 75%, black 25%);
+  }
+
+  .newsletter-inline__form button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accentColor) 28%, transparent);
+  }
+
+  .newsletter-inline__privacy {
+    margin: 0.6rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--textColor) 65%, transparent);
+  }
+
+  @media (min-width: 640px) {
+    .newsletter-inline__form {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .newsletter-inline__field input,
+    .newsletter-inline__form button {
+      transition: none;
+    }
+  }
+</style>
