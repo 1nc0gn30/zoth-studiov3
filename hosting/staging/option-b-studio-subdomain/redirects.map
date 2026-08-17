@@ -1,0 +1,69 @@
+# redirects.map — zoth.nealfrazier.tech → studio.nullai.tech
+
+## Purpose
+Map every path on the old domain to the same path on the new studio subdomain after Layout B cutover.
+
+## Cloudflare Tunnel / nginx redirect (laptop origin)
+
+Update the `:8088` Cloudflare Tunnel ingress or local nginx so that all traffic for `zoth.nealfrazier.tech` 301-redirects to `studio.nullai.tech`.
+
+### nginx map block (if terminating at local nginx before tunnel)
+
+```nginx
+# In the existing zoth.nealfrazier.tech server block (port 8088 or tunnel edge)
+map $host $redirect_target {
+    default "";
+    "zoth.nealfrazier.tech" "https://studio.nullai.tech$request_uri";
+}
+
+server {
+    listen 80;
+    server_name zoth.nealfrazier.tech;
+
+    if ($redirect_target) {
+        return 301 $redirect_target;
+    }
+
+    # ... existing local :8088 fallback if needed
+}
+```
+
+### Cloudflare Page Rule (recommended if tunnel-managed)
+
+1. Dashboard → **Rules → Page Rules** → **Create Page Rule**
+2. URL pattern: `zoth.nealfrazier.tech/*`
+3. Setting: **Forwarding URL (301)** → `https://studio.nullai.tech/$1`
+
+This avoids hitting the laptop origin entirely and offloads the redirect to Cloudflare edge.
+
+## Cloudflare DNS-only alternative (if DNS managed in hPanel)
+
+| Type | Name | Value |
+|------|------|-------|
+| CNAME | `zoth` | `studio.nullai.tech` |
+
+> Only use this if `zoth.nealfrazier.tech` is already nameservered to Hostinger / hPanel. Do not create a CNAME in hPanel while the domain is still on Cloudflare nameservers, because the Cloudflare proxy will continue serving the old `:8088` content regardless of the hPanel record.
+
+## Per-path examples
+
+| Old URL | New URL |
+|---------|---------|
+| `https://zoth.nealfrazier.tech/` | `https://studio.nullai.tech/` |
+| `https://zoth.nealfrazier.tech/pets/` | `https://studio.nullai.tech/pets/` |
+| `https://zoth.nealfrazier.tech/studio/` | `https://studio.nullai.tech/studio/` |
+| `https://zoth.nealfrazier.tech/vault/` | `https://studio.nullai.tech/vault/` |
+| `https://zoth.nealfrazier.tech/llms.txt` | `https://studio.nullai.tech/llms.txt` |
+| `https://zoth.nealfrazier.tech/sitemap.xml` | `https://studio.nullai.tech/sitemap.xml` |
+
+All paths must preserve the full request URI (`$request_uri`). Do not strip query strings or trailing slashes.
+
+## Canonical + link rel updates (after redirect is confirmed live)
+
+Once the redirect is stable, update in-repo canonical URLs so search engines stop indexing `zoth.nealfrazier.tech`:
+
+- `public/index.html` `<link rel="canonical">` + JSON-LD `url`
+- `public/studio/index.html` and other `public/studio/*.html` pages
+- `public/sitemap.xml` `<loc>` entries
+- `public/llms.txt` and `public/agents.md` citations
+
+Do **not** replace across unrelated projects in this disk.

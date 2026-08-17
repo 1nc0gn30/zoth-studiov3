@@ -52,7 +52,8 @@ export default function ToolGrid({ tools }) {
   if (!tools || tools.length === 0) {
     return (
       <div className="empty-state">
-        <span className="empty-icon">🔍</span>
+        <p className="empty-kicker">A NullAI studio</p>
+        <img className="empty-mascot" src="/assets/brand/zoth-seal-master.jpg" alt="Zoth Master Seal" width="48" height="48" />
         <p>No tools match your search.</p>
       </div>
     );

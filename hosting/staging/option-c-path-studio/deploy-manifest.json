@@ -1,0 +1,92 @@
+{
+  "layout": "C",
+  "label": "Path — nullai.tech/studio/",
+  "source": {
+    "local": "public/",
+    "description": "Zoth public hub (static site, vault UI shell, pets hangar)"
+  },
+  "rsync": {
+    "preset": "hostinger-shared-to-subpath",
+    "source": "public/",
+    "destination_user": "uXXXXX",
+    "destination_host": "hostinger.host",
+    "destination_root": "public_html/studio",
+    "ssh_port": 22,
+    "delete_excluded": true,
+    "excludes": [
+      ".git/",
+      ".gitignore",
+      "tools/",
+      "vault-daemon/",
+      "runtime/data/byok.json",
+      "runtime/data/conversations.json",
+      "agent-comms/",
+      "data/",
+      "vault/",
+      "scripts/",
+      "*.psd",
+      "*.sketch",
+      "*.ai",
+      ".DS_Store",
+      "Thumbs.db",
+      "npm-debug.log",
+      "yarn-error.log",
+      ".env*",
+      "byok.json",
+      "assets/*.py",
+      "assets/models/dataset/*"
+    ],
+    "args": [
+      "-avz",
+      "--delete",
+      "--exclude='.git'",
+      "--exclude='.gitignore'",
+      "--exclude='tools/'",
+      "--exclude='vault-daemon/'",
+      "--exclude='runtime/data/byok.json'",
+      "--exclude='runtime/data/conversations.json'",
+      "--exclude='agent-comms/'",
+      "--exclude='data/'",
+      "--exclude='vault/'",
+      "--exclude='scripts/'",
+      "--exclude='*.psd'",
+      "--exclude='*.sketch'",
+      "--exclude='*.ai'",
+      "--exclude='.DS_Store'",
+      "--exclude='Thumbs.db'",
+      "--exclude='npm-debug.log'",
+      "--exclude='yarn-error.log'",
+      "--exclude='.env*'",
+      "--exclude='byok.json'",
+      "--exclude='assets/*.py'",
+      "--exclude='assets/models/dataset/*'"
+    ]
+  },
+  "hostinger": {
+    "document_root_apex": "public_html/",
+    "document_root_studio": "public_html/studio/",
+    "ensure_paths": [
+      "public_html/studio/",
+      "public_html/studio/assets/",
+      "public_html/studio/pets/",
+      "public_html/studio/vault/"
+    ],
+    "file_permissions": "644",
+    "dir_permissions": "755"
+  },
+  "notes": [
+    "public_html/studio/ must exist before rsync or the transfer will land in the wrong place.",
+    "Hostinger shared hosting uses FTP/SFTP by default; rsync works if SSH is enabled on the plan.",
+    "If SSH is unavailable, use Hostinger File Manager or FTP client to mirror public/ into public_html/studio/.",
+    "After deploy, run smokechecks against https://nullai.tech/studio/",
+    "zoth.nealfrazier.tech 301 redirect should be set in Cloudflare or Hostinger hPanel"
+  ],
+  "audit_findings": {
+    "p0_excluded_paths": [
+      "assets/*.py",
+      "assets/models/dataset/*"
+    ],
+    "p1_requires_code_fix_before_deploy": true,
+    "p1_summary": "12 public fetch/probe calls and JSON-LD links still point to 127.0.0.1:8484/8787/8765; see agent-comms/handoffs/hermes-sensitive-tree-audit.md for exact files/lines."
+  }
+}

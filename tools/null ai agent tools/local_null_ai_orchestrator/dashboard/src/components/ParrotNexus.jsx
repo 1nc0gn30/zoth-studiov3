@@ -251,7 +251,7 @@ export default function ParrotNexus() {
   if (loading && !tools) {
     return (
       <section className="pn-container">
-        <div className="pn-title">🦜 Parrot Nexus</div>
+        <div className="pn-title">Parrot Nexus</div>
         <p className="pn-loading">Scanning all Parrot OS tools…</p>
       </section>
     );
@@ -260,7 +260,7 @@ export default function ParrotNexus() {
   if (error && !tools) {
     return (
       <section className="pn-container">
-        <div className="pn-title">🦜 Parrot Nexus</div>
+        <div className="pn-title">Parrot Nexus</div>
         <div className="error-banner"><span>⚠ {error}</span><button className="retry-btn" onClick={reload}>Retry</button></div>
       </section>
     );
@@ -269,8 +269,8 @@ export default function ParrotNexus() {
   return (
     <section className="pn-container">
       <div className="pn-title-row">
-        <span className="pn-title">🦜 Parrot Nexus</span>
-        <span className="pn-subtitle">Parrot OS Tool Inventory</span>
+        <span className="pn-title">Parrot Nexus</span>
+        <span className="pn-subtitle">A NullAI studio · Parrot OS inventory</span>
         <button className="pn-refresh" onClick={reload}>↻ Refresh</button>
       </div>
 
@@ -339,7 +339,7 @@ export default function ParrotNexus() {
       {/* Presets */}
       {presets.length > 0 && (
         <div className="pn-section">
-          <div className="pn-section-label">⚡ Presets ({presets.length})</div>
+          <div className="pn-section-label">Presets ({presets.length})</div>
           <div className="pn-presets">
             {presets.map((p) => (
               <div key={p.id} className="pn-preset-card">
@@ -354,7 +354,7 @@ export default function ParrotNexus() {
       {/* Playbooks */}
       {playbooks.length > 0 && (
         <div className="pn-section">
-          <div className="pn-section-label">🎯 Playbooks ({playbooks.length})</div>
+          <div className="pn-section-label">Playbooks ({playbooks.length})</div>
           <div className="pn-playbooks">
             {playbooks.map((pb) => (
               <button

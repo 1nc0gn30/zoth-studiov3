@@ -163,19 +163,19 @@ export default function GhostByte({ toolsList }) {
         <img
           className="ghostbyte-logo"
           src="https://nullai.tech/DarkMode-NullAI-Icon.png"
-          alt="GhostByte"
+          alt="Ghost Byte, the NullAI mark"
           onError={(e) => { e.target.style.display = "none"; }}
         />
         <div className="ghostbyte-brand">
           <span className="ghostbyte-title">GhostByte</span>
-          <span className="ghostbyte-sub">agent launchpad</span>
+          <span className="ghostbyte-sub">NullAI mark · creator of Zoth</span>
         </div>
         <div className="ghostbyte-header-actions">
           <button
             className="gb-btn gb-btn-secondary"
             onClick={() => setSettingsOpen(!settingsOpen)}
           >
-            ⚙ Settings
+            Settings
           </button>
         </div>
       </div>
@@ -309,7 +309,7 @@ export default function GhostByte({ toolsList }) {
       {settingsOpen && (
         <div className="gb-settings-overlay" onClick={() => setSettingsOpen(false)}>
           <div className="gb-settings-panel" onClick={(e) => e.stopPropagation()}>
-            <h3 className="gb-settings-title">⚙ GhostByte Settings</h3>
+            <h3 className="gb-settings-title">Ghost Byte settings</h3>
             <label className="gb-setting-row">
               <span>Capture output</span>
               <input

@@ -495,3 +495,130 @@ export async function getStudioAgentStatus(name) {
   if (!res.ok) throw new Error(`Agent status: ${res.status}`);
   return res.json();
 }
+
+export function getHarnessModels() {
+  return fetchJSON("/harness/models");
+}
+
+export function getHarnessSettings() {
+  return fetchJSON("/harness/settings");
+}
+
+export function saveHarnessSettings(body) {
+  return postJSON("/harness/settings", body);
+}
+
+export function listConversations() {
+  return fetchJSON("/conversations");
+}
+
+export function getConversation(id) {
+  return fetchJSON(`/conversations/${encodeURIComponent(id)}`);
+}
+
+export function createConversation(title) {
+  return postJSON("/conversations", { title: title || "New chat" });
+}
+
+export async function deleteConversation(id) {
+  const res = await fetch(`${API_BASE}/conversations/${encodeURIComponent(id)}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Delete conversation: ${res.status}`);
+  return res.json();
+}
+
+export function harnessChat(body) {
+  return postJSON("/harness/chat", body);
+}
+
+export function harnessAnswer(body) {
+  return postJSON("/harness/answer", body);
+}
+
+export function getHarnessTools() {
+  return fetchJSON("/harness/tools");
+}
+
+export function getHarnessCommands() {
+  return fetchJSON("/harness/commands");
+}
+
+export function getHarnessConnectors() {
+  return fetchJSON("/harness/connectors");
+}
+
+export function invokeConnector(id, action = "status", args = {}) {
+  return postJSON("/harness/connectors", { id, action, args });
+}
+
+async function dispatchEnvelope(path, action, params = {}, meta = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action,
+      params,
+      meta: { request_id: `ui-${Date.now()}`, ...meta },
+    }),
+  });
+  const data = await res.json().catch(() => null);
+  if (data && typeof data === "object") return data;
+  return { ok: false, error: { message: `API ${res.status}: ${res.statusText}` } };
+}
+
+export function githubDispatch(action, params = {}, meta = {}) {
+  return dispatchEnvelope("/connect/github/dispatch", action, params, meta);
+}
+
+export function gdriveDispatch(action, params = {}, meta = {}) {
+  return dispatchEnvelope("/connect/gdrive/dispatch", action, params, meta);
+}
+
+export function getByok() {
+  return fetchJSON("/harness/byok");
+}
+
+export function saveByok(key, value) {
+  return postJSON("/harness/byok", { key, value });
+}
+
+export function getRepos() {
+  return fetchJSON("/harness/repos");
+}
+
+export function repoAction(body) {
+  return postJSON("/harness/repos", body);
+}
+
+export function getSwarm() {
+  return fetchJSON("/swarm");
+}
+
+export function postSwarmMessage(body) {
+  return postJSON("/swarm/message", body);
+}
+
+export function swarmHeartbeat(body) {
+  return postJSON("/swarm/heartbeat", body);
+}
+
+export function listTerminals() {
+  return fetchJSON("/harness/terminals");
+}
+
+export function spawnTerminal(command, label) {
+  return postJSON("/harness/terminals", { command, label });
+}
+
+export function getTerminal(id, after = 0) {
+  return fetchJSON(`/harness/terminals/${encodeURIComponent(id)}?after=${after}`);
+}
+
+export async function killTerminal(id) {
+  const res = await fetch(`${API_BASE}/harness/terminals/${encodeURIComponent(id)}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Kill terminal: ${res.status}`);
+  return res.json();
+}
+
+export function getPets() {
+  return fetchJSON("/pets");
+}

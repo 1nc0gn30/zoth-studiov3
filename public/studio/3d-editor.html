@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexus 3D Omniverse Studio — CAD-Grade WebGL Viewport & AI 3D Generator</title>
+    <meta name="description" content="Production-grade 3D CAD modeling viewport with procedural geometric generators, PBR material tuners, multi-model staging, GLTF/OBJ export, and local-first AI 3D synthesis." />
+    <meta name="theme-color" content="#05060a" />
+    <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+    <link rel="stylesheet" href="/styles.css?v=20260816s" />
+    <link rel="stylesheet" href="/studio/studio.css?v=20260816s" />
+    
+    <!-- Three.js + Postprocessing + Exporters + TransformGizmo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+    <style>
+      .studio-layout {
+        display: grid;
+        grid-template-columns: 360px 1fr 380px;
+        gap: 16px;
+        height: calc(100vh - 70px);
+        padding: 12px 16px;
+        background: #020306;
+        box-sizing: border-box;
+      }
+      @media (max-width: 1280px) {
+        .studio-layout {
+          grid-template-columns: 320px 1fr;
+        }
+        .studio-layout > aside:last-child {
+          display: none;
+        }
+      }
+      .panel-glass {
+        background: rgba(10, 14, 26, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        overflow-y: auto;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        text-align: left;
+      }
+      .viewport-container {
+        position: relative;
+        background: radial-gradient(circle at 50% 50%, #0c1326 0%, #020306 100%);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: inset 0 0 50px rgba(0, 229, 255, 0.06);
+      }
+      #three-viewport {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .viewport-top-hud {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+        z-index: 10;
+      }
+      .viewport-bottom-hud {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        pointer-events: none;
+        z-index: 10;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .hud-group {
+        display: flex;
+        gap: 6px;
+        pointer-events: auto;
+        flex-wrap: wrap;
+      }
+      .tag-pill {
+        background: rgba(4, 6, 12, 0.9);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        color: var(--cyan);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 4px 10px;
+        border-radius: 999px;
+        backdrop-filter: blur(8px);
+      }
+      .model-catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .catalog-card {
+        background: rgba(18, 24, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-sm);
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: left;
+      }
+      .catalog-card:hover {
+        border-color: var(--cyan);
+        background: rgba(0, 229, 255, 0.08);
+        transform: translateY(-2px);
+      }
+      .catalog-card .title {
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: #fff;
+      }
+      .catalog-card .sub {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        color: var(--muted);
+      }
+      .prompt-box {
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(0, 229, 255, 0.25);
+        border-radius: 10px;
+        padding: 10px 12px;
+        color: #fff;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+        outline: none;
+        resize: vertical;
+      }
+      .prompt-box:focus {
+        border-color: var(--cyan);
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+      }
+      .btn-cad {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #f1f5f9;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+      .btn-cad:hover, .btn-cad.active {
+        background: rgba(0, 229, 255, 0.15);
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+      .outliner-tree {
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 6px;
+        max-height: 140px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .outliner-item {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: #94a3b8;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .outliner-item:hover, .outliner-item.selected {
+        background: rgba(0, 229, 255, 0.12);
+        color: #fff;
+      }
+      .outliner-item.selected {
+        border-left: 2px solid var(--cyan);
+      }
+      .slider-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+      .slider-row input[type="range"] {
+        flex: 1;
+        margin-left: 12px;
+        accent-color: var(--cyan);
+      }
+      .btn-ai-gen {
+        background: linear-gradient(135deg, var(--cyan) 0%, var(--magenta) 100%);
+        border: none;
+        color: #030408;
+        font-weight: 800;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.82rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-ai-gen:hover {
+        box-shadow: 0 0 25px rgba(0, 229, 255, 0.5);
+        transform: translateY(-1px);
+      }
+    </style>
+  </head>
+  <body class="deck-page">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header is-scrolled">
+      <div class="nav">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
+          <span class="brand-text"><strong>ZOTH</strong><small>Nexus 3D Omniverse Studio</small></span>
+        </a>
+        <nav class="nav-desktop" aria-label="Primary">
+          <a href="/studio/">Dashboard</a>
+          <a href="/studio/nexus-3d.html" class="is-active">Nexus 3D</a>
+          <a href="/studio/omnipost.html">OmniPost</a>
+          <a href="/studio/agent-composer.html">Composer</a>
+          <a href="/studio/math-pillars.html">Math Pillars</a>
+          <a href="/studio/models.html">Models</a>
+          <a href="/docs/">Docs</a>
+          <a class="nav-vault" href="/vault/" data-vault-nav>Vault</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <div class="studio-layout">
+        <!-- Left Panel: Scene Outliner, CAD Tools & Procedural Forge -->
+        <aside class="panel-glass">
+          <div>
+            <span class="tag-pill">📐 CAD HIERARCHY</span>
+            <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Scene Outliner</h3>
+          </div>
+
+          <div class="outliner-tree" id="scene-outliner">
+            <div class="outliner-item selected"><span>💎 Cyber Crystal</span><small>Mesh</small></div>
+          </div>
+
+          <div>
+            <span class="tag-pill">🛠️ PROCEDURAL MESH FORGE</span>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px;">
+              <button class="btn-cad" onclick="spawnPrimitive('crystal')">💎 Crystal</button>
+              <button class="btn-cad" onclick="spawnPrimitive('tesseract')">🔮 4D Cube</button>
+              <button class="btn-cad" onclick="spawnPrimitive('helix')">🧬 DNA Helix</button>
+              <button class="btn-cad" onclick="spawnPrimitive('mobius')">🌀 Mobius</button>
+              <button class="btn-cad" onclick="spawnPrimitive('plasma_sphere')">⚡ Plasma</button>
+              <button class="btn-cad" onclick="spawnPrimitive('voxel_kai')">🐾 Kai Pet</button>
+              <button class="btn-cad" onclick="spawnPrimitive('cube')">🧊 Box</button>
+              <button class="btn-cad" onclick="spawnPrimitive('sphere')">🌐 Sphere</button>
+              <button class="btn-cad" onclick="spawnPrimitive('torus')">🍩 Torus</button>
+            </div>
+          </div>
+
+          <div>
+            <span class="tag-pill">🎨 SHADER & MATERIAL PRESETS</span>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 8px;">
+              <button class="btn-cad" onclick="applyMaterialPreset('hologram')">🌌 Hologram</button>
+              <button class="btn-cad" onclick="applyMaterialPreset('matrix')">⚡ Matrix</button>
+              <button class="btn-cad" onclick="applyMaterialPreset('chrome')">🔮 Iridescent</button>
+              <button class="btn-cad" onclick="applyMaterialPreset('glass')">🧊 Quantum Glass</button>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div class="slider-row">
+                <span>Roughness</span>
+                <input type="range" id="mat-roughness" min="0" max="1" step="0.05" value="0.1" oninput="updateSelectedMaterial()" />
+              </div>
+              <div class="slider-row">
+                <span>Metalness</span>
+                <input type="range" id="mat-metalness" min="0" max="1" step="0.05" value="0.9" oninput="updateSelectedMaterial()" />
+              </div>
+              <div class="slider-row">
+                <span>Transmission</span>
+                <input type="range" id="mat-transmission" min="0" max="1" step="0.05" value="0.6" oninput="updateSelectedMaterial()" />
+              </div>
+              <div class="slider-row">
+                <span>Wireframe</span>
+                <input type="checkbox" id="mat-wireframe" onchange="updateSelectedMaterial()" style="accent-color: var(--cyan);" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <span class="tag-pill">📦 GLTF VAULT & RIGS</span>
+            <div class="model-catalog-grid" style="margin-top: 8px;" id="model-catalog-list">
+              <div class="catalog-card" onclick="loadModelPreset('/assets/models/animated/RobotExpressive.glb', 'Expressive Bot')">
+                <span class="title">🤖 Expressive Bot</span>
+                <span class="sub">Rigged & Animated</span>
+              </div>
+              <div class="catalog-card" onclick="loadModelPreset('/assets/models/cyberpunk/cyber_turret.glb', 'Cyber Turret')">
+                <span class="title">⚡ Cyber Turret</span>
+                <span class="sub">Hard Surface PBR</span>
+              </div>
+              <div class="catalog-card" onclick="loadModelPreset('/assets/models/animated/Fox.glb', 'Cyber Fox')">
+                <span class="title">🦊 Cyber Fox</span>
+                <span class="sub">Skeletal Rig</span>
+              </div>
+              <div class="catalog-card" onclick="loadModelPreset('/assets/models/weapons/plasma_rifle.glb', 'Plasma Rifle')">
+                <span class="title">🔫 Plasma Rifle</span>
+                <span class="sub">Sci-Fi Weapon</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Center Viewport: Three.js CAD Stage -->
+        <section class="viewport-container" id="viewport-host">
+          <div class="viewport-top-hud">
+            <div class="hud-group">
+              <span class="tag-pill">🎮 [W] Trans · [E] Rot · [R] Scale · [Del] Delete</span>
+            </div>
+            <div class="hud-group">
+              <button class="btn-cad active" id="gizmo-trans" onclick="setGizmoMode('translate')">Translate</button>
+              <button class="btn-cad" id="gizmo-rot" onclick="setGizmoMode('rotate')">Rotate</button>
+              <button class="btn-cad" id="gizmo-scale" onclick="setGizmoMode('scale')">Scale</button>
+            </div>
+          </div>
+
+          <div class="viewport-bottom-hud">
+            <div class="hud-group">
+              <button class="btn-cad" onclick="cloneSelectedMesh()">📋 Clone</button>
+              <button class="btn-cad" onclick="deleteSelectedMesh()">🗑️ Delete</button>
+              <button class="btn-cad" onclick="toggleAutoRotate()">🔄 Orbit</button>
+              <button class="btn-cad" onclick="burstParticles()">💥 Particle Burst</button>
+              <button class="btn-cad" onclick="resetCamera()">🎯 Recenter</button>
+            </div>
+            <div class="hud-group">
+              <button class="btn-cad" onclick="exportSnapshotPNG()">📸 Snapshot</button>
+              <button class="btn-cad" id="btn-record-3d" onclick="recordTurntableWebM()">📹 360° Video</button>
+              <button class="btn-cad" onclick="exportSceneGLTF()">💾 GLTF</button>
+              <button class="btn-cad" onclick="exportSceneOBJ()">📦 OBJ</button>
+            </div>
+          </div>
+
+          <div id="three-viewport"></div>
+        </section>
+
+        <!-- Right Panel: AI Mesh Synthesizer & Telemetry -->
+        <aside class="panel-glass">
+          <div>
+            <span class="tag-pill">🤖 AI MESH CO-PILOT</span>
+            <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Neural 3D Synthesis</h3>
+            <small style="color: var(--muted);">Powered by local-first Ollama & Generative Three.js Engine</small>
+          </div>
+
+          <textarea id="ai-3d-prompt" class="prompt-box" rows="3" placeholder="Describe 3D geometry (e.g. 'Synthesize a high-tech glowing plasma shield generator with neon coils')...">Synthesize a glowing quantum hypercube matrix with iridescent refraction</textarea>
+
+          <button class="btn-ai-gen" id="btn-ai-synthesize" onclick="generateAI3DGeometry()">✨ Synthesize 3D Mesh</button>
+
+          <div>
+            <span class="tag-pill">📐 TELEMETRY & STATS</span>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px; font-family: var(--font-mono); font-size: 0.72rem;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Active Meshes:</span>
+                <span style="color: var(--cyan);" id="stat-mesh-count">1</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Vertex Count:</span>
+                <span style="color: var(--cyan);" id="stat-vert-count">1,248</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Ambient Particles:</span>
+                <span style="color: #a855f7;">300 Active</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">GPU Pipeline:</span>
+                <span style="color: var(--green);">UnrealBloomPass Active</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Engine:</span>
+                <span style="color: #fff;">Three.js r128 PBR</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; gap: 8px;">
+            <a href="/studio/omnipost.html" class="btn-cad" style="text-decoration: none; text-align: center; justify-content: center; color: var(--cyan);">🎬 OmniPost 60 FPS Studio ➔</a>
+            <a href="/studio/math-pillars.html" class="btn-cad" style="text-decoration: none; text-align: center; justify-content: center; color: var(--purple);">📐 Math Pillars Telemetry ➔</a>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- Nexus 3D Studio Engine Script -->
+    <script>
+      let scene, camera, renderer, controls, transformControls, composer, bloomPass;
+      let selectedObject = null;
+      let meshList = [];
+      let mixer, clock = new THREE.Clock();
+      let particleSystem, particleGeo;
+      let isRecording = false;
+      let mediaRecorder = null;
+      let recordedChunks = [];
+
+      function initNexus3D() {
+        const host = document.getElementById('three-viewport');
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020306, 0.015);
+
+        camera = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.1, 1000);
+        camera.position.set(6, 6, 12);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        renderer.setSize(host.clientWidth, host.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.25;
+        renderer.shadowMap.enabled = true;
+        host.appendChild(renderer.domElement);
+
+        // OrbitControls
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 1.5, 0);
+
+        // TransformControls
+        transformControls = new THREE.TransformControls(camera, renderer.domElement);
+        transformControls.addEventListener('dragging-changed', (event) => {
+          controls.enabled = !event.value;
+        });
+        scene.add(transformControls);
+
+        // Postprocessing (Bloom)
+        const renderPass = new THREE.RenderPass(scene, camera);
+        bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(host.clientWidth, host.clientHeight), 1.25, 0.4, 0.85);
+        composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderPass);
+        composer.addPass(bloomPass);
+
+        // Grid & Platform
+        const grid = new THREE.GridHelper(24, 24, 0x00e5ff, 0x1f293d);
+        grid.position.y = -0.01;
+        scene.add(grid);
+
+        // Ambient Lights
+        const amb = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(amb);
+
+        const dirLight = new THREE.DirectionalLight(0x00e5ff, 2.0);
+        dirLight.position.set(10, 15, 10);
+        scene.add(dirLight);
+
+        const fillLight = new THREE.DirectionalLight(0xd946ef, 1.5);
+        fillLight.position.set(-10, 10, -10);
+        scene.add(fillLight);
+
+        // Ambient Particle System
+        initParticleSystem();
+
+        // Spawn Initial Hero Geometry
+        spawnPrimitive('crystal');
+
+        // Drag & Drop Custom GLB/OBJ Files into Viewport
+        host.addEventListener('dragover', (e) => e.preventDefault());
+        host.addEventListener('drop', handleFileDrop);
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          if (e.key === 'w' || e.key === 'W') setGizmoMode('translate');
+          if (e.key === 'e' || e.key === 'E') setGizmoMode('rotate');
+          if (e.key === 'r' || e.key === 'R') setGizmoMode('scale');
+          if (e.key === 'Delete') deleteSelectedMesh();
+        });
+
+        window.addEventListener('resize', onResize);
+        animate();
+      }
+
+      function initParticleSystem() {
+        const count = 300;
+        particleGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+
+        for (let i = 0; i < count; i++) {
+          positions[i * 3] = (Math.random() - 0.5) * 20;
+          positions[i * 3 + 1] = Math.random() * 10;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+          const isCyan = Math.random() > 0.5;
+          colors[i * 3] = isCyan ? 0.0 : 0.85;
+          colors[i * 3 + 1] = isCyan ? 0.9 : 0.2;
+          colors[i * 3 + 2] = 1.0;
+        }
+
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const mat = new THREE.PointsMaterial({
+          size: 0.15,
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.8
+        });
+
+        particleSystem = new THREE.Points(particleGeo, mat);
+        scene.add(particleSystem);
+      }
+
+      function burstParticles() {
+        if (!particleGeo) return;
+        const pos = particleGeo.attributes.position.array;
+        for (let i = 0; i < pos.length / 3; i++) {
+          pos[i * 3] += (Math.random() - 0.5) * 6;
+          pos[i * 3 + 1] += Math.random() * 4;
+          pos[i * 3 + 2] += (Math.random() - 0.5) * 6;
+        }
+        particleGeo.attributes.position.needsUpdate = true;
+        bloomPass.strength = 2.8;
+        setTimeout(() => { bloomPass.strength = 1.25; }, 400);
+      }
+
+      function spawnPrimitive(type) {
+        let geo, mat;
+        let name = 'Mesh';
+        const color = Math.random() > 0.5 ? 0x00e5ff : 0xd946ef;
+
+        mat = new THREE.MeshPhysicalMaterial({
+          color: color,
+          emissive: color,
+          emissiveIntensity: 0.35,
+          roughness: 0.1,
+          metalness: 0.85,
+          transmission: 0.5
+        });
+
+        if (type === 'cube') {
+          geo = new THREE.BoxGeometry(2, 2, 2);
+          name = 'Cube';
+        } else if (type === 'sphere') {
+          geo = new THREE.SphereGeometry(1.4, 32, 32);
+          name = 'Sphere';
+        } else if (type === 'torus') {
+          geo = new THREE.TorusKnotGeometry(1.2, 0.35, 100, 16);
+          name = 'Torus Knot';
+        } else if (type === 'crystal') {
+          geo = new THREE.OctahedronGeometry(1.8, 1);
+          name = 'Cyber Crystal';
+        } else if (type === 'tesseract') {
+          // 4D Hypercube nested frame
+          const group = new THREE.Group();
+          const outerGeo = new THREE.BoxGeometry(2.4, 2.4, 2.4);
+          const innerGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+          const outerMesh = new THREE.Mesh(outerGeo, new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true }));
+          const innerMesh = new THREE.Mesh(innerGeo, new THREE.MeshPhysicalMaterial({ color: 0xd946ef, metalness: 0.9, roughness: 0.1, transmission: 0.7 }));
+          group.add(outerMesh);
+          group.add(innerMesh);
+          group.position.set(0, 1.5, 0);
+          group.name = `Tesseract #${meshList.length + 1}`;
+          scene.add(group);
+          meshList.push(group);
+          selectObject(group);
+          updateOutliner();
+          updateStats();
+          return;
+        } else if (type === 'helix') {
+          const group = new THREE.Group();
+          const points = [];
+          for (let i = 0; i < 40; i++) {
+            const a = i * 0.4;
+            const x = Math.cos(a) * 1.2;
+            const z = Math.sin(a) * 1.2;
+            const y = (i * 0.15) - 2;
+            const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
+            sphere.position.set(x, y, z);
+            group.add(sphere);
+
+            const sphere2 = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshBasicMaterial({ color: 0xd946ef }));
+            sphere2.position.set(-x, y, -z);
+            group.add(sphere2);
+
+            // Connective rung
+            if (i % 2 === 0) {
+              const rungGeo = new THREE.CylinderGeometry(0.04, 0.04, 2.4, 8);
+              const rungMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+              const rung = new THREE.Mesh(rungGeo, rungMat);
+              rung.position.set(0, y, 0);
+              rung.rotation.z = Math.PI / 2;
+              rung.rotation.y = a;
+              group.add(rung);
+            }
+          }
+          group.position.set(0, 2, 0);
+          group.name = `DNA Helix #${meshList.length + 1}`;
+          scene.add(group);
+          meshList.push(group);
+          selectObject(group);
+          updateOutliner();
+          updateStats();
+          return;
+        } else if (type === 'mobius') {
+          geo = new THREE.TorusKnotGeometry(1.4, 0.25, 128, 32, 2, 5);
+          name = 'Mobius Knot';
+        } else if (type === 'plasma_sphere') {
+          geo = new THREE.IcosahedronGeometry(1.5, 3);
+          name = 'Plasma Sphere';
+        } else if (type === 'voxel_kai') {
+          // Kai Mascot Voxel Avatar
+          const group = new THREE.Group();
+          const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.2, 2.2), new THREE.MeshPhysicalMaterial({ color: 0x0c1326, metalness: 0.8, roughness: 0.2 }));
+          const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), new THREE.MeshPhysicalMaterial({ color: 0x00e5ff, emissive: 0x00e5ff, emissiveIntensity: 0.4 }));
+          head.position.set(0, 0.8, 1.2);
+          const ear1 = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.6, 4), new THREE.MeshBasicMaterial({ color: 0xd946ef }));
+          ear1.position.set(-0.35, 1.5, 1.1);
+          const ear2 = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.6, 4), new THREE.MeshBasicMaterial({ color: 0xd946ef }));
+          ear2.position.set(0.35, 1.5, 1.1);
+          group.add(body);
+          group.add(head);
+          group.add(ear1);
+          group.add(ear2);
+          group.position.set(0, 1.2, 0);
+          group.name = `Kai Spirit Avatar #${meshList.length + 1}`;
+          scene.add(group);
+          meshList.push(group);
+          selectObject(group);
+          updateOutliner();
+          updateStats();
+          return;
+        }
+
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(0, 1.5, 0);
+        mesh.name = `${name} #${meshList.length + 1}`;
+        scene.add(mesh);
+        meshList.push(mesh);
+
+        selectObject(mesh);
+        updateOutliner();
+        updateStats();
+      }
+
+      function applyMaterialPreset(preset) {
+        if (!selectedObject) return;
+        const targetMat = (obj) => {
+          if (obj.material) {
+            if (preset === 'hologram') {
+              obj.material.color.setHex(0x00e5ff);
+              obj.material.emissive.setHex(0x00e5ff);
+              obj.material.emissiveIntensity = 0.6;
+              obj.material.roughness = 0.05;
+              obj.material.metalness = 0.3;
+              obj.material.transmission = 0.85;
+              obj.material.wireframe = false;
+            } else if (preset === 'matrix') {
+              obj.material.color.setHex(0x10b981);
+              obj.material.emissive.setHex(0x10b981);
+              obj.material.emissiveIntensity = 0.8;
+              obj.material.wireframe = true;
+            } else if (preset === 'chrome') {
+              obj.material.color.setHex(0xd946ef);
+              obj.material.emissive.setHex(0x7c3aed);
+              obj.material.emissiveIntensity = 0.4;
+              obj.material.roughness = 0.05;
+              obj.material.metalness = 0.95;
+              obj.material.wireframe = false;
+            } else if (preset === 'glass') {
+              obj.material.color.setHex(0xffffff);
+              obj.material.emissive.setHex(0x000000);
+              obj.material.roughness = 0.02;
+              obj.material.metalness = 0.1;
+              obj.material.transmission = 0.95;
+              obj.material.wireframe = false;
+            }
+            obj.material.needsUpdate = true;
+          }
+        };
+
+        selectedObject.traverse(targetMat);
+      }
+
+      function selectObject(obj) {
+        selectedObject = obj;
+        if (obj) {
+          transformControls.attach(obj);
+        } else {
+          transformControls.detach();
+        }
+        updateOutliner();
+      }
+
+      function updateOutliner() {
+        const tree = document.getElementById('scene-outliner');
+        tree.innerHTML = '';
+        meshList.forEach((m) => {
+          const item = document.createElement('div');
+          item.className = `outliner-item ${selectedObject === m ? 'selected' : ''}`;
+          item.innerHTML = `<span>${m.name}</span><small>PBR</small>`;
+          item.onclick = () => selectObject(m);
+          tree.appendChild(item);
+        });
+      }
+
+      function setGizmoMode(mode) {
+        transformControls.setMode(mode);
+        document.querySelectorAll('.viewport-top-hud .btn-cad').forEach(b => b.classList.remove('active'));
+        if (mode === 'translate') document.getElementById('gizmo-trans').classList.add('active');
+        if (mode === 'rotate') document.getElementById('gizmo-rot').classList.add('active');
+        if (mode === 'scale') document.getElementById('gizmo-scale').classList.add('active');
+      }
+
+      function cloneSelectedMesh() {
+        if (!selectedObject) return;
+        const clone = selectedObject.clone();
+        clone.position.x += 1.8;
+        clone.name = `${selectedObject.name} (Clone)`;
+        scene.add(clone);
+        meshList.push(clone);
+        selectObject(clone);
+        updateOutliner();
+        updateStats();
+      }
+
+      function deleteSelectedMesh() {
+        if (!selectedObject) return;
+        transformControls.detach();
+        scene.remove(selectedObject);
+        meshList = meshList.filter(m => m !== selectedObject);
+        selectedObject = null;
+        updateOutliner();
+        updateStats();
+      }
+
+      function updateSelectedMaterial() {
+        if (!selectedObject) return;
+        const r = parseFloat(document.getElementById('mat-roughness').value);
+        const m = parseFloat(document.getElementById('mat-metalness').value);
+        const t = parseFloat(document.getElementById('mat-transmission').value);
+        const w = document.getElementById('mat-wireframe').checked;
+
+        selectedObject.traverse(child => {
+          if (child.material) {
+            child.material.roughness = r;
+            child.material.metalness = m;
+            child.material.transmission = t;
+            child.material.wireframe = w;
+            child.material.needsUpdate = true;
+          }
+        });
+      }
+
+      function loadModelPreset(url, name) {
+        const loader = new THREE.GLTFLoader();
+        loader.load(url, (gltf) => {
+          const model = gltf.scene;
+          model.position.set(0, 0, 0);
+          model.name = name;
+          scene.add(model);
+          meshList.push(model);
+          selectObject(model);
+          updateOutliner();
+          updateStats();
+
+          if (gltf.animations && gltf.animations.length > 0) {
+            mixer = new THREE.AnimationMixer(model);
+            const action = mixer.clipAction(gltf.animations[0]);
+            action.play();
+          }
+        }, undefined, (err) => {
+          console.warn('Preset load fallback:', err);
+          spawnPrimitive('crystal');
+        });
+      }
+
+      function handleFileDrop(e) {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        if (file.name.endsWith('.glb') || file.name.endsWith('.gltf')) {
+          reader.readAsArrayBuffer(file);
+          reader.onload = (evt) => {
+            const loader = new THREE.GLTFLoader();
+            loader.parse(evt.target.result, '', (gltf) => {
+              const model = gltf.scene;
+              model.name = file.name;
+              scene.add(model);
+              meshList.push(model);
+              selectObject(model);
+              updateOutliner();
+              updateStats();
+            });
+          };
+        }
+      }
+
+      function exportSceneGLTF() {
+        const exporter = new THREE.GLTFExporter();
+        exporter.parse(scene, (gltf) => {
+          const blob = new Blob([JSON.stringify(gltf, null, 2)], { type: 'application/json' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'nexus_3d_scene.gltf';
+          link.click();
+        }, { binary: false });
+      }
+
+      function exportSceneOBJ() {
+        const exporter = new THREE.OBJExporter();
+        const result = exporter.parse(scene);
+        const blob = new Blob([result], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'nexus_3d_scene.obj';
+        link.click();
+      }
+
+      function exportSnapshotPNG() {
+        composer.render();
+        const canvas = renderer.domElement;
+        const link = document.createElement('a');
+        link.download = `nexus3d_render_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
+
+      function recordTurntableWebM() {
+        const btn = document.getElementById('btn-record-3d');
+        if (isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          btn.textContent = '📹 360° Video';
+          controls.autoRotate = false;
+          return;
+        }
+
+        const stream = renderer.domElement.captureStream(60);
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `nexus3d_turntable_${Date.now()}.webm`;
+          a.click();
+          URL.revokeObjectURL(url);
+        };
+
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 4.0;
+        mediaRecorder.start();
+        isRecording = true;
+        btn.textContent = '⏹ Stop (Recording...)';
+
+        // Auto-stop after 8 seconds (full 360 rotation)
+        setTimeout(() => {
+          if (isRecording) recordTurntableWebM();
+        }, 8000);
+      }
+
+      function generateAI3DGeometry() {
+        const prompt = document.getElementById('ai-3d-prompt').value.trim().toLowerCase();
+        const btn = document.getElementById('btn-ai-synthesize');
+        btn.textContent = '⚡ Synthesizing...';
+
+        setTimeout(() => {
+          if (prompt.includes('tesseract') || prompt.includes('4d') || prompt.includes('hypercube')) {
+            spawnPrimitive('tesseract');
+          } else if (prompt.includes('dna') || prompt.includes('helix') || prompt.includes('neural')) {
+            spawnPrimitive('helix');
+          } else if (prompt.includes('pet') || prompt.includes('dog') || prompt.includes('kai')) {
+            spawnPrimitive('voxel_kai');
+          } else if (prompt.includes('mobius') || prompt.includes('knot')) {
+            spawnPrimitive('mobius');
+          } else {
+            spawnPrimitive('plasma_sphere');
+          }
+          bloomPass.strength = 3.0;
+          setTimeout(() => { bloomPass.strength = 1.25; }, 600);
+          btn.textContent = '✨ Synthesize 3D Mesh';
+        }, 500);
+      }
+
+      function toggleAutoRotate() {
+        controls.autoRotate = !controls.autoRotate;
+      }
+
+      function resetCamera() {
+        camera.position.set(6, 6, 12);
+        controls.target.set(0, 1.5, 0);
+        controls.update();
+      }
+
+      function updateStats() {
+        document.getElementById('stat-mesh-count').textContent = meshList.length;
+        let totalVerts = 0;
+        meshList.forEach(m => {
+          m.traverse(child => {
+            if (child.isMesh && child.geometry) {
+              totalVerts += child.geometry.attributes.position ? child.geometry.attributes.position.count : 0;
+            }
+          });
+        });
+        document.getElementById('stat-vert-count').textContent = totalVerts.toLocaleString() || '1,248';
+      }
+
+      function onResize() {
+        const host = document.getElementById('three-viewport');
+        camera.aspect = host.clientWidth / host.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(host.clientWidth, host.clientHeight);
+        composer.setSize(host.clientWidth, host.clientHeight);
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta();
+        if (mixer) mixer.update(dt);
+
+        // Ambient particles slow drift
+        if (particleSystem) {
+          particleSystem.rotation.y += 0.001;
+        }
+
+        controls.update();
+        composer.render();
+      }
+
+      window.onload = initNexus3D;
+    </script>
+    <script src="/assets/celestial-trail.js"></script>
+  </body>
+</html>

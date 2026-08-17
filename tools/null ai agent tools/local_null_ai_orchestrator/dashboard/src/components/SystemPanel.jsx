@@ -17,9 +17,8 @@ export default function SystemPanel({ data, system }) {
 
   return (
     <section>
-      <h2 className="section-title">
-        <span className="section-icon">💻</span> System
-      </h2>
+      <p className="empty-kicker">A NullAI studio</p>
+      <h2 className="section-title">System</h2>
 
       <div className="sys-grid">
         {/* OS card */}
@@ -91,9 +90,7 @@ export default function SystemPanel({ data, system }) {
       {/* Runtime breakdown */}
       {data?.by_runtime && (
         <>
-          <h3 className="subsection-title">
-            <span className="section-icon">⚙</span> Runtimes
-          </h3>
+          <h3 className="subsection-title">Runtimes</h3>
           <div className="runtime-bars">
             {Object.entries(data.by_runtime)
               .sort((a, b) => b[1] - a[1])
@@ -118,9 +115,7 @@ export default function SystemPanel({ data, system }) {
       {/* Category breakdown */}
       {data?.by_category && (
         <>
-          <h3 className="subsection-title">
-            <span className="section-icon">📂</span> Categories
-          </h3>
+          <h3 className="subsection-title">Categories</h3>
           <div className="cat-breakdown">
             {Object.entries(data.by_category)
               .sort((a, b) => b[1] - a[1])

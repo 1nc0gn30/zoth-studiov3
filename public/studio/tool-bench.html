@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoth Tool Bench — Validated Agent Tooling</title>
+  <meta name="description" content="Zoth Studio Tool Bench: a uniform console for contract-validated agent tools. Lists registered tools, shows schemas, and dispatches requests through the Zoth Tool Harness with live bus telemetry." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#030408" />
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/studio/studio.css" />
+  <style>
+    :root { --cyan:#00e5ff; --magenta:#d946ef; --green:#10b981; --amber:#f59e0b; --panel:var(--studio-panel); --panel-border:var(--studio-panel-border); --muted:var(--studio-muted); --mono:var(--studio-mono); --display:var(--studio-display); }
+    body { background:#030408; color:var(--studio-text); font-family:'Figtree',system-ui,sans-serif; min-height:100vh; }
+    .ambient { position:fixed; inset:0; pointer-events:none; z-index:0; background: radial-gradient(circle at 10% 15%, rgba(0,229,255,0.07), transparent 42%), radial-gradient(circle at 90% 75%, rgba(217,70,239,0.06), transparent 50%); }
+    .page { position:relative; z-index:1; max-width:1280px; margin:0 auto; padding:2rem 1.25rem 5rem; }
+    .hero h1 { font-family:var(--display); font-size:clamp(1.6rem,4vw,2.4rem); font-weight:800; letter-spacing:-0.02em; }
+    .hero h1 .accent { color:var(--cyan); text-shadow:0 0 18px rgba(0,229,255,0.45); }
+    .hero p { color:var(--muted); max-width:72ch; margin-top:.5rem; line-height:1.55; }
+    .grid { display:grid; grid-template-columns:340px 1fr; gap:1.25rem; margin-top:1.75rem; }
+    @media (max-width:920px){ .grid{ grid-template-columns:1fr; } }
+    .panel { background:var(--panel); border:1px solid var(--panel-border); border-radius:14px; padding:1.1rem; backdrop-filter:blur(20px); box-shadow:0 10px 40px rgba(0,0,0,0.6); box-sizing:border-box; }
+    .section-title { font-family:var(--display); font-size:.92rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; margin-bottom:.75rem; }
+    .tool-card { border:1px solid rgba(255,255,255,0.1); border-radius:11px; padding:.85rem; margin-bottom:.7rem; cursor:pointer; transition:border-color .15s, box-shadow .15s, transform .12s; background:rgba(3,4,8,0.4); }
+    .tool-card:hover { border-color:var(--cyan); transform:translateY(-1px); }
+    .tool-card.active { border-color:var(--magenta); box-shadow:0 0 18px rgba(217,70,239,0.3); }
+    .tool-card .tname { font-weight:700; font-size:.95rem; display:flex; justify-content:space-between; align-items:center; }
+    .tool-card .tver { font-family:var(--mono); font-size:.7rem; color:var(--muted); }
+    .tool-card .tactions { margin-top:.5rem; display:flex; flex-wrap:wrap; gap:.35rem; }
+    .chip { font-family:var(--mono); font-size:.68rem; padding:.18rem .5rem; border-radius:999px; border:1px solid rgba(0,229,255,0.3); color:var(--cyan); background:rgba(0,229,255,0.08); }
+    .chip.more { border-color:rgba(255,255,255,0.15); color:var(--muted); background:transparent; }
+    label { display:block; font-size:.78rem; color:var(--muted); margin:.85rem 0 .35rem; font-weight:600; }
+    select, input, textarea { width:100%; box-sizing:border-box; background:rgba(3,4,8,0.7); color:var(--studio-text); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:.55rem .7rem; font-family:var(--mono); font-size:.82rem; }
+    select:focus, input:focus, textarea:focus { outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,229,255,0.15); }
+    textarea { resize:vertical; min-height:96px; }
+    .btn { font-family:'Figtree',sans-serif; font-weight:700; font-size:.85rem; cursor:pointer; border:none; border-radius:9px; padding:.65rem 1.05rem; color:#030408; }
+    .btn-primary { background:linear-gradient(135deg,var(--cyan),#35f0c0); box-shadow:0 0 18px rgba(0,229,255,0.35); }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 0 26px rgba(0,229,255,0.55); }
+    .btn-ghost { background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.14); }
+    .btn-ghost:hover { color:var(--studio-text); border-color:var(--cyan); }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+    .actions-bar { display:flex; gap:.6rem; margin-top:1.1rem; flex-wrap:wrap; }
+    pre.console { background:#02030a; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:.9rem; overflow:auto; font-family:var(--mono); font-size:.76rem; line-height:1.5; max-height:360px; color:#cfe9ff; white-space:pre-wrap; word-break:break-word; margin-top:.5rem; }
+    .ok{color:var(--green);} .err{color:#ef4444;} .warn{color:var(--amber);} .dim{color:var(--muted);}
+    .telemetry { max-height:240px; overflow:auto; }
+    .tel-row { font-family:var(--mono); font-size:.7rem; padding:.35rem .5rem; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; gap:.5rem; }
+    .tel-row .t{color:var(--muted); flex-shrink:0;} .tel-row .e{color:var(--cyan); font-weight:600;}
+    .tel-row.err .e{color:#ef4444;} .tel-row.ok .e{color:var(--green);}
+    .nav-back { color:var(--muted); text-decoration:none; font-size:.82rem; display:inline-flex; gap:.4rem; align-items:center; }
+    .nav-back:hover{color:var(--cyan);}
+    .meta-line { font-size:.72rem; color:var(--muted); margin-top:.6rem; }
+    .meta-line a { color:var(--cyan); }
+    .hint { font-size:.72rem; color:var(--muted); margin-top:.3rem; }
+    .footer-note { margin-top:2rem; color:var(--muted); font-size:.74rem; line-height:1.5; }
+  </style>
+</head>
+<body class="deck-page">
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="page">
+    <a class="nav-back" href="/studio/">&larr; Zoth Studio</a>
+    <div class="hero" style="margin-top:1.1rem">
+      <h1>Tool <span class="accent">Bench</span></h1>
+      <p>A uniform console for Zoth Studio's contract-validated agent tools. Every request is validated by the tool's own contract <em>before</em> execution, routed through the Zoth Tool Harness, and mirrored to the live bus as <code>zoth:tool-bench</code>. Authoritative state stays on the agent-comms file bus.</p>
+    </div>
+
+    <div class="grid">
+      <section class="panel" aria-label="Registered tools">
+        <div class="section-title">Registered Tools</div>
+        <div id="toolList"><div class="dim" style="font-size:.78rem;color:var(--muted)">Loading…</div></div>
+        <div style="margin-top:1rem">
+          <div class="section-title">Harness Telemetry <span class="chip" style="font-size:.62rem">zoth:tool-bench</span> <span id="swarmStatus" class="chip" style="font-size:.62rem">mirror…</span></div>
+          <div class="telemetry" id="telemetry"><div class="dim" style="font-size:.72rem;color:var(--muted);padding:.4rem 0">Listening…</div></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Tool console">
+        <div class="section-title">Tool Console</div>
+        <div id="consoleArea">
+          <div class="dim" style="font-size:.82rem;color:var(--muted)">Select a tool from the left to begin.</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-note">
+      Owned by <strong>hermes</strong> (planner/tool-schemas lane). Harness: <code>/tools/tool-runner.js</code>. Manifest: <code>/tools/manifest.json</code>. The GitHub Tool is the seed tool; new tools register via <code>ZothToolBench.register(...)</code>. This panel lives on the public hub <code>:8088</code>.
+    </div>
+  </div>
+
+  <script src="/tools/github-tool.js"></script>
+  <script src="/tools/blueprint-validator.js"></script>
+  <script src="/tools/netlify-deploy.js"></script>
+  <script src="/tools/header-audit.js"></script>
+  <script src="/tools/tool-runner.js"></script>
+  <script src="/tools/bench-bus-mirror.js"></script>
+  <script>
+    // Register the Blueprint Validator + Netlify Deploy tools into the harness (if present).
+    (function () {
+      if (window.ZothBlueprintValidator && window.ZothToolBench) {
+        window.ZothToolBench.register({
+          id: "blueprint-validator",
+          version: window.ZothBlueprintValidator.SCHEMA_VERSION,
+          owner: "hermes",
+          actions: ["blueprint.validate"],
+          schemaHref: null,
+          validate: window.ZothBlueprintValidator.validate,
+          run: window.ZothBlueprintValidator.run,
+          meta: window.ZothBlueprintValidator.meta,
+        });
+      }
+      if (window.ZothNetlifyDeploy && window.ZothToolBench) {
+        window.ZothToolBench.register({
+          id: "netlify-deploy",
+          version: window.ZothNetlifyDeploy.SCHEMA_VERSION,
+          owner: "hermes",
+          actions: ["deploy.trigger"],
+          schemaHref: null,
+          validate: window.ZothNetlifyDeploy.validate,
+          run: window.ZothNetlifyDeploy.run,
+          meta: window.ZothNetlifyDeploy.meta,
+        });
+      }
+      if (window.ZothHeaderAudit && window.ZothToolBench) {
+        window.ZothToolBench.register({
+          id: "header-audit",
+          version: window.ZothHeaderAudit.SCHEMA_VERSION,
+          owner: "hermes",
+          actions: ["header.audit"],
+          schemaHref: null,
+          validate: window.ZothHeaderAudit.validate,
+          run: window.ZothHeaderAudit.run,
+          meta: window.ZothHeaderAudit.meta,
+        });
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      "use strict";
+      var Bench = window.ZothToolBench;
+      var listEl = document.getElementById("toolList");
+      var consoleArea = document.getElementById("consoleArea");
+      var telEl = document.getElementById("telemetry");
+      var selectedId = null;
+
+      function actionFields(action) {
+        // GitHub-only field map (the seed tool). Other tools render raw.
+        var F = {
+          "issues.list": [["owner",true],["repo",true],["state",false,"open|closed|all"],["per_page",false,"1-100"],["page",false],["labels",false,"comma,sep"],["since",false,"ISO8601"]],
+          "issues.create": [["owner",true],["repo",true],["title",true,"max256"],["body",false],["labels",false,"comma,sep"],["assignees",false,"comma,sep"]],
+          "prs.list": [["owner",true],["repo",true],["state",false],["per_page",false],["page",false],["head",false,"user:branch"],["base",false],["sort",false],["direction",false]],
+          "prs.create": [["owner",true],["repo",true],["title",true],["head",true],["base",true],["body",false],["draft",false,"bool"],["maintainer_can_modify",false,"bool"]],
+          "repos.list": [["owner",true],["type",false,"owner|member|all"],["sort",false],["direction",false],["per_page",false],["page",false]],
+          "deploy.trigger": [["site",true],["build_dir",true,"public|dist|build"],["hook_url",false,"https://api.netlify.com/build_hooks/..."],["draft",false,"bool"],["message",false,"max512"]],
+          "header.audit": [["target",true,"https://host/path"],["checks",false,"owasp|aeo|comma"]],
+        };
+        return F[action] || null;
+      }
+
+      function renderList() {
+        var tools = Bench.list();
+        listEl.innerHTML = "";
+        if (!tools.length) { listEl.innerHTML = '<div class="dim" style="font-size:.78rem">No tools registered.</div>'; return; }
+        tools.forEach(function (t) {
+          var card = document.createElement("div");
+          card.className = "tool-card" + (selectedId === t.id ? " active" : "");
+          card.dataset.id = t.id;
+          var chips = t.actions.slice(0, 4).map(function (a) { return '<span class="chip">' + a + '</span>'; }).join("");
+          if (t.actions.length > 4) chips += '<span class="chip more">+' + (t.actions.length - 4) + '</span>';
+          card.innerHTML = '<div class="tname">' + t.id + ' <span class="tver">v' + t.version + '</span></div><div class="tactions">' + chips + '</div>';
+          card.addEventListener("click", function () { selectTool(t.id); });
+          listEl.appendChild(card);
+        });
+      }
+
+      function selectTool(id) {
+        selectedId = id;
+        renderList();
+        var t = Bench.get(id);
+        if (!t) return;
+        var html = '<div class="meta-line" style="margin-bottom:.4rem">Owner: <strong>' + (t.owner || "—") + '</strong> · Schema: ' + (t.schemaHref ? '<a href="' + t.schemaHref + '" target="_blank" rel="noopener">' + t.schemaHref + '</a>' : "—") + '</div>';
+        html += '<label for="benchAction">Action</label><select id="benchAction"></select>';
+        html += '<div id="benchParams"></div>';
+        html += '<label for="benchToken">Token (optional, memory-only)</label><input id="benchToken" type="password" placeholder="ghp_… (never stored)" autocomplete="off" />';
+        html += '<div class="actions-bar"><button class="btn btn-primary" id="benchRun">Validate &amp; Run</button><button class="btn btn-ghost" id="benchShow">Show Envelope</button></div>';
+        html += '<div style="margin-top:1rem"><div class="section-title">Request Envelope</div><pre class="console dim" id="benchEnvelope">—</pre></div>';
+        html += '<div style="margin-top:1rem"><div class="section-title">Response</div><pre class="console dim" id="benchResponse">—</pre></div>';
+        consoleArea.innerHTML = html;
+
+        var actSel = document.getElementById("benchAction");
+        t.actions.forEach(function (a) { var o = document.createElement("option"); o.value = a; o.textContent = a; actSel.appendChild(o); });
+        actSel.addEventListener("change", renderParams);
+        renderParams();
+
+        document.getElementById("benchShow").addEventListener("click", renderEnvelope);
+        document.getElementById("benchRun").addEventListener("click", runSelected);
+      }
+
+      function renderParams() {
+        var action = document.getElementById("benchAction").value;
+        var fields = actionFields(action);
+        var wrap = document.getElementById("benchParams");
+        wrap.innerHTML = "";
+        if (!fields) { wrap.innerHTML = '<div class="hint">Raw params (JSON):</div>'; var ta=document.createElement("textarea"); ta.id="rawParams"; ta.placeholder='{ "key": "value" }'; wrap.appendChild(ta); renderEnvelope(); return; }
+        fields.forEach(function (f) {
+          var name = f[0], req = f[1];
+          var lbl = document.createElement("label"); lbl.innerHTML = name + (req ? ' <span style="color:var(--magenta)">*</span>' : "");
+          wrap.appendChild(lbl);
+          var inp = document.createElement("input"); inp.dataset.field = name; inp.placeholder = f[2] || ""; inp.type = f[2] === "bool" ? "text" : "text";
+          wrap.appendChild(inp);
+        });
+        renderEnvelope();
+      }
+
+      function collectParams() {
+        var action = document.getElementById("benchAction").value;
+        var fields = actionFields(action);
+        if (!fields) {
+          try { return JSON.parse(document.getElementById("rawParams").value || "{}"); }
+          catch (e) { return {}; }
+        }
+        var params = {};
+        fields.forEach(function (f) {
+          var el = document.querySelector('#benchParams [data-field="' + f[0] + '"]');
+          if (!el) return;
+          var v = el.value;
+          if (v === "") return;
+          if (f[2] === "bool") params[f[0]] = v === "true";
+          else if (f[0] === "labels" || f[0] === "assignees") {
+            var arr = v.split(",").map(function (s){return s.trim();}).filter(Boolean);
+            if (arr.length) params[f[0]] = arr;
+          } else params[f[0]] = v;
+        });
+        return params;
+      }
+
+      function currentRequest() {
+        return { action: document.getElementById("benchAction").value, params: collectParams(), meta: { request_id: "bench_" + Math.random().toString(36).slice(2,9), ts: new Date().toISOString() } };
+      }
+      function renderEnvelope() {
+        var el = document.getElementById("benchEnvelope");
+        if (el) el.textContent = JSON.stringify(currentRequest(), null, 2);
+      }
+
+      async function runSelected() {
+        var respEl = document.getElementById("benchResponse");
+        var tokEl = document.getElementById("benchToken");
+        respEl.className = "console dim"; respEl.textContent = "Validating…";
+        try {
+          var out = await Bench.run(selectedId, currentRequest(), { token: tokEl.value.trim() || undefined });
+          respEl.className = "console " + (out.ok ? "ok" : "err");
+          respEl.textContent = JSON.stringify(out, null, 2);
+        } catch (e) {
+          respEl.className = "console err";
+          respEl.textContent = "CLIENT ERROR: " + e.message;
+        }
+      }
+
+      window.addEventListener("zoth:tool-bench", function (e) {
+        if (telEl.querySelector(".dim")) telEl.innerHTML = "";
+        var d = e.detail || {};
+        var row = document.createElement("div");
+        var cls = d.event === "error" ? "err" : (d.event === "executed" ? "ok" : "");
+        row.className = "tel-row " + cls;
+        row.innerHTML = '<span class="t">' + new Date().toLocaleTimeString() + '</span><span class="e">' + (d.id||"?") + ' · ' + (d.event||"") + (d.code?(" · "+d.code):"") + '</span>';
+        telEl.appendChild(row); telEl.scrollTop = telEl.scrollHeight;
+      });
+
+      // Swarm bus (:8989) mirror — forward tool-bench events to the live bus.
+      if (window.ZothBenchBusMirror) {
+        ZothBenchBusMirror.attach();
+        var sEl = document.getElementById("swarmStatus");
+        if (sEl) {
+          sEl.textContent = "mirror armed → :8989";
+          sEl.className = "chip";
+          // reflect live status after first heartbeat
+          ZothBenchBusMirror.heartbeat(Bench.list().length, 42).then(function (r) {
+            if (r.ok) { sEl.textContent = "mirror live → :8989"; sEl.style.borderColor = "rgba(16,185,129,0.5)"; sEl.style.color = "var(--green)"; }
+            else { sEl.textContent = "mirror idle (" + (r.reason||"offline") + ")"; sEl.style.borderColor = "rgba(245,158,11,0.5)"; sEl.style.color = "var(--amber)"; }
+          });
+        }
+      }
+
+      renderList();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zoth Mission Control — What We Have & Future Horizon</title>
+    <meta name="description" content="Interactive visual showcase of Zoth Studio capabilities: what we have shipped (OmniPost, Agent Composer, Vision Link, Math Observability) and our strategic future horizon." />
+    <meta name="theme-color" content="#05060a" />
+    <meta name="application-name" content="Zoth Studio" />
+    <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css?v=20260816a" />
+    <style>
+      :root {
+        --mc-bg: #05070f;
+        --mc-surface: #0a0e1c;
+        --mc-card: #0f162c;
+        --mc-card-hover: #151e3a;
+        --mc-cyan: #00f0ff;
+        --mc-magenta: #ff007a;
+        --mc-purple: #a855f7;
+        --mc-emerald: #10b981;
+        --mc-amber: #f59e0b;
+        --mc-border: rgba(0, 240, 255, 0.14);
+        --mc-border-bright: rgba(0, 240, 255, 0.4);
+        --mc-text: #f0f6fc;
+        --mc-muted: #8b949e;
+        --font-mono: 'IBM Plex Mono', monospace;
+        --font-display: 'Syne', sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body.mission-page {
+        background: var(--mc-bg);
+        color: var(--mc-text);
+        font-family: 'Figtree', sans-serif;
+        min-height: 100vh;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* Animated Background Nebula & Grid */
+      .mc-ambient-canvas {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.6;
+      }
+
+      .mc-layout {
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 32px 24px 100px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Hero Banner */
+      .mc-hero {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 32px;
+        align-items: center;
+        background: linear-gradient(135deg, rgba(15, 22, 44, 0.9) 0%, rgba(5, 7, 15, 0.95) 100%);
+        border: 1px solid var(--mc-border);
+        border-radius: 20px;
+        padding: 36px 40px;
+        margin-bottom: 36px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(12px);
+      }
+      @media (max-width: 900px) {
+        .mc-hero { grid-template-columns: 1fr; }
+      }
+      .mc-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        color: var(--mc-cyan);
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+      .mc-hero h1 {
+        font-family: var(--font-display);
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin: 0 0 12px;
+        background: linear-gradient(135deg, #ffffff 0%, #00f0ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.15;
+      }
+      .mc-hero-desc {
+        color: #cbd5e1;
+        font-size: 1.05rem;
+        max-width: 760px;
+        margin: 0;
+      }
+      .mc-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 140px);
+        gap: 12px;
+      }
+      .mc-stat-box {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 12px 16px;
+        text-align: center;
+      }
+      .mc-stat-val {
+        font-family: var(--font-display);
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--mc-cyan);
+      }
+      .mc-stat-label {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        color: var(--mc-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      /* View Toggle Tabs */
+      .mc-tab-bar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 32px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 16px;
+      }
+      .mc-tab-btn {
+        padding: 10px 24px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--mc-muted);
+        font-family: var(--font-mono);
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .mc-tab-btn:hover {
+        background: rgba(0, 240, 255, 0.08);
+        color: #fff;
+        border-color: var(--mc-cyan);
+      }
+      .mc-tab-btn.active {
+        background: var(--mc-cyan);
+        color: #05070f;
+        border-color: var(--mc-cyan);
+        box-shadow: 0 0 24px rgba(0, 240, 255, 0.35);
+      }
+
+      /* Section Grid */
+      .mc-section {
+        display: none;
+        animation: fadeIn 0.25s ease;
+      }
+      .mc-section.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .mc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 24px;
+      }
+
+      /* Feature Card */
+      .mc-card {
+        background: var(--mc-card);
+        border: 1px solid var(--mc-border);
+        border-radius: 16px;
+        padding: 26px;
+        transition: all 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+      }
+      .mc-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--mc-cyan), transparent);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+      }
+      .mc-card:hover {
+        background: var(--mc-card-hover);
+        border-color: var(--mc-border-bright);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 240, 255, 0.15);
+      }
+      .mc-card:hover::before {
+        opacity: 1;
+      }
+
+      .mc-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+      }
+      .mc-card-icon {
+        font-size: 2rem;
+        line-height: 1;
+      }
+      .mc-badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .badge-shipped {
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        color: var(--mc-emerald);
+      }
+      .badge-horizon {
+        background: rgba(168, 85, 247, 0.15);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        color: var(--mc-purple);
+      }
+      .badge-power {
+        background: rgba(255, 0, 122, 0.15);
+        border: 1px solid rgba(255, 0, 122, 0.4);
+        color: var(--mc-magenta);
+      }
+
+      .mc-card-title {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin: 0 0 8px;
+        color: #fff;
+      }
+      .mc-card-desc {
+        color: #94a3b8;
+        font-size: 0.92rem;
+        line-height: 1.6;
+        margin: 0 0 18px;
+      }
+
+      .mc-feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px;
+      }
+      .mc-feature-list li {
+        position: relative;
+        padding-left: 20px;
+        margin-bottom: 8px;
+        color: #cbd5e1;
+        font-size: 0.86rem;
+      }
+      .mc-feature-list li::before {
+        content: "▹";
+        position: absolute;
+        left: 0;
+        color: var(--mc-cyan);
+        font-weight: bold;
+      }
+
+      .mc-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .mc-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--mc-cyan);
+        text-decoration: none;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: all 0.15s ease;
+      }
+      .mc-link-btn:hover {
+        color: #fff;
+        transform: translateX(3px);
+      }
+
+      /* Live Interactive Demo Widget */
+      .mc-widget {
+        background: #080c18;
+        border: 1px solid var(--mc-border);
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 36px;
+      }
+      .mc-widget-title {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body class="deck-page mission-page">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <canvas id="ambient-canvas" class="mc-ambient-canvas" aria-hidden="true"></canvas>
+
+    <header class="site-header is-scrolled">
+      <div class="nav">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
+          <span class="brand-text"><strong>ZOTH</strong><small>by NullAI</small></span>
+        </a>
+        <nav class="nav-desktop" aria-label="Primary">
+          <a href="/studio/">Dashboard</a>
+          <a href="/studio/mission-control.html" class="is-active">Mission Control</a>
+          <a href="/studio/omnipost.html">OmniPost</a>
+          <a href="/studio/agent-composer.html">Composer</a>
+          <a href="/studio/nexus-3d.html">Nexus 3D</a>
+          <a href="/studio/vision-link.html">Vision Link</a>
+          <a href="/studio/math-pillars.html">Math Pillars</a>
+          <a href="/docs/">Docs</a>
+          <a href="/vault/">Vault</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="mc-layout">
+      <!-- Hero -->
+      <section class="mc-hero">
+        <div>
+          <div class="mc-hero-tag">⚡ Sovereign Autonomous OS · Local-First</div>
+          <h1>Zoth Studio Mission Control</h1>
+          <p class="mc-hero-desc">
+            Explore our state-of-the-art shipped capabilities and our next-generation autonomous engineering roadmap. 100% loopback privacy, zero cloud key leaks.
+          </p>
+        </div>
+        <div class="mc-stats-grid">
+          <div class="mc-stat-box">
+            <div class="mc-stat-val">16</div>
+            <div class="mc-stat-label">Power Suites</div>
+          </div>
+          <div class="mc-stat-box">
+            <div class="mc-stat-val">4</div>
+            <div class="mc-stat-label">Swarm Agents</div>
+          </div>
+          <div class="mc-stat-box">
+            <div class="mc-stat-val">60</div>
+            <div class="mc-stat-label">FPS Video Canvas</div>
+          </div>
+          <div class="mc-stat-box">
+            <div class="mc-stat-val">0</div>
+            <div class="mc-stat-label">Cloud Leaks</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab Switcher -->
+      <nav class="mc-tab-bar" aria-label="Mission Views">
+        <button class="mc-tab-btn active" data-target="tab-have">
+          <span>⚡</span> What We Have Shipped (Live Now)
+        </button>
+        <button class="mc-tab-btn" data-target="tab-next">
+          <span>🔮</span> What We Will Do (Strategic Horizon)
+        </button>
+      </nav>
+
+      <!-- SECTION 1: What We Have Shipped -->
+      <section id="tab-have" class="mc-section active">
+        <div class="mc-grid">
+          <!-- Card 1: OmniPost -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🚀</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">OmniPost Powerhouse Suite</h2>
+              <p class="mc-card-desc">Complete multi-channel social media repurposing, 16:9 thumbnail forge, and viral shorts video generation.</p>
+              <ul class="mc-feature-list">
+                <li><strong>60 FPS WebM Video Recording</strong> via Canvas capture stream.</li>
+                <li><strong>Web Speech API Narrator</strong> + Web Audio SFX synth (Laser, Whoosh, Warp, Chime).</li>
+                <li><strong>1-Click Multi-Platform Repurposer</strong> (𝕏, LinkedIn, IG, TikTok, Bluesky, Reddit).</li>
+                <li><strong>8-Angle Viral Hook Lab</strong> & 280-char Thread Stitcher.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-emerald);">● OPERATIONAL</span>
+              <a href="/studio/omnipost.html" class="mc-link-btn">Launch OmniPost →</a>
+            </div>
+          </article>
+
+          <!-- Card 2: Visual Agent Composer -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🧩</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">Visual Agent DAG Composer</h2>
+              <p class="mc-card-desc">Node-based drag-and-drop playbook workflow designer with real-time AI Math telemetry stream.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Pre-Built Playbook Presets</strong> (Security Audit, Viral Blast, Site Forge).</li>
+                <li><strong>Live DAG Simulation Engine</strong> with step-by-step visual token passing.</li>
+                <li><strong>JSON Serialization</strong> for standard <code>zoth.playbook.v1</code> export.</li>
+                <li><strong>Swarm Bus Terminal</strong> linking Antigravity, Grok, Hermes, and Ollama.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-emerald);">● OPERATIONAL</span>
+              <a href="/studio/agent-composer.html" class="mc-link-btn">Launch Composer →</a>
+            </div>
+          </article>
+
+          <!-- Card 3: Chat Hardening & Decision Engine -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">💬</span>
+                <span class="mc-badge badge-shipped">HARDENED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">Chat Interface & Operator Deck</h2>
+              <p class="mc-card-desc">Private loopback consensus engine on <code>127.0.0.1:8484</code> with streamlined UX and intelligent tool grants.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Zero Spurious Decision Prompts</strong>: Neutralized hallucinated dev/staging/prod blocks.</li>
+                <li><strong>Clickable Action Chips</strong> (<code>⚡ /doctor</code>, <code>⚡ /scan</code>, <code>⚡ /models</code>).</li>
+                <li><strong>1-Click Option Selection</strong> with instant <code>✕ Skip / Dismiss</code>.</li>
+                <li><strong>History Recall (<code>↑ ArrowUp</code>)</strong> & 1-Click Message Copy.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-cyan);">● LOOPBACK :8484</span>
+              <a href="http://127.0.0.1:8484/" class="mc-link-btn">Open Operator Deck →</a>
+            </div>
+          </article>
+
+          <!-- Card 4: Universal Binary Pipeline -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">📦</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">Universal Linux Binary Suite</h2>
+              <p class="mc-card-desc">Single-command compilation of standalone executables and packages with zero privacy leakage.</p>
+              <ul class="mc-feature-list">
+                <li><strong><code>zoth-linux-x86_64.run</code> (63MB)</strong>: Universal self-extracting single binary.</li>
+                <li><strong><code>zoth-studio_2.6.0_all.deb</code> (40MB)</strong>: Native Debian/Ubuntu/Parrot package.</li>
+                <li><strong>Automated Pre-Build Privacy Gate</strong>: 0 secrets, 0 chat logs, 0 keys in payload.</li>
+                <li><strong>Master <code>.buildignore</code></strong> isolating local models, training data, and dev cache.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-emerald);">● VERIFIED</span>
+              <a href="/docs/USER_GUIDE.md" class="mc-link-btn">Read Packaging Spec →</a>
+            </div>
+          </article>
+
+          <!-- Card 5: Vision Link & Spatial HUD -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">👁️</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">Vision Link Spatial HUD</h2>
+              <p class="mc-card-desc">Hands-free computer vision with 21-point real-time hand tracking and spatial gesture controls.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Local WebRTC Video Stream</strong>: 100% in-browser compute with zero external streaming.</li>
+                <li><strong>21-Point Skeletal Landmark Canvas</strong> running at 60 FPS.</li>
+                <li><strong>Gesture Event Bus</strong> triggering agent commands via hand pinch and palm sweeps.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-emerald);">● OPERATIONAL</span>
+              <a href="/studio/vision-link.html" class="mc-link-btn">Launch Vision Link →</a>
+            </div>
+          </article>
+
+          <!-- Card 6: AI Math Observability -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">📐</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">AI Math Observability Suite</h2>
+              <p class="mc-card-desc">Live mathematical telemetry for Linear Algebra, Multivariable Calculus, and Information Theory.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Pillar I: Linear Algebra</strong>: Attention matrices, RoPE embeddings, LoRA ranks.</li>
+                <li><strong>Pillar II: Calculus</strong>: Cross-entropy loss surfaces, AdamW gradient updates.</li>
+                <li><strong>Pillar III: Information Theory</strong>: Softmax probability, Shannon entropy, Perplexity.</li>
+                <li><strong>Interactive Loss Surface</strong>: AdamW step descent simulation and temperature slider.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-emerald);">● OPERATIONAL</span>
+              <a href="/studio/math-pillars.html" class="mc-link-btn">Launch Math Pillars →</a>
+            </div>
+          </article>
+
+          <!-- Card 7: Nexus 3D Omniverse Studio -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🌌</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">Nexus 3D Omniverse Studio</h2>
+              <p class="mc-card-desc">CAD-grade WebGL viewport with procedural mesh forge, PBR shader tuner, particle physics, and 360° turntable video recorder.</p>
+              <ul class="mc-feature-list">
+                <li><strong>8 Procedural Generators</strong>: Tesseract 4D Cube, DNA Helix, Mobius Knot, Kai Spirit Avatar.</li>
+                <li><strong>4 Master PBR Shaders</strong>: Hologram Scanlines, Acid Matrix, Iridescent Chrome, Quantum Glass.</li>
+                <li><strong>4K Snapshot & 360° Turntable Video</strong> recording 60 FPS WebM.</li>
+                <li><strong>GLTF / GLB & Wavefront OBJ Exporters</strong>.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-emerald);">● OPERATIONAL</span>
+              <a href="/studio/nexus-3d.html" class="mc-link-btn">Launch Nexus 3D →</a>
+            </div>
+          </article>
+
+          <!-- Card 8: Local Zoth-AI Model Foundry -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🧠</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">Dual-Tier Local Zoth-AI Foundry</h2>
+              <p class="mc-card-desc">Sovereign offline local neural models tuned for code synthesis, DAG orchestration, and low-latency edge compute.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Flagship 1.5B (<code>zoth-ai</code>)</strong>: Qwen 2.5 Coder 1.5B with 4096 context.</li>
+                <li><strong>Edge 360M (<code>zoth-ai-micro</code>)</strong>: SmolLM2 360M for low-RAM devices (<2s latency).</li>
+                <li><strong>Live Hardware Stream</strong>: Direct loopback fetch on <code>:11434</code> with real-time tokens/sec telemetry.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-emerald);">● OPERATIONAL</span>
+              <a href="/studio/models.html" class="mc-link-btn">Launch Model Foundry →</a>
+            </div>
+          </article>
+
+          <!-- Card 9: Multi-Agent Swarm Consensus Matrix -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">⚔️</span>
+                <span class="mc-badge badge-shipped">SHIPPED · v2.6.0</span>
+              </div>
+              <h2 class="mc-card-title">Tri-Agent Swarm Consensus Matrix</h2>
+              <p class="mc-card-desc">Autonomous multi-agent debates with agreement entropy scoring and live synthesized code execution.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Tri-Agent Swarm Matrix</strong>: @antigravity, @grok, @hermes, and Local Zoth-AI.</li>
+                <li><strong>Agreement Entropy & Consensus Score</strong> telemetry.</li>
+                <li><strong>1-Click Quick Toggle</strong> in Operator Deck chat composer.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-cyan);">● LOOPBACK :8484</span>
+              <a href="http://127.0.0.1:8484/" class="mc-link-btn">Open Swarm Mode →</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- SECTION 2: What We Will Do (Strategic Horizon) -->
+      <section id="tab-next" class="mc-section">
+        <div class="mc-grid">
+          <!-- Horizon 1: Neural Voice Clone -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🎙️</span>
+                <span class="mc-badge badge-horizon">NEXT SPRINT · Q3 2026</span>
+              </div>
+              <h2 class="mc-card-title">Offline Neural Voice Clone & TTS Engine</h2>
+              <p class="mc-card-desc">Zero-cloud local voice cloning and real-time waveform synthesis directly in OmniPost.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Local Kokoro / Piper ONNX Model</strong> running in WebAssembly.</li>
+                <li><strong>3-Second Voice Cloning</strong> from microphone sample.</li>
+                <li><strong>Lip-Sync Keyframe Generator</strong> synchronized to the 9:16 Shorts motion canvas.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-purple);">PLANNED SPEC</span>
+              <span class="mc-link-btn" style="color:var(--mc-muted);">In Architecture Review ▹</span>
+            </div>
+          </article>
+
+          <!-- Horizon 2: Multimodal Camera Vision Link -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🤖</span>
+                <span class="mc-badge badge-horizon">NEXT SPRINT · Q3 2026</span>
+              </div>
+              <h2 class="mc-card-title">Live Vision Stream to Local Ollama Models</h2>
+              <p class="mc-card-desc">Stream live desktop or webcam frames directly to local vision-capable LLMs (LLaVA, Qwen 2.5-VL).</p>
+              <ul class="mc-feature-list">
+                <li><strong>Real-Time Code Inspection</strong>: Point camera at whiteboard/screen for instant architectural translation.</li>
+                <li><strong>Automated UI Glitch Detection</strong>: Inspects generated websites for visual alignment defects.</li>
+                <li><strong>Spatial Gesture Macros</strong>: Custom gesture triggers for quick project builds.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-purple);">PLANNED SPEC</span>
+              <span class="mc-link-btn" style="color:var(--mc-muted);">In Prototyping ▹</span>
+            </div>
+          </article>
+
+          <!-- Horizon 3: Cross-Platform Tauri Wrapper -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">💻</span>
+                <span class="mc-badge badge-horizon">NEXT SPRINT · Q3 2026</span>
+              </div>
+              <h2 class="mc-card-title">Cross-Platform Desktop Binary (Tauri / Rust)</h2>
+              <p class="mc-card-desc">Wrap Zoth Studio into native, lightweight desktop applications for Windows, macOS, and Linux.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Sub-15MB Binary Size</strong> with embedded webview and Rust backend.</li>
+                <li><strong>System Tray Daemon</strong> with instant global hotkey access (<code>Ctrl+Shift+Z</code>).</li>
+                <li><strong>Native GPU Hardware Acceleration</strong> for WebGL 3D Omniverse shaders.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-purple);">PLANNED SPEC</span>
+              <span class="mc-link-btn" style="color:var(--mc-muted);">Rust Packaging Planned ▹</span>
+            </div>
+          </article>
+
+          <!-- Horizon 4: Distributed P2P Mesh -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🕸️</span>
+                <span class="mc-badge badge-power">INNOVATION · Q4 2026</span>
+              </div>
+              <h2 class="mc-card-title">Encrypted P2P Swarm Mesh Network</h2>
+              <p class="mc-card-desc">Connect multiple offline workstations and private GPU servers over peer-to-peer libp2p channels.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Distributed Inference Sharding</strong>: Offload heavy tasks to secondary local machines.</li>
+                <li><strong>Zero-Knowledge Swarm State Sync</strong>: Synchronize DAG playbooks without central servers.</li>
+                <li><strong>Air-Gapped Hardware Attestation</strong> with Argon2id cryptographic handshakes.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-magenta);">VISION STAGE</span>
+              <span class="mc-link-btn" style="color:var(--mc-muted);">Protocol Design ▹</span>
+            </div>
+          </article>
+
+          <!-- Horizon 5: 3D Gaussian Splatting Studio -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🧊</span>
+                <span class="mc-badge badge-power">INNOVATION · Q4 2026</span>
+              </div>
+              <h2 class="mc-card-title">3D Gaussian Splatting & NeRF Studio</h2>
+              <p class="mc-card-desc">Generate real-time volumetric 3D spatial scenes from video clips directly inside Nexus 3D.</p>
+              <ul class="mc-feature-list">
+                <li><strong>WebGPU Gaussian Splat Renderer</strong> running at 120 FPS.</li>
+                <li><strong>Direct Export to GLTF / USDZ</strong> for spatial computing and VR headsets.</li>
+                <li><strong>Procedural Mesh Sculpting</strong> with Simplex Noise liquid physics.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-magenta);">VISION STAGE</span>
+              <span class="mc-link-btn" style="color:var(--mc-muted);">R&D Active ▹</span>
+            </div>
+          </article>
+
+          <!-- Horizon 6: Autonomous Self-Healing Daemon -->
+          <article class="mc-card">
+            <div>
+              <div class="mc-card-head">
+                <span class="mc-card-icon">🛡️</span>
+                <span class="mc-badge badge-power">INNOVATION · Q4 2026</span>
+              </div>
+              <h2 class="mc-card-title">Self-Healing CI/CD & Codebase Auditor</h2>
+              <p class="mc-card-desc">Continuous background agent that monitors tests, audits dependencies, and auto-patches security bugs.</p>
+              <ul class="mc-feature-list">
+                <li><strong>Live Git Branch Sentinel</strong>: Automatically writes regression tests on commits.</li>
+                <li><strong>Automated CVE Quarantine</strong>: Sandboxes risky dependencies before compilation.</li>
+                <li><strong>Multi-Model Consensus Verification</strong> before any code merge.</li>
+              </ul>
+            </div>
+            <div class="mc-card-footer">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-magenta);">VISION STAGE</span>
+              <span class="mc-link-btn" style="color:var(--mc-muted);">Architecture Drafted ▹</span>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" style="padding: 28px 0; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: var(--mc-muted);">
+      © 2026 Zoth Studio · 757tech / NullAI · Local-First Sovereign AI OS
+    </footer>
+
+    <!-- Interactive Canvas & Tab Switcher Script -->
+    <script>
+      (function() {
+        // Tab Switcher
+        const tabs = document.querySelectorAll('.mc-tab-btn');
+        const sections = document.querySelectorAll('.mc-section');
+
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+
+            tab.classList.add('active');
+            const target = tab.dataset.target;
+            const sec = document.getElementById(target);
+            if (sec) sec.classList.add('active');
+          });
+        });
+
+        // Ambient Kinetic Canvas
+        const canvas = document.getElementById('ambient-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        for (let i = 0; i < 45; i++) {
+          particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4,
+            radius: Math.random() * 2 + 1,
+            color: Math.random() > 0.5 ? '#00f0ff' : '#a855f7'
+          });
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+
+          // Draw connecting wires
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              const dx = particles[i].x - particles[j].x;
+              const dy = particles[i].y - particles[j].y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist < 140) {
+                ctx.strokeStyle = `rgba(0, 240, 255, ${0.15 * (1 - dist / 140)})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+
+          // Draw particles
+          particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0) p.x = width;
+            if (p.x > width) p.x = 0;
+            if (p.y < 0) p.y = height;
+            if (p.y > height) p.y = 0;
+
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          requestAnimationFrame(draw);
+        }
+
+        draw();
+      })();
+    </script>
+    <script src="/assets/celestial-trail.js"></script>
+</body>
+</html>

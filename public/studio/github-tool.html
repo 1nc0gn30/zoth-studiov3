@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoth GitHub Tool — Schema-Validated Agent Connector</title>
+  <meta name="description" content="Zoth Studio GitHub Tool: a strict contract-validated connector for issues, PRs, and repos. Schema validation runs before any call; token stays in memory only." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#030408" />
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/studio/studio.css" />
+  <style>
+    :root {
+      --cyan: #00e5ff;
+      --magenta: #d946ef;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --panel: var(--studio-panel);
+      --panel-border: var(--studio-panel-border);
+      --muted: var(--studio-muted);
+      --mono: var(--studio-mono);
+      --display: var(--studio-display);
+    }
+    body { background: #030408; color: var(--studio-text); font-family: 'Figtree', system-ui, sans-serif; min-height: 100vh; }
+    .page { max-width: 1280px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+    .ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle at 12% 18%, rgba(0,229,255,0.07), transparent 42%),
+                  radial-gradient(circle at 88% 70%, rgba(217,70,239,0.06), transparent 50%); }
+    .page { position: relative; z-index: 1; }
+
+    .hero h1 { font-family: var(--display); font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; }
+    .hero h1 .accent { color: var(--cyan); text-shadow: 0 0 18px rgba(0,229,255,0.45); }
+    .hero p { color: var(--muted); max-width: 70ch; margin-top: 0.5rem; line-height: 1.55; }
+
+    .schema-pill { display: inline-flex; align-items: center; gap: 0.45rem; margin-top: 0.9rem; padding: 0.35rem 0.8rem; border-radius: 999px;
+      border: 1px solid rgba(16,185,129,0.4); background: rgba(16,185,129,0.12); color: var(--green); font-size: 0.78rem; font-weight: 600; }
+    .schema-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+    .grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.25rem; margin-top: 1.75rem; }
+    @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 1.25rem;
+      backdrop-filter: blur(20px); box-shadow: 0 10px 40px rgba(0,0,0,0.6); box-sizing: border-box; }
+
+    label { display: block; font-size: 0.78rem; color: var(--muted); margin: 0.85rem 0 0.35rem; font-weight: 600; letter-spacing: 0.02em; }
+    .req { color: var(--magenta); }
+    select, input, textarea {
+      width: 100%; box-sizing: border-box; background: rgba(3,4,8,0.7); color: var(--studio-text);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 9px; padding: 0.6rem 0.7rem; font-family: var(--mono); font-size: 0.85rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    select:focus, input:focus, textarea:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,229,255,0.15); }
+    textarea { resize: vertical; min-height: 70px; }
+    .hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    @media (max-width: 520px) { .two-col { grid-template-columns: 1fr; } }
+
+    .token-row { display: flex; gap: 0.6rem; align-items: center; }
+    .token-row input { flex: 1; }
+    .btn {
+      font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; border-radius: 9px;
+      padding: 0.7rem 1.1rem; transition: transform 0.12s, box-shadow 0.15s, background 0.15s; color: #030408;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--cyan), #35f0c0); box-shadow: 0 0 18px rgba(0,229,255,0.35); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 26px rgba(0,229,255,0.55); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,0.14); }
+    .btn-ghost:hover { color: var(--studio-text); border-color: var(--cyan); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .actions-bar { display: flex; gap: 0.6rem; margin-top: 1.2rem; flex-wrap: wrap; }
+
+    .mode-tag { font-size: 0.72rem; padding: 0.2rem 0.55rem; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); color: var(--muted); }
+    .mode-tag.live { color: var(--green); border-color: rgba(16,185,129,0.5); }
+    .mode-tag.sim { color: var(--amber); border-color: rgba(245,158,11,0.5); }
+
+    .section-title { font-family: var(--display); font-size: 0.95rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--studio-text); margin-bottom: 0.6rem; }
+
+    pre.console {
+      background: #02030a; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.9rem; overflow: auto;
+      font-family: var(--mono); font-size: 0.78rem; line-height: 1.5; max-height: 320px; color: #cfe9ff; white-space: pre-wrap; word-break: break-word;
+    }
+    .ok { color: var(--green); } .err { color: var(--red); } .warn { color: var(--amber); } .dim { color: var(--muted); }
+
+    .telemetry { max-height: 260px; overflow: auto; }
+    .tel-row { font-family: var(--mono); font-size: 0.72rem; padding: 0.4rem 0.55rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 0.5rem; }
+    .tel-row .t { color: var(--muted); flex-shrink: 0; }
+    .tel-row .e { color: var(--cyan); font-weight: 600; }
+    .tel-row.err .e { color: var(--red); }
+    .tel-row.ok .e { color: var(--green); }
+
+    .collapse-toggle { float: right; cursor: pointer; color: var(--muted); font-family: var(--mono); font-size: 0.72rem; user-select: none; }
+    .collapsed .optional-block { display: none; }
+
+    .nav-back { color: var(--muted); text-decoration: none; font-size: 0.82rem; display: inline-flex; gap: 0.4rem; align-items: center; }
+    .nav-back:hover { color: var(--cyan); }
+    .footer-note { margin-top: 2rem; color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
+    kbd { background: rgba(255,255,255,0.08); border-radius: 4px; padding: 0.1rem 0.35rem; font-family: var(--mono); font-size: 0.72rem; }
+  </style>
+</head>
+<body class="deck-page">
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="page">
+    <a class="nav-back" href="/studio/">&larr; Zoth Studio</a>
+    <div class="hero" style="margin-top:1.1rem">
+      <h1>GitHub <span class="accent">Tool</span></h1>
+      <p>A schema-validated Zoth Studio connector. Every request is checked against the strict tool contract <em>before</em> any network call. Provide a GitHub token to execute live against the REST API, or run in simulated mode. The token is held in memory only — it is never written to disk or the agent bus.</p>
+      <div class="schema-pill"><span class="dot"></span> Contract <span id="schemaVersion">…</span> · 5 actions · validation-enforced</div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: builder -->
+      <section class="panel" aria-label="Request builder">
+        <div class="section-title">Request Builder</div>
+
+        <label for="action">Action <span class="req">*</span></label>
+        <select id="action">
+          <option value="issues.list">issues.list</option>
+          <option value="issues.create">issues.create</option>
+          <option value="prs.list">prs.list</option>
+          <option value="prs.create">prs.create</option>
+          <option value="repos.list">repos.list</option>
+        </select>
+
+        <div id="params"></div>
+
+        <label for="token">GitHub token (optional, memory-only)</label>
+        <div class="token-row">
+          <input id="token" type="password" placeholder="ghp_… or github_pat_… (never stored)" autocomplete="off" />
+          <button class="btn btn-ghost" id="clearToken" type="button">Clear</button>
+        </div>
+        <div class="hint">Without a token the tool runs in <strong>simulated</strong> mode. With a token it calls <code>api.github.com</code> directly from your browser.</div>
+
+        <div class="actions-bar">
+          <button class="btn btn-primary" id="run" type="button">Validate &amp; Run</button>
+          <button class="btn btn-ghost" id="showContract" type="button">Show Contract Payload</button>
+        </div>
+        <div style="margin-top:0.8rem"><span id="modeTag" class="mode-tag sim">mode: simulated</span></div>
+
+        <div style="margin-top:1.1rem">
+          <div class="section-title">Request Envelope</div>
+          <pre class="console" id="requestView" class="dim">Select an action to build a request…</pre>
+        </div>
+      </section>
+
+      <!-- RIGHT: response + telemetry -->
+      <section style="display:flex; flex-direction:column; gap:1.25rem">
+        <div class="panel">
+          <div class="section-title">Response</div>
+          <pre class="console" id="responseView" class="dim">—</pre>
+        </div>
+        <div class="panel">
+          <div class="section-title">Bus Telemetry <span class="mode-tag">zoth:github-tool</span></div>
+          <div class="telemetry" id="telemetry"><div class="tel-row"><span class="dim">Listening for tool events…</span></div></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-note">
+      Owned by <strong>hermes</strong> (planner/tool-schemas lane). Contract single-source: <code>/tools/github-tool.schema.json</code>; runtime: <code>/tools/github-tool.js</code>. Coordinated via the agent bus (<code>agent-comms/</code>). This panel lives on the public hub <code>:8088</code>; the private <code>:8484</code> deck stays loopback.
+    </div>
+  </div>
+
+  <script src="/tools/github-tool.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var Tool = window.ZothGitHubTool;
+      document.getElementById("schemaVersion").textContent = Tool.SCHEMA_VERSION;
+
+      var ACTION_FIELDS = {
+        "issues.list": [
+          { name: "owner", req: true, type: "text", ph: "NealFrazierTech" },
+          { name: "repo", req: true, type: "text", ph: "zoth" },
+          { name: "state", req: false, type: "select", opts: ["open", "closed", "all"] },
+          { name: "per_page", req: false, type: "number", ph: "30 (1-100)" },
+          { name: "page", req: false, type: "number", ph: "1" },
+          { name: "labels", req: false, type: "text", ph: "comma,separated" },
+          { name: "since", req: false, type: "text", ph: "2026-01-01T00:00:00Z" },
+        ],
+        "issues.create": [
+          { name: "owner", req: true, type: "text", ph: "NealFrazierTech" },
+          { name: "repo", req: true, type: "text", ph: "zoth" },
+          { name: "title", req: true, type: "text", ph: "Issue title (max 256)" },
+          { name: "body", req: false, type: "textarea", ph: "Description…" },
+          { name: "labels", req: false, type: "text", ph: "bug,urgent" },
+          { name: "assignees", req: false, type: "text", ph: "user1,user2" },
+        ],
+        "prs.list": [
+          { name: "owner", req: true, type: "text", ph: "NealFrazierTech" },
+          { name: "repo", req: true, type: "text", ph: "zoth" },
+          { name: "state", req: false, type: "select", opts: ["open", "closed", "all"] },
+          { name: "per_page", req: false, type: "number", ph: "30 (1-100)" },
+          { name: "page", req: false, type: "number", ph: "1" },
+          { name: "head", req: false, type: "text", ph: "user:branch (no spaces)" },
+          { name: "base", req: false, type: "text", ph: "main" },
+          { name: "sort", req: false, type: "select", opts: ["created", "updated", "popularity", "long-running"] },
+          { name: "direction", req: false, type: "select", opts: ["asc", "desc"] },
+        ],
+        "prs.create": [
+          { name: "owner", req: true, type: "text", ph: "NealFrazierTech" },
+          { name: "repo", req: true, type: "text", ph: "zoth" },
+          { name: "title", req: true, type: "text", ph: "PR title (max 256)" },
+          { name: "head", req: true, type: "text", ph: "feature-x" },
+          { name: "base", req: true, type: "text", ph: "main" },
+          { name: "body", req: false, type: "textarea", ph: "Description…" },
+          { name: "draft", req: false, type: "checkbox", label: "Draft PR" },
+          { name: "maintainer_can_modify", req: false, type: "checkbox", label: "Maintainer can modify" },
+        ],
+        "repos.list": [
+          { name: "owner", req: true, type: "text", ph: "NealFrazierTech" },
+          { name: "type", req: false, type: "select", opts: ["owner", "member", "all"] },
+          { name: "sort", req: false, type: "select", opts: ["created", "updated", "pushed", "full_name"] },
+          { name: "direction", req: false, type: "select", opts: ["asc", "desc"] },
+          { name: "per_page", req: false, type: "number", ph: "30 (1-100)" },
+          { name: "page", req: false, type: "number", ph: "1" },
+        ],
+      };
+
+      var paramsEl = document.getElementById("params");
+      var actionEl = document.getElementById("action");
+      var tokenEl = document.getElementById("token");
+      var requestView = document.getElementById("requestView");
+      var responseView = document.getElementById("responseView");
+      var modeTag = document.getElementById("modeTag");
+      var runBtn = document.getElementById("run");
+
+      function buildParams() {
+        var action = actionEl.value;
+        var fields = ACTION_FIELDS[action];
+        paramsEl.innerHTML = "";
+        fields.forEach(function (f) {
+          var label = document.createElement("label");
+          label.innerHTML = f.name + (f.req ? ' <span class="req">*</span>' : "") ;
+          paramsEl.appendChild(label);
+
+          var wrap = document.createElement("div");
+          if (f.type === "select") {
+            var sel = document.createElement("select");
+            sel.dataset.field = f.name;
+            f.opts.forEach(function (o) { var op = document.createElement("option"); op.value = o; op.textContent = o; sel.appendChild(op); });
+            wrap.appendChild(sel);
+          } else if (f.type === "textarea") {
+            var ta = document.createElement("textarea");
+            ta.dataset.field = f.name; ta.placeholder = f.ph || "";
+            wrap.appendChild(ta);
+          } else if (f.type === "checkbox") {
+            var cb = document.createElement("input");
+            cb.type = "checkbox"; cb.dataset.field = f.name; cb.style.width = "auto"; cb.style.marginRight = "0.5rem";
+            var lbl = document.createElement("span"); lbl.style.cssText = "font-size:0.8rem;color:var(--studio-text)"; lbl.textContent = f.label || f.name;
+            wrap.appendChild(cb); wrap.appendChild(lbl);
+          } else if (f.type === "number") {
+            var num = document.createElement("input");
+            num.type = "number"; num.dataset.field = f.name; num.placeholder = f.ph || "";
+            wrap.appendChild(num);
+          } else {
+            var inp = document.createElement("input");
+            inp.type = "text"; inp.dataset.field = f.name; inp.placeholder = f.ph || "";
+            wrap.appendChild(inp);
+          }
+          paramsEl.appendChild(wrap);
+        });
+        renderEnvelope();
+      }
+
+      function collectParams() {
+        var action = actionEl.value;
+        var fields = ACTION_FIELDS[action];
+        var params = {};
+        fields.forEach(function (f) {
+          var el = paramsEl.querySelector('[data-field="' + f.name + '"]');
+          if (!el) return;
+          var raw = el.type === "checkbox" ? el.checked : el.value;
+          if (el.type === "checkbox") {
+            if (el.checked) params[f.name] = true;
+            return;
+          }
+          if (raw === "" || raw === null || raw === undefined) return;
+          if (f.type === "number") {
+            var n = Number(raw);
+            if (!isNaN(n)) params[f.name] = n;
+            return;
+          }
+          if ((f.name === "labels" || f.name === "assignees") && typeof raw === "string") {
+            var arr = raw.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            if (arr.length) params[f.name] = arr;
+            return;
+          }
+          params[f.name] = raw;
+        });
+        return params;
+      }
+
+      function currentRequest() {
+        return {
+          action: actionEl.value,
+          params: collectParams(),
+          meta: Tool.meta("ui_" + Math.random().toString(36).slice(2, 10)),
+        };
+      }
+
+      function renderEnvelope() {
+        var req = currentRequest();
+        requestView.textContent = JSON.stringify(req, null, 2);
+        var hasToken = tokenEl.value.trim().length > 0;
+        modeTag.textContent = hasToken ? "mode: live (token present)" : "mode: simulated";
+        modeTag.className = "mode-tag " + (hasToken ? "live" : "sim");
+      }
+
+      function logTele(el, detail) {
+        var row = document.createElement("div");
+        var cls = detail.event === "error" ? "err" : (detail.event === "executed" ? "ok" : "");
+        row.className = "tel-row " + cls;
+        var t = new Date().toLocaleTimeString();
+        var msg = detail.event + (detail.action ? " · " + detail.action : "") + (detail.code ? " · " + detail.code : "");
+        row.innerHTML = '<span class="t">' + t + '</span><span class="e">' + msg + '</span>';
+        el.appendChild(row);
+        el.scrollTop = el.scrollHeight;
+      }
+
+      // Bus telemetry listener
+      var telEl = document.getElementById("telemetry");
+      window.addEventListener("zoth:github-tool", function (e) {
+        if (telEl.querySelector(".dim")) telEl.innerHTML = "";
+        logTele(telEl, e.detail || {});
+      });
+
+      actionEl.addEventListener("change", buildParams);
+      paramsEl.addEventListener("input", renderEnvelope);
+      paramsEl.addEventListener("change", renderEnvelope);
+      tokenEl.addEventListener("input", renderEnvelope);
+      document.getElementById("clearToken").addEventListener("click", function () { tokenEl.value = ""; renderEnvelope(); });
+
+      document.getElementById("showContract").addEventListener("click", function () {
+        renderEnvelope();
+        requestView.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+
+      runBtn.addEventListener("click", async function () {
+        var req = currentRequest();
+        responseView.className = "console dim";
+        responseView.textContent = "Validating…";
+        runBtn.disabled = true;
+        try {
+          var v = Tool.validate(req);
+          if (!v.ok) {
+            responseView.className = "console err";
+            responseView.textContent = "VALIDATION ERROR\n\n" + v.error.code + ": " + v.error.message;
+            return;
+          }
+          responseView.textContent = "Validation passed. Executing (" + (tokenEl.value.trim() ? "live" : "simulated") + ")…";
+          var out = await Tool.run(req, { token: tokenEl.value.trim() || undefined });
+          responseView.className = "console " + (out.ok ? "ok" : "err");
+          responseView.textContent = JSON.stringify(out, null, 2);
+        } catch (err) {
+          responseView.className = "console err";
+          responseView.textContent = "CLIENT ERROR: " + err.message;
+        } finally {
+          runBtn.disabled = false;
+        }
+      });
+
+      buildParams();
+    })();
+  </script>
+</body>
+</html>

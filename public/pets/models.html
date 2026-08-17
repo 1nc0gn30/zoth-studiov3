@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zoth Pets — 3D Model Studio</title>
+  <style>
+    :root {
+      --bg: #05050c;
+      --panel: rgba(8, 8, 18, 0.92);
+      --line: rgba(168, 85, 247, 0.45);
+      --text: #f3f0ff;
+      --muted: #8f8aa8;
+      --cyan: #22d3ee;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    #host { position: fixed; inset: 0; }
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: linear-gradient(180deg, #05050c 0%, transparent 100%);
+    }
+    h1 { margin: 0; font-size: 1.05rem; letter-spacing: -.02em; }
+    h1 span { color: var(--cyan); }
+    .sub { color: var(--cyan); font-size: .68rem; margin: 0 0 2px; letter-spacing: .14em; text-transform: uppercase; }
+    .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    button, select {
+      appearance: none; border: 1px solid var(--line); background: var(--panel);
+      color: var(--text); border-radius: 999px; padding: 7px 12px; font: inherit; cursor: pointer;
+    }
+    button:hover, select:hover { border-color: var(--cyan); color: var(--cyan); }
+    button.primary { background: linear-gradient(135deg, #7c3aed, #0891b2); border: none; font-weight: 600; }
+    aside {
+      position: fixed; top: 78px; right: 12px; width: min(280px, calc(100vw - 24px));
+      background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+      padding: 12px; z-index: 5; backdrop-filter: blur(14px);
+    }
+    aside img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: #0b0b14; }
+    aside h2 { margin: 8px 0 2px; font-size: 1rem; }
+    aside p { margin: 0 0 8px; color: var(--muted); font-size: .78rem; }
+    .strip {
+      position: fixed; left: 12px; right: 12px; bottom: 10px; z-index: 5;
+      display: flex; gap: 6px; overflow-x: auto; padding: 6px 8px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    }
+    .chip { flex: 0 0 auto; width: 76px; text-align: center; cursor: pointer; border: 1px solid transparent; border-radius: 10px; padding: 4px; }
+    .chip.active { border-color: var(--cyan); }
+    .chip img { width: 68px; height: 68px; object-fit: cover; border-radius: 8px; display: block; }
+    .chip b { display: block; font-size: .68rem; margin-top: 4px; }
+    a { color: var(--cyan); text-decoration: none; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="host"></div>
+  <header>
+    <div>
+      <p class="sub">A NullAI studio</p>
+      <h1>Zoth Pets <span>// 3D Model Studio</span></h1>
+    </div>
+    <div class="row">
+      <select id="task-vibe">
+        <option value="idle">🧘 Idle / Rest Vibe</option>
+        <option value="coding">⚡ Coding / Build Vibe</option>
+        <option value="security">🛡️ Security / Scan Vibe</option>
+        <option value="aeo">🦉 AEO / Knowledge Vibe</option>
+        <option value="fusion">🔥 Fusion / Swarm Vibe</option>
+        <option value="celebrate">🎉 Shipped / Victory Vibe</option>
+      </select>
+      <select id="style">
+        <option value="realistic">Realistic sculpt</option>
+        <option value="pixel">Voxel / pixel</option>
+        <option value="chibi">Chibi sculpt</option>
+      </select>
+      <button id="wire">Wireframe</button>
+      <button id="reset">Reset cam</button>
+    </div>
+  </header>
+  <aside>
+    <img id="ref" alt="Reference avatar" />
+    <h2 id="name">Kai</h2>
+    <p id="meta">Holographic Cat</p>
+    <p id="vibe-desc">Current Task Vibe: <b>Idle</b>. Switch vibes above to watch procedural kinetics, scanning shields, and kinetic halos adapt in real time.</p>
+  </aside>
+  <div class="strip" id="strip"></div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+    import { createPetFigure, petPortrait, loadPetTexture, fallbackPetTexture } from './pet-models.js';
+
+    const ROSTER = [
+      {id:"kai",name:"Kai",species:"Holographic Cat",color:0x22d3ee},
+      {id:"draco",name:"Draco",species:"Cyber Dragon",color:0xd946ef},
+      {id:"athena",name:"Athena",species:"Mecha Owl",color:0xa78bfa},
+      {id:"lycan",name:"Lycan",species:"Cybernetic Wolf",color:0xef4444},
+      {id:"ignis",name:"Ignis",species:"Neon Phoenix",color:0xf59e0b},
+      {id:"kitsune",name:"Kitsune",species:"Cyber Fox",color:0xfb923c},
+      {id:"pixel-neko",name:"Pixel-Neko",species:"16-Bit Retro Cat",color:0xf472b6},
+      {id:"pixel-shiba",name:"Pixel-Shiba",species:"16-Bit Cyber Doge",color:0xfbbf24},
+      {id:"radical-minion",name:"Radical Minion",species:"Hermes Partner",color:0xeab308},
+      {id:"glitchcat",name:"Glitchcat",species:"RGB Glitch Cat",color:0xff6ad5},
+      {id:"circuit-pup",name:"Circuit Pup",species:"LED Circuit Dog",color:0x7ee787},
+      {id:"terminal-ghost",name:"Terminal Ghost",species:"Phosphor Spirit",color:0x86efac},
+      {id:"savage-codex",name:"Savage Codex",species:"Hacker Familiar",color:0x00ff9d},
+      {id:"ai-workbot",name:"AI Workbot",species:"Task Robot",color:0x8b5cf6},
+      {id:"binary",name:"Binary",species:"Data Spirit",color:0x67e8f9},
+      {id:"aquila",name:"Aquila",species:"Cyber Eagle",color:0x00f0ff},
+      {id:"leviathan",name:"Leviathan",species:"Cyber Whale",color:0x06b6d4},
+      {id:"onyx",name:"Onyx",species:"Shadow Panther",color:0xff007a},
+      {id:"chronos",name:"Chronos",species:"Cyber Stag",color:0x38bdf8},
+      {id:"aether",name:"Aether",species:"Cyber Griffin",color:0xfbbf24},
+      {id:"kraken",name:"Kraken",species:"Cyber Octopus",color:0x00f0ff},
+      {id:"scorpius",name:"Scorpius",species:"Cyber Scorpion",color:0x00e5ff},
+    ];
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x05050c);
+    scene.fog = new THREE.FogExp2(0x05050c, 0.045);
+
+    const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.08, 80);
+    camera.position.set(0.2, 1.45, 5.1);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
+    document.getElementById('host').appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.minDistance = 2.4;
+    controls.maxDistance = 12;
+    controls.target.set(0, 1.05, 0);
+
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.48, 0.35, 0.82));
+    composer.addPass(new OutputPass());
+
+    scene.add(new THREE.AmbientLight(0x8b7bb8, 0.55));
+    const key = new THREE.DirectionalLight(0xffffff, 1.15);
+    key.position.set(3, 6, 4);
+    scene.add(key);
+    const rim = new THREE.PointLight(0x22d3ee, 2.2, 20);
+    rim.position.set(-3, 2, -2);
+    scene.add(rim);
+    const fill = new THREE.PointLight(0xf472b6, 1.2, 16);
+    fill.position.set(3, 1.4, 2);
+    scene.add(fill);
+
+    const floor = new THREE.Mesh(
+      new THREE.CircleGeometry(2.4, 64),
+      new THREE.MeshStandardMaterial({ color: 0x0c0c16, metalness: 0.7, roughness: 0.28, emissive: 0x12081e, emissiveIntensity: 0.4 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(1.05, 0.018, 10, 80),
+      new THREE.MeshBasicMaterial({ color: 0xa855f7 })
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.02;
+    scene.add(ring);
+
+    const cache = new Map();
+    async function resolveTex(id) {
+      const url = petPortrait(id);
+      if (cache.has(url)) return cache.get(url);
+      const tex = (await loadPetTexture(THREE, url)) || fallbackPetTexture(THREE);
+      cache.set(url, tex);
+      return tex;
+    }
+
+    let current = null;
+    let showGen = 0;
+    const startId = new URLSearchParams(location.search).get("pet") || location.hash.replace("#", "");
+    let selected = ROSTER.find((p) => p.id === startId) || ROSTER[0];
+    let wire = false;
+
+    async function show(pet) {
+      const gen = ++showGen;
+      selected = pet;
+      if (current) {
+        scene.remove(current.group);
+        current.dispose();
+        current = null;
+      }
+      const style = document.getElementById('style').value;
+      const tex = await resolveTex(pet.id);
+      if (gen !== showGen) return;
+      const vibe = document.getElementById('task-vibe').value;
+      current = createPetFigure(THREE, { id: pet.id, color: pet.color, texture: tex, style, initialVibe: vibe });
+      scene.add(current.group);
+      current.group.traverse((o) => {
+        if (o.material && 'wireframe' in o.material) o.material.wireframe = wire;
+      });
+      document.getElementById('name').textContent = pet.name;
+      document.getElementById('meta').textContent = pet.species;
+      document.getElementById('vibe-desc').innerHTML = `Current Task Vibe: <b>${vibe.toUpperCase()}</b>. Procedural aura, wireframe rotation, and kinematic frequency adapted.`;
+      document.getElementById('ref').src = petPortrait(pet.id);
+      document.querySelectorAll('.chip').forEach((el) => {
+        el.classList.toggle('active', el.dataset.id === pet.id);
+      });
+      const next = `?pet=${pet.id}`;
+      if (location.search !== next) history.replaceState(null, "", next);
+    }
+
+    const strip = document.getElementById('strip');
+    ROSTER.forEach((pet) => {
+      const el = document.createElement('div');
+      el.className = 'chip' + (pet.id === selected.id ? ' active' : '');
+      el.dataset.id = pet.id;
+      el.innerHTML = `<img src="${petPortrait(pet.id)}" alt="${pet.name}" /><b>${pet.name}</b>`;
+      el.onclick = () => show(pet);
+      strip.appendChild(el);
+    });
+
+    document.getElementById('task-vibe').onchange = (e) => {
+      const vibe = e.target.value;
+      if (!current) return;
+      current.setTaskVibe(vibe);
+      document.getElementById('vibe-desc').innerHTML = `Current Task Vibe: <b>${vibe.toUpperCase()}</b>. Procedural aura, wireframe rotation, and kinematic frequency adapted.`;
+    };
+    document.getElementById('style').onchange = () => show(selected);
+    document.getElementById('wire').onclick = () => {
+      wire = !wire;
+      if (current) {
+        current.group.traverse((o) => {
+          if (o.material && 'wireframe' in o.material) o.material.wireframe = wire;
+        });
+      }
+    };
+    document.getElementById('reset').onclick = () => {
+      camera.position.set(0.2, 1.45, 5.1);
+      controls.target.set(0, 1.05, 0);
+    };
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+      composer.setSize(innerWidth, innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+    function tick() {
+      requestAnimationFrame(tick);
+      const t = clock.getElapsedTime();
+      ring.rotation.z = t * 0.2;
+      if (current && current.tick) current.tick(t, camera);
+      controls.update();
+      composer.render();
+    }
+    show(selected);
+    tick();
+  </script>
+  <script src="/assets/celestial-trail.js"></script>
+</body>
+</html>

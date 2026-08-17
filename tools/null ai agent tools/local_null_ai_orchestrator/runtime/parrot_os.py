@@ -494,13 +494,16 @@ def _get_version(name: str, path: str) -> str:
         try:
             result = subprocess.run(
                 [path, flag], capture_output=True, text=True,
-                check=False, timeout=3
+                check=False, timeout=0.5
             )
             output = (result.stdout or result.stderr or "").strip()
             if output and result.returncode in (0, 1):
                 first_line = output.split("\n")[0][:120]
                 return first_line
-        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        except subprocess.TimeoutExpired:
+            # If tool timed out once, avoid running more flags on it
+            break
+        except (FileNotFoundError, OSError):
             continue
     return ""
 

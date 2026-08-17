@@ -229,8 +229,8 @@ function MasterPromptPreview({ prompt, onApprove, onEdit, editing }) {
   return (
     <div className="zs-master-prompt">
       <div className="zs-master-header">
-        <span className="zs-master-label">◈ Master Prompt</span>
-        <button className="zs-btn zs-btn-ghost" onClick={() => onEdit(!editing)}>{editing ? "Done" : "✎ Edit"}</button>
+        <span className="zs-master-label">Master prompt</span>
+        <button className="zs-btn zs-btn-ghost" onClick={() => onEdit(!editing)}>{editing ? "Done" : "Edit"}</button>
       </div>
       {editing ? (
         <textarea className="zs-textarea zs-prompt-textarea" value={prompt} onChange={(e) => onEdit(true, e.target.value)} rows={12} />
@@ -306,7 +306,7 @@ function AgentLog({ logs, stdout, stderr, lastMessage }) {
         )}
       </div>
       <div className="zs-log-scroll" ref={logRef}>
-        {allLines.length === 0 && <div className="zs-log-line zs-log-dim"><span className="zs-log-msg">Waiting for agent output…</span></div>}
+        {allLines.length === 0 && <div className="zs-log-line zs-log-dim"><span className="zs-log-msg">Local scaffold finished — no remote agent log.</span></div>}
         {allLines.map((line, i) => <LogLine key={i} text={line.text} severity={line.severity} />)}
       </div>
       <details className="zs-log-raw-details">
@@ -345,7 +345,7 @@ function AgentLog({ logs, stdout, stderr, lastMessage }) {
 
 // ── Main Component ──
 
-export default function ZothStudio() {
+export default function ZothStudio({ preset = null }) {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -381,6 +381,7 @@ export default function ZothStudio() {
   const [supabaseKey, setSupabaseKey] = useState("");
   const [logAutoScroll, setLogAutoScroll] = useState(true);
   const pollRef = useRef(null);
+  const waitForAgentRef = useRef(false);
 
   const availableAgents = [
     { id: "zoth-architect", label: "Z0TH Architect", icon: "🏗️", role: "Plans architecture, generates master prompt" },
@@ -390,6 +391,23 @@ export default function ZothStudio() {
     { id: "security-auditor", label: "Security Auditor", icon: "🔒", role: "Scans for vulnerabilities, secrets, misconfigs" },
     { id: "devops", label: "DevOps Deploy", icon: "🚀", role: "Builds, tests, and deploys to production" },
   ];
+
+  useEffect(() => {
+    if (!preset) return;
+    if (preset.name) setProjectName(preset.name);
+    if (preset.instructions) setInstructions(preset.instructions);
+    if (preset.site_type) setSiteType(preset.site_type);
+    if (preset.tone) setTone(preset.tone);
+    if (Array.isArray(preset.frameworks) && preset.frameworks.length) setFrameworks(preset.frameworks);
+    if (preset.css_framework) setCssFramework(preset.css_framework);
+    if (Array.isArray(preset.features) && preset.features.length) setFeatures(preset.features);
+    if (preset.deploy_target) setDeployTarget(preset.deploy_target);
+    if (preset.pages) setPages(preset.pages);
+    if (preset.theme) setSelectedTheme(preset.theme);
+    if (preset.depth) setDepth(Array.isArray(preset.depth) ? preset.depth : [preset.depth]);
+    setMode("create");
+    setStep(Math.min(4, Math.max(1, preset.step || 2)));
+  }, [preset]);
 
   // Load themes, projects, previews
   useEffect(() => {
@@ -413,23 +431,27 @@ export default function ZothStudio() {
     getAstroPreviewStatus().then((d) => setPreviews(d.running || [])).catch(() => {});
   }, []);
 
-  // Agent status polling
+  // Agent status polling — scaffold builds finish locally and never wait here
   useEffect(() => {
-    if (!building || !projectName) return;
+    if (!building || !projectName || !waitForAgentRef.current) return;
     const safe = toSafeName(projectName);
     pollRef.current = setInterval(async () => {
       try {
         const status = await getStudioAgentStatus(safe);
         setAgentStatus(status);
-        if (status.status && !status.status.running && status.process_alive === false) {
-          // Agent finished
+        const stage = status.status?.stage;
+        const scaffoldDone = status.agent_mode === "scaffold" || stage === "complete" || stage === "completed" || stage === "scaffold";
+        const finished = status.process_alive === false && (!status.status?.running || scaffoldDone);
+        if (finished) {
+          waitForAgentRef.current = false;
           clearInterval(pollRef.current);
           setBuilding(false);
           setBuildStages((prev) => prev.map((s) => ({ ...s, active: false, done: true })));
-          if (status.status.stage === "complete" || status.status.stage === "completed") {
-            setBuildResult({ site: safe, results: [{ framework: "agent", status: "ok" }], output: "Project built by agent" });
-          } else if (status.status.stage === "build_failed") {
-            setBuildResult({ site: safe, results: [{ framework: "agent", status: "error", error: status.status.message }] });
+          if (stage === "build_failed") {
+            setBuildResult({ site: safe, results: [{ framework: "html", status: "error", error: status.status.message }] });
+          } else {
+            setBuildResult({ site: safe, results: [{ framework: "html", status: "ok" }], output: status.last_message || "Local scaffold ready", preview_url: status.preview_url, agent_mode: status.agent_mode || "scaffold" });
+            if (status.preview_url) setPreviewUrl(status.preview_url);
           }
         }
       } catch {}
@@ -461,63 +483,63 @@ export default function ZothStudio() {
     setStep(3);
   }, [projectName, instructions, frameworks, selectedTheme, siteType, tone, features, keywords, logoUrl, assignedAgents, depth, pages]);
 
-  // Build — scaffold + spawn agent
+  // Build — local scaffold + preview only
   const handleBuild = useCallback(async () => {
+    waitForAgentRef.current = false;
     setBuilding(true);
     setError(null);
     setBuildResult(null);
     setAgentStatus(null);
 
-    const fwLabels = frameworks.map((f) => FRAMEWORKS.find((fw) => fw.id === f)?.label).join(", ") || "Astro";
     const stages = [
       { label: "Scaffolding project directory", detail: `projects/${toSafeName(projectName)}/`, active: true },
-      { label: "Writing master prompt to INSTRUCTIONS.md", detail: "Feeding to agent" },
-      { label: "Spawning AI agent", detail: `codex exec -m ${agentModel} -C projects/${toSafeName(projectName)}/` },
-      { label: "Agent building site", detail: "Real AI working in your project dir" },
-      { label: "Installing dependencies", detail: "npm install" },
-      { label: "Production build", detail: "npm run build" },
-      { label: "Ready for preview", detail: "Start dev server" },
+      { label: "Writing local pages and copy", detail: "HTML/CSS preview site" },
+      { label: "Starting preview server", detail: "detached http.server" },
+      { label: "Ready for preview", detail: "Open the local URL" },
     ];
     setBuildStages(stages);
 
     try {
-      // Step 1: Generate (creates dir + writes INSTRUCTIONS.md)
-      const genResult = await generateStudioProject({
+      await generateStudioProject({
         name: projectName, instructions, frameworks, theme: selectedTheme,
         site_type: siteType, tone, features, keywords, logo_url: logoUrl,
         depth, pages, css_framework: cssFramework, deploy_target: deployTarget,
         data_source: dataSource, supabase_url: supabaseUrl, a11y_level: a11yLevel,
       });
-      setBuildStages((prev) => prev.map((s, i) => i === 0 ? { ...s, done: true, active: false } : i === 1 ? { ...s, active: true } : s));
+      setBuildStages((prev) => prev.map((s, i) => ({ ...s, done: i === 0, active: i === 1 })));
 
-      // Step 2-3: Build (spawns codex in project dir)
       const buildRes = await studioBuild(projectName, agentModel);
-      setBuildStages((prev) => prev.map((s, i) => i < 3 ? { ...s, done: true, active: false } : i === 3 ? { ...s, active: true } : s));
-
-      // Store build result for reference
       setBuildResult(buildRes);
 
-      // The agent is now running — polling will track progress
-      if (buildRes.agent_mode === "codex" || buildRes.agent_mode === "agent-runner") {
-        setBuildStages((prev) => prev.map((s, i) => i < 3 ? { ...s, done: true, active: false } : i === 3 ? { ...s, active: true } : s));
-      } else if (buildRes.results) {
-        // Fallback: no agent, just build results
-        for (let i = 3; i < stages.length; i++) {
-          setBuildStages((prev) => prev.map((s, idx) => idx < i ? { ...s, done: true, active: false } : idx === i ? { ...s, active: true } : s));
-          await new Promise((r) => setTimeout(r, 300));
-        }
-        setBuilding(false);
+      const mode = buildRes.agent_mode || "scaffold";
+      const waitingOnAgent = !buildRes.preview_url && (mode === "codex" || mode === "agent-runner" || mode === "ollama");
+      waitForAgentRef.current = waitingOnAgent;
+      if (waitingOnAgent) {
+        setBuildStages((prev) => prev.map((s, i) => ({ ...s, done: i < 2, active: i === 2 })));
+      } else {
         setBuildStages((prev) => prev.map((s) => ({ ...s, done: true, active: false })));
-        // Try preview
-        try {
-          const safe = toSafeName(projectName);
-          const preview = await startAstroPreview(safe);
-          setPreviewUrl(preview.url);
-        } catch {}
+        setBuilding(false);
+        setAgentStatus({
+          process_alive: false,
+          last_message: buildRes.output || "Local scaffold written. Preview is ready.",
+          logs: buildRes.output || "",
+          stdout: "",
+          stderr: "",
+          agent_mode: mode,
+        });
       }
+
+      let nextPreview = buildRes.preview_url;
+      if (!nextPreview) {
+        const preview = await startAstroPreview(toSafeName(projectName));
+        nextPreview = preview.url;
+      }
+      if (!nextPreview) throw new Error("Preview server did not return a URL");
+      setPreviewUrl(nextPreview);
 
       try { const d = await getStudioProjects(); setProjects(d.projects || []); } catch {}
     } catch (e) {
+      waitForAgentRef.current = false;
       setError(e.message);
       setBuilding(false);
     }
@@ -530,7 +552,7 @@ export default function ZothStudio() {
     setStep(1); setProjectName(""); setInstructions(""); setKeywords(""); setSiteType(null); setTone(null);
     setFrameworks([]); setSelectedTheme(""); setFeatures([]); setDepth(["launch-ready", "content-heavy"]); setPages("home, about, contact"); setLogoUrl(""); setMasterPrompt("");
     setEditingPrompt(false); setAssignedAgents([]); setBuildStages([]); setBuildResult(null);
-    setPreviewUrl(null); setError(null); setAgentStatus(null); setBuilding(false);
+    setPreviewUrl(null); setError(null); setAgentStatus(null); setBuilding(false); waitForAgentRef.current = false;
     setCssFramework("tailwind"); setDeployTarget("netlify"); setDataSource("static-json"); setA11yLevel("wcag-aa");
     setSupabaseUrl(""); setSupabaseKey(""); setLogAutoScroll(true);
   };
@@ -539,12 +561,12 @@ export default function ZothStudio() {
     <section className="zs-container">
       <div className="zs-header">
         <div className="zs-header-left">
-          <span className="zs-brand">✦ Z0TH Studio</span>
-          <span className="zs-subtitle">Multi-Framework AI Site Builder</span>
+          <span className="zs-brand">Zoth Studio</span>
+          <span className="zs-subtitle">A NullAI studio · multi-framework builder</span>
         </div>
         <div className="zs-header-right">
-          <button className={`zs-btn ${mode === "create" ? "zs-btn-primary" : "zs-btn-secondary"}`} onClick={() => setMode("create")}>✦ Create</button>
-          <button className={`zs-btn ${mode === "browse" ? "zs-btn-primary" : "zs-btn-secondary"}`} onClick={() => { setMode("browse"); getStudioProjects().then((d) => setProjects(d.projects || [])).catch(() => {}); }}>📁 Projects</button>
+          <button className={`zs-btn ${mode === "create" ? "zs-btn-primary" : "zs-btn-secondary"}`} onClick={() => setMode("create")}>Create</button>
+          <button className={`zs-btn ${mode === "browse" ? "zs-btn-primary" : "zs-btn-secondary"}`} onClick={() => { setMode("browse"); getStudioProjects().then((d) => setProjects(d.projects || [])).catch(() => {}); }}>Projects</button>
         </div>
       </div>
 
@@ -553,7 +575,7 @@ export default function ZothStudio() {
           {projects.length === 0 ? (
             <div className="card as-card" style={{ textAlign: "center", padding: 30 }}>
               <p style={{ color: "var(--text-muted)" }}>No projects yet. Create one to get started.</p>
-              <button className="zs-btn zs-btn-primary" style={{ marginTop: 12 }} onClick={() => setMode("create")}>✦ New Project</button>
+              <button className="zs-btn zs-btn-primary" style={{ marginTop: 12 }} onClick={() => setMode("create")}>New project</button>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 10 }}>
@@ -573,7 +595,7 @@ export default function ZothStudio() {
 
           {step === 1 && (
             <div className="zs-step-content">
-              <h2 className="zs-section-title">📝 Project Brief</h2>
+              <h2 className="zs-section-title">Project brief</h2>
               <p className="zs-section-desc">Describe the product, audience, pages, conversion path, and content expectations. This becomes the agent brief.</p>
               <div className="zs-form-group">
                 <label className="zs-label">Project Name</label>
@@ -611,7 +633,7 @@ export default function ZothStudio() {
 
           {step === 2 && (
             <div className="zs-step-content">
-              <h2 className="zs-section-title">⚙️ Configuration</h2>
+              <h2 className="zs-section-title">Configuration</h2>
               <p className="zs-section-desc">Pick frameworks, theme, features, and which AI agent builds your project.</p>
               <div className="zs-form-group">
                 <label className="zs-label">Frameworks</label>
@@ -672,7 +694,7 @@ export default function ZothStudio() {
 
           {step === 3 && (
             <div className="zs-step-content">
-              <h2 className="zs-section-title">🔍 Review & Approve</h2>
+              <h2 className="zs-section-title">Review & approve</h2>
               <p className="zs-section-desc">This prompt will be written to <code>INSTRUCTIONS.md</code> inside the project directory and fed to the AI agent.</p>
               <div className="zs-config-summary">
                 <div className="zs-summary-row"><span className="zs-summary-label">Project</span><span className="zs-summary-value">{projectName}</span></div>
@@ -710,9 +732,9 @@ export default function ZothStudio() {
 
           {step === 4 && (
             <div className="zs-step-content">
-              <h2 className="zs-section-title">🚀 Build & Deploy</h2>
+              <h2 className="zs-section-title">Build & deploy</h2>
               <p className="zs-section-desc">
-                Directory: <code style={{ fontSize: "0.78rem" }}>projects/{toSafeName(projectName)}/</code> — Agent: <strong>{AGENT_MODELS.find((m) => m.id === agentModel)?.label || agentModel}</strong>
+                Directory: <code style={{ fontSize: "0.78rem" }}>projects/{toSafeName(projectName)}/</code> — Local scaffold + preview
               </p>
 
               {error && <div className="error-banner"><span>⚠ {error}</span><button className="retry-btn" onClick={() => setError(null)}>Dismiss</button></div>}
@@ -733,11 +755,11 @@ export default function ZothStudio() {
                       Ready to build <strong style={{ color: "var(--accent-cyan)" }}>{projectName}</strong>
                     </p>
                     <p style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>
-                      A directory will be created, INSTRUCTIONS.md written, and the AI agent launched inside it.
+                      A directory will be created, local pages written, and a preview server started. No remote agent.
                     </p>
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <button className="zs-btn zs-btn-primary zs-btn-large" onClick={handleBuild}>▶ Launch Agent Build</button>
+                    <button className="zs-btn zs-btn-primary zs-btn-large" onClick={handleBuild}>▶ Build &amp; Preview</button>
                   </div>
                 </div>
               )}
@@ -745,13 +767,34 @@ export default function ZothStudio() {
               {building && (
                 <div className="zs-build-active">
                   <p style={{ color: "var(--accent-cyan)", textAlign: "center", fontSize: "0.85rem" }}>
-                    ◈ Agent is working inside <code>projects/{toSafeName(projectName)}/</code> — will not stop until production-ready.
+                    Writing the site into <code>projects/{toSafeName(projectName)}/</code> and starting preview.
                   </p>
                 </div>
               )}
 
-              {/* Agent log panel — shows real-time output */}
-              {agentStatus && (
+              {projectName && (
+                <div style={{ textAlign: "center", marginTop: 12 }}>
+                  <button
+                    className="zs-btn zs-btn-primary"
+                    disabled={!projectName}
+                    onClick={async () => {
+                      try {
+                        setError(null);
+                        const preview = await startAstroPreview(toSafeName(projectName));
+                        if (!preview?.url) throw new Error(preview?.error || "Preview server did not return a URL");
+                        setPreviewUrl(preview.url);
+                        window.open(preview.url, "_blank", "noopener,noreferrer");
+                      } catch (e) {
+                        setError(e.message);
+                      }
+                    }}
+                  >
+                    ▶ Preview
+                  </button>
+                </div>
+              )}
+
+              {agentStatus && (agentStatus.process_alive || agentStatus.logs || agentStatus.stdout || agentStatus.last_message) && (
                 <AgentLog
                   logs={agentStatus.logs}
                   stdout={agentStatus.stdout}
@@ -763,7 +806,7 @@ export default function ZothStudio() {
               {buildResult && (
                 <div className="zs-build-result">
                   <div className="card as-card" style={{ borderLeft: buildResult.error ? "3px solid var(--accent-red)" : "3px solid var(--accent-green)" }}>
-                    <h3 className="as-card-title">{buildResult.error ? "⚠ Build Issues" : "✅ Build Complete"}</h3>
+                    <h3 className="as-card-title">{buildResult.error ? "Build issues" : "Build complete"}</h3>
                     <div className="as-ai-plan" style={{ marginTop: 8 }}>
                       {buildResult.site && <div className="as-ai-plan-row"><span>Site</span><strong>{buildResult.site}</strong></div>}
                       {buildResult.dir && <div className="as-ai-plan-row"><span>Directory</span><code style={{ fontSize: "0.72rem" }}>{buildResult.dir}</code></div>}
@@ -777,9 +820,12 @@ export default function ZothStudio() {
                     </div>
                     <button className="zs-btn zs-btn-primary" style={{ marginTop: 12 }} onClick={async () => {
                       try {
+                        setError(null);
                         const safe = toSafeName(projectName);
                         const preview = await startAstroPreview(safe);
+                        if (!preview?.url) throw new Error(preview?.error || preview?.message || "Preview server did not return a URL");
                         setPreviewUrl(preview.url);
+                        window.open(preview.url, "_blank", "noopener,noreferrer");
                       } catch (e) { setError(e.message); }
                     }}>▶ Preview</button>
                   </div>

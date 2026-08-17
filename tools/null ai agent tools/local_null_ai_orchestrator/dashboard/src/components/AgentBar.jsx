@@ -32,9 +32,8 @@ export default function AgentBar({ system }) {
 
   return (
     <section>
-      <h2 className="section-title">
-        <span className="section-icon">🤖</span> Agent Backends
-      </h2>
+      <p className="empty-kicker">A NullAI studio</p>
+      <h2 className="section-title">Agent backends</h2>
       <div className="agent-grid">
         {AGENTS.map((agent) => {
           const backend = backends[agent.id];

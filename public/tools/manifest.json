@@ -1,0 +1,63 @@
+{
+  "schema": "zoth-tool-manifest/v1",
+  "generated_at": "2026-08-17T15:45:00Z",
+  "owner": "hermes",
+  "lane": "planner/tool-schemas",
+  "contract_enforcement": "every request validated by the tool module's own validate() before execution",
+  "tools": [
+    {
+      "id": "github-tool",
+      "name": "Zoth GitHub Tool",
+      "version": "2026-08-17",
+      "entry": "/tools/github-tool.js",
+      "schema": "/tools/github-tool.schema.json",
+      "ui": "/studio/github-tool.html",
+      "blueprint": "/blueprints/github-tool.json",
+      "actions": ["issues.list", "issues.create", "prs.list", "prs.create", "repos.list"],
+      "modes": ["simulated", "live"],
+      "security": "token held in memory only; never persisted or written to the bus"
+    },
+    {
+      "id": "blueprint-validator",
+      "name": "Zoth Blueprint Validator",
+      "version": "2026-08-17",
+      "entry": "/tools/blueprint-validator.js",
+      "schema": null,
+      "ui": "/studio/tool-bench.html#blueprint-validator",
+      "blueprint": null,
+      "actions": ["blueprint.validate"],
+      "modes": ["client-side"],
+      "security": "fully local; no network; no secrets"
+    },
+    {
+      "id": "netlify-deploy",
+      "name": "Zoth Netlify Deploy Tool",
+      "version": "2026-08-17",
+      "entry": "/tools/netlify-deploy.js",
+      "schema": null,
+      "ui": "/studio/tool-bench.html#netlify-deploy",
+      "blueprint": null,
+      "actions": ["deploy.trigger"],
+      "modes": ["simulated", "live"],
+      "security": "build hook URL + secret held in memory only; never persisted or written to the bus"
+    },
+    {
+      "id": "header-audit",
+      "name": "Zoth Header Audit Tool",
+      "version": "2026-08-17",
+      "entry": "/tools/header-audit.js",
+      "schema": null,
+      "ui": "/studio/tool-bench.html#header-audit",
+      "blueprint": null,
+      "actions": ["header.audit"],
+      "modes": ["live"],
+      "security": "fetches public response headers only; no credentials; fail-soft on CORS"
+    }
+  ],
+  "harness": {
+    "module": "/tools/tool-runner.js",
+    "events": "zoth:tool-bench",
+    "mirror": "/tools/bench-bus-mirror.js -> http://127.0.0.1:8989/messages (swarm bus, fail-soft)",
+    "note": "Uniform dispatcher. Authoritative state lives on the agent-comms file bus; :8989 is the live swarm bus mirror."
+  }
+}

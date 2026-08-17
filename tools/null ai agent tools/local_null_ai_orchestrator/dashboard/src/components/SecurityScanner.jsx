@@ -135,7 +135,8 @@ export default function SecurityScanner() {
 
   return (
     <section className="main">
-      <div className="section-title">🔒 Security Scanner</div>
+      <p className="empty-kicker">A NullAI studio</p>
+      <div className="section-title">Security Scanner</div>
 
       {error && (
         <div className="error-banner">
@@ -188,7 +189,7 @@ export default function SecurityScanner() {
                 onClick={runScan}
                 disabled={scanning}
               >
-                {scanning ? "Scanning…" : "🔍 Full Scan"}
+                {scanning ? "Scanning…" : "Full scan"}
               </button>
             </div>
           </div>

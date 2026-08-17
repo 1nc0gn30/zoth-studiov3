@@ -277,8 +277,8 @@ export default function AIWorkbench({ system }) {
     <section className="aw-container">
       <div className="aw-header">
         <div>
-          <h2 className="aw-title">◈ AI Workbench</h2>
-          <p className="aw-subtitle">Install, run, and manage AI coding agents, MCP servers, and CLI tools</p>
+          <h2 className="aw-title">AI Workbench</h2>
+          <p className="aw-subtitle">A NullAI studio · CLIs, MCP, coding agents</p>
         </div>
         <div className="aw-header-stats">
           <span className="aw-stat">{installedCount}/{AI_TOOLS.length} installed</span>

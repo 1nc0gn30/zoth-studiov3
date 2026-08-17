@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OmniPost Powerhouse — Social, Shorts & Thumbnail Studio | Zoth Studio</title>
+    <meta name="description" content="Autonomous multi-platform social media studio, 16:9 thumbnail forge, viral shorts generator, AI thread stitcher, and agentic publishing engine for Zoth Studio." />
+    <meta name="theme-color" content="#05060a" />
+    <meta name="application-name" content="Zoth Studio" />
+    <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css?v=20260816a" />
+    <style>
+      :root {
+        --omni-bg: #06080f;
+        --omni-surface: #0d1222;
+        --omni-card: #131a30;
+        --omni-cyan: #00f0ff;
+        --omni-magenta: #ff007a;
+        --omni-purple: #a855f7;
+        --omni-amber: #f59e0b;
+        --omni-emerald: #10b981;
+        --omni-border: rgba(0, 240, 255, 0.15);
+        --omni-line: rgba(255, 255, 255, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+      body.omni-page {
+        background: var(--omni-bg);
+        color: #f0f6fc;
+        font-family: 'Figtree', sans-serif;
+        min-height: 100vh;
+      }
+
+      .omni-container {
+        max-width: 1560px;
+        margin: 0 auto;
+        padding: 24px 20px 80px;
+      }
+
+      /* Header */
+      .omni-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--omni-line);
+      }
+      .omni-title-wrap h1 {
+        margin: 0;
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #fff 40%, var(--omni-cyan) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .omni-subtitle {
+        color: var(--muted);
+        font-size: 0.92rem;
+        margin-top: 4px;
+      }
+
+      /* Tab Navigation */
+      .omni-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        background: rgba(13, 18, 34, 0.6);
+        padding: 6px;
+        border-radius: 12px;
+        border: 1px solid var(--omni-line);
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      .omni-tab-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .omni-tab-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .omni-tab-btn.active {
+        color: var(--omni-cyan);
+        background: rgba(0, 240, 255, 0.1);
+        border-color: rgba(0, 240, 255, 0.3);
+        box-shadow: 0 0 16px rgba(0, 240, 255, 0.15);
+      }
+
+      @media (max-width: 640px) {
+        .omni-container { padding: 12px 12px 60px; }
+        .omni-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+        .preview-matrix { grid-template-columns: 1fr; }
+        .phone-frame { width: 100%; max-width: 320px; height: 500px; }
+        .btn-omni { font-size: 0.76rem; padding: 6px 12px; }
+      }
+
+      /* View Panels */
+      .omni-view { display: none; }
+      .omni-view.active { display: block; animation: fadeIn 0.2s ease; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+      /* Grid Layouts */
+      .omni-grid {
+        display: grid;
+        grid-template-columns: minmax(320px, 420px) 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 1024px) {
+        .omni-grid { grid-template-columns: 1fr; }
+      }
+
+      .omni-card {
+        background: var(--omni-surface);
+        border: 1px solid var(--omni-line);
+        border-radius: 14px;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .card-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      /* Form controls */
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .form-label {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.76rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .form-input, .form-select, .form-textarea {
+        background: #060913;
+        border: 1px solid var(--omni-line);
+        color: #fff;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+      .form-input:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--omni-cyan);
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+      }
+      .form-textarea {
+        resize: vertical;
+        min-height: 120px;
+        line-height: 1.5;
+      }
+
+      /* Platform Selector */
+      .platform-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .plat-badge {
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--omni-line);
+        background: rgba(255,255,255,0.02);
+        color: var(--muted);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.74rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .plat-badge:hover { border-color: var(--omni-cyan); color: #fff; }
+      .plat-badge.active {
+        background: rgba(0, 240, 255, 0.12);
+        border-color: var(--omni-cyan);
+        color: var(--omni-cyan);
+      }
+
+      /* Multi-platform Preview Matrix */
+      .preview-matrix {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 16px;
+      }
+      .preview-card {
+        background: var(--omni-card);
+        border: 1px solid var(--omni-line);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .preview-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+      .plat-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .char-meter {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+      .preview-body {
+        font-size: 0.88rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: rgba(0,0,0,0.25);
+        padding: 10px;
+        border-radius: 8px;
+        min-height: 90px;
+        border: 1px solid rgba(255,255,255,0.04);
+      }
+      .preview-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: auto;
+      }
+
+      /* Shorts Video Canvas Previewer */
+      .shorts-stage-grid {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 900px) { .shorts-stage-grid { grid-template-columns: 1fr; } }
+      .phone-frame {
+        width: 320px;
+        height: 568px;
+        background: #000;
+        border-radius: 36px;
+        border: 8px solid #1c2438;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,240,255,0.15);
+        position: relative;
+        overflow: hidden;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+      }
+      #shorts-canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .shorts-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 24px 16px;
+        background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 70%, rgba(0,0,0,0.7) 100%);
+      }
+      .shorts-script-editor {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .scene-card {
+        background: #060913;
+        border: 1px solid var(--omni-line);
+        border-radius: 10px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .scene-head {
+        display: flex;
+        justify-content: space-between;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.74rem;
+        color: var(--omni-cyan);
+      }
+
+      /* Thumbnail Forge */
+      .thumb-stage-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #04060a;
+        border: 1px solid var(--omni-line);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+      }
+      #thumb-canvas {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+      }
+
+      /* Sound FX Bar */
+      .sfx-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 10px 14px;
+        background: #060913;
+        border: 1px solid var(--omni-line);
+        border-radius: 10px;
+      }
+
+      /* Buttons */
+      .btn-omni {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--omni-cyan);
+        color: #05070d;
+        font-weight: 700;
+      }
+      .btn-primary:hover {
+        box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+        transform: translateY(-1px);
+      }
+      .btn-secondary {
+        background: rgba(255,255,255,0.06);
+        color: #fff;
+        border-color: var(--omni-line);
+      }
+      .btn-secondary:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--omni-cyan);
+      }
+      .btn-magenta {
+        background: rgba(255,0,122,0.15);
+        color: var(--omni-magenta);
+        border-color: rgba(255,0,122,0.4);
+      }
+      .btn-magenta:hover {
+        background: var(--omni-magenta);
+        color: #fff;
+        box-shadow: 0 0 16px rgba(255,0,122,0.4);
+      }
+    </style>
+  </head>
+  <body class="deck-page omni-page">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div class="fx-grain" aria-hidden="true"></div>
+
+    <header class="site-header is-scrolled">
+      <div class="nav">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
+          <span class="brand-text"><strong>ZOTH</strong><small>by NullAI</small></span>
+        </a>
+        <nav class="nav-desktop" aria-label="Primary">
+          <a href="/studio/">Dashboard</a>
+          <a href="/studio/swarm.html">Swarm</a>
+          <a href="/studio/agent-composer.html">Composer</a>
+          <a href="/studio/omnipost.html" class="is-active">OmniPost</a>
+          <a href="/studio/nexus-3d.html">Nexus 3D</a>
+          <a href="/studio/connectors.html">Connectors</a>
+          <a href="/studio/models.html">Models</a>
+          <a href="/vault/">Vault</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="omni-container">
+      <!-- Top Title Bar -->
+      <div class="omni-header">
+        <div class="omni-title-wrap">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="pill" style="border-color: var(--omni-magenta); color: var(--omni-magenta);">POWERHOUSE SUITE</span>
+            <span class="pill" style="border-color: var(--omni-cyan); color: var(--omni-cyan);">MULTI-AGENT SYNC</span>
+          </div>
+          <h1>OmniPost Powerhouse Studio</h1>
+          <p class="omni-subtitle">Autonomous media generation, 16:9 thumbnail forge, multi-platform post repurposing, viral shorts script lab, and agentic broadcast dispatcher.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-omni btn-secondary" id="btn-sync-bus">📡 Sync Swarm Bus</button>
+          <button class="btn-omni btn-primary" id="btn-quick-generate">⚡ 1-Click AI Repurpose</button>
+        </div>
+      </div>
+
+      <!-- Tab Switcher -->
+      <nav class="omni-tabs" aria-label="OmniPost Modules">
+        <button class="omni-tab-btn active" data-tab="tab-repurpose">✨ Multi-Platform Repurposer</button>
+        <button class="omni-tab-btn" data-tab="tab-thumb-forge">🎨 Graphic & Thumbnail Forge</button>
+        <button class="omni-tab-btn" data-tab="tab-shorts">🎬 Viral Shorts & Reels Studio</button>
+        <button class="omni-tab-btn" data-tab="tab-hooks">🪝 Viral Hook & Trend Lab</button>
+        <button class="omni-tab-btn" data-tab="tab-threads">🧵 Thread Stitcher</button>
+        <button class="omni-tab-btn" data-tab="tab-scheduler">📅 Content Matrix & Schedule</button>
+        <button class="omni-tab-btn" data-tab="tab-agent-bus">🤖 Swarm Directives</button>
+      </nav>
+
+      <!-- TAB 1: Multi-Platform Repurposer -->
+      <section id="tab-repurpose" class="omni-view active">
+        <div class="omni-grid">
+          <!-- Input Form Panel -->
+          <div class="omni-card">
+            <div class="card-title">
+              <span>Source Content & Angle</span>
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--omni-cyan);">AI PROMPT ENGINE</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Core Topic / Brief / URL</label>
+              <textarea id="source-topic" class="form-textarea" placeholder="Paste article draft, changelog, launch announcement, or product feature...">🚀 Zoth Studio v2.6 Released: Full local-first 3D Omniverse, Simplex Space Liquid shaders, and autonomous multi-agent swarm orchestration on Parrot OS. Zero cloud dependencies required.</textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Target Tone & Voice</label>
+              <select id="select-tone" class="form-select">
+                <option value="thought_leader">💡 Authority & Thought Leadership</option>
+                <option value="hype_viral">🔥 High Energy & Viral Tech</option>
+                <option value="hacker_builder">🛠️ Deep Technical / Builder</option>
+                <option value="storytelling">📖 Narrative & Curiosity Hook</option>
+                <option value="minimalist">⚡ Minimalist & Punchy</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Active Destination Platforms</label>
+              <div class="platform-badges" id="platform-selectors">
+                <span class="plat-badge active" data-p="x">𝕏 Twitter/X</span>
+                <span class="plat-badge active" data-p="linkedin">💼 LinkedIn</span>
+                <span class="plat-badge active" data-p="instagram">📸 Instagram</span>
+                <span class="plat-badge active" data-p="tiktok">🎵 TikTok</span>
+                <span class="plat-badge active" data-p="threads">🧵 Threads</span>
+                <span class="plat-badge active" data-p="bluesky">🦋 Bluesky</span>
+                <span class="plat-badge active" data-p="reddit">🤖 Reddit</span>
+                <span class="plat-badge active" data-p="github">🐙 GitHub Release</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Inference Engine</label>
+              <select id="select-engine" class="form-select">
+                <option value="ollama-qwen">🧠 Local Ollama: qwen2.5-coder:1.5b (Fast)</option>
+                <option value="ollama-smollm">⚡ Local Ollama: smollm2:360m (Instant)</option>
+                <option value="gemini">🌟 Gemini 2.0 Flash / Pro</option>
+                <option value="grok">🚀 xAI Grok 4.5</option>
+                <option value="hermes">🐉 Nous Hermes 3 Llama-3</option>
+              </select>
+            </div>
+
+            <button class="btn-omni btn-primary" id="btn-generate-matrix" style="width:100%; padding:12px; margin-top:8px;">
+              ⚡ Generate All Platform Drafts
+            </button>
+          </div>
+
+          <!-- Output Platform Cards Matrix -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h2 style="font-family:'Syne', sans-serif; font-size:1.15rem; margin:0;">Platform Tailored Previews</h2>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-omni btn-secondary" id="btn-copy-all">📋 Copy All</button>
+                <button class="btn-omni btn-secondary" id="btn-export-zip">💾 Export JSON</button>
+              </div>
+            </div>
+
+            <div class="preview-matrix" id="preview-matrix-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: Graphic & Thumbnail Forge -->
+      <section id="tab-thumb-forge" class="omni-view">
+        <div class="omni-grid">
+          <!-- Controls Panel -->
+          <div class="omni-card">
+            <div class="card-title">
+              <span>Thumbnail & Banner Controls</span>
+              <span class="pill" style="border-color:var(--omni-cyan); color:var(--omni-cyan);">CANVAS ENGINE</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Aspect Ratio / Preset</label>
+              <select id="thumb-ratio" class="form-select">
+                <option value="16_9">16:9 — YouTube / Twitter Banner (1280x720)</option>
+                <option value="1_1">1:1 — Instagram / Square Feed (1080x1080)</option>
+                <option value="9_16">9:16 — Shorts / Stories Cover (720x1280)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Main Headline</label>
+              <input type="text" id="thumb-headline" class="form-input" value="LOCAL-FIRST AI" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Sub-headline / Punchline</label>
+              <input type="text" id="thumb-subhead" class="form-input" value="Zero Cloud APIs · Autonomous Swarms" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Badge Pill Text</label>
+              <input type="text" id="thumb-badge" class="form-input" value="⚡ ZOTH STUDIO V2.6" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Aesthetic Theme</label>
+              <select id="thumb-theme" class="form-select">
+                <option value="cyber_nebula">🌌 Cyber Nebula (Cyan & Deep Blue)</option>
+                <option value="acid_matrix">⚡ Acid Green & Obsidian</option>
+                <option value="dark_luxe">👑 Dark Luxe (Gold & Noir)</option>
+                <option value="hyper_purple">🔮 Holographic Magenta & Violet</option>
+              </select>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+              <button class="btn-omni btn-primary" id="btn-render-thumb" style="flex:1;">🎨 Re-render Canvas</button>
+              <button class="btn-omni btn-secondary" id="btn-download-thumb" style="flex:1;">💾 Download PNG</button>
+            </div>
+          </div>
+
+          <!-- Canvas Preview Stage -->
+          <div class="thumb-stage-wrap">
+            <canvas id="thumb-canvas" width="1280" height="720"></canvas>
+            <div style="margin-top:14px; font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--muted);">
+              Rendered at 100% Native Resolution · Ready for Instant High-Res Export
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Shorts & Reels Video Studio -->
+      <section id="tab-shorts" class="omni-view">
+        <div class="shorts-stage-grid">
+          <!-- Mobile Screen Previewer -->
+          <div class="omni-card" style="align-items:center;">
+            <div class="card-title" style="width:100%;">
+              <span>9:16 Shorts Canvas</span>
+              <span class="pill" style="border-color:var(--omni-emerald); color:var(--omni-emerald);">60 FPS</span>
+            </div>
+
+            <div class="phone-frame">
+              <canvas id="shorts-canvas" width="720" height="1280"></canvas>
+              <div class="shorts-overlay">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:#fff; background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:4px;">⏱️ <span id="shorts-timer">00:00</span></span>
+                  <span style="font-size:0.75rem; color:var(--omni-cyan);">#ZothStudio</span>
+                </div>
+                <div style="text-align:center;">
+                  <div id="shorts-live-caption" style="font-family:'Syne', sans-serif; font-size:1.1rem; font-weight:800; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,0.9); line-height:1.2; padding:8px; background:rgba(0,0,0,0.4); border-radius:8px;">
+                    Tap Play to test Video & Audio!
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; width:100%; margin-top:10px; flex-wrap:wrap;">
+              <button class="btn-omni btn-primary" id="btn-play-shorts" style="flex:1;">▶ Preview Motion</button>
+              <button class="btn-omni btn-secondary" id="btn-speech-shorts" style="flex:1;">🔊 Voice Synthesizer</button>
+              <button class="btn-omni btn-magenta" id="btn-record-shorts" style="width:100%; margin-top:4px;">📹 Record & Download WebM Video (60 FPS)</button>
+            </div>
+          </div>
+
+          <!-- Script Builder & Beat Sheet -->
+          <div class="omni-card shorts-script-editor">
+            <div class="card-title">
+              <span>Viral 4-Beat Shorts Script & Sound FX Engine</span>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-omni btn-secondary" onclick="openReadmeToVideoModal()">📄 README ➔ Video</button>
+                <button class="btn-omni btn-magenta" id="btn-gen-shorts-ai">✨ AI Refresh</button>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 14px;">
+              <div>
+                <label class="form-label" style="font-size:0.75rem;">Script Blueprint Preset</label>
+                <select id="shorts-script-preset" class="form-select" onchange="loadShortsPreset(this.value)">
+                  <option value="local_ai">⚡ Local AI Sovereignty (Zero Cloud APIs)</option>
+                  <option value="security">🛡️ Zero-Day Security & Kernel Hardening</option>
+                  <option value="web3">💎 Autonomous Smart Agents & DeFi</option>
+                  <option value="indie">🚀 Indie Hacker: Ship in 8 Micro-Steps</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" style="font-size:0.75rem;">Motion Canvas Theme</label>
+                <select id="shorts-theme-select" class="form-select">
+                  <option value="nebula">🌌 Cyber Nebula (Cyan & Violet)</option>
+                  <option value="matrix">⚡ Digital Matrix (Acid Green & Black)</option>
+                  <option value="crimson">🔥 Crimson Void (Red & Amber)</option>
+                  <option value="quantum">🧊 Quantum Ice (Electric Blue & White)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="scene-card">
+              <div class="scene-head"><span>BEAT 1: HOOK (0s - 3s)</span><span>Visual: Rapid 3D Zoom</span></div>
+              <textarea id="beat1-text" class="form-textarea" style="min-height:60px;">Stop building AI apps that depend on 10 external cloud APIs. Here is why local-first changes everything.</textarea>
+            </div>
+
+            <div class="scene-card">
+              <div class="scene-head"><span>BEAT 2: THE PROBLEM (3s - 12s)</span><span>Visual: Glitch Matrix</span></div>
+              <textarea id="beat2-text" class="form-textarea" style="min-height:60px;">Your API keys expire, rate limits break your deployments, and your user secrets leak over public tunnels.</textarea>
+            </div>
+
+            <div class="scene-card">
+              <div class="scene-head"><span>BEAT 3: THE SOLUTION (12s - 25s)</span><span>Visual: Liquid Shader Wave</span></div>
+              <textarea id="beat3-text" class="form-textarea" style="min-height:60px;">Zoth Studio runs entirely on loopback. You get local Ollama neural co-pilots, full 3D CAD modeling, and autonomous multi-agent swarms with zero key leakage.</textarea>
+            </div>
+
+            <div class="scene-card">
+              <div class="scene-head"><span>BEAT 4: CALL TO ACTION (25s - 30s)</span><span>Visual: Brand Seal Pulse</span></div>
+              <textarea id="beat4-text" class="form-textarea" style="min-height:50px;">Clone the repo on GitHub and take back control of your AI workflow.</textarea>
+            </div>
+
+            <!-- Sound FX Palette -->
+            <div>
+              <div class="form-label" style="margin-bottom:6px;">Synthesized Web Audio SFX</div>
+              <div class="sfx-bar">
+                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('laser')">⚡ Laser</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('whoosh')">💨 Whoosh</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('warp')">🌌 Warp Ascent</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('chime')">🔔 Crystal Chime</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('bass')">💥 Bass Drop</button>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+              <button class="btn-omni btn-primary" id="btn-update-canvas-captions">🔄 Update Canvas Timeline</button>
+              <button class="btn-omni btn-secondary" id="btn-export-script-md">📥 Download Script (.md)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- README / Markdown to Video Synthesizer Modal -->
+        <div id="readme-video-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#090d18; border:1px solid #00f0ff; border-radius:12px; max-width:680px; width:100%; padding:20px; box-shadow:0 0 30px rgba(0,240,255,0.25);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <h3 style="margin:0; font-family:'Syne', sans-serif; color:#00f0ff; font-size:1.2rem;">📄 Markdown / README ➔ 60 FPS Video Synthesizer</h3>
+              <button onclick="closeReadmeToVideoModal()" style="background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            <p style="font-size:0.8rem; color:#8b949e; margin-bottom:12px;">Paste your project README, blog article, or release notes below. The OmniPost engine will distill it into a viral 4-beat kinetic video script automatically.</p>
+            <textarea id="readme-input-text" style="width:100%; height:180px; background:#03050a; border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-family:'IBM Plex Mono', monospace; font-size:0.8rem; padding:10px; resize:vertical;" placeholder="# My AI Project&#10;&#10;An autonomous local-first engine that solves cloud API dependencies..."></textarea>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:14px;">
+              <button class="btn-omni btn-secondary" onclick="closeReadmeToVideoModal()">Cancel</button>
+              <button class="btn-omni btn-magenta" onclick="synthesizeReadmeToVideo()">✨ Synthesize Video Script ➔</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: Viral Hook Lab -->
+      <section id="tab-hooks" class="omni-view">
+        <div class="omni-card">
+          <div class="card-title">
+            <span>Viral Hook Generator & Psychological Angle Matrix</span>
+            <button class="btn-omni btn-primary" id="btn-gen-hooks">⚡ Generate 8 Angles</button>
+          </div>
+          <p style="color:var(--muted); font-size:0.88rem; margin:0;">Hooks crafted across high-conversion retention formulas: Curiosity Gap, Contrarian, Negative Retargeting, and Stat Bombs.</p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; margin-top:10px;" id="hooks-grid">
+            <!-- Rendered hooks -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: Thread Stitcher -->
+      <section id="tab-threads" class="omni-view">
+        <div class="omni-card">
+          <div class="card-title">
+            <span>Long-form Article to 𝕏 / Bluesky Thread Splitter</span>
+            <button class="btn-omni btn-primary" id="btn-stitch-thread">🧵 Auto-Stitch Thread (280c)</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Source Document (Markdown or Plain Text)</label>
+            <textarea id="thread-source" class="form-textarea" style="min-height:180px;">The shift toward local-first AI development is accelerating. When developers build with local neural weights (like Qwen 2.5 Coder and SmolLM2), several structural advantages emerge immediately:
+
+1. Zero Latency & Offline Durability: Queries execute on local silicon with zero network hops and zero outage downtime.
+2. Complete Secret Isolation: API keys, proprietary blueprints, and sensitive telemetry never cross public ingress tunnels.
+3. Multi-Agent Determinism: Agents communicate over structured loopback buses (agent-comms) with verifiable audit logs.
+4. Composability: 3D procedural tools, Web Audio synthesizers, and knowledge graphs combine seamlessly.</textarea>
+          </div>
+
+          <div id="thread-output-list" style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+            <!-- Rendered tweets -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: Content Matrix & Scheduler -->
+      <section id="tab-scheduler" class="omni-view">
+        <div class="omni-card">
+          <div class="card-title">
+            <span>Autonomous Publishing Matrix & Queue</span>
+            <span class="pill" style="border-color:var(--omni-emerald); color:var(--omni-emerald);">LOCAL-FIRST QUEUE</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:10px;">
+            <div style="background:#060913; padding:14px; border-radius:10px; border:1px solid var(--omni-line);">
+              <div style="font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--muted);">SCHEDULED POSTS</div>
+              <div style="font-family:'Syne', sans-serif; font-size:1.6rem; font-weight:800; color:var(--omni-cyan); margin-top:4px;">12</div>
+            </div>
+            <div style="background:#060913; padding:14px; border-radius:10px; border:1px solid var(--omni-line);">
+              <div style="font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--muted);">SHORTS IN QUEUE</div>
+              <div style="font-family:'Syne', sans-serif; font-size:1.6rem; font-weight:800; color:var(--omni-magenta); margin-top:4px;">4</div>
+            </div>
+            <div style="background:#060913; padding:14px; border-radius:10px; border:1px solid var(--omni-line);">
+              <div style="font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--muted);">AVG VIRAL SCORE</div>
+              <div style="font-family:'Syne', sans-serif; font-size:1.6rem; font-weight:800; color:var(--omni-emerald); margin-top:4px;">94.2/100</div>
+            </div>
+            <div style="background:#060913; padding:14px; border-radius:10px; border:1px solid var(--omni-line);">
+              <div style="font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--muted);">CONNECTED CHANNELS</div>
+              <div style="font-family:'Syne', sans-serif; font-size:1.6rem; font-weight:800; color:#fff; margin-top:4px;">8</div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.85rem; font-family:'IBM Plex Mono', monospace;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--omni-line); color:var(--muted); text-align:left;">
+                  <th style="padding:10px;">TIME (EST)</th>
+                  <th style="padding:10px;">PLATFORMS</th>
+                  <th style="padding:10px;">TITLE / HOOK</th>
+                  <th style="padding:10px;">AGENT</th>
+                  <th style="padding:10px;">STATUS</th>
+                </tr>
+              </thead>
+              <tbody id="schedule-tbody">
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                  <td style="padding:10px; color:var(--omni-cyan);">Today 11:30 AM</td>
+                  <td style="padding:10px;">𝕏 · LinkedIn · Threads</td>
+                  <td style="padding:10px;">Zoth Studio v2.6 Swarm Launch Brief</td>
+                  <td style="padding:10px;">@antigravity</td>
+                  <td style="padding:10px;"><span style="color:var(--omni-emerald);">● Ready</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                  <td style="padding:10px; color:var(--omni-cyan);">Today 03:00 PM</td>
+                  <td style="padding:10px;">TikTok · YouTube Shorts</td>
+                  <td style="padding:10px;">Why Cloud APIs Fail: Local-First AI</td>
+                  <td style="padding:10px;">@grok</td>
+                  <td style="padding:10px;"><span style="color:var(--omni-amber);">⏳ Rendering</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                  <td style="padding:10px; color:var(--omni-cyan);">Tomorrow 09:00 AM</td>
+                  <td style="padding:10px;">Reddit (r/LocalLlama) · GitHub</td>
+                  <td style="padding:10px;">Open-source 3D Procedural CAD with Ollama Co-pilot</td>
+                  <td style="padding:10px;">@hermes</td>
+                  <td style="padding:10px;"><span style="color:var(--omni-emerald);">● Ready</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: Swarm Directives -->
+      <section id="tab-agent-bus" class="omni-view">
+        <div class="omni-card">
+          <div class="card-title">
+            <span>Swarm Agent Broadcast Injection & Listening Port</span>
+            <span class="pill" style="border-color:var(--omni-cyan); color:var(--omni-cyan);">BUS :8989 / LOOPBACK</span>
+          </div>
+          <p style="color:var(--muted); font-size:0.88rem;">Autonomous swarm agents (@antigravity, @grok, @hermes) can query OmniPost to auto-generate marketing materials, release notes, and documentation broadcasts.</p>
+
+          <div style="display:flex; gap:10px; margin-top:10px;">
+            <input type="text" id="swarm-directive-input" class="form-input" style="flex:1;" placeholder="Inject prompt to all agents (e.g. '@all generate changelog and thread for commit 8f9c2')..." />
+            <button class="btn-omni btn-primary" id="btn-send-directive">Dispatch Directive</button>
+          </div>
+
+          <div id="swarm-logs-box" style="margin-top:16px; background:#030509; border:1px solid var(--omni-line); border-radius:8px; padding:12px; font-family:'IBM Plex Mono', monospace; font-size:0.78rem; max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+            <div style="color:var(--omni-cyan);">[09:10:00Z] @antigravity: OmniPost Powerhouse initialized and ready for autonomous dispatch.</div>
+            <div style="color:var(--omni-emerald);">[09:09:00Z] @grok: 8484 harness verified. Post generator ready to take schema payloads.</div>
+            <div style="color:#a855f7;">[04:22:04Z] @hermes: Tool schema validation active for social endpoints.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (function() {
+        // Tab Navigation
+        const tabBtns = document.querySelectorAll('.omni-tab-btn');
+        const views = document.querySelectorAll('.omni-view');
+
+        tabBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            views.forEach(v => v.classList.remove('active'));
+            btn.classList.add('active');
+            const target = document.getElementById(btn.dataset.tab);
+            if (target) {
+              target.classList.add('active');
+              if (btn.dataset.tab === 'tab-thumb-forge') {
+                renderThumbnailCanvas();
+              }
+            }
+          });
+        });
+
+        // Platform selectors toggle
+        document.querySelectorAll('.plat-badge').forEach(badge => {
+          badge.addEventListener('click', () => badge.classList.toggle('active'));
+        });
+
+        // Audio Context for Web Audio FX
+        let audioCtx = null;
+        function getAudioContext() {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          return audioCtx;
+        }
+
+        window.playSfx = function(type) {
+          try {
+            const ctx = getAudioContext();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            if (type === 'laser') {
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(880, now);
+              osc.frequency.exponentialRampToValueAtTime(110, now + 0.18);
+              gain.gain.setValueAtTime(0.15, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now);
+              osc.stop(now + 0.18);
+            } else if (type === 'whoosh') {
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(200, now);
+              osc.frequency.exponentialRampToValueAtTime(800, now + 0.12);
+              osc.frequency.exponentialRampToValueAtTime(80, now + 0.25);
+              gain.gain.setValueAtTime(0.12, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now);
+              osc.stop(now + 0.25);
+            } else if (type === 'warp') {
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(140, now);
+              osc.frequency.exponentialRampToValueAtTime(960, now + 0.35);
+              gain.gain.setValueAtTime(0.18, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now);
+              osc.stop(now + 0.35);
+            } else if (type === 'chime') {
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(1046.5, now); // C6
+              gain.gain.setValueAtTime(0.12, now);
+              gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now);
+              osc.stop(now + 0.45);
+            } else if (type === 'bass') {
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(180, now);
+              osc.frequency.exponentialRampToValueAtTime(45, now + 0.35);
+              gain.gain.setValueAtTime(0.3, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now);
+              osc.stop(now + 0.35);
+            }
+          } catch(e) {}
+        };
+
+        // Thumbnail Canvas Generator
+        const thumbCanvas = document.getElementById('thumb-canvas');
+        const thumbCtx = thumbCanvas ? thumbCanvas.getContext('2d') : null;
+
+        function renderThumbnailCanvas() {
+          if (!thumbCtx) return;
+          const ratio = document.getElementById('thumb-ratio').value;
+          let w = 1280, h = 720;
+          if (ratio === '1_1') { w = 1080; h = 1080; }
+          else if (ratio === '9_16') { w = 720; h = 1280; }
+
+          thumbCanvas.width = w;
+          thumbCanvas.height = h;
+
+          const headline = document.getElementById('thumb-headline').value || 'TITLE HERE';
+          const subhead = document.getElementById('thumb-subhead').value || '';
+          const badge = document.getElementById('thumb-badge').value || '';
+          const theme = document.getElementById('thumb-theme').value;
+
+          // Background styling
+          const grad = thumbCtx.createLinearGradient(0, 0, w, h);
+          if (theme === 'cyber_nebula') {
+            grad.addColorStop(0, '#001833');
+            grad.addColorStop(0.5, '#050a18');
+            grad.addColorStop(1, '#020307');
+          } else if (theme === 'acid_matrix') {
+            grad.addColorStop(0, '#021a0e');
+            grad.addColorStop(0.5, '#040d08');
+            grad.addColorStop(1, '#010402');
+          } else if (theme === 'dark_luxe') {
+            grad.addColorStop(0, '#2b1e06');
+            grad.addColorStop(0.5, '#0d0a04');
+            grad.addColorStop(1, '#050402');
+          } else {
+            grad.addColorStop(0, '#2d0036');
+            grad.addColorStop(0.5, '#0e0417');
+            grad.addColorStop(1, '#05010a');
+          }
+          thumbCtx.fillStyle = grad;
+          thumbCtx.fillRect(0, 0, w, h);
+
+          // Grid lines accent
+          thumbCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+          thumbCtx.lineWidth = 1;
+          for (let x = 0; x < w; x += 60) {
+            thumbCtx.beginPath();
+            thumbCtx.moveTo(x, 0);
+            thumbCtx.lineTo(x, h);
+            thumbCtx.stroke();
+          }
+          for (let y = 0; y < h; y += 60) {
+            thumbCtx.beginPath();
+            thumbCtx.moveTo(0, y);
+            thumbCtx.lineTo(w, y);
+            thumbCtx.stroke();
+          }
+
+          // Glowing Aura Orbs
+          const orbGrad = thumbCtx.createRadialGradient(w * 0.8, h * 0.3, 10, w * 0.8, h * 0.3, w * 0.5);
+          const accentHex = theme === 'cyber_nebula' ? '0, 240, 255' : (theme === 'acid_matrix' ? '16, 185, 129' : (theme === 'dark_luxe' ? '245, 158, 11' : '255, 0, 122'));
+          orbGrad.addColorStop(0, `rgba(${accentHex}, 0.35)`);
+          orbGrad.addColorStop(1, 'transparent');
+          thumbCtx.fillStyle = orbGrad;
+          thumbCtx.fillRect(0, 0, w, h);
+
+          // Badge pill
+          if (badge) {
+            thumbCtx.save();
+            thumbCtx.font = 'bold 24px "IBM Plex Mono", monospace';
+            const badgeWidth = thumbCtx.measureText(badge).width + 36;
+            const bx = 80, by = 90;
+            thumbCtx.fillStyle = `rgba(${accentHex}, 0.15)`;
+            thumbCtx.strokeStyle = `rgb(${accentHex})`;
+            thumbCtx.lineWidth = 2;
+            thumbCtx.beginPath();
+            thumbCtx.roundRect(bx, by, badgeWidth, 48, 24);
+            thumbCtx.fill();
+            thumbCtx.stroke();
+
+            thumbCtx.fillStyle = `rgb(${accentHex})`;
+            thumbCtx.fillText(badge, bx + 18, by + 33);
+            thumbCtx.restore();
+          }
+
+          // Headline Text
+          thumbCtx.save();
+          thumbCtx.fillStyle = '#ffffff';
+          thumbCtx.shadowColor = `rgba(${accentHex}, 0.6)`;
+          thumbCtx.shadowBlur = 24;
+          const fontSize = Math.min(84, Math.floor(w / 14));
+          thumbCtx.font = `900 ${fontSize}px "Syne", sans-serif`;
+          thumbCtx.fillText(headline, 80, h * 0.45);
+          thumbCtx.restore();
+
+          // Sub-headline
+          if (subhead) {
+            thumbCtx.save();
+            thumbCtx.fillStyle = '#b8c0d4';
+            const subSize = Math.min(36, Math.floor(w / 28));
+            thumbCtx.font = `600 ${subSize}px "Figtree", sans-serif`;
+            thumbCtx.fillText(subhead, 80, h * 0.45 + fontSize + 20);
+            thumbCtx.restore();
+          }
+
+          // Footer Watermark
+          thumbCtx.save();
+          thumbCtx.fillStyle = 'rgba(255,255,255,0.4)';
+          thumbCtx.font = '600 20px "IBM Plex Mono", monospace';
+          thumbCtx.fillText('ZOTH STUDIO · LOCAL-FIRST AI OPERATOR DECK', 80, h - 60);
+          thumbCtx.restore();
+        }
+
+        document.getElementById('btn-render-thumb').addEventListener('click', () => {
+          renderThumbnailCanvas();
+          playSfx('chime');
+        });
+
+        ['thumb-ratio', 'thumb-headline', 'thumb-subhead', 'thumb-badge', 'thumb-theme'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', renderThumbnailCanvas);
+        });
+
+        document.getElementById('btn-download-thumb').addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.download = `zoth-thumb-${Date.now()}.png`;
+          a.href = thumbCanvas.toDataURL('image/png');
+          a.click();
+          playSfx('warp');
+        });
+
+        // Sample Repurposing Logic
+        const defaultOutputs = {
+          x: "🚀 Just shipped Zoth Studio v2.6!\n\nLocal-first 3D Omniverse, Simplex Space Liquid shaders, and autonomous multi-agent swarm orchestration on Parrot OS.\n\nZero cloud keys required. Complete developer sovereignty.\n\n👇 Check the repo below\n#OpenSource #AI #LocalFirst #Web3",
+          linkedin: "The future of AI development isn't in centralized cloud wrappers—it's in sovereign, local-first tooling.\n\nToday we're releasing Zoth Studio v2.6:\n\n✨ 3D Procedural Omniverse with Three.js & custom GLSL shaders\n✨ Multi-agent swarm orchestration (@antigravity, @grok, @hermes)\n✨ Complete zero-key offline execution on Parrot OS\n\nWhen your workflow runs on loopback, you get instant latency, zero rate-limit anxiety, and complete privacy.\n\nHow is your team approaching local-first AI tooling in 2026? Let's discuss in the comments.",
+          instagram: "Autonomous multi-agent orchestration meets real-time 3D CAD modeling. 🧊✨\n\nZoth Studio v2.6 is live. Complete developer sovereignty on Parrot OS.\n\n.\n.\n#Coding #AIEngineering #ThreeJS #CreativeTech #WebDev #TechInnovation #DeveloperLife",
+          tiktok: "POV: You finally stopped paying $400/month for cloud AI API wrappers and switched to local-first autonomous swarms. 🤯⚡ #TechTok #CodingTok #AItools #DeveloperLife",
+          threads: "Zoth Studio v2.6 dropped today. Local 3D procedural modeling + offline Ollama co-pilots + multi-agent swarm coordination. 100% loopback, 0% key leakage. Who wants a deep dive?",
+          bluesky: "Local-first AI is the only long-term defense against SaaS enshittification.\n\nZoth Studio v2.6 is out—local Three.js CAD, Simplex Space shaders, and multi-agent coordination.",
+          reddit: "[Release] Zoth Studio: Local-first 3D CAD & Autonomous Multi-Agent Swarm Orchestrator for Linux/Parrot OS\n\nHey r/LocalLlama & r/SelfHosted,\n\nWe just open-sourced Zoth Studio v2.6. It provides a complete browser-based operator deck running on loopback (127.0.0.1:8484 and :8088), with integrated Ollama support, Three.js procedural modeling, and an encrypted BYOK vault.\n\nCheck out the repo and let us know what you think!",
+          github: "## Release v2.6.0 - Autonomous Swarm & 3D Omniverse\n\n### Highlights\n- **3D Studio CAD**: Added procedural Three.js geometry generators and UnrealBloomPass.\n- **OmniPost Powerhouse**: Autonomous multi-channel social repurposer and shorts script generator.\n- **Swarm Bus**: Live terminal-style communication bus across all local agent sessions."
+        };
+
+        function renderMatrix(data) {
+          const container = document.getElementById('preview-matrix-container');
+          container.innerHTML = '';
+          const activeBadges = Array.from(document.querySelectorAll('.plat-badge.active')).map(b => b.dataset.p);
+
+          Object.keys(data).forEach(k => {
+            if (!activeBadges.includes(k)) return;
+            const text = data[k];
+            const charLimit = k === 'x' ? 280 : (k === 'threads' ? 500 : 3000);
+            const card = document.createElement('div');
+            card.className = 'preview-card';
+            card.innerHTML = `
+              <div class="preview-card-head">
+                <div class="plat-title"><span>${getIcon(k)}</span> ${k.toUpperCase()}</div>
+                <div class="char-meter">${text.length} / ${charLimit} chars</div>
+              </div>
+              <div class="preview-body" contenteditable="true">${text}</div>
+              <div class="preview-actions">
+                <button class="btn-omni btn-secondary btn-sm" onclick="copyCardText(this)">📋 Copy</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="refineCardText(this, '${k}')">✨ Refine</button>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        }
+
+        function getIcon(k) {
+          const map = { x: '𝕏', linkedin: '💼', instagram: '📸', tiktok: '🎵', threads: '🧵', bluesky: '🦋', reddit: '🤖', github: '🐙' };
+          return map[k] || '📱';
+        }
+
+        window.copyCardText = function(btn) {
+          const body = btn.closest('.preview-card').querySelector('.preview-body');
+          navigator.clipboard.writeText(body.innerText);
+          btn.textContent = '✅ Copied!';
+          playSfx('chime');
+          setTimeout(() => btn.textContent = '📋 Copy', 1800);
+        };
+
+        window.refineCardText = function(btn, platform) {
+          const body = btn.closest('.preview-card').querySelector('.preview-body');
+          body.innerText = "🔥 [Polished with Local Ollama Coder] " + body.innerText;
+          btn.textContent = '⚡ Refined!';
+          playSfx('whoosh');
+          setTimeout(() => btn.textContent = '✨ Refine', 1800);
+        };
+
+        document.getElementById('btn-generate-matrix').addEventListener('click', () => {
+          playSfx('warp');
+          const outputs = {};
+          Object.keys(defaultOutputs).forEach(k => {
+            outputs[k] = defaultOutputs[k];
+          });
+          renderMatrix(outputs);
+        });
+
+        document.getElementById('btn-quick-generate').addEventListener('click', () => {
+          document.getElementById('btn-generate-matrix').click();
+        });
+
+        document.getElementById('btn-copy-all').addEventListener('click', () => {
+          let allText = '';
+          document.querySelectorAll('.preview-card').forEach(c => {
+            const title = c.querySelector('.plat-title').innerText;
+            const body = c.querySelector('.preview-body').innerText;
+            allText += `=== ${title} ===\n${body}\n\n`;
+          });
+          navigator.clipboard.writeText(allText);
+          playSfx('laser');
+          alert('All platform copies copied to clipboard!');
+        });
+
+        // 9:16 Shorts Animated Canvas Engine
+        const canvas = document.getElementById('shorts-canvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        let animationFrame = null;
+        let isPlaying = false;
+        let animTime = 0;
+
+        window.loadShortsPreset = function(presetKey) {
+          const presets = {
+            local_ai: {
+              beat1: "Stop building AI apps that depend on 10 external cloud APIs. Here is why local-first changes everything.",
+              beat2: "Your API keys expire, rate limits break your deployments, and your user secrets leak over public tunnels.",
+              beat3: "Zoth Studio runs entirely on loopback. You get local Ollama neural co-pilots, full 3D CAD modeling, and autonomous multi-agent swarms with zero key leakage.",
+              beat4: "Clone the repo on GitHub and take back control of your AI workflow."
+            },
+            security: {
+              beat1: "Your SaaS is leaking environment variables and private tokens in production builds right now.",
+              beat2: "Traditional build pipelines accidentally package .env files, chat logs, and cryptographic keys directly into published artifacts.",
+              beat3: "Zoth Studio enforces an automated pre-build privacy gate with .buildignore isolation, stripping 100% of keys, datasets, and logs before compile.",
+              beat4: "Run ./scripts/build-linux-packages.sh to build your sovereign zero-leak binary today."
+            },
+            web3: {
+              beat1: "Smart contracts shouldn't need centralized cloud servers to coordinate multi-agent consensus.",
+              beat2: "Centralized orchestrators create single points of failure, censorship risks, and vulnerability vectors.",
+              beat3: "Zoth Studio links Grok, Antigravity, and Hermes through an encrypted P2P swarm bus with Argon2id hardware security.",
+              beat4: "Deploy autonomous smart agents on loopback at zoth.nealfrazier.tech."
+            },
+            indie: {
+              beat1: "You don't need a 6-month development cycle to launch a high-converting web application.",
+              beat2: "Most founders get bogged down in repetitive boilerplate, CSS styling, and complex routing architectures.",
+              beat3: "The Zoth Studio Pour engine turns your brief into a production-ready responsive Astro app in exactly 8 micro-steps.",
+              beat4: "Open http://127.0.0.1:8484/#pour and stamp your first site in 60 seconds."
+            }
+          };
+
+          const p = presets[presetKey] || presets.local_ai;
+          document.getElementById('beat1-text').value = p.beat1;
+          document.getElementById('beat2-text').value = p.beat2;
+          document.getElementById('beat3-text').value = p.beat3;
+          document.getElementById('beat4-text').value = p.beat4;
+          playSfx('warp');
+        };
+
+        window.openReadmeToVideoModal = function() {
+          document.getElementById('readme-video-modal').style.display = 'flex';
+        };
+
+        window.closeReadmeToVideoModal = function() {
+          document.getElementById('readme-video-modal').style.display = 'none';
+        };
+
+        window.synthesizeReadmeToVideo = function() {
+          const raw = document.getElementById('readme-input-text').value.trim();
+          if (!raw) {
+            alert('Please paste some Markdown or README text first!');
+            return;
+          }
+
+          const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+          const headers = lines.filter(l => l.startsWith('#'));
+          const bodyLines = lines.filter(l => !l.startsWith('#') && !l.startsWith('```') && l.length > 20);
+
+          const title = headers.length ? headers[0].replace(/^#+\s*/, '') : 'Breakthrough Release';
+          const problem = bodyLines.length > 0 ? bodyLines[0] : 'Traditional architectures are slow, fragile, and expose sensitive credentials over public tunnels.';
+          const solution = bodyLines.length > 1 ? bodyLines[1] : `With ${title}, you get instant local execution, encrypted hardware keys, and autonomous agent orchestration.`;
+          const cta = headers.length > 1 ? `Check out ${headers[1].replace(/^#+\s*/, '')} and star the repo on GitHub!` : 'Clone the repo on GitHub and deploy your first sovereign build today!';
+
+          document.getElementById('beat1-text').value = `Why everyone is talking about ${title}: here is what you need to know.`;
+          document.getElementById('beat2-text').value = problem.substring(0, 140);
+          document.getElementById('beat3-text').value = solution.substring(0, 160);
+          document.getElementById('beat4-text').value = cta;
+
+          closeReadmeToVideoModal();
+          playSfx('warp');
+          alert('🎉 README parsed & loaded into 60 FPS Video Timeline!');
+        };
+
+        function drawShortsFrame(time) {
+          if (!ctx) return;
+          const w = canvas.width;
+          const h = canvas.height;
+          const theme = document.getElementById('shorts-theme-select')?.value || 'nebula';
+
+          // Animated Theme-driven background
+          const grad = ctx.createLinearGradient(0, 0, w, h);
+          let primaryColor = '#00f0ff';
+          let secondaryColor = '#a855f7';
+
+          if (theme === 'matrix') {
+            grad.addColorStop(0, '#041f12');
+            grad.addColorStop(0.5, '#020b06');
+            grad.addColorStop(1, '#000402');
+            primaryColor = '#10b981';
+            secondaryColor = '#059669';
+          } else if (theme === 'crimson') {
+            grad.addColorStop(0, '#2d0814');
+            grad.addColorStop(0.5, '#150308');
+            grad.addColorStop(1, '#080103');
+            primaryColor = '#ff007a';
+            secondaryColor = '#f59e0b';
+          } else if (theme === 'quantum') {
+            grad.addColorStop(0, '#07182e');
+            grad.addColorStop(0.5, '#030b17');
+            grad.addColorStop(1, '#01050a');
+            primaryColor = '#38bdf8';
+            secondaryColor = '#e2e8f0';
+          } else {
+            const hue1 = (time * 20) % 360;
+            const hue2 = (hue1 + 90) % 360;
+            grad.addColorStop(0, `hsl(${hue1}, 80%, 12%)`);
+            grad.addColorStop(0.5, `hsl(${hue2}, 90%, 8%)`);
+            grad.addColorStop(1, '#05070d');
+            primaryColor = '#00f0ff';
+            secondaryColor = '#a855f7';
+          }
+
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, w, h);
+
+          // Kinetic particles
+          ctx.fillStyle = primaryColor;
+          for (let i = 0; i < 24; i++) {
+            const px = (Math.sin(time + i) * 0.5 + 0.5) * w;
+            const py = ((time * 60 + i * 80) % h);
+            ctx.beginPath();
+            ctx.arc(px, py, 4 + Math.sin(time + i) * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Center Kinetic Geometry
+          ctx.save();
+          ctx.translate(w / 2, h / 2 - 80);
+          ctx.rotate(time * 0.5);
+          ctx.strokeStyle = primaryColor;
+          ctx.lineWidth = 6;
+          ctx.strokeRect(-120, -120, 240, 240);
+
+          ctx.rotate(time * -0.3);
+          ctx.strokeStyle = secondaryColor;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(0, 0, 90, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+
+          // Brand Center Watermark
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 36px Syne, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('ZOTH STUDIO', w / 2, h / 2 - 80);
+
+          if (isPlaying) {
+            animTime += 0.02;
+            const seconds = Math.floor(animTime) % 30;
+            document.getElementById('shorts-timer').textContent = `00:${seconds < 10 ? '0' + seconds : seconds}`;
+            updateLiveBeatCaption(seconds);
+            animationFrame = requestAnimationFrame(() => drawShortsFrame(animTime));
+          }
+        }
+
+        function updateLiveBeatCaption(sec) {
+          const capEl = document.getElementById('shorts-live-caption');
+          if (sec < 3) {
+            capEl.textContent = document.getElementById('beat1-text').value;
+          } else if (sec < 12) {
+            capEl.textContent = document.getElementById('beat2-text').value;
+          } else if (sec < 25) {
+            capEl.textContent = document.getElementById('beat3-text').value;
+          } else {
+            capEl.textContent = document.getElementById('beat4-text').value;
+          }
+        }
+
+        document.getElementById('btn-play-shorts').addEventListener('click', () => {
+          isPlaying = !isPlaying;
+          document.getElementById('btn-play-shorts').textContent = isPlaying ? '⏸ Pause Motion' : '▶ Preview Motion';
+          if (isPlaying) {
+            playSfx('whoosh');
+            drawShortsFrame(animTime);
+          } else {
+            cancelAnimationFrame(animationFrame);
+          }
+        });
+
+        // Web Speech Synthesizer Voiceover
+        document.getElementById('btn-speech-shorts').addEventListener('click', () => {
+          if (!('speechSynthesis' in window)) {
+            alert('Web Speech API not supported on this browser.');
+            return;
+          }
+          window.speechSynthesis.cancel();
+          const scriptText = [
+            document.getElementById('beat1-text').value,
+            document.getElementById('beat2-text').value,
+            document.getElementById('beat3-text').value,
+            document.getElementById('beat4-text').value
+          ].join('. ');
+
+          const utter = new SpeechSynthesisUtterance(scriptText);
+          utter.rate = 1.1;
+          utter.pitch = 1.0;
+          window.speechSynthesis.speak(utter);
+          if (!isPlaying) document.getElementById('btn-play-shorts').click();
+        });
+
+        // MediaRecorder WebM Video Recording
+        let mediaRecorder = null;
+        let recordedChunks = [];
+
+        document.getElementById('btn-record-shorts').addEventListener('click', () => {
+          const btn = document.getElementById('btn-record-shorts');
+          if (!canvas || !canvas.captureStream) {
+            alert('Canvas captureStream not supported in this browser.');
+            return;
+          }
+
+          if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            return;
+          }
+
+          recordedChunks = [];
+          const stream = canvas.captureStream(60);
+          
+          let options = { mimeType: 'video/webm; codecs=vp9' };
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options = { mimeType: 'video/webm' };
+          }
+
+          try {
+            mediaRecorder = new MediaRecorder(stream, options);
+          } catch (e) {
+            mediaRecorder = new MediaRecorder(stream);
+          }
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            btn.textContent = '📹 Record & Download WebM Video (60 FPS)';
+            btn.style.background = '';
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `zoth-shorts-${Date.now()}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            playSfx('chime');
+            alert('✅ 9:16 Shorts Video exported successfully!');
+          };
+
+          // Start recording
+          mediaRecorder.start();
+          if (!isPlaying) document.getElementById('btn-play-shorts').click();
+          playSfx('warp');
+
+          let countdown = 10;
+          btn.textContent = `🔴 Recording (${countdown}s remaining)... Click to Stop`;
+          btn.style.background = '#ef4444';
+
+          const timer = setInterval(() => {
+            countdown--;
+            if (countdown > 0 && mediaRecorder && mediaRecorder.state === 'recording') {
+              btn.textContent = `🔴 Recording (${countdown}s remaining)... Click to Stop`;
+            } else {
+              clearInterval(timer);
+              if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+              }
+            }
+          }, 1000);
+        });
+
+        // Viral Hooks Generator
+        const sampleHooks = [
+          { type: 'Curiosity Gap', hook: "Almost nobody realizes what happens when you remove cloud APIs from your AI stack." },
+          { type: 'Contrarian', hook: "Centralized SaaS AI wrappers are dead. Here is the architecture taking over in 2026." },
+          { type: 'Stat Bomb', hook: "92% of AI production incidents stem from 3rd-party API rate limits and key rotation failures." },
+          { type: 'Story Opener', hook: "I spent 48 hours rebuilding my entire creative workflow on Parrot OS with zero cloud dependencies." },
+          { type: 'Framework', hook: "The 3-layer stack for 100% private, sovereign AI agent swarms on local silicon." },
+          { type: 'Negative Retargeting', hook: "Stop giving away your application's proprietary logic over public REST tunnels." },
+          { type: 'Speed / Efficiency', hook: "How to generate 68 3D meshes in 12 seconds using local Ollama neural weights." },
+          { type: 'Call to Mastery', hook: "Master local-first AI orchestration before everyone else catches on." }
+        ];
+
+        function renderHooks() {
+          const grid = document.getElementById('hooks-grid');
+          grid.innerHTML = '';
+          sampleHooks.forEach((h, idx) => {
+            const card = document.createElement('div');
+            card.style.background = '#060913';
+            card.style.border = '1px solid var(--omni-line)';
+            card.style.borderRadius = '10px';
+            card.style.padding = '14px';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.gap = '8px';
+            card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--omni-cyan);">
+                <span>#0${idx + 1} · ${h.type.toUpperCase()}</span>
+                <span style="cursor:pointer; color:var(--muted);" onclick="navigator.clipboard.writeText('${h.hook.replace(/'/g, "\\'")}'); playSfx('chime'); alert('Hook copied!');">📋 Copy</span>
+              </div>
+              <div style="font-size:0.92rem; font-weight:600; line-height:1.4;">"${h.hook}"</div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+        document.getElementById('btn-gen-hooks').addEventListener('click', () => {
+          renderHooks();
+          playSfx('whoosh');
+        });
+        renderHooks();
+
+        // Thread Splitter
+        document.getElementById('btn-stitch-thread').addEventListener('click', () => {
+          playSfx('laser');
+          const text = document.getElementById('thread-source').value;
+          const paragraphs = text.split('\n\n').filter(p => p.trim());
+          const list = document.getElementById('thread-output-list');
+          list.innerHTML = '';
+
+          paragraphs.forEach((p, idx) => {
+            const tweet = `[${idx + 1}/${paragraphs.length}] ${p.trim()}`;
+            const item = document.createElement('div');
+            item.style.background = '#060913';
+            item.style.border = '1px solid var(--omni-line)';
+            item.style.borderRadius = '8px';
+            item.style.padding = '12px';
+            item.style.fontSize = '0.88rem';
+            item.style.lineHeight = '1.5';
+            item.innerHTML = `
+              <div style="display:flex; justify-content:space-between; color:var(--omni-cyan); font-family:'IBM Plex Mono', monospace; font-size:0.75rem; margin-bottom:6px;">
+                <span>POST #${idx + 1}</span>
+                <span>${tweet.length} / 280 chars</span>
+              </div>
+              <div>${tweet}</div>
+            `;
+            list.appendChild(item);
+          });
+        });
+
+        // Swarm Directive Dispatch
+        document.getElementById('btn-send-directive').addEventListener('click', () => {
+          const input = document.getElementById('swarm-directive-input');
+          const val = input.value.trim();
+          if (!val) return;
+          playSfx('warp');
+          const box = document.getElementById('swarm-logs-box');
+          const row = document.createElement('div');
+          row.style.color = '#00f0ff';
+          row.textContent = `[${new Date().toLocaleTimeString()}] @operator ➔ @all: ${val}`;
+          box.prepend(row);
+          input.value = '';
+        });
+
+        // Initial setup
+        renderMatrix(defaultOutputs);
+        drawShortsFrame(0);
+        renderThumbnailCanvas();
+      })();
+    </script>
+    <script src="/assets/celestial-trail.js"></script>
+</body>
+</html>

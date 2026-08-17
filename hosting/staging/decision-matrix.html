@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nullai.tech — Hosting Decision Matrix</title>
+<style>
+  :root {
+    --bg: #0b0c10;
+    --panel: #111318;
+    --panel-2: #161922;
+    --text: #e6e8f0;
+    --muted: #9aa3b2;
+    --accent: #00f0ff;
+    --accent-2: #7b61ff;
+    --good: #00ff9d;
+    --warn: #ffd166;
+    --bad: #ff5c8a;
+    --border: #232733;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+    background:
+      radial-gradient(1200px 800px at 10% -10%, #1c2333 0%, transparent 55%),
+      radial-gradient(900px 600px at 110% 10%, #1a1530 0%, transparent 55%),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+  .eyebrow { color: var(--accent); letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px; font-weight: 700; }
+  h1 { font-size: clamp(28px, 4vw, 44px); line-height: 1.1; margin: 8px 0 6px; font-weight: 800; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); font-size: 16px; max-width: 760px; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; background: #1f2533; border: 1px solid var(--border); color: var(--muted); font-size: 12px; margin-top: 10px; }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px #00f0ff33; }
+
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 32px; }
+  .card { grid-column: span 4; background: linear-gradient(180deg, var(--panel) 0%, #13161d 100%); border: 1px solid var(--border); border-radius: 16px; padding: 18px; position: relative; overflow: hidden; }
+  .card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px 300px at 0% 0%, #ffffff08 0%, transparent 60%); pointer-events: none; }
+  .card h3 { margin: 6px 0 8px; font-size: 18px; font-weight: 700; }
+  .card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
+  .card .url { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: var(--accent); font-size: 14px; margin: 4px 0 10px; }
+  .tag { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #1f2533; border: 1px solid var(--border); color: var(--muted); font-size: 12px; margin: 2px 4px 2px 0; }
+  .tag.good { color: #c6ffe6; border-color: #00ff9d44; background: #00ff9d14; }
+  .tag.bad { color: #ffdce6; border-color: #ff5c8a44; background: #ff5c8a14; }
+  .tag.warn { color: #fff3d6; border-color: #ffd16644; background: #ffd16614; }
+  .list { margin: 10px 0 0; padding: 0; list-style: none; }
+  .list li { padding: 8px 10px; border-radius: 10px; background: #13161d; border: 1px solid #1f2330; margin-bottom: 8px; font-size: 13px; color: #d3d7e0; }
+  .list li strong { color: var(--text); }
+  .winner { outline: 2px solid #00ff9d55; box-shadow: 0 0 0 8px #00ff9d14; }
+  .winner .winner-chip { position: absolute; top: 12px; right: 12px; background: #00ff9d22; color: var(--good); border: 1px solid #00ff9d55; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+
+  .section { margin-top: 36px; }
+  .section h2 { font-size: 20px; font-weight: 700; margin: 0 0 10px; }
+  .section .desc { color: var(--muted); font-size: 14px; }
+
+  table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 10px; }
+  th, td { padding: 12px 14px; text-align: left; font-size: 13px; border-bottom: 1px solid #1f2330; }
+  th { background: #13161d; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; }
+  td:last-child, th:last-child { text-align: right; }
+  td:first-child, th:first-child { text-align: left; }
+  tr:last-child td { border-bottom: none; }
+  .pill { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .pill.g { background: #00ff9d18; color: #00ff9d; border: 1px solid #00ff9d44; }
+  .pill.r { background: #ff5c8a18; color: #ff5c8a; border: 1px solid #ff5c8a44; }
+  .pill.y { background: #ffd16618; color: #ffd166; border: 1px solid #ffd16644; }
+
+  .callout { margin-top: 24px; background: linear-gradient(180deg, #13161d 0%, #0f1218 100%); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: flex; gap: 14px; align-items: flex-start; }
+  .callout .icon { width: 28px; height: 28px; border-radius: 8px; background: #00f0ff18; color: var(--accent); display: grid; place-items: center; font-weight: 800; }
+  .callout .title { font-weight: 700; margin-bottom: 4px; }
+  .callout .body { color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 980px) {
+    .card { grid-column: span 6; }
+  }
+  @media (max-width: 640px) {
+    .card { grid-column: span 12; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Hosting Decision</div>
+    <h1>nullai.tech cutover options</h1>
+    <p class="sub">Compare layout, plan, and remediation status before the Hostinger cutover. Recommended path is highlighted.</p>
+    <div class="badge"><span class="dot"></span>Last updated: 2026-08-16 · Hermes</div>
+
+    <div class="section">
+      <div class="desc">Choose one layout. Recommendation: <strong style="color:#00ff9d">B — studio subdomain</strong>.</div>
+      <div class="grid">
+        <div class="card">
+          <div class="label">Layout A</div>
+          <div class="url">nullai.tech/</div>
+          <h3>Apex</h3>
+          <div><span class="tag bad">Risk: overwrite live root</span><span class="tag warn">SEO churn</span><span class="tag bad">Hard rollback</span></div>
+          <ul class="list">
+            <li><strong>Pros:</strong> Simplest URL; no extra DNS; single origin for canonicals.</li>
+            <li><strong>Cons:</strong> Directly overwrites existing <code>nullai.tech</code> homepage and <code>/swarm</code> unless migrated first; highest blast radius; rollback requires restoring from backup.</li>
+            <li><strong>Best for:</strong> A fresh domain or when the existing homepage is already Zoth.</li>
+          </ul>
+        </div>
+
+        <div class="card winner">
+          <div class="winner-chip">Recommended</div>
+          <div class="label">Layout B</div>
+          <div class="url">studio.nullai.tech/</div>
+          <h3>Studio subdomain</h3>
+          <div><span class="tag good">Low risk</span><span class="tag good">Easy rollback</span><span class="tag good">Natural staging</span></div>
+          <ul class="list">
+            <li><strong>Pros:</strong> Keeps existing apex intact; tests in isolation; rollback is delete <code>public_html/studio/</code>; clean canonical path after 301 from old brand.</li>
+            <li><strong>Cons:</strong> Extra DNS record; users must learn subdomain; canonical discipline required across suite.</li>
+            <li><strong>Best for:</strong> Current state — live apex already exists and must not be clobbered.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="label">Layout C</div>
+          <div class="url">nullai.tech/studio/</div>
+          <h3>Path</h3>
+          <div><span class="tag warn">Collision risk</span><span class="tag warn">Path drift</span><span class="tag good">No extra DNS</span></div>
+          <ul class="list">
+            <li><strong>Pros:</strong> No new DNS; stays on apex host; easy to add later.</li>
+            <li><strong>Cons:</strong> High collision risk if anything else already owns <code>/studio</code>; deep-link hygiene harder; rollback is subtree removal.</li>
+            <li><strong>Best for:</strong> Short-lived experiments, not the permanent brand home.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="desc">Pick a Hostinger product. Recommendation: <strong style="color:#00ff9d">Cloud</strong> for static hub.</div>
+      <div class="grid">
+        <div class="card">
+          <div class="label">Hostinger Cloud</div>
+          <div class="url">Cloud hosting</div>
+          <h3>Cloud</h3>
+          <div><span class="tag good">Static-ready</span><span class="tag good">Managed TLS</span><span class="tag good">Cheap</span></div>
+          <ul class="list">
+            <li><strong>Pros:</strong> Plenty for static <code>public/</code>; managed Let’s Encrypt; low ops; fast enough for hub.</li>
+            <li><strong>Cons:</strong> No root; cannot run <code>:8484</code>, <code>:8787</code>, or Ollama publicly.</li>
+            <li><strong>Best for:</strong> Static-only public hub with laptop-private operator surfaces.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="label">Hostinger VPS</div>
+          <div class="url">KVM 2+</div>
+          <h3>VPS</h3>
+          <div><span class="tag warn">Room to grow</span><span class="tag warn">More ops</span><span class="tag bad">Overkill now</span></div>
+          <ul class="list">
+            <li><strong>Pros:</strong> Full root; room to add public APIs, reverse proxies, or private <code>/api</code> later.</li>
+            <li><strong>Cons:</strong> More maintenance; higher cost; unnecessary if the hub stays static.</li>
+            <li><strong>Best for:</strong> Future public API or Dockerized services; not needed today.</li>
+          </ul>
+        </div>
+        <div class="card" style="opacity:.85">
+          <div class="label">Skip</div>
+          <div class="url">Shared WP</div>
+          <h3>WordPress-only</h3>
+          <div><span class="tag bad">Wrong product</span></div>
+          <ul class="list">
+            <li><strong>Cons:</strong> This is not a WordPress site; static-only hosting or VPS are the correct choices.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="desc">Current deploy readiness and required fixes.</div>
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Status</th><th>Blocking</th><th>Owner</th><th>Artifact</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Sensitive-tree audit</td>
+            <td><span class="pill g">Done</span></td>
+            <td>No</td>
+            <td>Hermes</td>
+            <td><code>agent-comms/handoffs/hermes-sensitive-tree-audit.md</code></td>
+          </tr>
+          <tr>
+            <td>p0 exclude local-only files</td>
+            <td><span class="pill g">Done</span></td>
+            <td>No</td>
+            <td>Hermes</td>
+            <td><code>staging/*/deploy-manifest.json</code></td>
+          </tr>
+          <tr>
+            <td>p1 localhost fetch/probe/JSON-LD fixes</td>
+            <td><span class="pill g">Applied</span></td>
+            <td>Resolved</td>
+            <td>Hermes</td>
+            <td><code>public/{pets,registry,site,connectors,blueprints}</code></td>
+          </tr>
+          <tr>
+            <td>A/B/C staging artifacts</td>
+            <td><span class="pill g">Ready</span></td>
+            <td>No</td>
+            <td>Hermes</td>
+            <td><code>13-creative-media/zoth/hosting/staging/</code></td>
+          </tr>
+          <tr>
+            <td>p2 doc/meta localhost sanitization</td>
+            <td><span class="pill y">Prepared</span></td>
+            <td>Optional</td>
+            <td>Hermes</td>
+            <td><code>staging/p1-remediation/p2-doc-sanitization-patches.md</code></td>
+          </tr>
+          <tr>
+            <td>User layout/plan decision</td>
+            <td><span class="pill r">Waiting</span></td>
+            <td>Yes</td>
+            <td>User</td>
+            <td><code>staging/DECISION-GATE.md</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="callout">
+        <div class="icon">?</div>
+        <div>
+          <div class="title">Decision gate</div>
+          <div class="body">To proceed, the user must choose: Layout A/B/C, Hostinger Cloud or VPS, and whether to apply optional p2 doc sanitization before deploy. No DNS or deploy actions will be taken until confirmed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

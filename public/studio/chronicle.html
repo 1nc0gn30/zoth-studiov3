@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoth Chronicle & Engineering Horizon — Completed Sprints & Autonomous Roadmap</title>
+  <meta name="description" content="Official engineering chronicle and future roadmap for Zoth Studio and NullAI. Interactive log of AI Math Pillars, conversational harness, multi-agent composer, brand vault, and upcoming sovereign systems.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #03050a;
+      --bg-surface: rgba(9, 13, 24, 0.9);
+      --bg-card: rgba(14, 20, 36, 0.82);
+      --bg-card-hover: rgba(20, 30, 52, 0.98);
+      --border: rgba(0, 240, 255, 0.16);
+      --border-bright: rgba(0, 240, 255, 0.45);
+      --cyan: #00f0ff;
+      --purple: #a855f7;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --magenta: #ff007a;
+      --text: #f0f6fc;
+      --text-dim: #8b949e;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Figtree', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    .ambient-mesh {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(circle at 10% 15%, rgba(0, 240, 255, 0.09), transparent 45%),
+        radial-gradient(circle at 90% 85%, rgba(168, 85, 247, 0.10), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 6rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      filter: drop-shadow(0 0 14px var(--cyan));
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover, .nav-link.is-active {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Hero Section */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(14, 21, 40, 0.95), rgba(7, 10, 18, 0.95));
+      border: 1px solid var(--border-bright);
+      border-radius: 18px;
+      padding: 3rem 2.5rem;
+      margin-bottom: 2.5rem;
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    @media (max-width: 960px) {
+      .hero-banner { grid-template-columns: 1fr; padding: 2rem; }
+    }
+
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--cyan);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, #ffffff 30%, var(--cyan) 80%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      color: #cbd5e1;
+      font-size: 0.98rem;
+      line-height: 1.65;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Live Telemetry Ticker */
+    .ticker-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .ticker-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+    }
+
+    .ticker-card:hover {
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.06);
+      transform: translateY(-2px);
+    }
+
+    .ticker-num {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .ticker-num span {
+      font-size: 0.85rem;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .ticker-label {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Interactive Filters */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      background: rgba(14, 20, 36, 0.7);
+      padding: 8px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.80rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .filter-btn.is-active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Timeline & Milestone Grid */
+    .timeline-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .sprint-group-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .sprint-badge {
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .sprint-badge.done {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--emerald);
+      color: var(--emerald);
+    }
+
+    .sprint-badge.future {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid var(--purple);
+      color: var(--purple);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+
+    .milestone-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .milestone-card:hover {
+      border-color: var(--cyan);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(0, 240, 255, 0.14);
+      background: var(--bg-card-hover);
+    }
+
+    .milestone-card.is-future {
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+
+    .milestone-card.is-future:hover {
+      border-color: var(--purple);
+      box-shadow: 0 12px 35px rgba(168, 85, 247, 0.18);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .card-icon-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .card-icon.future-icon {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .card-tag {
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .card-tag.purple-tag {
+      color: #c084fc;
+      background: rgba(168, 85, 247, 0.08);
+      border-color: rgba(168, 85, 247, 0.25);
+    }
+
+    .card-body {
+      color: #cbd5e1;
+      font-size: 0.90rem;
+      line-height: 1.6;
+    }
+
+    .feature-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 0.25rem;
+    }
+
+    .feature-bullets li {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .feature-bullets li::before {
+      content: '▹';
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .is-future .feature-bullets li::before {
+      color: var(--purple);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      margin-top: auto;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--emerald);
+      font-weight: 600;
+    }
+
+    .status-indicator.planned {
+      color: var(--purple);
+    }
+
+    .card-link {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--cyan);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .card-link:hover {
+      text-shadow: 0 0 8px var(--cyan);
+      transform: translateX(2px);
+    }
+
+    /* Live CTA Banner */
+    .cta-deck-banner {
+      background: radial-gradient(circle at 50% 50%, #121a36 0%, #060812 100%);
+      border: 1px solid var(--border-bright);
+      border-radius: 18px;
+      padding: 3rem;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .cta-deck-banner h3 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .cta-deck-banner p {
+      max-width: 680px;
+      color: #cbd5e1;
+      font-size: 0.98rem;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .btn-glow {
+      background: linear-gradient(135deg, var(--cyan) 0%, #00a8ff 100%);
+      color: #03050a;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.4);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-glow:hover {
+      box-shadow: 0 0 36px rgba(0, 240, 255, 0.65);
+      transform: scale(1.03);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-mesh"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand-group">
+        <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Zoth Studio logo">
+        <div>
+          <h1 class="brand-title">Zoth Chronicle & Engineering Horizon</h1>
+          <p class="brand-subtitle">A NullAI studio · completed systems, telemetry milestones & sovereign roadmap</p>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a class="nav-link" href="/">Hub</a>
+        <a class="nav-link" href="/studio/">Studio Deck</a>
+        <a class="nav-link" href="/studio/consensus.html">Consensus</a>
+        <a class="nav-link" href="/studio/math-pillars.html">Math Pillars</a>
+        <a class="nav-link" href="/studio/agent-composer.html">Composer</a>
+        <a class="nav-link" href="/studio/brand.html">Brand Vault</a>
+        <a class="nav-link is-active" href="/studio/chronicle.html">Chronicle</a>
+        <a class="nav-link" href="/vault/">BYOK Vault</a>
+      </nav>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div>
+        <div class="kicker"><span class="live-dot"></span> Live Systems Engineering Record</div>
+        <h2 class="hero-title">Sovereign AI Built for True Observability</h2>
+        <p class="hero-desc">
+          Zoth Studio replaces the closed-box cloud AI paradigm with rigorous, local-first engineering. Below is the complete chronological log of shipped systems—from mathematical transformer telemetry and sanitized conversational harnesses to visual DAG playbooks and liquid-neon mascot spirits—alongside our upcoming autonomous horizon.
+        </p>
+      </div>
+
+      <div class="ticker-grid">
+        <div class="ticker-card">
+          <div class="ticker-num">19 <span>Workspaces</span></div>
+          <div class="ticker-label">Active Studio Deck Tools</div>
+        </div>
+        <div class="ticker-card">
+          <div class="ticker-num">3 <span>Pillars</span></div>
+          <div class="ticker-label">Math Observability Suite</div>
+        </div>
+        <div class="ticker-card">
+          <div class="ticker-num">16+ <span>Mascots</span></div>
+          <div class="ticker-label">Liquid-Neon Companion Spirits</div>
+        </div>
+        <div class="ticker-card">
+          <div class="ticker-num">0 <span>Leaks</span></div>
+          <div class="ticker-label">Loopback Encrypted Vault</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <button class="filter-btn is-active" data-filter="all">⚡ All Milestones</button>
+      <button class="filter-btn" data-filter="shipped">✓ Completed Sprints (Shipped)</button>
+      <button class="filter-btn" data-filter="roadmap">🔮 Future Horizon Roadmap</button>
+      <button class="filter-btn" data-filter="math">📐 AI Math Telemetry</button>
+      <button class="filter-btn" data-filter="security">🛡️ Security & Loopback</button>
+    </div>
+
+    <!-- Timeline Sections -->
+    <div class="timeline-wrap">
+
+      <!-- SECTION 1: SHIPPED SPRINTS -->
+      <div class="sprint-group" data-group="shipped">
+        <div class="sprint-group-title">
+          <span>🚀 Completed Systems & Shipped Sprints</span>
+          <span class="sprint-badge done">Production Ready</span>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Card 1: Math Pillars -->
+          <article class="milestone-card" data-category="math shipped">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon">📐</div>
+                <div>
+                  <h3 class="card-title">AI Math Pillars Observability</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Suite Version 2.0</div>
+                </div>
+              </div>
+              <span class="card-tag">Pillars I · II · III</span>
+            </div>
+            <p class="card-body">
+              Engineered the 3-Pillar mathematical measurement suite showcasing what physically occurs inside model runs:
+            </p>
+            <ul class="feature-bullets">
+              <li><strong>Linear Algebra</strong>: Attention matrices $\text{softmax}(QK^T/\sqrt{d_k})V$, RoPE 2D complex subspace rotations, and LoRA low-rank updates.</li>
+              <li><strong>5-Head Attention Selector</strong>: Interactive heatmap with specialization inspection (Heads 0–4).</li>
+              <li><strong>Calculus & Loss</strong>: Cross-entropy loss $\mathcal{L}_{\text{CE}}$, AdamW moment dynamics ($m_t, v_t$), and RMSNorm scale math.</li>
+              <li><strong>Information Theory</strong>: Live Shannon entropy $H(X)$ certainty gauge and 1-click JSON/CSV research telemetry exports.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator">● Shipped & Live</div>
+              <a href="/studio/math-pillars.html" class="card-link">Explore Suite →</a>
+            </div>
+          </article>
+
+          <!-- Card 2: Zoth Deck & Chat Engine -->
+          <article class="milestone-card" data-category="shipped">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon">💬</div>
+                <div>
+                  <h3 class="card-title">Zoth Deck Conversational Engine</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Local Orchestrator :8484</div>
+                </div>
+              </div>
+              <span class="card-tag">Conversational AI</span>
+            </div>
+            <p class="card-body">
+              Eliminated forced project scaffolding and elevated the chat experience to a seamless pair-programming environment:
+            </p>
+            <ul class="feature-bullets">
+              <li><strong>Natural Dialogue</strong>: Stopped the model from hijacking normal conversation with unwanted project generators.</li>
+              <li><strong>Gated Choice Cards</strong>: Cleanly separated option inputs so selection forms only appear when explicitly building a project.</li>
+              <li><strong>Output Sanitization</strong>: Formatted markdown rendering, syntax-highlighted code blocks, and 1-click copy buttons.</li>
+              <li><strong>In-Chat Math Drawer</strong>: Added <code>[📐 Math Observability ▼]</code> toggle to inspect tensors and entropy per turn.</li>
+              <li><strong>Slash Commands</strong>: Registered <code>/math</code> and <code>/telemetry</code>.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator">● Shipped & Live</div>
+              <a href="http://127.0.0.1:8484/" target="_blank" class="card-link">Launch Deck →</a>
+            </div>
+          </article>
+
+          <!-- Card 3: Visual Agent Composer -->
+          <article class="milestone-card" data-category="shipped">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon">🎛️</div>
+                <div>
+                  <h3 class="card-title">Visual Agent Composer & DAG Runner</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Swarm Playbook Studio</div>
+                </div>
+              </div>
+              <span class="card-tag">DAG Engine</span>
+            </div>
+            <p class="card-body">
+              Built a visual drag-and-drop workflow canvas for orchestrating multi-agent swarms:
+            </p>
+            <ul class="feature-bullets">
+              <li><strong>Math Telemetry Guard</strong>: Palette node for gating runs based on loss and entropy thresholds.</li>
+              <li><strong>Topological DAG Simulation</strong>: Live step-by-step execution animation across connected agent nodes.</li>
+              <li><strong>Swarm Bus Telemetry Stream</strong>: Real-time calculation of FLOPs, cross-entropy, and entropy streamed to the bus monitor.</li>
+              <li><strong>Playbook Exporter</strong>: One-click JSON schema export for execution in the local orchestrator.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator">● Shipped & Live</div>
+              <a href="/studio/agent-composer.html" class="card-link">Open Composer →</a>
+            </div>
+          </article>
+
+          <!-- Card 4: Brand Strategy & Liquid-Neon Mascots -->
+          <article class="milestone-card" data-category="shipped">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon">🐾</div>
+                <div>
+                  <h3 class="card-title">Brand Architecture & Liquid-Neon Mascots</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Brand Vault & Personas</div>
+                </div>
+              </div>
+              <span class="card-tag">Brand & Assets</span>
+            </div>
+            <p class="card-body">
+              Established the complete brand foundation and expanded the mascot companion roster in exact canon aesthetic:
+            </p>
+            <ul class="feature-bullets">
+              <li><strong>Brand Blueprint</strong>: Target personas (Atlas, Viper, Forge, Echo), AEO search triggers, and Loopback Doctrine.</li>
+              <li><strong>7 New Liquid-Neon Mascots</strong>: Aquila (Eagle), Leviathan (Whale), Onyx (Panther), Chronos (Stag), Aether (Griffin), Kraken (Octopus), and Scorpius (Scorpion).</li>
+              <li><strong>Media Vault Gallery</strong>: Filterable asset vault with 1-click Download and Copy Path buttons.</li>
+              <li><strong>Chat Integration</strong>: Registered all mascots in <code>pet_knowledge.py</code> for <code>/pet</code> deck engagement.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator">● Shipped & Live</div>
+              <a href="/studio/brand.html" class="card-link">View Brand Vault →</a>
+            </div>
+          </article>
+
+          <!-- Card 5: Swarm Command 3D Arena -->
+          <article class="milestone-card" data-category="shipped">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon">🛸</div>
+                <div>
+                  <h3 class="card-title">3D Swarm Arena & Boids Flocking Engine</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Kinetic WebGL Matrix</div>
+                </div>
+              </div>
+              <span class="card-tag">3D Swarm Arena</span>
+            </div>
+            <p class="card-body">
+              Built an interactive Three.js 3D kinetic battle arena with Craig Reynolds (1986) Boids flocking physics:
+            </p>
+            <ul class="feature-bullets">
+              <li><strong>Boids Flocking Lab</strong>: 48 autonomous subagent drones orbiting the central Quantum Nexus with real-time sliders for $v_{\text{max}}$, $F_{\text{max}}$, Cohesion, and Separation.</li>
+              <li><strong>Consensus Battle Simulator</strong>: 3-agent simultaneous laser discharge with Shannon entropy calculations.</li>
+              <li><strong>Web Audio SFX Engine</strong>: Procedural laser beam sweeps, harmonic chords, and audio toggles.</li>
+              <li><strong>16-Mascot Hangar Focus</strong>: 1-click smooth camera coordinates for all companion spirits.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator">● Shipped & Live</div>
+              <a href="/studio/swarm.html" class="card-link">Enter Arena →</a>
+            </div>
+          </article>
+
+          <!-- Card 6: Swarm Bus NOC & SSE Stream -->
+          <article class="milestone-card" data-category="shipped">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon">⚡</div>
+                <div>
+                  <h3 class="card-title">Swarm Bus NOC & Real-Time SSE Stream</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Event Bus Daemon :8989</div>
+                </div>
+              </div>
+              <span class="card-tag">SSE & Review Archive</span>
+            </div>
+            <p class="card-body">
+              Engineered high-throughput Server-Sent Events (SSE) stream and persistent dialogue review engine:
+            </p>
+            <ul class="feature-bullets">
+              <li><strong>Sub-Millisecond SSE Stream</strong>: <code>GET /stream</code> delivers instant notifications to browsers and agent loops without polling delay.</li>
+              <li><strong>Persistent Dialogue Archive</strong>: All multi-agent dialogues preserved in <code>logs/dialogue_archive.jsonl</code>.</li>
+              <li><strong>1-Click Review Exports</strong>: Automated formatted Markdown transcripts (<code>/export/markdown</code>) and raw JSON history (<code>/archive</code>).</li>
+              <li><strong>NOC Command Deck</strong>: Live agent node vitals, claim locks, search & filter by agent, and quick-dispatch console.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator">● Shipped & Live</div>
+              <a href="/studio/bus-monitor.html" class="card-link">Open Bus NOC →</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- SECTION 2: FUTURE HORIZON ROADMAP -->
+      <div class="sprint-group" data-group="roadmap">
+        <div class="sprint-group-title">
+          <span>🔮 Future Horizon Roadmap (What's Next)</span>
+          <span class="sprint-badge future">In Pipeline & Architecture</span>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Future 1: WebGPU Hypercube -->
+          <article class="milestone-card is-future" data-category="math roadmap">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon future-icon">🧊</div>
+                <div>
+                  <h3 class="card-title">Real-Time WebGPU Attention Hypercube</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Phase 1 · Next Sprint</div>
+                </div>
+              </div>
+              <span class="card-tag purple-tag">WebGPU 3D</span>
+            </div>
+            <p class="card-body">
+              Direct hardware-accelerated 3D WebGPU shader visualizing multi-layer transformer activations in real time:
+            </p>
+            <ul class="feature-bullets">
+              <li>Interactive 3D rotating hypercube displaying live attention weights across all 32 transformer layers simultaneously.</li>
+              <li>Shader-based volumetric particle streams representing token gradient flow during forward/backward passes.</li>
+              <li>Sub-millisecond WebGPU buffer bindings bypassing CPU bottlenecks.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator planned">◐ Architecture Ready</div>
+              <span class="card-tag purple-tag">Planned Q3 2026</span>
+            </div>
+          </article>
+
+          <!-- Future 2: Autonomous Consensus Arena v2 -->
+          <article class="milestone-card is-future" data-category="roadmap">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon future-icon">⚔️</div>
+                <div>
+                  <h3 class="card-title">Autonomous Consensus Arena v2</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Phase 2 · Swarm Multi-Model</div>
+                </div>
+              </div>
+              <span class="card-tag purple-tag">Multi-Model</span>
+            </div>
+            <p class="card-body">
+              Autonomous multi-model arbitration and truth-synthesis engine for complex coding and architecture tasks:
+            </p>
+            <ul class="feature-bullets">
+              <li>Live 3-way debate between Grok 4.5, Claude 3.5 Sonnet, and local Nous Hermes on architecture trade-offs.</li>
+              <li>Automated conflict resolution using formal verification probes and AST syntax correctness checkers.</li>
+              <li>Synthesis compiler fusing the fastest algorithm with the most secure boundary checks into a single deployable artifact.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator planned">◐ Spec Finalized</div>
+              <span class="card-tag purple-tag">Planned Q3 2026</span>
+            </div>
+          </article>
+
+          <!-- Future 3: ZK Swarm Mesh -->
+          <article class="milestone-card is-future" data-category="security roadmap">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon future-icon">🔐</div>
+                <div>
+                  <h3 class="card-title">Zero-Knowledge Encrypted Swarm Mesh</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Phase 3 · Cryptography</div>
+                </div>
+              </div>
+              <span class="card-tag purple-tag">ZK-Mesh & Vault</span>
+            </div>
+            <p class="card-body">
+              Peer-to-peer zero-knowledge encrypted agent memory synchronization across trusted Linux machines:
+            </p>
+            <ul class="feature-bullets">
+              <li>End-to-end encrypted agent bus communication using Curve25519 + ChaCha20-Poly1305 over local Tailscale/wireguard overlays.</li>
+              <li>Zero-knowledge proof verification ensuring agents execute verified code without leaking environment variables.</li>
+              <li>Immutable audit log stored in local SQLite with cryptographic merkle root checkpoints.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator planned">◐ Research Draft</div>
+              <span class="card-tag purple-tag">Planned Q4 2026</span>
+            </div>
+          </article>
+
+          <!-- Future 4: Autonomous Vulnerability Fuzzing Sentinel -->
+          <article class="milestone-card is-future" data-category="security roadmap">
+            <div class="card-top">
+              <div class="card-icon-title">
+                <div class="card-icon future-icon">🛡️</div>
+                <div>
+                  <h3 class="card-title">Autonomous Vulnerability Sentinel</h3>
+                  <div style="font-size: 0.74rem; color: var(--text-dim); font-family: var(--font-mono);">Phase 4 · Parrot OS Arsenal</div>
+                </div>
+              </div>
+              <span class="card-tag purple-tag">Red Team AI</span>
+            </div>
+            <p class="card-body">
+              Continuous autonomous security auditing daemon pairing Onyx and Lycan spirits with Parrot OS native toolchains:
+            </p>
+            <ul class="feature-bullets">
+              <li>Automated AST vulnerability scanning, tainted input fuzzing, and CORS/CSP header validation on every commit.</li>
+              <li>Self-healing patch generation with automated regression tests before opening pull requests.</li>
+              <li>Strict loopback containment ensuring zero penetration test data ever leaves the local subnet.</li>
+            </ul>
+            <div class="card-footer">
+              <div class="status-indicator planned">◐ Architecture Ready</div>
+              <span class="card-tag purple-tag">Planned Q4 2026</span>
+            </div>
+          </article>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Live CTA Banner -->
+    <section class="cta-deck-banner">
+      <h3>Experience the Sovereign Studio Live</h3>
+      <p>
+        Zoth Studio is fully operational on your machine. Inspect live mathematical telemetry, compose autonomous agent DAGs, or engage with your liquid-neon companion spirits in the local deck.
+      </p>
+      <div class="cta-actions">
+        <a href="http://127.0.0.1:8484/" target="_blank" class="btn-glow">⚡ Open Local Deck (:8484)</a>
+        <a href="/studio/math-pillars.html" class="btn-outline">📐 Open Math Pillars Suite</a>
+        <a href="/studio/agent-composer.html" class="btn-outline">🎛️ Open Agent Composer</a>
+        <a href="/studio/brand.html" class="btn-outline">🖼️ Open Brand Vault</a>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // Milestone Filter Handler
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.milestone-card');
+    const groups = document.querySelectorAll('.sprint-group');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+
+        const filter = btn.getAttribute('data-filter');
+
+        if (filter === 'all') {
+          cards.forEach(c => c.style.display = 'flex');
+          groups.forEach(g => g.style.display = 'block');
+        } else if (filter === 'shipped') {
+          groups.forEach(g => g.style.display = g.getAttribute('data-group') === 'shipped' ? 'block' : 'none');
+          cards.forEach(c => c.style.display = c.getAttribute('data-category').includes('shipped') ? 'flex' : 'none');
+        } else if (filter === 'roadmap') {
+          groups.forEach(g => g.style.display = g.getAttribute('data-group') === 'roadmap' ? 'block' : 'none');
+          cards.forEach(c => c.style.display = c.getAttribute('data-category').includes('roadmap') ? 'flex' : 'none');
+        } else {
+          groups.forEach(g => g.style.display = 'block');
+          cards.forEach(c => {
+            if (c.getAttribute('data-category').includes(filter)) {
+              c.style.display = 'flex';
+            } else {
+              c.style.display = 'none';
+            }
+          });
+        }
+      });
+    });
+  </script>
+  <script src="/assets/celestial-trail.js"></script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zoth Studio — Hermes Swarm Showcase</title>
+<style>
+  :root {
+    --bg: #07080c;
+    --panel: #0d1017;
+    --panel-2: #11161f;
+    --text: #e6e8f0;
+    --muted: #9aa3b2;
+    --accent: #00f0ff;
+    --accent-2: #7b61ff;
+    --good: #00ff9d;
+    --warn: #ffd166;
+    --bad: #ff5c8a;
+    --border: #1f2330;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+    background:
+      radial-gradient(1200px 800px at 10% -10%, #131c2b 0%, transparent 55%),
+      radial-gradient(900px 600px at 110% 10%, #181328 0%, transparent 55%),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+  .eyebrow { color: var(--accent); letter-spacing: 0.16em; text-transform: uppercase; font-size: 12px; font-weight: 800; }
+  h1 { font-size: clamp(28px, 4.2vw, 48px); line-height: 1.05; margin: 8px 0 8px; font-weight: 800; letter-spacing: -0.03em; }
+  .sub { color: var(--muted); font-size: 16px; max-width: 760px; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; background: #1f2533; border: 1px solid var(--border); color: var(--muted); font-size: 12px; margin-top: 10px; }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 3px #00ff9d33; }
+
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; margin-top: 26px; }
+  .card { grid-column: span 4; background: linear-gradient(180deg, var(--panel) 0%, #13161d 100%); border: 1px solid var(--border); border-radius: 16px; padding: 16px; position: relative; overflow: hidden; }
+  .card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px 300px at 0% 0%, #ffffff08 0%, transparent 60%); pointer-events: none; }
+  .card h3 { margin: 6px 0 8px; font-size: 17px; font-weight: 700; }
+  .card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 800; }
+  .card .url { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: var(--accent); font-size: 13px; margin: 4px 0 8px; word-break: break-all; }
+  .tag { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #1f2533; border: 1px solid var(--border); color: var(--muted); font-size: 12px; margin: 2px 4px 2px 0; }
+  .tag.good { color: #c6ffe6; border-color: #00ff9d44; background: #00ff9d14; }
+  .tag.bad { color: #ffdce6; border-color: #ff5c8a44; background: #ff5c8a14; }
+  .tag.warn { color: #fff3d6; border-color: #ffd16644; background: #ffd16614; }
+  .list { margin: 8px 0 0; padding: 0; list-style: none; }
+  .list li { padding: 7px 9px; border-radius: 10px; background: #13161d; border: 1px solid #1f2330; margin-bottom: 7px; font-size: 13px; color: #d3d7e0; }
+  .list li strong { color: var(--text); }
+  .winner { outline: 1.5px solid #00ff9d55; box-shadow: 0 0 0 7px #00ff9d12; }
+  .winner .winner-chip { position: absolute; top: 12px; right: 12px; background: #00ff9d22; color: var(--good); border: 1px solid #00ff9d55; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+
+  .section { margin-top: 34px; }
+  .section h2 { font-size: 20px; font-weight: 800; margin: 0 0 8px; }
+  .section .desc { color: var(--muted); font-size: 14px; }
+
+  table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 10px; }
+  th, td { padding: 11px 13px; text-align: left; font-size: 13px; border-bottom: 1px solid #1f2330; }
+  th { background: #13161d; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; }
+  td:last-child, th:last-child { text-align: right; }
+  tr:last-child td { border-bottom: none; }
+  .pill { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+  .pill.g { background: #00ff9d18; color: #00ff9d; border: 1px solid #00ff9d44; }
+  .pill.r { background: #ff5c8a18; color: #ff5c8a; border: 1px solid #ff5c8a44; }
+  .pill.y { background: #ffd16618; color: #ffd166; border: 1px solid #ffd16644; }
+
+  .callout { margin-top: 22px; background: linear-gradient(180deg, #13161d 0%, #0f1218 100%); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .callout .icon { width: 26px; height: 26px; border-radius: 8px; background: #00f0ff18; color: var(--accent); display: grid; place-items: center; font-weight: 900; }
+  .callout .title { font-weight: 800; margin-bottom: 3px; }
+  .callout .body { color: var(--muted); font-size: 13px; }
+
+  .timeline { margin-top: 14px; }
+  .timeline-row { display: grid; grid-template-columns: 180px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid #1a1d26; }
+  .timeline-row:last-child { border-bottom: none; }
+  .timeline-time { color: var(--muted); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .timeline-body { font-size: 13px; color: #d3d7e0; }
+  .timeline-body strong { color: var(--text); }
+
+  .artifact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .artifact { background: #13161d; border: 1px solid #1f2330; border-radius: 10px; padding: 10px; font-size: 12px; color: #c8ccd6; }
+  .artifact .name { color: var(--accent); font-weight: 800; margin-bottom: 4px; word-break: break-all; }
+  .artifact .path { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: var(--muted); font-size: 11px; }
+
+  @media (max-width: 980px) {
+    .card { grid-column: span 6; }
+    .artifact-grid { grid-template-columns: 1fr; }
+    .timeline-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+  @media (max-width: 640px) {
+    .card { grid-column: span 12; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Swarm Showcase</div>
+    <h1>nullai.tech cutover prep — complete workspace</h1>
+    <p class="sub">What Hermes delivered while the user was away: audit, staging artifacts, p1 fixes, recommendation, and verification. Nothing deployed without confirmation.</p>
+    <div class="badge"><span class="dot"></span>Last updated: 2026-08-17 · Hermes</div>
+
+    <div class="section">
+      <div class="desc">Mission status and recommended path.</div>
+      <div class="grid">
+        <div class="card">
+          <div class="label">Recommended layout</div>
+          <div class="url">studio.nullai.tech/</div>
+          <h3>B — Studio subdomain</h3>
+          <div><span class="tag good">Low risk</span><span class="tag good">Easy rollback</span><span class="tag good">Natural staging</span></div>
+          <ul class="list">
+            <li><strong>Why:</strong> Keeps existing apex intact; tests in isolation; rollback is delete <code>public_html/studio/</code>.</li>
+            <li><strong>Cons:</strong> Extra DNS; canonical discipline required.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="label">Recommended plan</div>
+          <div class="url">Hostinger Cloud</div>
+          <h3>Cloud hosting</h3>
+          <div><span class="tag good">Static-ready</span><span class="tag good">Managed TLS</span><span class="tag good">Cheap</span></div>
+          <ul class="list">
+            <li><strong>Why:</strong> Plenty for static <code>public/</code>; low ops; fast enough for hub.</li>
+            <li><strong>Cons:</strong> No root; cannot run private daemons publicly.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="label">Deploy readiness</div>
+          <div class="url">p1 fixed · p2 optional</div>
+          <h3>Ready with conditions</h3>
+          <div><span class="tag good">Audit done</span><span class="tag good">p1 applied</span><span class="tag warn">Decision pending</span></div>
+          <ul class="list">
+            <li><strong>Blocking:</strong> user decision on A/B/C + Cloud/VPS.</li>
+            <li><strong>Optional:</strong> p2 doc/meta sanitization.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="desc">Timeline of completed work in this session.</div>
+      <div class="timeline">
+        <div class="timeline-row"><div class="timeline-time">13:15Z</div><div class="timeline-body"><strong>Bus wake-up.</strong> Read protocol, STATUS, peer cards, inbox. Registered Hermes on the bus.</div></div>
+        <div class="timeline-row"><div class="timeline-time">13:30Z</div><div class="timeline-body"><strong>Staging artifacts dispatched.</strong> Launched parallel subagents for A/B/C deploy manifests, nginx notes, redirects, smokechecks, and risk summaries.</div></div>
+        <div class="timeline-row"><div class="timeline-time">13:32Z</div><div class="timeline-body"><strong>Lane claimed.</strong> <code>nullai-staging-prep</code> claimed to avoid collisions.</div></div>
+        <div class="timeline-row"><div class="timeline-time">13:36Z</div><div class="timeline-body"><strong>Artifacts landed.</strong> A/B/C staging folders written and verified. Broadcast status to all lanes.</div></div>
+        <div class="timeline-row"><div class="timeline-time">13:38Z</div><div class="timeline-body"><strong>Sensitive-tree audit complete.</strong> No real secrets. p0: 5 local-only files. p1: 12 localhost refs. p2: 41 doc exposures. p3: noise only.</div></div>
+        <div class="timeline-row"><div class="timeline-time">13:40Z</div><div class="timeline-body"><strong>Recommendation packet.</strong> Wrote <code>RECOMMENDATION.md</code>, <code>DECISION-GATE.md</code>, and lane claim for <code>nullai-public-p1-remediation</code>.</div></div>
+        <div class="timeline-row"><div class="timeline-time">13:42Z</div><div class="timeline-body"><strong>p1 fixes applied to <code>public/</code>.</strong> Replaced hard-coded localhost fetches/links with relative paths or localhost-guarded probes. Verified <code>:8088</code> still serves.</div></div>
+        <div class="timeline-row"><div class="timeline-time">13:45Z</div><div class="timeline-body"><strong>Decision matrix page built.</strong> Created <code>decision-matrix.html</code> with layout/pros-cons, Hostinger plan comparison, readiness table, and callouts. Verified in browser.</div></div>
+        <div class="timeline-row"><div class="timeline-time">23:30Z</div><div class="timeline-body"><strong>20-minute sprint joined.</strong> Accepted Antigravity sprint directive. Claimed <code>antigravity-20min-sprint-support</code> and split tasks: showcase hero, pets→Nexus workflow, trail enhancement, docs/composer audits.</div></div>
+        <div class="timeline-row"><div class="timeline-time">23:40Z</div><div class="timeline-body"><strong>Sprint execution started.</strong> Began showcase/pets/nexus/trail work; launched parallel subagents for docs audit and Agent Composer schema audit.</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="desc">All artifacts created during this session.</div>
+      <div class="artifact-grid">
+        <div class="artifact"><div class="name">Staging A</div><div class="path">13-creative-media/zoth/hosting/staging/option-a-apex/</div>Deploy manifest, nginx, redirects, checklist, risks</div>
+        <div class="artifact"><div class="name">Staging B</div><div class="path">13-creative-media/zoth/hosting/staging/option-b-studio-subdomain/</div>Deploy manifest, nginx, DNS records, redirects, checklist</div>
+        <div class="artifact"><div class="name">Staging C</div><div class="path">13-creative-media/zoth/hosting/staging/option-c-path-studio/</div>Deploy manifest, nginx, path collision notes, redirects</div>
+        <div class="artifact"><div class="name">Sensitive-tree audit</div><div class="path">agent-comms/handoffs/hermes-sensitive-tree-audit.md</div>p0-p3 findings, exact file paths, patterns</div>
+        <div class="artifact"><div class="name">P1 remediation patches</div><div class="path">13-creative-media/zoth/hosting/staging/p1-remediation/patches.md</div>Exact replacements for 12 localhost refs</div>
+        <div class="artifact"><div class="name">Guarded fetch snippet</div><div class="path">13-creative-media/zoth/hosting/staging/p1-remediation/guarded-fetch.js</div>Production-safe conditional fetch wrapper</div>
+        <div class="artifact"><div class="name">P2 doc sanitization</div><div class="path">13-creative-media/zoth/hosting/staging/p1-remediation/p2-doc-sanitization-patches.md</div>Optional doc/meta localhost cleanup</div>
+        <div class="artifact"><div class="name">Recommendation</div><div class="path">13-creative-media/zoth/hosting/staging/RECOMMENDATION.md</div>Why B + Cloud, what happens after go</div>
+        <div class="artifact"><div class="name">Decision gate</div><div class="path">13-creative-media/zoth/hosting/staging/DECISION-GATE.md</div>User choices: layout, plan, timing, p2</div>
+        <div class="artifact"><div class="name">Readiness report</div><div class="path">13-creative-media/zoth/hosting/staging/READINESS.md</div>Completed items, blockers, next action</div>
+        <div class="artifact"><div class="name">Decision matrix</div><div class="path">13-creative-media/zoth/hosting/staging/decision-matrix.html</div>Visual pros/cons, Hostinger plan table, readiness</div>
+        <div class="artifact"><div class="name">Sprint showcase</div><div class="path">13-creative-media/zoth/hosting/staging/showcase.html</div>Swarm showcase with timeline, artifacts, fixes</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="desc">Code fixes applied directly to <code>public/</code>.</div>
+      <table>
+        <thead>
+          <tr><th>File</th><th>Change</th><th>Type</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>pets/pets.js</td><td><code>http://127.0.0.1:8484/api/pets</code> → <code>/api/pets</code></td><td><span class="pill g">Fetch</span></td><td>Public pets hangar must not call private deck.</td></tr>
+          <tr><td>registry/registry.js</td><td><code>http://127.0.0.1:8484/api/tools</code> → <code>/api/tools</code></td><td><span class="pill g">Fetch</span></td><td>Public registry must not hit private API.</td></tr>
+          <tr><td>site.js</td><td>Daemon probe guarded with localhost check</td><td><span class="pill g">Guard</span></td><td>Vault daemon is loopback-only; skip on Hostinger.</td></tr>
+          <tr><td>site.js</td><td>Studio dashboard probe guarded with localhost check</td><td><span class="pill g">Guard</span></td><td>Studio deck is private; skip on Hostinger.</td></tr>
+          <tr><td>site.js</td><td>Studio meta text: <code>127.0.0.1:8484</code> → <code>Studio Deck</code></td><td><span class="pill g">Copy</span></td><td>Public UI must not expose private loopback.</td></tr>
+          <tr><td>site.js</td><td>Spark probe guarded with localhost check</td><td><span class="pill g">Guard</span></td><td>Undocumented local service; skip on Hostinger.</td></tr>
+          <tr><td>connectors/index.js</td><td>Vault default URL → empty string</td><td><span class="pill g">Default</span></td><td>Force explicit/production-safe values.</td></tr>
+          <tr><td>blueprints/index.html</td><td>Deck button <code>http://127.0.0.1:8484</code> → <code>/studio/</code></td><td><span class="pill g">Link</span></td><td>Public blueprint page must not link to localhost.</td></tr>
+          <tr><td>zoth-knowledge-graph.json</td><td>5 JSON-LD <code>127.0.0.1:8484/#...</code> → public canonical</td><td><span class="pill g">Schema</span></td><td>Search engines must not index dead localhost URLs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="desc">Audit snapshot: sensitive-tree findings.</div>
+      <table>
+        <thead>
+          <tr><th>Severity</th><th>Count</th><th>Meaning</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>p0 — Hard block</td><td>5</td><td>Local-only Python/dataset files that must not be uploaded</td><td><span class="pill g">Excluded in manifests</span></td></tr>
+          <tr><td>p1 — Must fix</td><td>12</td><td>Live fetch/probe/JSON-LD calls to <code>127.0.0.1:8484/8787/8765</code></td><td><span class="pill g">Patched in public/</span></td></tr>
+          <tr><td>p2 — Nice to fix</td><td>41</td><td>Doc/meta exposures of private ports to visitors/search</td><td><span class="pill y">Patch set prepared</span></td></tr>
+          <tr><td>p3 — Noise</td><td>—</td><td>Synthetic/demo secrets only; no real credentials found</td><td><span class="pill g">No action</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="callout">
+        <div class="icon">?</div>
+        <div>
+          <div class="title">Decision gate</div>
+          <div class="body">To proceed, the user must choose: Layout A/B/C, Hostinger Cloud or VPS, and whether to apply optional p2 doc sanitization before deploy. No DNS or deploy actions will be taken until confirmed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

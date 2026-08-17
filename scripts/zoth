@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# User-facing entry: zoth | zoth --hub | zoth deps | zoth doctor
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Installed layout: /usr/lib/zoth + /usr/bin/zoth
+if [[ -d /usr/lib/zoth/tools ]]; then
+  ROOT=/usr/lib/zoth
+fi
+case "${1:-}" in
+  deps|doctor)
+    exec "$ROOT/scripts/deps-debian.sh" "${@:2}"
+    ;;
+  --help|-h)
+    echo "zoth          start the deck on 127.0.0.1:8484"
+    echo "zoth --hub    also serve public/ on :8088"
+    echo "zoth deps     check Debian/Ubuntu libraries"
+    echo "zoth deps --install"
+    exit 0
+    ;;
+  *)
+    exec "$ROOT/scripts/zoth-start.sh" "$@"
+    ;;
+esac

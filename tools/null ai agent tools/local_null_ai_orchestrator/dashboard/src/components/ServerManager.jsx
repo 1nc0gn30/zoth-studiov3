@@ -82,9 +82,8 @@ export default function ServerManager() {
 
   return (
     <section>
-      <h2 className="section-title">
-        <span className="section-icon">🖥️</span> Running Servers
-      </h2>
+      <p className="empty-kicker">A NullAI studio</p>
+      <h2 className="section-title">Running Servers</h2>
       {error && (
         <div className="error-banner">
           <span>⚠</span> {error}
@@ -151,7 +150,7 @@ export default function ServerManager() {
                     {s.pid && <span className="server-meta-item">PID: {s.pid}</span>}
                     {s.port && <span className="server-meta-item">Port: {s.port}</span>}
                     {s.cwd && <span className="server-meta-item">CWD: {s.cwd}</span>}
-                    {s.containerized && <span className="server-meta-item" style={{ color: "var(--accent-cyan)" }}>🐳 container</span>}
+                    {s.containerized && <span className="server-meta-item" style={{ color: "var(--accent-cyan)" }}>container</span>}
                   </div>
                   {s.venv_path && (
                     <div className="server-meta">

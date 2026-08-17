@@ -1,0 +1,78 @@
+# Category: Web Apps & SaaS
+
+## Tools in this category:
+- [[757tech]] — Runtimes: shell
+- [[757tech2025]] — Runtimes: astro, node, shell
+- [[admin-dashboard]] — Runtimes: frontend, node, vite
+- [[aether]] — Runtimes: frontend, node, vite
+- [[aetheris]] — Runtimes: frontend, node, vite
+- [[all-your-wares]] — Runtimes: frontend, node, vite
+- [[astro-for-ai]] — Runtimes: astro, node, shell
+- [[aura-map]] — Runtimes: frontend, node, vite
+- [[avatar-studio]] — Runtimes: frontend, node, vite
+- [[blicki]] — Runtimes: frontend, node, vite
+- [[blog-template]] — Runtimes: frontend, node
+- [[boilerplate-project-messageboard]] — Runtimes: node
+- [[boilertemplate-project-exercisetracker]] — Runtimes: node
+- [[boilertemplate-project-filemetadata]] — Runtimes: node
+- [[boilertemplate-project-headparser]] — Runtimes: node
+- [[boilertemplate-url-shortner]] — Runtimes: node
+- [[BOOMPOW]] — Runtimes: frontend, node, vite
+- [[bullseye]] — Runtimes: frontend, node, vite
+- [[Coffee-meetup]] — Runtimes: node
+- [[Conscious-Cat-Guardianship]] — Runtimes: frontend, node, vite
+- [[Duck-Duck-Ducky]] — Runtimes: frontend, node, vite
+- [[dunkin-donut-maker]] — Runtimes: frontend, node, vite
+- [[Edgar-cayce-app]] — Runtimes: node
+- [[edge-forge]] — Runtimes: frontend, node, vite
+- [[envguard-pro]] — Runtimes: frontend, node, vite
+- [[Feral-tide-strategy]] — Runtimes: frontend, node, shell, vite
+- [[FUCK-ICE]] — Runtimes: frontend, node, vite
+- [[fxckthesystem]] — Runtimes: frontend, node, vite
+- [[hack-the-world]] — Runtimes: frontend, node, vite
+- [[hacktheworld]] — Runtimes: frontend, node
+- [[hermes-parrot-os-workhouse]] — Runtimes: frontend, node, vite
+- [[i-got-you]] — Runtimes: frontend, node, vite
+- [[ibisbackend]] — Runtimes: node
+- [[kane-korsos]] — Runtimes: frontend, node, vite
+- [[kitchen-forge]] — Runtimes: frontend, node, shell, vite
+- [[letsdoit]] — Runtimes: frontend, node, vite
+- [[lumina-builder]] — Runtimes: frontend, node, vite
+- [[magicui-for-astro]] — Runtimes: node
+- [[mentorship-marketplace]] — Runtimes: frontend, node, vite
+- [[migratex]] — Runtimes: frontend, node, vite
+- [[mosesart]] — Runtimes: frontend, node, vite
+- [[Mundane-Oracle]] — Runtimes: frontend, node, vite
+- [[neowardrive]] — Runtimes: node
+- [[nexus]] — Runtimes: frontend, node, vite
+- [[nexus-3d-editor]] — Runtimes: frontend, node, vite
+- [[nfc-link-hub]] — Runtimes: frontend, node, vite
+- [[nona]] — Runtimes: frontend, node, vite
+- [[nona-2026]] — Runtimes: frontend, node, vite
+- [[nova-os-analytics]] — Runtimes: frontend, node, vite
+- [[O-N-E]] — Runtimes: frontend, node, vite
+- [[omnipost]] — Runtimes: frontend, node, vite
+- [[one-shot]] — Runtimes: frontend, node, vite
+- [[optimalism]] — Runtimes: frontend, node
+- [[packageforge]] — Runtimes: frontend, node, vite
+- [[Paws-and-Paths]] — Runtimes: frontend, node, vite
+- [[PiedPiper]] — Runtimes: frontend, node, vite
+- [[powerapp-templates]] — Runtimes: 
+- [[prepped-pigeon]] — Runtimes: frontend, node, vite
+- [[skill-swap-mongodb-react-app-website]] — Runtimes: node
+- [[SunCycle]] — Runtimes: astro, node, shell
+- [[taskforge-lite]] — Runtimes: node
+- [[tech-pro]] — Runtimes: astro, node, shell, vite
+- [[TH34LL]] — Runtimes: 
+- [[th34ll-react-supabase-app]] — Runtimes: frontend, node
+- [[Thumb-Journey]] — Runtimes: frontend, node, vite
+- [[url-shortener]] — Runtimes: frontend, node, vite
+- [[v-edge-vegan-pizza]] — Runtimes: frontend, node, vite
+- [[vbtv]] — Runtimes: frontend, node, vite
+- [[virtualcoffee]] — Runtimes: frontend, node, vite
+- [[vision-link]] — Runtimes: frontend, node, vite
+- [[Vite-Mui-React-Framer-Motion-Starter-App]] — Runtimes: frontend, node, vite
+- [[website]] — Runtimes: frontend, node
+- [[yell-space]] — Runtimes: frontend, node, vite
+- [[youtubemixtube]] — Runtimes: frontend, node, vite
+- [[zen-breathing-companion]] — Runtimes: frontend, node, vite

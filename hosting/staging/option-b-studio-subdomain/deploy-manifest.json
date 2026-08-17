@@ -1,0 +1,52 @@
+{
+  "layout": "B",
+  "subdomain": "studio.nullai.tech",
+  "description": "Deploy the zoth/public/ hub as a dedicated subdomain on Hostinger, leaving nullai.tech apex untouched.",
+  "rsync": {
+    "source": "13-creative-media/zoth/public/",
+    "destination": "USER@HOSTINGER_HOST:public_html/studio/",
+    "flags": [
+      "-avz",
+      "--delete",
+      "--exclude='.git'",
+      "--exclude='.DS_Store'",
+      "--exclude='node_modules'",
+      "--exclude='*.log'",
+      "--exclude='.env*'",
+      "--exclude='byok.json'",
+      "--exclude='conversations.json'",
+      "--exclude='runtime/data/'",
+      "--exclude='vault-daemon/'",
+      "--exclude='agent-comms/'",
+      "--exclude='tools/null ai agent tools/local_null_ai_orchestrator/'",
+      "--exclude='*.key'",
+      "--exclude='*.pem'",
+      "--exclude='*.secret'",
+      "--exclude='assets/*.py'",
+      "--exclude='assets/models/dataset/*'"
+    ]
+  },
+  "target_paths": {
+    "remote_web_root": "public_html/studio/",
+    "expected_index": "public_html/studio/index.html",
+    "expected_assets": "public_html/studio/assets/",
+    "expected_pets": "public_html/studio/pets/",
+    "expected_studio": "public_html/studio/studio/",
+    "expected_vault": "public_html/studio/vault/"
+  },
+  "notes": [
+    "Do not rsync to public_html/ directly; everything lands under public_html/studio/ so the apex remains intact.",
+    "The studio subdomain should be created in hPanel before rsync runs.",
+    "Enable Let's Encrypt SSL for studio.nullai.tech in hPanel after files are in place.",
+    "Never upload vault daemon, agent-comms, or any file containing GITHUB_TOKEN or HOSTINGER_API_TOKEN.",
+    "After first successful sync, verify with the smokecheck-checklist.md before updating DNS."
+  ],
+  "audit_findings": {
+    "p0_excluded_paths": [
+      "assets/*.py",
+      "assets/models/dataset/*"
+    ],
+    "p1_requires_code_fix_before_deploy": true,
+    "p1_summary": "12 public fetch/probe calls and JSON-LD links still point to 127.0.0.1:8484/8787/8765; see agent-comms/handoffs/hermes-sensitive-tree-audit.md for exact files/lines."
+  }
+}

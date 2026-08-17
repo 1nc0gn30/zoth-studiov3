@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zoth BYOK Vault — local encrypted keys</title>
+    <meta
+      name="description"
+      content="Zoth BYOK vault: store provider keys on this machine. Optional Rust daemon (Argon2id + XChaCha20-Poly1305) on 127.0.0.1:8787. Browser-local fallback if the daemon is off."
+    />
+    <meta name="theme-color" content="#03040a" />
+    <meta name="robots" content="index, follow, max-snippet:-1" />
+    <meta name="author" content="Neal Frazier / 757tech" />
+    <link rel="canonical" href="https://zoth.nealfrazier.tech/vault/" />
+    <link rel="alternate" type="text/plain" href="https://zoth.nealfrazier.tech/llms.txt" title="llms.txt" />
+    <link rel="icon" type="image/png" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Zoth Studio" />
+    <meta property="og:title" content="Zoth BYOK Vault — local encrypted keys" />
+    <meta
+      property="og:description"
+      content="Bring-your-own-key vault. Loopback daemon. No cloud KMS."
+    />
+    <meta property="og:url" content="https://zoth.nealfrazier.tech/vault/" />
+    <meta property="og:image" content="https://zoth.nealfrazier.tech/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Zoth BYOK Vault — local encrypted keys" />
+    <meta name="twitter:description" content="Encrypted keys on this machine. Optional Rust daemon on loopback." />
+    <meta name="twitter:image" content="https://zoth.nealfrazier.tech/og-image.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Zoth BYOK Vault",
+        "url": "https://zoth.nealfrazier.tech/vault/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Web, Linux",
+        "description": "Local encrypted key vault for Zoth Studio. Optional Rust daemon on 127.0.0.1:8787 using Argon2id and XChaCha20-Poly1305.",
+        "isPartOf": { "@type": "WebSite", "url": "https://zoth.nealfrazier.tech/", "name": "Zoth Studio" },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Cache-bust: nginx was serving vault assets as immutable for 7d -->
+    <link rel="stylesheet" href="/vault/vault.css?v=20260816b" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="c" aria-label="3D vault"></canvas>
+      <div class="vignette" aria-hidden="true"></div>
+      <div class="scanlines" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <a class="brand" href="/">
+          <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="28" height="28" alt="" />
+          <span class="brand-lockup">
+            <span class="brand-name">VAULT</span>
+            <em class="brand-by">by NullAI</em>
+          </span>
+        </a>
+        <div class="top-actions">
+          <span class="status-chip" id="sec-pill" role="status">
+            <i class="sec-dot" id="sec-dot" aria-hidden="true"></i>
+            <span id="sec-pill-label">…</span>
+          </span>
+          <span class="session-chip" id="autolock-badge" hidden>
+            <span id="sec-ttl">—</span>
+          </span>
+          <button type="button" class="tb" id="btn-presets" hidden>Presets</button>
+          <details class="more-menu" id="toolbar-more" hidden>
+            <summary class="tb" aria-label="More">···</summary>
+            <div class="more-panel">
+              <button type="button" class="more-item" id="btn-security">Security</button>
+              <button type="button" class="more-item" id="btn-audit">Audit</button>
+              <button type="button" class="more-item" id="btn-touch-session">Extend session</button>
+              <button type="button" class="more-item" id="btn-change-pass">Passphrase</button>
+              <hr class="more-sep" />
+              <button type="button" class="more-item" id="btn-rotate" aria-pressed="true">Orbit</button>
+              <button type="button" class="more-item" id="btn-focus">Focus</button>
+              <button type="button" class="more-item" id="btn-explode" aria-pressed="false">Scatter</button>
+            </div>
+          </details>
+          <button type="button" class="tb tb-lock" id="btn-lock" hidden>Lock</button>
+          <a class="tb tb-quiet" href="/">Hub</a>
+        </div>
+      </header>
+
+      <!-- JS stubs -->
+      <div id="sec-hud" hidden aria-hidden="true">
+        <div id="sec-score-ring"><b id="sec-score">—</b></div>
+        <span id="sec-hud-title"></span><span id="sec-hud-sub"></span>
+        <div id="sec-chips"></div>
+        <div id="sec-session" hidden><i id="sec-ttl-fill"></i></div>
+      </div>
+      <div id="mode-daemon" hidden></div>
+      <div id="mode-browser" hidden></div>
+      <span id="mode-daemon-status" hidden></span>
+      <span id="sealed-line" hidden><span id="sealed-text"></span></span>
+      <span id="pass-min-hint" hidden></span>
+      <span id="brand-sub" hidden></span>
+      <span id="panel-sub" hidden></span>
+      <span id="backend-line" hidden></span>
+
+      <!-- GATE: pick path first, then passphrase -->
+      <section class="gate" id="gate">
+        <div class="gate-card" id="gate-card">
+          <div class="gate-mark" aria-hidden="true">
+            <span class="gate-ring"></span>
+            <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="48" height="48" alt="" />
+          </div>
+          <div class="gate-probe" id="gate-probe" role="status" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <span id="gate-probe-text">Connecting…</span>
+          </div>
+          <ol class="flow-steps" aria-label="Vault flow: path, then passphrase, then keys stay here">
+            <li class="is-on"><span>1</span> Path</li>
+            <li><span>2</span> Passphrase</li>
+            <li><span>3</span> Keys stay here</li>
+          </ol>
+          <p class="gate-eyebrow" id="gate-eyebrow">A NullAI studio · local encrypted</p>
+          <h1>Vault</h1>
+          <p class="gate-lead">Three steps: pick a path, enter a passphrase, store keys on this machine.</p>
+
+          <div class="gate-modes" id="gate-modes" role="tablist" aria-label="How do you want to open the vault?">
+            <button type="button" class="gate-mode is-on" data-gate-mode="open" id="gate-mode-open" role="tab" aria-selected="true">
+              <em class="gm-num" aria-hidden="true">01</em>
+              <span class="gm-body">
+                <strong>Open existing</strong>
+                <span id="gate-open-hint">Unlock a vault you already created</span>
+              </span>
+              <i class="gm-check" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="gate-mode" data-gate-mode="create" id="gate-mode-create" role="tab" aria-selected="false">
+              <em class="gm-num" aria-hidden="true">02</em>
+              <span class="gm-body">
+                <strong>Create new</strong>
+                <span id="gate-create-hint">Start a fresh encrypted vault</span>
+              </span>
+              <i class="gm-check" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="gate-mode" data-gate-mode="demo" id="gate-mode-demo" role="tab" aria-selected="false">
+              <em class="gm-num" aria-hidden="true">03</em>
+              <span class="gm-body">
+                <strong>Try demo</strong>
+                <span>Sample keys · browser only</span>
+              </span>
+              <i class="gm-check" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="gate-form-wrap" class="gate-form">
+            <label class="field" for="master-pass">
+              <span id="pass-label">Passphrase</span>
+              <div class="pass-row">
+                <input id="master-pass" type="password" autocomplete="current-password" placeholder="Enter passphrase" />
+                <button type="button" class="icon-btn" id="btn-toggle-master" aria-label="Show passphrase" aria-pressed="false">👁</button>
+              </div>
+              <div class="strength" id="pass-strength" aria-hidden="true"><i></i></div>
+            </label>
+
+            <label class="check" id="remember-wrap">
+              <input type="checkbox" id="remember-session" checked />
+              <span>Auto-lock when idle</span>
+            </label>
+
+            <button type="button" class="primary block" id="btn-gate-go">
+              <span class="btn-label" id="btn-gate-go-label">Unlock vault</span>
+              <span class="spinner btn-spinner" hidden></span>
+            </button>
+
+            <!-- Keep real actions for JS; primary button routes to them -->
+            <button type="button" class="primary block" id="btn-unlock" hidden>
+              <span class="btn-label">Unlock</span>
+              <span class="spinner btn-spinner" hidden></span>
+            </button>
+            <button type="button" class="ghost block" id="btn-init" hidden>
+              <span class="btn-label">Create vault</span>
+              <span class="spinner btn-spinner" hidden></span>
+            </button>
+            <button type="button" class="text-btn" id="btn-demo" hidden>Demo</button>
+          </div>
+
+          <div class="gate-links">
+            <button type="button" class="text-btn" id="btn-gate-security">Security details</button>
+          </div>
+          <p class="hint" id="gate-msg" role="status"></p>
+          <p class="gate-meta" id="vault-exists-hint"></p>
+        </div>
+      </section>
+
+      <!-- SIDEBAR: list is the product -->
+      <aside class="panel" id="panel" hidden>
+        <div class="panel-chrome">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div>
+                <p class="panel-kicker">A NullAI studio</p>
+                <h2>Keys</h2>
+              </div>
+              <span class="count-pill" id="stat-total">0</span>
+            </div>
+            <button type="button" class="icon-btn" id="btn-collapse" aria-label="Collapse">‹</button>
+          </div>
+
+          <div class="search-bar">
+            <input id="key-search" type="search" placeholder="Search" aria-label="Search keys" />
+            <select id="sort-keys" aria-label="Sort">
+              <option value="newest">New</option>
+              <option value="label">A–Z</option>
+              <option value="provider">Service</option>
+              <option value="category">Cat</option>
+              <option value="favorites">★</option>
+              <option value="health">Health</option>
+            </select>
+          </div>
+
+          <div class="chip-row cat-chips" id="category-chips" role="tablist" aria-label="Category"></div>
+          <div class="chip-row" id="provider-chips" role="tablist" aria-label="Provider"></div>
+
+          <div class="bulk-bar" id="bulk-bar" hidden>
+            <span id="bulk-count">0</span>
+            <button type="button" class="text-btn" id="btn-bulk-export">Export</button>
+            <button type="button" class="text-btn" id="btn-bulk-fav">★</button>
+            <button type="button" class="text-btn danger-t" id="btn-bulk-del">Del</button>
+            <button type="button" class="text-btn" id="btn-bulk-clear">Clear</button>
+          </div>
+        </div>
+
+        <ul class="key-list" id="key-list"></ul>
+
+        <div class="panel-composer">
+          <form id="key-form" class="key-form">
+            <div class="composer-head">
+              <span id="form-title">Add key</span>
+              <button type="button" class="text-btn" id="btn-open-presets">Browse services</button>
+            </div>
+            <div class="detect-banner" id="detect-banner" hidden>
+              <div>
+                <strong id="detect-label">Detected</strong>
+                <span id="detect-meta"></span>
+              </div>
+              <button type="button" class="text-btn" id="btn-apply-detect">Apply</button>
+            </div>
+            <div class="composer-row">
+              <select id="key-provider" required aria-label="Service"></select>
+              <input id="key-label" type="text" placeholder="Label" maxlength="64" required />
+            </div>
+            <div class="pass-row">
+              <input id="key-secret" type="password" autocomplete="off" placeholder="Paste secret" required />
+              <button type="button" class="icon-btn" id="btn-toggle-secret" aria-label="Show key">👁</button>
+            </div>
+            <p class="field-hint" id="key-format-hint"></p>
+            <p class="field-hint validate" id="key-validate"></p>
+            <details class="form-more">
+              <summary>Details</summary>
+              <input id="key-env" type="text" placeholder="ENV_NAME" maxlength="64" spellcheck="false" />
+              <input id="key-endpoint" type="url" placeholder="Base URL" maxlength="200" />
+              <input id="key-tags" type="text" placeholder="tags" maxlength="100" />
+              <input id="key-notes" type="text" placeholder="notes" maxlength="160" />
+              <label class="check">
+                <input type="checkbox" id="key-favorite" />
+                <span>Favorite</span>
+              </label>
+              <a class="docs-link" id="provider-docs" href="#" target="_blank" rel="noopener" hidden>Docs</a>
+            </details>
+            <div class="composer-actions">
+              <button type="submit" class="primary" id="btn-save">Save</button>
+              <button type="button" class="ghost" id="btn-clear-form">Clear</button>
+              <button type="button" class="ghost" id="btn-smart-paste">.env</button>
+            </div>
+            <input type="hidden" id="key-id" value="" />
+          </form>
+          <div class="panel-foot">
+            <button type="button" class="text-btn" id="btn-export">Export</button>
+            <button type="button" class="text-btn" id="btn-export-json">Backup</button>
+            <button type="button" class="text-btn" id="btn-import">Import</button>
+            <button type="button" class="text-btn danger-t" id="btn-wipe">Wipe</button>
+          </div>
+          <input type="file" id="import-file" accept=".env,.txt,.json,text/plain,application/json" hidden />
+          <p class="hint" id="panel-msg" role="status"></p>
+        </div>
+
+        <!-- hidden stats for JS -->
+        <span id="stat-providers" hidden>0</span>
+        <span id="stat-favs" hidden>0</span>
+        <span id="stat-cats" hidden>0</span>
+        <span id="stats-row" hidden></span>
+      </aside>
+
+      <button type="button" class="panel-fab" id="btn-expand" hidden>Keys</button>
+      <div class="legend" id="legend" hidden></div>
+      <div class="tooltip" id="tooltip" hidden></div>
+      <div class="hud" id="hud" hidden>
+        <span id="hud-count">0</span>
+        <span class="sep">·</span>
+        <span id="hud-hint">orbit · click · dbl-copy</span>
+      </div>
+      <div class="toast" id="toast" hidden role="status"></div>
+      <footer class="bottom">
+        <kbd>?</kbd>
+        <span id="session-status">locked</span>
+      </footer>
+    </div>
+
+    <dialog id="security-dialog" class="sheet">
+      <div class="sheet-head">
+        <h3>Security</h3>
+        <button type="button" class="icon-btn" id="btn-close-security" aria-label="Close">✕</button>
+      </div>
+      <div class="sec-dialog-score">
+        <div class="sec-score-ring lg" id="sec-dialog-ring" data-grade="—">
+          <b id="sec-dialog-score">—</b>
+        </div>
+        <div>
+          <strong id="sec-dialog-grade">—</strong>
+          <p class="muted" id="sec-dialog-blurb"></p>
+        </div>
+      </div>
+      <ul class="sec-check-list" id="sec-check-list"></ul>
+      <div class="sheet-actions">
+        <button type="button" class="primary" id="btn-refresh-security">Refresh</button>
+        <button type="button" class="ghost" id="btn-close-security-2">Close</button>
+      </div>
+    </dialog>
+
+    <dialog id="audit-dialog" class="sheet">
+      <div class="sheet-head">
+        <h3>Audit</h3>
+        <button type="button" class="icon-btn" id="btn-close-audit" aria-label="Close">✕</button>
+      </div>
+      <div class="audit-list" id="audit-list"></div>
+    </dialog>
+
+    <dialog id="preset-browser" class="sheet sheet-wide">
+      <div class="sheet-head">
+        <div>
+          <h3>Services</h3>
+          <p class="muted" id="preset-browser-sub"></p>
+        </div>
+        <button type="button" class="icon-btn" id="btn-close-presets" aria-label="Close">✕</button>
+      </div>
+      <div class="pack-row" id="pack-row"></div>
+      <div class="preset-toolbar">
+        <input id="preset-search" type="search" placeholder="Search…" />
+        <label class="check inline">
+          <input type="checkbox" id="preset-underground" />
+          <span>Indie</span>
+        </label>
+      </div>
+      <div class="chip-row" id="preset-cat-chips"></div>
+      <div class="preset-grid" id="preset-grid"></div>
+    </dialog>
+
+    <dialog id="shortcuts" class="sheet sheet-sm">
+      <h3>Keys</h3>
+      <ul class="shortcut-list">
+        <li><kbd>N</kbd> new</li>
+        <li><kbd>P</kbd> presets</li>
+        <li><kbd>/</kbd> search</li>
+        <li><kbd>E</kbd> export</li>
+        <li><kbd>L</kbd> lock</li>
+        <li><kbd>Esc</kbd> close</li>
+      </ul>
+      <button type="button" class="primary block" id="btn-close-shortcuts">Done</button>
+    </dialog>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="/vault/vault.js?v=20260812l"></script>
+    <script src="/assets/celestial-trail.js"></script>
+</body>
+</html>

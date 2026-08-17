@@ -85,9 +85,11 @@ except ImportError:
 # ─── Paths ───
 ORCH_DIR = Path(__file__).resolve().parent
 WORKSPACE_ROOT = ORCH_DIR.parent
+DRIVE_ROOT = ORCH_DIR.parents[4] if len(ORCH_DIR.parents) >= 5 else None
 REGISTRY_PATH = ORCH_DIR / "registry.local.json"
 REPORTS_DIR = ORCH_DIR / "reports"
 DASHBOARD_DIR = ORCH_DIR / "dashboard" / "dist"
+ZOTH_PUBLIC_DIR = ORCH_DIR.parents[2] / "public" if len(ORCH_DIR.parents) >= 3 else None
 
 # ─── Config ───
 ASTRO_TOOL_DIR = ORCH_DIR.parent / "website generators" / "local_null_ai_zoth-studio"
@@ -135,6 +137,7 @@ class ToolRecord:
 # ─── Tool discovery helpers ───
 def iter_local_tool_dirs() -> list[Path]:
     tools: list[Path] = []
+    # 1. Internal Zoth tools
     for root_path in [WORKSPACE_ROOT]:
         if not root_path.exists():
             continue
@@ -146,6 +149,23 @@ def iter_local_tool_dirs() -> list[Path]:
                 if dirname == ORCH_DIR:
                     continue
                 tools.append(dirname)
+
+    # 2. Drive categorized apps
+    if DRIVE_ROOT and DRIVE_ROOT.exists():
+        category_dirs = [
+            "00-workspaces", "01-clients-services", "02-netlify-ax-creator",
+            "03-ai-agents-llm", "04-web-apps-saas", "05-portfolio-agency",
+            "06-learning-courses", "07-security-osint", "08-crypto-web3",
+            "09-games-experiments", "10-python-tools", "11-tools-scripts",
+            "12-rust", "13-creative-media"
+        ]
+        for cat in category_dirs:
+            cat_path = DRIVE_ROOT / cat
+            if cat_path.exists() and cat_path.is_dir():
+                for proj in sorted(cat_path.iterdir()):
+                    if proj.is_dir() and not proj.name.startswith('.') and proj != ORCH_DIR and proj != ORCH_DIR.parent:
+                        tools.append(proj)
+
     return sorted(tools, key=lambda p: p.name.lower())
 
 def detect_name(path: Path) -> str:
@@ -168,8 +188,27 @@ def detect_category(path: Path) -> str:
     manifest = read_manifest(path)
     if manifest.get("category"):
         return manifest["category"]
-    # Infer from parent directory
     parent = path.parent.name.lower()
+    drive_category_map = {
+        "00-workspaces": "Workspaces",
+        "01-clients-services": "Client Services",
+        "02-netlify-ax-creator": "Netlify & Creator Tools",
+        "03-ai-agents-llm": "AI Agents & LLM",
+        "04-web-apps-saas": "Web Apps & SaaS",
+        "05-portfolio-agency": "Portfolio & Agency",
+        "06-learning-courses": "Learning & Courses",
+        "07-security-osint": "Security Operations & OSINT",
+        "08-crypto-web3": "Crypto & Web3",
+        "09-games-experiments": "Games & Experiments",
+        "10-python-tools": "Python Tools",
+        "11-tools-scripts": "Automation & Tools",
+        "12-rust": "Rust Projects",
+        "13-creative-media": "Creative & Media",
+    }
+    for prefix, cat in drive_category_map.items():
+        if parent == prefix:
+            return cat
+
     category_map = {
         "cybersecurity": "Security Operations",
         "design": "Design Intelligence",
@@ -187,19 +226,21 @@ def detect_category(path: Path) -> str:
 
 def detect_runtimes(path: Path) -> list[str]:
     runtimes = []
-    files = [f.name for f in path.iterdir() if f.is_file()]
-    # Merge with nested files
-    nested_files = []
-    for sub in path.iterdir():
-        if sub.is_dir() and sub.name not in ("node_modules", ".git", "__pycache__", ".null_ai_venv"):
-            for f in sub.rglob("*"):
-                if f.is_file() and f.suffix in (".py", ".js", ".ts", ".go", ".rs", ".sh", ".mjs", ".jsx", ".tsx"):
-                    nested_files.append(f.name)
+    names = set()
+    exclude_dirs = {"node_modules", ".git", "__pycache__", ".null_ai_venv", ".venv", "venv", ".next", "dist", "build", "vendor"}
+    try:
+        for r, dirs, files in os.walk(path):
+            dirs[:] = [d for d in dirs if d not in exclude_dirs]
+            for f in files:
+                ext = os.path.splitext(f)[1].lower()
+                if ext in (".py", ".js", ".ts", ".go", ".rs", ".sh", ".mjs", ".jsx", ".tsx") or f in ("package.json", "go.mod", "Cargo.toml"):
+                    names.add(f)
+    except Exception:
+        pass
 
-    all_names = set(files + nested_files)
-    if any(f.endswith(".py") for f in all_names):
+    if any(f.endswith(".py") for f in names):
         runtimes.append("python")
-    if any(f.endswith((".js", ".jsx", ".ts", ".tsx", ".mjs")) for f in all_names) or (path / "package.json").exists():
+    if any(f.endswith((".js", ".jsx", ".ts", ".tsx", ".mjs")) for f in names) or (path / "package.json").exists():
         if "node" not in runtimes:
             runtimes.append("node")
     if (path / "package.json").exists():
@@ -212,11 +253,11 @@ def detect_runtimes(path: Path) -> list[str]:
                 runtimes.append("vite")
         except (json.JSONDecodeError, KeyError):
             pass
-    if any(f.endswith(".go") for f in all_names) or (path / "go.mod").exists():
+    if any(f.endswith(".go") for f in names) or (path / "go.mod").exists():
         runtimes.append("go")
-    if any(f.endswith(".rs") for f in all_names) or (path / "Cargo.toml").exists():
+    if any(f.endswith(".rs") for f in names) or (path / "Cargo.toml").exists():
         runtimes.append("rust")
-    if any(f.endswith(".sh") for f in files):
+    if any(f.endswith(".sh") for f in names):
         runtimes.append("shell")
     has_frontend = (path / "index.html").exists() or (path / "src").exists()
     if has_frontend and "node" in runtimes and "astro" not in runtimes:
@@ -292,12 +333,20 @@ def build_tool_record(path: Path) -> ToolRecord:
         if readme_file.exists():
             first_line = readme_file.read_text().strip().split("\n")[0]
             description = first_line.lstrip("#").strip()[:120]
+    try:
+        if DRIVE_ROOT and DRIVE_ROOT in path.parents:
+            rel_p = str(path.relative_to(DRIVE_ROOT))
+        else:
+            rel_p = str(path.relative_to(WORKSPACE_ROOT.parent) if path != WORKSPACE_ROOT else ".")
+    except Exception:
+        rel_p = str(path)
+
     return ToolRecord(
         id=path.name,
         name=name,
         description=description,
         path=str(path),
-        relative_path=str(path.relative_to(WORKSPACE_ROOT.parent) if path != WORKSPACE_ROOT else "."),
+        relative_path=rel_p,
         category=manifest.get("category", detect_category(path)),
         runtimes=runtimes,
         tags=tags_for(path, runtimes),
@@ -354,6 +403,14 @@ def get_venv_python(tool_path: Path) -> Path | None:
 def command_scan(_args: argparse.Namespace) -> int:
     registry = scan_tools()
     print(f"Scanned {registry['tool_count']} tools. Registry written to {REGISTRY_PATH}")
+    try:
+        from runtime.pet_knowledge import ROSTER, heal_all
+        roster = heal_all()
+        healed = len(roster.get("pets") or [])
+        skipped = max(0, len(ROSTER) - healed)
+        print(f"Pet knowledge: healed {healed} pets / {skipped} skipped")
+    except Exception as exc:
+        print(f"Pet knowledge: healed 0 pets / skipped ({exc})")
     return 0
 
 def command_list(args: argparse.Namespace) -> int:
@@ -418,33 +475,33 @@ def command_doctor(_args: argparse.Namespace) -> int:
     print(f"  Registry:   {'✓ exists' if REGISTRY_PATH.exists() else '✗ missing'}")
     print()
 
-    # Check node
-    try:
-        node_v = subprocess.run(["node", "--version"], capture_output=True, text=True, timeout=5)
-        print(f"  Node:       {node_v.stdout.strip() if node_v.returncode == 0 else 'not found'}")
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        print(f"  Node:       not found")
+    from runtime.deps import format_report, probe
+    data = probe()
+    print(format_report(data))
+    print()
 
-    # Check npm
-    try:
-        npm_v = subprocess.run(["npm", "--version"], capture_output=True, text=True, timeout=5)
-        print(f"  npm:        {npm_v.stdout.strip() if npm_v.returncode == 0 else 'not found'}")
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        print(f"  npm:        not found")
-
-    # Check tools
     registry = load_registry()
     tools = registry.get("tools", [])
-    print(f"\n  Tools:      {len(tools)} registered")
-
-    # Check runtimes missing
+    print(f"  Tools:      {len(tools)} registered")
     missing_rt = sum(1 for t in tools if not t.get("runtimes"))
     print(f"  Needs cfg:  {missing_rt} tools")
+    return 0 if data.get("ready") else 2
 
-    # Check dashboard
-    dash_index = DASHBOARD_DIR / "index.html"
-    print(f"  Dashboard:  {'✓ ready' if dash_index.exists() else '✗ not built'}")
-    return 0
+
+def command_deps(args: argparse.Namespace) -> int:
+    from runtime.deps import format_report, install_python, probe
+    if getattr(args, "install", False):
+        result = install_python()
+        print(result.get("cmd"))
+        print(result.get("stdout") or result.get("stderr") or "")
+        if not result.get("ok"):
+            return 1
+    data = probe()
+    if getattr(args, "json", False):
+        print(json.dumps(data, indent=2))
+    else:
+        print(format_report(data))
+    return 0 if data.get("ready") else 2
 
 def command_dashboard(_args: argparse.Namespace) -> int:
     registry = load_registry()
@@ -583,6 +640,16 @@ def command_serve(args: argparse.Namespace) -> int:
 
     port = getattr(args, 'port', 8484)
     host = getattr(args, 'host', '127.0.0.1')
+    loopback = {"127.0.0.1", "localhost", "::1", "0:0:0:0:0:0:0:1"}
+    if host not in loopback and not getattr(args, "public", False):
+        print(
+            f"[serve] refusing to bind {host} — studio stays on loopback.\n"
+            "        pass --public only if you accept network exposure.",
+            file=sys.stderr,
+        )
+        return 1
+    if host not in loopback:
+        print(f"[serve] WARNING: binding {host} — studio is reachable off-loopback", file=sys.stderr)
     registry = load_registry()
     tools = registry.get("tools", [])
     api_token_val = getattr(args, "token", None)
@@ -670,12 +737,28 @@ def command_serve(args: argparse.Namespace) -> int:
             path = urllib.parse.urlparse(self.path).path.rstrip("/") or "/"
 
             # ─── Dashboard ───
-            if path == "/" or path == "/dashboard":
-                index = DASHBOARD_DIR / "index.html"
-                if not index.exists():
-                    self._send_json({"error": "Dashboard not built. Run `cd dashboard && npm run build`"}, 404)
+            if path in ("/pour", "/spark"):
+                self.send_response(302)
+                self.send_header("Location", "/#pour")
+                self.end_headers()
+                return
+
+            if path in ("/", "/dashboard", "/dashboard.html"):
+                dash_file = ORCH_DIR / "dashboard.html"
+                if not dash_file.exists():
+                    dash_file = DASHBOARD_DIR / "index.html"
+                if not dash_file.exists():
+                    self._send_json({"error": "Dashboard not found"}, 404)
                     return
-                self._serve_file(index)
+                self._serve_file(dash_file)
+                return
+
+            if path in ("/zoth_logo.png", "/zoth_logo_bw.png", "/zoth_logo_nobg.png", "/pet_realistic.png", "/pet_pixel.png", "/pet_draco.png", "/pet_shiba.png", "/pet_phoenix.png", "/pet_wolf.png", "/pet_owl.png", "/pet_fox.png"):
+                logo_file = ORCH_DIR / path.lstrip("/")
+                if logo_file.exists():
+                    self._serve_file(logo_file)
+                else:
+                    self._serve_file(ORCH_DIR / "zoth_logo.png")
                 return
 
             # ─── Dashboard assets ───
@@ -683,6 +766,38 @@ def command_serve(args: argparse.Namespace) -> int:
                 asset = DASHBOARD_DIR / path.lstrip("/dashboard/")
                 self._serve_file(asset)
                 return
+
+            # ─── Public Hub & Studio Surfaces (Vault, Blueprints, Assets, Connectors, Swarm) ───
+            if ZOTH_PUBLIC_DIR and ZOTH_PUBLIC_DIR.exists():
+                # Direct folder index redirects
+                if path in ("/vault", "/vault/"):
+                    self._serve_file(ZOTH_PUBLIC_DIR / "vault" / "index.html")
+                    return
+                if path in ("/blueprints", "/blueprints/"):
+                    self._serve_file(ZOTH_PUBLIC_DIR / "blueprints" / "index.html")
+                    return
+                if path in ("/studio/swarm", "/studio/swarm.html", "/swarm", "/swarm/"):
+                    self._serve_file(ZOTH_PUBLIC_DIR / "studio" / "swarm.html")
+                    return
+                if path in ("/studio/connectors", "/studio/connectors.html", "/connectors", "/connectors/"):
+                    self._serve_file(ZOTH_PUBLIC_DIR / "studio" / "connectors.html")
+                    return
+                if path in ("/studio/ax-powerhouse", "/studio/ax-powerhouse.html", "/ax-powerhouse"):
+                    self._serve_file(ZOTH_PUBLIC_DIR / "studio" / "ax-powerhouse.html")
+                    return
+                if path in ("/assets/gallery", "/assets/gallery.html", "/gallery"):
+                    self._serve_file(ZOTH_PUBLIC_DIR / "assets" / "gallery.html")
+                    return
+
+                # Any static assets inside public/
+                rel_candidate = path.lstrip("/")
+                target_file = ZOTH_PUBLIC_DIR / rel_candidate
+                if target_file.exists() and target_file.is_file():
+                    self._serve_file(target_file)
+                    return
+                elif (ZOTH_PUBLIC_DIR / rel_candidate / "index.html").exists():
+                    self._serve_file(ZOTH_PUBLIC_DIR / rel_candidate / "index.html")
+                    return
 
             # ─── API: tools list ───
             if path == "/api/tools":
@@ -1340,8 +1455,27 @@ def command_serve(args: argparse.Namespace) -> int:
             if path == "/api/vite/sites":
                 self._send_json({"sites": []})
                 return
-            if path == "/api/vite/preview-status":
-                self._send_json({"running": []})
+            # ─── API: shutdown ───
+            if path == "/api/shutdown":
+                def _do_shutdown():
+                    time.sleep(0.3)
+                    os._exit(0)
+                threading.Thread(target=_do_shutdown, daemon=True).start()
+                self._send_json({"status": "shutdown_initiated", "message": "Zoth Studio server shutting down smoothly."})
+                return
+
+            # ─── API: obsidian vault generator ───
+            if path in ("/api/obsidian/vault", "/api/obsidian/graph"):
+                try:
+                    tools = load_registry().get("tools", [])
+                    vault_dir = ORCH_DIR / "obsidian-vault"
+                    vault_dir.mkdir(parents=True, exist_ok=True)
+                    by_cat = {}
+                    for t in tools:
+                        by_cat.setdefault(t.get("category", "Uncategorized"), []).append(t)
+                    self._send_json({"status": "ok", "vault_dir": str(vault_dir), "tool_count": len(tools), "categories": len(by_cat)})
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
                 return
 
             # ─── 404 ───
@@ -1359,6 +1493,67 @@ def command_serve(args: argparse.Namespace) -> int:
                 data = json.loads(body) if body else {}
             except json.JSONDecodeError:
                 data = {}
+
+            # ─── API: shutdown ───
+            if path == "/api/shutdown":
+                def _do_shutdown():
+                    time.sleep(0.3)
+                    os._exit(0)
+                threading.Thread(target=_do_shutdown, daemon=True).start()
+                self._send_json({"status": "shutdown_initiated", "message": "Zoth Studio server shutting down smoothly."})
+                return
+
+            # ─── API: studio build ───
+            if path == "/api/studio/build":
+                project_name = data.get("project_name", "cyber_app")
+                instructions = data.get("instructions", "")
+                selected_options = data.get("selected_options", {})
+                try:
+                    from runtime.sandbox_engine import create_and_build_project
+                    result = create_and_build_project(project_name, instructions, selected_options)
+                    self._send_json(result)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            # ─── API: hermes chat ───
+            if path == "/api/hermes/chat":
+                prompt = data.get("prompt", "")
+                if not prompt:
+                    self._send_json({"error": "prompt required"}, 400)
+                    return
+                try:
+                    sys.path.insert(0, str(ORCH_DIR / "studio-agents"))
+                    from hermes_agent import hermes
+                    reg = load_registry()
+                    result = hermes.process_prompt(prompt, reg.get("tools", []))
+                    self._send_json(result)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            # ─── API: terminal exec ───
+            if path == "/api/terminal/exec":
+                cmd = data.get("command", "").strip()
+                if not cmd:
+                    self._send_json({"error": "command required"}, 400)
+                    return
+                try:
+                    if cmd == "scan":
+                        full_cmd = "python3 orchestrator.py scan"
+                    elif cmd == "doctor":
+                        full_cmd = "python3 orchestrator.py doctor"
+                    else:
+                        full_cmd = f"python3 orchestrator.py {cmd}"
+                    proc = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, timeout=30, cwd=str(ORCH_DIR))
+                    self._send_json({
+                        "command": cmd,
+                        "exit_code": proc.returncode,
+                        "output": proc.stdout or proc.stderr or "Command executed silently."
+                    })
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
 
             # ─── API: astro build ───
             if path == "/api/astro/build":
@@ -1639,19 +1834,18 @@ def command_serve(args: argparse.Namespace) -> int:
                 self._send_json({"status": "ok", "site": safe, "project": manifest, "dir": str(project_dir)})
                 return
 
-            # ─── API: studio build (scaffold dir → spawn agent) ───
+            # ─── API: studio build (Real Sandbox Execution Engine) ───
             if path == "/api/studio/build":
-                name = data.get("name", "").strip()
-                if not name:
-                    self._send_json({"error": "name required"}, 400)
-                    return
-                safe = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-                project = self.STUDIO_PROJECTS.get(safe, {})
-                frameworks = project.get("frameworks", ["astro"])
-                model = data.get("model", "codex")
-
-                # Ensure project directory exists with INSTRUCTIONS.md
-                project_dir = WORKSPACE_ROOT / "projects" / safe
+                project_name = data.get("project_name", data.get("name", "cyber_app"))
+                instructions = data.get("instructions", "")
+                selected_options = data.get("selected_options", {})
+                try:
+                    from runtime.sandbox_engine import create_and_build_project
+                    result = create_and_build_project(project_name, instructions, selected_options)
+                    self._send_json(result)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
                 project_dir.mkdir(parents=True, exist_ok=True)
                 instructions_path = project_dir / "INSTRUCTIONS.md"
                 if not instructions_path.exists():
@@ -2029,6 +2223,11 @@ def main():
     p_doctor = sub.add_parser("doctor", help="System health check")
     p_doctor.set_defaults(func=command_doctor)
 
+    p_deps = sub.add_parser("deps", help="List / install Zoth runtime dependencies")
+    p_deps.add_argument("--install", action="store_true", help="pip-install required Python modules")
+    p_deps.add_argument("--json", action="store_true", help="Machine-readable probe")
+    p_deps.set_defaults(func=command_deps)
+
     p_dash = sub.add_parser("dashboard", help="CLI dashboard view")
     p_dash.set_defaults(func=command_dashboard)
 
@@ -2045,7 +2244,9 @@ def main():
 
     p_serve = sub.add_parser("serve", help="Start HTTP API server")
     p_serve.add_argument("--port", "-p", type=int, default=8484, help="Port (default: 8484)")
-    p_serve.add_argument("--host", default="127.0.0.1", help="Host (default: 127.0.0.1)")
+    p_serve.add_argument("--host", default="127.0.0.1", help="Host (default: 127.0.0.1, loopback only)")
+    p_serve.add_argument("--public", action="store_true",
+                        help="Allow non-loopback bind (off by default — do not put this on a tunnel)")
     p_serve.add_argument("--token", help="API token for auth")
     p_serve.add_argument("--server", choices=["auto", "uvicorn", "stdlib"], default="auto",
                          help="Server backend: auto=uvicorn if available, else stdlib (default: auto)")

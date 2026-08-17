@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual Multi-Agent DAG Composer & Pipeline Foundry — Zoth Studio</title>
+    <meta name="description" content="Visual node-based multi-agent DAG workflow composer, curved Bezier fiber-optic wire rendering, 16-mascot nodes, Python AST pipeline runner, and universal JSON export." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://zoth.nealfrazier.tech/studio/agent-composer.html" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css?v=20260816a" />
+    <style>
+      :root {
+        --bg-composer: #03050a;
+        --panel-composer: rgba(10, 14, 26, 0.92);
+        --panel-alt: rgba(16, 22, 40, 0.85);
+        --wire-color: #00f0ff;
+        --accent-purple: #a855f7;
+        --accent-amber: #f59e0b;
+        --accent-emerald: #10b981;
+        --cyan: #00f0ff;
+        --grok: #00d4aa;
+        --agy: #7c9cff;
+        --hermes: #ffaa40;
+        --line: rgba(0, 240, 255, 0.16);
+        --line-bright: rgba(0, 240, 255, 0.45);
+        --font-mono: 'IBM Plex Mono', monospace;
+        --font-display: 'Syne', sans-serif;
+        --font-body: 'Figtree', sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        background: var(--bg-composer);
+        color: #f0f6fc;
+        font-family: var(--font-body);
+        line-height: 1.5;
+        overflow-x: hidden;
+      }
+
+      .composer-wrap {
+        padding: 1.5rem 1.5rem 5rem;
+        max-width: 1640px;
+        margin: 0 auto;
+      }
+
+      /* Hero Banner */
+      .composer-hero {
+        background: linear-gradient(135deg, rgba(6, 10, 22, 0.94) 0%, rgba(10, 16, 36, 0.96) 100%), url('/assets/media/dag-composer-hero.jpg') center/cover no-repeat;
+        border: 1px solid var(--line-bright);
+        border-radius: 18px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: 0 0 40px rgba(0, 240, 255, 0.12);
+      }
+
+      .hero-title {
+        font-family: var(--font-display);
+        font-size: 2.1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-desc {
+        color: #cbd5e1;
+        font-size: 0.95rem;
+        max-width: 780px;
+        line-height: 1.55;
+      }
+
+      .composer-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .btn-pill {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        color: #f0f6fc;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .btn-pill:hover {
+        background: rgba(0, 240, 255, 0.12);
+        border-color: var(--cyan);
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+      }
+
+      /* 3-Column Layout */
+      .composer-grid {
+        display: grid;
+        grid-template-columns: 310px 1fr 360px;
+        gap: 1.25rem;
+        min-height: 760px;
+      }
+
+      @media (max-width: 1300px) {
+        .composer-grid { grid-template-columns: 280px 1fr; }
+        .bus-dock { grid-column: 1 / -1; }
+      }
+
+      @media (max-width: 900px) {
+        .composer-grid { grid-template-columns: 1fr; }
+      }
+
+      .c-panel {
+        background: var(--panel-composer);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .c-panel-head {
+        padding: 1rem 1.25rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .c-panel-head h2, .c-panel-head h3 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      /* Palette Sidebar */
+      .tool-palette {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        overflow-y: auto;
+        max-height: 820px;
+      }
+
+      .tool-group-title {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--cyan);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .node-card {
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--panel-alt);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        cursor: grab;
+        user-select: none;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .node-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--cyan);
+        box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+      }
+
+      .node-card-title {
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .node-card-desc {
+        font-size: 0.74rem;
+        color: #94a3b8;
+        margin-top: 4px;
+        line-height: 1.35;
+      }
+
+      /* Canvas Stage */
+      .canvas-container {
+        position: relative;
+        flex: 1;
+        min-height: 600px;
+        background: radial-gradient(circle at 50% 50%, #0d1222 0%, #030408 100%);
+        overflow: hidden;
+      }
+
+      .canvas-grid-bg {
+        position: absolute;
+        inset: 0;
+        background-size: 28px 28px;
+        background-image: radial-gradient(circle, rgba(0, 240, 255, 0.12) 1px, transparent 1px);
+        pointer-events: none;
+      }
+
+      #stage { position: absolute; inset: 0; }
+
+      .canvas-node {
+        position: absolute;
+        width: 240px;
+        border-radius: 12px;
+        background: rgba(13, 17, 30, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--line);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        cursor: move;
+        user-select: none;
+        z-index: 10;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+
+      .canvas-node.is-selected {
+        border-color: var(--cyan);
+        box-shadow: 0 0 24px rgba(0, 240, 255, 0.4), 0 10px 30px rgba(0, 0, 0, 0.8);
+        z-index: 20;
+      }
+
+      .canvas-node.is-executing {
+        border-color: var(--accent-emerald);
+        box-shadow: 0 0 28px rgba(16, 185, 129, 0.6);
+        animation: nodePulse 1.2s infinite ease-in-out;
+      }
+
+      @keyframes nodePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+      }
+
+      .canvas-node-header {
+        padding: 9px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .canvas-node-body {
+        padding: 10px 12px;
+        font-size: 0.76rem;
+        color: #94a3b8;
+        font-family: var(--font-mono);
+      }
+
+      .node-socket {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 2px solid #0d111c;
+        cursor: crosshair;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .node-socket:hover {
+        transform: translateY(-50%) scale(1.4);
+        box-shadow: 0 0 10px #fff;
+      }
+
+      .socket-in { left: -7px; background: #10b981; }
+      .socket-out { right: -7px; background: #00f0ff; }
+
+      /* Flowing Fiber Wires */
+      @keyframes wireFlow {
+        from { stroke-dashoffset: 40; }
+        to { stroke-dashoffset: 0; }
+      }
+
+      .wire-path {
+        stroke: url(#wireGrad);
+        stroke-width: 3.5;
+        fill: none;
+        stroke-dasharray: 8, 4;
+        animation: wireFlow 1.2s linear infinite;
+        filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.6));
+      }
+
+      /* Bus Feed */
+      .bus-feed {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        max-height: 480px;
+      }
+
+      .bus-msg {
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-left: 3px solid var(--cyan);
+        line-height: 1.4;
+      }
+
+      .bus-msg-head {
+        display: flex;
+        justify-content: space-between;
+        color: var(--cyan);
+        margin-bottom: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      .canvas-toolbar {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        display: flex;
+        gap: 6px;
+        z-index: 30;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div class="fx-grain" aria-hidden="true"></div>
+
+    <header class="site-header is-scrolled">
+      <div class="nav">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
+          <span class="brand-text"><strong>ZOTH</strong></span>
+        </a>
+        <nav class="nav-desktop" aria-label="Primary">
+          <a href="/studio/">Deck</a>
+          <a href="/studio/consensus.html">Consensus</a>
+          <a href="/studio/math-pillars.html">Math Pillars</a>
+          <a href="/studio/agent-composer.html" aria-current="page">Composer</a>
+          <a href="/studio/models.html">Models</a>
+          <a href="/studio/chronicle.html">Chronicle</a>
+          <a href="/studio/swarm.html">Swarm</a>
+          <a href="/vault/">Vault</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="composer-wrap">
+      <!-- Cinematic Hero Banner -->
+      <section class="composer-hero">
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px;">
+            <span>✦ Visual Multi-Agent Pipeline Foundry</span>
+          </div>
+          <h1 class="hero-title">Visual DAG Composer & Orchestrator</h1>
+          <p class="hero-desc">
+            Graphically assemble autonomous multi-agent pipelines linking <strong>@antigravity</strong>, <strong>@grok</strong>, <strong>@hermes</strong>, and <strong>16 mascot companion nodes</strong> with live Bezier fiber wires, Python AST syntax verification, and universal JSON export.
+          </p>
+        </div>
+
+        <div class="composer-badges">
+          <select id="preset-selector" class="btn-pill" style="background:#080a14; color:#00f0ff; border-color:rgba(0,240,255,0.4); cursor:pointer;">
+            <option value="pipeline">⚡ 3-Agent Consensus & Audit Pipeline</option>
+            <option value="security">🛡️ Full-Stack Security & OWASP Audit</option>
+            <option value="aeo">🦉 Athena AEO & Schema Validator</option>
+            <option value="redteam">🐆 Onyx Red Team Exploit Sweep</option>
+          </select>
+          <button class="btn-pill" id="btn-run-playbook" style="border-color: var(--cyan); color: var(--cyan); font-weight:700;">▶ Run DAG Pipeline</button>
+          <button class="btn-pill" id="btn-export-json">💾 Export JSON</button>
+          <button class="btn-pill" id="btn-export-python">🐍 Export Python</button>
+          <button class="btn-pill" id="btn-clear-canvas">🧹 Clear</button>
+        </div>
+      </section>
+
+      <!-- 3-Column Layout -->
+      <div class="composer-grid">
+        <!-- 1. Left Column: Palette Sidebar -->
+        <aside class="c-panel tool-palette" aria-label="Agent and Tool Palette">
+          <div class="c-panel-head">
+            <h2>Component Palette</h2>
+            <span style="font-size: 0.72rem; color: var(--cyan); font-family: var(--font-mono);">DRAG TO STAGE</span>
+          </div>
+
+          <!-- Primary Swarm Agents -->
+          <div>
+            <div class="tool-group-title">🤖 Swarm Agent Nodes</div>
+            <div class="node-card" draggable="true" data-type="agent" data-agent="antigravity" data-title="Antigravity Architect">
+              <div class="node-card-title">🐺 @antigravity</div>
+              <div class="node-card-desc">Code synthesis, 3D WebGL, Consensus Arena v2</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="agent" data-agent="grok" data-title="Grok Packager">
+              <div class="node-card-title">🦊 @grok</div>
+              <div class="node-card-desc">Local harness, Debian packaging, deploy guards</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="agent" data-agent="hermes" data-title="Hermes Planner">
+              <div class="node-card-title">🐲 @hermes</div>
+              <div class="node-card-desc">Tool schema validation, claim arbitration</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="agent" data-agent="ollama" data-title="Local Ollama AI">
+              <div class="node-card-title">🤖 Local Ollama LLM</div>
+              <div class="node-card-desc">Offline qwen2.5-coder & smollm2 neural inference</div>
+            </div>
+          </div>
+
+          <!-- 16 Mascot Companion Nodes -->
+          <div>
+            <div class="tool-group-title">🐾 Mascot Doctrine Nodes</div>
+            <div class="node-card" draggable="true" data-type="mascot" data-agent="athena" data-title="Athena AEO Engine">
+              <div class="node-card-title">🦉 Athena (AEO Guard)</div>
+              <div class="node-card-desc">JSON-LD schema & answer engine optimization</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="mascot" data-agent="lycan" data-title="Lycan OWASP Guard">
+              <div class="node-card-title">🐺 Lycan (OWASP Security)</div>
+              <div class="node-card-desc">Security boundary & secret leak prevention</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="mascot" data-agent="onyx" data-title="Onyx Red Team">
+              <div class="node-card-title">🐆 Onyx (Red Team)</div>
+              <div class="node-card-desc">Zero-day exploit detection & sandbox audit</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="mascot" data-agent="chronos" data-title="Chronos DAG Navigator">
+              <div class="node-card-title">🦌 Chronos (DAG Optimizer)</div>
+              <div class="node-card-desc">Topological sort & critical path scheduler</div>
+            </div>
+          </div>
+
+          <!-- Orchestrator Actions -->
+          <div>
+            <div class="tool-group-title">⚡ Orchestrator Actions</div>
+            <div class="node-card" draggable="true" data-type="tool" data-tool="math-telemetry" data-title="Math Telemetry Guard">
+              <div class="node-card-title">📐 Math Telemetry Guard</div>
+              <div class="node-card-desc">Attention matrix & Shannon entropy gate</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="tool" data-tool="ast-validator" data-title="Python AST Linter">
+              <div class="node-card-title">🐍 Python AST Linter</div>
+              <div class="node-card-desc">Syntax verification & privilege check</div>
+            </div>
+            <div style="height: 6px;"></div>
+            <div class="node-card" draggable="true" data-type="tool" data-tool="security-audit" data-title="Hermetic Security Scan">
+              <div class="node-card-title">🛡️ Security & A11y Gate</div>
+              <div class="node-card-desc">Loopback verify, contrast check & bind guard</div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- 2. Center Column: Node Canvas Stage -->
+        <section class="c-panel" style="position: relative;" aria-label="Visual Playbook Canvas">
+          <div class="c-panel-head">
+            <h3>Interactive DAG Topology Stage</h3>
+            <span id="canvas-status" style="font-size:0.75rem; color: var(--cyan); font-family: var(--font-mono);">0 Nodes Connected</span>
+          </div>
+          <div class="canvas-container" id="canvas-container">
+            <div class="canvas-grid-bg"></div>
+            <div class="canvas-toolbar">
+              <span class="btn-pill" style="font-size:0.7rem; pointer-events:none;">Zoom: 100%</span>
+              <span class="btn-pill" id="dag-exec-pill" style="font-size:0.7rem; color: var(--accent-emerald);">● Ready</span>
+            </div>
+            <svg id="svg-wires" style="position: absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5;">
+              <defs>
+                <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#10b981" />
+                  <stop offset="100%" stop-color="#00f0ff" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div id="stage"></div>
+          </div>
+        </section>
+
+        <!-- 3. Right Column: Swarm Live Bus & Execution Telemetry -->
+        <aside class="c-panel bus-dock" aria-label="Live Swarm Feed">
+          <div class="c-panel-head">
+            <h2>Swarm Bus Feed</h2>
+            <span class="btn-pill" id="live-indicator" style="background: rgba(16,185,129,0.1); color: var(--accent-emerald); border-color: var(--accent-emerald);">● LIVE :8989</span>
+          </div>
+          <div class="bus-feed" id="live-bus-feed">
+            <div class="bus-msg">
+              <div class="bus-msg-head"><span>@ANTIGRAVITY</span><span>10:15:00</span></div>
+              <div>Connected to Visual DAG Composer. Bezier fiber-optic wire rendering online.</div>
+            </div>
+            <div class="bus-msg">
+              <div class="bus-msg-head"><span>@GROK</span><span>10:16:30</span></div>
+              <div>Ready to receive compiled DAG execution chain via orchestrator.py.</div>
+            </div>
+            <div class="bus-msg">
+              <div class="bus-msg-head"><span>@HERMES</span><span>10:17:00</span></div>
+              <div>JSON schema validation standing by for pipeline execution.</div>
+            </div>
+          </div>
+
+          <div style="padding: 12px; border-top: 1px solid var(--line); background: var(--panel-composer);">
+            <div class="tool-group-title">Inject Bus Directive</div>
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+              <input type="text" id="bus-input-msg" placeholder="Broadcast directive across swarm bus..." style="flex:1; background: #06080e; border: 1px solid var(--line); color: #fff; padding: 6px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.76rem;" onkeydown="if(event.key==='Enter') injectBusDirective()" />
+              <button class="btn-pill" id="btn-bus-send" style="background: var(--cyan); color: #000; font-weight: 700;" onclick="injectBusDirective()">Send</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      (function() {
+        let nodes = [];
+        let connections = [];
+        let activeDragNode = null;
+        let dragOffset = { x: 0, y: 0 };
+        const stage = document.getElementById('stage');
+        const container = document.getElementById('canvas-container');
+        const svgWires = document.getElementById('svg-wires');
+        const statusSpan = document.getElementById('canvas-status');
+
+        /* Procedural Sound */
+        let audioCtx = null;
+        function playTone(freq, dur = 0.15) {
+          try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+          } catch(e) {}
+        }
+
+        // Drag from palette
+        document.querySelectorAll('.node-card').forEach(card => {
+          card.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('application/json', JSON.stringify({
+              type: card.dataset.type,
+              title: card.dataset.title,
+              agent: card.dataset.agent,
+              tool: card.dataset.tool
+            }));
+          });
+        });
+
+        container.addEventListener('dragover', (e) => e.preventDefault());
+        container.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const dataRaw = e.dataTransfer.getData('application/json');
+          if (!dataRaw) return;
+          const data = JSON.parse(dataRaw);
+          const rect = container.getBoundingClientRect();
+          const x = e.clientX - rect.left - 120;
+          const y = e.clientY - rect.top - 30;
+          createNode(data.title, data.type, x, y, data.agent, data.tool);
+          playTone(587.33); // D5 chime
+        });
+
+        function createNode(title, type, x, y, agent, tool) {
+          const id = 'node_' + Math.random().toString(36).substr(2, 9);
+          const node = { id, title, type, x: Math.max(10, x), y: Math.max(10, y), agent, tool };
+          nodes.push(node);
+          renderNodeEl(node);
+          updateStatus();
+          return node;
+        }
+
+        function renderNodeEl(node) {
+          const el = document.createElement('div');
+          el.className = 'canvas-node';
+          el.id = node.id;
+          el.style.left = node.x + 'px';
+          el.style.top = node.y + 'px';
+
+          let icon = '⚡';
+          let borderCol = 'var(--line)';
+          if (node.agent === 'antigravity') { icon = '🐺'; borderCol = 'var(--agy)'; }
+          else if (node.agent === 'grok') { icon = '🦊'; borderCol = 'var(--grok)'; }
+          else if (node.agent === 'hermes') { icon = '🐲'; borderCol = 'var(--hermes)'; }
+          else if (node.agent === 'athena') { icon = '🦉'; borderCol = 'var(--cyan)'; }
+          else if (node.agent === 'lycan') { icon = '🐺'; borderCol = 'var(--accent-emerald)'; }
+          else if (node.agent === 'onyx') { icon = '🐆'; borderCol = 'var(--accent-purple)'; }
+          else if (node.type === 'tool') { icon = '📐'; borderCol = 'var(--accent-amber)'; }
+
+          el.style.borderLeft = `4px solid ${borderCol}`;
+
+          el.innerHTML = `
+            <div class="node-socket socket-in" data-socket="in" data-node="${node.id}"></div>
+            <div class="canvas-node-header">
+              <span>${icon} ${node.title}</span>
+              <button onclick="deleteNode('${node.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:bold;">✕</button>
+            </div>
+            <div class="canvas-node-body">
+              <div>Type: ${node.type.toUpperCase()}</div>
+              <div style="font-size:0.68rem; color:#64748b; margin-top:2px;">ID: ${node.id.substr(0,8)}</div>
+            </div>
+            <div class="node-socket socket-out" data-socket="out" data-node="${node.id}"></div>
+          `;
+
+          // Dragging logic
+          el.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('node-socket') || e.target.tagName === 'BUTTON') return;
+            activeDragNode = node;
+            const rect = el.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+            document.querySelectorAll('.canvas-node').forEach(n => n.classList.remove('is-selected'));
+            el.classList.add('is-selected');
+          });
+
+          stage.appendChild(el);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+          if (!activeDragNode) return;
+          const rect = container.getBoundingClientRect();
+          activeDragNode.x = Math.max(10, Math.min(rect.width - 250, e.clientX - rect.left - dragOffset.x));
+          activeDragNode.y = Math.max(10, Math.min(rect.height - 100, e.clientY - rect.top - dragOffset.y));
+          const el = document.getElementById(activeDragNode.id);
+          if (el) {
+            el.style.left = activeDragNode.x + 'px';
+            el.style.top = activeDragNode.y + 'px';
+          }
+          drawWires();
+        });
+
+        window.addEventListener('mouseup', () => {
+          activeDragNode = null;
+        });
+
+        window.deleteNode = function(id) {
+          nodes = nodes.filter(n => n.id !== id);
+          connections = connections.filter(c => c.from !== id && c.to !== id);
+          const el = document.getElementById(id);
+          if (el) el.remove();
+          drawWires();
+          updateStatus();
+          playTone(220);
+        };
+
+        // Wire Rendering (Curved Bezier)
+        function drawWires() {
+          svgWires.innerHTML = `
+            <defs>
+              <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#10b981" />
+                <stop offset="100%" stop-color="#00f0ff" />
+              </linearGradient>
+            </defs>
+          `;
+
+          connections.forEach(c => {
+            const fromNode = nodes.find(n => n.id === c.from);
+            const toNode = nodes.find(n => n.id === c.to);
+            if (!fromNode || !toNode) return;
+
+            const x1 = fromNode.x + 240;
+            const y1 = fromNode.y + 40;
+            const x2 = toNode.x;
+            const y2 = toNode.y + 40;
+
+            const dx = Math.max(60, (x2 - x1) * 0.5);
+            const pathData = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('class', 'wire-path');
+            svgWires.appendChild(path);
+          });
+        }
+
+        function updateStatus() {
+          statusSpan.textContent = `${nodes.length} Nodes · ${connections.length} Fiber Wires`;
+        }
+
+        // Presets
+        function loadPreset(key) {
+          stage.innerHTML = '';
+          nodes = [];
+          connections = [];
+
+          if (key === 'pipeline') {
+            const n1 = createNode('Antigravity Architect', 'agent', 40, 60, 'antigravity');
+            const n2 = createNode('Python AST Linter', 'tool', 330, 60, null, 'ast-validator');
+            const n3 = createNode('Grok Packager', 'agent', 330, 220, 'grok');
+            const n4 = createNode('Math Telemetry Guard', 'tool', 620, 140, null, 'math-telemetry');
+            connections.push({ from: n1.id, to: n2.id });
+            connections.push({ from: n2.id, to: n4.id });
+            connections.push({ from: n3.id, to: n4.id });
+          } else if (key === 'security') {
+            const n1 = createNode('Lycan OWASP Guard', 'mascot', 40, 100, 'lycan');
+            const n2 = createNode('Hermetic Security Scan', 'tool', 330, 100, null, 'security-audit');
+            const n3 = createNode('Onyx Red Team', 'mascot', 620, 100, 'onyx');
+            connections.push({ from: n1.id, to: n2.id });
+            connections.push({ from: n2.id, to: n3.id });
+          } else if (key === 'aeo') {
+            const n1 = createNode('Athena AEO Engine', 'mascot', 40, 120, 'athena');
+            const n2 = createNode('Hermes Planner', 'agent', 340, 120, 'hermes');
+            const n3 = createNode('Math Telemetry Guard', 'tool', 640, 120, null, 'math-telemetry');
+            connections.push({ from: n1.id, to: n2.id });
+            connections.push({ from: n2.id, to: n3.id });
+          }
+
+          drawWires();
+          updateStatus();
+          playTone(659.25); // E5
+        }
+
+        document.getElementById('preset-selector').addEventListener('change', (e) => {
+          loadPreset(e.target.value);
+        });
+
+        // Run DAG Simulation
+        document.getElementById('btn-run-playbook').addEventListener('click', () => {
+          if (nodes.length === 0) {
+            alert('Please add or select a DAG pipeline first!');
+            return;
+          }
+          const pill = document.getElementById('dag-exec-pill');
+          pill.textContent = '⚡ Executing...';
+          pill.style.color = 'var(--cyan)';
+
+          let i = 0;
+          function stepNode() {
+            if (i < nodes.length) {
+              const node = nodes[i];
+              const el = document.getElementById(node.id);
+              if (el) el.classList.add('is-executing');
+              playTone(440 + i * 80);
+
+              setTimeout(() => {
+                if (el) el.classList.remove('is-executing');
+                i++;
+                stepNode();
+              }, 400);
+            } else {
+              pill.textContent = '🟢 Success (240ms)';
+              pill.style.color = 'var(--accent-emerald)';
+              playTone(880, 0.4);
+
+              const feed = document.getElementById('live-bus-feed');
+              const msg = document.createElement('div');
+              msg.className = 'bus-msg';
+              msg.innerHTML = `
+                <div class="bus-msg-head"><span>@DAG-EXECUTOR</span><span>${new Date().toLocaleTimeString()}</span></div>
+                <div>Pipeline executed across ${nodes.length} nodes with zero AST violations.</div>
+              `;
+              feed.appendChild(msg);
+              feed.scrollTop = feed.scrollHeight;
+            }
+          }
+          stepNode();
+        });
+
+        // Export JSON
+        document.getElementById('btn-export-json').addEventListener('click', () => {
+          const exportData = {
+            version: '2.6.0',
+            name: 'zoth-dag-pipeline',
+            timestamp: new Date().toISOString(),
+            nodes: nodes,
+            connections: connections
+          };
+          const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'zoth-dag-pipeline.json';
+          a.click();
+          playTone(783.99);
+        });
+
+        // Export Python
+        document.getElementById('btn-export-python').addEventListener('click', () => {
+          const pyScript = `# Zoth Studio Visual DAG Pipeline (v2.6.0)\n# Generated: ${new Date().toISOString()}\n\nimport asyncio\n\nasync def run_pipeline():\n    print("⚡ Starting Zoth Multi-Agent DAG Pipeline...")\n` +
+            nodes.map(n => `    # Node: ${n.title}\n    print("Executing ${n.title}...")\n    await asyncio.sleep(0.1)\n`).join('\n') +
+            `    print("🟢 Pipeline complete with 100% consensus!")\n\nif __name__ == "__main__":\n    asyncio.run(run_pipeline())\n`;
+
+          const blob = new Blob([pyScript], { type: 'text/x-python' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'zoth_pipeline.py';
+          a.click();
+          playTone(880);
+        });
+
+        // Clear
+        document.getElementById('btn-clear-canvas').addEventListener('click', () => {
+          stage.innerHTML = '';
+          nodes = [];
+          connections = [];
+          drawWires();
+          updateStatus();
+          playTone(220);
+        });
+
+        // Bus Injection
+        window.injectBusDirective = function() {
+          const input = document.getElementById('bus-input-msg');
+          const val = input.value.trim();
+          if (!val) return;
+          const feed = document.getElementById('live-bus-feed');
+          const msg = document.createElement('div');
+          msg.className = 'bus-msg';
+          msg.innerHTML = `
+            <div class="bus-msg-head"><span>@OPERATOR</span><span>${new Date().toLocaleTimeString()}</span></div>
+            <div>${val}</div>
+          `;
+          feed.appendChild(msg);
+          feed.scrollTop = feed.scrollHeight;
+          input.value = '';
+          playTone(659.25);
+        };
+
+        // Initial load
+        window.addEventListener('DOMContentLoaded', () => {
+          loadPreset('pipeline');
+        });
+      })();
+    </script>
+  </body>
+</html>

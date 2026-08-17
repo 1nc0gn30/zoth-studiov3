@@ -1,6 +1,26 @@
-# AGENTS.md — NULL AI Agent Framework
+# AGENTS.md — Zoth Studio
 
-## For AI agents working in this repo
+## Product (read this first)
+
+Zoth is a **local-first** stack: public hub (`public/`), private studio deck (`:8484`), encrypted vault (`/vault/` + optional daemon `:8787`).
+
+- Public facts for answer engines: `public/llms.txt`
+- How to operate this site: `public/agents.md`
+- Human overview: `README.md`
+
+Do not expose `:8484` or `:8787` on the Cloudflare tunnel. Do not put secrets in `public/`.
+
+## How we work (not vibe)
+
+Local models (Ollama `smollm2:360m`, `qwen2.5-coder:1.5b`) **suggest**. Kits, nginx, vault crypto, and bind rules **are the product**. Do not treat generated copy or generated code as finished work.
+
+- Read what you ship. If you cannot explain a bind, a header, or a secret path, do not land it.
+- Prefer containment over chrome: loopback studio/vault, static hub, fail-soft probes.
+- Pets carry doctrine and briefs; they do not invent physics or skip review.
+- No exploit payloads. No “it looks cool so ship it” canvases on operator surfaces.
+- Degrees are not the bar. Understanding the system you shipped is.
+
+## For AI agents working in the orchestrator
 
 ### Project purpose
 This is a local-first, multi-agent AI orchestration framework running on Parrot OS.

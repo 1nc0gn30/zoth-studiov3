@@ -66,7 +66,7 @@ export default function MediaForge({ tools = [] }) {
       <div className="mf-header">
         <div>
           <span className="mf-brand">AssetForge</span>
-          <span className="mf-subtitle">Media generation, brand assets, logos, and file conversion</span>
+          <span className="mf-subtitle">A NullAI studio · media, brand, conversion</span>
         </div>
         <div className="mf-statline">
           <span>{mediaTools.length} media tools</span>
@@ -110,7 +110,7 @@ export default function MediaForge({ tools = [] }) {
       </div>
 
       <div className="mf-tools">
-        <h3>Registered Media Tools</h3>
+        <h3>Media tools</h3>
         <div className="mf-tool-grid">
           {mediaTools.map((tool) => (
             <div key={tool.id} className="mf-tool">

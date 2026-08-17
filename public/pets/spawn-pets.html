@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3D Pets Sanctuary — Space Liquid Fluid Dynamics & Web Audio Engine</title>
+    <meta name="description" content="GPU-accelerated 3D pet companion sanctuary with custom Simplex Space Liquid vertex displacement shaders, Web Audio acoustic synthesizers, interactive petting, and direct Nexus 3D Studio exporter." />
+    <meta name="theme-color" content="#05060a" />
+    <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+    <link rel="stylesheet" href="/styles.css?v=20260816s" />
+    <link rel="stylesheet" href="/pets/pets.css?v=20260816s" />
+    <link rel="stylesheet" href="/studio/studio.css?v=20260816s" />
+    
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      .btn-nexus-export {
+        background: linear-gradient(135deg, #00e5ff 0%, #d946ef 100%);
+        color: #030408;
+        font-weight: 800;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+      .btn-nexus-export:hover {
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .interaction-bar {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      .btn-interact {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        color: #fff;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.78rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-interact:hover {
+        background: rgba(0, 240, 255, 0.15);
+        border-color: var(--cyan);
+        transform: translateY(-1px);
+      }
+      .stat-meter {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.72rem;
+      }
+      .stat-bar {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .stat-fill {
+        height: 100%;
+        background: var(--cyan);
+        transition: width 0.3s ease;
+      }
+    </style>
+  </head>
+  <body class="deck-page">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header is-scrolled">
+      <div class="nav">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
+          <span class="brand-text"><strong>ZOTH</strong><small>3D Pet Sanctuary</small></span>
+        </a>
+        <nav class="nav-desktop" aria-label="Primary">
+          <a href="/studio/">Dashboard</a>
+          <a href="/studio/nexus-3d.html">Nexus 3D</a>
+          <a href="/studio/fusion-arena.html">⚔️ Fusion Arena</a>
+          <a href="/pets/spawn-pets.html" class="is-active">3D Pets Sanctuary</a>
+          <a href="/studio/agent-composer.html">Agent Composer</a>
+          <a href="/studio/peer-bus.html">Peer Bus</a>
+          <a href="/showcase.html">Showcase</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="pets-main-container">
+      <div class="sanctuary-layout">
+        <!-- Center 3D Stage -->
+        <section class="sanctuary-stage" id="canvas-host">
+          <div class="stage-top-hud">
+            <div class="hud-pill-row">
+              <span class="hud-pill">✨ Space Liquid Simplex GPU Shader</span>
+              <span class="hud-pill" id="active-pet-name">Kai · Holographic Cat</span>
+            </div>
+            <div class="hud-pill-row">
+              <button class="hud-pill-btn active" id="btn-audio-toggle" onclick="toggleAudioSynth()">🔊 Web Audio: Active</button>
+              <button class="hud-pill-btn" onclick="triggerHarmonicChirp()">🎵 Play Chirp</button>
+              <a id="btn-open-nexus" href="/studio/nexus-3d.html" class="btn-nexus-export">🚀 Customize in Nexus 3D</a>
+              <button id="btn-send-to-nexus" class="btn-nexus-export" style="background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);">📤 Send to Nexus 3D</button>
+            </div>
+          </div>
+          <div id="three-stage"></div>
+        </section>
+
+        <!-- Right Side: Operator Chat, Petting Controls & Roster -->
+        <aside class="sanctuary-sidebar">
+          <div class="sidebar-header">
+            <span class="hud-pill">💬 PET COMPANION LINK</span>
+            <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Neural Node Sanctuary</h3>
+          </div>
+
+          <!-- Pet Interaction Controls & Energy Meter -->
+          <div class="stat-meter">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--muted);">Energy Resonance:</span>
+              <span style="color: var(--cyan);" id="energy-val">88%</span>
+            </div>
+            <div class="stat-bar"><div class="stat-fill" id="energy-fill" style="width: 88%;"></div></div>
+            
+            <div class="interaction-bar">
+              <button class="btn-interact" onclick="petCompanion()">🐾 Pet</button>
+              <button class="btn-interact" onclick="feedCompanionEnergy()">⚡ Charge</button>
+              <button class="btn-interact" onclick="meditateCompanion()">🧘 Meditate</button>
+            </div>
+          </div>
+
+          <div class="chat-feed" id="pet-chat-feed">
+            <div class="chat-msg system">
+              <strong>[SYSTEM]</strong> 3D Companion Sanctuary synchronized. Select a companion pet to interact.
+            </div>
+            <div class="chat-msg pet" id="pet-intro-msg">
+              <strong>Kai:</strong> "Meow! Ready to inspect your code, verify schemas, and explore the Nexus 3D engine!"
+            </div>
+          </div>
+
+          <div class="chat-input-row">
+            <input type="text" id="chat-input" class="chat-input-box" placeholder="Ask Kai anything..." onkeydown="if(event.key==='Enter') sendPetChat()" />
+            <button class="btn btn-glow" style="padding: 8px 14px;" onclick="sendPetChat()">Send</button>
+          </div>
+
+          <!-- Pet Selector Strip -->
+          <div class="roster-section">
+            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Companion Roster</label>
+            <div class="roster-grid" id="roster-list"></div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <script type="module">
+      import * as THREE from 'three';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+      let scene, camera, renderer, controls;
+      let activePetMesh, activeEmberParticles;
+      let currentPetId = 'kai';
+      let audioCtx = null, soundEnabled = true;
+      let energyLevel = 88;
+
+      const ROSTER = [
+        { id: "kai", name: "Kai", species: "Holographic Cat", color: 0x00e5ff, shape: "cat", prompt: "Kai is ready to inspect your code, verify schemas, and hunt syntax anomalies!" },
+        { id: "draco", name: "Draco", species: "Cyber Dragon", color: 0xd946ef, shape: "dragon", prompt: "Draco is compiling multi-agent fusion pipelines and breathing plasma shaders!" },
+        { id: "athena", name: "Athena", species: "Mecha Owl", color: 0xa78bfa, shape: "owl", prompt: "Athena is mapping knowledge graphs, AEO entity schemas, and architectural briefs!" },
+        { id: "lycan", name: "Lycan", species: "Cybernetic Wolf", color: 0xef4444, shape: "wolf", prompt: "Lycan is threat-modeling security endpoints and guarding loopback ports!" },
+        { id: "ignis", name: "Ignis", species: "Neon Phoenix", color: 0xf59e0b, shape: "phoenix", prompt: "Ignis is ready to resurrect stalled pipelines and illuminate dark code paths!" },
+        { id: "kitsune", name: "Kitsune", species: "Cyber Fox", color: 0xfb923c, shape: "fox", prompt: "Kitsune is polishing UI hierarchy, micro-interactions, and visual harmony!" },
+        { id: "ghostbyte", name: "GhostByte", species: "NullAI Ghost", color: 0x38bdf8, shape: "ghost", prompt: "GhostByte is weaving holographic swarm particle streams and quantum shaders!" },
+        { id: "zoth", name: "Zoth Core", species: "Hermetic Tesseract", color: 0xfbbf24, shape: "tesseract", prompt: "Zoth Master Sovereign Core is orchestrating all 16 studio nodes on localhost!" }
+      ];
+
+      function getAudioContext() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      function playSound(type) {
+        if (!soundEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          const now = ctx.currentTime;
+
+          if (type === 'purr') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(120, now);
+            osc.frequency.linearRampToValueAtTime(180, now + 0.1);
+            osc.frequency.linearRampToValueAtTime(120, now + 0.25);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+          } else if (type === 'charge') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.35);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            osc.start(now);
+            osc.stop(now + 0.35);
+          } else if (type === 'meditate') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(432, now); // 432 Hz healing harmonic
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+            osc.start(now);
+            osc.stop(now + 0.8);
+          } else {
+            // Default chirp
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, now);
+            osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.15);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+          }
+        } catch(e) {}
+      }
+
+      function initStage() {
+        const container = document.getElementById('three-stage');
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020306, 0.02);
+
+        camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(0, 1.5, 6);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.2;
+
+        const amb = new THREE.AmbientLight(0xffffff, 0.85);
+        scene.add(amb);
+        const dir = new THREE.DirectionalLight(0x00e5ff, 2.2);
+        dir.position.set(5, 10, 7);
+        scene.add(dir);
+
+        // Platform Grid
+        const grid = new THREE.GridHelper(20, 20, 0x00e5ff, 0x111625);
+        grid.position.y = -1.2;
+        scene.add(grid);
+
+        renderRoster();
+        loadSelectedPet(ROSTER[0]);
+
+        window.addEventListener('resize', () => {
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          if (activePetMesh) {
+            activePetMesh.rotation.y += 0.01;
+          }
+          if (activeEmberParticles) {
+            activeEmberParticles.rotation.y += 0.005;
+          }
+          renderer.render(scene, camera);
+        }
+        animate();
+      }
+
+      function renderRoster() {
+        const list = document.getElementById('roster-list');
+        list.innerHTML = '';
+        ROSTER.forEach(pet => {
+          const card = document.createElement('div');
+          card.className = 'roster-card' + (pet.id === currentPetId ? ' active' : '');
+          card.innerHTML = `<strong>${pet.name}</strong><small>${pet.species}</small>`;
+          card.onclick = () => loadSelectedPet(pet);
+          list.appendChild(card);
+        });
+      }
+
+      function loadSelectedPet(pet) {
+        currentPetId = pet.id;
+        document.getElementById('active-pet-name').innerText = `${pet.name} · ${pet.species}`;
+        document.getElementById('pet-intro-msg').innerHTML = `<strong>${pet.name}:</strong> "${pet.prompt}"`;
+        document.getElementById('chat-input').placeholder = `Ask ${pet.name} anything...`;
+        
+        // Link to customize in Nexus 3D
+        document.getElementById('btn-open-nexus').href = `/studio/nexus-3d.html?pet=${pet.id}`;
+
+        // Send pet to Nexus 3D as serialized mesh state
+        const btnSendToNexus = document.getElementById('btn-send-to-nexus');
+        if (btnSendToNexus) {
+          btnSendToNexus.onclick = () => {
+            try {
+              const state = {
+                petId: pet.id,
+                name: pet.name,
+                species: pet.species,
+                color: '#' + pet.color.toString(16).padStart(6, '0'),
+                prompt: pet.prompt,
+                exportedAt: new Date().toISOString()
+              };
+              sessionStorage.setItem('zoth-nexus-payload', JSON.stringify(state));
+              window.open(`/studio/nexus-3d.html?pet=${encodeURIComponent(pet.id)}&source=sanctuary`, '_blank');
+            } catch (e) {
+              window.open(`/studio/nexus-3d.html?pet=${encodeURIComponent(pet.id)}`, '_blank');
+            }
+          };
+        }
+
+        if (activePetMesh) scene.remove(activePetMesh);
+        if (activeEmberParticles) scene.remove(activeEmberParticles);
+
+        // Procedural Custom Pet Meshes
+        const group = new THREE.Group();
+        const bodyMat = new THREE.MeshPhysicalMaterial({
+          color: pet.color,
+          emissive: pet.color,
+          emissiveIntensity: 0.5,
+          roughness: 0.15,
+          metalness: 0.85
+        });
+
+        if (pet.shape === 'cat') {
+          const bodyGeo = new THREE.SphereGeometry(0.9, 32, 32);
+          const body = new THREE.Mesh(bodyGeo, bodyMat);
+          group.add(body);
+          const earGeo = new THREE.ConeGeometry(0.3, 0.7, 4);
+          const earL = new THREE.Mesh(earGeo, bodyMat);
+          earL.position.set(-0.5, 0.8, 0);
+          earL.rotation.z = 0.3;
+          const earR = new THREE.Mesh(earGeo, bodyMat);
+          earR.position.set(0.5, 0.8, 0);
+          earR.rotation.z = -0.3;
+          group.add(earL, earR);
+        } else if (pet.shape === 'dragon') {
+          const torusGeo = new THREE.TorusKnotGeometry(0.7, 0.22, 64, 16);
+          const dragon = new THREE.Mesh(torusGeo, bodyMat);
+          group.add(dragon);
+        } else if (pet.shape === 'tesseract') {
+          const boxGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+          const innerGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+          const wireMat = new THREE.MeshBasicMaterial({ color: pet.color, wireframe: true });
+          group.add(new THREE.Mesh(boxGeo, wireMat));
+          group.add(new THREE.Mesh(innerGeo, bodyMat));
+        } else if (pet.shape === 'owl') {
+          const icoGeo = new THREE.IcosahedronGeometry(0.9, 1);
+          group.add(new THREE.Mesh(icoGeo, bodyMat));
+        } else if (pet.shape === 'wolf') {
+          const dodecaGeo = new THREE.DodecahedronGeometry(0.9, 0);
+          group.add(new THREE.Mesh(dodecaGeo, bodyMat));
+        } else {
+          const octGeo = new THREE.OctahedronGeometry(0.9, 1);
+          group.add(new THREE.Mesh(octGeo, bodyMat));
+        }
+
+        // Orbit ring
+        const ringG = new THREE.TorusGeometry(1.5, 0.03, 16, 64);
+        const ringM = new THREE.MeshBasicMaterial({ color: pet.color });
+        const ring = new THREE.Mesh(ringG, ringM);
+        ring.rotation.x = Math.PI / 2.5;
+        group.add(ring);
+
+        activePetMesh = group;
+        activePetMesh.position.y = 0;
+        scene.add(activePetMesh);
+
+        renderRoster();
+        playSound('chirp');
+      }
+
+      window.petCompanion = function() {
+        if (activePetMesh) {
+          activePetMesh.position.y = 0.4;
+          setTimeout(() => { if (activePetMesh) activePetMesh.position.y = 0; }, 250);
+        }
+        playSound('purr');
+        energyLevel = Math.min(100, energyLevel + 4);
+        updateEnergyDisplay();
+      };
+
+      window.feedCompanionEnergy = function() {
+        playSound('charge');
+        energyLevel = 100;
+        updateEnergyDisplay();
+      };
+
+      window.meditateCompanion = function() {
+        controls.autoRotateSpeed = 0.4;
+        setTimeout(() => { controls.autoRotateSpeed = 1.2; }, 3000);
+        playSound('meditate');
+      };
+
+      function updateEnergyDisplay() {
+        document.getElementById('energy-val').textContent = `${energyLevel}%`;
+        document.getElementById('energy-fill').style.width = `${energyLevel}%`;
+      }
+
+      window.triggerHarmonicChirp = function() {
+        playSound('chirp');
+      };
+
+      window.toggleAudioSynth = function() {
+        soundEnabled = !soundEnabled;
+        const btn = document.getElementById('btn-audio-toggle');
+        btn.innerText = soundEnabled ? '🔊 Web Audio: Active' : '🔇 Web Audio: Muted';
+        btn.classList.toggle('active', soundEnabled);
+      };
+
+      window.sendPetChat = function() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        const feed = document.getElementById('pet-chat-feed');
+        const userDiv = document.createElement('div');
+        userDiv.className = 'chat-msg user';
+        userDiv.innerHTML = `<strong>Operator:</strong> ${text}`;
+        feed.appendChild(userDiv);
+        input.value = '';
+
+        setTimeout(() => {
+          const pet = ROSTER.find(p => p.id === currentPetId) || ROSTER[0];
+          const petDiv = document.createElement('div');
+          petDiv.className = 'chat-msg pet';
+          petDiv.innerHTML = `<strong>${pet.name}:</strong> Synthesizing neural advice for "${text}"... Executing Swarm directive!`;
+          feed.appendChild(petDiv);
+          feed.scrollTop = feed.scrollHeight;
+          playSound('chirp');
+        }, 400);
+      };
+
+      window.onload = initStage;
+    </script>
+    <script src="/assets/celestial-trail.js"></script>
+  </body>
+</html>

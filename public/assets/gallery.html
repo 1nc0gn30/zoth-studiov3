@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoth Media & Asset Vault — Production Ready Web Assets</title>
+  <meta name="description" content="Explore and download high-resolution AI art, pixel logos, procedural SVG avatars, cyber security badges, and brand assets for Zoth Studio and client web applications.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070d;
+      --bg-surface: rgba(13, 17, 28, 0.85);
+      --bg-card: rgba(18, 24, 38, 0.7);
+      --border: rgba(0, 240, 255, 0.15);
+      --border-focus: #00f0ff;
+      --cyan: #00f0ff;
+      --magenta: #ff007a;
+      --purple: #a855f7;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --text: #f0f6fc;
+      --text-dim: #8b949e;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Figtree', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Glow */
+    .ambient-mesh {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 15%, rgba(0, 240, 255, 0.08), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(255, 0, 122, 0.06), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.04), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 6rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      filter: drop-shadow(0 0 12px var(--cyan));
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-link {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--cyan);
+      border-color: var(--border);
+      background: rgba(0, 240, 255, 0.05);
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      padding: 1.25rem 1.5rem;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(5, 7, 13, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      padding: 0.65rem 1rem 0.65rem 2.5rem;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.is-active, .tab-btn:hover {
+      background: var(--cyan);
+      color: #05070d;
+      border-color: var(--cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
+    }
+
+    /* Grid */
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.75rem;
+    }
+
+    .asset-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .asset-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--cyan);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 240, 255, 0.2);
+    }
+
+    .asset-preview-stage {
+      height: 200px;
+      background: radial-gradient(circle, rgba(13, 17, 28, 0.9), #05070d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .asset-preview-stage img,
+    .asset-preview-stage svg {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    }
+
+    .asset-info {
+      padding: 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .asset-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .asset-category {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .asset-actions {
+      margin-top: auto;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-action {
+      flex: 1;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      background: var(--cyan);
+      color: #05070d;
+    }
+
+    /* Modal */
+    dialog.preview-modal {
+      margin: auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--cyan);
+      border-radius: 16px;
+      color: var(--text);
+      max-width: 600px;
+      width: 90%;
+      padding: 2rem;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0, 240, 255, 0.3);
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-mesh"></div>
+
+  <div class="container">
+    <header class="header">
+      <div class="brand-group">
+        <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Zoth logo">
+        <div>
+          <h1 class="brand-title">Zoth Media Vault</h1>
+          <p class="brand-subtitle">A NullAI studio · production-ready logos, pixel avatars, badges & artwork</p>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a class="nav-link" href="/">Hub</a>
+        <a class="nav-link" href="/studio/">Studio Deck</a>
+        <a class="nav-link" href="/studio/models.html">Model Foundry</a>
+        <a class="nav-link" href="/studio/swarm.html">Swarm Arena</a>
+        <a class="nav-link" href="/studio/connectors.html">Connectors</a>
+        <a class="nav-link" href="/studio/ax-powerhouse.html">AX Powerhouse</a>
+        <a class="nav-link" href="/vault/">BYOK Vault</a>
+        <a class="nav-link" href="/blueprints/">Blueprints</a>
+      </nav>
+    </header>
+
+    <section class="controls-bar">
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search assets (e.g. nous, deepseek, grok, claude, gemini, badge)...">
+      </div>
+
+      <div class="filter-tabs">
+        <button class="tab-btn is-active" data-filter="all">All Assets</button>
+        <button class="tab-btn" data-filter="models">AI Model Logos</button>
+        <button class="tab-btn" data-filter="logos">Logos & Glyphs</button>
+        <button class="tab-btn" data-filter="generated">Generated AI Art</button>
+        <button class="tab-btn" data-filter="avatars">Pixel Avatars</button>
+        <button class="tab-btn" data-filter="badges">Cyber Badges</button>
+        <button class="tab-btn" data-filter="pets">Companion Pets</button>
+      </div>
+    </section>
+
+    <main id="assets-grid" class="assets-grid"></main>
+
+    <footer class="site-footer" style="margin-top: 5rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="32" height="32" alt="Zoth Seal">
+        <span style="font-size: 0.85rem; color: var(--text-dim);">A NullAI studio · © 2026 Zoth Media Vault</span>
+      </div>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a class="nav-link" href="/">Hub</a>
+        <a class="nav-link" href="/studio/models.html">Model Foundry</a>
+        <a class="nav-link" href="/studio/swarm.html">Swarm Arena</a>
+        <a class="nav-link" href="/studio/connectors.html">Connectors</a>
+        <a class="nav-link" href="/studio/ax-powerhouse.html">AX Powerhouse</a>
+        <a class="nav-link" href="/vault/">Vault</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const ASSETS = [
+      // AI Model Frontier & Open Weight Vector Logos
+      {
+        id: "nous-research",
+        title: "Nous Research (Hermes Draco)",
+        category: "models",
+        type: "svg",
+        src: "/assets/logos/nous-research.svg",
+        tags: ["nous", "hermes", "draco", "dragon", "model", "logo", "vector", "reasoning"]
+      },
+      {
+        id: "deepseek",
+        title: "DeepSeek AI (Oceanic MoE)",
+        category: "models",
+        type: "svg",
+        src: "/assets/logos/deepseek.svg",
+        tags: ["deepseek", "whale", "ocean", "model", "logo", "vector", "moe", "r1", "v3"]
+      },
+      {
+        id: "xai-grok",
+        title: "xAI Grok (Kitsune Flame)",
+        category: "models",
+        type: "svg",
+        src: "/assets/logos/xai-grok.svg",
+        tags: ["grok", "xai", "kitsune", "fox", "model", "logo", "vector", "4.5"]
+      },
+      {
+        id: "anthropic-claude",
+        title: "Anthropic Claude (Kinetic Spark)",
+        category: "models",
+        type: "svg",
+        src: "/assets/logos/anthropic-claude.svg",
+        tags: ["claude", "anthropic", "sonnet", "spark", "model", "logo", "vector", "ui"]
+      },
+      {
+        id: "google-gemini",
+        title: "Google Gemini 2.0 (Cosmic Star)",
+        category: "models",
+        type: "svg",
+        src: "/assets/logos/google-gemini.svg",
+        tags: ["gemini", "google", "star", "diamond", "model", "logo", "vector", "multimodal"]
+      },
+      {
+        id: "cerebras-wafer",
+        title: "Cerebras Wafer-Scale AI",
+        category: "models",
+        type: "svg",
+        src: "/assets/logos/cerebras-wafer.svg",
+        tags: ["cerebras", "wafer", "silicon", "chip", "model", "logo", "vector", "highspeed"]
+      },
+
+      // Procedural SVG Logos & Glyphs
+      {
+        id: "quantum-nexus",
+        title: "Quantum Nexus",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/quantum-nexus.svg",
+        tags: ["quantum", "nexus", "ai", "vector", "logo"]
+      },
+      {
+        id: "hex-core-security",
+        title: "Hex Core Sentinel",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/hex-core-security.svg",
+        tags: ["hex", "security", "sentinel", "vector", "logo"]
+      },
+      {
+        id: "neural-synapse",
+        title: "Neural Synapse",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/neural-synapse.svg",
+        tags: ["neural", "synapse", "ai", "vector", "logo"]
+      },
+      {
+        id: "cyber-bolt",
+        title: "Cyber Bolt Energy",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/cyber-bolt.svg",
+        tags: ["bolt", "energy", "fintech", "vector", "logo"]
+      },
+      {
+        id: "sol-orbital",
+        title: "Sol Orbital Matrix",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/sol-orbital.svg",
+        tags: ["solana", "crypto", "orbital", "vector", "logo"]
+      },
+      {
+        id: "terminal-prompt-glyph",
+        title: "Terminal CLI Prompt",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/terminal-prompt-glyph.svg",
+        tags: ["terminal", "cli", "devtools", "vector", "logo"]
+      },
+      {
+        id: "apex-mountain-crest",
+        title: "Apex Mountain Crest",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/apex-mountain-crest.svg",
+        tags: ["apex", "crest", "mountain", "agency", "vector", "logo"]
+      },
+      {
+        id: "skate-cross-bones",
+        title: "Skate Deck Cross",
+        category: "logos",
+        type: "svg",
+        src: "/assets/logos/skate-cross-bones.svg",
+        tags: ["skate", "arcade", "cross", "street", "vector", "logo"]
+      },
+
+      // Generated AI Art
+      {
+        id: "pixel-cyber-logo",
+        title: "Neo-Circuit Cyber Core",
+        category: "generated",
+        type: "image",
+        src: "/assets/generated/pixel_cyber_logo_1786718072480.jpg",
+        tags: ["pixel", "cyber", "logo", "circuit", "neon"]
+      },
+      {
+        id: "cyber-operator-avatar",
+        title: "Nightwing Cyber Operator",
+        category: "generated",
+        type: "image",
+        src: "/assets/generated/cyber_operator_avatar_1786718087394.jpg",
+        tags: ["avatar", "operator", "hud", "synthwave", "pilot"]
+      },
+      {
+        id: "pixel-mecha-fox",
+        title: "Neo-Unit 01 Cyber Fox",
+        category: "generated",
+        type: "image",
+        src: "/assets/generated/pixel_mecha_fox_1786718098979.jpg",
+        tags: ["pixel", "fox", "mascot", "mecha", "emblem"]
+      },
+      {
+        id: "cyber-security-badge",
+        title: "Unit Defense Security Shield",
+        category: "generated",
+        type: "image",
+        src: "/assets/generated/cyber_security_badge_1786718112180.jpg",
+        tags: ["badge", "security", "shield", "defense", "lock"]
+      },
+
+      // Pixel Avatars
+      {
+        id: "operator-cipher",
+        title: "Cipher Operator",
+        category: "avatars",
+        type: "svg",
+        src: "/assets/avatars/operator-cipher.svg",
+        tags: ["avatar", "pixel", "cipher", "cyan"]
+      },
+      {
+        id: "operator-phantom",
+        title: "Phantom Hacker",
+        category: "avatars",
+        type: "svg",
+        src: "/assets/avatars/operator-phantom.svg",
+        tags: ["avatar", "pixel", "phantom", "purple"]
+      },
+      {
+        id: "operator-sentinel",
+        title: "Sentinel Vanguard",
+        category: "avatars",
+        type: "svg",
+        src: "/assets/avatars/operator-sentinel.svg",
+        tags: ["avatar", "pixel", "sentinel", "green"]
+      },
+      {
+        id: "operator-solaris",
+        title: "Solaris Pilot",
+        category: "avatars",
+        type: "svg",
+        src: "/assets/avatars/operator-solaris.svg",
+        tags: ["avatar", "pixel", "solaris", "amber"]
+      },
+
+      // Cyber Badges
+      {
+        id: "badge-owasp-sentinel",
+        title: "OWASP Sentinel",
+        category: "badges",
+        type: "svg",
+        src: "/assets/badges/badge-owasp-sentinel.svg",
+        tags: ["badge", "owasp", "security", "defense"]
+      },
+      {
+        id: "badge-canvas-titan",
+        title: "60 FPS Canvas Titan",
+        category: "badges",
+        type: "svg",
+        src: "/assets/badges/badge-canvas-titan.svg",
+        tags: ["badge", "canvas", "graphics", "speed"]
+      },
+      {
+        id: "badge-aeo-architect",
+        title: "AEO Semantic Master",
+        category: "badges",
+        type: "svg",
+        src: "/assets/badges/badge-aeo-architect.svg",
+        tags: ["badge", "aeo", "schema", "athena"]
+      },
+      {
+        id: "badge-rust-core",
+        title: "Rust Systems Guardian",
+        category: "badges",
+        type: "svg",
+        src: "/assets/badges/badge-rust-core.svg",
+        tags: ["badge", "rust", "argon2id", "vault"]
+      },
+
+      // Companion Pets
+      {
+        id: "pet-kitsune",
+        title: "Kitsune (Motion & Taste)",
+        category: "pets",
+        type: "image",
+        src: "/assets/pets/kitsune-neon.jpg",
+        tags: ["pet", "kitsune", "fox", "cyber"]
+      },
+      {
+        id: "pet-lycan",
+        title: "Lycan (OWASP Sentinel)",
+        category: "pets",
+        type: "image",
+        src: "/assets/pets/lycan-neon.jpg",
+        tags: ["pet", "lycan", "wolf", "security"]
+      },
+      {
+        id: "pet-athena",
+        title: "Athena (Knowledge & AEO)",
+        category: "pets",
+        type: "image",
+        src: "/assets/pets/athena-neon.jpg",
+        tags: ["pet", "athena", "owl", "knowledge"]
+      },
+      {
+        id: "pet-ignis",
+        title: "Ignis (Refactor Phoenix)",
+        category: "pets",
+        type: "image",
+        src: "/assets/pets/ignis-neon.jpg",
+        tags: ["pet", "ignis", "phoenix", "refactor"]
+      }
+    ];
+
+    let currentFilter = "all";
+    let searchQuery = "";
+
+    // Web Audio Synthesizer
+    let audioCtx = null;
+    function playChime(freq = 520) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      } catch (e) {}
+    }
+
+    function renderAssets() {
+      const grid = document.getElementById('assets-grid');
+      const filtered = ASSETS.filter(item => {
+        const matchesFilter = currentFilter === 'all' || 
+          item.category === currentFilter || 
+          (currentFilter === 'logos' && (item.category === 'models' || item.category === 'logos'));
+        const query = searchQuery.toLowerCase().trim();
+        if (!query) return matchesFilter;
+
+        const matchesQuery = item.title.toLowerCase().includes(query) ||
+          item.tags.some(t => t.toLowerCase().includes(query));
+        return matchesFilter && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-dim);">No assets found matching your query.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => `
+        <div class="asset-card">
+          <div class="asset-preview-stage">
+            <img src="${item.src}" alt="${item.title}" loading="lazy">
+          </div>
+          <div class="asset-info">
+            <h3 class="asset-title">${item.title}</h3>
+            <span class="asset-category">${item.category} · ${item.type.toUpperCase()}</span>
+            <div class="asset-actions">
+              <a href="${item.src}" download class="btn-action" onclick="playChime(660)">Download</a>
+              <button class="btn-action" onclick="copyAssetUrl('${item.src}')">Copy URL</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.copyAssetUrl = function(url) {
+      const full = window.location.origin + url;
+      navigator.clipboard.writeText(full);
+      playChime(880);
+      alert('Copied asset URL to clipboard: ' + full);
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAssets();
+
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderAssets();
+      });
+
+      const tabs = document.querySelectorAll('.tab-btn');
+      tabs.forEach(t => {
+        t.addEventListener('click', () => {
+          tabs.forEach(btn => btn.classList.remove('is-active'));
+          t.classList.add('is-active');
+          currentFilter = t.getAttribute('data-filter');
+          playChime(440);
+          renderAssets();
+        });
+      });
+    });
+  </script>
+  <script src="/assets/celestial-trail.js"></script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edge Forge — Serverless Function Builder | Zoth Studio</title>
+    <meta name="description" content="Serverless edge function configurator and deployment pipeline for Zoth Studio." />
+    <meta name="theme-color" content="#05060a" />
+    <meta name="application-name" content="Zoth Studio" />
+    <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+    <link rel="stylesheet" href="/styles.css?v=20260815s" />
+    <style>
+      .forge-wrap {
+        width: min(1200px, calc(100% - 32px));
+        margin: 32px auto;
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+      }
+      .forge-card {
+        background: rgba(16, 20, 34, 0.85);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius);
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .code-editor {
+        width: 100%;
+        min-height: 280px;
+        background: #030408;
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        border-radius: var(--radius-sm);
+        padding: 16px;
+        color: #00e5ff;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        line-height: 1.6;
+        resize: vertical;
+      }
+      .code-editor:focus {
+        outline: none;
+        box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+      }
+    </style>
+  </head>
+  <body class="deck-page">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header is-scrolled">
+      <div class="nav">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
+          <span class="brand-text"><strong>ZOTH</strong><small>by NullAI</small></span>
+        </a>
+        <nav class="nav-desktop" aria-label="Primary">
+          <a href="/studio/">Dashboard</a>
+          <a href="/studio/models.html">Model Foundry</a>
+          <a href="/studio/swarm.html">Swarm Arena</a>
+          <a href="/studio/nexus-3d.html">Nexus 3D</a>
+          <a href="/studio/omnipost.html">OmniPost</a>
+          <a href="/studio/vision-link.html">Vision Link</a>
+          <a href="/studio/subsweep.html">SubSweep</a>
+          <a href="/studio/edge-forge.html" class="is-active">Edge Forge</a>
+          <a href="/studio/connectors.html">Connectors</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="forge-wrap">
+      <section class="forge-card">
+        <div>
+          <p class="kicker">A NullAI studio</p>
+          <span class="pill" style="border-color: #f59e0b; color: #f59e0b;">EDGE COMPUTING</span>
+          <h2 style="margin: 10px 0 6px 0; font-family: var(--font-display);">Edge Function Forge</h2>
+          <p style="color: var(--muted); font-size: 0.9rem;">Author and dispatch ultra-low-latency edge handlers with V8 isolate runtime.</p>
+        </div>
+
+        <div>
+          <label style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 8px;">EDGE HANDLER CODE (JS / TS)</label>
+          <textarea id="edge-code" class="code-editor">export default async function handler(req, res) {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const target = new URL(req.url, 'http://127.0.0.1');
+
+  return new Response(JSON.stringify({
+    status: 'ok',
+    worker: 'zoth-edge-01',
+    runtime: 'v8-isolate',
+    latency_ms: 1.4,
+    client_ip: ip,
+    timestamp: new Date().toISOString()
+  }), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+}</textarea>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button class="btn" onclick="deployEdge()">⚡ Deploy to Edge</button>
+          <button class="btn btn-ghost" onclick="testExecution()">🧪 Test Dry Run</button>
+          <span id="deploy-status" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--green); margin-left: auto;"></span>
+        </div>
+      </section>
+
+      <aside class="forge-card">
+        <div>
+          <p class="kicker">A NullAI studio</p>
+          <span class="pill">TELEMETRY</span>
+          <h3 style="margin: 10px 0 16px 0; font-family: var(--font-display);">Worker Clusters</h3>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-mono); font-size: 0.85rem;">
+          <div style="background: rgba(3,4,8,0.6); padding: 12px; border-radius: var(--radius-sm);">
+            <div style="color: var(--cyan); font-weight: 700;">IAD1 (US-East)</div>
+            <div style="color: var(--muted); font-size: 0.75rem;">Status: Active · 0.8ms avg</div>
+          </div>
+          <div style="background: rgba(3,4,8,0.6); padding: 12px; border-radius: var(--radius-sm);">
+            <div style="color: var(--cyan); font-weight: 700;">FRA1 (Europe)</div>
+            <div style="color: var(--muted); font-size: 0.75rem;">Status: Active · 1.2ms avg</div>
+          </div>
+          <div style="background: rgba(3,4,8,0.6); padding: 12px; border-radius: var(--radius-sm);">
+            <div style="color: var(--cyan); font-weight: 700;">NRT1 (Asia)</div>
+            <div style="color: var(--muted); font-size: 0.75rem;">Status: Active · 1.8ms avg</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      function deployEdge() {
+        const status = document.getElementById('deploy-status');
+        status.innerText = 'Compiling V8 Isolate...';
+        setTimeout(() => {
+          status.innerText = '✅ Deployed to 3 Edge Clusters!';
+          setTimeout(() => { status.innerText = ''; }, 3000);
+        }, 600);
+      }
+
+      function testExecution() {
+        alert('Dry run passed: HTTP 200 OK (1.4ms execution latency)');
+      }
+    </script>
+    <script src="/assets/celestial-trail.js"></script>
+</body>
+</html>

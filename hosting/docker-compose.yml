@@ -1,0 +1,129 @@
+# Zoth public hub — sandboxed local host for zoth.nealfrazier.tech
+#
+# Architecture (recommended):
+#   Internet → Cloudflare edge → cloudflared tunnel → nginx (this compose)
+#   → static files from ../public
+#
+# Sandbox rules:
+#   - Everything runs in Docker (no host nginx/cloudflared install required)
+#   - No host network mode (bridge only)
+#   - Only publishes 127.0.0.1:8088 for local preview (not 0.0.0.0)
+#   - Full Zoth orchestrator (:8484) is NOT exposed to the internet by default
+#
+# Quick start:
+#   1. Create Cloudflare Tunnel + DNS CNAME (see HOSTING.md)
+#   2. Put tunnel token in .env
+#   3. docker compose --profile tunnel up -d
+#
+# Local-only (no Cloudflare yet):
+#   docker compose up -d web
+#   open http://127.0.0.1:8088/
+
+name: zoth-hub
+
+services:
+  web:
+    image: nginx:1.27-alpine
+    container_name: zoth-web
+    restart: unless-stopped
+    # Sandbox: bind loopback only — Cloudflare Tunnel reaches nginx over compose network
+    ports:
+      - "127.0.0.1:8088:80"
+    volumes:
+      - ../public:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - zoth-net
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Optional: reverse-proxy path to local orchestrator on the host (NOT public by default)
+  # Enable with: docker compose --profile studio up -d
+  # Requires host orchestrator on 127.0.0.1:8484 and extra_hosts below.
+  # Prefer keeping /studio off the tunnel until you add auth.
+  studio-proxy:
+    profiles: ["studio"]
+    image: nginx:1.27-alpine
+    container_name: zoth-studio-proxy
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8089:80"
+    volumes:
+      - ./nginx/studio.conf:/etc/nginx/conf.d/default.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - zoth-net
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+
+  cloudflared:
+    profiles: ["tunnel"]
+    image: cloudflare/cloudflared:latest
+    container_name: zoth-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - zoth-net
+    # Sandbox: no host ports; only talks outbound to Cloudflare + to web service
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 96M
+    # Do not mount host FS beyond what the image needs
+
+networks:
+  zoth-net:
+    driver: bridge
+    name: zoth-net
+    internal: false  # needs outbound for Cloudflare tunnel

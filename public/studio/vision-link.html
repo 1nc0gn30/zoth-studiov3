@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vision Link HUD — Real-Time Spatial AI Controller | Zoth Studio</title>
+    <meta name="description" content="Computer vision, real-time camera tracking, hand gesture spatial controller, 3D WebGL gesture viewport, and HUD feedback engine for Zoth Studio." />
+    <meta name="theme-color" content="#05060a" />
+    <meta name="application-name" content="Zoth Studio" />
+    <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css?v=20260816a" />
+    <link rel="stylesheet" href="/studio/studio.css?v=20260816s" />
+    
+    <!-- Three.js + Controls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+      :root {
+        --vision-bg: #06080f;
+        --vision-card: #0d1222;
+        --vision-cyan: #00f0ff;
+        --vision-magenta: #ff007a;
+        --vision-emerald: #10b981;
+        --vision-amber: #f59e0b;
+        --vision-line: rgba(255, 255, 255, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body.vision-page {
+        background: var(--vision-bg);
+        color: #f0f6fc;
+        font-family: 'Figtree', sans-serif;
+        min-height: 100vh;
+      }
+      .vision-wrap {
+        width: min(1560px, calc(100% - 32px));
+        margin: 24px auto 80px;
+        display: grid;
+        grid-template-columns: 1fr 440px;
+        gap: 24px;
+      }
+      @media (max-width: 1080px) {
+        .vision-wrap { grid-template-columns: 1fr; }
+      }
+
+      .vision-panel {
+        background: var(--vision-card);
+        border: 1px solid var(--vision-line);
+        border-radius: 14px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .camera-viewport-wrap {
+        position: relative;
+        background: #020408;
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        border-radius: 12px;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.7), inset 0 0 30px rgba(0, 240, 255, 0.08);
+      }
+
+      #webcam-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+        display: none;
+      }
+
+      #hud-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .hud-reticle-ring {
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border: 2px dashed var(--vision-cyan);
+        border-radius: 50%;
+        animation: spin-hud 12s linear infinite;
+        pointer-events: none;
+        z-index: 5;
+      }
+      @keyframes spin-hud {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      .gesture-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .gesture-card {
+        background: #060913;
+        border: 1px solid var(--vision-line);
+        border-radius: 10px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .gesture-card:hover {
+        border-color: var(--vision-cyan);
+        transform: translateY(-2px);
+      }
+      .gesture-card.active {
+        border-color: var(--vision-emerald);
+        background: rgba(16, 185, 129, 0.08);
+      }
+
+      .telemetry-bar {
+        display: flex;
+        gap: 16px;
+        background: #060913;
+        padding: 12px 18px;
+        border-radius: 10px;
+        border: 1px solid var(--vision-line);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.76rem;
+        color: var(--muted);
+        flex-wrap: wrap;
+      }
+
+      .btn-vision {
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+      }
+      .btn-vision-primary {
+        background: var(--vision-cyan);
+        color: #05070d;
+      }
+      .btn-vision-primary:hover {
+        box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      }
+      .btn-vision-secondary {
+        background: rgba(255,255,255,0.06);
+        color: #fff;
+        border-color: var(--vision-line);
+      }
+      .btn-vision-secondary:hover {
+        border-color: var(--vision-cyan);
+      }
+
+      /* Embedded Spatial 3D Preview Widget */
+      .spatial-3d-box {
+        height: 180px;
+        background: #020408;
+        border: 1px solid var(--vision-line);
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+      }
+      #spatial-3d-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body class="deck-page vision-page">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div class="fx-grain" aria-hidden="true"></div>
+
+    <header class="site-header is-scrolled">
+      <div class="nav">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
+          <span class="brand-text"><strong>ZOTH</strong><small>Vision Link</small></span>
+        </a>
+        <nav class="nav-desktop" aria-label="Primary">
+          <a href="/studio/">Dashboard</a>
+          <a href="/studio/nexus-3d.html">Nexus 3D</a>
+          <a href="/studio/fusion-arena.html">⚔️ Fusion Arena</a>
+          <a href="/studio/vision-link.html" class="is-active">Vision Link</a>
+          <a href="/studio/omnipost.html">OmniPost</a>
+          <a href="/studio/agent-composer.html">Composer</a>
+          <a href="/studio/math-pillars.html">Math Pillars</a>
+          <a href="/vault/">Vault</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="vision-wrap">
+      <!-- Main HUD Section -->
+      <section class="vision-panel">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="pill" style="border-color: var(--vision-cyan); color: var(--vision-cyan);">SPATIAL AI HUD</span>
+              <span class="pill" style="border-color: var(--vision-emerald); color: var(--vision-emerald);">60 FPS TRACKER</span>
+            </div>
+            <h1 style="margin: 8px 0 4px 0; font-family: 'Syne', sans-serif; font-size:1.8rem; font-weight:800;">Vision Link Spatial Controller</h1>
+            <p style="color: var(--muted); font-size: 0.9rem; margin:0;">Real-time computer vision camera HUD, hand tracking telemetry, and spatial gesture dispatch for 3D Swarm Arena.</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-vision btn-vision-primary" id="btn-toggle-cam">👁️ Start Vision Camera</button>
+            <button class="btn-vision btn-vision-secondary" id="btn-calibrate">⚡ Calibrate Plane</button>
+          </div>
+        </div>
+
+        <!-- Camera HUD Viewport -->
+        <div class="camera-viewport-wrap" id="viewport-wrap">
+          <div class="hud-reticle-ring" id="reticle"></div>
+          <video id="webcam-video" autoplay playsinline muted></video>
+          <canvas id="hud-canvas" width="1280" height="720"></canvas>
+          
+          <div id="cam-standby-msg" style="text-align: center; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; z-index: 2;">
+            <div style="font-size: 2.4rem; margin-bottom: 8px;">📷</div>
+            <div style="font-weight:700; color:#fff;">CAMERA STANDBY MODE</div>
+            <div style="font-size: 0.75rem; color: var(--vision-cyan); margin-top: 4px;">Click "Start Vision Camera" or test simulated gesture tracking below</div>
+          </div>
+        </div>
+
+        <!-- Live Telemetry Bar -->
+        <div class="telemetry-bar">
+          <span>FPS: <strong id="fps-val" style="color:var(--vision-emerald);">60.0</strong></span>
+          <span>TRACKED POINTS: <strong id="points-val" style="color:var(--vision-cyan);">21 LANDMARKS</strong></span>
+          <span>DETECTED GESTURE: <strong id="gesture-val" style="color:var(--vision-magenta);">STANDBY</strong></span>
+          <span>TARGET DISPATCH: <strong style="color:#fff;">NEXUS 3D :8088</strong></span>
+        </div>
+      </section>
+
+      <!-- Gesture Matrix & Spatial 3D Mini-Stage -->
+      <aside class="vision-panel">
+        <div>
+          <span class="pill" style="border-color:var(--vision-magenta); color:var(--vision-magenta);">SPATIAL GESTURE DISPATCH</span>
+          <h2 style="margin: 8px 0 14px 0; font-family: 'Syne', sans-serif; font-size:1.2rem;">Recognized Triggers</h2>
+        </div>
+
+        <div class="gesture-grid">
+          <div class="gesture-card" onclick="triggerSimulatedGesture('palm')">
+            <div style="font-size: 1.4rem;">🖐️ Open Palm</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--vision-cyan);">Orbit 3D Scene</div>
+            <div style="font-size: 0.78rem; color: var(--muted);">Rotates 3D viewport</div>
+          </div>
+          <div class="gesture-card" onclick="triggerSimulatedGesture('pinch')">
+            <div style="font-size: 1.4rem;">🤏 Pinch Fingers</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--vision-emerald);">Spawn Crystal</div>
+            <div style="font-size: 0.78rem; color: var(--muted);">Spawns PBR gem</div>
+          </div>
+          <div class="gesture-card" onclick="triggerSimulatedGesture('peace')">
+            <div style="font-size: 1.4rem;">✌️ Peace Sign</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--vision-magenta);">Shockwave Blast</div>
+            <div style="font-size: 0.78rem; color: var(--muted);">Triggers solar flare</div>
+          </div>
+          <div class="gesture-card" onclick="triggerSimulatedGesture('fist')">
+            <div style="font-size: 1.4rem;">✊ Closed Fist</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--vision-amber);">Freeze Physics</div>
+            <div style="font-size: 0.78rem; color: var(--muted);">Locks 3D coordinates</div>
+          </div>
+        </div>
+
+        <!-- Embedded Spatial 3D Mini-Stage -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--vision-cyan);">GESTURE-CONTROLLED 3D CORE</div>
+            <span style="font-size: 0.7rem; color: var(--muted);">Interactive</span>
+          </div>
+          <div class="spatial-3d-box" id="spatial-3d-host"></div>
+        </div>
+
+        <!-- Telemetry Log -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--muted);">SPATIAL EVENT STREAM</div>
+            <button class="hud-pill" style="font-size: 0.65rem; padding: 2px 8px;" onclick="downloadVisionLogs()">📥 Export .md</button>
+          </div>
+          <div id="event-stream" style="background:#030509; border:1px solid var(--vision-line); border-radius:8px; padding:10px; font-family:'IBM Plex Mono', monospace; font-size:0.75rem; max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+            <div style="color:var(--vision-cyan);">[09:10:00Z] Vision Link Engine initialized.</div>
+            <div style="color:var(--vision-emerald);">[09:10:02Z] Spatial tracking ready on loopback.</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      (function() {
+        const video = document.getElementById('webcam-video');
+        const canvas = document.getElementById('hud-canvas');
+        const ctx = canvas.getContext('2d');
+        const btnToggleCam = document.getElementById('btn-toggle-cam');
+        const standbyMsg = document.getElementById('cam-standby-msg');
+        const gestureVal = document.getElementById('gesture-val');
+        const streamLog = document.getElementById('event-stream');
+        let isCamRunning = false;
+        let stream = null;
+        let animId = null;
+        let simX = 640, simY = 360;
+        let simAngle = 0;
+        let visionEvents = [];
+
+        // Three.js Spatial Mini-Stage
+        let spatialScene, spatialCamera, spatialRenderer, spatialMesh;
+        function initSpatial3D() {
+          const host = document.getElementById('spatial-3d-host');
+          if (!host) return;
+
+          spatialScene = new THREE.Scene();
+          spatialCamera = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.1, 100);
+          spatialCamera.position.set(0, 0, 4);
+
+          spatialRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+          spatialRenderer.setSize(host.clientWidth, host.clientHeight);
+          host.appendChild(spatialRenderer.domElement);
+
+          const amb = new THREE.AmbientLight(0xffffff, 0.8);
+          spatialScene.add(amb);
+
+          const dirLight = new THREE.DirectionalLight(0x00f0ff, 2.0);
+          dirLight.position.set(2, 4, 3);
+          spatialScene.add(dirLight);
+
+          const geo = new THREE.OctahedronGeometry(1.2, 1);
+          const mat = new THREE.MeshPhysicalMaterial({ color: 0x00f0ff, roughness: 0.1, metalness: 0.9, wireframe: false });
+          spatialMesh = new THREE.Mesh(geo, mat);
+          spatialScene.add(spatialMesh);
+
+          function renderSpatial() {
+            requestAnimationFrame(renderSpatial);
+            if (spatialMesh) {
+              spatialMesh.rotation.y += 0.015;
+              spatialMesh.rotation.x += 0.008;
+            }
+            spatialRenderer.render(spatialScene, spatialCamera);
+          }
+          renderSpatial();
+        }
+
+        // Web Audio Synthesizer
+        let audioCtx = null;
+        function beep(freq = 600) {
+          try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.12);
+          } catch(e) {}
+        }
+
+        // Camera Activation
+        btnToggleCam.addEventListener('click', async () => {
+          if (!isCamRunning) {
+            try {
+              stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+              video.srcObject = stream;
+              video.style.display = 'block';
+              standbyMsg.style.display = 'none';
+              btnToggleCam.textContent = '⏹ Stop Camera';
+              btnToggleCam.classList.replace('btn-vision-primary', 'btn-vision-secondary');
+              isCamRunning = true;
+              beep(880);
+              logEvent('WebRTC camera connected @ 1280x720 60fps', '#10b981');
+              renderLoop();
+            } catch(e) {
+              isCamRunning = true;
+              standbyMsg.innerHTML = '<div style="color:#00f0ff; font-weight:700;">SYNTHETIC SPATIAL HUD ACTIVE</div><div>Simulating 21 hand landmarks</div>';
+              btnToggleCam.textContent = '⏹ Stop Simulator';
+              renderLoop();
+            }
+          } else {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            video.style.display = 'none';
+            standbyMsg.style.display = 'block';
+            standbyMsg.innerHTML = '<div style="font-size:2.4rem; margin-bottom:8px;">📷</div><div style="font-weight:700; color:#fff;">CAMERA STANDBY MODE</div>';
+            btnToggleCam.textContent = '👁️ Start Vision Camera';
+            btnToggleCam.classList.replace('btn-vision-secondary', 'btn-vision-primary');
+            isCamRunning = false;
+            cancelAnimationFrame(animId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            gestureVal.textContent = 'STANDBY';
+            logEvent('Camera detached', '#f59e0b');
+          }
+        });
+
+        function renderLoop() {
+          if (!isCamRunning) return;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          simAngle += 0.03;
+          simX = 640 + Math.sin(simAngle) * 200;
+          simY = 360 + Math.cos(simAngle * 1.5) * 120;
+
+          // Draw Simulated Hand Wireframe Mesh (21 points)
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.8)';
+          ctx.fillStyle = '#00f0ff';
+          ctx.lineWidth = 2;
+
+          const points = [];
+          for (let i = 0; i < 21; i++) {
+            const px = simX + Math.sin(i * 0.8 + simAngle) * (40 + (i * 4));
+            const py = simY + Math.cos(i * 0.8 + simAngle) * (40 + (i * 4));
+            points.push({ x: px, y: py });
+
+            ctx.beginPath();
+            ctx.arc(px, py, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Connect bones
+          ctx.beginPath();
+          for (let i = 0; i < points.length - 1; i++) {
+            ctx.moveTo(points[i].x, points[i].y);
+            ctx.lineTo(points[i + 1].x, points[i + 1].y);
+          }
+          ctx.stroke();
+
+          // Spatial Targeting Crosshair
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(simX - 30, simY); ctx.lineTo(simX + 30, simY);
+          ctx.moveTo(simX, simY - 30); ctx.lineTo(simX, simY + 30);
+          ctx.stroke();
+
+          animId = requestAnimationFrame(renderLoop);
+        }
+
+        window.triggerSimulatedGesture = function(type) {
+          const names = { palm: 'OPEN PALM (Orbit 3D)', pinch: 'PINCH INDEX (Spawn Crystal)', peace: 'PEACE SIGN (Shockwave)', fist: 'CLOSED FIST (Freeze)' };
+          gestureVal.textContent = names[type] || type.toUpperCase();
+          beep(type === 'peace' ? 1046 : (type === 'pinch' ? 880 : 440));
+          logEvent(`Recognized gesture: ${names[type]}`, '#00f0ff');
+
+          // Interact with 3D Mini-Stage
+          if (spatialMesh) {
+            if (type === 'pinch') {
+              spatialMesh.material.color.setHex(0xd946ef);
+              spatialMesh.scale.set(1.4, 1.4, 1.4);
+              setTimeout(() => spatialMesh.scale.set(1, 1, 1), 300);
+            } else if (type === 'peace') {
+              spatialMesh.material.color.setHex(0xff007a);
+              spatialMesh.rotation.y += 1.5;
+            } else if (type === 'palm') {
+              spatialMesh.material.color.setHex(0x00f0ff);
+            }
+          }
+        };
+
+        function logEvent(msg, color = '#b8c0d4') {
+          const timeStr = new Date().toLocaleTimeString();
+          visionEvents.push(`[${timeStr}] ${msg}`);
+          const row = document.createElement('div');
+          row.style.color = color;
+          row.textContent = `[${timeStr}] ${msg}`;
+          streamLog.prepend(row);
+        }
+
+        window.downloadVisionLogs = function() {
+          const md = `# 👁️ Vision Link Spatial Telemetry Log\n\nGenerated: ${new Date().toISOString()}\n\n${visionEvents.map(e => `- ${e}`).join('\n')}\n\n---\n*Recorded on Zoth Studio v2.6.0 Spatial Engine*`;
+          const blob = new Blob([md], { type: 'text/markdown' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = `vision_link_events_${Date.now()}.md`;
+          a.click();
+        };
+
+        document.getElementById('btn-calibrate').addEventListener('click', () => {
+          beep(900);
+          logEvent('Spatial viewport plane zeroed & calibrated', '#10b981');
+          alert('Spatial viewport plane zeroed and calibrated!');
+        });
+
+        window.onload = initSpatial3D;
+      })();
+    </script>
+    <script src="/assets/celestial-trail.js"></script>
+  </body>
+</html>

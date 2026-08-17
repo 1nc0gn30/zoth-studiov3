@@ -286,8 +286,8 @@ export default function AgentFactory() {
       {/* Header */}
       <div className="af-header">
         <div className="af-header-left">
-          <span className="af-brand">🤖 Agent Factory</span>
-          <span className="af-subtitle">Design, configure, and deploy AI agents</span>
+          <span className="af-brand">Agent Factory</span>
+          <span className="af-subtitle">A NullAI studio · design and deploy agents</span>
         </div>
         <div className="af-header-right">
           <input
@@ -353,7 +353,7 @@ export default function AgentFactory() {
       {(mode === "create" || mode === "edit") && (
         <div className="af-editor">
           <h2 className="af-editor-title">
-            {mode === "edit" ? `✎ Edit: ${editAgent?.name}` : "✦ Create New Agent"}
+            {mode === "edit" ? `Edit ${editAgent?.name}` : "Create new agent"}
           </h2>
 
           <div className="af-form-grid">
