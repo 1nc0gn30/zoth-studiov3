@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getByok, getHarnessConnectors, invokeConnector, saveByok } from "../api";
+import Tip from "./Tip";
 
 const SECRET_KEY = /secret|token|password|passphrase|authorization|api[_-]?key|bearer/i;
 
@@ -24,6 +25,7 @@ export default function ConnectorsPanel() {
   const [busy, setBusy] = useState(null);
   const [log, setLog] = useState("");
   const [focus, setFocus] = useState(null);
+  const [copied, setCopied] = useState("");
 
   async function refresh() {
     const [c, b] = await Promise.all([getHarnessConnectors(), getByok().catch(() => ({ keys: {} }))]);
@@ -67,10 +69,9 @@ export default function ConnectorsPanel() {
 
   return (
     <div className="conn-panel">
-      <p className="empty-kicker">A NullAI studio</p>
+      <p className="empty-kicker">Accounts</p>
       <p className="muted">
-        Probe first. If a CLI is missing, the install command is shown. Open the Auth URL for a
-        token, or paste it under BYOK. Values stay on this machine — Save never echoes them.
+        Probe first. Missing CLIs stay collapsed until you copy them. Keys stay on this machine.
       </p>
       <ul className="conn-list">
         {connectors.map((c) => (
@@ -86,29 +87,49 @@ export default function ConnectorsPanel() {
                 {c.cli_path ? ` · ${c.cli}` : ""}
               </small>
               {c.cli && !c.cli_path && c.install && (
-                <code className="conn-install">{c.install}</code>
+                <div className="conn-install-row">
+                  <Tip label="Copy the install command" kicker="Missing CLI">
+                    <button
+                      type="button"
+                      className="conn-install-btn"
+                      onClick={() => {
+                        navigator.clipboard.writeText(c.install).then(() => {
+                          setCopied(c.id);
+                          setTimeout(() => setCopied((cur) => (cur === c.id ? "" : cur)), 1400);
+                        });
+                      }}
+                    >
+                      {copied === c.id ? "Copied install" : `Install ${c.cli}`}
+                    </button>
+                  </Tip>
+                </div>
               )}
             </div>
             <div className="conn-actions">
               {c.auth_url && (
-                <a
-                  className="ghost"
-                  href={c.auth_url}
-                  target={c.auth_url.startsWith("/") ? "_self" : "_blank"}
-                  rel="noreferrer"
-                  title={c.auth_url}
-                >
-                  Auth URL
-                </a>
+                <Tip label="Open the sign-in page for this account" kicker="Auth">
+                  <a
+                    className="ghost"
+                    href={c.auth_url}
+                    target={c.auth_url.startsWith("/") ? "_self" : "_blank"}
+                    rel="noreferrer"
+                  >
+                    Auth
+                  </a>
+                </Tip>
               )}
               {(c.env || []).length > 0 && (
-                <button type="button" onClick={() => setFocus(focus === c.id ? null : c.id)}>
-                  BYOK
-                </button>
+                <Tip label="Paste a key that stays on this machine" kicker="Vault">
+                  <button type="button" onClick={() => setFocus(focus === c.id ? null : c.id)}>
+                    BYOK
+                  </button>
+                </Tip>
               )}
-              <button type="button" disabled={busy === c.id} onClick={() => probe(c)}>
-                {busy === c.id ? "…" : "Probe"}
-              </button>
+              <Tip label="Check if this connector answers locally" kicker="Status">
+                <button type="button" disabled={busy === c.id} onClick={() => probe(c)}>
+                  {busy === c.id ? "…" : "Probe"}
+                </button>
+              </Tip>
             </div>
             {focus === c.id && (
               <div className="conn-byok">

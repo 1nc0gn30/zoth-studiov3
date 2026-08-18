@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
 const PHASES = [
-  "Binding intent",
+  "Reading the thread",
   "Routing the model",
-  "Tracing the seal",
-  "Listening",
+  "Gathering tools",
+  "Writing the reply",
 ];
 
 export default function HermeticWait({ visual = "seal", motion = "orbit", showStatus = true }) {

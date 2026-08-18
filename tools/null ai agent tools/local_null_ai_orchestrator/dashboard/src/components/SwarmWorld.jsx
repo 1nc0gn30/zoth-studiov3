@@ -47,15 +47,15 @@ function labelSprite(text) {
   c.height = 64;
   const ctx = c.getContext("2d");
   ctx.clearRect(0, 0, 256, 64);
-  ctx.fillStyle = "rgba(8,8,16,0.72)";
+  ctx.fillStyle = "rgba(8,8,16,0.78)";
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(28, 14, 200, 36, 8);
   else ctx.rect(28, 14, 200, 36);
   ctx.fill();
-  ctx.strokeStyle = "rgba(167,139,250,0.45)";
+  ctx.strokeStyle = "rgba(232,200,114,0.4)";
   ctx.stroke();
-  ctx.fillStyle = "#eceaf6";
-  ctx.font = "600 22px Inter, system-ui, sans-serif";
+  ctx.fillStyle = "#f7f4ee";
+  ctx.font = "600 22px Fraunces, 'Iowan Old Style', serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, 128, 32);
@@ -152,7 +152,7 @@ function makeUnit(agent, tex) {
   return group;
 }
 
-export default function SwarmWorld({ agents = [], seats = {}, links = [], picked, onPick, focus = 0 }) {
+export default function SwarmWorld({ agents = [], seats = {}, links = [], picked, onPick, focus = 0, onReady, onFail }) {
   const host = useRef(null);
   const api = useRef(null);
   const latest = useRef({ agents, seats, links, picked, onPick, focus });
@@ -171,11 +171,23 @@ export default function SwarmWorld({ agents = [], seats = {}, links = [], picked
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
     camera.position.set(0.2, 8.6, 11.2);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+    } catch (e) {
+      onFail?.();
+      return undefined;
+    }
+    if (!renderer.getContext()) {
+      onFail?.();
+      return undefined;
+    }
+    renderer.setClearColor(0x050510, 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.08;
+    renderer.domElement.style.background = "#050510";
     el.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -457,7 +469,8 @@ export default function SwarmWorld({ agents = [], seats = {}, links = [], picked
       syncUnits();
       rebuildLinks();
       raf = requestAnimationFrame(tick);
-    })();
+      onReady?.();
+    })().catch(() => onFail?.());
 
     return () => {
       dead = true;

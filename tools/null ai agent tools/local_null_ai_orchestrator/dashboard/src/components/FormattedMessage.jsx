@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 function sanitizeRaw(text) {
   if (!text) return "";
-  // Strip dangling harness internal tags
   return text
     .replace(/<zoth_studio>[\s\S]*?<\/zoth_studio>/gi, "")
     .replace(/<run_command>[\s\S]*?<\/run_command>/gi, "")
@@ -22,41 +21,48 @@ function CodeBlock({ code, lang, onRunCode }) {
     });
   };
 
-  const isPreviewable = ["html", "svg", "xml"].includes(String(lang || "").toLowerCase().trim());
-  const isExecutable = ["bash", "sh", "python", "py", "curl"].includes(String(lang || "").toLowerCase().trim());
+  const langKey = String(lang || "").toLowerCase().trim();
+  const isPreviewable = ["html", "svg", "xml"].includes(langKey);
+  const isExecutable = ["bash", "sh", "python", "py", "curl"].includes(langKey);
 
   return (
     <div className="msg-code-block">
       <div className="msg-code-head">
         <span className="msg-code-lang">{lang || "code"}</span>
-        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+        <div className="msg-code-actions">
           {isPreviewable && (
             <button
               type="button"
               className="msg-code-copy"
               onClick={() => setShowPreview(!showPreview)}
-              style={{ color: "#00f0ff" }}
+              aria-pressed={showPreview}
+              title={showPreview ? "Hide live preview" : "Preview this markup"}
             >
-              {showPreview ? "Hide Preview" : "👁️ Live Preview"}
+              {showPreview ? "Hide preview" : "Preview"}
             </button>
           )}
           {isExecutable && onRunCode && (
             <button
               type="button"
-              className="msg-code-copy"
+              className="msg-code-copy is-run"
               onClick={() => onRunCode(code)}
-              style={{ color: "#10b981" }}
+              title="Send this snippet to the terminal dock"
             >
-              ⚡ Run in Term
+              Run
             </button>
           )}
-          <button type="button" className="msg-code-copy" onClick={handleCopy}>
-            {copied ? "✓ Copied" : "Copy"}
+          <button
+            type="button"
+            className={`msg-code-copy${copied ? " is-done" : ""}`}
+            onClick={handleCopy}
+            title="Copy code to clipboard"
+          >
+            {copied ? "Copied" : "Copy"}
           </button>
         </div>
       </div>
       {showPreview && isPreviewable ? (
-        <div style={{ background: "#fff", color: "#000", padding: "12px", borderRadius: "0 0 6px 6px", overflowX: "auto" }}>
+        <div className="msg-code-preview">
           <div dangerouslySetInnerHTML={{ __html: code }} />
         </div>
       ) : (
@@ -71,10 +77,10 @@ function CodeBlock({ code, lang, onRunCode }) {
 function renderInline(text, onCommandClick) {
   if (!text) return null;
 
-  // Tokenize inline markdown: `code`, **bold**, *italic*, [link](url)
   const tokens = [];
   let key = 0;
-  const inlineRegex = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
+  const inlineRegex =
+    /(`[^`]+`|\*\*[^*]+\*\*|~~[^~]+~~|==[^=]+==|__[^_]+__|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
   let lastIdx = 0;
   let match;
 
@@ -86,20 +92,55 @@ function renderInline(text, onCommandClick) {
     if (token.startsWith("`") && token.endsWith("`")) {
       const codeVal = token.slice(1, -1);
       const isCmd = codeVal.startsWith("/");
-      tokens.push(
-        <code
-          key={key++}
-          className={`msg-inline-code${isCmd ? " is-cmd-chip" : ""}`}
-          onClick={isCmd && onCommandClick ? () => onCommandClick(codeVal) : undefined}
-          title={isCmd ? `Click to run or insert ${codeVal}` : undefined}
-        >
-          {isCmd ? `⚡ ${codeVal}` : codeVal}
-        </code>
-      );
+      if (isCmd && onCommandClick) {
+        tokens.push(
+          <button
+            type="button"
+            key={key++}
+            className="msg-inline-code is-cmd-chip"
+            onClick={() => onCommandClick(codeVal)}
+            title={`Insert ${codeVal} into the composer`}
+          >
+            {codeVal}
+          </button>
+        );
+      } else {
+        tokens.push(
+          <code key={key++} className="msg-inline-code">
+            {codeVal}
+          </code>
+        );
+      }
     } else if (token.startsWith("**") && token.endsWith("**")) {
-      tokens.push(<strong key={key++}>{token.slice(2, -2)}</strong>);
+      tokens.push(
+        <strong key={key++} className="msg-strong">
+          {token.slice(2, -2)}
+        </strong>
+      );
+    } else if (token.startsWith("~~") && token.endsWith("~~")) {
+      tokens.push(
+        <s key={key++} className="msg-strike">
+          {token.slice(2, -2)}
+        </s>
+      );
+    } else if (token.startsWith("==") && token.endsWith("==")) {
+      tokens.push(
+        <mark key={key++} className="msg-mark">
+          {token.slice(2, -2)}
+        </mark>
+      );
+    } else if (token.startsWith("__") && token.endsWith("__")) {
+      tokens.push(
+        <u key={key++} className="msg-underline">
+          {token.slice(2, -2)}
+        </u>
+      );
     } else if (token.startsWith("*") && token.endsWith("*")) {
-      tokens.push(<em key={key++}>{token.slice(1, -1)}</em>);
+      tokens.push(
+        <em key={key++} className="msg-em">
+          {token.slice(1, -1)}
+        </em>
+      );
     } else if (token.startsWith("[") && token.includes("](")) {
       const linkMatch = token.match(/\[(.*?)\]\((.*?)\)/);
       if (linkMatch) {
@@ -132,7 +173,6 @@ export default function FormattedMessage({ content, onCommandClick }) {
   const clean = sanitizeRaw(content);
   if (!clean) return null;
 
-  // Split into code fences and regular text
   const parts = [];
   const fenceRegex = /```(\w+)?\n([\s\S]*?)```/g;
   let lastIdx = 0;
@@ -168,23 +208,37 @@ export default function FormattedMessage({ content, onCommandClick }) {
           return <CodeBlock key={`code-${pIdx}`} lang={p.lang} code={p.content} onRunCode={onCommandClick} />;
         }
 
-        // Process text lines (headers, lists, tables, paragraphs)
         const lines = p.content.split("\n");
         const renderedElements = [];
         let curList = [];
+        let listKind = "ul";
         let curTable = [];
+        let curQuote = [];
 
         const flushList = () => {
-          if (curList.length > 0) {
-            renderedElements.push(
-              <ul key={`ul-${blockKey++}`} className="msg-list">
-                {curList.map((li, liIdx) => (
-                  <li key={liIdx}>{renderInline(li, onCommandClick)}</li>
-                ))}
-              </ul>
-            );
-            curList = [];
-          }
+          if (curList.length === 0) return;
+          const Tag = listKind === "ol" ? "ol" : "ul";
+          renderedElements.push(
+            <Tag key={`list-${blockKey++}`} className={`msg-list msg-list-${listKind}`}>
+              {curList.map((li, liIdx) => (
+                <li key={liIdx}>{renderInline(li, onCommandClick)}</li>
+              ))}
+            </Tag>
+          );
+          curList = [];
+          listKind = "ul";
+        };
+
+        const flushQuote = () => {
+          if (curQuote.length === 0) return;
+          renderedElements.push(
+            <blockquote key={`q-${blockKey++}`} className="msg-quote">
+              {curQuote.map((q, qIdx) => (
+                <p key={qIdx}>{renderInline(q, onCommandClick)}</p>
+              ))}
+            </blockquote>
+          );
+          curQuote = [];
         };
 
         const flushTable = () => {
@@ -201,24 +255,20 @@ export default function FormattedMessage({ content, onCommandClick }) {
             );
 
             renderedElements.push(
-              <div key={`table-wrap-${blockKey++}`} className="msg-table-wrap" style={{ overflowX: "auto", margin: "10px 0" }}>
-                <table className="msg-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", fontFamily: "var(--font-mono, monospace)" }}>
+              <div key={`table-wrap-${blockKey++}`} className="msg-table-wrap">
+                <table className="msg-table">
                   <thead>
-                    <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.03)" }}>
+                    <tr>
                       {headerRow.map((h, hIdx) => (
-                        <th key={hIdx} style={{ padding: "6px 10px", textAlign: "left", color: "#00f0ff" }}>
-                          {renderInline(h, onCommandClick)}
-                        </th>
+                        <th key={hIdx}>{renderInline(h, onCommandClick)}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {bodyRows.map((row, rIdx) => (
-                      <tr key={rIdx} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <tr key={rIdx}>
                         {row.map((cell, cIdx) => (
-                          <td key={cIdx} style={{ padding: "6px 10px" }}>
-                            {renderInline(cell, onCommandClick)}
-                          </td>
+                          <td key={cIdx}>{renderInline(cell, onCommandClick)}</td>
                         ))}
                       </tr>
                     ))}
@@ -236,19 +286,31 @@ export default function FormattedMessage({ content, onCommandClick }) {
           if (!trimmed) {
             flushList();
             flushTable();
+            flushQuote();
             return;
           }
 
-          // Markdown Table detection
           if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
             flushList();
+            flushQuote();
             curTable.push(trimmed);
             return;
-          } else {
-            flushTable();
+          }
+          flushTable();
+
+          if (trimmed.startsWith("> ")) {
+            flushList();
+            curQuote.push(trimmed.replace(/^>\s?/, ""));
+            return;
+          }
+          flushQuote();
+
+          if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+            flushList();
+            renderedElements.push(<hr key={`hr-${blockKey++}`} className="msg-rule" />);
+            return;
           }
 
-          // Headers
           if (trimmed.startsWith("### ")) {
             flushList();
             renderedElements.push(
@@ -271,8 +333,12 @@ export default function FormattedMessage({ content, onCommandClick }) {
               </h1>
             );
           } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+            if (curList.length && listKind !== "ul") flushList();
+            listKind = "ul";
             curList.push(trimmed.substring(2));
           } else if (/^\d+\.\s/.test(trimmed)) {
+            if (curList.length && listKind !== "ol") flushList();
+            listKind = "ol";
             curList.push(trimmed.replace(/^\d+\.\s/, ""));
           } else {
             flushList();
@@ -286,6 +352,7 @@ export default function FormattedMessage({ content, onCommandClick }) {
 
         flushList();
         flushTable();
+        flushQuote();
 
         return <React.Fragment key={`part-${pIdx}`}>{renderedElements}</React.Fragment>;
       })}

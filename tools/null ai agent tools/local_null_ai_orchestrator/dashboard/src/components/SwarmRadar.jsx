@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { getSwarm, postSwarmMessage } from "../api";
+import Tip from "./Tip";
 
 const SwarmWorld = lazy(() => import("./SwarmWorld"));
 
@@ -37,6 +38,78 @@ function pinColor(agent, seat) {
   return seat?.color || PIN[agent.id] || "#a78bfa";
 }
 
+function capsOf(text) {
+  return String(text || "")
+    .split(/[,|]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+}
+
+function SwarmField({ agents, seats, links, picked, onPick }) {
+  const regions = useMemo(() => {
+    const acc = {};
+    agents.forEach((a) => {
+      const seat = seats[a.id] || a.seat || { x: 50, y: 50, region: "Field" };
+      const name = seat.region || "Field";
+      if (!acc[name]) acc[name] = { name, x: 0, y: 0, n: 0 };
+      acc[name].x += Number(seat.x ?? 50);
+      acc[name].y += Number(seat.y ?? 50);
+      acc[name].n += 1;
+    });
+    return Object.values(acc).map((r) => ({ ...r, x: r.x / r.n, y: r.y / r.n }));
+  }, [agents, seats]);
+
+  return (
+    <div className="swarm-field" aria-hidden="true">
+      <div className="swarm-field-glow" />
+      <div className="swarm-field-stars" />
+      <svg className="swarm-field-links" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {(links || []).map((l, i) => {
+          const a = seats[l.from] || {};
+          const b = seats[l.to] || {};
+          if (a.x == null || b.x == null) return null;
+          return (
+            <line
+              key={`${l.from}-${l.to}-${i}`}
+              x1={a.x}
+              y1={a.y}
+              x2={b.x}
+              y2={b.y}
+              className="swarm-field-arc"
+            />
+          );
+        })}
+      </svg>
+      {regions.map((r) => (
+        <span key={r.name} className="swarm-region" style={{ left: `${r.x}%`, top: `${Math.max(8, r.y - 10)}%` }}>
+          {r.name}
+        </span>
+      ))}
+      {agents.map((a) => {
+        const seat = seats[a.id] || a.seat || { x: 50, y: 50 };
+        return (
+          <button
+            key={a.id}
+            type="button"
+            className={`swarm-pin is-${a.status}${picked === a.id ? " is-on" : ""}`}
+            style={{ left: `${seat.x ?? 50}%`, top: `${seat.y ?? 50}%` }}
+            onClick={() => onPick(a.id)}
+            aria-label={`${a.name || a.id}, ${a.status}`}
+          >
+            {faceOf(a.id) ? (
+              <img className="swarm-face" src={faceOf(a.id)} alt="" />
+            ) : (
+              <i />
+            )}
+            <b>@{a.id}</b>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function SwarmRadar({ full = false }) {
   const [data, setData] = useState(null);
   const [to, setTo] = useState("all");
@@ -46,6 +119,7 @@ export default function SwarmRadar({ full = false }) {
   const [sending, setSending] = useState(false);
   const [sentNote, setSentNote] = useState("");
   const [focus, setFocus] = useState(0);
+  const [world, setWorld] = useState("loading");
 
   async function refresh() {
     try {
@@ -131,8 +205,34 @@ export default function SwarmRadar({ full = false }) {
 
   return (
     <div className={`swarm${full ? " is-full" : ""}`}>
-      <main id="main" className="swarm-stage">
-        <Suspense fallback={<div className="swarm-world" role="status">Loading 3D table…</div>}>
+      {full && (
+        <header className="map-bar">
+          <Tip label="Back to the chat deck" kicker="Deck">
+            <a className="map-deck" href="/">
+              <img src="/assets/brand/zoth-seal-master.jpg" alt="" width="22" height="22" />
+              Deck
+            </a>
+          </Tip>
+          <div className="map-bar-copy">
+            <p className="empty-kicker">Who is live</p>
+            <h1>Swarm</h1>
+          </div>
+          <p className="map-live" role="status" aria-live="polite">
+            <b>{live.length}</b>
+            <span>live · {agents.length} seated</span>
+          </p>
+        </header>
+      )}
+
+      <main id="main" className={`swarm-stage${world === "ready" ? " has-world" : ""}`}>
+        <SwarmField
+          agents={agents}
+          seats={seats}
+          links={data?.links || []}
+          picked={picked}
+          onPick={pick}
+        />
+        <Suspense fallback={null}>
           <SwarmWorld
             agents={agents}
             seats={seats}
@@ -140,61 +240,79 @@ export default function SwarmRadar({ full = false }) {
             picked={picked}
             focus={focus}
             onPick={pick}
+            onReady={() => setWorld("ready")}
+            onFail={() => setWorld("fail")}
           />
         </Suspense>
-        <div className="swarm-hud">
+        <div className={`swarm-hud${world === "ready" ? " has-world" : ""}`}>
           <div className="swarm-hud-top">
-            <p className="swarm-kicker">NullAI swarm</p>
-            <p className="muted" role="status" aria-live="polite">
-              {live.length} live · {agents.length} on the table
-            </p>
+            {!full && (
+              <div className="swarm-brand-block">
+                <p className="swarm-kicker">NullAI swarm</p>
+                <p className="swarm-count" role="status" aria-live="polite">
+                  <b>{live.length}</b> live · {agents.length} on the table
+                </p>
+              </div>
+            )}
             <ul className="swarm-ports" aria-label="Local services">
               {(data?.ports || []).map((p) => (
-                <li key={p.id} className={p.online ? "ok" : ""}>
-                  {p.label}
-                  <span className="sr-only">{p.online ? "online" : "offline"}</span>
+                <li key={p.id}>
+                  <Tip label={p.online ? "Answering on this machine" : "Not listening"} kicker={p.label}>
+                    <span className={`swarm-port${p.online ? " ok" : ""}`}>
+                      {p.label}
+                      <span className="sr-only">{p.online ? "online" : "offline"}</span>
+                    </span>
+                  </Tip>
                 </li>
               ))}
             </ul>
-            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "6px" }}>
+            <div className="swarm-tools">
               {!full && (
-                <a className="ghost" href="/map">
-                  Open full map
-                </a>
+                <Tip label="Open the full observatory" kicker="Map">
+                  <a className="ghost" href="/map">
+                    Full map
+                  </a>
+                </Tip>
               )}
-              <a className="ghost" href="http://127.0.0.1:8989/export/markdown" target="_blank" rel="noreferrer" download="zoth_transcript.md">
-                📜 Export Log (.md)
-              </a>
-              <a className="ghost" href="http://127.0.0.1:8989/archive" target="_blank" rel="noreferrer" download="zoth_archive.json">
-                💾 Archive (.json)
-              </a>
+              <Tip label="Download the swarm transcript" kicker="Log">
+                <a className="ghost" href="http://127.0.0.1:8989/export/markdown" target="_blank" rel="noreferrer" download="zoth_transcript.md">
+                  Log
+                </a>
+              </Tip>
+              <Tip label="Download the raw archive" kicker="Archive">
+                <a className="ghost" href="http://127.0.0.1:8989/archive" target="_blank" rel="noreferrer" download="zoth_archive.json">
+                  Archive
+                </a>
+              </Tip>
             </div>
           </div>
           {err && <p className="swarm-err">{err}</p>}
 
           <nav aria-label="Agents on the table">
-          <h2 className="sr-only">Agents</h2>
-          <ul className="swarm-roster">
-            {agents.map((a) => (
-              <li key={a.id}>
-                <button
-                  type="button"
-                  className={`swarm-chip is-${a.status}${picked === a.id ? " is-on" : ""}`}
-                  onClick={() => pick(a.id)}
-                  aria-pressed={picked === a.id}
-                  aria-label={`${a.name || a.id}, ${a.status}`}
-                >
-                  {faceOf(a.id) ? (
-                    <img className="swarm-face" src={faceOf(a.id)} alt={`${a.name || a.id} portrait`} />
-                  ) : (
-                    <i />
-                  )}
-                  <span>@{a.id}</span>
-                  <em>{a.status}</em>
-                </button>
-              </li>
-            ))}
-          </ul>
+            <h2 className="sr-only">Agents</h2>
+            <ul className="swarm-roster">
+              {agents.map((a) => (
+                <li key={a.id}>
+                  <Tip label={a.task || a.status} kicker={a.name || a.id}>
+                    <button
+                      type="button"
+                      className={`swarm-chip is-${a.status}${picked === a.id ? " is-on" : ""}`}
+                      onClick={() => pick(a.id)}
+                      aria-pressed={picked === a.id}
+                      aria-label={`${a.name || a.id}, ${a.status}`}
+                    >
+                      {faceOf(a.id) ? (
+                        <img className="swarm-face" src={faceOf(a.id)} alt="" />
+                      ) : (
+                        <i />
+                      )}
+                      <span>@{a.id}</span>
+                      <em>{a.status}</em>
+                    </button>
+                  </Tip>
+                </li>
+              ))}
+            </ul>
           </nav>
 
           <aside className="swarm-inspect" data-agent={selected?.id || ""} aria-label="Selected agent">
@@ -215,8 +333,14 @@ export default function SwarmRadar({ full = false }) {
                   </div>
                 </div>
                 <p className={`swarm-state is-${selected.status}`}>{selected.status}</p>
-                <p className="swarm-task">{selected.task}</p>
-                <small className="muted">{selected.capabilities}</small>
+                {selected.task && <p className="swarm-task">{selected.task}</p>}
+                {capsOf(selected.capabilities).length > 0 && (
+                  <ul className="swarm-caps">
+                    {capsOf(selected.capabilities).map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ul>
+                )}
                 <small className="muted">seen {ago(selected.age_sec)}</small>
                 <ol className="swarm-feed">
                   {feed.map((m) => (
@@ -232,18 +356,15 @@ export default function SwarmRadar({ full = false }) {
               </>
             ) : (
               <div className="swarm-empty">
-                <img src="/assets/brand/zoth-seal-master.jpg" alt="Zoth Master Seal" width="36" height="36" />
+                <img src="/assets/brand/zoth-seal-master.jpg" alt="" width="36" height="36" />
                 <p>Click a unit on the table.</p>
-                <div className="swarm-empty-faces">
-                  {Object.entries(FACE).map(([id, src]) => (
-                    <img key={id} src={src} alt="" title={id} />
-                  ))}
-                </div>
               </div>
             )}
           </aside>
 
-          <p className="swarm-hint">Drag to orbit · scroll to zoom · click a unit</p>
+          <p className="swarm-hint">
+            {world === "ready" ? "Drag to orbit · scroll to zoom · click a unit" : "Click a unit on the table"}
+          </p>
         </div>
       </main>
 
@@ -257,7 +378,7 @@ export default function SwarmRadar({ full = false }) {
         <label>
           To
           <select value={to} onChange={(e) => setTo(e.target.value)}>
-            <option value="all">all</option>
+            <option value="all">everyone</option>
             {agents.map((a) => (
               <option key={a.id} value={a.id}>
                 @{a.id}
@@ -271,9 +392,11 @@ export default function SwarmRadar({ full = false }) {
           placeholder={picked ? `Message @${picked}…` : "Ask the swarm…"}
           aria-label="Message"
         />
-        <button type="submit" disabled={sending} aria-disabled={!draft.trim()}>
-          Send
-        </button>
+        <Tip label="Send to the selected agent" kicker="Swarm" shortcut="Enter">
+          <button type="submit" className="composer-send" disabled={sending || !draft.trim()}>
+            Send
+          </button>
+        </Tip>
         {sentNote && (
           <p className="swarm-sent" role="status">
             {sentNote}

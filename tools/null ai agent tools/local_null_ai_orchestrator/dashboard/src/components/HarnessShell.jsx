@@ -29,6 +29,7 @@ import HermeticWait from "./HermeticWait";
 import AgentTermDock from "./AgentTermDock";
 import AIWorkbench from "./AIWorkbench";
 import FormattedMessage from "./FormattedMessage";
+import Tip from "./Tip";
 import SystemPanel from "./SystemPanel";
 import ZothStudio from "./ZothStudio";
 import SecurityScanner from "./SecurityScanner";
@@ -42,35 +43,89 @@ import ToolGrid from "./ToolGrid";
 import DagComposer from "./DagComposer";
 import SwarmDebateCard from "./SwarmDebateCard";
 
-const PRIMARY = [
-  { id: "composer", label: "DAG Composer" },
-  { id: "consensus", label: "Consensus" },
-  { id: "math", label: "Math Pillars" },
-  { id: "vault", label: "Vault" },
-  { id: "tools", label: "Tools" },
-  { id: "models", label: "Models" },
-  { id: "pets", label: "Pets" },
-  { id: "swarm", label: "Swarm" },
-  { id: "connect", label: "Connect" },
-  { id: "github", label: "GitHub" },
+const SIMPLE_NAV = [
+  { id: "swarm", label: "Swarm", blurb: "Who is live" },
+  { id: "studio", label: "Studio", blurb: "Build a site" },
+  { id: "pets", label: "Pets", blurb: "Companions" },
+  { id: "vault", label: "Vault", blurb: "Local keys" },
+  { id: "connect", label: "Connect", blurb: "Accounts" },
 ];
-const MORE = [
-  { id: "settings", label: "Settings" },
-  { id: "chronicle", label: "Chronicle" },
-  { id: "omnipost", label: "OmniPost" },
-  { id: "agents", label: "Agents" },
-  { id: "workbench", label: "Workbench" },
-  { id: "studio", label: "Generate" },
-  { id: "system", label: "System" },
-  { id: "nexus", label: "Nexus" },
-  { id: "media", label: "Media" },
-  { id: "security", label: "Security" },
-  { id: "servers", label: "Servers" },
-  { id: "repos", label: "Repos" },
-  { id: "ghost", label: "GhostByte" },
-  { id: "lab", label: "Lab" },
+const POWERHOUSE = [
+  { id: "composer", label: "Playbooks", blurb: "Visual DAG agent graphs" },
+  { id: "consensus", label: "Consensus", blurb: "Three-agent arbitration" },
+  { id: "tools", label: "Tool wall", blurb: "Every local tool at once" },
+  { id: "github", label: "GitHub", blurb: "Repos, issues, and PRs" },
+  { id: "models", label: "Models", blurb: "Local and cloud models" },
+  { id: "math", label: "Math", blurb: "Run telemetry and pillars" },
+  { id: "workbench", label: "Workbench", blurb: "Scratch a live job" },
+  { id: "media", label: "Media", blurb: "Image and video forge" },
+  { id: "security", label: "Security", blurb: "Scan and review" },
+  { id: "agents", label: "Agents", blurb: "Spin a specialist" },
+  { id: "nexus", label: "Nexus", blurb: "Parrot OS toolkit" },
+  { id: "repos", label: "Repos", blurb: "Local git worktrees" },
+  { id: "omnipost", label: "OmniPost", blurb: "Repurpose a post" },
+  { id: "chronicle", label: "Chronicle", blurb: "Roadmap and sprints" },
+  { id: "servers", label: "Servers", blurb: "What is listening" },
+  { id: "system", label: "System", blurb: "Health and binaries" },
+  { id: "ghost", label: "Ghost Byte", blurb: "NullAI companion" },
+  { id: "lab", label: "Lab", blurb: "Isolated experiments" },
+  { id: "settings", label: "Settings", blurb: "Wait visual and keys" },
 ];
-const PANELS = [...PRIMARY, ...MORE];
+const PRIMARY = SIMPLE_NAV;
+const MORE = POWERHOUSE;
+const PANELS = [...SIMPLE_NAV, ...POWERHOUSE];
+
+function deckHero(id) {
+  return {
+    hero: `/assets/media/deck/${id}.jpg`,
+    video: `/assets/media/deck/${id}.mp4`,
+  };
+}
+
+const SLASH_TITLES = {
+  help: "Commands",
+  who: "Who is live",
+  pet: "Companion",
+  mission: "Mission",
+  consensus: "Consensus",
+  math: "Math",
+  doctor: "Doctor",
+  scan: "Scan",
+  connect: "Connect",
+  github: "GitHub",
+  drive: "Drive",
+  backup: "Backup",
+  vault: "Vault",
+};
+
+function tidyLine(s) {
+  return String(s || "")
+    .replace(/^\[pet:[^\]]+\]\s*/i, "")
+    .replace(/^#+\s*/, "")
+    .replace(/\*\*|__|==|~~/g, "")
+    .replace(/`/g, "")
+    .trim();
+}
+
+function prettyConvoTitle(c) {
+  const raw = String(c?.title || "").trim();
+  if (!raw || raw === "New chat") return "Empty thread";
+  const stripped = tidyLine(raw);
+  if (String(c?.title || "").trim().startsWith("/") || stripped.startsWith("/")) {
+    const src = String(c?.title || "").replace(/^\[pet:[^\]]+\]\s*/i, "");
+    const [cmd, ...rest] = src.replace(/^\//, "").split(/\s+/);
+    const key = (cmd || "").toLowerCase();
+    if (key === "pet" && rest[0]) return `Sit ${rest[0]}`;
+    return SLASH_TITLES[key] || tidyLine(src.replace(/^\//, ""));
+  }
+  return stripped || "Empty thread";
+}
+
+function prettyConvoPreview(c) {
+  const raw = tidyLine(c?.preview);
+  if (!raw || raw === "Empty") return "No messages yet";
+  return raw;
+}
 
 export default function HarnessShell({ data, system, tools, chains, error, reload }) {
   const [convos, setConvos] = useState([]);
@@ -101,7 +156,30 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
   const [commands, setCommands] = useState([]);
   const [cmdIndex, setCmdIndex] = useState(0);
   const [mathOpen, setMathOpen] = useState({});
+  const [msgDetails, setMsgDetails] = useState({});
+  const [copiedKey, setCopiedKey] = useState("");
   const [swarmMode, setSwarmMode] = useState(false);
+  const [detailsOn, setDetailsOn] = useState(() => {
+    try {
+      return localStorage.getItem("zoth-details") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [powerOn, setPowerOn] = useState(false);
+  const [railQuery, setRailQuery] = useState("");
+
+  function toggleDetails() {
+    setDetailsOn((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("zoth-details", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
   const scroller = useRef(null);
   const draftRef = useRef(null);
 
@@ -343,6 +421,10 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
 
   const lastAssistant = [...(thread?.messages || [])].reverse().find((m) => m.role === "assistant");
   const messages = thread?.messages || [];
+  const q = railQuery.trim().toLowerCase();
+  const shownConvos = q
+    ? convos.filter((c) => `${prettyConvoTitle(c)} ${prettyConvoPreview(c)} ${c.title || ""}`.toLowerCase().includes(q))
+    : convos;
 
   return (
     <div className={`harness${railOpen ? " rail-open" : ""}`}>
@@ -358,11 +440,23 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
             <em>by NullAI</em>
           </div>
         </div>
-        <button className="new-chat" onClick={newChat}>
-          New chat
-        </button>
+        <Tip label="Start a clean local thread" kicker="Chat" shortcut="⌘N">
+          <button className="new-chat" onClick={newChat}>
+            New chat
+          </button>
+        </Tip>
+        <label className="rail-search">
+          <span className="sr-only">Find a chat</span>
+          <input
+            type="search"
+            value={railQuery}
+            onChange={(e) => setRailQuery(e.target.value)}
+            placeholder="Find a chat"
+            aria-label="Find a chat"
+          />
+        </label>
         <nav className="conv-list" aria-label="Past conversations">
-          {convos.map((c) => (
+          {shownConvos.map((c) => (
             <button
               key={c.id}
               className={c.id === activeId ? "on" : ""}
@@ -371,8 +465,8 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
                 setRailOpen(false);
               }}
             >
-              <b>{c.title}</b>
-              <small>{c.preview || "Empty"}</small>
+              <b>{prettyConvoTitle(c)}</b>
+              <small>{prettyConvoPreview(c)}</small>
             </button>
           ))}
           {convos.length === 0 && (
@@ -380,6 +474,9 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
               <img className="seal-img" src="/assets/brand/zoth-seal-master.jpg" alt="Zoth Master Seal" width="22" height="22" />
               No sessions yet. New chat stays on this machine.
             </p>
+          )}
+          {convos.length > 0 && shownConvos.length === 0 && (
+            <p className="rail-empty">No chats match “{railQuery}”.</p>
           )}
         </nav>
         {activeId && (
@@ -399,85 +496,99 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
 
       <section className="stage">
         <header className="stage-bar">
-          <button
-            className="menu-btn"
-            aria-expanded={railOpen}
-            aria-controls="chats"
-            onClick={() => setRailOpen((v) => !v)}
-          >
-            Chats
-          </button>
-          <label>
-            Model
-            <select
-              value={settings.model || "auto"}
-              onChange={(e) => patchSettings({ model: e.target.value })}
+          <Tip label="Open past conversations" kicker="History">
+            <button
+              className="menu-btn"
+              aria-expanded={railOpen}
+              aria-controls="chats"
+              onClick={() => setRailOpen((v) => !v)}
             >
-              {models.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                  {m.available ? "" : " (offline)"}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="hide-sm">
-            Pet
-            <select value={petId} onChange={(e) => (e.target.value ? engagePet(e.target.value) : setPetId(""))}>
-              <option value="">None</option>
-              {petList.map((p) => (
-                <option key={p.id || p.name} value={p.id || p.name}>
-                  {p.name || p.id}
-                </option>
-              ))}
-            </select>
-          </label>
-          {engagedPet && (
-            <button type="button" className="stage-pet" onClick={() => setPanel("pets")} title="Open companions">
-              <img
-                src={petPortraitSrc(engagedPet)}
-                alt=""
-                onError={(e) => onPetPortraitError(e, engagedPet)}
-              />
-              <span>{engagedPet.name || petId}</span>
+              Chats
             </button>
-          )}
-          <div className="dots hide-sm" title="Connectors">
-            <span className={keys.openai ? "ok" : ""}>OpenAI</span>
-            <span className={keys.anthropic ? "ok" : ""}>Claude</span>
-            <span className={keys.groq ? "ok" : ""}>Groq</span>
-            <span className={binaries.find((b) => b.id === "ollama")?.installed ? "ok" : ""}>
-              Ollama
-            </span>
-          </div>
-          <div className="pop-btns">
-            {PRIMARY.map((p) => (
-              <button key={p.id} className={panel === p.id ? "on" : ""} onClick={() => setPanel(p.id)}>
-                {p.label}
-              </button>
-            ))}
-            <button onClick={() => setTermOpen((v) => !v)}>Terminal</button>
-            <div className="more-wrap">
-              <button aria-expanded={moreOpen} onClick={() => setMoreOpen((v) => !v)}>
-                More
-              </button>
-              {moreOpen && (
-                <div className="more-menu" role="menu">
-                  {MORE.map((p) => (
-                    <button
-                      key={p.id}
-                      role="menuitem"
-                      onClick={() => {
-                        setPanel(p.id);
-                        setMoreOpen(false);
-                      }}
-                    >
-                      {p.label}
-                    </button>
+          </Tip>
+          {detailsOn && (
+            <>
+              <label>
+                Model
+                <select
+                  value={settings.model || "auto"}
+                  onChange={(e) => patchSettings({ model: e.target.value })}
+                >
+                  {models.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                      {m.available ? "" : " (offline)"}
+                    </option>
                   ))}
-                </div>
-              )}
+                </select>
+              </label>
+              <label className="hide-sm">
+                Pet
+                <select value={petId} onChange={(e) => (e.target.value ? engagePet(e.target.value) : setPetId(""))}>
+                  <option value="">None</option>
+                  {petList.map((p) => (
+                    <option key={p.id || p.name} value={p.id || p.name}>
+                      {p.name || p.id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
+          {engagedPet && (
+            <Tip label="Companion is sitting in this thread" kicker="Pet">
+              <button type="button" className="stage-pet" onClick={() => setPanel("pets")}>
+                <img
+                  src={petPortraitSrc(engagedPet)}
+                  alt=""
+                  onError={(e) => onPetPortraitError(e, engagedPet)}
+                />
+                <span>{engagedPet.name || petId}</span>
+              </button>
+            </Tip>
+          )}
+          {detailsOn && (
+            <div className="dots hide-sm" title="Connectors">
+              <span className={keys.openai ? "ok" : ""}>OpenAI</span>
+              <span className={keys.anthropic ? "ok" : ""}>Claude</span>
+              <span className={keys.groq ? "ok" : ""}>Groq</span>
+              <span className={binaries.find((b) => b.id === "ollama")?.installed ? "ok" : ""}>
+                Ollama
+              </span>
             </div>
+          )}
+          <div className="pop-btns">
+            {SIMPLE_NAV.map((p) => (
+              <Tip key={p.id} label={p.blurb} kicker={p.label}>
+                <button className={panel === p.id ? "on" : ""} onClick={() => setPanel(p.id)}>
+                  {p.label}
+                </button>
+              </Tip>
+            ))}
+            <Tip label="Extra tools stay here until you need them" kicker="Powerhouse">
+              <button
+                className={powerOn ? "on" : ""}
+                aria-expanded={powerOn}
+                onClick={() => setPowerOn((v) => !v)}
+              >
+                Powerhouse
+              </button>
+            </Tip>
+            <Tip
+              label={detailsOn ? "Hide models, chips, and per-message extras" : "Show models, chips, and per-message extras"}
+              kicker="Details"
+            >
+              <button className={detailsOn ? "on" : ""} onClick={toggleDetails}>
+                {detailsOn ? "Details on" : "Details"}
+              </button>
+            </Tip>
+            {detailsOn && (
+              <Tip label="Dock a local terminal under chat" kicker="Terminal">
+                <button className={termOpen ? "on" : ""} onClick={() => setTermOpen((v) => !v)}>
+                  Terminal
+                </button>
+              </Tip>
+            )}
           </div>
           {error && (
             <button className="ghost" onClick={reload}>
@@ -485,53 +596,77 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
             </button>
           )}
         </header>
+        {powerOn && (
+          <div className="power-sheet" role="dialog" aria-label="Powerhouse tools">
+            <div className="power-sheet-head">
+              <div>
+                <p className="pop-kicker">Zoth still runs these</p>
+                <h2>Powerhouse</h2>
+              </div>
+              <button type="button" className="pop-x" onClick={() => setPowerOn(false)} aria-label="Close powerhouse">
+                ×
+              </button>
+            </div>
+            <p className="muted">Open one when you need it. Chat stays the default.</p>
+            <ul className="power-grid">
+              {POWERHOUSE.map((p) => (
+                <li key={p.id}>
+                  <Tip label={p.blurb || `Open ${p.label}`} kicker={p.label} side="bottom">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPanel(p.id);
+                        setPowerOn(false);
+                      }}
+                    >
+                      <b>{p.label}</b>
+                      {p.blurb ? <small>{p.blurb}</small> : null}
+                    </button>
+                  </Tip>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className={`thread${engagedPet ? " has-companion" : ""}`} ref={scroller}>
           {messages.length === 0 && (
             <div className="empty-chat">
               <div className="empty-hero-row">
-                <img className="empty-mascot" src="/assets/mascot/zoth-hero-avatar.jpg" alt="Zoth Mascot" width="84" height="84" />
+                <img className="empty-mascot" src="/assets/mascot/zoth-avatar.jpg" alt="" width="84" height="84" />
                 <div className="empty-header-copy">
-                  <span className="empty-kicker">A NullAI Studio · Local-First Autonomous Deck</span>
-                  <h1>Zoth Studio Deck</h1>
+                  <span className="empty-kicker">NullAI · Zoth Studio</span>
+                  <h1>Ask Zoth</h1>
                   <p className="lede">
-                    Local pair-programming harness & multi-agent consensus engine. Private loopback on <code>:8484</code>.
+                    Type below. <strong>Swarm</strong> is who is live. <strong>Studio</strong> builds a site.
+                    Extra tools stay in Powerhouse.
                   </p>
                 </div>
               </div>
 
-              <div>
-                <div className="empty-section-title">⚡ Quick Navigation & Sub-Studios</div>
-                <div className="deck-cards">
-                  <button type="button" onClick={() => setPanel("nexus-3d")}>🚀 Nexus 3D Studio</button>
-                  <button type="button" onClick={() => setPanel("fusion-arena")}>⚔️ Fusion Arena</button>
-                  <button type="button" onClick={() => setPanel("pets")}>🐾 Companion Sanctuary</button>
-                  <button type="button" onClick={() => setPanel("vault")}>🔒 BYOK Key Vault</button>
-                  <button type="button" onClick={() => setPanel("connect")}>🔌 Tool Connectors</button>
-                  <button type="button" onClick={() => setPanel("github")}>🐙 GitHub Sync</button>
-                  <button type="button" onClick={() => setPanel("swarm")}>📡 Swarm Telemetry</button>
-                  <a className="deck-link" href="/showcase.html" target="_blank" rel="noreferrer">✨ Grand Showcase</a>
-                </div>
+              <div className="simple-doors">
+                {SIMPLE_NAV.map((p) => (
+                  <Tip key={p.id} label={p.blurb} kicker="Open" side="bottom">
+                    <button type="button" className="simple-door" onClick={() => setPanel(p.id)}>
+                      <b>{p.label}</b>
+                      <small>{p.blurb}</small>
+                    </button>
+                  </Tip>
+                ))}
               </div>
 
-              <div>
-                <div className="empty-section-title">💬 Suggested Directives & Slash Commands</div>
-                <div className="hints">
-                  {[
-                    { label: "⚡ Engage Kai (Inspector)", text: "/pet kai" },
-                    { label: "⚡ Engage Draco (Fusion)", text: "/pet draco" },
-                    { label: "⚡ Engage GhostByte (Swarm)", text: "/pet ghostbyte" },
-                    { label: "🐙 List GitHub Repos", text: "/github repos" },
-                    { label: "🚀 Synthesize 3D CAD Mesh", text: "Create a cyberpunk plasma energy turret in 3D" },
-                    { label: "🛡️ Run OWASP Security Audit", text: "/doctor" },
-                    { label: "📡 Swarm Bus Status", text: "/who" },
-                    { label: "❓ View All Commands", text: "/help" },
-                  ].map((c) => (
-                    <button key={c.label} onClick={() => setDraft(c.text)}>
+              <div className="hints">
+                {[
+                  { label: "Who is live?", text: "/who", tip: "Ask the swarm who is online" },
+                  { label: "Sit Zoth in chat", text: "/pet zoth", tip: "Engage the Zoth companion in this thread" },
+                  { label: "Build a site", text: "Build a dark lawn-care site for Hampton Roads with booking", tip: "Start a Studio brief from chat" },
+                ].map((c) => (
+                  <Tip key={c.label} label={c.tip} kicker="Insert" side="bottom">
+                    <button type="button" onClick={() => setDraft(c.text)}>
                       {c.label}
                     </button>
-                  ))}
-                </div>
+                  </Tip>
+                ))}
               </div>
             </div>
           )}
@@ -548,23 +683,31 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
                         onError={(e) => onPetPortraitError(e, engagedPet)}
                       />
                     ) : (
-                      <div className="bubble-avatar-badge">🤖</div>
+                      <img
+                        className="bubble-avatar-img"
+                        src="/assets/brand/zoth-seal-master.jpg"
+                        alt=""
+                      />
                     )
                   ) : (
-                    <div className="bubble-avatar-badge user">👤</div>
+                    <div className="bubble-avatar-badge user" aria-hidden="true">
+                      Y
+                    </div>
                   )}
                   <span className="bubble-author-name">
                     {m.role === "user" ? "You" : engagedPet ? engagedPet.name || "Zoth" : "Zoth AI"}
                   </span>
-                  {m.role === "assistant" && (
+                  {m.role === "assistant" && detailsOn && (
                     <span className="bubble-model-tag">
                       {m.meta?.model || "local"}
                     </span>
                   )}
                 </div>
-                <span className="bubble-timestamp">
-                  {m.ts ? new Date(m.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
-                </span>
+                {(detailsOn || msgDetails[m.id || m.ts]) && (
+                  <span className="bubble-timestamp">
+                    {m.ts ? new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                  </span>
+                )}
               </div>
 
               <div className="bubble-content-card">
@@ -590,41 +733,56 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
 
               {m.role === "assistant" && (
                 <div className="bubble-actions-bar">
-                  <small className="bubble-meta">
-                    {m.meta?.provider || "local"}/{m.meta?.model || "zoth-ai"}
-                    {m.ran_commands?.length ? ` · ran ${m.ran_commands.join(", ")}` : ""}
-                  </small>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                    <button
-                      type="button"
-                      className="btn-bubble-action"
-                      onClick={() => {
-                        navigator.clipboard.writeText(stripPetPrefix(m.content));
-                        const btn = document.activeElement;
-                        if (btn) {
-                          const orig = btn.textContent;
-                          btn.textContent = "✓ Copied";
-                          setTimeout(() => (btn.textContent = orig), 1500);
-                        }
-                      }}
-                      title="Copy response markdown"
-                    >
-                      📋 Copy
-                    </button>
+                  <Tip label="Model, copy, and math stay hidden until you ask" kicker="Message">
                     <button
                       type="button"
                       className="btn-bubble-action"
                       onClick={() => {
                         const key = m.id || m.ts;
-                        setMathOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+                        setMsgDetails((prev) => ({ ...prev, [key]: !prev[key] }));
                       }}
                     >
-                      {mathOpen[m.id || m.ts] ? "Hide Math ▲" : "📐 Math Observability ▼"}
+                      {msgDetails[m.id || m.ts] || detailsOn ? "Hide extras" : "Details"}
                     </button>
-                  </div>
+                  </Tip>
+                  {(detailsOn || msgDetails[m.id || m.ts]) && (
+                    <>
+                      <small className="bubble-meta">
+                        {m.meta?.provider || "local"}/{m.meta?.model || "zoth-ai"}
+                        {m.ran_commands?.length ? ` · ran ${m.ran_commands.join(", ")}` : ""}
+                      </small>
+                      <Tip label="Copy this reply to the clipboard" kicker="Reply">
+                        <button
+                          type="button"
+                          className={`btn-bubble-action${copiedKey === (m.id || m.ts) ? " is-done" : ""}`}
+                          onClick={() => {
+                            const key = m.id || m.ts;
+                            navigator.clipboard.writeText(stripPetPrefix(m.content || "")).then(() => {
+                              setCopiedKey(key);
+                              setTimeout(() => setCopiedKey((cur) => (cur === key ? "" : cur)), 1600);
+                            });
+                          }}
+                        >
+                          {copiedKey === (m.id || m.ts) ? "Copied" : "Copy"}
+                        </button>
+                      </Tip>
+                      <Tip label="Token and training math for this run" kicker="Math">
+                        <button
+                          type="button"
+                          className="btn-bubble-action"
+                          onClick={() => {
+                            const key = m.id || m.ts;
+                            setMathOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+                          }}
+                        >
+                          {mathOpen[m.id || m.ts] ? "Hide math" : "Math"}
+                        </button>
+                      </Tip>
+                    </>
+                  )}
                 </div>
               )}
-              {m.role === "assistant" && mathOpen[m.id || m.ts] && (
+              {(detailsOn || msgDetails[m.id || m.ts]) && m.role === "assistant" && mathOpen[m.id || m.ts] && (
                 <div className="bubble-math-drawer">
                   <div className="math-drawer-header">
                     <span className="math-drawer-title">AI Math Pillars · Run Observability Telemetry</span>
@@ -652,7 +810,7 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
                   </div>
                 </div>
               )}
-              {m.ran_commands?.length > 0 && (
+              {(detailsOn || msgDetails[m.id || m.ts]) && m.ran_commands?.length > 0 && (
                 <div className="run-chips">
                   {m.ran_commands.map((cmd) => (
                     <code key={cmd}>{cmd.startsWith("/") ? cmd : `/${cmd}`}</code>
@@ -677,7 +835,7 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
                   onReview={() => openStudio(m.studio_preset, 3)}
                 />
               )}
-              {m.terminal_id && (
+              {(detailsOn || msgDetails[m.id || m.ts]) && m.terminal_id && (
                 <button
                   className="ghost"
                   onClick={() => {
@@ -707,48 +865,26 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
           onOpen={() => setPanel("pets")}
         />
         <div className="composer-quick-chips">
-          <button
-            type="button"
-            className={`quick-chip ${swarmMode ? "active" : ""}`}
-            style={{
-              background: swarmMode ? "rgba(0, 240, 255, 0.25)" : "rgba(255, 255, 255, 0.05)",
-              color: swarmMode ? "#00f0ff" : "#8b949e",
-              border: `1px solid ${swarmMode ? "#00f0ff" : "rgba(255, 255, 255, 0.1)"}`,
-              fontWeight: 700
-            }}
-            onClick={() => setSwarmMode(!swarmMode)}
-            title="Toggle Multi-Agent Tri-Consensus Reasoning"
-          >
-            {swarmMode ? "🌐 Swarm: ON" : "🌐 Swarm: OFF"}
-          </button>
-          {[
-            { label: "⚔️ /consensus", cmd: "/consensus " },
-            { label: "📐 /math", cmd: "/math" },
-            { label: "⚡ /doctor", cmd: "/doctor" },
-            { label: "🛸 /mission", cmd: "/mission" },
-            { label: "🚀 /omnipost", cmd: "/omnipost" },
-            { label: "🧩 /composer", cmd: "/composer" },
-            { label: "📜 /chronicle", cmd: "/chronicle" },
-            { label: "📖 /docs", cmd: "/docs" },
-            { label: "🐙 /github", cmd: "/github repos" },
-            { label: "🧠 /models", cmd: "/models" },
-            { label: "🐾 /pet", cmd: "/pet " },
-            { label: "📡 /swarm", cmd: "/who" },
-            { label: "🔐 /vault", cmd: "/vault" },
-            { label: "🌐 /connect", cmd: "/connect" },
-          ].map((chip) => (
+          <Tip label="Route this send through the live swarm" kicker="Swarm">
             <button
               type="button"
-              key={chip.label}
-              className="quick-chip"
-              onClick={() => {
-                setDraft(chip.cmd);
-                draftRef.current?.focus();
-              }}
+              className={`quick-chip ${swarmMode ? "active" : ""}`}
+              aria-pressed={swarmMode}
+              onClick={() => setSwarmMode(!swarmMode)}
             >
-              {chip.label}
+              {swarmMode ? "Swarm on" : "Swarm off"}
             </button>
-          ))}
+          </Tip>
+          {detailsOn && (
+            <>
+              <Tip label="Insert /who" kicker="Command">
+                <button type="button" className="quick-chip" onClick={() => setDraft("/who")}>Who is live</button>
+              </Tip>
+              <Tip label="Insert /help" kicker="Command">
+                <button type="button" className="quick-chip" onClick={() => setDraft("/help")}>Commands</button>
+              </Tip>
+            </>
+          )}
         </div>
         <form className="composer" id="composer" onSubmit={send}>
           {engagedPet && (
@@ -762,39 +898,55 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
                 <strong>{engagedPet.name || petId}</strong>
                 <small> · companion engaged for thread replies</small>
               </span>
-              <button
-                type="button"
-                className="composer-pet-dismiss"
-                onClick={() => setPetId("")}
-                title="Disengage companion"
-              >
-                ✕ Disengage
-              </button>
+              <Tip label="Remove the companion from this thread" kicker="Pet">
+                <button
+                  type="button"
+                  className="composer-pet-dismiss"
+                  onClick={() => setPetId("")}
+                >
+                  Disengage
+                </button>
+              </Tip>
             </div>
           )}
           {draft.startsWith("/") && (
             <div className="cmd-palette" role="listbox" aria-label="Commands">
-              {(commands.length
-                ? commands.filter((c) =>
-                    (`/${c.name} ${c.usage}`).includes(draft.slice(1).split(" ")[0] || "") ||
-                    c.name.startsWith(draft.slice(1).split(/\s/)[0] || "")
-                  )
-                : []
-              ).map((c, i) => (
-                <button
-                  type="button"
-                  key={c.name}
-                  className={i === cmdIndex ? "on" : ""}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setDraft(`/${c.name} `);
-                    draftRef.current?.focus();
-                  }}
-                >
-                  <code>{c.usage}</code>
-                  <span>{c.hint}</span>
-                </button>
-              ))}
+              {(() => {
+                const matches = commands.filter((c) =>
+                  (`/${c.name} ${c.usage}`).includes(draft.slice(1).split(" ")[0] || "") ||
+                  c.name.startsWith(draft.slice(1).split(/\s/)[0] || "")
+                );
+                return (
+                  <>
+                    <div className="cmd-palette-head">
+                      <span>Commands</span>
+                      <small>
+                        {matches.length} · ↑↓ move · Tab insert
+                      </small>
+                    </div>
+                    {matches.map((c, i) => (
+                      <button
+                        type="button"
+                        key={c.name}
+                        role="option"
+                        aria-selected={i === cmdIndex}
+                        className={i === cmdIndex ? "on" : ""}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setDraft(`/${c.name} `);
+                          draftRef.current?.focus();
+                        }}
+                      >
+                        <code>{c.usage}</code>
+                        <span>{c.hint}</span>
+                      </button>
+                    ))}
+                    {matches.length === 0 && (
+                      <p className="cmd-palette-empty">No command matches.</p>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
           <textarea
@@ -842,13 +994,21 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
             }}
             placeholder={
               engagedPet
-                ? `Message ${engagedPet.name || "your pet"} (engaged)…`
-                : "Message the harness, /pet kai to engage, or / for commands"
+                ? `Message ${engagedPet.name || "your pet"}…`
+                : "Ask Zoth. / opens commands."
             }
+            aria-label="Message"
           />
-          <button type="submit" disabled={busy || !draft.trim()}>
-            Send
-          </button>
+          <Tip label="Send this message" kicker="Composer" shortcut="Enter">
+            <button type="submit" className="composer-send" disabled={busy || !draft.trim()}>
+              Send
+            </button>
+          </Tip>
+          <p className="composer-hint">
+            <span>Enter to send</span>
+            <span>Shift+Enter for a line</span>
+            <span>/ for commands</span>
+          </p>
         </form>
         </div>
         {termOpen && (
@@ -857,19 +1017,19 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
       </section>
 
       {panel === "composer" && (
-        <Popout title="DAG Playbook Composer" kicker="Visual Agent & Tool Orchestration" wide externalUrl="/studio/agent-composer.html" onClose={() => setPanel(null)}>
+        <Popout title="DAG Playbook Composer" kicker="Visual Agent & Tool Orchestration" wide externalUrl="/studio/agent-composer.html" {...deckHero("composer")} onClose={() => setPanel(null)}>
           <iframe className="deck-frame" title="DAG Composer" src="/studio/agent-composer.html" style={{ minHeight: "740px" }} />
         </Popout>
       )}
 
       {panel === "consensus" && (
-        <Popout title="Multi-Agent Consensus Arena" kicker="Autonomous 3-Agent Arbitration & AST Synthesis" wide externalUrl="/studio/consensus.html" onClose={() => setPanel(null)}>
+        <Popout title="Multi-Agent Consensus Arena" kicker="Autonomous 3-Agent Arbitration & AST Synthesis" wide externalUrl="/studio/consensus.html" {...deckHero("consensus")} onClose={() => setPanel(null)}>
           <iframe className="deck-frame" title="Consensus Arena" src="/studio/consensus.html" style={{ minHeight: "740px" }} />
         </Popout>
       )}
 
       {panel === "math" && (
-        <Popout title="AI Math Pillars & Observability" kicker="Linear Algebra, Calculus & Information Theory Telemetry" wide externalUrl="/studio/math-pillars.html" onClose={() => setPanel(null)}>
+        <Popout title="AI Math Pillars & Observability" kicker="Linear Algebra, Calculus & Information Theory Telemetry" wide externalUrl="/studio/math-pillars.html" {...deckHero("math")} onClose={() => setPanel(null)}>
           <iframe className="deck-frame" title="Math Pillars" src="/studio/math-pillars.html" style={{ minHeight: "740px" }} />
         </Popout>
       )}
@@ -887,13 +1047,13 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
       )}
 
       {panel === "dag" && (
-        <Popout title="DAG Playbook Composer" kicker="Visual Agent & Tool Orchestration" wide externalUrl="/studio/agent-composer.html" onClose={() => setPanel(null)}>
+        <Popout title="DAG Playbook Composer" kicker="Visual Agent & Tool Orchestration" wide externalUrl="/studio/agent-composer.html" {...deckHero("composer")} onClose={() => setPanel(null)}>
           <iframe className="deck-frame" title="DAG Composer" src="/studio/agent-composer.html" style={{ minHeight: "740px" }} />
         </Popout>
       )}
 
       {panel === "models" && (
-        <Popout title="Models & connectors" kicker="A NullAI studio" onClose={() => setPanel(null)}>
+        <Popout title="Models & connectors" kicker="A NullAI studio" {...deckHero("models")} onClose={() => setPanel(null)}>
           <ul className="model-list">
             {models.map((m) => (
               <li key={m.id}>
@@ -1006,7 +1166,7 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
       )}
 
       {panel === "tools" && (
-        <Popout title="Tool registry" kicker={`A NullAI studio · ${tools.length} tools`} wide externalUrl="/registry/" onClose={() => setPanel(null)}>
+        <Popout title="Tool registry" kicker={`A NullAI studio · ${tools.length} tools`} wide externalUrl="/registry/" {...deckHero("tools")} onClose={() => setPanel(null)}>
           <ToolGrid tools={tools} />
         </Popout>
       )}
@@ -1016,17 +1176,17 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
         </Popout>
       )}
       {panel === "swarm" && (
-        <Popout title="Agent map & Swarm Arena" kicker="A NullAI studio · live" wide externalUrl="/studio/swarm.html" onClose={() => setPanel(null)}>
+        <Popout title="Swarm" kicker="Who is live" wide externalUrl="/studio/swarm.html" {...deckHero("swarm")} onClose={() => setPanel(null)}>
           <SwarmRadar />
         </Popout>
       )}
       {panel === "connect" && (
-        <Popout title="Connectors" kicker="A NullAI studio · BYOK" onClose={() => setPanel(null)}>
+        <Popout title="Connect" kicker="Accounts stay on this machine" {...deckHero("connect")} onClose={() => setPanel(null)}>
           <ConnectorsPanel />
         </Popout>
       )}
       {panel === "github" && (
-        <Popout title="GitHub" kicker="A NullAI studio · repos" wide onClose={() => setPanel(null)}>
+        <Popout title="GitHub" kicker="A NullAI studio · repos" wide {...deckHero("github")} onClose={() => setPanel(null)}>
           <GithubDrivePanel host="github" />
         </Popout>
       )}
@@ -1041,28 +1201,38 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
         </Popout>
       )}
       {panel === "pets" && (
-        <Popout title="Companions" kicker="A NullAI studio" wide externalUrl="/pets/" onClose={() => setPanel(null)}>
+        <Popout title="Pets" kicker="Sit one in this thread" wide externalUrl="/pets/" {...deckHero("pets")} onClose={() => setPanel(null)}>
           <div className="pet-toolbar">
-            <button type="button" onClick={() => setPanel("studio-pets")}>Open 3D pet studio</button>
-            <a className="ghost" href="/pets/" target="_blank" rel="noreferrer">Hangar ↗</a>
+            <Tip label="Sculpt and paint a companion in 3D" kicker="Studio">
+              <button type="button" onClick={() => setPanel("studio-pets")}>3D studio</button>
+            </Tip>
+            <Tip label="Open the hangar in a new tab" kicker="Hangar">
+              <a className="ghost" href="/pets/" target="_blank" rel="noreferrer">Hangar ↗</a>
+            </Tip>
           </div>
           <ul className="pet-pick">
             {petList.map((p) => (
               <li key={p.id || p.name}>
-                <button
-                  className={(p.id || p.name) === petId ? "on" : ""}
-                  onClick={() => engagePet(p.id || p.name)}
+                <Tip
+                  label={(p.id || p.name) === petId ? "Already sitting in this thread" : "Engage this companion in chat"}
+                  kicker={p.name || p.id}
+                  side="bottom"
                 >
-                  <img
-                    src={petPortraitSrc(p)}
-                    alt=""
-                    onError={(e) => onPetPortraitError(e, p)}
-                  />
-                  <span>
-                    <b>{p.name || p.id}</b>
-                    <small>{(p.id || p.name) === petId ? "engaged in this chat" : p.role || p.species || "Engage in chat"}</small>
-                  </span>
-                </button>
+                  <button
+                    className={(p.id || p.name) === petId ? "on" : ""}
+                    onClick={() => engagePet(p.id || p.name)}
+                  >
+                    <img
+                      src={petPortraitSrc(p)}
+                      alt=""
+                      onError={(e) => onPetPortraitError(e, p)}
+                    />
+                    <span>
+                      <b>{p.name || p.id}</b>
+                      <small>{(p.id || p.name) === petId ? "in this chat" : p.role || p.species || "Sit in chat"}</small>
+                    </span>
+                  </button>
+                </Tip>
               </li>
             ))}
           </ul>
@@ -1074,7 +1244,7 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
         </Popout>
       )}
       {panel === "vault" && (
-        <Popout title="BYOK vault" kicker="A NullAI studio · local keys" wide externalUrl="/vault/" onClose={() => setPanel(null)}>
+        <Popout title="Vault" kicker="Local keys never leave" wide externalUrl="/vault/" {...deckHero("vault")} onClose={() => setPanel(null)}>
           <iframe className="deck-frame" title="Vault" src="/vault/" style={{ minHeight: "740px" }} />
         </Popout>
       )}
@@ -1084,7 +1254,7 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
         </Popout>
       )}
       {panel === "studio" && (
-        <Popout title="Generate" kicker="A NullAI studio" wide onClose={() => setPanel(null)}>
+        <Popout title="Studio" kicker="Build a site" wide onClose={() => setPanel(null)}>
           {studioPreset && (
             <p className="muted">Prefill from chat — review, then Next / Build.</p>
           )}

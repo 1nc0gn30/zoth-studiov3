@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import Tip from "./Tip";
 
-export default function Popout({ title, kicker, onClose, wide, externalUrl, children }) {
+export default function Popout({ title, kicker, onClose, wide, externalUrl, hero, video, children }) {
   const closeRef = useRef(null);
   const [maximized, setMaximized] = useState(wide || false);
+  const [vidOk, setVidOk] = useState(!!video);
 
   useEffect(() => {
     const prev = document.activeElement;
@@ -24,6 +26,25 @@ export default function Popout({ title, kicker, onClose, wide, externalUrl, chil
         className={`pop-panel ${wide ? "wide" : ""} ${maximized ? "is-maximized" : ""}`}
         style={maximized ? { width: "min(1480px, calc(100vw - 32px))", left: "50%", right: "auto", transform: "translateX(-50%)", top: "20px", bottom: "20px" } : {}}
       >
+        {(hero || video) && (
+          <div className="pop-hero" aria-hidden="true">
+            {video && vidOk ? (
+              <video
+                className="pop-hero-media"
+                src={video}
+                poster={hero || undefined}
+                autoPlay
+                muted
+                loop
+                playsInline
+                onError={() => setVidOk(false)}
+              />
+            ) : (
+              <img className="pop-hero-media" src={hero} alt="" />
+            )}
+            <div className="pop-hero-fade" />
+          </div>
+        )}
         <header className="pop-head">
           <div className="pop-title-group">
             {kicker && <p className="pop-kicker">{kicker}</p>}
@@ -31,32 +52,36 @@ export default function Popout({ title, kicker, onClose, wide, externalUrl, chil
           </div>
           <div className="pop-head-actions">
             {externalUrl && (
-              <a
-                href={externalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="pop-action-btn"
-                title="Open in new browser tab"
-              >
-                <span>Full Page</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-              </a>
+              <Tip label="Open this panel in its own tab" kicker="Full page">
+                <a
+                  href={externalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pop-action-btn"
+                >
+                  <span>Open</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </a>
+              </Tip>
             )}
-            <button
-              type="button"
-              className="pop-action-btn"
-              onClick={() => setMaximized((v) => !v)}
-              title={maximized ? "Restore size" : "Expand to wide view"}
-            >
-              {maximized ? "❐ Standard" : "⛶ Maximize"}
-            </button>
-            <button ref={closeRef} className="pop-x" onClick={onClose} aria-label="Close">
-              ×
-            </button>
+            <Tip label={maximized ? "Return to the docked size" : "Fill more of the screen"} kicker="View">
+              <button
+                type="button"
+                className="pop-action-btn"
+                onClick={() => setMaximized((v) => !v)}
+              >
+                {maximized ? "Dock" : "Wide"}
+              </button>
+            </Tip>
+            <Tip label="Close this panel" kicker="Esc">
+              <button ref={closeRef} className="pop-x" onClick={onClose} aria-label="Close">
+                ×
+              </button>
+            </Tip>
           </div>
         </header>
         <div className="pop-body">{children}</div>

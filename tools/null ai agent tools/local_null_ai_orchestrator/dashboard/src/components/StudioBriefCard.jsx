@@ -5,7 +5,7 @@ export default function StudioBriefCard({ preset, onOpen, onReview }) {
     : preset.frameworks || "astro";
   return (
     <div className="studio-card">
-      <p className="ask-kicker">{preset.inferred ? "NullAI inferred brief" : "NullAI studio brief"}</p>
+      <p className="ask-kicker">{preset.inferred ? "Inferred brief" : "Studio brief"}</p>
       <h3>{preset.name || "untitled-site"}</h3>
       <dl>
         <div>
@@ -31,7 +31,7 @@ export default function StudioBriefCard({ preset, onOpen, onReview }) {
       {preset.instructions && <p className="studio-brief">{preset.instructions}</p>}
       <div className="studio-card-actions">
         <button type="button" onClick={onOpen}>
-          Open Generate
+          Open Studio
         </button>
         {onReview && (
           <button type="button" className="ghost" onClick={onReview}>

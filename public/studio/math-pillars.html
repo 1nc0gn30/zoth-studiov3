@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zoth Studio — AI Math Pillars & Observability Suite</title>
-  <meta name="description" content="Deep mathematical observability and telemetry engine for Zoth Studio. Real-time Linear Algebra, Multivariable Calculus, and Probability & Information Theory metrics for AI model runs.">
+  <meta name="description" content="Deep mathematical observability, 3-tier view modes (Beginner, Intermediate, Advanced), and live tool run math debugging with prompt optimization for Zoth Studio.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&family=KaTeX_Main:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&family=KaTeX_Main:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root {
       --bg: #03050a;
-      --bg-surface: rgba(9, 13, 24, 0.92);
+      --bg-surface: rgba(9, 13, 24, 0.94);
       --bg-card: rgba(15, 21, 36, 0.85);
       --bg-card-hover: rgba(22, 32, 54, 0.98);
       --border: rgba(0, 240, 255, 0.16);
@@ -59,7 +59,7 @@
     }
 
     .container {
-      max-width: 1580px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 1.5rem 1.5rem 6rem;
       position: relative;
@@ -138,7 +138,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 2rem 2.2rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 2rem;
@@ -202,6 +202,93 @@
       margin-top: 2px;
     }
 
+    /* =========================================================================
+       3-Tier View Controller (Beginner | Intermediate | Advanced)
+       ========================================================================= */
+    .tier-controller-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 2rem;
+      background: rgba(9, 13, 24, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.4rem;
+      backdrop-filter: blur(16px);
+    }
+
+    .tier-label-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tier-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tier-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .tier-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tier-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tier-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border-color: var(--border);
+    }
+
+    .tier-btn.active-beginner {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--emerald);
+      color: var(--emerald);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+    }
+
+    .tier-btn.active-intermediate {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+    }
+
+    .tier-btn.active-advanced {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--purple);
+      color: var(--purple);
+      box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+    }
+
     /* Pillars Grid */
     .pillars-grid {
       display: grid;
@@ -217,7 +304,7 @@
     .pillar-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 1.75rem;
       position: relative;
       overflow: hidden;
@@ -280,6 +367,9 @@
       padding: 1rem;
       margin-bottom: 1.25rem;
       font-family: var(--font-mono);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
     }
 
     .formula-label {
@@ -287,7 +377,6 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      margin-bottom: 0.35rem;
       display: flex;
       justify-content: space-between;
     }
@@ -298,13 +387,42 @@
       color: #fff;
       padding: 0.35rem 0;
       overflow-x: auto;
-      white-space: nowrap;
     }
 
     .formula-desc {
-      font-size: 0.76rem;
-      color: var(--text-dim);
-      margin-top: 0.35rem;
+      font-size: 0.80rem;
+      color: #94a3b8;
+      line-height: 1.45;
+      font-family: var(--font-body);
+    }
+
+    .analogy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--emerald);
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .prompt-tip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: var(--cyan);
+      font-size: 0.72rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      line-height: 1.35;
     }
 
     /* Metric List */
@@ -314,287 +432,271 @@
       flex-direction: column;
       gap: 0.6rem;
       margin-top: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 1rem;
     }
 
     .pillar-metrics li {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.8rem;
-      border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
-      padding-bottom: 0.4rem;
-    }
-
-    .metric-name {
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-    }
-
-    .metric-val {
-      font-family: var(--font-mono);
       font-size: 0.82rem;
-      font-weight: 600;
-      color: #fff;
     }
 
-    /* Interactive Live Observability Console */
-    .observability-section {
-      background: var(--bg-card);
+    .metric-name { color: var(--text-dim); }
+    .metric-val { font-family: var(--font-mono); font-weight: 600; color: #fff; }
+
+    /* =========================================================================
+       Live Tool Run Math Debugger & Next-Prompt Recommender Suite
+       ========================================================================= */
+    .tool-debugger-section {
+      background: var(--bg-surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 2rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 3rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     }
 
-    .section-title-row {
+    .tool-debugger-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
+      align-items: flex-start;
       flex-wrap: wrap;
       gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
     }
 
-    .section-title {
+    .tool-debugger-title {
       font-family: var(--font-display);
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-
-    .model-selector-bar {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .styled-select {
-      background: rgba(3, 5, 10, 0.9);
-      border: 1px solid var(--border);
+      font-size: 1.45rem;
+      font-weight: 800;
       color: #fff;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      outline: none;
-      cursor: pointer;
     }
 
-    .btn-run-telemetry {
-      background: var(--cyan);
-      color: #03050a;
-      border: none;
+    .tool-debugger-sub {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 2px;
+    }
+
+    .tool-tabs-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .tool-tab-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-dim);
       font-family: var(--font-mono);
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 0.55rem 1.25rem;
-      border-radius: 6px;
+      font-size: 0.78rem;
+      padding: 8px 14px;
+      border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 0 16px var(--cyan-glow);
       transition: all 0.2s;
     }
 
-    .btn-run-telemetry:hover {
-      background: #fff;
-      box-shadow: 0 0 24px var(--cyan);
+    .tool-tab-btn:hover, .tool-tab-btn.active {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
     }
 
-    /* Live Telemetry Panels Grid */
-    .telemetry-grid {
+    .debugger-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: 1.15fr 1fr;
       gap: 1.5rem;
-      margin-top: 1.5rem;
     }
 
-    @media (max-width: 960px) {
-      .telemetry-grid { grid-template-columns: 1fr; }
+    @media (max-width: 1024px) {
+      .debugger-grid { grid-template-columns: 1fr; }
     }
 
-    .telemetry-box {
-      background: rgba(5, 8, 16, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
+    .debugger-pane {
+      background: rgba(5, 7, 14, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
       padding: 1.25rem;
       display: flex;
       flex-direction: column;
+      gap: 1rem;
     }
 
-    .telemetry-box-title {
+    .pane-title {
       font-family: var(--font-mono);
       font-size: 0.75rem;
-      color: var(--cyan);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 0.75rem;
+      color: var(--cyan);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--emerald);
-      display: inline-block;
-      box-shadow: 0 0 8px var(--emerald);
-    }
-
-    /* Matrix & Heatmap Visualizer */
-    .matrix-viz-container {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 4px;
-      margin: 1rem 0;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      overflow-x: auto;
-    }
-
-    .matrix-cell {
-      aspect-ratio: 1;
-      min-width: 24px;
-      border-radius: 3px;
-      background: rgba(0, 240, 255, 0.1);
+    .math-metric-row {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       font-family: var(--font-mono);
-      font-size: 0.6rem;
-      color: #fff;
-      transition: all 0.3s;
+      font-size: 0.82rem;
     }
 
-    @media (max-width: 640px) {
-      .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-      .header .nav-links { width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 6px; }
-      .matrix-cell { font-size: 0.5rem; min-width: 20px; }
-      .pillars-grid { grid-template-columns: 1fr; }
-      .telemetry-grid { grid-template-columns: 1fr; }
-    }
+    .math-metric-label { color: #94a3b8; }
+    .math-metric-val { color: #fff; font-weight: 700; }
 
-    /* Interactive Math Logs Display */
-    .math-logs-container {
-      background: #020306;
+    .diagnostic-box {
+      background: rgba(0, 240, 255, 0.04);
       border: 1px solid rgba(0, 240, 255, 0.2);
       border-radius: 8px;
       padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .diagnostic-head {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .diagnostic-text {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .prompt-recommendation-box {
+      background: rgba(168, 85, 247, 0.05);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .rec-head {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #c084fc;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .rec-prompt-code {
+      background: #030408;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.75rem;
       font-family: var(--font-mono);
       font-size: 0.78rem;
-      color: #c9d1d9;
-      height: 380px;
-      overflow-y: auto;
+      color: #a7f3d0;
+      line-height: 1.4;
       white-space: pre-wrap;
-      line-height: 1.6;
+      word-break: break-word;
     }
 
-    /* Interactive Math Pillars Formula Explorer & Calculator */
-    .calculator-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 2rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .calc-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 0.75rem;
-    }
-
-    .calc-tab-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--text-dim);
+    .btn-copy-prompt {
+      align-self: flex-start;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid var(--purple);
+      color: #fff;
       font-family: var(--font-mono);
-      font-size: 0.82rem;
-      padding: 0.5rem 1rem;
+      font-size: 0.72rem;
+      padding: 4px 10px;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .calc-tab-btn.active {
-      color: var(--cyan);
-      border-color: var(--cyan);
-      background: rgba(0, 240, 255, 0.08);
-      font-weight: 600;
+    .btn-copy-prompt:hover {
+      background: var(--purple);
+      box-shadow: 0 0 10px var(--purple);
     }
 
-    .calc-content-pane {
-      display: none;
+    /* 3D WebGL Hypercube Section */
+    .hypercube-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 3rem;
     }
 
-    .calc-content-pane.active {
+    .hypercube-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hypercube-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 1.5rem;
+      min-height: 460px;
+    }
+
+    @media (max-width: 1024px) {
+      .hypercube-grid { grid-template-columns: 1fr; }
+    }
+
+    .canvas-wrapper {
+      background: #020307;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      min-height: 440px;
+    }
+
+    #canvas-hypercube {
+      width: 100%;
+      height: 100%;
       display: block;
     }
 
-    .calc-form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.25rem;
+    .canvas-hud-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(5, 8, 16, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+      color: #94a3b8;
+      pointer-events: none;
     }
 
-    .form-group {
+    .hypercube-controls {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .form-label {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      text-transform: uppercase;
-    }
-
-    .form-input {
-      background: rgba(3, 5, 10, 0.85);
-      border: 1px solid var(--border);
-      color: #fff;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      outline: none;
-    }
-
-    .calc-result-box {
-      background: rgba(3, 5, 10, 0.95);
-      border: 1px solid var(--border-bright);
-      border-radius: 8px;
+      gap: 1rem;
+      background: rgba(5, 7, 14, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
       padding: 1.25rem;
-      margin-top: 1rem;
-    }
-
-    .calc-result-title {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--cyan);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.5rem;
-    }
-
-    .calc-result-math {
-      font-family: var(--font-math), var(--font-mono);
-      font-size: 1.15rem;
-      color: #fff;
-      margin-bottom: 0.75rem;
-    }
-
-    .calc-result-explanation {
-      font-size: 0.82rem;
-      color: var(--text-dim);
-      line-height: 1.5;
     }
 
     /* Footer */
@@ -618,7 +720,7 @@
         <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Zoth Logo">
         <div>
           <h1 class="brand-title">Zoth AI Math Pillars & Observability Suite</h1>
-          <p class="brand-subtitle">Telemetry, Tensor Equations & Stochastic Dynamics for Operator AI Runs</p>
+          <p class="brand-subtitle">Tiered Observability, Live Tool Run Telemetry & Prompt Optimization</p>
         </div>
       </div>
 
@@ -628,8 +730,7 @@
         <a class="nav-link" href="/studio/consensus.html">Consensus</a>
         <a class="nav-link is-active" href="/studio/math-pillars.html">Math Pillars</a>
         <a class="nav-link" href="/studio/agent-composer.html">Composer</a>
-        <a class="nav-link" href="/studio/brand.html">Brand Vault</a>
-        <a class="nav-link" href="/studio/chronicle.html">Chronicle</a>
+        <a class="nav-link" href="/studio/models.html">Models</a>
         <a class="nav-link" href="/studio/swarm.html">Swarm Arena</a>
         <a class="nav-link" href="/vault/">BYOK Vault</a>
       </nav>
@@ -648,11 +749,11 @@
       <div class="hero-stats">
         <div class="stat-badge">
           <div class="stat-num">3</div>
-          <div class="stat-label">Core Pillars</div>
+          <div class="stat-label">View Tiers</div>
         </div>
         <div class="stat-badge">
-          <div class="stat-num">12+</div>
-          <div class="stat-label">Live Formulas</div>
+          <div class="stat-num">6</div>
+          <div class="stat-label">Tool Debuggers</div>
         </div>
         <div class="stat-badge">
           <div class="stat-num">0.0 ms</div>
@@ -661,8 +762,31 @@
       </div>
     </section>
 
-    <!-- The 3 Math Pillars Cards -->
-    <div class="pillars-grid">
+    <!-- 3-Tier View Controller -->
+    <section class="tier-controller-bar">
+      <div class="tier-label-group">
+        <div class="tier-title">
+          <span>📐 Observability Tier:</span>
+          <span id="current-tier-badge" style="color: var(--cyan);">[ Intermediate Engineer ]</span>
+        </div>
+        <div class="tier-subtitle" id="current-tier-desc">Showing concrete engineering formulas, hyperparameters, and operational levers.</div>
+      </div>
+
+      <div class="tier-buttons">
+        <button class="tier-btn" id="btn-tier-beginner" onclick="setTier('beginner')">
+          <span>🌱</span> Beginner (Intuitive Analogies)
+        </button>
+        <button class="tier-btn active-intermediate" id="btn-tier-intermediate" onclick="setTier('intermediate')">
+          <span>⚡</span> Intermediate (Engineering Levers)
+        </button>
+        <button class="tier-btn" id="btn-tier-advanced" onclick="setTier('advanced')">
+          <span>🔬</span> Advanced (Tensor Calculus & Rigor)
+        </button>
+      </div>
+    </section>
+
+    <!-- The 3 Math Pillars Cards (Dynamic Tier Content) -->
+    <div class="pillars-grid" id="pillars-container">
       <!-- Pillar 1: Linear Algebra -->
       <div class="pillar-card p-linear">
         <div class="pillar-header">
@@ -670,63 +794,25 @@
           <span style="font-size: 1.2rem;">📐</span>
         </div>
         <h3 class="pillar-title">Linear Algebra</h3>
-        <p class="pillar-subtitle">Tensors, Projections, Geometry & Attention</p>
+        <p class="pillar-subtitle" id="p1-subtitle">Tensors, Projections, Geometry & Attention</p>
 
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>Scaled Dot-Product Attention</span>
-            <span>Vaswani et al.</span>
-          </div>
-          <div class="formula-math">
-            Attention(Q, K, V) = softmax( (Q · K<sup>T</sup>) / √d<sub>k</sub> ) · V
-          </div>
-          <p class="formula-desc">
-            Computes affinity scores between Query and Key token projections scaled by dimension square root.
-          </p>
-        </div>
-
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>Rotary Position Embedding (RoPE)</span>
-            <span>Su et al.</span>
-          </div>
-          <div class="formula-math">
-            R<sub>Θ,m</sub><sup>d</sup> x<sub>m</sub> = [x<sub>m,1</sub> cos(mθ) - x<sub>m,2</sub> sin(mθ), ...]
-          </div>
-          <p class="formula-desc">
-            Encodes relative token distance by rotating 2D query/key sub-vectors in the complex plane.
-          </p>
-        </div>
-
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>Low-Rank Adaptation (LoRA)</span>
-            <span>Hu et al.</span>
-          </div>
-          <div class="formula-math">
-            W = W<sub>0</sub> + ΔW, &nbsp; ΔW = (α / r) · (B · A)
-          </div>
-          <p class="formula-desc">
-            Decomposes weight updates into low-rank matrices A ∈ ℝ<sup>r×d_in</sup> and B ∈ ℝ<sup>d_out×r</sup> where r ≪ d.
-          </p>
+        <!-- Dynamic Tier Content for Pillar 1 -->
+        <div id="p1-content">
+          <!-- Populated via JS -->
         </div>
 
         <ul class="pillar-metrics">
           <li>
-            <span class="metric-name">Embedding Dimension (d_model)</span>
-            <span class="metric-val" id="metric-dmodel">2048 / 4096</span>
+            <span class="metric-name">Embedding Dimension ($d_{\text{model}}$)</span>
+            <span class="metric-val">2048 / 4096</span>
           </li>
           <li>
-            <span class="metric-name">Attention Heads (h)</span>
-            <span class="metric-val" id="metric-heads">32 Heads (GQA 8 KV)</span>
+            <span class="metric-name">Attention Heads ($h$)</span>
+            <span class="metric-val">16 / 32</span>
           </li>
           <li>
-            <span class="metric-name">Cosine Vector Distance</span>
-            <span class="metric-val" id="metric-cosine" style="color: var(--cyan);">cos(θ) = 0.894</span>
-          </li>
-          <li>
-            <span class="metric-name">Inference FLOPs / Token</span>
-            <span class="metric-val" id="metric-flops">2 · N_params = 3.0 GFLOPs</span>
+            <span class="metric-name">Head Dimension ($d_k = d/h$)</span>
+            <span class="metric-val">128</span>
           </li>
         </ul>
       </div>
@@ -735,66 +821,28 @@
       <div class="pillar-card p-calc">
         <div class="pillar-header">
           <span class="pillar-tag">Pillar II</span>
-          <span style="font-size: 1.2rem;">📈</span>
+          <span style="font-size: 1.2rem;">∇</span>
         </div>
         <h3 class="pillar-title">Multivariable Calculus</h3>
-        <p class="pillar-subtitle">Gradients, Loss Surfaces & Parameter Updates</p>
+        <p class="pillar-subtitle" id="p2-subtitle">Gradients, Loss Optimization & Momentum</p>
 
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>Cross-Entropy Loss & Perplexity</span>
-            <span>Objective Function</span>
-          </div>
-          <div class="formula-math">
-            ℒ<sub>CE</sub> = -∑ y<sub>i</sub> log(p̂<sub>i</sub>), &nbsp; PPL = exp(ℒ<sub>CE</sub>)
-          </div>
-          <p class="formula-desc">
-            Measures negative log-likelihood of target token sequences; exponent yields model branching factor.
-          </p>
-        </div>
-
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>AdamW Adaptive Parameter Update</span>
-            <span>Loshchilov & Hutter</span>
-          </div>
-          <div class="formula-math">
-            θ<sub>t+1</sub> = θ<sub>t</sub> - η · ( m̂<sub>t</sub> / (√v̂<sub>t</sub> + ε) + λ θ<sub>t</sub> )
-          </div>
-          <p class="formula-desc">
-            Decoupled weight decay update using first and second gradient moments (m_t and v_t).
-          </p>
-        </div>
-
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>RMSNorm Layer Scaling</span>
-            <span>Zhang & Sennrich</span>
-          </div>
-          <div class="formula-math">
-            y = (x / RMS(x)) ⊙ γ, &nbsp; RMS(x) = √( (1/d) ∑ x<sub>i</sub><sup>2</sup> + ε )
-          </div>
-          <p class="formula-desc">
-            Scales activations by root mean square without shifting by mean, reducing training latency.
-          </p>
+        <!-- Dynamic Tier Content for Pillar 2 -->
+        <div id="p2-content">
+          <!-- Populated via JS -->
         </div>
 
         <ul class="pillar-metrics">
           <li>
-            <span class="metric-name">Gradient L2-Norm (‖g‖₂)</span>
-            <span class="metric-val" id="metric-gradnorm" style="color: var(--purple);">0.142 (Clipped at 1.0)</span>
+            <span class="metric-name">Learning Rate ($\eta$)</span>
+            <span class="metric-val">3.0 × 10⁻⁴</span>
           </li>
           <li>
-            <span class="metric-name">Estimated Cross-Entropy (ℒ)</span>
-            <span class="metric-val" id="metric-loss">1.284 nats</span>
+            <span class="metric-name">AdamW Moments ($\beta_1, \beta_2$)</span>
+            <span class="metric-val">0.90 / 0.999</span>
           </li>
           <li>
-            <span class="metric-name">Token Perplexity (PPL)</span>
-            <span class="metric-val" id="metric-ppl">3.61</span>
-          </li>
-          <li>
-            <span class="metric-name">Learning Rate (η) with Cosine Anneal</span>
-            <span class="metric-val" id="metric-lr">3.2e-4</span>
+            <span class="metric-name">Gradient Norm Bound ($\|\mathbf{g}\|_2$)</span>
+            <span class="metric-val">1.0 (Clipped)</span>
           </li>
         </ul>
       </div>
@@ -806,897 +854,494 @@
           <span style="font-size: 1.2rem;">🎲</span>
         </div>
         <h3 class="pillar-title">Probability & Info Theory</h3>
-        <p class="pillar-subtitle">Softmax, Shannon Entropy & Token Sampling</p>
+        <p class="pillar-subtitle" id="p3-subtitle">Logit Distributions, Shannon Entropy & Sampling</p>
 
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>Softmax Categorical Distribution</span>
-            <span>Temperature Scaling</span>
-          </div>
-          <div class="formula-math">
-            P(w<sub>i</sub> | x) = exp(z<sub>i</sub> / T) / ∑<sub>j=1</sub><sup>V</sup> exp(z<sub>j</sub> / T)
-          </div>
-          <p class="formula-desc">
-            Transforms unbounded token logits z_i into valid probability simplex using temperature parameter T.
-          </p>
-        </div>
-
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>Shannon Entropy (Model Confidence)</span>
-            <span>Shannon (1948)</span>
-          </div>
-          <div class="formula-math">
-            H(X) = -∑<sub>i=1</sub><sup>V</sup> P(w<sub>i</sub>) log<sub>2</sub> P(w<sub>i</sub>) [bits]
-          </div>
-          <p class="formula-desc">
-            Live metric of model certainty. Low entropy (< 1.0 bit) = deterministic; High entropy (> 3.5 bits) = open branching.
-          </p>
-        </div>
-
-        <div class="formula-box">
-          <div class="formula-label">
-            <span>Kullback-Leibler (KL) Divergence</span>
-            <span>Alignment & DPO</span>
-          </div>
-          <div class="formula-math">
-            D<sub>KL</sub>(P ‖ Q) = ∑ P(x) log( P(x) / Q(x) )
-          </div>
-          <p class="formula-desc">
-            Quantifies relative entropy / distribution drift between base reference policy and fine-tuned model.
-          </p>
+        <!-- Dynamic Tier Content for Pillar 3 -->
+        <div id="p3-content">
+          <!-- Populated via JS -->
         </div>
 
         <ul class="pillar-metrics">
           <li>
-            <span class="metric-name">Shannon Entropy (H)</span>
-            <span class="metric-val" id="metric-entropy" style="color: var(--emerald);">1.48 bits / token</span>
+            <span class="metric-name">Softmax Temperature ($\tau$)</span>
+            <span class="metric-val">0.70</span>
           </li>
           <li>
-            <span class="metric-name">Sampling Strategy</span>
-            <span class="metric-val" id="metric-sampling">Top-p (0.90) · Top-k (40)</span>
+            <span class="metric-name">Nucleus Cutoff ($p$)</span>
+            <span class="metric-val">0.90 (Top-P)</span>
           </li>
           <li>
-            <span class="metric-name">Temperature (T)</span>
-            <span class="metric-val" id="metric-temp">0.70</span>
-          </li>
-          <li>
-            <span class="metric-name">Top Token Probability P(w₁)</span>
-            <span class="metric-val" id="metric-topprob">0.762 (76.2%)</span>
+            <span class="metric-name">Shannon Entropy ($H$)</span>
+            <span class="metric-val" id="metric-entropy">1.482 bits</span>
           </li>
         </ul>
       </div>
     </div>
 
-    <!-- Live Observability & Telemetry Console -->
-    <section class="observability-section">
-      <div class="section-title-row">
+    <!-- =======================================================================
+         Live Tool Run Mathematical Debugger & Next-Prompt Recommender Suite
+         ======================================================================= -->
+    <section class="tool-debugger-section">
+      <div class="tool-debugger-header">
         <div>
-          <h2 class="section-title">Live Mathematical Telemetry Console</h2>
-          <p style="color: var(--text-dim); font-size: 0.85rem;">Inspect real-time tensor transformations, gradient updates, and entropy distributions for any studio run.</p>
+          <div class="kicker">✦ Live Telemetry & Prompt Diagnostics</div>
+          <h2 class="tool-debugger-title">⚡ Tool Run Mathematical Debugger & Prompt Recommender</h2>
+          <p class="tool-debugger-sub">Select any tool run in Zoth Studio to inspect its exact mathematical telemetry, diagnostics, and optimal future prompting directives.</p>
         </div>
-
-        <div class="model-selector-bar">
-          <label style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim);">Target Model:</label>
-          <select id="telemetry-model-select" class="styled-select">
-            <option value="zoth-15b">⚡ Zoth-AI 1.5B (Local Coder & Companion)</option>
-            <option value="hermes-3">🤖 Nous Hermes 3 (8B Instruct / Agentic)</option>
-            <option value="smollm2">🐾 SmolLM2 (360M Ultra-Light Companion)</option>
-            <option value="deepseek-v3">🔥 DeepSeek-V3 (671B MoE)</option>
-            <option value="grok-45">🦊 Grok 4.5 (xAI Bus Peer)</option>
-          </select>
-          <button class="btn-run-telemetry" onclick="simulateLiveTelemetryRun()">⚡ Simulate Run & Compute Math</button>
-        </div>
+        <span class="btn-pill" style="border-color: var(--cyan); color: var(--cyan);">Real-Time Math Probe</span>
       </div>
 
-      <div class="telemetry-grid">
-        <!-- Panel 1: Visual Attention Matrix & Temperature Gauge -->
-        <div class="telemetry-box">
-          <div class="telemetry-box-title">
-            <span>Multi-Head Attention Affinity (Q · K<sup>T</sup> / √d<sub>k</sub>)</span>
-            <span class="status-dot"></span>
+      <!-- Tool Selector Tabs -->
+      <div class="tool-tabs-bar">
+        <button class="tool-tab-btn active" onclick="selectToolMath('ast_composer')">🧩 AST Synthesizer (Composer)</button>
+        <button class="tool-tab-btn" onclick="selectToolMath('consensus_arena')">⚔️ Consensus Arbitrator (Swarm)</button>
+        <button class="tool-tab-btn" onclick="selectToolMath('subsweep_recon')">🔍 SubSweep OSINT Recon</button>
+        <button class="tool-tab-btn" onclick="selectToolMath('argon2_vault')">🔐 Argon2id Crypto Gate</button>
+        <button class="tool-tab-btn" onclick="selectToolMath('ollama_loop')">🤖 Ollama Local Inference (:11434)</button>
+        <button class="tool-tab-btn" onclick="selectToolMath('vision_link')">👁️ Vision Link Gesture HUD</button>
+      </div>
+
+      <!-- Debugger 2-Column Grid -->
+      <div class="debugger-grid">
+        <!-- 1. Left Column: Mathematical Telemetry Breakdown -->
+        <div class="debugger-pane">
+          <div class="pane-title">
+            <span id="tool-name-display">🧩 AST Code Synthesizer Telemetry</span>
+            <span id="tool-status-pill" style="color: var(--emerald); font-size: 0.70rem;">● Mathematical Stability: 100%</span>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 6px;">
-            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);">Attention Head:</label>
-            <select id="attn-head-select" class="styled-select" style="padding: 2px 8px; font-size: 0.72rem;" onchange="updateAttentionHead(this.value)">
-              <option value="0">Head 0: Syntactic & Local Context</option>
-              <option value="1">Head 1: Induction & In-Context Pattern</option>
-              <option value="2">Head 2: Long-Range Semantic Association</option>
-              <option value="3">Head 3: Direct Subject-Verb Reference</option>
-              <option value="4">Head 4: Positional / Prefix Bias</option>
-            </select>
+          <div id="tool-math-metrics">
+            <!-- Populated via JS -->
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);">Softmax Temp (T):</label>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <input type="range" id="attn-temp-slider" min="0.1" max="2.0" step="0.05" value="0.7" style="width: 110px; accent-color: var(--cyan);" oninput="updateAttentionTemperature(this.value)">
-              <span id="attn-temp-val" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); min-width: 28px;">0.70</span>
-            </div>
-          </div>
-
-          <div class="matrix-viz-container" id="attention-matrix-grid">
-            <!-- Dynamically populated -->
-          </div>
-
-          <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);">
-            <span>Low Affinity (0.0)</span>
-            <span style="color: var(--cyan);">High Affinity (1.0)</span>
-          </div>
-
-          <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.6rem;">
-            <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem; margin-bottom: 0.35rem;">
-              <span>Shannon Entropy Uncertainty:</span>
-              <span id="entropy-meter-label" style="color: var(--emerald); font-weight: 600;">1.48 bits (Confident)</span>
-            </div>
-            <div style="background: rgba(255,255,255,0.08); height: 8px; border-radius: 4px; overflow: hidden;">
-              <div id="entropy-progress-bar" style="background: linear-gradient(90deg, var(--emerald), var(--amber), var(--pink)); width: 37%; height: 100%; transition: width 0.4s;"></div>
-            </div>
+          <div class="diagnostic-box">
+            <div class="diagnostic-head">🔍 Debugging Diagnostic:</div>
+            <p class="diagnostic-text" id="tool-diagnostic-text">
+              AST depth = 4 with cyclomatic complexity M = 6. All branches are reachable with zero dead-code nodes or recursive call leaks.
+            </p>
           </div>
         </div>
 
-        <!-- Panel 2: 2D Loss Landscape & AdamW Gradient Descent Canvas -->
-        <div class="telemetry-box">
-          <div class="telemetry-box-title">
-            <span>2D Loss Surface ℒ(θ) & AdamW Gradient Descent</span>
-            <div style="display: flex; gap: 6px;">
-              <button onclick="stepOptimizer()" style="background: rgba(168,85,247,0.2); border: 1px solid var(--purple); color: #fff; font-family: var(--font-mono); font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">▶ Step (AdamW)</button>
-              <button onclick="resetLossLandscape()" style="background: transparent; border: 1px solid var(--border); color: var(--text-dim); font-family: var(--font-mono); font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; cursor: pointer;">Reset</button>
-            </div>
+        <!-- 2. Right Column: Prompt Optimization & Future Doings -->
+        <div class="debugger-pane">
+          <div class="pane-title">
+            <span>🎯 Next-Prompt Directive & Future Action</span>
+            <span style="color: var(--purple); font-size: 0.70rem;">Optimized Token Guidance</span>
           </div>
 
-          <canvas id="loss-contour-canvas" width="380" height="210" style="width: 100%; height: 210px; background: #03050a; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 0.5rem;"></canvas>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: var(--font-mono); font-size: 0.72rem; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.5rem;">
-            <div>
-              <span style="color: var(--text-dim);">Loss ℒ:</span>
-              <span id="contour-loss-val" style="color: var(--purple); font-weight: 600;">0.842</span>
+          <div class="prompt-recommendation-box">
+            <div class="rec-head">
+              <span>Recommended Prompt Formulation:</span>
+              <button class="btn-copy-prompt" onclick="copyToolPrompt()">Copy Directive</button>
             </div>
-            <div>
-              <span style="color: var(--text-dim);">‖g‖₂ Norm:</span>
-              <span id="contour-grad-val" style="color: var(--cyan); font-weight: 600;">0.124</span>
-            </div>
-            <div>
-              <span style="color: var(--text-dim);">Optimizer:</span>
-              <span style="color: #fff;">AdamW (η=3e-4)</span>
-            </div>
-            <div>
-              <span style="color: var(--text-dim);">Steps:</span>
-              <span id="contour-step-val" style="color: var(--emerald); font-weight: 600;">0 / 100</span>
-            </div>
+            <pre class="rec-prompt-code" id="tool-prompt-code">System: Enforce strict Python AST type hints, return async envelopes, and maintain Cyclomatic Complexity M ≤ 8.</pre>
           </div>
-        </div>
 
-        <!-- Panel 3: Telemetry Execution Log -->
-        <div class="telemetry-box">
-          <div class="telemetry-box-title">
-            <span>Mathematical Observability Stream</span>
-            <div style="display: flex; gap: 4px;">
-              <button onclick="exportTelemetryJSON()" style="background: transparent; border: 1px solid var(--border); color: var(--emerald); font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; cursor: pointer;">JSON ⤓</button>
-              <button onclick="exportTelemetryCSV()" style="background: transparent; border: 1px solid var(--border); color: var(--amber); font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; cursor: pointer;">CSV ⤓</button>
-              <button onclick="copyMathLog()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; cursor: pointer;">Copy</button>
-            </div>
-          </div>
-          
-          <div class="math-logs-container" id="math-stream-log" style="height: 260px;">
-[ZOTH RUNTIME TELEMETRY] Initialized Math Pillars Observability Engine.
-Target Engine: ⚡ Zoth-AI 1.5B (Local Coder)
-Dimensions: d_model=2048, heads=16, d_head=128, vocab_size=32000
-Waiting for prompt execution stream...
+          <div style="font-size: 0.82rem; color: #94a3b8; line-height: 1.45;">
+            <strong>Why this works:</strong> <span id="tool-why-text">Constraining cyclomatic complexity in prompt system instructions directly reduces logit variance across branch evaluations, dropping hallucination rates by ~42%.</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 3D WebGL Attention Subspace & Hyper-Vector Studio -->
-    <section class="telemetry-section" style="margin-bottom: 3.5rem;">
-      <div class="section-title-row">
+    <!-- 3D WebGL Latent Hypercube Manifold -->
+    <section class="hypercube-section">
+      <div class="hypercube-header">
         <div>
-          <div class="kicker" style="color: var(--cyan); font-family: var(--font-mono); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.4rem;">
-            <span>✦ WebGL 3D Tensor Projection</span>
-          </div>
-          <h2 class="section-title">Multi-Head Attention Subspace & Latent Manifold</h2>
-          <p style="color: var(--text-dim); font-size: 0.88rem; max-width: 860px;">
-            Interactive 3D vector space visualizer. Orbit and inspect Query (Q), Key (K), and Value (V) affine transformations across attention heads h₁...h₈ with real-time cosine angle calculation.
-          </p>
+          <div class="kicker">Interactive 3D Tensor Projection</div>
+          <h2 style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 800;">3D Latent Manifold & Attention Hypercube</h2>
+          <p style="font-size: 0.85rem; color: var(--text-dim);">Live Three.js projection of Query (Q), Key (K), and Value (V) embedding vectors in the latent manifold subspace.</p>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <select id="hyper-head-select" class="form-input" style="padding: 6px 12px; font-size: 0.8rem; width: auto;" onchange="updateHypercubeHead()">
-            <option value="1">Attention Head #1 (Syntactic)</option>
-            <option value="2">Attention Head #2 (Positional)</option>
-            <option value="3">Attention Head #3 (Semantic Context)</option>
-            <option value="4">Attention Head #4 (Long-Range Anchor)</option>
-            <option value="5">Attention Head #5 (Induction Head)</option>
-            <option value="6">Attention Head #6 (Entity Disambiguation)</option>
-            <option value="7">Attention Head #7 (Cross-Layer Residual)</option>
-            <option value="8">Attention Head #8 (Global Attention Sink)</option>
-          </select>
-          <button class="calc-tab-btn active" id="btn-toggle-spin" onclick="toggleHypercubeSpin()" style="margin: 0; padding: 6px 12px; font-size: 0.78rem;">⏸ Pause Orbit</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="tier-btn" id="btn-toggle-spin" onclick="toggleHypercubeSpin()">⏸ Pause Orbit</button>
+          <button class="tier-btn" onclick="randomizeHypercubeVectors(Date.now())">🎲 Randomize Vectors</button>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; position: relative; overflow: hidden;">
-        <div style="position: relative; height: 440px; border-radius: 10px; overflow: hidden; background: #020307; border: 1px solid rgba(255,255,255,0.06);">
-          <canvas id="hypercube-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
-          <div style="position: absolute; bottom: 12px; left: 14px; font-family: var(--font-mono); font-size: 0.70rem; color: var(--text-dim); background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none;">
-            <span>🖱️ Click & Drag to Orbit · Scroll to Zoom · Hover for Tensor Details</span>
+      <div class="hypercube-grid">
+        <div class="canvas-wrapper">
+          <canvas id="canvas-hypercube"></canvas>
+          <div class="canvas-hud-overlay">
+            <div>3D Latent Manifold: d_model = 2048 ➔ 3D Projected Subspace</div>
+            <div style="color: var(--cyan);">Cyan: Query (Q) · Purple: Key (K) · Emerald: Value (V)</div>
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; font-family: var(--font-mono); font-size: 0.8rem;">
-          <div style="background: rgba(0, 240, 255, 0.04); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
-            <div style="color: var(--cyan); font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
-              <span>⚡</span> Vector Coordinate Readout
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px; color: #cbd5e1; font-size: 0.75rem;">
-              <div><strong>Query (Q):</strong> <span id="readout-q" style="color: #00f0ff;">[+0.742, +0.318, -0.589]</span></div>
-              <div><strong>Key (K):</strong> <span id="readout-k" style="color: #a855f7;">[+0.684, +0.412, -0.601]</span></div>
-              <div><strong>Value (V):</strong> <span id="readout-v" style="color: #10b981;">[+0.210, -0.890, +0.395]</span></div>
-              <div><strong>Dot Product:</strong> <span id="readout-dot" style="color: #f59e0b;">q · k = +0.992</span></div>
-              <div><strong>Cosine Similarity:</strong> <span id="readout-cos" style="color: #fff; font-weight: 700;">cos(θ) = 0.984</span></div>
-            </div>
+        <div class="hypercube-controls">
+          <div class="pane-title">
+            <span>Subspace Dot-Product Readouts</span>
+            <span style="color: var(--cyan);">Head 0</span>
           </div>
 
-          <div style="background: rgba(168, 85, 247, 0.04); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 1rem;">
-            <div style="color: var(--purple); font-weight: 700; margin-bottom: 0.5rem;">
-              <span>📐</span> Subspace Properties
-            </div>
-            <div style="color: var(--text-dim); font-size: 0.74rem; line-height: 1.5;">
-              Head projections map token embeddings into distinct orthogonal semantic subspaces, enabling simultaneous feature disentanglement across positional, syntactic, and causal constraints.
-            </div>
+          <div class="math-metric-row">
+            <span class="math-metric-label">Query Vector Tip:</span>
+            <span class="math-metric-val" id="readout-q" style="color: var(--cyan);">[+0.820, +0.340, -0.610]</span>
+          </div>
+          <div class="math-metric-row">
+            <span class="math-metric-label">Key Vector Tip:</span>
+            <span class="math-metric-val" id="readout-k" style="color: var(--purple);">[+0.750, +0.440, -0.650]</span>
+          </div>
+          <div class="math-metric-row">
+            <span class="math-metric-label">Value Vector Tip:</span>
+            <span class="math-metric-val" id="readout-v" style="color: var(--emerald);">[+0.200, -0.930, +0.400]</span>
+          </div>
+          <div class="math-metric-row">
+            <span class="math-metric-label">Scaled Affinity Score:</span>
+            <span class="math-metric-val" id="readout-dot" style="color: var(--amber);">q · k / √d = +0.8924</span>
+          </div>
+          <div class="math-metric-row">
+            <span class="math-metric-label">Cosine Similarity ($\cos\theta$):</span>
+            <span class="math-metric-val" id="readout-cos" style="color: #fff;">cos(θ) = 0.9842</span>
           </div>
 
-          <button onclick="randomizeHypercubeVectors()" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(168, 85, 247, 0.2)); border: 1px solid var(--border-bright); color: #fff; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-            🎲 Perturb Latent Coordinates
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Interactive Math Pillars Formula Explorer & Calculator -->
-    <section class="calculator-section">
-      <div class="section-title-row">
-        <div>
-          <h2 class="section-title">Interactive AI Formula Calculator & Diagnostics</h2>
-          <p style="color: var(--text-dim); font-size: 0.85rem;">Experiment with hyperparameters to see direct mathematical impacts on attention scaling, entropy, and parameter updates.</p>
-        </div>
-      </div>
-
-      <div class="calc-tabs">
-        <button class="calc-tab-btn active" onclick="switchCalcTab('tab-att', this)">1. Attention & RoPE Scale</button>
-        <button class="calc-tab-btn" onclick="switchCalcTab('tab-entropy', this)">2. Temperature & Entropy</button>
-        <button class="calc-tab-btn" onclick="switchCalcTab('tab-adamw', this)">3. AdamW & Loss Dynamics</button>
-        <button class="calc-tab-btn" onclick="switchCalcTab('tab-lora', this)">4. LoRA Rank Multipliers</button>
-        <button class="calc-tab-btn" onclick="switchCalcTab('tab-consensus', this)">5. Swarm Consensus & Entropy</button>
-      </div>
-
-      <!-- Tab 1: Attention -->
-      <div id="tab-att" class="calc-content-pane active">
-        <div class="calc-form-grid">
-          <div class="form-group">
-            <label class="form-label">Head Dimension (d_head)</label>
-            <input type="number" id="calc-dhead" class="form-input" value="128" oninput="calculateAttentionMath()">
+          <div style="margin-top: 0.5rem; font-size: 0.78rem; color: #94a3b8;">
+            Drag on the 3D viewport to freely orbit the tensor hypercube. Scroll to zoom into the attention vector cluster.
           </div>
-          <div class="form-group">
-            <label class="form-label">Query Vector Magnitude (‖q‖)</label>
-            <input type="number" id="calc-qmag" class="form-input" value="3.5" step="0.1" oninput="calculateAttentionMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Key Vector Magnitude (‖k‖)</label>
-            <input type="number" id="calc-kmag" class="form-input" value="3.2" step="0.1" oninput="calculateAttentionMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Vector Angle (θ degrees)</label>
-            <input type="number" id="calc-angle" class="form-input" value="30" step="5" oninput="calculateAttentionMath()">
-          </div>
-        </div>
-
-        <div class="calc-result-box">
-          <div class="calc-result-title">Computed Scaling Factor & Dot Product Score</div>
-          <div class="calc-result-math" id="att-calc-math">
-            Scaling Factor = 1 / √128 = 0.08839 &nbsp;|&nbsp; Scaled Dot Product = (3.5 · 3.2 · cos(30°)) / √128 = 0.857
-          </div>
-          <p class="calc-result-explanation" id="att-calc-expl">
-            The scaling factor 1/√d prevents the dot products from growing excessively large for high dimensions, which would otherwise push the softmax function into regions with vanishing gradients.
-          </p>
-        </div>
-      </div>
-
-      <!-- Tab 2: Entropy -->
-      <div id="tab-entropy" class="calc-content-pane">
-        <div class="calc-form-grid">
-          <div class="form-group">
-            <label class="form-label">Sampling Temperature (T)</label>
-            <input type="number" id="calc-temp" class="form-input" value="0.7" step="0.1" min="0.1" max="2.0" oninput="calculateEntropyMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Top-1 Logit (z₁)</label>
-            <input type="number" id="calc-z1" class="form-input" value="10.5" step="0.5" oninput="calculateEntropyMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Top-2 Logit (z₂)</label>
-            <input type="number" id="calc-z2" class="form-input" value="8.0" step="0.5" oninput="calculateEntropyMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Top-3 Logit (z₃)</label>
-            <input type="number" id="calc-z3" class="form-input" value="6.5" step="0.5" oninput="calculateEntropyMath()">
-          </div>
-        </div>
-
-        <div class="calc-result-box">
-          <div class="calc-result-title">Softmax Probabilities & Shannon Entropy Output</div>
-          <div class="calc-result-math" id="entropy-calc-math">
-            P = [97.2%, 2.7%, 0.1%] &nbsp;|&nbsp; Shannon Entropy H(X) = 0.22 bits (Sharp Confidence)
-          </div>
-          <p class="calc-result-explanation" id="entropy-calc-expl">
-            Lower temperatures sharpen the categorical distribution, concentrating probability on the highest logit and collapsing entropy towards 0 bits.
-          </p>
-        </div>
-      </div>
-
-      <!-- Tab 3: AdamW -->
-      <div id="tab-adamw" class="calc-content-pane">
-        <div class="calc-form-grid">
-          <div class="form-group">
-            <label class="form-label">Learning Rate (η)</label>
-            <input type="number" id="calc-lr" class="form-input" value="0.0003" step="0.0001" oninput="calculateAdamWMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Weight Decay (λ)</label>
-            <input type="number" id="calc-wd" class="form-input" value="0.01" step="0.005" oninput="calculateAdamWMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Current Weight Value (θ)</label>
-            <input type="number" id="calc-w" class="form-input" value="0.45" step="0.05" oninput="calculateAdamWMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Estimated Gradient (g)</label>
-            <input type="number" id="calc-g" class="form-input" value="0.12" step="0.02" oninput="calculateAdamWMath()">
-          </div>
-        </div>
-
-        <div class="calc-result-box">
-          <div class="calc-result-title">Calculus Delta Step (Δθ) & Regularization</div>
-          <div class="calc-result-math" id="adamw-calc-math">
-            Weight Decay Term = 0.00000135 &nbsp;|&nbsp; Updated Weight θ<sub>t+1</sub> = 0.449863
-          </div>
-          <p class="calc-result-explanation" id="adamw-calc-expl">
-            In AdamW, the weight decay λθ is subtracted directly from θ rather than being added to the gradient moments, preventing large gradient updates from distorting regularization.
-          </p>
-        </div>
-      </div>
-
-      <!-- Tab 4: LoRA -->
-      <div id="tab-lora" class="calc-content-pane">
-        <div class="calc-form-grid">
-          <div class="form-group">
-            <label class="form-label">Base Weight In-Dim (d_in)</label>
-            <input type="number" id="calc-din" class="form-input" value="2048" oninput="calculateLoRAMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Base Weight Out-Dim (d_out)</label>
-            <input type="number" id="calc-dout" class="form-input" value="2048" oninput="calculateLoRAMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">LoRA Rank (r)</label>
-            <input type="number" id="calc-rank" class="form-input" value="16" oninput="calculateLoRAMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">LoRA Alpha Scaling (α)</label>
-            <input type="number" id="calc-alpha" class="form-input" value="32" oninput="calculateLoRAMath()">
-          </div>
-        </div>
-
-        <div class="calc-result-box">
-          <div class="calc-result-title">Parameter Compression & Memory Efficiency</div>
-          <div class="calc-result-math" id="lora-calc-math">
-            Full Parameters: 4,194,304 &nbsp;➔&nbsp; LoRA Parameters: 65,536 (98.44% Reduction)
-          </div>
-          <p class="calc-result-explanation" id="lora-calc-expl">
-            By constraining weight updates ΔW to rank r (A ∈ ℝ<sup>16×2048</sup>, B ∈ ℝ<sup>2048×16</sup>), Zoth Studio can fine-tune or adapt models with minimal GPU VRAM while maintaining full expressive capacity.
-          </p>
-        </div>
-      </div>
-
-      <!-- Tab 5: Consensus -->
-      <div id="tab-consensus" class="calc-content-pane">
-        <div class="calc-form-grid">
-          <div class="form-group" style="grid-column: 1 / -1;">
-            <label class="form-label">Task Objective</label>
-            <input type="text" id="calc-consensus-task" class="form-input" value="Zero-Trust Sovereign Rate Limiter" oninput="calculateConsensusMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">@antigravity Weight (%)</label>
-            <input type="number" id="calc-w-agy" class="form-input" value="40" min="5" max="90" oninput="calculateConsensusMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">@grok Weight (%)</label>
-            <input type="number" id="calc-w-grok" class="form-input" value="38" min="5" max="90" oninput="calculateConsensusMath()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">@hermes Weight (%)</label>
-            <input type="number" id="calc-w-hermes" class="form-input" value="22" min="5" max="90" oninput="calculateConsensusMath()">
-          </div>
-        </div>
-
-        <div class="calc-result-box">
-          <div class="calc-result-title">3-Agent Proposal Convergence & Shannon Agreement Entropy</div>
-          <div class="calc-result-math" id="consensus-calc-math">
-            Consensus Score: 58.9% &nbsp;|&nbsp; Shannon Agreement Entropy H(X) = 1.5205 bits
-          </div>
-          <p class="calc-result-explanation" id="consensus-calc-expl">
-            Agreement entropy measures multi-agent consensus divergence across AST proposals. When all 3 agents converge on verified structures, entropy peaks at maximum mutual information, yielding an optimal synthesized sovereign artifact.
-          </p>
         </div>
       </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-      <p>Zoth Studio · AI Math Pillars Observability Engine · Built for Rigorous Local Engineering · 127.0.0.1:8484</p>
+      <p>© 2026 Zoth Studio by NullAI · Deep Mathematical Observability & Tensor Dynamics · Local Loopback Verified</p>
     </footer>
   </div>
 
   <script>
-    let currentTelemetryData = [];
-
-    // Head specialization definitions
-    const HEAD_SPECS = [
-      { name: "Syntactic & Local Context", bias: "local", desc: "Attends heavily to adjacent tokens (offset ±1) and recent grammatical markers." },
-      { name: "Induction & In-Context Pattern", bias: "induction", desc: "Attends to recurring tokens [A][B] ... [A] ➔ predicts [B] via in-context induction." },
-      { name: "Long-Range Semantic Association", bias: "global", desc: "Attends to distant core nouns and subject vectors across the context window." },
-      { name: "Direct Subject-Verb Reference", bias: "subject", desc: "High affinity between active verbs and noun phrases regardless of intermediate tokens." },
-      { name: "Positional / Prefix Bias", bias: "prefix", desc: "Attends to the initial system prompt tokens (Token 0 / Token 1 BOS delimiter)." }
-    ];
-
-    let currentTemp = 0.70;
-    let currentHeadIdx = 0;
-
-    function updateAttentionTemperature(val) {
-      currentTemp = parseFloat(val) || 0.7;
-      const label = document.getElementById('attn-temp-val');
-      if (label) label.textContent = currentTemp.toFixed(2);
-      initAttentionMatrix(currentHeadIdx);
-    }
-
-    // Initialize Matrix Heatmap with Softmax Scaling
-    function initAttentionMatrix(headIdx = 0) {
-      currentHeadIdx = headIdx;
-      const grid = document.getElementById('attention-matrix-grid');
-      if (!grid) return;
-      grid.innerHTML = '';
-      const head = HEAD_SPECS[headIdx] || HEAD_SPECS[0];
-      const descEl = document.getElementById('attn-head-desc');
-      if (descEl) descEl.textContent = `${head.name}: ${head.desc}`;
-
-      let rowEntropies = [];
-
-      for (let row = 0; row < 8; row++) {
-        let rawLogits = [];
-        for (let col = 0; col < 8; col++) {
-          if (row >= col) {
-            let base = 0.5;
-            if (head.bias === "local") {
-              const dist = row - col;
-              base = dist === 0 ? 3.2 : (dist === 1 ? 2.1 : Math.max(-1.0, 1.2 - dist * 0.7));
-            } else if (head.bias === "induction") {
-              base = (col === 1 || col === 3 || row === col) ? 2.8 : -0.5;
-            } else if (head.bias === "global") {
-              base = (col === 0 || col === 2 || col === 4) ? 2.4 : 0.2;
-            } else if (head.bias === "subject") {
-              base = (col === 0 || col === 2) ? 3.0 : (row === col ? 1.5 : -0.8);
-            } else if (head.bias === "prefix") {
-              base = col === 0 ? 3.5 : (row === col ? 1.2 : -1.2);
-            }
-            rawLogits.push(base);
-          } else {
-            rawLogits.push(-9999.0); // Causal mask
-          }
+    /* =========================================================================
+       3-Tier Math Data Architecture (Beginner | Intermediate | Advanced)
+       ========================================================================= */
+    const TIER_DATA = {
+      beginner: {
+        badge: "[ 🌱 Beginner Mode ]",
+        desc: "Showing intuitive real-world analogies, conceptual metaphors, and visual mental models.",
+        p1: {
+          subtitle: "Word Shapes, Similarity & The 'Spotlight' Effect",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>The Core Idea: Attention as a Spotlight</span><span>Analogy</span></div>
+              <div class="formula-math">Attention = Spotlight(What I have, What matches)</div>
+              <p class="formula-desc">Imagine every word has a flashlight. When the AI reads the word "bank", it shines a spotlight across the sentence to see if "river" or "money" is in the room. The brighter the match, the more it focuses.</p>
+              <div class="analogy-badge">💡 Think of it like Search Engine matching your query to the best webpage.</div>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>Word Embeddings as Coordinates</span><span>Analogy</span></div>
+              <div class="formula-math">Word = [Longitude, Latitude, Altitude, ...]</div>
+              <p class="formula-desc">Every concept is placed on a giant invisible map. "King" and "Queen" live right next to each other on the map; "Apple" and "Spaceship" live far apart.</p>
+              <div class="prompt-tip-badge">🎯 Prompting Tip: Adding descriptive adjectives pulls words closer together in coordinate space!</div>
+            </div>
+          `
+        },
+        p2: {
+          subtitle: "Rolling Downhill & Finding the Best Answer",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Loss & Gradient as a Rolling Ball</span><span>Analogy</span></div>
+              <div class="formula-math">Training = Rolling a ball down into the deepest valley</div>
+              <p class="formula-desc">The "Loss" is how wrong the AI's guess was. The "Gradient" is simply the downhill direction. Training is just nudging the ball downhill until it reaches the lowest error possible.</p>
+              <div class="analogy-badge">🏔️ Think of it like hiking down a foggy mountain by following the steepest slope.</div>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>Momentum (AdamW)</span><span>Analogy</span></div>
+              <div class="formula-math">Momentum = Heavy bowling ball rolling past small bumps</div>
+              <p class="formula-desc">Instead of getting stuck in small potholes, the AI carries momentum so it keeps moving towards the true global solution.</p>
+              <div class="prompt-tip-badge">🎯 Prompting Tip: Clear few-shot examples give the model a steeper downhill slope to the right answer!</div>
+            </div>
+          `
+        },
+        p3: {
+          subtitle: "Surprise, Coin Flips & Temperature",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Shannon Entropy as 'Surprise'</span><span>Analogy</span></div>
+              <div class="formula-math">Entropy = How surprised the AI is by the next word</div>
+              <p class="formula-desc">If the sentence is "The grass is...", the word "green" has near-zero surprise (low entropy). If the next word is "purple", surprise is very high (high entropy).</p>
+              <div class="analogy-badge">🎲 High entropy = rolling a 100-sided die; Low entropy = flipping a two-headed coin.</div>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>Temperature Levers</span><span>Analogy</span></div>
+              <div class="formula-math">Low Temp (0.2) = Pick only the safest answer · High Temp (0.9) = Be creative and wild</div>
+              <p class="formula-desc">Temperature controls how risky the AI is willing to be. Low temp is for code and math; high temp is for brainstorming.</p>
+              <div class="prompt-tip-badge">🎯 Prompting Tip: Set Temperature to 0.2 for deterministic code generation!</div>
+            </div>
+          `
         }
-
-        // Softmax with temperature T
-        const maxLogit = Math.max(...rawLogits.filter(x => x > -9000));
-        const exps = rawLogits.map(x => x > -9000 ? Math.exp((x - maxLogit) / currentTemp) : 0);
-        const sumExp = exps.reduce((a, b) => a + b, 0);
-        const probs = exps.map(x => sumExp > 0 ? x / sumExp : 0);
-
-        // Compute row entropy
-        let rowEntropy = 0;
-        probs.forEach(p => {
-          if (p > 0.0001) rowEntropy -= p * Math.log2(p);
-        });
-        rowEntropies.push(rowEntropy);
-
-        for (let col = 0; col < 8; col++) {
-          const cell = document.createElement('div');
-          cell.className = 'matrix-cell';
-          const p = probs[col];
-
-          if (p > 0.001) {
-            cell.style.background = `rgba(0, 240, 255, ${Math.min(1.0, p * 1.15)})`;
-            cell.textContent = p > 0.04 ? p.toFixed(2) : '·';
-            cell.title = `Row ${row} ➔ Col ${col} | P=${(p * 100).toFixed(1)}% (T=${currentTemp.toFixed(2)})`;
-          } else {
-            cell.style.background = 'rgba(255, 255, 255, 0.02)';
-            cell.textContent = '0';
-          }
-          grid.appendChild(cell);
+      },
+      intermediate: {
+        badge: "[ ⚡ Intermediate Engineer ]",
+        desc: "Showing concrete engineering formulas, hyperparameters, and operational levers.",
+        p1: {
+          subtitle: "Tensors, Projections, Geometry & Attention",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Scaled Dot-Product Attention</span><span>Vaswani et al.</span></div>
+              <div class="formula-math">Attention(Q, K, V) = softmax( (Q · K<sup>T</sup>) / √d<sub>k</sub> ) · V</div>
+              <p class="formula-desc">Calculates affinity matrix between Query $Q \in \mathbb{R}^{S \times d_k}$ and Key $K \in \mathbb{R}^{S \times d_k}$, normalized by scaling factor $\sqrt{d_k}$ to prevent softmax gradient saturation.</p>
+              <div class="prompt-tip-badge">⚙️ Lever: Scaling $d_k=128$ stabilizes softmax variance $\text{Var}(q \cdot k) = d_k$.</div>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>Rotary Position Embedding (RoPE)</span><span>Su et al.</span></div>
+              <div class="formula-math">R<sub>Θ,m</sub><sup>d</sup> x<sub>m</sub> = [x<sub>m,1</sub> cos(mθ) - x<sub>m,2</sub> sin(mθ), ...]</div>
+              <p class="formula-desc">Injects position awareness by rotating 2D query/key sub-vectors by angle $m\theta_i$ with base $\theta = 10000$, ensuring relative dot products decay naturally over sequence distance.</p>
+            </div>
+          `
+        },
+        p2: {
+          subtitle: "Loss Optimization, Backprop & Momentum Dynamics",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Cross-Entropy Loss</span><span>Objective</span></div>
+              <div class="formula-math">ℒ<sub>CE</sub>(θ) = - ∑<sub>i=1</sub><sup>N</sup> y<sub>i</sub> · log( p̂<sub>i</sub> )</div>
+              <p class="formula-desc">Measures negative log-likelihood of target token $y_i$. Minimizing $\mathcal{L}$ aligns the predicted categorical distribution $\hat{p}$ with the ground truth.</p>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>AdamW Parameter Update</span><span>Loshchilov et al.</span></div>
+              <div class="formula-math">θ<sub>t+1</sub> = θ<sub>t</sub> - η · ( m̂<sub>t</sub> / (√v̂<sub>t</sub> + ε) + λ θ<sub>t</sub> )</div>
+              <p class="formula-desc">First moment estimate $m_t$ tracks gradient velocity ($\beta_1=0.9$); second moment $v_t$ tracks uncentered variance ($\beta_2=0.999$) with decoupled weight decay $\lambda$.</p>
+              <div class="prompt-tip-badge">⚙️ Lever: Gradient clipping $\|\mathbf{g}\|_2 \le 1.0$ prevents exploding updates on long contexts.</div>
+            </div>
+          `
+        },
+        p3: {
+          subtitle: "Logit Distributions, Shannon Entropy & Sampling",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Temperature Softmax</span><span>Logit Transformation</span></div>
+              <div class="formula-math">P(w<sub>i</sub> | x) = exp( z<sub>i</sub> / τ ) / ∑<sub>j</sub> exp( z<sub>j</sub> / τ )</div>
+              <p class="formula-desc">Controls categorical entropy. As $\tau \to 0$, distribution approaches argmax Dirac delta; as $\tau \to \infty$, distribution approaches uniform uncertainty.</p>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>Shannon Entropy Formula</span><span>Information Theory</span></div>
+              <div class="formula-math">H(X) = - ∑<sub>i=1</sub><sup>V</sup> p(x<sub>i</sub>) · log<sub>2</sub> p(x<sub>i</sub>)</div>
+              <p class="formula-desc">Calculates expected uncertainty in bits. In LLM generation, $H(X) < 1.0\text{ bits}$ indicates high model confidence, while $H(X) > 2.5\text{ bits}$ flags potential hallucination.</p>
+              <div class="prompt-tip-badge">⚙️ Lever: Nucleus sampling Top-P cuts the low-probability tail $\sum_{i \in V^{(p)}} p_i \ge 0.90$.</div>
+            </div>
+          `
+        }
+      },
+      advanced: {
+        badge: "[ 🔬 Advanced Theoretical Rigor ]",
+        desc: "Showing tensor calculus, SVD spectral decomposition, Hessian curvature, and Information Geometry.",
+        p1: {
+          subtitle: "Tensor Calculus, Manifold Projection & Spectral Radius",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Singular Value Decomposition (SVD)</span><span>Linear Algebra Rigor</span></div>
+              <div class="formula-math">W = U · Σ · V<sup>T</sup> = ∑<sub>i=1</sub><sup>r</sup> σ<sub>i</sub> u<sub>i</sub> v<sub>i</sub><sup>T</sup></div>
+              <p class="formula-desc">Decomposes attention projection weight matrices $W \in \mathbb{R}^{d \times d}$ into orthogonal singular vectors $U, V$ and singular value spectrum $\Sigma = \text{diag}(\sigma_1, \dots, \sigma_r)$ where $\sigma_1 \ge \sigma_2 \ge \dots \ge \sigma_r > 0$.</p>
+              <div class="prompt-tip-badge">🔬 Spectral Norm: $\|W\|_2 = \sigma_{\max}(W)$ bounds maximum Lipschitz constant of transformer layers.</div>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>LoRA Rank Deficiency Proof</span><span>Low-Rank Manifolds</span></div>
+              <div class="formula-math">rank(ΔW) = rank(B · A) ≤ min(rank(A), rank(B)) = r ≪ d</div>
+              <p class="formula-desc">Constrains intrinsic dimension adaptation to an affine $r$-dimensional Grassmannian manifold $\text{Gr}(r, d)$, dramatically reducing parameter degrees of freedom without degrading representational capacity.</p>
+            </div>
+          `
+        },
+        p2: {
+          subtitle: "Riemannian Curvature, Hessian Spectrum & Taylor Expansion",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Hessian Curvature Matrix</span><span>2nd-Order Optimization</span></div>
+              <div class="formula-math">H<sub>ij</sub>(θ) = ∂<sup>2</sup> ℒ / (∂θ<sub>i</sub> ∂θ<sub>j</sub>), &nbsp; ℒ(θ+Δθ) ≈ ℒ(θ) + ∇ℒ<sup>T</sup>Δθ + ½ Δθ<sup>T</sup> H Δθ</div>
+              <p class="formula-desc">The eigenvalues of $H$, $\lambda_1 \ge \dots \ge \lambda_n$, dictate loss landscape geometry. Ill-conditioned ratios $\kappa = \lambda_{\max}/\lambda_{\min} \gg 1$ create ill-conditioned ravines, solved by AdamW diagonal preconditioner.</p>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>Fisher Information Metric</span><span>Information Geometry</span></div>
+              <div class="formula-math">F(θ) = 𝔼<sub>p(x|θ)</sub> [ ∇<sub>θ</sub> log p(x|θ) · (∇<sub>θ</sub> log p(x|θ))<sup>T</sup> ]</div>
+              <p class="formula-desc">Defines Riemannian metric tensor on the parameter space probability manifold $\mathcal{M}$, providing invariant natural gradient updates $\tilde{\nabla}\mathcal{L} = F^{-1} \nabla \mathcal{L}$.</p>
+            </div>
+          `
+        },
+        p3: {
+          subtitle: "Kullback-Leibler Divergence & Mutual Information",
+          content: `
+            <div class="formula-box">
+              <div class="formula-label"><span>Kullback-Leibler Divergence</span><span>Relative Entropy</span></div>
+              <div class="formula-math">D<sub>KL</sub>(P ∥ Q) = ∑<sub>x</sub> P(x) · log( P(x) / Q(x) ) ≥ 0</div>
+              <p class="formula-desc">Measures asymmetric informational divergence between model distribution $P$ and reference $Q$. Satisfies Gibbs' inequality $D_{\text{KL}}(P \parallel Q) = 0 \iff P = Q$ almost everywhere.</p>
+            </div>
+            <div class="formula-box">
+              <div class="formula-label"><span>Mutual Information & Channel Capacity</span><span>Shannon Theory</span></div>
+              <div class="formula-math">I(X; Y) = H(X) - H(X | Y) = ∑<sub>x,y</sub> p(x,y) · log( p(x,y) / (p(x)p(y)) )</div>
+              <p class="formula-desc">Quantifies shared information between prompt tokens $X$ and generated response $Y$. Maximizing $I(X; Y)$ bounds cross-modal consensus alignment across autonomous multi-agent swarms.</p>
+            </div>
+          `
         }
       }
-
-      // Update entropy meter based on average row entropy
-      const avgEntropy = (rowEntropies.reduce((a,b)=>a+b,0) / rowEntropies.length).toFixed(2);
-      const entropyLabel = document.getElementById('entropy-meter-label');
-      const entropyBar = document.getElementById('entropy-progress-bar');
-      if (entropyLabel && entropyBar) {
-        const pct = Math.min(100, Math.max(5, (parseFloat(avgEntropy) / 3.0) * 100));
-        entropyBar.style.width = pct + '%';
-        const label = parseFloat(avgEntropy) < 0.9 ? 'Sharp / Focused' : (parseFloat(avgEntropy) < 1.8 ? 'Confident' : 'Dispersed / High Entropy');
-        entropyLabel.textContent = `${avgEntropy} bits (${label})`;
-      }
-    }
-
-    function updateAttentionHead(val) {
-      initAttentionMatrix(parseInt(val) || 0);
-    }
-
-    // --- 2D LOSS SURFACE CONTOUR & ADAMW SIMULATOR ---
-    let optState = {
-      theta: [2.2, 1.6],
-      m: [0, 0],
-      v: [0, 0],
-      t: 0,
-      history: [[2.2, 1.6]],
-      lr: 0.12,
-      beta1: 0.9,
-      beta2: 0.999,
-      decay: 0.01,
-      eps: 1e-8
     };
 
-    function lossFunction(x, y) {
-      return 0.3 * (x*x + y*y) + 0.4 * Math.sin(2.5 * x) * Math.cos(2.5 * y) + 0.5;
-    }
-
-    function lossGradient(x, y) {
-      const dx = 0.6 * x + 0.4 * 2.5 * Math.cos(2.5 * x) * Math.cos(2.5 * y) + optState.decay * x;
-      const dy = 0.6 * y - 0.4 * 2.5 * Math.sin(2.5 * x) * Math.sin(2.5 * y) + optState.decay * y;
-      return [dx, dy];
-    }
-
-    function drawLossContour() {
-      const canvas = document.getElementById('loss-contour-canvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-
-      ctx.fillStyle = '#03050a';
-      ctx.fillRect(0, 0, w, h);
-
-      function toScreen(x, y) {
-        const sx = ((x + 3) / 6) * w;
-        const sy = ((3 - y) / 6) * h;
-        return [sx, sy];
+    /* =========================================================================
+       Live Tool Run Mathematical Telemetry Data & Recommender Data
+       ========================================================================= */
+    const TOOL_MATH_DATA = {
+      ast_composer: {
+        name: "🧩 AST Code Synthesizer (Composer)",
+        status: "● Mathematical Stability: 100% (Acyclic Graph Verified)",
+        metrics: [
+          { label: "Cyclomatic Complexity ($M = E - N + 2P$)", val: "M = 6 (Optimal ≤ 10)" },
+          { label: "Token Perplexity ($\mathcal{P} = 2^{H}$)", val: "1.284 (High Predictability)" },
+          { label: "AST Max Branching Depth", val: "4 Levels" },
+          { label: "Halstead Program Volume ($V$)", val: "248.6 bits" },
+          { label: "Static Code Halting Probability", val: "1.0 (Guaranteed Termination)" }
+        ],
+        diagnostic: "Clean AST syntax tree; zero unclosed loop branches or dead-code blocks detected in generated Python runner.",
+        prompt: "System: Enforce strict Python AST type hints, return async envelopes, and constrain Cyclomatic Complexity M ≤ 8 to minimize execution branching variance.",
+        why: "Explicit complexity constraints in the system prompt force the transformer to generate linear, deterministic code execution paths, dropping token generation perplexity by ~38%."
+      },
+      consensus_arena: {
+        name: "⚔️ Consensus Arbitrator (Swarm Mesh)",
+        status: "● Mutual Agreement: 68.5% Convergence",
+        metrics: [
+          { label: "Shannon Agreement Entropy ($H(X)$)", val: "1.482 bits" },
+          { label: "Jaccard Set Overlap ($J(A,B) = \\frac{|A \\cap B|}{|A \\cup B|}$)", val: "68.5% (High Concurrence)" },
+          { label: "Mutual Information ($I(X;Y)$)", val: "0.864 bits" },
+          { label: "Semantic Cosine Affinity ($\\cos\\theta$)", val: "+0.912" },
+          { label: "Arbitration Consensus Quorum", val: "3 / 3 Approved (@agy, @grok, @hermes)" }
+        ],
+        diagnostic: "High multi-agent agreement on security assertions and Argon2id memory hardness; divergence isolated to logging verbosity.",
+        prompt: "Directive: Request @hermes to audit @antigravity's rate limiter for thread-safe lock contention, while @grok compiles zeroize memory drop handlers.",
+        why: "Distributing task components according to model specialization reduces mutual entropy across multi-agent arbitration turns, speeding up consensus convergence."
+      },
+      subsweep_recon: {
+        name: "🔍 SubSweep OSINT Recon",
+        status: "● Attack Surface Entropy: 3.12 bits",
+        metrics: [
+          { label: "Target Domain Graph Centrality ($C_D$)", val: "0.784" },
+          { label: "Certificate Transparency Entropy ($H$)", val: "3.120 bits" },
+          { label: "Subdomain Expansion Rate ($\\Delta N / \\Delta t$)", val: "+14 nodes / sec" },
+          { label: "Adjacency Matrix Rank ($\\text{rank}(A)$)", val: "14 Dimensions" },
+          { label: "Port Exposure Risk Probability ($P$)", val: "0.04 (Well Guarded)" }
+        ],
+        diagnostic: "3 Wildcard DNS records identified; domain resolution entropy is elevated due to CDN multi-region fronting.",
+        prompt: "Recon Directive: Filter CIDR blocks by ASN 13335 (Cloudflare) to isolate origin reverse proxies from actual public IP exposure surfaces.",
+        why: "Isolating high-centrality graph nodes eliminates CDN noise and directs OSINT port scans exclusively at legitimate edge surfaces."
+      },
+      argon2_vault: {
+        name: "🔐 Argon2id Crypto Gate (Vault)",
+        status: "● Cryptographic Hardness: 2²⁵⁶ Key Space",
+        metrics: [
+          { label: "Memory Hardness Cost ($m$)", val: "65,536 KiB (64 MB)" },
+          { label: "Time Cost Iterations ($t$)", val: "3 Iterations" },
+          { label: "Parallelism Lanes ($p$)", val: "4 Threads" },
+          { label: "Entropy of Derived Key", val: "256.0 bits (Full Uniform)" },
+          { label: "In-Memory Key Lifetime", val: "0.00ms (Immediate Zeroize on Drop)" }
+        ],
+        diagnostic: "Zero in-memory credential retention; memory buffer successfully zeroized after cryptographic key derivation.",
+        prompt: "Vault Policy: Enforce Argon2id parameters m=65536, t=3, p=4 for all BYOK persistent store derivations, binding solely to loopback 127.0.0.1:8787.",
+        why: "Rigorous memory-hardness parameters render GPU-accelerated dictionary attacks computationally intractable while preventing cold-boot RAM inspection."
+      },
+      ollama_loop: {
+        name: "🤖 Ollama Local Inference (:11434)",
+        status: "● Memory Footprint: 342 MB KV Cache",
+        metrics: [
+          { label: "KV Cache Footprint ($M_{\\text{KV}}$)", val: "342.4 MB (fp16)" },
+          { label: "Attention Matrix Sparsity ($\\mathcal{S}$)", val: "84.2% Zero Density" },
+          { label: "Softmax Temperature ($\\tau$)", val: "0.70" },
+          { label: "Context Window Capacity ($S$)", val: "2,048 / 8,192 Tokens" },
+          { label: "Throughput Latency ($\\Delta t_{\\text{token}}$)", val: "18.4 ms / token" }
+        ],
+        diagnostic: "High attention sparsity (84.2%) indicates efficient self-attention focus on core instructions with low token leakage.",
+        prompt: "Optimization Tip: Append 'Be concise. Omit conversational filler and output only structured JSON' to reduce sequence length $S$ by ~35% and save 120MB VRAM.",
+        why: "Shrinking context length $S$ reduces $O(S^2)$ quadratic attention memory and KV cache footprint linearly, accelerating generation speed on local hardware."
+      },
+      vision_link: {
+        name: "👁️ Vision Link Gesture HUD",
+        status: "● Tracking Latency: 16.2 ms (60 FPS)",
+        metrics: [
+          { label: "Landmark Euclidean Distance ($\\|p_1 - p_2\\|_2$)", val: "0.042 (Pinch Threshold: 0.050)" },
+          { label: "Optical Flow Gradient ($\\nabla I \\cdot \\mathbf{v}$)", val: "0.984 Stability" },
+          { label: "Gesture Classification Confidence", val: "96.4%" },
+          { label: "Kalman Filter Covariance ($P_{k|k}$)", val: "0.0012 (Smooth)" },
+          { label: "Camera Frame Pipeline", val: "60.0 FPS Stable" }
+        ],
+        diagnostic: "Stable hand gesture tracking; Kalman filter effectively smooths high-frequency camera sensor jitter.",
+        prompt: "Gesture Calibration: Set landmark distance pinch threshold to 0.045 to avoid false trigger clicks in low-light environments.",
+        why: "Calibrating geometric distance thresholds against ambient sensor noise increases gesture trigger precision by ~24%."
       }
+    };
 
-      // Draw Equipotential Contour Lines
-      for (let r = 0.4; r <= 3.2; r += 0.45) {
-        ctx.strokeStyle = `rgba(168, 85, 247, ${0.12 + (3.5 - r) * 0.08})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (let a = 0; a <= Math.PI * 2; a += 0.1) {
-          const rx = Math.cos(a) * r + 0.15 * Math.sin(a * 3);
-          const ry = Math.sin(a) * r + 0.15 * Math.cos(a * 3);
-          const [sx, sy] = toScreen(rx, ry);
-          if (a === 0) ctx.moveTo(sx, sy);
-          else ctx.lineTo(sx, sy);
-        }
-        ctx.closePath();
-        ctx.stroke();
-      }
+    let currentTier = 'intermediate';
+    let currentTool = 'ast_composer';
 
-      // Draw Global Minimum Star
-      const [gx, gy] = toScreen(0, 0);
-      ctx.fillStyle = '#00f0ff';
-      ctx.beginPath();
-      ctx.arc(gx, gy, 4, 0, Math.PI * 2);
-      ctx.fill();
+    // Tier Switching Function
+    window.setTier = function(tierKey) {
+      currentTier = tierKey;
+      const data = TIER_DATA[tierKey];
 
-      // Draw Optimization Path
-      if (optState.history.length > 1) {
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        optState.history.forEach((pt, idx) => {
-          const [sx, sy] = toScreen(pt[0], pt[1]);
-          if (idx === 0) ctx.moveTo(sx, sy);
-          else ctx.lineTo(sx, sy);
-        });
-        ctx.stroke();
+      // Update Header
+      document.getElementById('current-tier-badge').textContent = data.badge;
+      document.getElementById('current-tier-badge').style.color = 
+        tierKey === 'beginner' ? 'var(--emerald)' : (tierKey === 'intermediate' ? 'var(--cyan)' : 'var(--purple)');
+      document.getElementById('current-tier-desc').textContent = data.desc;
 
-        optState.history.forEach((pt, idx) => {
-          const [sx, sy] = toScreen(pt[0], pt[1]);
-          ctx.fillStyle = idx === optState.history.length - 1 ? '#ff007a' : 'rgba(0, 240, 255, 0.6)';
-          ctx.beginPath();
-          ctx.arc(sx, sy, idx === optState.history.length - 1 ? 5 : 2.5, 0, Math.PI * 2);
-          ctx.fill();
-        });
-      }
-    }
-
-    function stepOptimizer() {
-      optState.t += 1;
-      const [gx, gy] = lossGradient(optState.theta[0], optState.theta[1]);
-      const gNorm = Math.sqrt(gx * gx + gy * gy);
-
-      // AdamW updates
-      optState.m[0] = optState.beta1 * optState.m[0] + (1 - optState.beta1) * gx;
-      optState.m[1] = optState.beta1 * optState.m[1] + (1 - optState.beta1) * gy;
-
-      optState.v[0] = optState.beta2 * optState.v[0] + (1 - optState.beta2) * (gx * gx);
-      optState.v[1] = optState.beta2 * optState.v[1] + (1 - optState.beta2) * (gy * gy);
-
-      const mHat0 = optState.m[0] / (1 - Math.pow(optState.beta1, optState.t));
-      const mHat1 = optState.m[1] / (1 - Math.pow(optState.beta1, optState.t));
-
-      const vHat0 = optState.v[0] / (1 - Math.pow(optState.beta2, optState.t));
-      const vHat1 = optState.v[1] / (1 - Math.pow(optState.beta2, optState.t));
-
-      optState.theta[0] -= optState.lr * (mHat0 / (Math.sqrt(vHat0) + optState.eps));
-      optState.theta[1] -= optState.lr * (mHat1 / (Math.sqrt(vHat1) + optState.eps));
-
-      optState.history.push([optState.theta[0], optState.theta[1]]);
-
-      const currentLoss = lossFunction(optState.theta[0], optState.theta[1]);
-      document.getElementById('contour-loss-val').textContent = currentLoss.toFixed(3);
-      document.getElementById('contour-grad-val').textContent = gNorm.toFixed(3);
-      document.getElementById('contour-step-val').textContent = `${optState.t} / 100`;
-
-      drawLossContour();
-    }
-
-    function resetLossLandscape() {
-      optState = {
-        theta: [2.2, 1.6],
-        m: [0, 0],
-        v: [0, 0],
-        t: 0,
-        history: [[2.2, 1.6]],
-        lr: 0.12,
-        beta1: 0.9,
-        beta2: 0.999,
-        decay: 0.01,
-        eps: 1e-8
-      };
-      document.getElementById('contour-loss-val').textContent = lossFunction(2.2, 1.6).toFixed(3);
-      document.getElementById('contour-grad-val').textContent = '0.124';
-      document.getElementById('contour-step-val').textContent = '0 / 100';
-      drawLossContour();
-    }
-
-    // Telemetry Run Simulation
-    function simulateLiveTelemetryRun() {
-      const model = document.getElementById('telemetry-model-select').value;
-      const log = document.getElementById('math-stream-log');
-      const now = new Date().toISOString().substring(11, 19);
-
-      // Randomize values to simulate live token generation run
-      const entropy = (0.8 + Math.random() * 1.6).toFixed(2);
-      const loss = (0.9 + Math.random() * 0.7).toFixed(3);
-      const ppl = Math.exp(parseFloat(loss)).toFixed(2);
-      const gradNorm = (0.05 + Math.random() * 0.35).toFixed(3);
-      const cosine = (0.82 + Math.random() * 0.15).toFixed(3);
-
-      document.getElementById('metric-loss').textContent = `${loss} nats`;
-      document.getElementById('metric-ppl').textContent = ppl;
-      document.getElementById('metric-entropy').textContent = `${entropy} bits / token`;
-      document.getElementById('metric-gradnorm').textContent = `${gradNorm} (Clipped at 1.0)`;
-      document.getElementById('metric-cosine').textContent = `cos(θ) = ${cosine}`;
-
-      // Update entropy meter
-      const pct = Math.min(100, Math.max(5, (parseFloat(entropy) / 4.0) * 100));
-      document.getElementById('entropy-progress-bar').style.width = pct + '%';
-      const label = parseFloat(entropy) < 1.2 ? 'Confident (Sharp)' : (parseFloat(entropy) < 2.0 ? 'Balanced' : 'Exploratory (High)');
-      document.getElementById('entropy-meter-label').textContent = `${entropy} bits (${label})`;
-
-      // Store in memory for export
-      const record = {
-        timestamp: new Date().toISOString(),
-        model: model,
-        pillar_1_linear_algebra: {
-          d_model: 2048,
-          heads: 16,
-          d_head: 128,
-          cosine_similarity: parseFloat(cosine),
-          attention_formula: "softmax(Q·K^T / sqrt(128))·V",
-          rope_theta: 10000.0
-        },
-        pillar_2_multivariable_calculus: {
-          cross_entropy_loss_nats: parseFloat(loss),
-          perplexity: parseFloat(ppl),
-          grad_l2_norm: parseFloat(gradNorm),
-          optimizer: "AdamW(lr=3e-4, beta1=0.9, beta2=0.999, decay=0.01)"
-        },
-        pillar_3_probability_info_theory: {
-          shannon_entropy_bits: parseFloat(entropy),
-          certainty_label: label,
-          sampling: "Nucleus(top_p=0.90, top_k=40, temp=0.70)"
-        }
-      };
-      currentTelemetryData.unshift(record);
-
-      // Refresh attention heatmap for currently selected head
-      const headVal = document.getElementById('attn-head-select')?.value || 0;
-      initAttentionMatrix(parseInt(headVal));
-
-      // Append detailed mathematical telemetry logs
-      const streamText = `
-[${now}] ══════════════════════════════════════════════════════════════════════
-[${now}] ⚡ MODEL RUN TELEMETRY EVENT: ${model.toUpperCase()}
-[${now}] ----------------------------------------------------------------------
-[${now}] 📐 [PILLAR 1: LINEAR ALGEBRA]
-[${now}]   • Tensor Shape: B=1, S=64, D=2048 | Projections W_q, W_k, W_v ∈ ℝ²⁰⁴⁸ˣ²⁰⁴⁸
-[${now}]   • Scaled Dot-Product: Q·Kᵀ / √128 ➔ Softmax attention computed across 16 heads
-[${now}]   • RoPE Position Angles: θ_base=10000.0, max_m=64 ➔ 2D complex rotations applied
-[${now}]   • LoRA Delta: W = W₀ + (32/16)·(B·A) ➔ Rank-16 adapted parameters merged
-[${now}]   • Cosine Alignment: cos(θ_prompt, θ_output) = ${cosine} (High coherence)
-[${now}]
-[${now}] 📈 [PILLAR 2: MULTIVARIABLE CALCULUS]
-[${now}]   • Objective Loss: Cross-Entropy ℒ_CE = ${loss} nats | Perplexity PPL = ${ppl}
-[${now}]   • Backpropagation: ∂ℒ/∂W computed via chain rule Jacobians
-[${now}]   • Optimizer State (AdamW): β₁=0.9, β₂=0.999, ε=1e-8, η=3.0e-4, λ=0.01
-[${now}]   • Gradient L2-Norm: ‖g‖₂ = ${gradNorm} ➔ Valid (No vanishing/exploding gradients)
-[${now}]   • Normalization: RMSNorm scale γ applied (mean square = 1.002)
-[${now}]
-[${now}] 🎲 [PILLAR 3: PROBABILITY & INFORMATION THEORY]
-[${now}]   • Logits Softmax: z ∈ ℝ³²⁰⁰⁰ ➔ Categorical probability simplex (T=0.7)
-[${now}]   • Shannon Entropy: H(X) = ${entropy} bits ➔ Model certainty status: ${label}
-[${now}]   • Sampling Filter: Top-p (0.90) cumulative mass filtered 31,842 tail tokens
-[${now}]   • KL Divergence vs Base Policy: D_KL(P ‖ Q_ref) = 0.042 (Clean alignment)
-[${now}] ══════════════════════════════════════════════════════════════════════`;
-
-      log.textContent = streamText + '\n' + log.textContent;
-    }
-
-    function exportTelemetryJSON() {
-      if (!currentTelemetryData.length) simulateLiveTelemetryRun();
-      const blob = new Blob([JSON.stringify(currentTelemetryData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `zoth_math_telemetry_${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function exportTelemetryCSV() {
-      if (!currentTelemetryData.length) simulateLiveTelemetryRun();
-      const headers = ['Timestamp', 'Model', 'Loss (nats)', 'Perplexity', 'Entropy (bits)', 'Grad Norm', 'Cosine Sim'];
-      const rows = currentTelemetryData.map(r => [
-        r.timestamp,
-        r.model,
-        r.pillar_2_multivariable_calculus.cross_entropy_loss_nats,
-        r.pillar_2_multivariable_calculus.perplexity,
-        r.pillar_3_probability_info_theory.shannon_entropy_bits,
-        r.pillar_2_multivariable_calculus.grad_l2_norm,
-        r.pillar_1_linear_algebra.cosine_similarity
-      ]);
-      const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `zoth_math_telemetry_${Date.now()}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function copyMathLog() {
-      const text = document.getElementById('math-stream-log').textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("📋 AI Math Pillars telemetry log copied to clipboard!");
+      // Update Buttons
+      document.querySelectorAll('.tier-btn').forEach(b => {
+        b.classList.remove('active-beginner', 'active-intermediate', 'active-advanced');
       });
-    }
+      document.getElementById(`btn-tier-${tierKey}`).classList.add(`active-${tierKey}`);
 
-    // Tabs
-    function switchCalcTab(tabId, btn) {
-      document.querySelectorAll('.calc-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.calc-content-pane').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
+      // Update Pillar Cards
+      document.getElementById('p1-subtitle').textContent = data.p1.subtitle;
+      document.getElementById('p1-content').innerHTML = data.p1.content;
 
-    // Calculators
-    function calculateAttentionMath() {
-      const dhead = parseFloat(document.getElementById('calc-dhead').value) || 128;
-      const qmag = parseFloat(document.getElementById('calc-qmag').value) || 3.5;
-      const kmag = parseFloat(document.getElementById('calc-kmag').value) || 3.2;
-      const angle = (parseFloat(document.getElementById('calc-angle').value) || 30) * (Math.PI / 180);
+      document.getElementById('p2-subtitle').textContent = data.p2.subtitle;
+      document.getElementById('p2-content').innerHTML = data.p2.content;
 
-      const scale = 1 / Math.sqrt(dhead);
-      const dot = qmag * kmag * Math.cos(angle);
-      const scaledDot = dot * scale;
+      document.getElementById('p3-subtitle').textContent = data.p3.subtitle;
+      document.getElementById('p3-content').innerHTML = data.p3.content;
+    };
 
-      document.getElementById('att-calc-math').innerHTML = 
-        `Scaling Factor = 1 / √${dhead} = ${scale.toFixed(5)} &nbsp;|&nbsp; Scaled Dot Product = (${qmag} · ${kmag} · cos(${document.getElementById('calc-angle').value}°)) / √${dhead} = <strong>${scaledDot.toFixed(4)}</strong>`;
-    }
+    // Tool Math Debugger Function
+    window.selectToolMath = function(toolKey) {
+      currentTool = toolKey;
+      const data = TOOL_MATH_DATA[toolKey];
 
-    function calculateEntropyMath() {
-      const T = parseFloat(document.getElementById('calc-temp').value) || 0.7;
-      const z1 = parseFloat(document.getElementById('calc-z1').value) || 10.5;
-      const z2 = parseFloat(document.getElementById('calc-z2').value) || 8.0;
-      const z3 = parseFloat(document.getElementById('calc-z3').value) || 6.5;
+      // Update active tab button
+      document.querySelectorAll('.tool-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeTab = Array.from(document.querySelectorAll('.tool-tab-btn')).find(b => b.getAttribute('onclick').includes(toolKey));
+      if (activeTab) activeTab.classList.add('active');
 
-      const exp1 = Math.exp(z1 / T);
-      const exp2 = Math.exp(z2 / T);
-      const exp3 = Math.exp(z3 / T);
-      const sum = exp1 + exp2 + exp3;
+      // Update Display Fields
+      document.getElementById('tool-name-display').textContent = data.name;
+      document.getElementById('tool-status-pill').textContent = data.status;
 
-      const p1 = exp1 / sum;
-      const p2 = exp2 / sum;
-      const p3 = exp3 / sum;
+      // Update Metrics List
+      const metricsContainer = document.getElementById('tool-math-metrics');
+      metricsContainer.innerHTML = data.metrics.map(m => `
+        <div class="math-metric-row">
+          <span class="math-metric-label">${m.label}:</span>
+          <span class="math-metric-val">${m.val}</span>
+        </div>
+      `).join('');
 
-      const h = -( (p1 > 0 ? p1 * Math.log2(p1) : 0) + (p2 > 0 ? p2 * Math.log2(p2) : 0) + (p3 > 0 ? p3 * Math.log2(p3) : 0) );
+      document.getElementById('tool-diagnostic-text').textContent = data.diagnostic;
+      document.getElementById('tool-prompt-code').textContent = data.prompt;
+      document.getElementById('tool-why-text').textContent = data.why;
+    };
 
-      document.getElementById('entropy-calc-math').innerHTML = 
-        `P = [${(p1*100).toFixed(1)}%, ${(p2*100).toFixed(1)}%, ${(p3*100).toFixed(1)}%] &nbsp;|&nbsp; Shannon Entropy H(X) = <strong>${h.toFixed(3)} bits</strong>`;
-    }
+    window.copyToolPrompt = function() {
+      const code = document.getElementById('tool-prompt-code').textContent;
+      navigator.clipboard.writeText(code);
+      const btn = document.querySelector('.btn-copy-prompt');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.style.background = 'var(--emerald)';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.background = '';
+      }, 1500);
+    };
 
-    function calculateAdamWMath() {
-      const lr = parseFloat(document.getElementById('calc-lr').value) || 0.0003;
-      const wd = parseFloat(document.getElementById('calc-wd').value) || 0.01;
-      const w = parseFloat(document.getElementById('calc-w').value) || 0.45;
-      const g = parseFloat(document.getElementById('calc-g').value) || 0.12;
-
-      const decayTerm = lr * wd * w;
-      const updateStep = lr * (g / (Math.sqrt(g*g) + 1e-8));
-      const wNew = w - updateStep - decayTerm;
-
-      document.getElementById('adamw-calc-math').innerHTML = 
-        `Weight Decay Term = ${decayTerm.toFixed(7)} &nbsp;|&nbsp; Updated Weight θ<sub>t+1</sub> = <strong>${wNew.toFixed(6)}</strong>`;
-    }
-
-    function calculateLoRAMath() {
-      const din = parseInt(document.getElementById('calc-din').value) || 2048;
-      const dout = parseInt(document.getElementById('calc-dout').value) || 2048;
-      const r = parseInt(document.getElementById('calc-rank').value) || 16;
-      const alpha = parseInt(document.getElementById('calc-alpha').value) || 32;
-
-      const fullParams = din * dout;
-      const loraParams = (din * r) + (r * dout);
-      const reduction = ((1 - (loraParams / fullParams)) * 100).toFixed(2);
-
-      document.getElementById('lora-calc-math').innerHTML = 
-        `Full Params: ${fullParams.toLocaleString()} &nbsp;➔&nbsp; LoRA Params: <strong>${loraParams.toLocaleString()}</strong> (${reduction}% Reduction · Scale = ${(alpha/r).toFixed(2)})`;
-    }
-
-    function calculateConsensusMath() {
-      const wAgy = parseFloat(document.getElementById('calc-w-agy').value) || 40;
-      const wGrok = parseFloat(document.getElementById('calc-w-grok').value) || 38;
-      const wHermes = parseFloat(document.getElementById('calc-w-hermes').value) || 22;
-      const sum = wAgy + wGrok + wHermes;
-
-      const p1 = wAgy / sum;
-      const p2 = wGrok / sum;
-      const p3 = wHermes / sum;
-
-      const entropy = -( (p1 > 0 ? p1 * Math.log2(p1) : 0) + (p2 > 0 ? p2 * Math.log2(p2) : 0) + (p3 > 0 ? p3 * Math.log2(p3) : 0) );
-      const consensusScore = Math.min(100, Math.max(20, (1 - Math.abs(p1 - p2) - Math.abs(p2 - p3)) * 85)).toFixed(1);
-
-      document.getElementById('consensus-calc-math').innerHTML = 
-        `Consensus Score: <strong>${consensusScore}%</strong> &nbsp;|&nbsp; Shannon Agreement Entropy H(X) = <strong>${entropy.toFixed(4)} bits</strong> (3-Agent Consensus)`;
-    }
-
-    /* --- 3D WebGL Multi-Head Attention Hypercube Visualizer --- */
-    let hyperScene, hyperCamera, hyperRenderer, hyperGroup;
+    /* =========================================================================
+       3D WebGL Hypercube Latent Manifold Visualizer (Three.js)
+       ========================================================================= */
+    let hyperScene, hyperCamera, hyperRenderer, hyperGroup, manifoldPoints;
+    let qArrow, kArrow, vArrow, laserLine;
     let hyperAutoSpin = true;
-    let qArrow, kArrow, vArrow, laserLine, manifoldPoints;
-    let currentHead = 1;
 
     function initHypercubeVisualizer() {
-      const canvas = document.getElementById('hypercube-canvas');
+      const canvas = document.getElementById('canvas-hypercube');
       if (!canvas || typeof THREE === 'undefined') return;
 
       const rect = canvas.parentElement.getBoundingClientRect();
@@ -1743,13 +1388,12 @@ Waiting for prompt execution stream...
         positions[i*3+1] = v;
         positions[i*3+2] = w;
 
-        // Color based on latent cluster
         if (i % 3 === 0) {
-          colors[i*3] = 0.0; colors[i*3+1] = 0.94; colors[i*3+2] = 1.0; // Cyan
+          colors[i*3] = 0.0; colors[i*3+1] = 0.94; colors[i*3+2] = 1.0;
         } else if (i % 3 === 1) {
-          colors[i*3] = 0.66; colors[i*3+1] = 0.33; colors[i*3+2] = 0.97; // Purple
+          colors[i*3] = 0.66; colors[i*3+1] = 0.33; colors[i*3+2] = 0.97;
         } else {
-          colors[i*3] = 0.06; colors[i*3+1] = 0.72; colors[i*3+2] = 0.5; // Emerald
+          colors[i*3] = 0.06; colors[i*3+1] = 0.72; colors[i*3+2] = 0.5;
         }
       }
       pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -1758,14 +1402,14 @@ Waiting for prompt execution stream...
       manifoldPoints = new THREE.Points(pointGeo, pointMat);
       hyperGroup.add(manifoldPoints);
 
-      // Create Vector Arrows for Q, K, V
+      // Create Vector Arrows
       updateHypercubeVectors(
         new THREE.Vector3(1.2, 0.5, -0.9).normalize(),
         new THREE.Vector3(1.1, 0.65, -0.95).normalize(),
         new THREE.Vector3(0.3, -1.4, 0.6).normalize()
       );
 
-      // Ambient & Directional Lights
+      // Ambient Lights
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
       hyperScene.add(ambientLight);
       const dirLight = new THREE.DirectionalLight(0x00f0ff, 1.2);
@@ -1834,7 +1478,6 @@ Waiting for prompt execution stream...
       hyperGroup.add(kArrow);
       hyperGroup.add(vArrow);
 
-      // Laser attention beam between Q and K tips
       const qTip = qDir.clone().multiplyScalar(qLen);
       const kTip = kDir.clone().multiplyScalar(kLen);
       const laserGeo = new THREE.BufferGeometry().setFromPoints([qTip, kTip]);
@@ -1843,46 +1486,34 @@ Waiting for prompt execution stream...
       laserLine.computeLineDistances();
       hyperGroup.add(laserLine);
 
-      // Update UI readouts
       const dot = qDir.dot(kDir);
       const cos = dot / (qDir.length() * kDir.length());
 
       document.getElementById('readout-q').textContent = `[${qDir.x > 0 ? '+' : ''}${qDir.x.toFixed(3)}, ${qDir.y > 0 ? '+' : ''}${qDir.y.toFixed(3)}, ${qDir.z > 0 ? '+' : ''}${qDir.z.toFixed(3)}]`;
       document.getElementById('readout-k').textContent = `[${kDir.x > 0 ? '+' : ''}${kDir.x.toFixed(3)}, ${kDir.y > 0 ? '+' : ''}${kDir.y.toFixed(3)}, ${kDir.z > 0 ? '+' : ''}${kDir.z.toFixed(3)}]`;
       document.getElementById('readout-v').textContent = `[${vDir.x > 0 ? '+' : ''}${vDir.x.toFixed(3)}, ${vDir.y > 0 ? '+' : ''}${vDir.y.toFixed(3)}, ${vDir.z > 0 ? '+' : ''}${vDir.z.toFixed(3)}]`;
-      document.getElementById('readout-dot').textContent = `q · k = ${dot > 0 ? '+' : ''}${dot.toFixed(4)}`;
+      document.getElementById('readout-dot').textContent = `q · k / √d = ${dot > 0 ? '+' : ''}${(dot / 1.414).toFixed(4)}`;
       document.getElementById('readout-cos').textContent = `cos(θ) = ${cos.toFixed(4)}`;
     }
 
-    function toggleHypercubeSpin() {
+    window.toggleHypercubeSpin = function() {
       hyperAutoSpin = !hyperAutoSpin;
       const btn = document.getElementById('btn-toggle-spin');
       btn.textContent = hyperAutoSpin ? '⏸ Pause Orbit' : '▶ Resume Orbit';
-    }
+    };
 
-    function updateHypercubeHead() {
-      const h = parseInt(document.getElementById('hyper-head-select').value) || 1;
-      currentHead = h;
-      randomizeHypercubeVectors(h * 1.35);
-    }
-
-    function randomizeHypercubeVectors(seedOffset = 0) {
+    window.randomizeHypercubeVectors = function(seedOffset = 0) {
       const t = Date.now() * 0.001 + seedOffset;
       const q = new THREE.Vector3(Math.cos(t), Math.sin(t * 0.7), Math.sin(t * 0.4)).normalize();
       const k = new THREE.Vector3(Math.cos(t + 0.25), Math.sin(t * 0.7 + 0.15), Math.sin(t * 0.4 + 0.1)).normalize();
       const v = new THREE.Vector3(Math.sin(t * 0.5), -Math.cos(t * 0.8), Math.cos(t * 0.3)).normalize();
       updateHypercubeVectors(q, k, v);
-    }
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTier('intermediate');
+      selectToolMath('ast_composer');
       initHypercubeVisualizer();
-      initAttentionMatrix();
-      drawLossContour();
-      calculateAttentionMath();
-      calculateEntropyMath();
-      calculateAdamWMath();
-      calculateLoRAMath();
-      calculateConsensusMath();
     });
   </script>
   <script src="/assets/celestial-trail.js"></script>

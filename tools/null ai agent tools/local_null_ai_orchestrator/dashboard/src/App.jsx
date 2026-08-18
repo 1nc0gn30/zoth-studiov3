@@ -38,21 +38,13 @@ export default function App() {
 
   const path = typeof window !== "undefined" ? window.location.pathname : "/";
   if (path === "/map" || path === "/swarm") {
+    if (typeof document !== "undefined") document.title = "Swarm — Zoth Studio";
     return (
       <div className="harness map-shell">
         <a className="skip" href="#composer">
-          Skip to message composer
+          Skip to swarm composer
         </a>
-        <div className="stage">
-          <header className="stage-bar">
-            <a className="ghost" href="/">
-              Deck
-            </a>
-            <p className="empty-kicker">A NullAI studio</p>
-            <h1>Agent map</h1>
-          </header>
-          <SwarmRadar full />
-        </div>
+        <SwarmRadar full />
       </div>
     );
   }
