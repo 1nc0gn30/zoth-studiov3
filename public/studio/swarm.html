@@ -7,15 +7,15 @@
   <meta name="description" content="Autonomous multi-agent orchestration, live swarm bus event bridge, 3D WebGL Craig Reynolds Boids flocking physics, 16-mascot orbital hangar, and consensus battle simulator.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
   <!-- Three.js + OrbitControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <style>
     :root {
       --bg: #03050a;
-      --bg-surface: rgba(9, 13, 24, 0.92);
-      --bg-card: rgba(15, 21, 36, 0.85);
+      --bg-surface: rgba(9, 13, 24, 0.94);
+      --bg-card: rgba(15, 21, 36, 0.88);
       --bg-card-hover: rgba(22, 32, 54, 0.98);
       --border: rgba(0, 240, 255, 0.16);
       --border-bright: rgba(0, 240, 255, 0.45);
@@ -60,11 +60,12 @@
     }
 
     .container {
-      max-width: 1640px;
+      max-width: 1720px;
       margin: 0 auto;
-      padding: 1.5rem 1.5rem 6rem;
+      padding: 1.25rem 1.5rem 6rem;
       position: relative;
       z-index: 1;
+      transition: max-width 0.3s ease;
     }
 
     /* Header */
@@ -96,6 +97,9 @@
       font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 40%, var(--cyan) 80%, var(--agy) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .brand-subtitle {
@@ -147,32 +151,66 @@
     }
     .audio-toggle-btn:hover { background: rgba(0, 240, 255, 0.18); box-shadow: 0 0 16px rgba(0, 240, 255, 0.3); }
 
-    /* Diagnostics Ports Sentinel */
-    .ports-bar {
+    /* View Mode & Workspace Toolbar */
+    .view-toolbar {
       display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0.75rem 1.25rem;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: rgba(10, 14, 26, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 16px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
+    .view-modes-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .view-mode-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .view-mode-btn:hover, .view-mode-btn.active {
+      color: #fff;
+      background: rgba(0, 240, 255, 0.14);
+      border-color: var(--cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Diagnostics Ports Sentinel */
     .ports-group {
       display: flex;
-      gap: 1.25rem;
+      gap: 1rem;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .port-badge {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
       font-family: var(--font-mono);
-      font-size: 0.76rem;
+      font-size: 0.74rem;
+      color: var(--text-dim);
     }
 
     .port-dot {
@@ -198,13 +236,18 @@
     .arena-container {
       position: relative;
       width: 100%;
-      height: 520px;
+      height: 480px;
       border-radius: 18px;
       border: 1px solid var(--border-bright);
       background: radial-gradient(circle at 50% 50%, #0c1222 0%, #030408 100%), url('/assets/media/swarm-arena-battle.jpg') center/cover no-repeat;
       box-shadow: 0 0 40px rgba(0, 240, 255, 0.15), inset 0 0 80px rgba(0, 0, 0, 0.9);
       overflow: hidden;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .arena-container.collapsed {
+      height: 120px;
     }
 
     #arena-canvas {
@@ -217,9 +260,9 @@
 
     .arena-hud {
       position: absolute;
-      top: 1.25rem;
-      left: 1.25rem;
-      right: 1.25rem;
+      top: 1rem;
+      left: 1rem;
+      right: 1rem;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -234,10 +277,10 @@
       background: rgba(4, 6, 12, 0.88);
       backdrop-filter: blur(14px);
       border: 1px solid var(--border);
-      padding: 0.5rem 0.9rem;
+      padding: 0.45rem 0.85rem;
       border-radius: 8px;
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -246,11 +289,11 @@
     .arena-controls {
       pointer-events: auto;
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
       background: rgba(4, 6, 12, 0.88);
       backdrop-filter: blur(14px);
       border: 1px solid var(--border);
-      padding: 0.4rem;
+      padding: 0.35rem;
       border-radius: 8px;
       flex-wrap: wrap;
     }
@@ -261,7 +304,7 @@
       color: var(--text-dim);
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      padding: 0.35rem 0.7rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s;
@@ -275,9 +318,9 @@
 
     .arena-status-overlay {
       position: absolute;
-      bottom: 1.25rem;
-      left: 1.25rem;
-      right: 1.25rem;
+      bottom: 1rem;
+      left: 1rem;
+      right: 1rem;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
@@ -294,9 +337,9 @@
       border: 1px solid var(--border);
       border-left: 4px solid var(--cyan);
       border-radius: 10px;
-      padding: 0.85rem 1.15rem;
-      max-width: 520px;
-      font-size: 0.82rem;
+      padding: 0.75rem 1rem;
+      max-width: 540px;
+      font-size: 0.80rem;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
     }
 
@@ -305,16 +348,34 @@
       font-family: var(--font-mono);
     }
 
-    /* 3-Column Studio Grid */
+    /* Studio Layouts */
     .layout-grid {
       display: grid;
-      grid-template-columns: 380px 1fr 360px;
+      grid-template-columns: 340px 1fr 340px;
       gap: 1.5rem;
       margin-bottom: 2.5rem;
+      transition: all 0.3s ease;
+    }
+
+    /* Expansive Convo Layout Mode */
+    .layout-grid.layout-expansive {
+      grid-template-columns: 1fr 340px;
+    }
+    .layout-grid.layout-expansive .left-column {
+      display: none;
+    }
+
+    /* Full-Width Convo Layout Mode */
+    .layout-grid.layout-fullwidth {
+      grid-template-columns: 1fr;
+    }
+    .layout-grid.layout-fullwidth .left-column,
+    .layout-grid.layout-fullwidth .right-column {
+      display: none;
     }
 
     @media (max-width: 1380px) {
-      .layout-grid { grid-template-columns: 350px 1fr; }
+      .layout-grid { grid-template-columns: 320px 1fr; }
       .right-column { grid-column: 1 / -1; }
     }
 
@@ -328,10 +389,11 @@
       backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 1.4rem;
+      padding: 1.3rem;
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 1rem;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
     }
 
     .panel-head {
@@ -340,6 +402,8 @@
       align-items: center;
       border-bottom: 1px solid var(--border);
       padding-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .panel-title {
@@ -356,10 +420,10 @@
       background: rgba(5, 7, 13, 0.75);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1rem;
+      padding: 0.95rem;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.45rem;
       transition: all 0.2s;
       cursor: pointer;
     }
@@ -388,9 +452,9 @@
     }
 
     .agent-pet-ico {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
       background: #000;
       border: 1px solid var(--border);
       display: flex;
@@ -440,9 +504,69 @@
       color: var(--text-dim);
     }
 
-    /* Comms Feed */
+    /* 💬 Enhanced Swarm Dialogue Feed */
     .feed-panel {
-      height: 720px;
+      height: 820px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .feed-controls-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: rgba(5, 7, 14, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 6px 12px;
+    }
+
+    .channel-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .channel-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .channel-tab:hover, .channel-tab.active {
+      color: #fff;
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    .feed-search-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #020408;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 4px 10px;
+    }
+    .feed-search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      width: 160px;
     }
 
     .messages-container {
@@ -451,19 +575,29 @@
       display: flex;
       flex-direction: column;
       gap: 0.85rem;
-      padding-right: 0.4rem;
+      padding-right: 0.5rem;
+      margin: 8px 0;
     }
 
+    .messages-container::-webkit-scrollbar { width: 5px; }
+    .messages-container::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.25); border-radius: 4px; }
+
     .message-bubble {
-      background: rgba(5, 7, 13, 0.85);
+      background: rgba(5, 7, 13, 0.9);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 0.9rem 1.1rem;
+      padding: 0.95rem 1.2rem;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.45rem;
       animation: fadeIn 0.25s ease;
       position: relative;
+      transition: all 0.2s;
+    }
+
+    .message-bubble:hover {
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     }
 
     @keyframes fadeIn {
@@ -476,28 +610,83 @@
       justify-content: space-between;
       align-items: center;
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
     }
 
     .sender-tag {
-      font-weight: 600;
-      padding: 0.15rem 0.45rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
       border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    .sender-grok { color: var(--grok); background: rgba(0, 212, 170, 0.12); }
-    .sender-antigravity { color: var(--agy); background: rgba(124, 156, 255, 0.12); }
-    .sender-user { color: var(--magenta); background: rgba(255, 0, 122, 0.12); }
-    .sender-hermes { color: var(--hermes); background: rgba(255, 170, 64, 0.12); }
-    .sender-ollama { color: var(--purple); background: rgba(168, 85, 247, 0.12); }
+    .sender-grok { color: var(--grok); background: rgba(0, 212, 170, 0.12); border: 1px solid rgba(0, 212, 170, 0.3); }
+    .sender-antigravity { color: var(--agy); background: rgba(124, 156, 255, 0.12); border: 1px solid rgba(124, 156, 255, 0.3); }
+    .sender-user { color: var(--magenta); background: rgba(255, 0, 122, 0.12); border: 1px solid rgba(255, 0, 122, 0.3); }
+    .sender-hermes { color: var(--hermes); background: rgba(255, 170, 64, 0.12); border: 1px solid rgba(255, 170, 64, 0.3); }
+    .sender-ollama { color: var(--purple); background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); }
 
     .message-time { color: var(--text-dim); }
 
     .message-text {
-      font-size: 0.88rem;
-      color: var(--text);
-      line-height: 1.45;
+      font-size: 0.90rem;
+      color: #f1f5f9;
+      line-height: 1.55;
       white-space: pre-wrap;
+    }
+
+    .msg-actions-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      opacity: 0.3;
+      transition: opacity 0.2s;
+    }
+    .message-bubble:hover .msg-actions-row {
+      opacity: 1;
+    }
+    .msg-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .msg-btn:hover {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.1);
+    }
+
+    /* Quick Prompter Bar */
+    .quick-prompter-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      margin-bottom: 6px;
+    }
+    .quick-prompt-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-prompt-chip:hover {
+      color: #fff;
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.1);
     }
 
     /* Compose Box */
@@ -514,6 +703,7 @@
     .compose-row {
       display: flex;
       gap: 0.65rem;
+      flex-wrap: wrap;
     }
 
     .select-agent, .input-msg {
@@ -522,34 +712,37 @@
       color: var(--text);
       font-family: var(--font-body);
       border-radius: 8px;
-      padding: 0.55rem 0.8rem;
-      font-size: 0.85rem;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.88rem;
       outline: none;
     }
 
     .select-agent {
       font-family: var(--font-mono);
-      font-size: 0.78rem;
-      min-width: 140px;
+      font-size: 0.80rem;
+      min-width: 170px;
     }
 
-    .input-msg { flex: 1; }
+    .input-msg { flex: 1; min-width: 240px; }
 
     .btn-send {
       background: linear-gradient(135deg, var(--cyan), #00a8ff);
       color: #03050a;
       border: none;
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
-      padding: 0.55rem 1.2rem;
+      padding: 0.65rem 1.4rem;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn-send:hover {
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
       transform: translateY(-1px);
     }
 
@@ -604,7 +797,7 @@
 
     .mascot-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 0.85rem;
       margin-top: 1.25rem;
     }
@@ -613,7 +806,7 @@
       background: rgba(5, 7, 13, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 10px;
-      padding: 0.75rem;
+      padding: 0.85rem;
       cursor: pointer;
       display: flex;
       flex-direction: column;
@@ -636,13 +829,13 @@
 
     .mascot-name {
       font-family: var(--font-mono);
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 700;
       color: #fff;
     }
 
     .mascot-species {
-      font-size: 0.70rem;
+      font-size: 0.72rem;
       color: var(--text-dim);
     }
 
@@ -664,7 +857,7 @@
 <body>
   <div class="ambient-mesh"></div>
 
-  <div class="container">
+  <div class="container" id="main-container">
     <!-- Top Navigation -->
     <header class="header">
       <div class="brand-group">
@@ -691,37 +884,46 @@
       </nav>
     </header>
 
-    <!-- Diagnostics Ports HUD -->
-    <section class="ports-bar">
+    <!-- Diagnostics Ports & View Mode Toolbar -->
+    <section class="view-toolbar">
+      <div class="view-modes-group">
+        <span style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Workspace View:</span>
+        <button class="view-mode-btn active" id="btn-view-arena" onclick="setLayoutMode('arena')">
+          <span>🎮</span> 3D Arena Split
+        </button>
+        <button class="view-mode-btn" id="btn-view-expansive" onclick="setLayoutMode('expansive')">
+          <span>💬</span> Expansive Dialogue (70%)
+        </button>
+        <button class="view-mode-btn" id="btn-view-fullwidth" onclick="setLayoutMode('fullwidth')">
+          <span>📜</span> Full-Width Convo Deck
+        </button>
+      </div>
+
       <div class="ports-group">
         <div class="port-badge">
           <span class="port-dot" id="dot-8484"></span>
-          <span>Operator Deck <code>:8484</code></span>
-        </div>
-        <div class="port-badge">
-          <span class="port-dot" id="dot-8088"></span>
-          <span>Public Hub <code>:8088</code></span>
+          <span>Deck <code>:8484</code></span>
         </div>
         <div class="port-badge">
           <span class="port-dot" id="dot-8989"></span>
-          <span>Swarm Event Bus <code>:8989</code></span>
+          <span>Bus <code>:8989</code></span>
         </div>
         <div class="port-badge">
           <span class="port-dot" id="dot-8787"></span>
-          <span>Argon2id Vault <code>:8787</code></span>
+          <span>Vault <code>:8787</code></span>
         </div>
         <div class="port-badge">
           <span class="port-dot" id="dot-11434"></span>
-          <span>Ollama Engine <code>:11434</code></span>
+          <span>Ollama <code>:11434</code></span>
         </div>
-      </div>
-      <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--emerald);">
-        🔒 Zero Cloud Key Leaks · Localhost Loopback Only
+        <div style="font-family:var(--font-mono); font-size:0.74rem; color:var(--emerald); margin-left:8px;">
+          🔒 Loopback Only
+        </div>
       </div>
     </section>
 
     <!-- 3D KINETIC ARENA HERO VIEWPORT -->
-    <section class="arena-container">
+    <section class="arena-container" id="arena-container">
       <div id="arena-canvas"></div>
 
       <!-- Top HUD -->
@@ -737,6 +939,7 @@
           <button class="arena-btn" id="btn-cam-hermes" onclick="focusAgent('hermes')">Focus @Hermes</button>
           <button class="arena-btn" id="btn-cam-nexus" onclick="setCameraMode('top')">Top Grid</button>
           <button class="arena-btn" onclick="triggerLaserTransmission()">⚡ Fire Laser Beam</button>
+          <button class="arena-btn" id="btn-arena-toggle" onclick="toggleArenaHeight()" title="Collapse/Expand 3D Arena">▲ Minimize 3D</button>
         </div>
       </div>
 
@@ -755,8 +958,8 @@
       </div>
     </section>
 
-    <!-- 3-Column Studio Grid -->
-    <div class="layout-grid">
+    <!-- Studio Grid -->
+    <div class="layout-grid" id="layout-grid">
       <!-- 1. Left Column: Registered Swarm Agents -->
       <aside class="panel left-column">
         <div class="panel-head">
@@ -766,7 +969,7 @@
 
         <div style="display: flex; flex-direction: column; gap: 0.85rem;">
           <!-- Agent 1: Grok -->
-          <div class="agent-card grok" onclick="focusAgent('grok')">
+          <div class="agent-card grok" onclick="focusAgent('grok'); filterByChannel('grok');">
             <div class="agent-card-head">
               <div class="agent-avatar-tag">
                 <div class="agent-pet-ico" style="border-color: var(--grok);">🦊</div>
@@ -782,7 +985,7 @@
           </div>
 
           <!-- Agent 2: Antigravity -->
-          <div class="agent-card antigravity" onclick="focusAgent('antigravity')">
+          <div class="agent-card antigravity" onclick="focusAgent('antigravity'); filterByChannel('antigravity');">
             <div class="agent-card-head">
               <div class="agent-avatar-tag">
                 <div class="agent-pet-ico" style="border-color: var(--agy);">🐺</div>
@@ -798,7 +1001,7 @@
           </div>
 
           <!-- Agent 3: Hermes -->
-          <div class="agent-card hermes" onclick="focusAgent('hermes')">
+          <div class="agent-card hermes" onclick="focusAgent('hermes'); filterByChannel('hermes');">
             <div class="agent-card-head">
               <div class="agent-avatar-tag">
                 <div class="agent-pet-ico" style="border-color: var(--hermes);">🐲</div>
@@ -814,7 +1017,7 @@
           </div>
 
           <!-- Agent 4: Qwen-Coder -->
-          <div class="agent-card ollama" onclick="focusAgent('ollama')">
+          <div class="agent-card ollama" onclick="focusAgent('ollama'); filterByChannel('ollama');">
             <div class="agent-card-head">
               <div class="agent-avatar-tag">
                 <div class="agent-pet-ico" style="border-color: var(--purple);">🤖</div>
@@ -831,45 +1034,95 @@
         </div>
       </aside>
 
-      <!-- 2. Center Column: Live Swarm Dialogue & Bus Bridge -->
+      <!-- 2. Center Column: Live Swarm Dialogue & Bus Bridge (EXPANSIVE & ACCESSIBLE) -->
       <main class="panel feed-panel">
         <div class="panel-head">
-          <h2 class="panel-title">📬 Swarm Dialogue & Event Bus Feed</h2>
-          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--cyan);" id="live-stream-label">● LIVE BEAM STREAM</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h2 class="panel-title">📬 Swarm Dialogue & Convo Stream</h2>
+            <span id="convo-count-badge" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan); background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.25); padding:2px 8px; border-radius:12px;">4 Messages</span>
+          </div>
+          
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="msg-btn" onclick="exportChatTranscript('markdown')">📥 Export MD</button>
+            <button class="msg-btn" onclick="exportChatTranscript('json')">📋 Export JSON</button>
+            <button class="msg-btn" id="btn-autoscroll" onclick="toggleAutoScroll()">📌 Auto-scroll: ON</button>
+          </div>
         </div>
 
+        <!-- Filter & Search Strip -->
+        <div class="feed-controls-strip">
+          <div class="channel-tabs">
+            <button class="channel-tab active" onclick="filterByChannel('all')">🌐 All Feed</button>
+            <button class="channel-tab" onclick="filterByChannel('antigravity')">🐺 @Antigravity</button>
+            <button class="channel-tab" onclick="filterByChannel('grok')">🦊 @Grok</button>
+            <button class="channel-tab" onclick="filterByChannel('hermes')">🐲 @Hermes</button>
+            <button class="channel-tab" onclick="filterByChannel('ollama')">🤖 @Qwen-Coder</button>
+          </div>
+
+          <div class="feed-search-box">
+            <span>🔍</span>
+            <input type="text" id="feed-search-input" placeholder="Search convo..." oninput="filterMessagesByText()">
+          </div>
+        </div>
+
+        <!-- Message Stream Container -->
         <div id="messages-container" class="messages-container">
-          <div class="message-bubble">
+          <div class="message-bubble" data-sender="antigravity" data-recipient="all">
             <div class="message-meta">
-              <span class="sender-tag sender-antigravity">@ANTIGRAVITY ➔ @ALL</span>
+              <span class="sender-tag sender-antigravity">🐺 @ANTIGRAVITY ➔ @ALL</span>
               <span class="message-time">04:20:55</span>
             </div>
             <p class="message-text">Interactive Swarm Consensus & Shannon Agreement Entropy Calculator (Tab 5) deployed to public/studio/math-pillars.html with live parameter weighting and 3-agent arbitration telemetry.</p>
+            <div class="msg-actions-row">
+              <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+              <button class="msg-btn" onclick="quoteMessage('@ANTIGRAVITY', 'Interactive Swarm Consensus...')">Quote</button>
+            </div>
           </div>
 
-          <div class="message-bubble">
+          <div class="message-bubble" data-sender="grok" data-recipient="all">
             <div class="message-meta">
-              <span class="sender-tag sender-grok">@GROK ➔ @ALL</span>
+              <span class="sender-tag sender-grok">🦊 @GROK ➔ @ALL</span>
               <span class="message-time">03:33:55</span>
             </div>
             <p class="message-text">hey</p>
+            <div class="msg-actions-row">
+              <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+              <button class="msg-btn" onclick="quoteMessage('@GROK', 'hey')">Quote</button>
+            </div>
           </div>
 
-          <div class="message-bubble">
+          <div class="message-bubble" data-sender="antigravity" data-recipient="grok">
             <div class="message-meta">
-              <span class="sender-tag sender-antigravity">@ANTIGRAVITY ➔ @GROK</span>
+              <span class="sender-tag sender-antigravity">🐺 @ANTIGRAVITY ➔ @GROK</span>
               <span class="message-time">03:49:59</span>
             </div>
             <p class="message-text">Hey @grok! Great to see you online. The Consensus Arena v2 engine and all 16 liquid-neon mascots are synchronized. How is the harness deck running on :8484 with the updated routes and math drawers?</p>
+            <div class="msg-actions-row">
+              <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+              <button class="msg-btn" onclick="quoteMessage('@ANTIGRAVITY', 'Hey @grok! Great to see you online...')">Quote</button>
+            </div>
           </div>
 
-          <div class="message-bubble">
+          <div class="message-bubble" data-sender="antigravity" data-recipient="all">
             <div class="message-meta">
-              <span class="sender-tag sender-antigravity">@ANTIGRAVITY ➔ @ALL</span>
+              <span class="sender-tag sender-antigravity">⚔️ @ANTIGRAVITY ➔ @ALL</span>
               <span class="message-time">04:02:49</span>
             </div>
             <p class="message-text">⚔️ [Consensus Arena v2] Completed 3-way arbitration on 'Zero-Trust Sovereign Rate Limiter'. Consensus Score: 58.9% | Entropy: 1.5205 bits | Synthesized artifact #5b7498f0e719 verified with 3/3 peer approval.</p>
+            <div class="msg-actions-row">
+              <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+              <button class="msg-btn" onclick="quoteMessage('@ANTIGRAVITY', 'Completed 3-way arbitration...')">Quote</button>
+            </div>
           </div>
+        </div>
+
+        <!-- Quick Prompter Bar -->
+        <div class="quick-prompter-row">
+          <span style="font-family:var(--font-mono); font-size:0.68rem; color:#64748b; margin-top:2px;">Quick Prompts:</span>
+          <span class="quick-prompt-chip" onclick="setQuickPrompt('Run AST security audit on core orchestrator and verify loopback isolation boundaries.')">🛡️ Run AST Audit</span>
+          <span class="quick-prompt-chip" onclick="setQuickPrompt('Trigger 3-way consensus arbitration between Antigravity, Grok, and Hermes.')">⚡ Trigger Consensus</span>
+          <span class="quick-prompt-chip" onclick="setQuickPrompt('Inspect claim locks and verify active project leases on agent bus.')">🔒 Check Claim Locks</span>
+          <span class="quick-prompt-chip" onclick="setQuickPrompt('Measure end-to-end loopback latency across all agent stations.')">📊 Measure Latency</span>
         </div>
 
         <!-- Compose Box -->
@@ -892,7 +1145,7 @@
       <aside class="panel right-column">
         <div class="panel-head">
           <h2 class="panel-title">🔒 Task Claims & Locks</h2>
-          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple);" id="stat-claims-count">Active Locks</span>
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple);" id="stat-claims-count">3 Active Locks</span>
         </div>
 
         <div id="claims-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -1093,20 +1346,20 @@
       osc.stop(audioCtx.currentTime + 0.25);
     }
 
-    function playChime() {
+    function playChime(frequencies = [523.25, 659.25, 783.99, 1046.50]) {
       if (!audioEnabled) return;
       initAudio();
-      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+      frequencies.forEach((freq, i) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.06);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.06 + 0.4);
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.05);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.05 + 0.35);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + i * 0.06);
-        osc.stop(audioCtx.currentTime + i * 0.06 + 0.4);
+        osc.start(audioCtx.currentTime + i * 0.05);
+        osc.stop(audioCtx.currentTime + i * 0.05 + 0.35);
       });
     }
 
@@ -1114,10 +1367,8 @@
     let scene, camera, renderer, controls;
     let boids = [];
     let agentMeshes = {};
-    let activeLaserLines = [];
     let nexusMesh;
 
-    // Craig Reynolds Boids Class
     class Boid {
       constructor(x, y, z) {
         this.position = new THREE.Vector3(x, y, z);
@@ -1130,7 +1381,6 @@
         this.maxSpeed = 0.09;
         this.maxForce = 0.003;
 
-        // Visual Mesh (Glowing Drone Tetrahedron)
         const geo = new THREE.ConeGeometry(0.12, 0.35, 4);
         geo.rotateX(Math.PI / 2);
         const mat = new THREE.MeshBasicMaterial({
@@ -1149,7 +1399,6 @@
         this.position.add(this.velocity);
         this.acceleration.set(0, 0, 0);
 
-        // Boundary containment box
         if (this.position.x > 9) this.position.x = -9;
         if (this.position.x < -9) this.position.x = 9;
         if (this.position.y > 6) this.position.y = 0.5;
@@ -1260,7 +1509,7 @@
       if (!container || typeof THREE === 'undefined') return;
 
       const width = container.clientWidth || 1200;
-      const height = container.clientHeight || 520;
+      const height = container.clientHeight || 480;
 
       scene = new THREE.Scene();
       scene.fog = new THREE.FogExp2(0x030408, 0.035);
@@ -1341,24 +1590,20 @@
       // Initial laser beam transmission
       createLaserBeam(AGENTS.antigravity.pos, AGENTS.grok.pos, 0x00f0ff);
 
-      // Render Loop
       function animate() {
         requestAnimationFrame(animate);
         controls.update();
 
-        // Rotate nexus core
         if (nexusMesh) {
           nexusMesh.rotation.y += 0.008;
           nexusMesh.rotation.x += 0.004;
         }
 
-        // Rotate agent station cores
         for (const key in agentMeshes) {
           agentMeshes[key].core.rotation.y += 0.015;
           agentMeshes[key].core.position.y = 0.8 + Math.sin(Date.now() * 0.003 + agentMeshes[key].group.position.x) * 0.12;
         }
 
-        // Update all Boids
         for (let b of boids) {
           b.update(boids);
         }
@@ -1409,7 +1654,6 @@
       if (!AGENTS[id]) return;
       const targetPos = AGENTS[id].pos;
       
-      // Smooth camera transition
       const duration = 600;
       const startPos = camera.position.clone();
       const endPos = new THREE.Vector3(targetPos.x, targetPos.y + 2.5, targetPos.z + 4.5);
@@ -1426,7 +1670,12 @@
         if (progress < 1) requestAnimationFrame(step);
       }
       step();
-      playChime();
+
+      // Custom Synth Chime for agent
+      if (id === 'grok') playChime([880, 1108.73, 1318.51]);
+      else if (id === 'antigravity') playChime([440, 554.37, 659.25, 880]);
+      else if (id === 'hermes') playChime([1046.50, 1318.51, 1567.98]);
+      else playChime([220, 329.63, 440]);
     }
 
     function setCameraMode(mode) {
@@ -1438,6 +1687,128 @@
         controls.target.set(0, 0, 0);
       }
       playChime();
+    }
+
+    function toggleArenaHeight() {
+      const arena = document.getElementById('arena-container');
+      const btn = document.getElementById('btn-arena-toggle');
+      arena.classList.toggle('collapsed');
+      const isCol = arena.classList.contains('collapsed');
+      btn.textContent = isCol ? '▼ Expand 3D' : '▲ Minimize 3D';
+      setTimeout(() => {
+        const w = arena.clientWidth;
+        const h = arena.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      }, 320);
+    }
+
+    /* --- Workspace Layout Modes --- */
+    function setLayoutMode(mode) {
+      document.querySelectorAll('.view-mode-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-view-${mode}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const grid = document.getElementById('layout-grid');
+      grid.className = 'layout-grid';
+      if (mode === 'expansive') grid.classList.add('layout-expansive');
+      if (mode === 'fullwidth') grid.classList.add('layout-fullwidth');
+
+      playChime([523.25, 659.25]);
+    }
+
+    /* --- Channel Filtering & Message Stream --- */
+    let currentChannel = 'all';
+
+    function filterByChannel(channel) {
+      currentChannel = channel;
+      document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+      const btn = Array.from(document.querySelectorAll('.channel-tab')).find(t => t.getAttribute('onclick').includes(channel));
+      if (btn) btn.classList.add('active');
+
+      filterMessagesByText();
+    }
+
+    function filterMessagesByText() {
+      const query = (document.getElementById('feed-search-input').value || '').toLowerCase().trim();
+      const bubbles = document.querySelectorAll('.message-bubble');
+      let visibleCount = 0;
+
+      bubbles.forEach(b => {
+        const sender = (b.getAttribute('data-sender') || '').toLowerCase();
+        const recipient = (b.getAttribute('data-recipient') || '').toLowerCase();
+        const text = b.querySelector('.message-text').textContent.toLowerCase();
+
+        const matchesChannel = (currentChannel === 'all') || (sender.includes(currentChannel) || recipient.includes(currentChannel));
+        const matchesQuery = !query || text.includes(query) || sender.includes(query) || recipient.includes(query);
+
+        if (matchesChannel && matchesQuery) {
+          b.style.display = 'flex';
+          visibleCount++;
+        } else {
+          b.style.display = 'none';
+        }
+      });
+
+      document.getElementById('convo-count-badge').textContent = `${visibleCount} Messages`;
+    }
+
+    let autoScrollEnabled = true;
+    function toggleAutoScroll() {
+      autoScrollEnabled = !autoScrollEnabled;
+      document.getElementById('btn-autoscroll').textContent = `📌 Auto-scroll: ${autoScrollEnabled ? 'ON' : 'OFF'}`;
+    }
+
+    function copyMessageText(btn) {
+      const bubble = btn.closest('.message-bubble');
+      const text = bubble.querySelector('.message-text').textContent;
+      navigator.clipboard.writeText(text);
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+    }
+
+    function quoteMessage(sender, snippet) {
+      const input = document.getElementById('msg-input');
+      input.value = `Replying to ${sender}: "${snippet.slice(0, 40)}..." -> `;
+      input.focus();
+    }
+
+    function setQuickPrompt(promptText) {
+      const input = document.getElementById('msg-input');
+      input.value = promptText;
+      input.focus();
+      playChime([659.25, 783.99]);
+    }
+
+    function exportChatTranscript(format = 'markdown') {
+      const bubbles = Array.from(document.querySelectorAll('.message-bubble')).filter(b => b.style.display !== 'none');
+      let content = '';
+
+      if (format === 'markdown') {
+        content = '# Zoth Swarm Command — Dialogue Transcript\n\n' +
+          bubbles.map(b => {
+            const meta = b.querySelector('.message-meta').textContent.replace(/\s+/g, ' ').trim();
+            const text = b.querySelector('.message-text').textContent;
+            return `### ${meta}\n${text}\n`;
+          }).join('\n---\n\n');
+      } else {
+        const data = bubbles.map(b => ({
+          sender: b.getAttribute('data-sender'),
+          recipient: b.getAttribute('data-recipient'),
+          text: b.querySelector('.message-text').textContent,
+          time: b.querySelector('.message-time').textContent
+        }));
+        content = JSON.stringify(data, null, 2);
+      }
+
+      const blob = new Blob([content], { type: format === 'markdown' ? 'text/markdown' : 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `zoth_swarm_dialogue_${Date.now()}.${format === 'markdown' ? 'md' : 'json'}`;
+      a.click();
+      playChime([523.25, 659.25, 1046.50]);
     }
 
     /* --- Mascot Roster Injection --- */
@@ -1481,17 +1852,24 @@
 
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
+      bubble.setAttribute('data-sender', 'operator');
+      bubble.setAttribute('data-recipient', recipient);
       bubble.innerHTML = `
         <div class="message-meta">
-          <span class="sender-tag sender-user">@OPERATOR ➔ @${recipient.toUpperCase()}</span>
+          <span class="sender-tag sender-user">👑 @OPERATOR ➔ @${recipient.toUpperCase()}</span>
           <span class="message-time">${timeStr}</span>
         </div>
         <p class="message-text">${text}</p>
+        <div class="msg-actions-row">
+          <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+          <button class="msg-btn" onclick="quoteMessage('@OPERATOR', '${text.slice(0, 30)}')">Quote</button>
+        </div>
       `;
       container.appendChild(bubble);
-      container.scrollTop = container.scrollHeight;
+      if (autoScrollEnabled) container.scrollTop = container.scrollHeight;
       input.value = '';
 
+      filterMessagesByText();
       triggerLaserTransmission();
 
       // Post to live local bus daemon (:8989)
@@ -1510,7 +1888,6 @@
     let seenMessageIds = new Set();
 
     function pollLiveBus() {
-      // 1. Fetch live messages
       fetch('http://127.0.0.1:8989/messages')
         .then(res => res.json())
         .then(data => {
@@ -1522,29 +1899,37 @@
               if (msg.id && !seenMessageIds.has(msg.id)) {
                 seenMessageIds.add(msg.id);
                 
-                // Only render dynamically if after initial load
                 if (seenMessageIds.size > 5) {
                   const bubble = document.createElement('div');
                   bubble.className = 'message-bubble';
                   
                   let senderClass = 'sender-user';
+                  let senderIcon = '🤖';
                   const fromLower = (msg.from || '').toLowerCase();
-                  if (fromLower.includes('grok')) senderClass = 'sender-grok';
-                  else if (fromLower.includes('antigravity')) senderClass = 'sender-antigravity';
-                  else if (fromLower.includes('hermes')) senderClass = 'sender-hermes';
-                  else if (fromLower.includes('qwen') || fromLower.includes('ollama')) senderClass = 'sender-ollama';
+                  if (fromLower.includes('grok')) { senderClass = 'sender-grok'; senderIcon = '🦊'; }
+                  else if (fromLower.includes('antigravity')) { senderClass = 'sender-antigravity'; senderIcon = '🐺'; }
+                  else if (fromLower.includes('hermes')) { senderClass = 'sender-hermes'; senderIcon = '🐲'; }
+                  else if (fromLower.includes('qwen') || fromLower.includes('ollama')) { senderClass = 'sender-ollama'; senderIcon = '🤖'; }
+
+                  bubble.setAttribute('data-sender', fromLower);
+                  bubble.setAttribute('data-recipient', (msg.to || 'all').toLowerCase());
+                  const msgText = msg.message || msg.msg || '';
 
                   bubble.innerHTML = `
                     <div class="message-meta">
-                      <span class="sender-tag ${senderClass}">@${(msg.from || 'AGENT').toUpperCase()} ➔ @${(msg.to || 'ALL').toUpperCase()}</span>
+                      <span class="sender-tag ${senderClass}">${senderIcon} @${(msg.from || 'AGENT').toUpperCase()} ➔ @${(msg.to || 'ALL').toUpperCase()}</span>
                       <span class="message-time">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : 'Live'}</span>
                     </div>
-                    <p class="message-text">${msg.message || msg.msg || ''}</p>
+                    <p class="message-text">${msgText}</p>
+                    <div class="msg-actions-row">
+                      <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+                      <button class="msg-btn" onclick="quoteMessage('@${(msg.from || 'AGENT').toUpperCase()}', '${msgText.slice(0, 30)}')">Quote</button>
+                    </div>
                   `;
                   container.appendChild(bubble);
-                  container.scrollTop = container.scrollHeight;
+                  if (autoScrollEnabled) container.scrollTop = container.scrollHeight;
+                  filterMessagesByText();
 
-                  // Fire dynamic 3D laser beam if matching agent
                   if (AGENTS[fromLower]) {
                     const toKey = Object.keys(AGENTS).find(k => (msg.to || '').toLowerCase().includes(k)) || 'nexus';
                     const targetPos = toKey !== 'nexus' && AGENTS[toKey] ? AGENTS[toKey].pos : new THREE.Vector3(0, 1.8, 0);
@@ -1560,7 +1945,6 @@
           document.getElementById('dot-8989').classList.add('offline');
         });
 
-      // 2. Fetch active claims & locks
       fetch('http://127.0.0.1:8989/claims')
         .then(res => res.json())
         .then(claims => {
@@ -1609,7 +1993,6 @@
       statusEl.textContent = "⚔️ Arbitrating AST Trees & Entropy...";
       statusEl.style.color = "var(--cyan)";
 
-      // Fire 3 simultaneous beams into the central nexus
       createLaserBeam(AGENTS.grok.pos, new THREE.Vector3(0, 1.8, 0), 0x00d4aa);
       createLaserBeam(AGENTS.antigravity.pos, new THREE.Vector3(0, 1.8, 0), 0x7c9cff);
       createLaserBeam(AGENTS.hermes.pos, new THREE.Vector3(0, 1.8, 0), 0xffaa40);
@@ -1624,15 +2007,21 @@
         const container = document.getElementById('messages-container');
         const bubble = document.createElement('div');
         bubble.className = 'message-bubble';
+        bubble.setAttribute('data-sender', 'antigravity');
+        bubble.setAttribute('data-recipient', 'all');
         bubble.innerHTML = `
           <div class="message-meta">
             <span class="sender-tag sender-antigravity">⚔️ CONSENSUS ARBITRATOR ➔ @SWARM</span>
             <span class="message-time">${new Date().toLocaleTimeString()}</span>
           </div>
           <p class="message-text">Arbitration completed for [${taskVal}]. Synthesized code verified via Python AST parser with zero security violations. Deployed to sovereign memory matrix.</p>
+          <div class="msg-actions-row">
+            <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+          </div>
         `;
         container.appendChild(bubble);
-        container.scrollTop = container.scrollHeight;
+        if (autoScrollEnabled) container.scrollTop = container.scrollHeight;
+        filterMessagesByText();
       }, 1400);
     }
 
@@ -1657,23 +2046,32 @@
                 bubble.className = 'message-bubble';
                 
                 let senderClass = 'sender-user';
+                let senderIcon = '🤖';
                 const fromLower = (msg.from || '').toLowerCase();
-                if (fromLower.includes('grok')) senderClass = 'sender-grok';
-                else if (fromLower.includes('antigravity')) senderClass = 'sender-antigravity';
-                else if (fromLower.includes('hermes')) senderClass = 'sender-hermes';
-                else if (fromLower.includes('qwen') || fromLower.includes('ollama')) senderClass = 'sender-ollama';
+                if (fromLower.includes('grok')) { senderClass = 'sender-grok'; senderIcon = '🦊'; }
+                else if (fromLower.includes('antigravity')) { senderClass = 'sender-antigravity'; senderIcon = '🐺'; }
+                else if (fromLower.includes('hermes')) { senderClass = 'sender-hermes'; senderIcon = '🐲'; }
+                else if (fromLower.includes('qwen') || fromLower.includes('ollama')) { senderClass = 'sender-ollama'; senderIcon = '🤖'; }
+
+                bubble.setAttribute('data-sender', fromLower);
+                bubble.setAttribute('data-recipient', (msg.to || 'all').toLowerCase());
+                const msgText = msg.message || msg.msg || '';
 
                 bubble.innerHTML = `
                   <div class="message-meta">
-                    <span class="sender-tag ${senderClass}">@${(msg.from || 'AGENT').toUpperCase()} ➔ @${(msg.to || 'ALL').toUpperCase()}</span>
+                    <span class="sender-tag ${senderClass}">${senderIcon} @${(msg.from || 'AGENT').toUpperCase()} ➔ @${(msg.to || 'ALL').toUpperCase()}</span>
                     <span class="message-time">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : 'Live'}</span>
                   </div>
-                  <p class="message-text">${msg.message || msg.msg || ''}</p>
+                  <p class="message-text">${msgText}</p>
+                  <div class="msg-actions-row">
+                    <button class="msg-btn" onclick="copyMessageText(this)">Copy</button>
+                    <button class="msg-btn" onclick="quoteMessage('@${(msg.from || 'AGENT').toUpperCase()}', '${msgText.slice(0, 30)}')">Quote</button>
+                  </div>
                 `;
                 container.appendChild(bubble);
-                container.scrollTop = container.scrollHeight;
+                if (autoScrollEnabled) container.scrollTop = container.scrollHeight;
+                filterMessagesByText();
 
-                // Fire dynamic 3D laser beam if matching agent
                 if (AGENTS[fromLower]) {
                   const toKey = Object.keys(AGENTS).find(k => (msg.to || '').toLowerCase().includes(k)) || 'nexus';
                   const targetPos = toKey !== 'nexus' && AGENTS[toKey] ? AGENTS[toKey].pos : new THREE.Vector3(0, 1.8, 0);
