@@ -37,7 +37,7 @@ import ParrotNexus from "./ParrotNexus";
 import ServerManager from "./ServerManager";
 import AgentFactory from "./AgentFactory";
 import MediaForge from "./MediaForge";
-import GhostByte from "./GhostByte";
+import AdytumPanel from "./AdytumPanel";
 import MalwareLab from "./MalwareLab";
 import ToolGrid from "./ToolGrid";
 import DagComposer from "./DagComposer";
@@ -67,7 +67,7 @@ const POWERHOUSE = [
   { id: "chronicle", label: "Chronicle", blurb: "Roadmap and sprints" },
   { id: "servers", label: "Servers", blurb: "What is listening" },
   { id: "system", label: "System", blurb: "Health and binaries" },
-  { id: "ghost", label: "Ghost Byte", blurb: "NullAI companion" },
+  { id: "adytum", label: "Adytum", blurb: "Plan with purpose" },
   { id: "lab", label: "Lab", blurb: "Isolated experiments" },
   { id: "settings", label: "Settings", blurb: "Wait visual and keys" },
 ];
@@ -277,6 +277,16 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
       if (slug) engagePet(slug, { closePanel: true });
       else setPanel("pets");
     }
+    const slash = text.split(/\s/)[0].toLowerCase();
+    const SLASH_PANEL = {
+      "/adytum": "adytum",
+      "/tools": "tools",
+      "/templates": "tools",
+      "/vault": "vault",
+      "/who": "swarm",
+      "/swarm": "swarm",
+    };
+    if (SLASH_PANEL[slash]) setPanel(SLASH_PANEL[slash]);
     setDraft("");
     setBusy(true);
     try {
@@ -660,6 +670,7 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
                   { label: "Who is live?", text: "/who", tip: "Ask the swarm who is online" },
                   { label: "Sit Zoth in chat", text: "/pet zoth", tip: "Engage the Zoth companion in this thread" },
                   { label: "Build a site", text: "Build a dark lawn-care site for Hampton Roads with booking", tip: "Start a Studio brief from chat" },
+                  { label: "Plan in Adytum", text: "/adytum", tip: "Open the hermetic planning rite" },
                 ].map((c) => (
                   <Tip key={c.label} label={c.tip} kicker="Insert" side="bottom">
                     <button type="button" onClick={() => setDraft(c.text)}>
@@ -1166,8 +1177,23 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
       )}
 
       {panel === "tools" && (
-        <Popout title="Tool registry" kicker={`A NullAI studio · ${tools.length} tools`} wide externalUrl="/registry/" {...deckHero("tools")} onClose={() => setPanel(null)}>
-          <ToolGrid tools={tools} />
+        <Popout title="Tools" kicker="Runnable tools · templates in the other tab" wide externalUrl="/registry/" {...deckHero("tools")} onClose={() => setPanel(null)}>
+          <ToolGrid
+            tools={tools}
+            onUseTemplate={(t) => {
+              setStudioPreset({
+                name: String(t.id || "site").slice(0, 40),
+                instructions: `Start from the “${t.name}” template. Keep the structure, rewrite copy for this brief.`,
+                template_id: t.id,
+                inferred: true,
+                site_type: "landing",
+                tone: "dark-mode",
+                frameworks: ["astro"],
+                step: 1,
+              });
+              setPanel("studio");
+            }}
+          />
         </Popout>
       )}
       {panel === "agents" && (
@@ -1258,7 +1284,11 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
           {studioPreset && (
             <p className="muted">Prefill from chat — review, then Next / Build.</p>
           )}
-          <ZothStudio preset={studioPreset} />
+          <ZothStudio
+            preset={studioPreset}
+            templates={(tools || []).filter((t) => (t.kind || "template") === "template")}
+            onPlanInAdytum={() => setPanel("adytum")}
+          />
         </Popout>
       )}
       {panel === "system" && (
@@ -1286,9 +1316,14 @@ export default function HarnessShell({ data, system, tools, chains, error, reloa
           <ServerManager />
         </Popout>
       )}
-      {panel === "ghost" && (
-        <Popout title="GhostByte" kicker="NullAI mark" wide onClose={() => setPanel(null)}>
-          <GhostByte toolsList={tools} />
+      {panel === "adytum" && (
+        <Popout title="Adytum" kicker="Plan with purpose" wide externalUrl="/adytum/" onClose={() => setPanel(null)}>
+          <AdytumPanel
+            onBrief={(preset) => {
+              setStudioPreset(preset);
+              setPanel("studio");
+            }}
+          />
         </Popout>
       )}
       {panel === "lab" && (

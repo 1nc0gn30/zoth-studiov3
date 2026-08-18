@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 const RUNTIME_COLORS = {
   python: "#3572A5",
   node: "#339933",
@@ -10,7 +12,7 @@ const RUNTIME_COLORS = {
   unknown: "#666",
 };
 
-function ToolCard({ tool }) {
+function ToolCard({ tool, onUseTemplate }) {
   const runtimes = tool.runtimes || [];
   return (
     <div className="tool-card">
@@ -44,26 +46,72 @@ function ToolCard({ tool }) {
           )}
         </div>
       )}
+      {tool.kind === "template" && onUseTemplate && (
+        <button type="button" className="tool-use-btn" onClick={() => onUseTemplate(tool)}>
+          Use in Studio
+        </button>
+      )}
     </div>
   );
 }
 
-export default function ToolGrid({ tools }) {
-  if (!tools || tools.length === 0) {
-    return (
-      <div className="empty-state">
-        <p className="empty-kicker">A NullAI studio</p>
-        <img className="empty-mascot" src="/assets/brand/zoth-seal-master.jpg" alt="Zoth Master Seal" width="48" height="48" />
-        <p>No tools match your search.</p>
-      </div>
-    );
-  }
+export default function ToolGrid({ tools, onUseTemplate }) {
+  const [view, setView] = useState("tool");
+  const [q, setQ] = useState("");
+  const catalog = tools || [];
+  const toolsN = catalog.filter((t) => t.kind === "tool").length;
+  const templatesN = catalog.filter((t) => (t.kind || "template") === "template").length;
+
+  const shown = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return catalog.filter((t) => {
+      const kind = t.kind || "template";
+      if (kind !== view) return false;
+      if (!needle) return true;
+      return (
+        String(t.name || "").toLowerCase().includes(needle) ||
+        String(t.id || "").toLowerCase().includes(needle) ||
+        String(t.category || "").toLowerCase().includes(needle)
+      );
+    });
+  }, [catalog, view, q]);
 
   return (
-    <div className="tool-grid">
-      {tools.map((tool) => (
-        <ToolCard key={tool.id} tool={tool} />
-      ))}
+    <div className="tool-wall">
+      <div className="tool-wall-bar">
+        <div className="tool-wall-tabs">
+          <button type="button" className={view === "tool" ? "on" : ""} onClick={() => setView("tool")}>
+            Tools <small>{toolsN}</small>
+          </button>
+          <button type="button" className={view === "template" ? "on" : ""} onClick={() => setView("template")}>
+            Templates <small>{templatesN}</small>
+          </button>
+        </div>
+        <input
+          className="tool-wall-search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={view === "tool" ? "Find a tool" : "Find a template"}
+          aria-label="Filter catalog"
+        />
+      </div>
+      <p className="muted">
+        {view === "tool"
+          ? "Runnable tools only. Client sites and course shells live under Templates."
+          : "Design templates and site shells. Use one as a shape for Studio — do not /run these."}
+      </p>
+      {shown.length === 0 ? (
+        <div className="empty-state">
+          <p className="empty-kicker">Catalog</p>
+          <p>No {view === "tool" ? "tools" : "templates"} match.</p>
+        </div>
+      ) : (
+        <div className="tool-grid">
+          {shown.map((tool) => (
+            <ToolCard key={tool.id} tool={tool} onUseTemplate={onUseTemplate} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

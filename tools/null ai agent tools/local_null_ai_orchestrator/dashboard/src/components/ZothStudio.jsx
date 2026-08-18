@@ -345,7 +345,67 @@ function AgentLog({ logs, stdout, stderr, lastMessage }) {
 
 // ── Main Component ──
 
-export default function ZothStudio({ preset = null }) {
+const SHAPE_SKIP = /30-?days|100-websites|boilerplate|boilertemplate|university|mastery|linux|python-math|freecodecamp|numberguess|salonappointment/i;
+
+const SHAPE_MAP = {
+  landing: {
+    cats: ["Client Services", "Web Apps & SaaS"],
+    keys: ["lawn", "care", "business", "single-page", "shop", "home", "repair", "fence", "paint"],
+  },
+  saas: {
+    cats: ["Web Apps & SaaS"],
+    keys: ["saas", "app", "tracker", "crm", "dashboard"],
+  },
+  portfolio: {
+    cats: ["Portfolio & Agency"],
+    keys: ["portfolio", "resume", "hacker", "single-page"],
+  },
+  ecommerce: {
+    cats: ["Client Services", "Web Apps & SaaS"],
+    keys: ["shop", "store", "wares", "skate", "gas"],
+  },
+  blog: {
+    cats: ["Web Apps & SaaS", "Creative & Media"],
+    keys: ["blog", "gazette", "chronicle"],
+  },
+  dashboard: {
+    cats: ["Web Apps & SaaS"],
+    keys: ["admin", "dashboard", "panel"],
+  },
+  docs: {
+    cats: ["Learning & Courses"],
+    keys: ["docs", "guide", "playbook", "security"],
+  },
+  agency: {
+    cats: ["Portfolio & Agency", "Creative & Media"],
+    keys: ["agency", "studio", "media", "design"],
+  },
+};
+
+function prettyTemplateName(id, name) {
+  const raw = String(name || id || "").replace(/[-_]+/g, " ").trim();
+  return raw.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function templatesForType(all, siteType) {
+  const spec = SHAPE_MAP[siteType] || { cats: ["Client Services", "Portfolio & Agency"], keys: ["single-page", "portfolio", "business", "lawn"] };
+  const scored = (all || [])
+    .filter((t) => (t.kind || "template") === "template")
+    .filter((t) => !SHAPE_SKIP.test(`${t.id} ${t.name}`))
+    .map((t) => {
+      const blob = `${t.id} ${t.name}`.toLowerCase();
+      const cat = t.category || "";
+      let score = 0;
+      if (spec.cats.includes(cat)) score += 3;
+      score += spec.keys.reduce((n, k) => n + (blob.includes(k) ? 2 : 0), 0);
+      return { t, score };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+  return scored.slice(0, 6).map((x) => x.t);
+}
+
+export default function ZothStudio({ preset = null, templates = [], onPlanInAdytum }) {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -380,6 +440,7 @@ export default function ZothStudio({ preset = null }) {
   const [supabaseUrl, setSupabaseUrl] = useState("");
   const [supabaseKey, setSupabaseKey] = useState("");
   const [logAutoScroll, setLogAutoScroll] = useState(true);
+  const [templateId, setTemplateId] = useState("");
   const pollRef = useRef(null);
   const waitForAgentRef = useRef(false);
 
@@ -404,6 +465,7 @@ export default function ZothStudio({ preset = null }) {
     if (preset.deploy_target) setDeployTarget(preset.deploy_target);
     if (preset.pages) setPages(preset.pages);
     if (preset.theme) setSelectedTheme(preset.theme);
+    if (preset.template_id) setTemplateId(preset.template_id);
     if (preset.depth) setDepth(Array.isArray(preset.depth) ? preset.depth : [preset.depth]);
     setMode("create");
     setStep(Math.min(4, Math.max(1, preset.step || 2)));
@@ -554,6 +616,7 @@ export default function ZothStudio({ preset = null }) {
     setEditingPrompt(false); setAssignedAgents([]); setBuildStages([]); setBuildResult(null);
     setPreviewUrl(null); setError(null); setAgentStatus(null); setBuilding(false); waitForAgentRef.current = false;
     setCssFramework("tailwind"); setDeployTarget("netlify"); setDataSource("static-json"); setA11yLevel("wcag-aa");
+    setTemplateId("");
     setSupabaseUrl(""); setSupabaseKey(""); setLogAutoScroll(true);
   };
 
@@ -567,6 +630,11 @@ export default function ZothStudio({ preset = null }) {
         <div className="zs-header-right">
           <button className={`zs-btn ${mode === "create" ? "zs-btn-primary" : "zs-btn-secondary"}`} onClick={() => setMode("create")}>Create</button>
           <button className={`zs-btn ${mode === "browse" ? "zs-btn-primary" : "zs-btn-secondary"}`} onClick={() => { setMode("browse"); getStudioProjects().then((d) => setProjects(d.projects || [])).catch(() => {}); }}>Projects</button>
+          {onPlanInAdytum && (
+            <button type="button" className="zs-btn zs-btn-secondary" onClick={onPlanInAdytum}>
+              Plan in Adytum
+            </button>
+          )}
         </div>
       </div>
 
@@ -602,6 +670,38 @@ export default function ZothStudio({ preset = null }) {
                 <input className="zs-input" type="text" placeholder="e.g. the-sauce-kit" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
               </div>
               <div className="zs-form-group">
+                <label className="zs-label">Site Type</label>
+                <ChipSelector items={SITE_TYPES} selected={siteType} onToggle={setSiteType} multiple={false} />
+              </div>
+              {templatesForType(templates, siteType).length > 0 && (
+                <div className="zs-form-group">
+                  <label className="zs-label">
+                    Starting shape <span className="zs-label-hint">(optional template)</span>
+                  </label>
+                  <div className="zs-template-row">
+                    {templatesForType(templates, siteType).map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        className={`zs-template-chip${templateId === t.id ? " on" : ""}`}
+                        onClick={() => {
+                          setTemplateId(t.id);
+                          if (!projectName) setProjectName(String(t.id).slice(0, 40));
+                          setInstructions((prev) =>
+                            prev
+                              ? prev
+                              : `Start from the “${prettyTemplateName(t.id, t.name)}” template. Keep the structure, rewrite copy for this brief.`
+                          );
+                        }}
+                      >
+                        <b>{prettyTemplateName(t.id, t.name)}</b>
+                        <small>{t.category}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="zs-form-group">
                 <label className="zs-label">Instructions</label>
                 <textarea className="zs-textarea" placeholder="Describe your project in detail — what it does, who it's for, pages, vibe..." value={instructions} onChange={(e) => setInstructions(e.target.value)} rows={5} />
               </div>
@@ -612,10 +712,6 @@ export default function ZothStudio({ preset = null }) {
               <div className="zs-form-group">
                 <label className="zs-label">Pages / Routes</label>
                 <input className="zs-input" type="text" placeholder="home, pricing, docs, contact" value={pages} onChange={(e) => setPages(e.target.value)} />
-              </div>
-              <div className="zs-form-group">
-                <label className="zs-label">Site Type</label>
-                <ChipSelector items={SITE_TYPES} selected={siteType} onToggle={setSiteType} multiple={false} />
               </div>
               <div className="zs-form-group">
                 <label className="zs-label">Tone / Style</label>
@@ -698,6 +794,7 @@ export default function ZothStudio({ preset = null }) {
               <p className="zs-section-desc">This prompt will be written to <code>INSTRUCTIONS.md</code> inside the project directory and fed to the AI agent.</p>
               <div className="zs-config-summary">
                 <div className="zs-summary-row"><span className="zs-summary-label">Project</span><span className="zs-summary-value">{projectName}</span></div>
+                {templateId && <div className="zs-summary-row"><span className="zs-summary-label">Template</span><span className="zs-summary-value">{templateId}</span></div>}
                 <div className="zs-summary-row"><span className="zs-summary-label">Type</span><span className="zs-summary-value">{SITE_TYPES.find((s) => s.id === siteType)?.label || "—"}</span></div>
                 <div className="zs-summary-row"><span className="zs-summary-label">Frameworks</span><span className="zs-summary-value">{frameworks.map((f) => FRAMEWORKS.find((fw) => fw.id === f)?.label).join(", ")}</span></div>
                 <div className="zs-summary-row"><span className="zs-summary-label">Theme</span><span className="zs-summary-value">{selectedTheme || "Auto"}</span></div>

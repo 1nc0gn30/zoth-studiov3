@@ -191,7 +191,7 @@ function ToolDetail({ tool, onClose }) {
             {launchType === "on-demand"
               ? "This tool is available to launch from Parrot Nexus. It will not start automatically — click Launch when ready."
               : launchType === "cli"
-              ? "Command-line tool. Invoke directly from the terminal or GhostByte."
+              ? "Command-line tool. Invoke from the terminal dock."
               : "Development runtime. Available in your PATH for builds and scripting."}
           </div>
         </div>
@@ -329,7 +329,7 @@ export default function ParrotNexus() {
           <span style={{ color: "#f59e0b" }}>⏸ Available to Launch</span> — GUI/heavy tools (Maltego, Burp, OWASP ZAP, etc.) — not auto-started
         </span>
         <span className="pn-legend-item">
-          <span style={{ color: "#3b82f6" }}>⟩ CLI</span> — Command-line tools you can invoke from terminal or GhostByte
+          <span style={{ color: "#3b82f6" }}>⟩ CLI</span> — Command-line tools you can invoke from the terminal dock
         </span>
         <span className="pn-legend-item">
           <span style={{ color: "#22c55e" }}>⚙ Runtime</span> — Development runtimes (python, node, go, etc.)

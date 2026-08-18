@@ -13,10 +13,19 @@ BUILD_DIR="$(mktemp -d -t zoth-win-staging-XXXXXX)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
 VERSION="2.6.0"
 PKG_NAME="zoth-studio"
-IGNORE_FILE="$ROOT/.buildignore"
+VARIANT="${VARIANT:-regular}"
+if [[ "$VARIANT" == "extreme" ]]; then
+  IGNORE_FILE="$ROOT/.buildignore.extreme"
+  PKG_DISPLAY="Zoth Studio (Extreme Edition)"
+  echo "🔥 BUILDING VARIANT: EXTREME (Church of Malware lab included in local payload)"
+else
+  IGNORE_FILE="$ROOT/.buildignore"
+  PKG_DISPLAY="Zoth Studio"
+  echo "🛡️ BUILDING VARIANT: REGULAR (Standard clean build)"
+fi
 
 echo "============================================================"
-echo "⚡ ZOTH STUDIO: WINDOWS PACKAGING PIPELINE v$VERSION"
+echo "⚡ $PKG_DISPLAY: WINDOWS PACKAGING PIPELINE v$VERSION"
 echo "============================================================"
 
 # Step 1: Ensure React Dashboard is built

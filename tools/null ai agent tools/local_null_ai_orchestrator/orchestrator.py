@@ -371,7 +371,8 @@ def scan_tools() -> dict[str, Any]:
 def load_registry() -> dict[str, Any]:
     if not REGISTRY_PATH.exists():
         return scan_tools()
-    return load_json(REGISTRY_PATH, {})
+    from runtime.registry_kinds import annotate_registry
+    return annotate_registry(load_json(REGISTRY_PATH, {}))
 
 def find_tool(tool_id: str) -> dict[str, Any]:
     registry = load_registry()

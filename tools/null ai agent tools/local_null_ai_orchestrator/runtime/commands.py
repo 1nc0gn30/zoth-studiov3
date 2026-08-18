@@ -67,7 +67,7 @@ COMMANDS: list[dict[str, Any]] = [
     {
         "name": "tools",
         "usage": "/tools [query]",
-        "hint": "Search the 298-tool registry; model picks a next action",
+        "hint": "Search real tools (templates stay in /templates)",
         "tool": "registry.search",
     },
     {
@@ -87,6 +87,18 @@ COMMANDS: list[dict[str, Any]] = [
         "usage": "/pet <name>",
         "hint": "Engage a companion for the next turns",
         "tool": "pets.engage",
+    },
+    {
+        "name": "templates",
+        "usage": "/templates [query]",
+        "hint": "Search design templates — not runnable tools",
+        "tool": "registry.templates",
+    },
+    {
+        "name": "adytum",
+        "usage": "/adytum",
+        "hint": "Open Adytum — plan a project with purpose before you build",
+        "tool": "adytum.guide",
     },
     {
         "name": "run",
@@ -401,17 +413,22 @@ def _term(args: str, ctx: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _catalog_hits(ctx: dict[str, Any], args: str, kind: str) -> list[dict[str, Any]]:
+    items = [t for t in (ctx.get("tools") or []) if (t.get("kind") or "template") == kind]
+    q = args.lower().strip()
+    if not q:
+        return items
+    return [
+        t
+        for t in items
+        if q in (t.get("id") or "").lower()
+        or q in (t.get("name") or "").lower()
+        or q in (t.get("category") or "").lower()
+    ]
+
+
 def _tools(args: str, ctx: dict[str, Any]) -> dict[str, Any]:
-    tools = ctx.get("tools") or []
-    q = args.lower()
-    hits = tools
-    if q:
-        hits = [
-            t for t in tools
-            if q in (t.get("id") or "").lower()
-            or q in (t.get("name") or "").lower()
-            or q in (t.get("category") or "").lower()
-        ]
+    hits = _catalog_hits(ctx, args, "tool")
     preview = [
         f"- {t.get('id') or t.get('name')} ({t.get('category') or 'uncat'})"
         for t in hits[:18]
@@ -424,8 +441,42 @@ def _tools(args: str, ctx: dict[str, Any]) -> dict[str, Any]:
         "open_panel": "tools",
         "prompt": (
             f"The human ran /tools {args or '(all)'}. Tool `registry.search` returned "
-            f"{len(hits)} hits. Top results:\n{listing}\n\n"
+            f"{len(hits)} real tools (design templates are under /templates).\n{listing}\n\n"
             "Recommend 1–3 tools for the current goal. Use ask_user to let them pick one to /run."
+        ),
+    }
+
+
+def _templates(args: str, ctx: dict[str, Any]) -> dict[str, Any]:
+    hits = _catalog_hits(ctx, args, "template")
+    preview = [
+        f"- {t.get('id') or t.get('name')} ({t.get('category') or 'uncat'})"
+        for t in hits[:18]
+    ]
+    listing = "\n".join(preview) or "(no matches)"
+    return {
+        "handled": False,
+        "command": "templates",
+        "tool": "registry.templates",
+        "open_panel": "tools",
+        "prompt": (
+            f"The human ran /templates {args or '(all)'}. These are design templates, not runnable tools. "
+            f"{len(hits)} matches:\n{listing}\n\n"
+            "Pick a template as a starting shape for /studio. Do not /run a template."
+        ),
+    }
+
+
+def _adytum(_args: str, _ctx: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "handled": False,
+        "command": "adytum",
+        "tool": "adytum.guide",
+        "open_panel": "adytum",
+        "prompt": (
+            "The human opened Adytum. Tool `adytum.guide` is the hermetic project-planning rite. "
+            "Walk them through purpose, constraints, and the next concrete build step. "
+            "When they have a clear brief, offer /studio — do not open Generate unless they ask."
         ),
     }
 
@@ -505,6 +556,16 @@ def _run(args: str, ctx: dict[str, Any]) -> dict[str, Any]:
             "handled": True,
             "command": "run",
             "display": f"Unknown tool `{tool_id}`. Use `/tools {tool_id}` to search.",
+        }
+    if (hit.get("kind") or "template") == "template":
+        return {
+            "handled": True,
+            "command": "run",
+            "display": (
+                f"`{tool_id}` is a design template, not a runnable tool. "
+                "Open Studio and pick it as a starting shape, or `/templates` to browse."
+            ),
+            "open_panel": "studio",
         }
     return {
         "handled": False,
@@ -1138,6 +1199,8 @@ HANDLERS: dict[str, CommandFn] = {
     "deps": _doctor,
     "term": _term,
     "tools": _tools,
+    "templates": _templates,
+    "adytum": _adytum,
     "models": _models,
     "model": _model,
     "pet": _pet,

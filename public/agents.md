@@ -6,7 +6,7 @@ How a coding, research, or indexing agent should treat this repository and produ
 
 Zoth Studio is a **sovereign, local-first** multi-agent AI orchestration powerhouse:
 
-1. **Hub** (`public/`, `https://zoth.nealfrazier.tech/`) — Public product hub, 16 companion pets hangar (`/pets/`), blueprint foundry (`/blueprints/`), tool registry (`/registry/`), and documentation (`/docs/`).
+1. **Hub** (`public/`, `https://zoth.nullai.tech/`) — Public product hub, 16 companion pets hangar (`/pets/`), blueprint foundry (`/blueprints/`), tool registry (`/registry/`), and documentation (`/docs/`).
 2. **Studio Deck** (`/studio/` → `http://127.0.0.1:8484/`) — Operator deck for live agent runs, subagents, and terminals. Private loopback.
 3. **Consensus Arena v2** (`/studio/consensus.html`) — Triangulated 3-agent arbitration across Antigravity, Grok, and Hermes with Python AST validation and Shannon agreement entropy telemetry.
 4. **BYOK Vault** (`/vault/` + native daemon on `http://127.0.0.1:8787/`) — Argon2id + XChaCha20-Poly1305 encrypted BYOK vault. Private loopback.
@@ -16,7 +16,7 @@ Read `/llms.txt`, `/blueprints/aeo-entity-definitions.md`, and `/blueprints/zoth
 
 ## 16 Liquid-Neon Pets & Knowledge Packs
 
-- **Public Hangar**: https://zoth.nealfrazier.tech/pets/ (Local: http://127.0.0.1:8088/pets/)
+- **Public Hangar**: https://zoth.nullai.tech/pets/ (Local: http://127.0.0.1:8088/pets/)
 - **16 Companion Mascots**: Kai (inspect), Draco (consensus arbiter), Ignis (refactor), Lycan (OWASP), Athena (AEO knowledge), Kitsune (taste & UX), Pixel-Neko (tool librarian), Pixel-Shiba (vault guardian), Radical Minion (Hermes tool caller), Aquila (edge routing), Leviathan (vector memory), Onyx (red team), Chronos (DAG sequencer), Aether (swarm conductor), Kraken (packet sniffer), Scorpius (zero-day auditor).
 - **Knowledge Packs**: Live doctrine (`SYSTEM.md`, `PLAYBOOK.md`, `CANON.md`) resides on the private studio deck (`127.0.0.1:8484`). Public surface exposes `/pets/packs.json` only.
 
@@ -51,10 +51,10 @@ cd vault-daemon && ./scripts/run-local.sh
 
 ## Canonical References
 
-- Canonical Public Hub: https://zoth.nealfrazier.tech/
-- Blueprint Foundry: https://zoth.nealfrazier.tech/blueprints/
-- Machine Manifest: https://zoth.nealfrazier.tech/llms.txt
-- Discovery Manifest: https://zoth.nealfrazier.tech/ai.txt
-- Knowledge Graph: https://zoth.nealfrazier.tech/blueprints/zoth-knowledge-graph.json
-- AEO Ontology Definitions: https://zoth.nealfrazier.tech/blueprints/aeo-entity-definitions.md
-- Sitemap XML: https://zoth.nealfrazier.tech/sitemap.xml
+- Canonical Public Hub: https://zoth.nullai.tech/
+- Blueprint Foundry: https://zoth.nullai.tech/blueprints/
+- Machine Manifest: https://zoth.nullai.tech/llms.txt
+- Discovery Manifest: https://zoth.nullai.tech/ai.txt
+- Knowledge Graph: https://zoth.nullai.tech/blueprints/zoth-knowledge-graph.json
+- AEO Ontology Definitions: https://zoth.nullai.tech/blueprints/aeo-entity-definitions.md
+- Sitemap XML: https://zoth.nullai.tech/sitemap.xml

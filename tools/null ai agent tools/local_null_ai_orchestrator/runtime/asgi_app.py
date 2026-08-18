@@ -225,7 +225,9 @@ async def api_dashboard(request: Request) -> Response:
     registry = load_registry()
     tools = registry.get("tools", [])
     return _json_response({
-        "tool_count": len(tools),
+        "tool_count": registry.get("tool_count", sum(1 for t in tools if t.get("kind") == "tool")),
+        "template_count": registry.get("template_count", 0),
+        "catalog_count": registry.get("catalog_count", len(tools)),
         "categories": list({t.get("category", "Other") for t in tools}),
         "healthy": True,
     })
@@ -1340,6 +1342,8 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/blueprints", public_page),
         Route("/blueprints/{path:path}", public_page),
         Route("/studio/{path:path}", public_page),
+        Route("/adytum", public_page),
+        Route("/adytum/{path:path}", public_page),
 
         # Health
         Route("/api/health", api_health),
@@ -1449,8 +1453,10 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
                 f"http://127.0.0.1:{port}",
                 "http://127.0.0.1:8088",
                 "http://localhost:8088",
+                "https://zoth.nullai.tech",
+                "https://nullai.tech",
             ],
-            allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
+            allow_origin_regex=r"https://([a-z0-9-]+\.)?nullai\.tech|http://(localhost|127\.0\.0\.1)(:\d+)?",
             allow_methods=["*"],
             allow_headers=["*"],
         ),
