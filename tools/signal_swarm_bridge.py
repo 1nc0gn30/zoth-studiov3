@@ -2,7 +2,7 @@
 """
 ⚡ Zoth Studio — Signal Swarm Command Bridge & Remote Agent NOC
 Enables commanding any live swarm agent (@antigravity, @grok, @hermes, @ollama, @all)
-and querying active swarm status via Signal Messenger on Parrot OS.
+and querying active swarm status via Signal Messenger (including "Note to Self") on Parrot OS.
 """
 
 import os
@@ -68,7 +68,7 @@ def query_ollama(prompt, model="qwen2.5-coder:1.5b"):
             res_data = json.loads(response.read().decode("utf-8"))
             return res_data.get("response", "").strip()
     except Exception as e:
-        return f"[Ollama Offline / Standby] {e}\n(Fallback): Processed offline on Parrot OS loopback."
+        return f"[Ollama Standby / Offline] {e}\n(Fallback): Command received and queued on Parrot OS loopback."
 
 def post_to_swarm_bus(from_agent, to_agent, message):
     """Mirror message into Zoth Swarm Event Bus."""
@@ -89,14 +89,6 @@ def get_swarm_status():
     p_8787 = "🟢 ACTIVE" if check_port(8787) else "🟡 STANDBY"
     p_8989 = "🟢 ACTIVE" if check_port(8989) else "🟡 STANDBY"
     p_11434 = "🟢 ACTIVE" if check_port(11434) else "🟡 STANDBY"
-
-    heartbeats = {}
-    if os.path.exists(HEARTBEATS_JSON):
-        try:
-            with open(HEARTBEATS_JSON, "r") as f:
-                heartbeats = json.load(f)
-        except Exception:
-            pass
 
     claims = []
     if os.path.exists(CLAIMS_DIR):
@@ -143,6 +135,10 @@ def process_swarm_command(sender, text):
     """Parse incoming text command and route to the appropriate live agent or tool."""
     raw = text.strip()
     lower = raw.lower()
+
+    # Avoid processing automated bot echoes
+    if raw.startswith("⚡ [Zoth Swarm]") or raw.startswith("🤖 @QWEN") or raw.startswith("🦊 @GROK") or raw.startswith("🐺 @ANTIGRAVITY") or raw.startswith("🐲 @HERMES") or raw.startswith("⚔️ 3-AGENT"):
+        return None
 
     # Log incoming message to Swarm Bus
     post_to_swarm_bus("signal-operator", "swarm", raw)
@@ -233,7 +229,7 @@ def process_swarm_command(sender, text):
     if lower.startswith("@antigravity"):
         prompt = raw[len("@antigravity"):].strip()
         post_to_swarm_bus("signal-operator", "antigravity", prompt)
-        res = query_ollama(f"You are @antigravity, the lead security and AST validator for Zoth Studio. Respond to the operator concisely: {prompt}")
+        res = query_ollama(f"You are @antigravity, the lead security and AST validator for Zoth Studio. Respond concisely to the operator: {prompt}")
         return f"🐺 @ANTIGRAVITY: {res}"
 
     # 8. Agent Direct Routing: @grok
@@ -273,17 +269,27 @@ def send_signal_msg(account, recipient, message):
     if not os.path.exists(SIGNAL_CLI_BIN):
         print(f"❌ signal-cli binary not found at {SIGNAL_CLI_BIN}")
         return False
+    if not message:
+        return False
+
     cmd = [SIGNAL_CLI_BIN]
     if account:
         cmd.extend(["-u", account])
-    cmd.extend(["send", "-m", message, recipient])
+    
+    # If recipient is "Note to Self" or self destination
+    if recipient and recipient != "self" and recipient != "note-to-self":
+        cmd.extend(["send", "-m", message, recipient])
+    else:
+        # Send to self
+        cmd.extend(["send", "-m", message, account or "note-to-self"])
+
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
         if res.returncode == 0:
-            print(f"✅ [Signal Sent] ➔ {recipient}")
+            print(f"✅ [Signal Sent] ➔ {recipient or 'Note to Self'}")
             return True
         else:
-            print(f"⚠️ [Signal Send Error] {res.stderr.strip()}")
+            print(f"⚠️ [Signal Send Notice] {res.stderr.strip() or res.stdout.strip()}")
             return False
     except Exception as e:
         print(f"❌ [Signal Send Exception] {e}")
@@ -296,19 +302,80 @@ def link_device():
     print("═══════════════════════════════════════════════════════════")
     print("1. Open Signal on your phone")
     print("2. Go to: Settings ➔ Linked Devices ➔ Link New Device")
-    print("3. Generating link request...\n")
+    print("3. Point your camera at the QR code below:\n")
 
     cmd = [SIGNAL_CLI_BIN, "link", "-n", "ZothSwarm-ParrotOS"]
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         for line in proc.stdout:
             print(line, end="")
-            if "tsdevice:/" in line:
-                print("\n🔗 Copy/Scan this link in your Signal app or QR reader:")
-                print(line.strip())
         proc.wait()
     except Exception as e:
         print(f"❌ Link error: {e}")
+
+def run_signal_daemon(account=""):
+    """
+    Run signal-cli in JSON-RPC daemon mode.
+    Catches BOTH:
+      1) 'Note to Self' messages sent from your phone (syncMessage.sentMessage)
+      2) Direct messages sent to your bot account (dataMessage)
+    """
+    cfg = load_config()
+    act = account or cfg.get("account", "")
+    print(f"🚀 Starting Signal Swarm Bridge Daemon on Parrot OS...")
+    print(f"📡 Account: {act or 'Default Linked Device'}")
+    print("✨ Ready: Text 'Note to Self' on your Signal phone app to command live agents!")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+    cmd = [SIGNAL_CLI_BIN]
+    if act:
+        cmd.extend(["-u", act])
+    cmd.extend(["--output=json", "daemon"])
+
+    recent_handled_hashes = set()
+
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        for line in proc.stdout:
+            if not line.strip():
+                continue
+            try:
+                data = json.loads(line)
+                envelope = data.get("envelope", {})
+                
+                # Check for direct message
+                data_msg = envelope.get("dataMessage", {})
+                # Check for 'Note to Self' message (syncMessage sentMessage)
+                sync_msg = envelope.get("syncMessage", {})
+                sent_msg = sync_msg.get("sentMessage", {})
+
+                source = envelope.get("source") or envelope.get("sourceNumber") or act
+                message_text = data_msg.get("message") or sent_msg.get("message")
+                dest = sent_msg.get("destination") or sent_msg.get("destinationNumber") or source or act
+
+                if message_text:
+                    # Prevent echo loops
+                    msg_hash = f"{dest}:{message_text}"
+                    if msg_hash in recent_handled_hashes:
+                        continue
+                    recent_handled_hashes.add(msg_hash)
+                    if len(recent_handled_hashes) > 100:
+                        recent_handled_hashes.clear()
+
+                    is_note_to_self = bool(sync_msg) or (dest == source)
+                    print(f"\n📩 [Signal Received {'(Note to Self)' if is_note_to_self else ''}] Msg: {message_text}")
+                    
+                    reply = process_swarm_command(source, message_text)
+                    if reply:
+                        target = dest if dest else source
+                        print(f"📤 [Sending Swarm Reply] ➔ {target}")
+                        send_signal_msg(act, target, reply)
+            except json.JSONDecodeError:
+                pass
+    except KeyboardInterrupt:
+        print("\nStopping Signal Swarm Bridge Daemon.")
+    except Exception as e:
+        print(f"❌ Daemon Exception: {e}")
 
 def run_interactive_console():
     """Interactive terminal console to test all swarm commands directly."""
@@ -326,47 +393,11 @@ def run_interactive_console():
             if inp.lower() in ["exit", "quit", "q"]:
                 break
             reply = process_swarm_command("local-test", inp)
-            print("\n" + reply + "\n")
+            if reply:
+                print("\n" + reply + "\n")
         except (KeyboardInterrupt, EOFError):
             print("\nExiting simulator.")
             break
-
-def run_signal_daemon(account=""):
-    """Run signal-cli in JSON-RPC / receive daemon mode."""
-    cfg = load_config()
-    act = account or cfg.get("account", "")
-    print(f"🚀 Starting Signal Swarm Bridge Daemon (Account: {act or 'Default'})...")
-    print("Listening for incoming Signal messages from authorized operators...")
-
-    cmd = [SIGNAL_CLI_BIN]
-    if act:
-        cmd.extend(["-u", act])
-    cmd.extend(["--output=json", "daemon"])
-
-    try:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        for line in proc.stdout:
-            if not line.strip():
-                continue
-            try:
-                data = json.loads(line)
-                # Parse standard signal-cli JSON envelope
-                envelope = data.get("envelope", {})
-                source = envelope.get("source") or envelope.get("sourceNumber")
-                data_msg = envelope.get("dataMessage", {})
-                message_text = data_msg.get("message")
-
-                if source and message_text:
-                    print(f"\n📩 [Signal Received] From: {source} | Msg: {message_text}")
-                    reply = process_swarm_command(source, message_text)
-                    print(f"📤 [Sending Reply] ➔ {source}")
-                    send_signal_msg(act, source, reply)
-            except json.JSONDecodeError:
-                pass
-    except KeyboardInterrupt:
-        print("\nStopping Signal Swarm Bridge Daemon.")
-    except Exception as e:
-        print(f"❌ Daemon Exception: {e}")
 
 def main():
     parser = argparse.ArgumentParser(description="Zoth Signal Swarm Command Bridge")
@@ -387,9 +418,10 @@ def main():
     elif args.action == "send":
         if args.msg:
             reply = process_swarm_command("cli", args.msg)
-            print(reply)
-            if args.to:
-                send_signal_msg(args.account, args.to, reply)
+            if reply:
+                print(reply)
+                if args.to:
+                    send_signal_msg(args.account, args.to, reply)
         else:
             print("Please specify --msg '<command or prompt>'")
     elif args.action == "daemon":
