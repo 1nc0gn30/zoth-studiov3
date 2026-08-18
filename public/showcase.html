@@ -4,12 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Zoth Studio & Swarm Omniverse — Autonomous Engineering Showcase</title>
-    <meta name="description" content="Grand architectural showcase of everything engineered by Antigravity across the Zoth Studio ecosystem: Nexus 3D Studio, Space Liquid GLSL Shaders, 3D AI Dataset, and Multi-Agent Swarm Bus." />
+    <meta name="description" content="Grand architectural showcase of the Zoth Studio ecosystem: Nexus 3D Omniverse, Interactive Model Loaders, Live GLSL Shaders, OmniPost 60 FPS Video Overlays, and Direct Deep Links to all 23 Studio Suites." />
     <meta name="theme-color" content="#05060a" />
     <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
-    <link rel="stylesheet" href="/styles.css?v=20260816s" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css?v=20260818a" />
     
-    <!-- Three.js + Post-Processing for Embedded Hero Viewer -->
+    <!-- Three.js + OrbitControls + GLTFLoader -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -19,30 +22,34 @@
         --glow-cyan: rgba(0, 229, 255, 0.4);
         --glow-gold: rgba(251, 191, 36, 0.4);
         --glow-magenta: rgba(217, 70, 239, 0.4);
+        --panel-bg: rgba(10, 14, 26, 0.92);
+        --panel-border: rgba(255, 255, 255, 0.08);
       }
       body {
         background: #020307;
         color: #f1f5f9;
-        font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+        font-family: var(--font-body, "Figtree", system-ui, sans-serif);
         overflow-x: hidden;
       }
+
+      /* Hero Section */
       .showcase-hero-wrap {
-        max-width: 1400px;
+        max-width: 1440px;
         margin: 0 auto;
-        padding: 60px 24px 40px;
+        padding: 50px 24px 30px;
       }
       .showcase-hero-grid {
         display: grid;
-        grid-template-columns: 1.15fr 0.85fr;
+        grid-template-columns: 1fr 1.05fr;
         gap: 36px;
         align-items: center;
       }
-      @media (max-width: 1024px) {
+      @media (max-width: 1080px) {
         .showcase-hero-grid { grid-template-columns: 1fr; }
       }
       .showcase-hero h1 {
-        font-family: var(--font-display);
-        font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+        font-family: var(--font-display, "Syne", sans-serif);
+        font-size: clamp(2.4rem, 4.2vw, 3.8rem);
         letter-spacing: -0.03em;
         line-height: 1.1;
         margin: 14px 0 18px;
@@ -53,62 +60,150 @@
       }
       .showcase-hero p.lede {
         margin: 0 0 24px;
-        font-size: 1.12rem;
-        color: var(--muted);
+        font-size: 1.1rem;
+        color: var(--muted, #94a3b8);
         line-height: 1.65;
         text-align: left;
       }
 
       /* Embedded 3D Interactive Hero Viewer */
-      .hero-3d-box {
+      .hero-3d-container {
         position: relative;
         width: 100%;
-        height: 420px;
-        border-radius: var(--radius);
+        height: 520px;
+        border-radius: var(--radius, 18px);
         background: radial-gradient(circle at 50% 50%, #0d1326 0%, #030408 100%);
         border: 1px solid rgba(0, 229, 255, 0.35);
         box-shadow: 0 0 50px rgba(0, 229, 255, 0.15), inset 0 0 30px rgba(0, 229, 255, 0.05);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
       #hero-viewport {
         width: 100%;
-        height: 100%;
+        flex: 1;
         display: block;
+        cursor: grab;
       }
-      .hero-3d-hud {
+      #hero-viewport:active { cursor: grabbing; }
+
+      .hero-3d-top-hud {
         position: absolute;
         top: 12px;
         left: 12px;
         right: 12px;
         display: flex;
         justify-content: space-between;
+        align-items: center;
         pointer-events: none;
         z-index: 10;
       }
       .hud-pill {
-        background: rgba(3, 4, 8, 0.85);
+        background: rgba(3, 4, 8, 0.88);
         border: 1px solid rgba(0, 229, 255, 0.3);
-        color: var(--cyan);
-        font-family: var(--font-mono);
+        color: var(--cyan, #00e5ff);
+        font-family: var(--font-mono, monospace);
         font-size: 0.72rem;
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 999px;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
         pointer-events: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .hud-pill.fps-badge {
+        color: #10b981;
+        border-color: rgba(16, 185, 129, 0.4);
       }
 
+      /* 3D Viewer Control Bar */
+      .hero-3d-controls {
+        background: rgba(8, 11, 22, 0.95);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 10;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.75rem;
+      }
+      .hero-ctrlGroup {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .hero-select {
+        background: #030408;
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        color: #fff;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.74rem;
+        padding: 5px 10px;
+        border-radius: 6px;
+        outline: none;
+        cursor: pointer;
+      }
+      .hero-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.72rem;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .hero-btn:hover, .hero-btn.active {
+        background: rgba(0, 229, 255, 0.15);
+        border-color: var(--cyan, #00e5ff);
+        color: #fff;
+      }
+      .hero-loader-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(3, 5, 12, 0.85);
+        backdrop-filter: blur(8px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        z-index: 20;
+        transition: opacity 0.3s ease;
+      }
+      .hero-loader-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .spinner {
+        width: 38px;
+        height: 38px;
+        border: 3px solid rgba(0, 229, 255, 0.2);
+        border-top-color: var(--cyan, #00e5ff);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Metric Strip */
       .stat-strip {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px;
-        max-width: 1400px;
-        margin: 30px auto 0;
+        max-width: 1440px;
+        margin: 20px auto 0;
         padding: 0 24px;
       }
       .stat-card {
-        background: rgba(10, 14, 26, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius);
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius, 18px);
         padding: 20px;
         backdrop-filter: blur(16px);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -117,25 +212,26 @@
       }
       .stat-card:hover {
         transform: translateY(-4px);
-        border-color: var(--cyan);
+        border-color: var(--cyan, #00e5ff);
       }
       .stat-card .num {
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, monospace);
         font-size: 2.2rem;
         font-weight: 900;
-        color: var(--cyan);
+        color: var(--cyan, #00e5ff);
       }
       .stat-card .label {
         font-size: 0.85rem;
-        color: var(--muted);
+        color: var(--muted, #94a3b8);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-top: 4px;
       }
 
+      /* Sections General */
       .section-wrap {
-        max-width: 1400px;
-        margin: 70px auto;
+        max-width: 1440px;
+        margin: 80px auto;
         padding: 0 24px;
       }
       .section-header {
@@ -143,118 +239,224 @@
         text-align: left;
       }
       .section-header .tag {
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, monospace);
         font-size: 0.75rem;
-        color: var(--cyan);
+        color: var(--cyan, #00e5ff);
         text-transform: uppercase;
         letter-spacing: 0.1em;
+        font-weight: 700;
       }
       .section-header h2 {
-        font-family: var(--font-display);
+        font-family: var(--font-display, "Syne", sans-serif);
         font-size: 2.2rem;
+        font-weight: 800;
         margin: 6px 0;
         color: #fff;
       }
+      .section-header p {
+        color: var(--muted, #94a3b8);
+        font-size: 1rem;
+        margin: 4px 0 0;
+        max-width: 800px;
+      }
 
-      .feature-grid {
+      /* 3D Model Explorer Vault */
+      .model-vault-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-        gap: 24px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
       }
-      .feature-card {
-        background: rgba(10, 14, 26, 0.92);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        transition: all 0.3s ease;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
-        text-align: left;
-      }
-      .feature-card:hover {
-        border-color: rgba(0, 229, 255, 0.4);
-        box-shadow: 0 0 35px rgba(0, 229, 255, 0.15);
-        transform: translateY(-4px);
-      }
-      .feature-img-box {
-        position: relative;
-        height: 260px;
-        background: #020306;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .feature-img-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.4s ease;
-      }
-      .feature-card:hover .feature-img-box img {
-        transform: scale(1.04);
-      }
-      .feature-body {
-        padding: 24px;
+      .model-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-sm, 12px);
+        padding: 18px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        flex: 1;
+        transition: all 0.25s ease;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
       }
-      .feature-title {
-        font-family: var(--font-display);
-        font-size: 1.4rem;
-        color: #fff;
+      .model-card:hover {
+        border-color: rgba(0, 229, 255, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+      }
+      .model-card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
-      .feature-desc {
-        color: var(--muted);
-        font-size: 0.92rem;
-        line-height: 1.6;
+      .model-name {
+        font-family: var(--font-display, "Syne", sans-serif);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+      }
+      .model-meta {
+        font-family: var(--font-mono, monospace);
+        font-size: 0.72rem;
+        color: var(--muted, #94a3b8);
+      }
+      .model-desc {
+        font-size: 0.85rem;
+        color: #cbd5e1;
+        line-height: 1.5;
+        flex: 1;
+      }
+      .model-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: auto;
+      }
+
+      /* Live Shader Visualizers Section */
+      .shader-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 24px;
+      }
+      @media (max-width: 768px) {
+        .shader-grid { grid-template-columns: 1fr; }
+      }
+      .shader-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius, 18px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .shader-canvas-box {
+        position: relative;
+        height: 280px;
+        background: #020306;
+        overflow: hidden;
+      }
+      .shader-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .shader-hud-tag {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(3, 4, 8, 0.85);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        color: var(--cyan, #00e5ff);
+        font-family: var(--font-mono, monospace);
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 999px;
+        pointer-events: none;
+      }
+      .shader-body {
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        text-align: left;
+      }
+      .shader-title {
+        font-family: var(--font-display, "Syne", sans-serif);
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #fff;
+      }
+      .shader-desc {
+        color: var(--muted, #94a3b8);
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+      .shader-ctrls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+      }
+
+      /* Suite Omniverse Grid (All 23 Suites) */
+      .suite-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+      }
+      .suite-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius-sm, 12px);
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: all 0.25s ease;
+        text-align: left;
+      }
+      .suite-card:hover {
+        border-color: rgba(0, 229, 255, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0, 229, 255, 0.12);
+      }
+      .suite-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .suite-title {
+        font-family: var(--font-display, "Syne", sans-serif);
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #fff;
+      }
+      .suite-desc {
+        font-size: 0.88rem;
+        color: #cbd5e1;
+        line-height: 1.55;
+        flex: 1;
       }
       .tech-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
         margin-top: auto;
-        padding-top: 12px;
+        padding-top: 10px;
       }
       .tech-tag {
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 999px;
-        padding: 3px 10px;
-        font-family: var(--font-mono);
-        font-size: 0.7rem;
+        padding: 2px 8px;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.68rem;
         color: #94a3b8;
       }
-      .tech-tag.cyan { color: var(--cyan); border-color: rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.05); }
-      .tech-tag.gold { color: var(--gold, #fbbf24); border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.05); }
+      .tech-tag.cyan { color: var(--cyan, #00e5ff); border-color: rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.05); }
       .tech-tag.magenta { color: var(--magenta, #d946ef); border-color: rgba(217, 70, 239, 0.3); background: rgba(217, 70, 239, 0.05); }
+      .tech-tag.gold { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.05); }
+      .tech-tag.green { color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); }
 
-      .feature-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 14px;
-      }
+      /* Buttons */
       .btn-glow {
-        background: var(--cyan);
+        background: var(--cyan, #00e5ff);
         color: #030408;
         font-weight: 700;
         text-decoration: none;
-        padding: 10px 18px;
+        padding: 9px 16px;
         border-radius: 8px;
-        font-size: 0.85rem;
+        font-size: 0.84rem;
         display: inline-flex;
         align-items: center;
         gap: 6px;
         transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
       }
       .btn-glow:hover {
-        box-shadow: 0 0 20px var(--cyan);
+        box-shadow: 0 0 20px var(--cyan, #00e5ff);
         transform: translateY(-1px);
       }
       .btn-outline {
@@ -262,52 +464,104 @@
         border: 1px solid rgba(255, 255, 255, 0.15);
         color: #f1f5f9;
         text-decoration: none;
-        padding: 10px 18px;
+        padding: 9px 16px;
         border-radius: 8px;
-        font-size: 0.85rem;
+        font-size: 0.84rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         transition: all 0.2s ease;
+        cursor: pointer;
       }
       .btn-outline:hover {
         border-color: #fff;
         background: rgba(255, 255, 255, 0.05);
       }
 
-      .live-deck {
-        background: rgba(10, 14, 26, 0.94);
-        border: 1px solid rgba(0, 229, 255, 0.3);
-        border-radius: var(--radius);
-        padding: 30px;
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+      /* Video Player Modal Overlay */
+      .video-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 4, 10, 0.9);
+        backdrop-filter: blur(16px);
+        z-index: 999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
       }
+      .video-modal-backdrop.open { display: flex; }
+      .video-modal-box {
+        width: 100%;
+        max-width: 860px;
+        background: #080c1a;
+        border: 1px solid rgba(0, 229, 255, 0.35);
+        border-radius: 18px;
+        box-shadow: 0 0 60px rgba(0, 229, 255, 0.25);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .video-modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background: #04060e;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .video-modal-canvas-wrap {
+        position: relative;
+        width: 100%;
+        height: 440px;
+        background: #000;
+      }
+      #modal-video-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .video-modal-foot {
+        padding: 16px 20px;
+        background: #060914;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* Assets Gallery */
       .gallery-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 16px;
-        margin-top: 20px;
       }
       .gallery-item {
         background: #04060d;
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius-sm);
-        padding: 12px;
+        border-radius: var(--radius-sm, 12px);
+        padding: 14px;
         text-align: left;
+        display: flex;
+        flex-direction: column;
       }
       .gallery-item img {
         width: 100%;
-        height: 200px;
+        height: 190px;
         object-fit: cover;
-        border-radius: 6px;
-        margin-bottom: 8px;
+        border-radius: 8px;
+        margin-bottom: 10px;
       }
       .gallery-title {
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.92rem;
         color: #fff;
       }
       .gallery-sub {
-        font-family: var(--font-mono);
+        font-family: var(--font-mono, monospace);
         font-size: 0.72rem;
-        color: var(--muted);
+        color: var(--muted, #94a3b8);
       }
     </style>
   </head>
@@ -322,10 +576,11 @@
         <nav class="nav-desktop" aria-label="Primary">
           <a href="/studio/">Dashboard</a>
           <a href="/studio/nexus-3d.html">Nexus 3D</a>
-          <a href="/studio/fusion-arena.html" style="color:var(--magenta); font-weight:700;">⚔️ Fusion Arena</a>
-          <a href="/pets/spawn-pets.html">3D Pets Sanctuary</a>
-          <a href="/studio/agent-composer.html">Agent Composer</a>
-          <a href="/studio/peer-bus.html">Peer Bus</a>
+          <a href="/studio/fusion-arena.html" style="color:var(--magenta, #d946ef); font-weight:700;">⚔️ Fusion Arena</a>
+          <a href="/pets/spawn-pets.html">🐾 3D Sanctuary</a>
+          <a href="/studio/agent-composer.html">Composer</a>
+          <a href="/studio/omnipost.html">OmniPost</a>
+          <a href="/docs/">Docs</a>
           <a href="/showcase.html" class="is-active">Showcase</a>
         </nav>
       </div>
@@ -338,25 +593,67 @@
           <div class="showcase-hero">
             <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 999px; padding: 6px 16px; margin-bottom: 12px;">
               <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;"></span>
-              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--cyan); font-weight: 700; text-transform: uppercase;">Autonomous Multi-Agent Architecture · 245 Iterations Live</span>
+              <span style="font-family: var(--font-mono, monospace); font-size: 0.75rem; color: var(--cyan, #00e5ff); font-weight: 700; text-transform: uppercase;">Autonomous 3D & Swarm Omniverse · v2.6.0</span>
             </div>
             <h1>Engineered with Mathematical Precision</h1>
-            <p class="lede">A comprehensive architectural tour of all systems, engines, custom GLSL shaders, 3D AI datasets, and multi-agent protocols delivered for the Zoth Studio Ecosystem.</p>
+            <p class="lede">
+              Explore the complete sovereign engineering powerhouse: interactive Three.js 3D model loaders, real-time GLSL fluid shaders, OmniPost 60 FPS video overlays, and direct access to all 23 studio engines.
+            </p>
 
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-              <a href="/studio/nexus-3d.html" class="btn-glow">🚀 Launch Nexus 3D CAD</a>
-              <a href="/studio/fusion-arena.html" class="btn-outline" style="border-color: var(--magenta); color: var(--magenta);">⚔️ Open Fusion Arena</a>
-              <a href="/pets/spawn-pets.html" class="btn-outline">🐾 Pet Sanctuary</a>
+              <a href="/studio/nexus-3d.html" class="btn-glow">🚀 Launch Nexus 3D Studio</a>
+              <button type="button" onclick="openVideoModal('omnipost')" class="btn-glow" style="background: var(--magenta, #d946ef); color: #fff;">🎬 Play OmniPost 60FPS Video</button>
+              <a href="#suite-directory" class="btn-outline">🌐 Explore All 23 Suites</a>
             </div>
           </div>
 
           <!-- Live Three.js Hero Viewport -->
-          <div class="hero-3d-box">
-            <div class="hero-3d-hud">
-              <span class="hud-pill">🎮 Interactive 3D Model: Expressive AI Bot</span>
-              <span class="hud-pill">Drag to Orbit · 60 FPS</span>
+          <div class="hero-3d-container">
+            <div class="hero-3d-top-hud">
+              <span class="hud-pill" id="hero-model-label">🎮 Active Model: Expressive AI Bot</span>
+              <span class="hud-pill fps-badge" id="hero-fps-badge">⚡ 60 FPS · 453 KB</span>
             </div>
+
             <div id="hero-viewport"></div>
+
+            <div id="hero-loader" class="hero-loader-overlay hidden">
+              <div class="spinner"></div>
+              <div style="font-family: var(--font-mono, monospace); font-size: 0.8rem; color: var(--cyan, #00e5ff);" id="hero-loader-text">Loading Model...</div>
+            </div>
+
+            <!-- Controls Toolbar -->
+            <div class="hero-3d-controls">
+              <div class="hero-ctrlGroup">
+                <label style="color: var(--muted, #94a3b8); margin-right: 4px;">Model:</label>
+                <select id="hero-model-select" class="hero-select" onchange="loadHeroModel(this.value)">
+                  <optgroup label="🤖 Animated Models">
+                    <option value="/assets/models/animated/RobotExpressive.glb" selected>RobotExpressive (Bot)</option>
+                    <option value="/assets/models/animated/Flamingo.glb">Flamingo (Fly)</option>
+                    <option value="/assets/models/animated/Horse.glb">Horse (Gallop)</option>
+                    <option value="/assets/models/animated/Parrot.glb">Parrot (Wings)</option>
+                    <option value="/assets/models/animated/AnimatedMorphSphere.glb">Morph Sphere (Displace)</option>
+                    <option value="/assets/models/animated/Soldier.glb">Soldier (Tactical)</option>
+                    <option value="/assets/models/animated/Michelle.glb">Michelle (Rigged)</option>
+                  </optgroup>
+                  <optgroup label="🚀 Sci-Fi Models">
+                    <option value="/assets/models/scifi/Astronaut.glb">Astronaut (Suit)</option>
+                    <option value="/assets/models/scifi/DamagedHelmet.glb">Damaged Helmet (PBR)</option>
+                    <option value="/assets/models/scifi/BoomBox.glb">BoomBox (Cyber Audio)</option>
+                    <option value="/assets/models/scifi/Buggy.glb">Buggy (Terrain Vehicle)</option>
+                    <option value="/assets/models/scifi/Lantern.glb">Lantern (Emission)</option>
+                    <option value="/assets/models/scifi/WaterBottle.glb">Water Bottle (Refract)</option>
+                    <option value="/assets/models/scifi/CesiumMan.glb">Cesium Man (Bio-Mesh)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="hero-ctrlGroup">
+                <button type="button" class="hero-btn" id="btn-toggle-spin" onclick="toggleAutoSpin()">🔄 Spin</button>
+                <button type="button" class="hero-btn" id="btn-toggle-wire" onclick="toggleWireframe()">🕸️ Wire</button>
+                <button type="button" class="hero-btn" onclick="cycleTheme()">🎨 Theme</button>
+                <button type="button" class="hero-btn" onclick="resetHeroCamera()">🎯 Center</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -368,244 +665,593 @@
           <div class="label">3D Model Asset Vault</div>
         </div>
         <div class="stat-card">
-          <div class="num">956k</div>
-          <div class="label">Indexed 3D Vertices</div>
+          <div class="num">23</div>
+          <div class="label">Studio Suites Online</div>
         </div>
         <div class="stat-card">
-          <div class="num">204</div>
-          <div class="label">AI Training Pairs (JSONL)</div>
+          <div class="num">47+</div>
+          <div class="label">Chained Sovereign Tools</div>
         </div>
         <div class="stat-card">
-          <div class="num">16 / 16</div>
-          <div class="label">Studio Apps Online</div>
+          <div class="num">100%</div>
+          <div class="label">Local-First Loopback</div>
         </div>
       </div>
 
-      <!-- Section 1: Flagship WebGL & 3D Deliverables -->
-      <section class="section-wrap">
+      <!-- Section 1: 3D Model Explorer Vault -->
+      <section class="section-wrap" id="3d-vault">
         <div class="section-header">
-          <span class="tag">Flagship Systems</span>
-          <h2>Live WebGL Studios & Engines</h2>
+          <span class="tag">Interactive Assets</span>
+          <h2>3D Model Explorer Vault</h2>
+          <p>Direct GLTF/GLB models loaded from <code>assets/models/scifi/</code> and <code>assets/models/animated/</code>. Click any card to immediately load it into the live 3D viewer.</p>
         </div>
 
-        <div class="feature-grid">
-          <!-- Nexus 3D Studio -->
-          <div class="feature-card">
-            <div class="feature-img-box">
-              <img src="/assets/brand/zoth-seal-hermetic-hd.jpg" alt="Nexus 3D Studio" />
+        <div class="model-vault-grid">
+          <!-- Animated Models -->
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">Expressive AI Robot</div>
+              <span class="tech-tag cyan">Animated GLB</span>
             </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>Nexus 3D Omniverse Studio</span>
-                <span class="tech-tag cyan">WebGL CAD Engine</span>
-              </div>
-              <p class="feature-desc">
-                Production-grade CAD-capable 3D viewport featuring real-time scene hierarchy outliners, parametric primitive synthesis (Cubes, Spheres, Torus Knots, Crystals), live transform gizmos (`W`, `E`, `R`, `Del`), and UnrealBloomPass post-processing.
+            <div class="model-meta">Path: assets/models/animated/RobotExpressive.glb · 453 KB</div>
+            <p class="model-desc">Multi-clip rigged automaton with idle, wave, jump, thumbs-up, and running skeletal animations.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/animated/RobotExpressive.glb', 'Expressive AI Robot')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">Astronaut Explorer</div>
+              <span class="tech-tag cyan">Sci-Fi GLB</span>
+            </div>
+            <div class="model-meta">Path: assets/models/scifi/Astronaut.glb · 2.8 MB</div>
+            <p class="model-desc">High-poly lunar suit with metallic normal maps, reflective gold visor, and life-support backpack.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/scifi/Astronaut.glb', 'Astronaut Explorer')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">Damaged Battle Helmet</div>
+              <span class="tech-tag gold">Sci-Fi PBR</span>
+            </div>
+            <div class="model-meta">Path: assets/models/scifi/DamagedHelmet.glb · 3.6 MB</div>
+            <p class="model-desc">Standard PBR benchmark asset with micro-scratches, roughness maps, and emissive optic lenses.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/scifi/DamagedHelmet.glb', 'Damaged Battle Helmet')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">Cyber BoomBox</div>
+              <span class="tech-tag magenta">Audio Hardware</span>
+            </div>
+            <div class="model-meta">Path: assets/models/scifi/BoomBox.glb · 10.6 MB</div>
+            <p class="model-desc">Retro-futuristic cassette acoustic rig with specular speaker cones and brushed steel chassis.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/scifi/BoomBox.glb', 'Cyber BoomBox')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">All-Terrain Buggy</div>
+              <span class="tech-tag green">Vehicle GLB</span>
+            </div>
+            <div class="model-meta">Path: assets/models/scifi/Buggy.glb · 7.7 MB</div>
+            <p class="model-desc">Planetary scout buggy with heavy independent suspension, off-road treads, and tubular roll cage.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/scifi/Buggy.glb', 'All-Terrain Buggy')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">Kinetic Flamingo</div>
+              <span class="tech-tag cyan">Morph Animated</span>
+            </div>
+            <div class="model-meta">Path: assets/models/animated/Flamingo.glb · 75 KB</div>
+            <p class="model-desc">Ultra-lightweight vertex-morphing avian wing flight cycle running at continuous 60 FPS.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/animated/Flamingo.glb', 'Kinetic Flamingo')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">Galloping Steed</div>
+              <span class="tech-tag cyan">Morph Animated</span>
+            </div>
+            <div class="model-meta">Path: assets/models/animated/Horse.glb · 177 KB</div>
+            <p class="model-desc">Procedural morph-target equine stride with dynamic skeletal displacement and muscular flow.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/animated/Horse.glb', 'Galloping Steed')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-card-header">
+              <div class="model-name">Cyber Lantern</div>
+              <span class="tech-tag gold">Sci-Fi GLB</span>
+            </div>
+            <div class="model-meta">Path: assets/models/scifi/Lantern.glb · 9.6 MB</div>
+            <p class="model-desc">Alchemical glowing glass containment vessel with inner filament glow and weathered brass fittings.</p>
+            <div class="model-actions">
+              <button type="button" class="btn-glow" onclick="loadHeroModel('/assets/models/scifi/Lantern.glb', 'Cyber Lantern')">🎮 Load in 3D Viewport</button>
+              <a href="/studio/nexus-3d.html" class="btn-outline">Open CAD</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Live GLSL Shader Visualizers -->
+      <section class="section-wrap" id="shaders">
+        <div class="section-header">
+          <span class="tag">GPU-Accelerated Shaders</span>
+          <h2>Live Real-Time GLSL Shaders</h2>
+          <p>Custom GLSL vertex wave displacement, cosine rainbow iridescence, and particle attraction compute shaders running live on your GPU.</p>
+        </div>
+
+        <div class="shader-grid">
+          <!-- Shader 1: Space Liquid Fluid Shader -->
+          <div class="shader-card">
+            <div class="shader-canvas-box">
+              <div class="shader-hud-tag">GLSL Simplex 3D · Fluid Wave</div>
+              <canvas id="canvas-liquid-shader" class="shader-canvas"></canvas>
+            </div>
+            <div class="shader-body">
+              <div class="shader-title">Space Liquid Simplex 3D Fluid</div>
+              <p class="shader-desc">
+                Powers the 3D Pets Sanctuary. Uses analytical 3D Simplex noise to displace vertex normals in spherical harmonic coordinates with cosine palette mapping.
               </p>
               <div class="tech-tags">
-                <span class="tech-tag cyan">Three.js r128</span>
-                <span class="tech-tag cyan">Scene Outliner</span>
-                <span class="tech-tag gold">Ollama AI Co-Pilot</span>
-                <span class="tech-tag">Skeletal Rigging</span>
-                <span class="tech-tag">GLTF / OBJ Exporter</span>
+                <span class="tech-tag magenta">Simplex Noise 3D</span>
+                <span class="tech-tag cyan">Normal Displacement</span>
+                <span class="tech-tag gold">Interactive Pointer</span>
               </div>
-              <div class="feature-actions">
-                <a href="/studio/nexus-3d.html" class="btn-glow">🚀 Launch Nexus 3D Studio</a>
-                <a href="/studio/3d-editor.html" class="btn-outline">Alias URL</a>
+              <div class="shader-ctrls">
+                <button type="button" class="btn-outline" onclick="alterShaderMode('liquid', 'cyan')">Cyan Neon</button>
+                <button type="button" class="btn-outline" onclick="alterShaderMode('liquid', 'synth')">Synthwave</button>
+                <button type="button" class="btn-outline" onclick="alterShaderMode('liquid', 'gold')">Alchemical Gold</button>
+                <a href="/pets/spawn-pets.html" class="btn-glow" style="margin-left: auto;">🐾 Pet Sanctuary</a>
               </div>
             </div>
           </div>
 
-          <!-- Fusion Swarm Arena -->
-          <div class="feature-card">
-            <div class="feature-img-box" style="background: radial-gradient(circle, #101428 0%, #030408 100%);">
-              <img src="/assets/media/swarm-kinetic-arena-art.jpg" alt="Fusion Arena" />
+          <!-- Shader 2: Cosmic Particle Swirl -->
+          <div class="shader-card">
+            <div class="shader-canvas-box">
+              <div class="shader-hud-tag">3,000 Particle Physics · Vortex</div>
+              <canvas id="canvas-vortex-shader" class="shader-canvas"></canvas>
             </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>Fusion Swarm Arena</span>
-                <span class="tech-tag magenta">Multi-Agent Viewport</span>
-              </div>
-              <p class="feature-desc">
-                Real-time 3D battle & consensus arena with 2,500-particle cosmic vortex swirls, interactive solar flare bursts, and live streaming bus telemetry.
+            <div class="shader-body">
+              <div class="shader-title">Fusion Cosmic Particle Swirl</div>
+              <p class="shader-desc">
+                Powers the Fusion Swarm Arena. Computes real-time orbital gravity, centrifugal acceleration, and interactive mouse flare bursts across 3,000 luminous nodes.
               </p>
               <div class="tech-tags">
-                <span class="tech-tag magenta">ACES ToneMapping</span>
-                <span class="tech-tag cyan">2.5k Particle Vortex</span>
-                <span class="tech-tag gold">Swarm Consensus</span>
+                <span class="tech-tag cyan">Gravitational Attraction</span>
+                <span class="tech-tag magenta">3k Particle Vortex</span>
+                <span class="tech-tag green">60 FPS Render</span>
               </div>
-              <div class="feature-actions">
-                <a href="/studio/fusion-arena.html" class="btn-glow" style="background: var(--magenta); color: #fff;">⚔️ Launch Fusion Arena</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3D Pets Sanctuary -->
-          <div class="feature-card">
-            <div class="feature-img-box">
-              <img src="/assets/mascot/ghostbyte-avatar.jpg" alt="3D Pets Sanctuary" />
-            </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>3D Pets Sanctuary Engine</span>
-                <span class="tech-tag magenta">GLSL Fluid Shader</span>
-              </div>
-              <p class="feature-desc">
-                Interactive companion pet sanctum powered by custom GPU-accelerated Simplex 3D Space Liquid vertex wave displacement, cosine rainbow iridescence, procedural Web Audio acoustic chirp chords, and full chat console integration.
-              </p>
-              <div class="tech-tags">
-                <span class="tech-tag magenta">GLSL Simplex 3D</span>
-                <span class="tech-tag magenta">Web Audio API</span>
-                <span class="tech-tag cyan">GhostByte Live</span>
-                <span class="tech-tag gold">NLP Pet Chat</span>
-              </div>
-              <div class="feature-actions">
-                <a href="/pets/spawn-pets.html" class="btn-glow">🐾 Open 3D Pet Sanctuary</a>
-                <a href="/pets/studio.html" class="btn-outline">Studio View</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Visual Agent Composer -->
-          <div class="feature-card">
-            <div class="feature-img-box" style="background: radial-gradient(circle, #101428 0%, #030408 100%);">
-              <svg viewBox="0 0 400 200" width="100%" height="100%" style="padding: 20px;">
-                <path d="M 60 100 C 140 100, 160 60, 220 60" fill="none" stroke="#00e5ff" stroke-width="3" />
-                <path d="M 60 100 C 140 100, 160 140, 220 140" fill="none" stroke="#d946ef" stroke-width="3" />
-                <rect x="20" y="70" width="80" height="60" rx="8" fill="#0b1020" stroke="#00e5ff" stroke-width="2" />
-                <text x="60" y="105" fill="#fff" font-size="12" font-family="monospace" text-anchor="middle">@antigravity</text>
-                <rect x="220" y="30" width="90" height="60" rx="8" fill="#0b1020" stroke="#38bdf8" stroke-width="2" />
-                <text x="265" y="65" fill="#fff" font-size="12" font-family="monospace" text-anchor="middle">3D-SCULPT</text>
-                <rect x="220" y="110" width="90" height="60" rx="8" fill="#0b1020" stroke="#d946ef" stroke-width="2" />
-                <text x="265" y="145" fill="#fff" font-size="12" font-family="monospace" text-anchor="middle">GITHUB-SYNC</text>
-              </svg>
-            </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>Visual Agent Composer</span>
-                <span class="tech-tag cyan">DAG Playbook Builder</span>
-              </div>
-              <p class="feature-desc">
-                Interactive node-graph workflow architect developed with our peer Antigravity instance. Features dynamic bezier connecting wires, input/output sockets, Swarm Agent blocks, and 1-click JSON playbook exportation.
-              </p>
-              <div class="tech-tags">
-                <span class="tech-tag cyan">Interactive SVG DAG</span>
-                <span class="tech-tag gold">Swarm Orchestration</span>
-                <span class="tech-tag magenta">Multi-Agent Bus</span>
-              </div>
-              <div class="feature-actions">
-                <a href="/studio/agent-composer.html" class="btn-glow">⚡ Open Agent Composer</a>
-                <a href="/studio/peer-bus.html" class="btn-outline">Bus Telemetry</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- OmniPost 2.0 Video Engine -->
-          <div class="feature-card">
-            <div class="feature-img-box" style="background: radial-gradient(circle, #25091a 0%, #030408 100%);">
-              <div style="font-size: 4rem;">🎬</div>
-            </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>OmniPost 2.0 Video Studio</span>
-                <span class="tech-tag magenta">README-to-Video Engine</span>
-              </div>
-              <p class="feature-desc">
-                Instant 60 FPS HTML5 canvas viral video slideshow forge, multi-platform post repurposing (X, Threads, LinkedIn), Web Speech narration, and 16:9 thumbnail creator.
-              </p>
-              <div class="tech-tags">
-                <span class="tech-tag magenta">MediaRecorder 60FPS</span>
-                <span class="tech-tag cyan">Web Speech Synth</span>
-                <span class="tech-tag gold">Viral Hook Generator</span>
-              </div>
-              <div class="feature-actions">
-                <a href="/studio/omnipost.html" class="btn-glow" style="background: var(--magenta); color: #fff;">🎬 Launch OmniPost 2.0</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- AI Math Observability Suite -->
-          <div class="feature-card">
-            <div class="feature-img-box" style="background: radial-gradient(circle, #1c0f2e 0%, #030408 100%);">
-              <div style="font-size: 4rem;">📐</div>
-            </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>AI Math Observability</span>
-                <span class="tech-tag cyan">Interactive 3D Loss Surface</span>
-              </div>
-              <p class="feature-desc">
-                Real-time mathematical telemetry for Linear Algebra, Multivariable Calculus, and Shannon Entropy with live 8x8 attention heatmaps and AdamW optimizer simulation.
-              </p>
-              <div class="tech-tags">
-                <span class="tech-tag cyan">Loss Contours</span>
-                <span class="tech-tag magenta">Shannon Entropy</span>
-                <span class="tech-tag gold">Attention Heatmap</span>
-              </div>
-              <div class="feature-actions">
-                <a href="/studio/math-pillars.html" class="btn-glow">📐 Launch Math Pillars</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Vision Link Spatial HUD -->
-          <div class="feature-card">
-            <div class="feature-img-box" style="background: radial-gradient(circle, #091c1f 0%, #030408 100%);">
-              <div style="font-size: 4rem;">👁️</div>
-            </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>Vision Link Spatial HUD</span>
-                <span class="tech-tag cyan">60 FPS Hand Tracker</span>
-              </div>
-              <p class="feature-desc">
-                Real-time WebRTC camera spatial controller with 21-landmark skeleton wireframes, gesture-controlled 3D preview core, and markdown event streaming.
-              </p>
-              <div class="tech-tags">
-                <span class="tech-tag cyan">WebRTC Video</span>
-                <span class="tech-tag gold">Spatial 3D Viewport</span>
-                <span class="tech-tag magenta">Gesture Dispatch</span>
-              </div>
-              <div class="feature-actions">
-                <a href="/studio/vision-link.html" class="btn-glow">👁️ Open Vision Link</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- BYOK Encrypted Vault -->
-          <div class="feature-card">
-            <div class="feature-img-box" style="background: radial-gradient(circle, #1a1508 0%, #030408 100%);">
-              <div style="font-size: 4rem;">🔒</div>
-            </div>
-            <div class="feature-body">
-              <div class="feature-title">
-                <span>Encrypted BYOK Vault</span>
-                <span class="tech-tag gold">Argon2id + XChaCha20</span>
-              </div>
-              <p class="feature-desc">
-                Hardware-contained secret management on loopback port 8787. Zero cloud telemetry leaks, strict memory wiping, and Bitwarden CLI bridge integration.
-              </p>
-              <div class="tech-tags">
-                <span class="tech-tag gold">Argon2id Rust Daemon</span>
-                <span class="tech-tag cyan">XChaCha20-Poly1305</span>
-                <span class="tech-tag">Loopback Isolation</span>
-              </div>
-              <div class="feature-actions">
-                <a href="/vault/" class="btn-glow" style="background: var(--gold); color: #000;">🔒 Access Vault UI</a>
+              <div class="shader-ctrls">
+                <button type="button" class="btn-outline" onclick="burstVortex()">💥 Trigger Flare Burst</button>
+                <button type="button" class="btn-outline" onclick="toggleVortexSpeed()">⚡ Warp Speed</button>
+                <a href="/studio/fusion-arena.html" class="btn-glow" style="margin-left: auto; background: var(--magenta, #d946ef); color: #fff;">⚔️ Fusion Arena</a>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Section 2: Official Branding & Mascot Vault -->
-      <section class="section-wrap">
+      <!-- Section 3: OmniPost Video Engine & Video Overlay Modal -->
+      <section class="section-wrap" id="video-overlay">
+        <div class="section-header">
+          <span class="tag">Media Synthesis</span>
+          <h2>OmniPost 60 FPS Video Studio & Player</h2>
+          <p>Instant README-to-video forge with canvas motion rendering, Web Speech API audio narration, and real-time audio spectrum telemetry.</p>
+        </div>
+
+        <div class="live-deck" style="background: rgba(10, 14, 26, 0.95); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: var(--radius, 18px); padding: 30px; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center;">
+            <div>
+              <h3 style="font-family: var(--font-display, 'Syne', sans-serif); font-size: 1.8rem; margin: 0 0 12px; color: #fff;">60 FPS Procedural Shorts Engine</h3>
+              <p style="color: var(--muted, #94a3b8); font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
+                Experience the interactive video playback overlay synthesized on-the-fly directly inside HTML5 Canvas. Supports multi-platform repurposing for 𝕏, TikTok, YouTube Shorts, and LinkedIn.
+              </p>
+
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="button" class="btn-glow" onclick="openVideoModal('omnipost')" style="background: var(--magenta, #d946ef); color: #fff;">
+                  ▶ Launch Video Player Overlay
+                </button>
+                <a href="/studio/omnipost.html" class="btn-outline">
+                  🎬 Open OmniPost 2.0 Full Suite
+                </a>
+              </div>
+            </div>
+
+            <!-- Mini Embedded Preview Screen -->
+            <div style="position: relative; height: 260px; background: #020306; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <canvas id="mini-video-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+              <button type="button" onclick="openVideoModal('omnipost')" style="position: absolute; width: 64px; height: 64px; border-radius: 50%; background: rgba(0, 229, 255, 0.85); border: none; color: #000; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px var(--cyan, #00e5ff); transition: transform 0.2s ease;">
+                ▶
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Comprehensive Studio Suite Directory (All 23 Suites) -->
+      <section class="section-wrap" id="suite-directory">
+        <div class="section-header">
+          <span class="tag">Omniverse Navigation</span>
+          <h2>All 23 Zoth Studio Suites & Engines</h2>
+          <p>Direct deep links to every sovereign tool, CAD engine, multi-agent arbitration room, and telemetry console.</p>
+        </div>
+
+        <div class="suite-grid">
+          <!-- Suite 1: Nexus 3D -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🚀 Nexus 3D Omniverse</div>
+              <span class="tech-tag cyan">WebGL CAD</span>
+            </div>
+            <p class="suite-desc">CAD-capable 3D scene hierarchy outliner, parametric primitive synthesis (Cubes, Spheres, Torus Knots, Crystals), live transform gizmos, and UnrealBloomPass.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">Three.js r128</span>
+              <span class="tech-tag gold">Transform Controls</span>
+              <span class="tech-tag">GLTF Exporter</span>
+            </div>
+            <a href="/studio/nexus-3d.html" class="btn-glow">🚀 Launch Nexus 3D</a>
+          </div>
+
+          <!-- Suite 2: Fusion Swarm Arena -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">⚔️ Fusion Swarm Arena</div>
+              <span class="tech-tag magenta">Battle Viewport</span>
+            </div>
+            <p class="suite-desc">Real-time 3D consensus arena with 2,500-particle cosmic vortex swirls, interactive solar flare bursts, and live streaming bus telemetry.</p>
+            <div class="tech-tags">
+              <span class="tech-tag magenta">ACES ToneMapping</span>
+              <span class="tech-tag cyan">2.5k Particle Vortex</span>
+              <span class="tech-tag gold">Swarm Arbitration</span>
+            </div>
+            <a href="/studio/fusion-arena.html" class="btn-glow" style="background: var(--magenta, #d946ef); color: #fff;">⚔️ Open Fusion Arena</a>
+          </div>
+
+          <!-- Suite 3: Consensus Arena v2 -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">⚖️ Consensus Arena v2</div>
+              <span class="tech-tag gold">Tri-Agent Arbiter</span>
+            </div>
+            <p class="suite-desc">Evaluates competing proposals from @antigravity, @grok, and @hermes with Python AST validation and Shannon agreement entropy telemetry.</p>
+            <div class="tech-tags">
+              <span class="tech-tag gold">Shannon Entropy</span>
+              <span class="tech-tag cyan">AST Diffing</span>
+              <span class="tech-tag">Jaccard Matrix</span>
+            </div>
+            <a href="/studio/consensus.html" class="btn-glow">⚖️ Open Consensus v2</a>
+          </div>
+
+          <!-- Suite 4: Swarm Hub -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🐝 Swarm Consensus Hub</div>
+              <span class="tech-tag cyan">Swarm Routing</span>
+            </div>
+            <p class="suite-desc">Live agent status monitor, proposal queuing, quorum arbitration, and multi-model consensus verification.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">Quorum Engine</span>
+              <span class="tech-tag gold">Agent Status</span>
+            </div>
+            <a href="/studio/swarm.html" class="btn-glow">🐝 Launch Swarm Hub</a>
+          </div>
+
+          <!-- Suite 5: 3D Pets Sanctuary -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🐾 3D Pets Sanctuary</div>
+              <span class="tech-tag magenta">GLSL Fluid Shader</span>
+            </div>
+            <p class="suite-desc">Interactive companion pet sanctum powered by custom Simplex 3D Space Liquid vertex wave displacement, cosine rainbow iridescence, and Web Audio chirp chords.</p>
+            <div class="tech-tags">
+              <span class="tech-tag magenta">GLSL Simplex 3D</span>
+              <span class="tech-tag cyan">Web Audio API</span>
+              <span class="tech-tag gold">16 Companions</span>
+            </div>
+            <a href="/pets/spawn-pets.html" class="btn-glow">🐾 Open Pet Sanctuary</a>
+          </div>
+
+          <!-- Suite 6: Visual Agent Composer -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🧩 Visual Agent Composer</div>
+              <span class="tech-tag cyan">DAG Node Builder</span>
+            </div>
+            <p class="suite-desc">Interactive node-graph workflow architect with dynamic bezier connecting wires, input/output sockets, and 1-click JSON playbook export.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">Interactive SVG DAG</span>
+              <span class="tech-tag gold">Swarm Orchestration</span>
+              <span class="tech-tag magenta">Multi-Agent Bus</span>
+            </div>
+            <a href="/studio/agent-composer.html" class="btn-glow">🧩 Open Composer</a>
+          </div>
+
+          <!-- Suite 7: OmniPost 2.0 -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🎬 OmniPost 2.0 Video</div>
+              <span class="tech-tag magenta">README-to-Video</span>
+            </div>
+            <p class="suite-desc">Instant 60 FPS HTML5 canvas viral video slideshow forge, multi-platform post repurposing (X, Threads, LinkedIn), Web Speech narration, and thumbnail creator.</p>
+            <div class="tech-tags">
+              <span class="tech-tag magenta">MediaRecorder 60FPS</span>
+              <span class="tech-tag cyan">Web Speech Synth</span>
+              <span class="tech-tag gold">Viral Hook Lab</span>
+            </div>
+            <a href="/studio/omnipost.html" class="btn-glow" style="background: var(--magenta, #d946ef); color: #fff;">🎬 Launch OmniPost</a>
+          </div>
+
+          <!-- Suite 8: AI Math Observability -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">📐 AI Math Observability</div>
+              <span class="tech-tag cyan">Loss & Entropy</span>
+            </div>
+            <p class="suite-desc">Real-time mathematical telemetry for Linear Algebra ($QK^T$), Multivariable Calculus (AdamW gradients), and Information Theory (Shannon token entropy).</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">Attention Heatmap</span>
+              <span class="tech-tag magenta">Shannon Entropy</span>
+              <span class="tech-tag gold">AdamW Sim</span>
+            </div>
+            <a href="/studio/math-pillars.html" class="btn-glow">📐 Launch Math Pillars</a>
+          </div>
+
+          <!-- Suite 9: Vision Link Spatial HUD -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">👁️ Vision Link Spatial HUD</div>
+              <span class="tech-tag cyan">Hand Tracking</span>
+            </div>
+            <p class="suite-desc">Real-time WebRTC camera spatial controller with 21-landmark skeleton wireframes, gesture-controlled 3D viewport, and event streaming.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">WebRTC Video</span>
+              <span class="tech-tag gold">Spatial 3D</span>
+              <span class="tech-tag magenta">Gesture Dispatch</span>
+            </div>
+            <a href="/studio/vision-link.html" class="btn-glow">👁️ Open Vision Link</a>
+          </div>
+
+          <!-- Suite 10: Subsweep Reconnaissance -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🛰️ Subsweep Recon</div>
+              <span class="tech-tag green">OSINT & Network</span>
+            </div>
+            <p class="suite-desc">Passive DNS discovery, sub-domain resolution, ASN footprinting, and cryptographic certificate transparency log parsing.</p>
+            <div class="tech-tags">
+              <span class="tech-tag green">DNS Resolver</span>
+              <span class="tech-tag">ASN Mapping</span>
+              <span class="tech-tag cyan">OSINT Core</span>
+            </div>
+            <a href="/studio/subsweep.html" class="btn-glow">🛰️ Launch Subsweep</a>
+          </div>
+
+          <!-- Suite 11: Peer Bus Monitor -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">📡 Peer Bus Monitor</div>
+              <span class="tech-tag cyan">IPC Telemetry</span>
+            </div>
+            <p class="suite-desc">Real-time event stream monitor inspecting file-based IPC packets (`agent-comms/`), agent claims, locks, and heartbeat timestamps.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">File IPC</span>
+              <span class="tech-tag gold">Live Heartbeats</span>
+              <span class="tech-tag">Claim Matrix</span>
+            </div>
+            <a href="/studio/bus-monitor.html" class="btn-glow">📡 Open Bus Monitor</a>
+          </div>
+
+          <!-- Suite 12: Mission Control HUD -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🎛️ Mission Control HUD</div>
+              <span class="tech-tag gold">System Control</span>
+            </div>
+            <p class="suite-desc">Central command deck unifying container health, process status, active agent runs, memory consumption, and port telemetry.</p>
+            <div class="tech-tags">
+              <span class="tech-tag gold">System Health</span>
+              <span class="tech-tag cyan">Port Scanner</span>
+              <span class="tech-tag">Process Tree</span>
+            </div>
+            <a href="/studio/mission-control.html" class="btn-glow">🎛️ Open Mission Control</a>
+          </div>
+
+          <!-- Suite 13: Model Foundry -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🧠 Model Foundry (Ollama)</div>
+              <span class="tech-tag cyan">Neural Weights</span>
+            </div>
+            <p class="suite-desc">Switch, pull, inspect, and benchmark offline neural models including `qwen2.5-coder:1.5b`, `smollm2:360m`, and `zoth-ai`.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">Ollama Integration</span>
+              <span class="tech-tag gold">Q4_K_M GGUF</span>
+              <span class="tech-tag">Zero Egress</span>
+            </div>
+            <a href="/studio/models.html" class="btn-glow">🧠 Open Model Foundry</a>
+          </div>
+
+          <!-- Suite 14: Connectors Probe Matrix -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🔌 Connectors Probe Matrix</div>
+              <span class="tech-tag green">Integrations</span>
+            </div>
+            <p class="suite-desc">Live probe status matrix for GitHub, Netlify, Solana, Ethereum, Cloudflare, Bitwarden, and Ollama connectors with fail-soft mock fallbacks.</p>
+            <div class="tech-tags">
+              <span class="tech-tag green">Probe Diagnostics</span>
+              <span class="tech-tag cyan">Fail-Soft Mock</span>
+              <span class="tech-tag">REST / RPC</span>
+            </div>
+            <a href="/studio/connectors.html" class="btn-glow">🔌 View Connectors</a>
+          </div>
+
+          <!-- Suite 15: Sovereign Tool Bench -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🛠️ Sovereign Tool Bench</div>
+              <span class="tech-tag gold">Tool Dispatcher</span>
+            </div>
+            <p class="suite-desc">Interactive execution bench for local tools: Python AST Validator, Header Audit Tool, Blueprint Validator, and Netlify Deployer.</p>
+            <div class="tech-tags">
+              <span class="tech-tag gold">Tool Runner</span>
+              <span class="tech-tag cyan">Schema Validation</span>
+              <span class="tech-tag">Bus Mirror</span>
+            </div>
+            <a href="/studio/tool-bench.html" class="btn-glow">🛠️ Open Tool Bench</a>
+          </div>
+
+          <!-- Suite 16: GitHub Octokit Tool -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🐙 GitHub Octokit Tool</div>
+              <span class="tech-tag cyan">Repo Automation</span>
+            </div>
+            <p class="suite-desc">Local-first GitHub REST client: list/create issues, manage pull requests, browse repositories, and dispatch CI/CD workflow runs.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">Octokit REST</span>
+              <span class="tech-tag gold">Actions Dispatch</span>
+              <span class="tech-tag">Token Isolation</span>
+            </div>
+            <a href="/studio/github-tool.html" class="btn-glow">🐙 Open GitHub Tool</a>
+          </div>
+
+          <!-- Suite 17: Edge Site Forge -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">⚡ Edge Site Forge</div>
+              <span class="tech-tag magenta">Static Deployer</span>
+            </div>
+            <p class="suite-desc">Instant Astro/Tailwind site generator with live preview, automated HTML minification, and Netlify edge deployment hooks.</p>
+            <div class="tech-tags">
+              <span class="tech-tag magenta">Astro Builder</span>
+              <span class="tech-tag cyan">Edge Hooks</span>
+              <span class="tech-tag">Live Preview</span>
+            </div>
+            <a href="/studio/edge-forge.html" class="btn-glow">⚡ Open Edge Forge</a>
+          </div>
+
+          <!-- Suite 18: AX Powerhouse -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🏛️ AX Powerhouse Suite</div>
+              <span class="tech-tag gold">Agency Workflows</span>
+            </div>
+            <p class="suite-desc">Comprehensive client delivery deck, automated proposal architect, brand asset composer, and SLA timeline tracker.</p>
+            <div class="tech-tags">
+              <span class="tech-tag gold">Client Delivery</span>
+              <span class="tech-tag cyan">Proposal Engine</span>
+              <span class="tech-tag">SLA Telemetry</span>
+            </div>
+            <a href="/studio/ax-powerhouse.html" class="btn-glow">🏛️ Open AX Powerhouse</a>
+          </div>
+
+          <!-- Suite 19: Chronicle Roadmap -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">📜 Chronicle Roadmap</div>
+              <span class="tech-tag cyan">Milestones & Logs</span>
+            </div>
+            <p class="suite-desc">Archived engineering milestones, sprint logs, version histories, and future architectural roadmaps across 4 phases.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">Sprint Logs</span>
+              <span class="tech-tag gold">Milestone Ledger</span>
+            </div>
+            <a href="/studio/chronicle.html" class="btn-glow">📜 View Chronicle</a>
+          </div>
+
+          <!-- Suite 20: Brand & Mascot Vault -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">💎 Brand & Mascot Vault</div>
+              <span class="tech-tag magenta">Visual Assets</span>
+            </div>
+            <p class="suite-desc">Hermetic cyber seals, 8K insignia masters, mascot avatars, and vector SVG identity downloads.</p>
+            <div class="tech-tags">
+              <span class="tech-tag magenta">SVG Vectors</span>
+              <span class="tech-tag cyan">8K Insignias</span>
+              <span class="tech-tag gold">Brand Guidelines</span>
+            </div>
+            <a href="/studio/brand.html" class="btn-glow">💎 Open Brand Vault</a>
+          </div>
+
+          <!-- Suite 21: Glass Wall Registry -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🗄️ Glass Wall Registry</div>
+              <span class="tech-tag cyan">298+ Tool Catalog</span>
+            </div>
+            <p class="suite-desc">Interactive indexed catalog of all 298+ local projects across 14 categories with instant fuzzy search and tag filtering.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">298+ Projects</span>
+              <span class="tech-tag gold">Instant Search</span>
+              <span class="tech-tag">Tag Filters</span>
+            </div>
+            <a href="/registry/index.html" class="btn-glow">🗄️ Explore Registry</a>
+          </div>
+
+          <!-- Suite 22: Argon2id BYOK Vault -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🔒 Argon2id BYOK Vault</div>
+              <span class="tech-tag gold">Encrypted Storage</span>
+            </div>
+            <p class="suite-desc">Hardware-contained secret management on loopback port :8787. Argon2id key derivation, XChaCha20-Poly1305, and zeroization.</p>
+            <div class="tech-tags">
+              <span class="tech-tag gold">Argon2id Daemon</span>
+              <span class="tech-tag cyan">XChaCha20-P13</span>
+              <span class="tech-tag">Loopback Only</span>
+            </div>
+            <a href="/vault/index.html" class="btn-glow" style="background: var(--gold, #fbbf24); color: #000;">🔒 Access Vault</a>
+          </div>
+
+          <!-- Suite 23: Master Studio Dashboard -->
+          <div class="suite-card">
+            <div class="suite-head">
+              <div class="suite-title">🎛️ Master Studio Dashboard</div>
+              <span class="tech-tag cyan">Launchpad</span>
+            </div>
+            <p class="suite-desc">Central launchpad with 21 interactive power cards, live deck connectivity probe, and system status indicators.</p>
+            <div class="tech-tags">
+              <span class="tech-tag cyan">21 Power Cards</span>
+              <span class="tech-tag gold">Deck Prober</span>
+            </div>
+            <a href="/studio/index.html" class="btn-glow">🎛️ Open Dashboard</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 5: Official Branding & Mascot Vault -->
+      <section class="section-wrap" id="branding">
         <div class="section-header">
           <span class="tag">Visual Identity</span>
           <h2>Official Brand & Mascot Assets</h2>
         </div>
 
-        <div class="live-deck">
+        <div class="live-deck" style="background: rgba(10, 14, 26, 0.94); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: var(--radius, 18px); padding: 30px; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);">
           <div class="gallery-grid">
             <div class="gallery-item">
               <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Hermetic Seal SVG" />
@@ -642,62 +1288,587 @@
       </section>
     </main>
 
-    <!-- Interactive Hero 3D Model Script -->
+    <!-- Video Modal Player Overlay -->
+    <div id="video-overlay-modal" class="video-modal-backdrop" onclick="if(event.target===this) closeVideoModal()">
+      <div class="video-modal-box">
+        <div class="video-modal-head">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.2rem;">🎬</span>
+            <strong style="color: #fff; font-family: var(--font-display, 'Syne', sans-serif);" id="modal-video-title">OmniPost 2.0 · 60 FPS Procedural Shorts Engine</strong>
+          </div>
+          <button type="button" onclick="closeVideoModal()" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 1rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;">✕ Close</button>
+        </div>
+
+        <div class="video-modal-canvas-wrap">
+          <canvas id="modal-video-canvas"></canvas>
+        </div>
+
+        <div class="video-modal-foot">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" class="btn-glow" id="btn-modal-play" onclick="toggleModalVideoPlay()">⏸ Pause</button>
+            <button type="button" class="btn-outline" onclick="triggerSpeechNarration()">🔊 Voice Narration</button>
+            <span style="font-family: var(--font-mono, monospace); font-size: 0.75rem; color: var(--cyan, #00e5ff);" id="modal-video-time">00:04 / 00:15 · 60 FPS</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <a href="/studio/omnipost.html" class="btn-glow" style="background: var(--magenta, #d946ef); color: #fff;">🎬 Launch OmniPost</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts: Three.js Interactive Hero Viewer & Model Switcher -->
     <script>
-      (function() {
+      let heroScene, heroCamera, heroRenderer, heroControls, heroMixer, heroClock;
+      let currentHeroModel = null;
+      let isAutoSpin = true;
+      let isWireframe = false;
+      let lightThemeIndex = 0;
+      let dirLight1, dirLight2, ambLight;
+
+      const lightingThemes = [
+        { name: "Cyber Cyan", amb: 0x0a1020, dir1: 0x00e5ff, dir2: 0xd946ef },
+        { name: "Hermetic Gold", amb: 0x1a1205, dir1: 0xfbbf24, dir2: 0x00e5ff },
+        { name: "Synthwave Magenta", amb: 0x180820, dir1: 0xd946ef, dir2: 0x38bdf8 },
+        { name: "Studio Pure White", amb: 0x222222, dir1: 0xffffff, dir2: 0x88bbff }
+      ];
+
+      function initHero3D() {
         const container = document.getElementById('hero-viewport');
         if (!container) return;
 
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
-        camera.position.set(0, 2, 7);
+        heroScene = new THREE.Scene();
+        heroClock = new THREE.Clock();
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(renderer.domElement);
+        heroCamera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+        heroCamera.position.set(0, 1.8, 6.5);
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 2.0;
+        heroRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        heroRenderer.setSize(container.clientWidth, container.clientHeight);
+        heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        heroRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+        heroRenderer.toneMappingExposure = 1.2;
+        container.appendChild(heroRenderer.domElement);
 
-        const amb = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(amb);
-        const dir = new THREE.DirectionalLight(0x00e5ff, 2.0);
-        dir.position.set(5, 10, 7);
-        scene.add(dir);
+        heroControls = new THREE.OrbitControls(heroCamera, heroRenderer.domElement);
+        heroControls.enableDamping = true;
+        heroControls.dampingFactor = 0.05;
+        heroControls.autoRotate = true;
+        heroControls.autoRotateSpeed = 2.0;
 
-        let mixer, clock = new THREE.Clock();
+        // Grid floor
+        const gridHelper = new THREE.GridHelper(10, 20, 0x00e5ff, 0x111c38);
+        gridHelper.position.y = -1.6;
+        gridHelper.material.opacity = 0.4;
+        gridHelper.material.transparent = true;
+        heroScene.add(gridHelper);
+
+        // Lighting
+        ambLight = new THREE.AmbientLight(lightingThemes[0].amb, 2.0);
+        heroScene.add(ambLight);
+
+        dirLight1 = new THREE.DirectionalLight(lightingThemes[0].dir1, 2.8);
+        dirLight1.position.set(5, 10, 7);
+        heroScene.add(dirLight1);
+
+        dirLight2 = new THREE.DirectionalLight(lightingThemes[0].dir2, 1.5);
+        dirLight2.position.set(-5, -2, -5);
+        heroScene.add(dirLight2);
+
+        // Default Load
+        loadHeroModel('/assets/models/animated/RobotExpressive.glb', 'Expressive AI Bot');
+
+        window.addEventListener('resize', onHeroResize);
+        animateHero();
+      }
+
+      function onHeroResize() {
+        const container = document.getElementById('hero-viewport');
+        if (!container || !heroCamera || !heroRenderer) return;
+        heroCamera.aspect = container.clientWidth / container.clientHeight;
+        heroCamera.updateProjectionMatrix();
+        heroRenderer.setSize(container.clientWidth, container.clientHeight);
+      }
+
+      function loadHeroModel(url, customName) {
+        const loaderEl = document.getElementById('hero-loader');
+        const loaderText = document.getElementById('hero-loader-text');
+        const labelEl = document.getElementById('hero-model-label');
+        const selectEl = document.getElementById('hero-model-select');
+
+        if (loaderEl) loaderEl.classList.remove('hidden');
+        if (loaderText) loaderText.textContent = `Loading ${customName || url.split('/').pop()}...`;
+        if (selectEl && selectEl.value !== url) selectEl.value = url;
+
+        if (currentHeroModel) {
+          heroScene.remove(currentHeroModel);
+          currentHeroModel = null;
+        }
+        if (heroMixer) {
+          heroMixer.stopAllAction();
+          heroMixer = null;
+        }
+
         const loader = new THREE.GLTFLoader();
-        loader.load('/assets/models/animated/RobotExpressive.glb', (gltf) => {
-          const model = gltf.scene;
-          model.position.set(0, -1.8, 0);
-          model.scale.set(1.2, 1.2, 1.2);
-          scene.add(model);
+        loader.load(
+          url,
+          (gltf) => {
+            const model = gltf.scene;
+            currentHeroModel = model;
 
-          if (gltf.animations && gltf.animations.length > 0) {
-            mixer = new THREE.AnimationMixer(model);
-            const action = mixer.clipAction(gltf.animations[0]);
-            action.play();
+            // Compute bounding box to normalize scale and center
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const targetSize = 2.8;
+            const scale = targetSize / (maxDim || 1);
+            model.scale.set(scale, scale, scale);
+
+            // Center model vertically
+            model.position.x = -center.x * scale;
+            model.position.y = -center.y * scale - 0.2;
+            model.position.z = -center.z * scale;
+
+            heroScene.add(model);
+
+            // Apply wireframe if active
+            if (isWireframe) applyWireframe(model, true);
+
+            // Play first animation if present
+            if (gltf.animations && gltf.animations.length > 0) {
+              heroMixer = new THREE.AnimationMixer(model);
+              const action = heroMixer.clipAction(gltf.animations[0]);
+              action.play();
+            }
+
+            const modelTitle = customName || url.split('/').pop().replace('.glb', '');
+            if (labelEl) labelEl.textContent = `🎮 Active Model: ${modelTitle}`;
+            if (loaderEl) loaderEl.classList.add('hidden');
+          },
+          (xhr) => {
+            if (xhr.total && loaderText) {
+              const pct = Math.round((xhr.loaded / xhr.total) * 100);
+              loaderText.textContent = `Loading: ${pct}%`;
+            }
+          },
+          (err) => {
+            console.error("GLTF Load Error:", err);
+            if (loaderText) loaderText.textContent = "Error loading GLTF model.";
+            setTimeout(() => { if (loaderEl) loaderEl.classList.add('hidden'); }, 1500);
+          }
+        );
+      }
+
+      function toggleAutoSpin() {
+        isAutoSpin = !isAutoSpin;
+        if (heroControls) heroControls.autoRotate = isAutoSpin;
+        const btn = document.getElementById('btn-toggle-spin');
+        if (btn) btn.classList.toggle('active', isAutoSpin);
+      }
+
+      function applyWireframe(obj, state) {
+        obj.traverse((child) => {
+          if (child.isMesh && child.material) {
+            child.material.wireframe = state;
           }
         });
+      }
 
-        window.addEventListener('resize', () => {
-          camera.aspect = container.clientWidth / container.clientHeight;
-          camera.updateProjectionMatrix();
-          renderer.setSize(container.clientWidth, container.clientHeight);
+      function toggleWireframe() {
+        isWireframe = !isWireframe;
+        if (currentHeroModel) applyWireframe(currentHeroModel, isWireframe);
+        const btn = document.getElementById('btn-toggle-wire');
+        if (btn) btn.classList.toggle('active', isWireframe);
+      }
+
+      function cycleTheme() {
+        lightThemeIndex = (lightThemeIndex + 1) % lightingThemes.length;
+        const t = lightingThemes[lightThemeIndex];
+        if (ambLight) ambLight.color.setHex(t.amb);
+        if (dirLight1) dirLight1.color.setHex(t.dir1);
+        if (dirLight2) dirLight2.color.setHex(t.dir2);
+      }
+
+      function resetHeroCamera() {
+        if (!heroCamera || !heroControls) return;
+        heroCamera.position.set(0, 1.8, 6.5);
+        heroControls.target.set(0, 0, 0);
+        heroControls.update();
+      }
+
+      let lastTime = performance.now();
+      let frameCount = 0;
+      function animateHero() {
+        requestAnimationFrame(animateHero);
+        const dt = heroClock ? heroClock.getDelta() : 0.016;
+        if (heroMixer) heroMixer.update(dt);
+        if (heroControls) heroControls.update();
+        if (heroRenderer && heroScene && heroCamera) heroRenderer.render(heroScene, heroCamera);
+
+        // FPS calculation
+        frameCount++;
+        const now = performance.now();
+        if (now - lastTime >= 1000) {
+          const fps = Math.round((frameCount * 1000) / (now - lastTime));
+          const fpsBadge = document.getElementById('hero-fps-badge');
+          if (fpsBadge) fpsBadge.textContent = `⚡ ${fps} FPS · Active WebGL`;
+          frameCount = 0;
+          lastTime = now;
+        }
+      }
+
+      // Initialize on load
+      window.addEventListener('DOMContentLoaded', () => {
+        initHero3D();
+        initLiquidShader();
+        initVortexShader();
+        initMiniVideoPreview();
+      });
+
+      /* ═══════════════════════════════════════════════════════════════
+         Live GLSL Shader 1: Simplex 3D Space Liquid
+         ═══════════════════════════════════════════════════════════════ */
+      let liquidScene, liquidCamera, liquidRenderer, liquidMesh;
+      let liquidPalette = 'cyan';
+
+      function initLiquidShader() {
+        const canvas = document.getElementById('canvas-liquid-shader');
+        if (!canvas) return;
+
+        liquidScene = new THREE.Scene();
+        liquidCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 50);
+        liquidCamera.position.set(0, 0, 3.5);
+
+        liquidRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        liquidRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        liquidRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const geo = new THREE.IcosahedronGeometry(1.2, 32);
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0.0 },
+            uPalette: { value: 0 } // 0: Cyan, 1: Synth, 2: Gold
+          },
+          vertexShader: `
+            uniform float uTime;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+
+            // Simplex noise approximation
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+            float snoise(vec3 v){
+              const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+              const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+              vec3 i  = floor(v + dot(v, C.yyy));
+              vec3 x0 = v - i + dot(i, C.xxx);
+              vec3 g = step(x0.yzx, x0.xyz);
+              vec3 l = 1.0 - g;
+              vec3 i1 = min(g.xyz, l.zxy);
+              vec3 i2 = max(g.xyz, l.zxy);
+              vec3 x1 = x0 - i1 + C.xxx;
+              vec3 x2 = x0 - i2 + C.yyy;
+              vec3 x3 = x0 - D.yyy;
+              i = mod289(i);
+              vec4 p = permute(permute(permute(
+                        i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                      + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                      + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+              float n_ = 0.142857142857;
+              vec3 ns = n_ * D.wyz - D.xzx;
+              vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+              vec4 x_ = floor(j * ns.z);
+              vec4 y_ = floor(j - 7.0 * x_);
+              vec4 x = x_ *ns.x + ns.yyyy;
+              vec4 y = y_ *ns.x + ns.yyyy;
+              vec4 h = 1.0 - abs(x) - abs(y);
+              vec4 b0 = vec4(x.xy, y.xy);
+              vec4 b1 = vec4(x.zw, y.zw);
+              vec4 s0 = floor(b0)*2.0 + 1.0;
+              vec4 s1 = floor(b1)*2.0 + 1.0;
+              vec4 sh = -step(h, vec4(0.0));
+              vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+              vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+              vec3 p0 = vec3(a0.xy, h.x);
+              vec3 p1 = vec3(a0.zw, h.y);
+              vec3 p2 = vec3(a1.xy, h.z);
+              vec3 p3 = vec3(a1.zw, h.w);
+              vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+              p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+              vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+              m = m * m;
+              return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+            }
+
+            void main() {
+              vNormal = normal;
+              vPosition = position;
+              float displacement = snoise(position * 1.8 + vec3(uTime * 0.45)) * 0.35;
+              vec3 newPos = position + normal * displacement;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform float uTime;
+            uniform int uPalette;
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+
+            void main() {
+              vec3 n = normalize(vNormal);
+              float fresnel = pow(1.0 - abs(dot(n, vec3(0.0, 0.0, 1.0))), 2.5);
+              
+              vec3 col;
+              if (uPalette == 0) { // Cyan
+                col = mix(vec3(0.0, 0.2, 0.4), vec3(0.0, 0.9, 1.0), fresnel);
+              } else if (uPalette == 1) { // Synthwave
+                col = mix(vec3(0.3, 0.0, 0.4), vec3(0.85, 0.27, 0.94), fresnel);
+              } else { // Gold
+                col = mix(vec3(0.4, 0.25, 0.0), vec3(1.0, 0.8, 0.2), fresnel);
+              }
+              
+              gl_FragColor = vec4(col, 0.92);
+            }
+          `,
+          transparent: true
         });
 
-        function animate() {
-          requestAnimationFrame(animate);
-          const dt = clock.getDelta();
-          if (mixer) mixer.update(dt);
-          controls.update();
-          renderer.render(scene, camera);
+        liquidMesh = new THREE.Mesh(geo, mat);
+        liquidScene.add(liquidMesh);
+
+        function animateLiquid() {
+          requestAnimationFrame(animateLiquid);
+          mat.uniforms.uTime.value += 0.02;
+          liquidMesh.rotation.y += 0.008;
+          liquidRenderer.render(liquidScene, liquidCamera);
         }
-        animate();
-      })();
+        animateLiquid();
+      }
+
+      function alterShaderMode(type, mode) {
+        if (type === 'liquid' && liquidMesh) {
+          const val = mode === 'cyan' ? 0 : (mode === 'synth' ? 1 : 2);
+          liquidMesh.material.uniforms.uPalette.value = val;
+        }
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         Live GLSL Shader 2: Cosmic Particle Swirl
+         ═══════════════════════════════════════════════════════════════ */
+      let vortexCanvas, vortexCtx, vortexParticles = [];
+      let isWarpSpeed = false;
+
+      function initVortexShader() {
+        vortexCanvas = document.getElementById('canvas-vortex-shader');
+        if (!vortexCanvas) return;
+        vortexCtx = vortexCanvas.getContext('2d');
+        vortexCanvas.width = vortexCanvas.clientWidth;
+        vortexCanvas.height = vortexCanvas.clientHeight;
+
+        const count = 300;
+        for (let i = 0; i < count; i++) {
+          vortexParticles.push({
+            r: Math.random() * 120 + 20,
+            angle: Math.random() * Math.PI * 2,
+            speed: (Math.random() * 0.02 + 0.01) * (Math.random() > 0.5 ? 1 : -1),
+            size: Math.random() * 2.5 + 1,
+            color: Math.random() > 0.5 ? '#00e5ff' : '#d946ef'
+          });
+        }
+
+        function renderVortex() {
+          requestAnimationFrame(renderVortex);
+          vortexCtx.fillStyle = 'rgba(2, 3, 7, 0.15)';
+          vortexCtx.fillRect(0, 0, vortexCanvas.width, vortexCanvas.height);
+
+          const cx = vortexCanvas.width / 2;
+          const cy = vortexCanvas.height / 2;
+          const speedMul = isWarpSpeed ? 3.5 : 1.0;
+
+          vortexParticles.forEach(p => {
+            p.angle += p.speed * speedMul;
+            const x = cx + Math.cos(p.angle) * p.r;
+            const y = cy + Math.sin(p.angle) * p.r * 0.6;
+
+            vortexCtx.beginPath();
+            vortexCtx.arc(x, y, p.size, 0, Math.PI * 2);
+            vortexCtx.fillStyle = p.color;
+            vortexCtx.shadowBlur = 10;
+            vortexCtx.shadowColor = p.color;
+            vortexCtx.fill();
+          });
+        }
+        renderVortex();
+      }
+
+      function burstVortex() {
+        vortexParticles.forEach(p => {
+          p.r += (Math.random() - 0.5) * 60;
+        });
+      }
+
+      function toggleVortexSpeed() {
+        isWarpSpeed = !isWarpSpeed;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         Video Player Modal & Mini Preview (OmniPost 60 FPS Engine)
+         ═══════════════════════════════════════════════════════════════ */
+      let modalVideoPlaying = true;
+      let modalVideoTime = 0;
+      let modalAnimId;
+
+      function openVideoModal(type) {
+        const modal = document.getElementById('video-overlay-modal');
+        if (!modal) return;
+        modal.classList.add('open');
+        modalVideoPlaying = true;
+        renderModalVideoCanvas();
+      }
+
+      function closeVideoModal() {
+        const modal = document.getElementById('video-overlay-modal');
+        if (!modal) return;
+        modal.classList.remove('open');
+        cancelAnimationFrame(modalAnimId);
+      }
+
+      function toggleModalVideoPlay() {
+        modalVideoPlaying = !modalVideoPlaying;
+        const btn = document.getElementById('btn-modal-play');
+        if (btn) btn.textContent = modalVideoPlaying ? "⏸ Pause" : "▶ Play";
+      }
+
+      function renderModalVideoCanvas() {
+        const canvas = document.getElementById('modal-video-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+
+        function drawFrame() {
+          if (!document.getElementById('video-overlay-modal').classList.contains('open')) return;
+          modalAnimId = requestAnimationFrame(drawFrame);
+
+          if (modalVideoPlaying) {
+            modalVideoTime += 0.016;
+            if (modalVideoTime > 15) modalVideoTime = 0;
+          }
+
+          const t = modalVideoTime;
+          const timeEl = document.getElementById('modal-video-time');
+          if (timeEl) {
+            const sec = Math.floor(t);
+            timeEl.textContent = `00:${sec < 10 ? '0' + sec : sec} / 00:15 · 60 FPS (MediaRecorder)`;
+          }
+
+          // Render procedural cyber video frame
+          ctx.fillStyle = '#050711';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Animated grid lines
+          ctx.strokeStyle = 'rgba(0, 229, 255, 0.15)';
+          ctx.lineWidth = 1;
+          for (let x = 0; x < canvas.width; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+          }
+
+          // Beat Slides
+          const beatIndex = Math.floor((t % 15) / 3.75);
+          const beats = [
+            { tag: "🔥 HOOK", title: "Autonomous Local AI Swarm", sub: "Zero cloud egress. 100% private." },
+            { tag: "⚠️ PROBLEM", title: "Cloud SaaS Lock-in is Fragile", sub: "Latency, API bans, and data harvesting." },
+            { tag: "⚡ SOLUTION", title: "Zoth Studio 2.6.0", sub: "Tri-Agent Consensus + 47 Chained Tools." },
+            { tag: "🚀 CTA", title: "Launch on Loopback Now", sub: "Single binary .run & .exe ready." }
+          ];
+          const curBeat = beats[beatIndex] || beats[0];
+
+          // Center Graphic
+          ctx.save();
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          
+          // Outer glowing ring
+          ctx.beginPath();
+          ctx.arc(0, 0, 90 + Math.sin(t * 4) * 6, 0, Math.PI * 2);
+          ctx.strokeStyle = '#00e5ff';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = '#00e5ff';
+          ctx.shadowBlur = 20;
+          ctx.stroke();
+
+          // Title text
+          ctx.textAlign = 'center';
+          ctx.font = 'bold 14px "IBM Plex Mono", monospace';
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillText(curBeat.tag, 0, -45);
+
+          ctx.font = 'bold 22px "Syne", sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(curBeat.title, 0, 0);
+
+          ctx.font = '14px "Figtree", sans-serif';
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillText(curBeat.sub, 0, 30);
+
+          ctx.restore();
+
+          // Audio Spectrum Simulator at bottom
+          ctx.fillStyle = 'rgba(0, 229, 255, 0.7)';
+          const bars = 32;
+          const barW = canvas.width / bars;
+          for (let b = 0; b < bars; b++) {
+            const h = (Math.sin(t * 8 + b) * 0.5 + 0.5) * 35 + 5;
+            ctx.fillRect(b * barW + 2, canvas.height - h, barW - 4, h);
+          }
+        }
+        drawFrame();
+      }
+
+      function triggerSpeechNarration() {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance("Zoth Studio autonomous multi-agent swarm. High speed local intelligence running on your hardware.");
+          utterance.rate = 1.05;
+          utterance.pitch = 1.0;
+          window.speechSynthesis.speak(utterance);
+        } else {
+          alert("Web Speech API synthesizer not supported in this browser.");
+        }
+      }
+
+      function initMiniVideoPreview() {
+        const canvas = document.getElementById('mini-video-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        let t = 0;
+
+        function loop() {
+          requestAnimationFrame(loop);
+          t += 0.02;
+          ctx.fillStyle = '#060914';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.strokeStyle = 'rgba(217, 70, 239, 0.4)';
+          ctx.beginPath();
+          ctx.arc(canvas.width / 2, canvas.height / 2, 40 + Math.sin(t * 3) * 5, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.font = '11px "IBM Plex Mono", monospace';
+          ctx.fillStyle = '#00e5ff';
+          ctx.textAlign = 'center';
+          ctx.fillText("60 FPS MEDIA ENGINE", canvas.width / 2, canvas.height / 2 + 65);
+        }
+        loop();
+      }
     </script>
     <script src="/assets/celestial-trail.js"></script>
   </body>
