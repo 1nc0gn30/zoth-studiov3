@@ -1344,6 +1344,11 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/studio/{path:path}", public_page),
         Route("/adytum", public_page),
         Route("/adytum/{path:path}", public_page),
+        Route("/docs", public_page),
+        Route("/docs/{path:path}", public_page),
+        Route("/styles.css", public_page),
+        Route("/styles/{path:path}", public_page),
+        Route("/site.js", public_page),
 
         # Health
         Route("/api/health", api_health),
