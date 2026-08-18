@@ -37,8 +37,10 @@
       rel="stylesheet"
     />
 
-    <!-- Three.js for Embedded Interactive 3D WebGL Prism -->
+    <!-- Three.js + Loaders for Embedded Interactive 3D WebGL Studio & Prism -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <style>
       :root {
@@ -603,7 +605,7 @@
         font-weight: 500;
       }
 
-      /* 3 Steps Onboarding Guide */
+      /* Section Common Header */
       .section-heading {
         text-align: left;
         margin-bottom: 36px;
@@ -629,6 +631,7 @@
         margin-top: 8px;
       }
 
+      /* 3 Steps Onboarding Guide */
       .steps-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -780,6 +783,243 @@
         transition: gap 0.2s;
       }
       .card-link:hover { gap: 10px; text-decoration: underline; }
+
+      /* =========================================================================
+         1. Interactive 3D CAD Omniverse Inspector & Model Studio
+         ========================================================================= */
+      .cad-studio-section {
+        background: radial-gradient(circle at 50% 50%, rgba(14, 22, 45, 0.95), rgba(4, 7, 16, 0.98));
+        border: 1px solid var(--border-bright);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 90px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 240, 255, 0.12);
+      }
+      .cad-studio-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 28px;
+        align-items: center;
+        margin-top: 24px;
+      }
+      @media (max-width: 1024px) {
+        .cad-studio-grid { grid-template-columns: 1fr; }
+      }
+      .cad-viewport-container {
+        position: relative;
+        width: 100%;
+        height: 440px;
+        border-radius: 14px;
+        background: radial-gradient(circle at 50% 50%, #0d152b 0%, #020409 100%);
+        border: 1px solid var(--border-bright);
+        overflow: hidden;
+        box-shadow: inset 0 0 40px rgba(0, 240, 255, 0.08);
+      }
+      #cad-model-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .cad-hud-overlay {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+      }
+      .cad-hud-chip {
+        background: rgba(3, 6, 14, 0.85);
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        color: var(--cyan);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 4px 10px;
+        border-radius: 999px;
+        backdrop-filter: blur(8px);
+        pointer-events: auto;
+      }
+      .cad-controls-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .cad-btn-strip {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .cad-selector-btn {
+        background: rgba(14, 20, 36, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .cad-selector-btn:hover, .cad-selector-btn.active {
+        color: #fff;
+        border-color: var(--cyan);
+        background: rgba(0, 240, 255, 0.15);
+        box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+      }
+
+      /* =========================================================================
+         2. Interactive In-Browser Sovereign Terminal Simulator
+         ========================================================================= */
+      .terminal-sim-section {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-bright);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 90px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      }
+      .terminal-window {
+        background: #03050c;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+      }
+      .terminal-topbar {
+        background: rgba(14, 20, 36, 0.98);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .terminal-dots {
+        display: flex;
+        gap: 6px;
+      }
+      .term-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .terminal-body {
+        padding: 20px;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.6;
+        min-height: 260px;
+        max-height: 380px;
+        overflow-y: auto;
+        color: #f1f5f9;
+      }
+      .terminal-input-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        background: rgba(8, 12, 24, 0.95);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .term-prompt {
+        color: var(--cyan);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .term-input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        font-family: var(--font-mono);
+        font-size: 0.84rem;
+        flex: 1;
+      }
+      .term-quick-btns {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      /* =========================================================================
+         3. Interactive Swarm Bus Packet Visualizer
+         ========================================================================= */
+      .swarm-bus-section {
+        background: var(--bg-surface);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 90px;
+      }
+      .swarm-canvas-box {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        border-radius: 14px;
+        background: #02040a;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        margin-top: 20px;
+      }
+      #swarm-bus-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* =========================================================================
+         4. Interactive AI Math Observability Grapher
+         ========================================================================= */
+      .math-observatory-section {
+        background: var(--bg-surface);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 90px;
+      }
+      .math-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 28px;
+        align-items: center;
+        margin-top: 20px;
+      }
+      @media (max-width: 1024px) {
+        .math-grid { grid-template-columns: 1fr; }
+      }
+      .math-canvas-box {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        border-radius: 14px;
+        background: #020409;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+      #math-curve-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .slider-control {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .slider-header {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: #94a3b8;
+      }
+      .slider-input {
+        width: 100%;
+        accent-color: var(--cyan);
+      }
 
       /* Interactive 3D Pet Companion Sandbox */
       .pet-sandbox-section {
@@ -1061,9 +1301,10 @@
 
         <nav class="nav-menu" aria-label="Main Navigation">
           <a class="nav-btn" href="#get-started" style="color:var(--cyan);">⚡ Quick Start</a>
-          <a class="nav-btn" href="/studio/consensus.html">Swarm Arena</a>
-          <a class="nav-btn" href="/studio/nexus-3d.html">Nexus 3D</a>
-          <a class="nav-btn" href="/studio/omnipost.html">OmniPost</a>
+          <a class="nav-btn" href="#cad-studio">3D Inspector</a>
+          <a class="nav-btn" href="#terminal-sim">Live Terminal</a>
+          <a class="nav-btn" href="#swarm-bus">Swarm Bus</a>
+          <a class="nav-btn" href="#math-observatory">Math Pillars</a>
           <a class="nav-btn" href="#pet-sandbox">3D Pets</a>
           <a class="nav-btn" href="/showcase.html" style="color:var(--gold);">Showcase</a>
           <a class="nav-btn" href="/docs/">Docs</a>
@@ -1207,49 +1448,225 @@
         </div>
       </section>
 
-      <!-- Run 100% Free Locally in 3 Simple Steps -->
-      <section class="section-heading" id="get-started">
-        <span class="section-tag">Zero Cloud Costs · Zero Setup Friction</span>
-        <h2 class="section-title">Run 100% Free Locally in 3 Steps</h2>
-        <p class="section-desc">Get your private AI agent powerhouse running on your hardware in under 60 seconds with full autonomy.</p>
+      <!-- 1. Interactive 3D CAD Omniverse Inspector & Model Studio -->
+      <section class="cad-studio-section" id="cad-studio">
+        <span class="section-tag">Interactive Three.js CAD Viewport</span>
+        <h2 style="font-family: var(--font-display); font-size: 2.2rem; color: #fff; margin-top: 4px;">Nexus 3D Model Studio & Inspector</h2>
+        <p style="color: #94a3b8; font-size: 1rem; margin-top: 6px;">Live 3D asset inspection with orbit controls, wireframe switching, shader lighting modes, and geometric telemetry.</p>
+
+        <div class="cad-studio-grid">
+          <div class="cad-viewport-container">
+            <canvas id="cad-model-canvas"></canvas>
+            <div class="cad-hud-overlay">
+              <div class="cad-hud-chip" id="cad-asset-label">🤖 RobotExpressive.glb</div>
+              <div class="cad-hud-chip" id="cad-poly-count">▲ 12,480 Polys · 60 FPS</div>
+            </div>
+          </div>
+
+          <div class="cad-controls-panel">
+            <div>
+              <label style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Select 3D Model Asset</label>
+              <div class="cad-btn-strip" style="margin-top:6px;">
+                <button class="cad-selector-btn active" onclick="loadCadModel('robot', 'assets/models/animated/RobotExpressive.glb', '🤖 RobotExpressive.glb', '▲ 14,200 Polys · SkinnedMesh')">🤖 Sentinel Robot</button>
+                <button class="cad-selector-btn" onclick="loadCadModel('damaged', 'assets/models/scifi/DamagedHelmet.glb', '🪖 DamagedHelmet.glb', '▲ 24,600 Polys · PBR Roughness')">🪖 Damaged Helmet</button>
+                <button class="cad-selector-btn" onclick="loadCadModel('scifi', 'assets/models/scifi/SciFiHelmet.glb', '🛡️ SciFiHelmet.glb', '▲ 18,300 Polys · Normal Map')">🛡️ SciFi Helmet</button>
+                <button class="cad-selector-btn" onclick="loadCadModel('buggy', 'assets/models/scifi/Buggy.glb', '🏎️ Buggy.glb', '▲ 32,100 Polys · MeshStandard')">🏎️ Buggy Rover</button>
+                <button class="cad-selector-btn" onclick="loadCadModel('lantern', 'assets/models/scifi/Lantern.glb', '🏮 Lantern.glb', '▲ 8,400 Polys · Emissive')">🏮 Lantern</button>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Viewport Render Mode</label>
+              <div class="cad-btn-strip" style="margin-top:6px;">
+                <button class="cad-selector-btn active" id="mode-pbr" onclick="setRenderMode('pbr')">✨ Solid PBR</button>
+                <button class="cad-selector-btn" id="mode-wire" onclick="setRenderMode('wireframe')">🕸️ Wireframe</button>
+                <button class="cad-selector-btn" id="mode-points" onclick="setRenderMode('points')">✨ Point Cloud</button>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Atmospheric Lighting Preset</label>
+              <div class="cad-btn-strip" style="margin-top:6px;">
+                <button class="cad-selector-btn active" onclick="setCadLighting('neon')">🌌 Cyber Neon</button>
+                <button class="cad-selector-btn" onclick="setCadLighting('gold')">☀️ Solar Flare</button>
+                <button class="cad-selector-btn" onclick="setCadLighting('void')">🌑 Void Black</button>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:8px;">
+              <a class="btn-primary" href="/studio/nexus-3d.html" onclick="playChime(700)">
+                <span>🧊</span> Open Full Nexus 3D Studio
+              </a>
+              <button class="btn-secondary" onclick="toggleAutoRotate()" id="btn-autorotate">
+                <span>🔄</span> Auto-Rotate: ON
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-num">01</div>
-          <h3 class="step-title">Download or Clone</h3>
-          <p class="step-body">
-            Run the 1-line curl installer for Linux/macOS, download the standalone Windows <code>.exe</code> / Linux <code>.AppImage</code>, or clone directly from GitHub.
-          </p>
-          <div style="margin-top: 14px;">
-            <a class="card-link" href="#downloads">View All Releases & Binaries →</a>
+      <!-- 2. Interactive In-Browser Sovereign Terminal Simulator -->
+      <section class="terminal-sim-section" id="terminal-sim">
+        <span class="section-tag">Interactive In-Browser CLI Sandbox</span>
+        <h2 style="font-family: var(--font-display); font-size: 2.2rem; color: #fff; margin-top: 4px;">Sovereign CLI & Tool Simulator</h2>
+        <p style="color: #94a3b8; font-size: 1rem; margin-top: 6px;">Test real CLI commands right in your browser. Experience tool discovery, multi-agent arbitration, and vault key derivation.</p>
+
+        <div class="term-quick-btns">
+          <button class="cad-selector-btn" onclick="runSimCommand('zoth scan --deep')">🔍 zoth scan --deep</button>
+          <button class="cad-selector-btn" onclick="runSimCommand('zoth consensus --topic &quot;Solana Bridge&quot;')">⚔️ zoth consensus</button>
+          <button class="cad-selector-btn" onclick="runSimCommand('zoth omnipost --render &quot;README.md&quot;')">🎬 zoth omnipost</button>
+          <button class="cad-selector-btn" onclick="runSimCommand('zoth vault derive --cost 64MiB')">🔐 zoth vault derive</button>
+          <button class="cad-selector-btn" onclick="runSimCommand('zoth doctor')">🩺 zoth doctor</button>
+          <button class="cad-selector-btn" onclick="clearTerminal()">🧹 clear</button>
+        </div>
+
+        <div class="terminal-window">
+          <div class="terminal-topbar">
+            <div class="terminal-dots">
+              <span class="term-dot" style="background:#ef4444;"></span>
+              <span class="term-dot" style="background:#f59e0b;"></span>
+              <span class="term-dot" style="background:#10b981;"></span>
+            </div>
+            <span style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">nullai@zoth-hub: ~ (Sovereign Loopback :8484)</span>
+            <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--emerald);">● Online</span>
+          </div>
+          <div class="terminal-body" id="term-output">
+            <div style="color:var(--cyan);">★ Zoth Studio Sovereign Terminal Simulator v2.6.0 ★</div>
+            <div style="color:#94a3b8;">Type 'help' or click any quick trigger button above to execute simulated commands.</div>
+            <div style="color:#64748b; margin-top:6px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+          </div>
+          <div class="terminal-input-row">
+            <span class="term-prompt">nullai@zoth:~$</span>
+            <input type="text" class="term-input" id="term-input-field" placeholder="Try typing 'zoth scan' or 'zoth doctor'..." onkeydown="handleTermKey(event)" />
+            <button class="copy-btn" onclick="executeCurrentInput()" style="padding:4px 12px; font-size:0.75rem;">Run ↵</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Interactive Swarm Bus Packet Flow Visualizer -->
+      <section class="swarm-bus-section" id="swarm-bus">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <span class="section-tag">Real-Time Autonomous Communication</span>
+            <h2 style="font-family: var(--font-display); font-size: 2.1rem; color: #fff; margin-top: 4px;">Multi-Agent Swarm Bus Stream</h2>
+            <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 4px;">Observe data packets traversing the loopback Swarm Bus between @antigravity, @grok, @hermes, and @ollama.</p>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--cyan); background:rgba(0,240,255,0.08); padding:6px 14px; border-radius:8px; border:1px solid var(--border);">
+            Throughput: <strong id="swarm-packet-rate">1,480 msg/sec</strong> · Latency: <strong style="color:var(--emerald);">0.42 ms</strong>
           </div>
         </div>
 
-        <div class="step-card">
-          <div class="step-num" style="color:var(--emerald);">02</div>
-          <h3 class="step-title">Start the Local Engine</h3>
-          <p class="step-body">
-            Execute <code>zoth</code> or double-click <code>zoth.bat</code>. The local orchestrator automatically starts the private Operator Deck on <code>http://127.0.0.1:8484/</code>.
-          </p>
-          <div style="margin-top: 14px;">
-            <span class="card-link" style="color:var(--emerald);">Zero Cloud Dependency · 127.0.0.1</span>
+        <div class="swarm-canvas-box">
+          <canvas id="swarm-bus-canvas"></canvas>
+        </div>
+      </section>
+
+      <!-- 4. Interactive AI Math Observability & Loss Curve Grapher -->
+      <section class="math-observatory-section" id="math-observatory">
+        <span class="section-tag">Neural Convergence Observability</span>
+        <h2 style="font-family: var(--font-display); font-size: 2.1rem; color: #fff; margin-top: 4px;">AI Mathematical Telemetry & Loss Curves</h2>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 4px;">Simulate gradient descent convergence, cross-entropy loss, and cosine learning rate schedules with live interactive controls.</p>
+
+        <div class="math-grid">
+          <div class="math-canvas-box">
+            <canvas id="math-curve-canvas"></canvas>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="slider-control">
+              <div class="slider-header">
+                <span>Training Progress (Epochs)</span>
+                <strong id="val-epoch" style="color:var(--cyan);">100 / 100</strong>
+              </div>
+              <input type="range" min="10" max="200" value="100" class="slider-input" id="slider-epoch" oninput="updateMathCurves()" />
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <span>Learning Rate (&eta;)</span>
+                <strong id="val-lr" style="color:var(--gold);">3e-4 (Cosine Decay)</strong>
+              </div>
+              <input type="range" min="1" max="10" value="3" class="slider-input" id="slider-lr" oninput="updateMathCurves()" />
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <span>Entropy Noise Scale (&sigma;)</span>
+                <strong id="val-noise" style="color:var(--magenta);">0.08</strong>
+              </div>
+              <input type="range" min="0" max="20" value="8" class="slider-input" id="slider-noise" oninput="updateMathCurves()" />
+            </div>
+
+            <div style="background:rgba(4,6,14,0.8); border:1px solid var(--border); border-radius:10px; padding:12px; font-family:var(--font-mono); font-size:0.76rem; color:#94a3b8;">
+              Loss Function: <span style="color:#fff;">$\mathcal{L}_{CE} = -\sum y_i \log(\hat{y}_i) + \lambda \|\theta\|_2^2$</span><br />
+              Convergence: <span style="color:var(--emerald);">Optimal Gradient Norm (g=0.0142)</span>
+            </div>
+
+            <a class="btn-primary" href="/studio/math-pillars.html" onclick="playChime(680)">
+              <span>📐</span> Explore Full Math Observability Studio
+            </a>
           </div>
         </div>
+      </section>
 
-        <div class="step-card">
-          <div class="step-num" style="color:var(--gold);">03</div>
-          <h3 class="step-title">Orchestrate & Build</h3>
-          <p class="step-body">
-            Chain 47+ local tools, arbitrate 3-agent swarms, sculpt 3D CAD worlds, load offline Ollama models, and forge 60 FPS viral videos with zero subscriptions.
-          </p>
-          <div style="margin-top: 14px;">
-            <a class="card-link" href="/showcase.html" style="color:var(--gold);">Explore 16 Studio Engines →</a>
+      <!-- 5. Interactive 3D Pet Companion Sandbox -->
+      <section class="pet-sandbox-section" id="pet-sandbox">
+        <span class="section-tag">Interactive AI Companions</span>
+        <h2 style="font-family: var(--font-display); font-size: 2.1rem; color: #fff; margin-top: 4px;">3D Companion Pet Roster</h2>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 6px;">Select any companion avatar to synthesize their acoustic resonance frequency and explore their doctrine specialization.</p>
+
+        <div class="pet-roster-grid">
+          <button class="pet-card-btn active" onclick="selectPet('kai', 520, '🐺 Kai (Cyber Shadow)', 'Lead orchestrator companion. Specializes in reconnaissance, loopback architecture, and fail-soft network diagnostics.')">
+            <span class="pet-avatar-icon">🐺</span>
+            <span class="pet-avatar-name">Kai</span>
+            <span class="pet-avatar-role">Orchestrator</span>
+          </button>
+          <button class="pet-card-btn" onclick="selectPet('draco', 680, '🐉 Draco (Solar Dragon)', 'High-throughput code compiler. Specializes in async DAG pipeline generation and GPU acceleration.')">
+            <span class="pet-avatar-icon">🐉</span>
+            <span class="pet-avatar-name">Draco</span>
+            <span class="pet-avatar-role">Compiler</span>
+          </button>
+          <button class="pet-card-btn" onclick="selectPet('ignis', 600, '🔥 Ignis (Phoenix)', 'Synthesis & video forge companion. Powers OmniPost 2.0 60 FPS video slideshow generation.')">
+            <span class="pet-avatar-icon">🔥</span>
+            <span class="pet-avatar-name">Ignis</span>
+            <span class="pet-avatar-role">Media Forge</span>
+          </button>
+          <button class="pet-card-btn" onclick="selectPet('athena', 780, '🦉 Athena (Owl of Aegis)', 'Cryptographic sentinel. Verifies Argon2id derivations, AST schemas, and loopback port containment.')">
+            <span class="pet-avatar-icon">🦉</span>
+            <span class="pet-avatar-name">Athena</span>
+            <span class="pet-avatar-role">Security</span>
+          </button>
+          <button class="pet-card-btn" onclick="selectPet('kitsune', 880, '🦊 Kitsune (Celestial Fox)', 'AEO & Answer Engine strategist. Generates machine-readable knowledge graphs and JSON-LD blueprints.')">
+            <span class="pet-avatar-icon">🦊</span>
+            <span class="pet-avatar-name">Kitsune</span>
+            <span class="pet-avatar-role">AEO Schema</span>
+          </button>
+          <button class="pet-card-btn" onclick="selectPet('pixel-neko', 960, '🐱 Pixel Neko', 'Retro pixel CAD sculptor. Generates 3D voxel assets and procedural wireframe primitives.')">
+            <span class="pet-avatar-icon">🐱</span>
+            <span class="pet-avatar-name">Pixel Neko</span>
+            <span class="pet-avatar-role">3D Voxels</span>
+          </button>
+          <button class="pet-card-btn" onclick="selectPet('pixel-shiba', 820, '🐕 Pixel Shiba', 'Local model manager. Interfaces offline Ollama weights, quantization, and context streaming.')">
+            <span class="pet-avatar-icon">🐕</span>
+            <span class="pet-avatar-name">Pixel Shiba</span>
+            <span class="pet-avatar-role">Ollama Model</span>
+          </button>
+        </div>
+
+        <div class="pet-brief-display">
+          <div class="pet-brief-info">
+            <h4 id="pet-brief-title">🐺 Kai (Cyber Shadow)</h4>
+            <p id="pet-brief-desc">Lead orchestrator companion. Specializes in reconnaissance, loopback architecture, and fail-soft network diagnostics.</p>
+          </div>
+          <div>
+            <a class="btn-primary" href="/pets/spawn-pets.html" onclick="playChime(880)">
+              <span>🚀</span> Launch 3D Sanctuary Viewer
+            </a>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- The 8 Core Studio Engines Visual Showcase -->
+      <!-- 8 Core Studio Engines Visual Showcase -->
       <section class="section-heading" id="showcase">
         <span class="section-tag">Interactive Media Gallery</span>
         <h2 class="section-title">The Zoth Studio Engine Arsenal</h2>
@@ -1417,63 +1834,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Interactive 3D Pet Companion Sandbox -->
-      <section class="pet-sandbox-section" id="pet-sandbox">
-        <span class="section-tag">Interactive AI Companions</span>
-        <h2 style="font-family: var(--font-display); font-size: 2.1rem; color: #fff; margin-top: 4px;">3D Companion Pet Roster</h2>
-        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 6px;">Select any companion avatar to synthesize their acoustic resonance frequency and explore their doctrine specialization.</p>
-
-        <div class="pet-roster-grid">
-          <button class="pet-card-btn active" onclick="selectPet('kai', 520, '🐺 Kai (Cyber Shadow)', 'Lead orchestrator companion. Specializes in reconnaissance, loopback architecture, and fail-soft network diagnostics.')">
-            <span class="pet-avatar-icon">🐺</span>
-            <span class="pet-avatar-name">Kai</span>
-            <span class="pet-avatar-role">Orchestrator</span>
-          </button>
-          <button class="pet-card-btn" onclick="selectPet('draco', 680, '🐉 Draco (Solar Dragon)', 'High-throughput code compiler. Specializes in async DAG pipeline generation and GPU acceleration.')">
-            <span class="pet-avatar-icon">🐉</span>
-            <span class="pet-avatar-name">Draco</span>
-            <span class="pet-avatar-role">Compiler</span>
-          </button>
-          <button class="pet-card-btn" onclick="selectPet('ignis', 600, '🔥 Ignis (Phoenix)', 'Synthesis & video forge companion. Powers OmniPost 2.0 60 FPS video slideshow generation.')">
-            <span class="pet-avatar-icon">🔥</span>
-            <span class="pet-avatar-name">Ignis</span>
-            <span class="pet-avatar-role">Media Forge</span>
-          </button>
-          <button class="pet-card-btn" onclick="selectPet('athena', 780, '🦉 Athena (Owl of Aegis)', 'Cryptographic sentinel. Verifies Argon2id derivations, AST schemas, and loopback port containment.')">
-            <span class="pet-avatar-icon">🦉</span>
-            <span class="pet-avatar-name">Athena</span>
-            <span class="pet-avatar-role">Security</span>
-          </button>
-          <button class="pet-card-btn" onclick="selectPet('kitsune', 880, '🦊 Kitsune (Celestial Fox)', 'AEO & Answer Engine strategist. Generates machine-readable knowledge graphs and JSON-LD blueprints.')">
-            <span class="pet-avatar-icon">🦊</span>
-            <span class="pet-avatar-name">Kitsune</span>
-            <span class="pet-avatar-role">AEO Schema</span>
-          </button>
-          <button class="pet-card-btn" onclick="selectPet('pixel-neko', 960, '🐱 Pixel Neko', 'Retro pixel CAD sculptor. Generates 3D voxel assets and procedural wireframe primitives.')">
-            <span class="pet-avatar-icon">🐱</span>
-            <span class="pet-avatar-name">Pixel Neko</span>
-            <span class="pet-avatar-role">3D Voxels</span>
-          </button>
-          <button class="pet-card-btn" onclick="selectPet('pixel-shiba', 820, '🐕 Pixel Shiba', 'Local model manager. Interfaces offline Ollama weights, quantization, and context streaming.')">
-            <span class="pet-avatar-icon">🐕</span>
-            <span class="pet-avatar-name">Pixel Shiba</span>
-            <span class="pet-avatar-role">Ollama Model</span>
-          </button>
-        </div>
-
-        <div class="pet-brief-display">
-          <div class="pet-brief-info">
-            <h4 id="pet-brief-title">🐺 Kai (Cyber Shadow)</h4>
-            <p id="pet-brief-desc">Lead orchestrator companion. Specializes in reconnaissance, loopback architecture, and fail-soft network diagnostics.</p>
-          </div>
-          <div>
-            <a class="btn-primary" href="/pets/spawn-pets.html" onclick="playChime(880)">
-              <span>🚀</span> Launch 3D Sanctuary Viewer
-            </a>
-          </div>
-        </div>
-      </section>
 
       <!-- Why Local-First Comparison -->
       <section class="comparison-section" id="comparison">
@@ -1676,7 +2036,7 @@
       </div>
     </footer>
 
-    <!-- Interactive Scripts: Three.js Hero Viewport, Particle Canvas, Hero HUD, Tab Switcher & Web Audio -->
+    <!-- Interactive Scripts: Three.js Hero Viewport, 3D CAD Studio, Particle Canvas, Terminal Sim, Swarm Bus, Math Observability & Web Audio -->
     <script>
       let audioEnabled = false;
       let audioCtx = null;
@@ -1715,7 +2075,9 @@
         } catch(e) {}
       }
 
+      // =========================================================================
       // 1. Kinetic Neural Particle Background Canvas
+      // =========================================================================
       (function initNeuralCanvas() {
         const canvas = document.getElementById('neural-canvas');
         if (!canvas) return;
@@ -1780,7 +2142,9 @@
         render();
       })();
 
+      // =========================================================================
       // 2. Embedded Three.js Hero 3D Prism Viewport
+      // =========================================================================
       (function initHero3DPrism() {
         const canvas = document.getElementById('hero-prism-canvas');
         if (!canvas || typeof THREE === 'undefined') return;
@@ -1793,7 +2157,6 @@
         renderer.setSize(canvas.clientWidth, canvas.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Create Holographic Prismatic Icosahedron + Wireframe Ring
         const geom = new THREE.IcosahedronGeometry(1.6, 1);
         const mat = new THREE.MeshStandardMaterial({
           color: 0x00f0ff,
@@ -1816,7 +2179,6 @@
         ringMesh.rotation.x = Math.PI / 3;
         scene.add(ringMesh);
 
-        // Lighting
         const lightA = new THREE.PointLight(0x00f0ff, 2.5, 50);
         lightA.position.set(5, 5, 5);
         scene.add(lightA);
@@ -1862,7 +2224,448 @@
         requestAnimationFrame(animate);
       })();
 
-      // 3. Hero HUD Topic Switcher
+      // =========================================================================
+      // 3. Interactive 3D CAD Omniverse Inspector & Model Studio
+      // =========================================================================
+      let cadScene, cadCamera, cadRenderer, cadControls, currentModelGroup;
+      let cadAutoRotate = true;
+      let currentRenderMode = 'pbr';
+      let cadLightA, cadLightB, cadLightAmbient;
+
+      (function initCadStudio() {
+        const canvas = document.getElementById('cad-model-canvas');
+        if (!canvas || typeof THREE === 'undefined') return;
+
+        cadScene = new THREE.Scene();
+        cadCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        cadCamera.position.set(0, 2, 6);
+
+        cadRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        cadRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        cadRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        if (typeof THREE.OrbitControls !== 'undefined') {
+          cadControls = new THREE.OrbitControls(cadCamera, rendererElement => canvas);
+          cadControls.enableDamping = true;
+          cadControls.dampingFactor = 0.05;
+          cadControls.maxDistance = 20;
+          cadControls.minDistance = 1;
+        }
+
+        // Lighting Rig
+        cadLightAmbient = new THREE.AmbientLight(0xffffff, 0.6);
+        cadScene.add(cadLightAmbient);
+
+        cadLightA = new THREE.DirectionalLight(0x00f0ff, 2.2);
+        cadLightA.position.set(5, 8, 5);
+        cadScene.add(cadLightA);
+
+        cadLightB = new THREE.DirectionalLight(0xff007a, 1.8);
+        cadLightB.position.set(-5, -4, -5);
+        cadScene.add(cadLightB);
+
+        // Ground Grid
+        const grid = new THREE.GridHelper(10, 20, 0x00f0ff, 0x1e293b);
+        grid.position.y = -1.2;
+        cadScene.add(grid);
+
+        currentModelGroup = new THREE.Group();
+        cadScene.add(currentModelGroup);
+
+        // Load Default Model
+        loadCadModel('robot', 'assets/models/animated/RobotExpressive.glb', '🤖 RobotExpressive.glb', '▲ 14,200 Polys · SkinnedMesh');
+
+        window.addEventListener('resize', () => {
+          if (!canvas.clientWidth || !canvas.clientHeight) return;
+          cadCamera.aspect = canvas.clientWidth / canvas.clientHeight;
+          cadCamera.updateProjectionMatrix();
+          cadRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        });
+
+        function animateCad() {
+          if (cadAutoRotate && currentModelGroup) {
+            currentModelGroup.rotation.y += 0.008;
+          }
+          if (cadControls) cadControls.update();
+          cadRenderer.render(cadScene, cadCamera);
+          requestAnimationFrame(animateCad);
+        }
+        requestAnimationFrame(animateCad);
+      })();
+
+      function loadCadModel(key, url, label, polyInfo) {
+        document.querySelectorAll('.cad-selector-btn').forEach(b => {
+          if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(key)) {
+            b.classList.add('active');
+          } else if (b.getAttribute('onclick') && b.getAttribute('onclick').includes('loadCadModel')) {
+            b.classList.remove('active');
+          }
+        });
+
+        document.getElementById('cad-asset-label').textContent = label;
+        document.getElementById('cad-poly-count').textContent = polyInfo;
+        playChime(640);
+
+        if (!currentModelGroup) return;
+        while (currentModelGroup.children.length > 0) {
+          currentModelGroup.remove(currentModelGroup.children[0]);
+        }
+
+        if (typeof THREE.GLTFLoader !== 'undefined') {
+          const loader = new THREE.GLTFLoader();
+          loader.load(
+            url,
+            (gltf) => {
+              const model = gltf.scene;
+              const box = new THREE.Box3().setFromObject(model);
+              const center = box.getCenter(new THREE.Vector3());
+              const size = box.getSize(new THREE.Vector3());
+              const maxDim = Math.max(size.x, size.y, size.z);
+              const scale = 2.4 / (maxDim || 1);
+              model.scale.set(scale, scale, scale);
+              model.position.sub(center.multiplyScalar(scale));
+              model.position.y += 0.2;
+              currentModelGroup.add(model);
+              applyRenderModeToGroup(model, currentRenderMode);
+            },
+            undefined,
+            (err) => {
+              // Fallback Procedural Cyber Mesh
+              const fallbackGeom = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
+              const fallbackMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, wireframe: currentRenderMode === 'wireframe' });
+              const fallbackMesh = new THREE.Mesh(fallbackGeom, fallbackMat);
+              currentModelGroup.add(fallbackMesh);
+            }
+          );
+        }
+      }
+
+      function setRenderMode(mode) {
+        currentRenderMode = mode;
+        ['pbr', 'wire', 'points'].forEach(m => {
+          const el = document.getElementById('mode-' + m);
+          if (el) el.classList.remove('active');
+        });
+        const activeBtn = document.getElementById('mode-' + (mode === 'wireframe' ? 'wire' : mode));
+        if (activeBtn) activeBtn.classList.add('active');
+        if (currentModelGroup) applyRenderModeToGroup(currentModelGroup, mode);
+        playChime(760);
+      }
+
+      function applyRenderModeToGroup(group, mode) {
+        group.traverse((child) => {
+          if (child.isMesh) {
+            if (mode === 'wireframe') {
+              child.material.wireframe = true;
+            } else {
+              child.material.wireframe = false;
+            }
+          }
+        });
+      }
+
+      function setCadLighting(preset) {
+        if (!cadLightA || !cadLightB) return;
+        if (preset === 'neon') {
+          cadLightA.color.setHex(0x00f0ff);
+          cadLightB.color.setHex(0xff007a);
+          cadLightAmbient.color.setHex(0x1e1b4b);
+        } else if (preset === 'gold') {
+          cadLightA.color.setHex(0xfbbf24);
+          cadLightB.color.setHex(0xf97316);
+          cadLightAmbient.color.setHex(0x451a03);
+        } else if (preset === 'void') {
+          cadLightA.color.setHex(0x38bdf8);
+          cadLightB.color.setHex(0x0284c7);
+          cadLightAmbient.color.setHex(0x0f172a);
+        }
+        playChime(580);
+      }
+
+      function toggleAutoRotate() {
+        cadAutoRotate = !cadAutoRotate;
+        const btn = document.getElementById('btn-autorotate');
+        if (btn) btn.innerHTML = `<span>🔄</span> Auto-Rotate: ${cadAutoRotate ? 'ON' : 'OFF'}`;
+        playChime(620);
+      }
+
+      // =========================================================================
+      // 4. In-Browser Sovereign Terminal Simulator
+      // =========================================================================
+      const SIM_COMMANDS = {
+        'zoth scan --deep': `Scanning 47 local sovereign tools & AST manifests...
+[✓] Core Engine: Python 3.11 + Starlette Runtime active on :8484
+[✓] Hardware Vault: Argon2id Daemon listening on :8787 (64MiB Memory Cost)
+[✓] Local LLM Daemon: Ollama (smollm2:360m, qwen2.5-coder:1.5b) connected
+[✓] 3D Omniverse: 956k indexed vertices across 42 GLTF / OBJ models
+[✓] Loopback Containment: 100% PASS (Zero Cloud Data Egress)`,
+
+        'zoth consensus --topic "Solana Bridge"': `[Arbitration Triggered] Topic: "Solana Bridge Anchor Program"
+├── @antigravity (Security): "Enforcing PDA signer verification & reentrancy locks."
+├── @grok (Performance): "Optimizing compute budget to 12,000 CUs per instruction."
+└── @hermes (AST Audit): "Validating IDL schema compliance & account serialization."
+[Consensus Reached]: Agreement Entropy H(P) = 1.240 bits · Code Contract Synthesized!`,
+
+        'zoth omnipost --render "README.md"': `[OmniPost 2.0 Video Forge] Parsing README.md...
+├── Generating 60 FPS Canvas Keyframes (1080x1920 9:16 + 1920x1080 16:9)
+├── Synthesizing Web Speech Acoustic Narration (Track 01: Sovereign AI)
+└── Video artifact exported: dist/zoth_showcase_60fps.mp4 (4.2 MB)`,
+
+        'zoth vault derive --cost 64MiB': `[Argon2id Vault Daemon] Deriving cryptographic master key...
+├── Params: Memory=65536 KiB · Iterations=3 · Parallelism=4
+├── Algorithm: Argon2id + XChaCha20-Poly1305 AEAD
+├── Memory Zeroization: 100% Cleared upon key export
+└── Key derived in 48.2 ms on local hardware.`,
+
+        'zoth doctor': `[Zoth Health Check Diagnostic]
+├── Loopback Port :8088 (Public Hub): READY
+├── Loopback Port :8484 (Operator Deck): READY
+├── Loopback Port :8787 (Vault Daemon): READY
+├── Loopback Port :11434 (Ollama AI): READY
+├── Git Remote Sync: NullAITech/zoth-studio (Clean)
+└── Status: 100% HEALTHY · Zero Cloud Vulnerabilities`,
+
+        'help': `Available Sovereign Commands:
+  • zoth scan --deep        Scan all 47 tools & local port health
+  • zoth consensus          Arbitrate 3-agent autonomous consensus
+  • zoth omnipost           Generate 60 FPS video slideshows from README
+  • zoth vault derive       Derive hardware keys via Argon2id
+  • zoth doctor             Perform system-wide health & security check
+  • clear                   Clear the terminal output screen`,
+
+        'clear': 'CLEAR'
+      };
+
+      function runSimCommand(cmd) {
+        const out = document.getElementById('term-output');
+        if (!out) return;
+
+        const cmdRow = document.createElement('div');
+        cmdRow.style.color = '#38bdf8';
+        cmdRow.style.marginTop = '8px';
+        cmdRow.innerHTML = `<strong>nullai@zoth:~$</strong> ${cmd}`;
+        out.appendChild(cmdRow);
+
+        playChime(660);
+
+        setTimeout(() => {
+          const res = SIM_COMMANDS[cmd] || `Command not found: "${cmd}". Type 'help' for available commands.`;
+          if (res === 'CLEAR') {
+            clearTerminal();
+            return;
+          }
+          const resRow = document.createElement('div');
+          resRow.style.color = '#f1f5f9';
+          resRow.style.whiteSpace = 'pre-wrap';
+          resRow.style.marginBottom = '8px';
+          resRow.textContent = res;
+          out.appendChild(resRow);
+          out.scrollTop = out.scrollHeight;
+        }, 150);
+      }
+
+      function handleTermKey(e) {
+        if (e.key === 'Enter') {
+          executeCurrentInput();
+        }
+      }
+
+      function executeCurrentInput() {
+        const input = document.getElementById('term-input-field');
+        if (!input || !input.value.trim()) return;
+        const val = input.value.trim();
+        input.value = '';
+        runSimCommand(val);
+      }
+
+      function clearTerminal() {
+        const out = document.getElementById('term-output');
+        if (out) {
+          out.innerHTML = `<div style="color:var(--cyan);">★ Terminal Cleared ★</div>`;
+        }
+      }
+
+      // =========================================================================
+      // 5. Interactive Swarm Bus Packet Flow Visualizer
+      // =========================================================================
+      (function initSwarmBusCanvas() {
+        const canvas = document.getElementById('swarm-bus-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let width = (canvas.width = canvas.clientWidth || 800);
+        let height = (canvas.height = canvas.clientHeight || 300);
+
+        const nodes = [
+          { name: '@antigravity', x: 0.18, y: 0.5, color: '#00f0ff', role: 'Security Gate' },
+          { name: '@grok', x: 0.5, y: 0.22, color: '#fbbf24', role: 'Async Throughput' },
+          { name: '@hermes', x: 0.82, y: 0.5, color: '#a855f7', role: 'AST Audit' },
+          { name: '@ollama', x: 0.5, y: 0.78, color: '#10b981', role: 'Offline Weights' }
+        ];
+
+        const packets = [];
+        for (let i = 0; i < 16; i++) {
+          spawnPacket();
+        }
+
+        function spawnPacket() {
+          const from = Math.floor(Math.random() * nodes.length);
+          let to = Math.floor(Math.random() * nodes.length);
+          while (to === from) to = Math.floor(Math.random() * nodes.length);
+          packets.push({
+            from, to,
+            progress: Math.random(),
+            speed: 0.006 + Math.random() * 0.008,
+            size: 3 + Math.random() * 2
+          });
+        }
+
+        window.addEventListener('resize', () => {
+          if (!canvas.clientWidth || !canvas.clientHeight) return;
+          width = canvas.width = canvas.clientWidth;
+          height = canvas.height = canvas.clientHeight;
+        });
+
+        function renderBus() {
+          ctx.clearRect(0, 0, width, height);
+
+          // Draw Connecting Bus Lines
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.15)';
+          ctx.lineWidth = 1.5;
+          for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x * width, nodes[i].y * height);
+              ctx.lineTo(nodes[j].x * width, nodes[j].y * height);
+              ctx.stroke();
+            }
+          }
+
+          // Draw & Update Data Packets
+          for (let i = 0; i < packets.length; i++) {
+            const p = packets[i];
+            p.progress += p.speed;
+            if (p.progress >= 1) {
+              packets.splice(i, 1);
+              spawnPacket();
+              continue;
+            }
+
+            const nA = nodes[p.from];
+            const nB = nodes[p.to];
+            const px = (nA.x + (nB.x - nA.x) * p.progress) * width;
+            const py = (nA.y + (nB.y - nA.y) * p.progress) * height;
+
+            ctx.beginPath();
+            ctx.arc(px, py, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = nA.color;
+            ctx.shadowColor = nA.color;
+            ctx.shadowBlur = 10;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+
+          // Draw Agent Nodes
+          for (let i = 0; i < nodes.length; i++) {
+            const n = nodes[i];
+            const nx = n.x * width;
+            const ny = n.y * height;
+
+            ctx.beginPath();
+            ctx.arc(nx, ny, 22, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(14, 20, 36, 0.95)';
+            ctx.strokeStyle = n.color;
+            ctx.lineWidth = 2;
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.font = 'bold 11px IBM Plex Mono';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(n.name, nx, ny + 38);
+
+            ctx.font = '9px Figtree';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(n.role, nx, ny + 50);
+          }
+
+          requestAnimationFrame(renderBus);
+        }
+        renderBus();
+      })();
+
+      // =========================================================================
+      // 6. Interactive AI Math Observability & Loss Curve Grapher
+      // =========================================================================
+      function updateMathCurves() {
+        const canvas = document.getElementById('math-curve-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const width = (canvas.width = canvas.clientWidth || 600);
+        const height = (canvas.height = canvas.clientHeight || 320);
+
+        const epochs = parseInt(document.getElementById('slider-epoch').value, 10);
+        const lrVal = parseInt(document.getElementById('slider-lr').value, 10);
+        const noiseVal = parseInt(document.getElementById('slider-noise').value, 10) / 100;
+
+        document.getElementById('val-epoch').textContent = `${epochs} / 200`;
+        document.getElementById('val-lr').textContent = `${lrVal}e-4 (Cosine)`;
+        document.getElementById('val-noise').textContent = `${noiseVal.toFixed(2)}`;
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Grid Lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.lineWidth = 1;
+        for (let x = 40; x < width; x += 60) {
+          ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, height - 30); ctx.stroke();
+        }
+        for (let y = 30; y < height - 30; y += 40) {
+          ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 20, y); ctx.stroke();
+        }
+
+        // Draw Loss Curve (Cross-Entropy)
+        ctx.beginPath();
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 2.5;
+        const stepX = (width - 60) / epochs;
+
+        for (let e = 0; e <= epochs; e++) {
+          const t = e / epochs;
+          const loss = Math.exp(-t * (lrVal * 0.8)) * 0.85 + 0.12 + (Math.random() - 0.5) * noiseVal;
+          const px = 40 + e * stepX;
+          const py = (height - 30) - loss * (height - 80);
+          if (e === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Draw Cosine Learning Rate Schedule
+        ctx.beginPath();
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([4, 4]);
+        for (let e = 0; e <= epochs; e++) {
+          const t = e / epochs;
+          const lr = 0.5 * (1 + Math.cos(Math.PI * t)) * (lrVal / 10);
+          const px = 40 + e * stepX;
+          const py = (height - 30) - lr * (height - 100);
+          if (e === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Legend
+        ctx.font = '10px IBM Plex Mono';
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillText('■ Cross-Entropy Loss L(θ)', 50, 30);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('-- Cosine LR Decay η(t)', 230, 30);
+      }
+
+      // =========================================================================
+      // 7. Hero HUD Topic Switcher
+      // =========================================================================
       const HERO_DATA = {
         ratelimit: {
           code: `class SovereignRateLimiter:\n    def __init__(self, max_req=100, window=60):\n        self.buckets = {}\n    def check_limit(self, client_ip):\n        hashed = hashlib.sha256(client_ip.encode()).hexdigest()[:16]\n        # Tri-agent synthesis: Sliding window + SHA-256 isolation`,
@@ -1898,7 +2701,9 @@
         playChime(640);
       }
 
-      // 4. Quick Install Tab Switcher & Clipboard Copy
+      // =========================================================================
+      // 8. Quick Install Tab Switcher & Clipboard Copy
+      // =========================================================================
       const INSTALL_COMMANDS = {
         linux: "curl -fsSL https://raw.githubusercontent.com/NullAITech/zoth-studio/main/scripts/install.sh | bash",
         windows: "irm https://raw.githubusercontent.com/NullAITech/zoth-studio/main/scripts/install.ps1 | iex",
@@ -1935,7 +2740,9 @@
         });
       }
 
-      // 5. Interactive Pet Companion Selector
+      // =========================================================================
+      // 9. Interactive Pet Companion Selector
+      // =========================================================================
       function selectPet(petId, freq, title, desc) {
         document.querySelectorAll('.pet-card-btn').forEach(b => b.classList.remove('active'));
         if (event && event.currentTarget) {
@@ -1946,7 +2753,9 @@
         playChime(freq);
       }
 
-      // 6. Floating Action Bar on Scroll
+      // =========================================================================
+      // 10. Floating Action Bar on Scroll
+      // =========================================================================
       window.addEventListener('scroll', () => {
         const floatBar = document.getElementById('floating-bar');
         if (!floatBar) return;
@@ -1959,6 +2768,7 @@
 
       window.addEventListener('DOMContentLoaded', () => {
         selectHeroTopic('ratelimit');
+        updateMathCurves();
       });
     </script>
   </body>
