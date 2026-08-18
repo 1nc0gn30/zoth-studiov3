@@ -6,7 +6,7 @@
     <title>Studio — Zoth</title>
     <meta
       name="description"
-      content="Studio is the working surface. Chat with Zoth, plan in Adytum, then build a site on this machine."
+      content="Studio is a door. Name a site on this machine after you install the binary. Plan in Adytum, then pour the brief here."
     />
     <link rel="canonical" href="https://zoth.nullai.tech/studio/" />
     <meta name="theme-color" content="#050508" />
@@ -28,156 +28,217 @@
         --font-display: Fraunces, "Iowan Old Style", Palatino, serif;
         --font-sans: Inter, system-ui, sans-serif;
         --font-mono: "JetBrains Mono", ui-monospace, monospace;
+        --pad: clamp(20px, 4vw, 48px);
       }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { background: var(--bg); color: var(--text); font-family: var(--font-sans); }
+      body { overflow-x: hidden; }
       a { color: inherit; }
-      img { display: block; max-width: 100%; }
-      .skip { position: absolute; left: 14px; top: -48px; background: var(--gold); color: #111; padding: 8px 12px; }
-      .skip:focus { top: 12px; z-index: 20; }
+      img, video { display: block; max-width: 100%; }
+      .skip { position: absolute; left: 14px; top: -48px; background: var(--gold); color: #111; padding: 8px 12px; z-index: 80; }
+      .skip:focus { top: 12px; }
 
       header.bar {
-        position: absolute; inset: 0 0 auto; z-index: 8;
-        display: flex; align-items: center; gap: 18px; padding: 18px 22px;
+        position: fixed; inset: 0 0 auto; z-index: 40;
+        display: flex; align-items: center; gap: 18px;
+        padding: 14px var(--pad);
+        transition: background 0.3s ease, border-color 0.3s ease;
+        border-bottom: 1px solid transparent;
       }
-      .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+      header.bar.on {
+        background: rgba(5, 5, 8, 0.88);
+        backdrop-filter: blur(18px);
+        border-bottom-color: var(--line);
+      }
+      .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
       .brand img {
-        width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
-        border: 1px solid rgba(232, 200, 114, 0.4);
+        width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+        border: 1px solid rgba(232, 200, 114, 0.45);
       }
-      .brand strong { display: block; font-family: var(--font-display); font-size: 1.15rem; letter-spacing: -0.03em; font-weight: 600; }
+      .brand strong { display: block; font-family: var(--font-display); font-size: 1.18rem; letter-spacing: -0.03em; font-weight: 600; }
       .brand small {
         display: block; color: var(--gold); font-family: var(--font-mono);
-        font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+        font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
       }
-      nav.menu { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; }
+      nav.menu { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-left: auto; align-items: center; }
       nav.menu a {
-        text-decoration: none; font-family: var(--font-mono); font-size: 0.72rem;
-        letter-spacing: 0.08em; text-transform: uppercase; color: #c8c4d6; padding: 6px 0;
-        position: relative;
+        text-decoration: none; font-family: var(--font-mono); font-size: 0.7rem;
+        font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+        color: #c8c4d6; padding: 8px 0; position: relative;
       }
       nav.menu a::after {
-        content: ""; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px;
+        content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
         background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.28s ease;
       }
       nav.menu a:hover, nav.menu a.on { color: var(--text); }
       nav.menu a:hover::after, nav.menu a.on::after { transform: scaleX(1); }
+      .burger {
+        display: none; margin-left: auto;
+        background: none; border: 1px solid var(--line); color: var(--text);
+        font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em;
+        text-transform: uppercase; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+      }
+      .drawer {
+        display: none; position: fixed; inset: 0; z-index: 38;
+        background: #050508; padding: 96px var(--pad) 40px;
+        flex-direction: column; gap: 6px;
+      }
+      body.menu-open .drawer { display: flex; }
+      .drawer a {
+        text-decoration: none; font-family: var(--font-display);
+        font-size: clamp(1.8rem, 8vw, 2.6rem); letter-spacing: -0.03em;
+        padding: 8px 0; border-bottom: 1px solid var(--line);
+      }
+      .drawer a:hover { color: var(--gold); }
 
       .hero {
         position: relative; min-height: 100svh;
         display: flex; align-items: flex-end;
       }
-      .hero .stage { position: absolute; inset: 0; overflow: hidden; }
-      .hero .media {
+      .stage { position: absolute; inset: 0; overflow: hidden; }
+      .media {
         position: absolute; inset: 0; width: 100%; height: 100%;
-        object-fit: cover; object-position: 72% 40%;
-        animation: ken 28s ease-in-out infinite alternate;
+        object-fit: cover;
       }
+      .hero .media { object-position: 72% 38%; }
       .hero .shade {
         position: absolute; inset: 0;
         background:
-          linear-gradient(90deg, rgba(5,5,8,0.86) 0%, rgba(5,5,8,0.42) 48%, rgba(5,5,8,0.12) 78%),
-          linear-gradient(180deg, rgba(5,5,8,0.2) 0%, #050508 100%);
+          linear-gradient(90deg, rgba(5,5,8,0.9) 0%, rgba(5,5,8,0.5) 42%, rgba(5,5,8,0.08) 74%),
+          linear-gradient(180deg, rgba(5,5,8,0.28) 0%, rgba(5,5,8,0.08) 40%, #050508 100%);
       }
-      .copy {
+      .col {
         position: relative; z-index: 2;
-        width: min(40rem, calc(100% - 40px));
-        padding: 0 22px 56px;
-        animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+        width: min(36rem, calc(100% - 40px));
+        padding: 0 var(--pad) 80px;
+        animation: rise 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
       }
+      .hair { width: 42px; height: 1px; background: var(--gold); margin-bottom: 16px; opacity: 0.85; }
       .kicker {
         font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.18em;
         text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
       }
       h1 {
         font-family: var(--font-display); font-weight: 600;
-        font-size: clamp(2.8rem, 7vw, 5.2rem);
-        letter-spacing: -0.04em; line-height: 0.92;
+        font-size: clamp(3rem, 8vw, 5.6rem);
+        letter-spacing: -0.045em; line-height: 0.9;
       }
-      .lede { margin: 14px 0 22px; color: var(--mute); line-height: 1.6; max-width: 26rem; }
-      .lede strong { color: var(--text); }
-
-      .doors { display: grid; gap: 0; margin: 8px 0 22px; }
-      .door {
-        display: grid; grid-template-columns: 7.5rem 1fr;
-        gap: 12px; align-items: baseline;
-        text-decoration: none; padding: 11px 0;
-        border-top: 1px solid var(--line);
-      }
-      .door:last-of-type { border-bottom: 1px solid var(--line); }
-      .door b {
-        font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; letter-spacing: -0.03em;
-      }
-      .door span { color: var(--mute); font-size: 0.92rem; }
-      .door:hover b { color: var(--gold); }
-
+      .lede { margin: 16px 0 26px; color: var(--mute); font-size: 1.06rem; line-height: 1.6; max-width: 24rem; }
+      .lede strong { color: var(--text); font-weight: 600; }
       .cta { display: flex; flex-wrap: wrap; gap: 10px; }
       .btn {
         display: inline-flex; align-items: center; text-decoration: none;
         font-family: var(--font-mono); font-weight: 600; font-size: 0.78rem;
-        border-radius: 999px; padding: 12px 18px;
+        letter-spacing: 0.04em; border-radius: 999px; padding: 12px 18px;
+        transition: transform 0.2s ease;
       }
+      .btn:hover { transform: translateY(-1px); }
       .btn-on { background: var(--gold); color: #14110a; }
       .btn-off { border: 1px solid var(--line); }
 
-      details { margin: 0 22px 64px; max-width: 40rem; }
-      summary {
-        cursor: pointer; font-family: var(--font-mono); font-size: 0.7rem;
+      .band {
+        position: relative; min-height: 78svh;
+        display: flex; align-items: flex-end;
+        text-decoration: none; color: inherit;
+      }
+      .band .media { object-position: center; transform: scale(1.03); transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+      .band:hover .media { transform: scale(1.07); }
+      .band .shade {
+        position: absolute; inset: 0;
+        background: linear-gradient(180deg, rgba(5,5,8,0.08) 0%, rgba(5,5,8,0.5) 50%, #050508 100%);
+      }
+      .band .col { padding: 56px var(--pad) 64px; width: min(42rem, 100%); animation: none; }
+      .band h2 {
+        font-family: var(--font-display); font-weight: 600;
+        font-size: clamp(2.1rem, 5vw, 3.5rem);
+        letter-spacing: -0.035em; line-height: 0.96;
+      }
+      .band p { margin-top: 12px; color: var(--mute); max-width: 30rem; line-height: 1.6; }
+      .go {
+        display: inline-block; margin-top: 18px;
+        font-family: var(--font-mono); font-size: 0.72rem;
         letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold);
       }
-      .more { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 14px; }
-      .more a {
-        text-decoration: none; color: var(--mute); font-size: 0.88rem;
-        border-bottom: 1px solid transparent;
+      .band.east { justify-content: flex-end; text-align: right; }
+      .band.east .col { margin-left: auto; }
+      .band.east .shade {
+        background:
+          linear-gradient(270deg, rgba(5,5,8,0.9) 0%, rgba(5,5,8,0.42) 46%, rgba(5,5,8,0.04) 78%),
+          linear-gradient(180deg, rgba(5,5,8,0.1) 0%, #050508 100%);
       }
-      .more a:hover { color: var(--text); border-bottom-color: var(--gold); }
+      .band.east p { margin-left: auto; }
+      .band.mid { text-align: center; }
+      .band.mid .col { margin-inline: auto; }
+      .band.mid p { margin-inline: auto; }
+      .band.mid .shade {
+        background: radial-gradient(ellipse at 50% 42%, rgba(5,5,8,0.08) 0%, rgba(5,5,8,0.55) 62%, #050508 100%);
+      }
 
-      footer {
-        display: flex; flex-wrap: wrap; gap: 12px 20px; justify-content: space-between;
-        padding: 22px; border-top: 1px solid var(--line);
-        font-family: var(--font-mono); font-size: 0.72rem; color: var(--mute);
+      .more {
+        padding: 72px var(--pad) 80px;
+        max-width: 72rem;
       }
-      footer a { text-decoration: none; }
-      footer a:hover { color: var(--text); }
+      .more h2 {
+        font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.4rem);
+        font-weight: 600; letter-spacing: -0.03em; margin: 10px 0 28px;
+      }
+      .rooms {
+        list-style: none;
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 0 48px;
+      }
+      .rooms a {
+        display: block; text-decoration: none;
+        padding: 18px 0; border-top: 1px solid var(--line);
+      }
+      .rooms b {
+        display: block; font-family: var(--font-display); font-size: 1.35rem;
+        font-weight: 600; letter-spacing: -0.03em;
+      }
+      .rooms span { display: block; margin-top: 4px; color: var(--mute); font-size: 0.92rem; }
+      .rooms a:hover b { color: var(--gold); }
+
+      footer.site {
+        border-top: 1px solid var(--line);
+        padding: 28px var(--pad);
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; color: var(--mute);
+      }
+      footer.site a { text-decoration: none; }
+      footer.site a:hover { color: var(--text); }
 
       @keyframes rise {
         from { opacity: 0; transform: translateY(18px); }
         to { opacity: 1; transform: none; }
       }
-      @keyframes ken {
-        from { transform: scale(1); }
-        to { transform: scale(1.05); }
-      }
       @media (max-width: 760px) {
-        header.bar { position: relative; background: var(--bg); }
-        .hero { min-height: calc(100svh - 72px); }
         nav.menu { display: none; }
-        .menu-open nav.menu {
-          display: flex; position: absolute; left: 0; right: 0; top: 100%;
-          background: rgba(5,5,8,0.96); padding: 12px 22px 18px; border-bottom: 1px solid var(--line);
+        .burger { display: inline-flex; }
+        .hero .media { object-position: 78% 32%; }
+        .hero .shade {
+          background: linear-gradient(180deg, rgba(5,5,8,0.28) 0%, rgba(5,5,8,0.08) 32%, rgba(5,5,8,0.8) 70%, #050508 100%);
         }
-        .burger {
-          margin-left: auto; background: none; border: 1px solid var(--line); color: var(--text);
-          font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em;
-          padding: 6px 10px; border-radius: 999px; cursor: pointer;
-        }
-        .door { grid-template-columns: 1fr; gap: 2px; }
+        .col { width: calc(100% - 16px); padding: 0 18px 36px; }
+        .band { min-height: 70svh; }
+        .band.east, .band.mid { text-align: left; }
+        .band.east .col, .band.mid .col { margin: 0; }
+        .rooms { grid-template-columns: 1fr; }
       }
-      @media (min-width: 761px) { .burger { display: none; } }
       @media (prefers-reduced-motion: reduce) {
-        .copy, .hero .media { animation: none; }
+        .col, .band .media { animation: none; transition: none; }
+        video { display: none; }
       }
     </style>
   </head>
   <body>
     <a class="skip" href="#main">Skip to main content</a>
-    <header class="bar">
+    <header class="bar" id="topbar">
       <a class="brand" href="/hub/">
-        <img src="/assets/brand/zoth-seal-master.jpg" alt="" width="34" height="34" />
+        <img src="/assets/brand/zoth-seal-master.jpg" alt="" width="36" height="36" />
         <span><strong>Zoth</strong><small>by NullAI</small></span>
       </a>
-      <button class="burger" type="button" aria-expanded="false" aria-controls="nav">Menu</button>
-      <nav class="menu" id="nav" aria-label="Primary">
+      <button class="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
+      <nav class="menu" aria-label="Primary">
         <a class="js-deck" href="http://127.0.0.1:8484/">Deck</a>
         <a class="on" href="/studio/">Studio</a>
         <a href="/studio/swarm.html">Swarm</a>
@@ -186,49 +247,109 @@
         <a href="/adytum/">Adytum</a>
       </nav>
     </header>
+    <nav class="drawer" id="drawer" aria-label="Mobile">
+      <a class="js-deck" href="http://127.0.0.1:8484/">Deck</a>
+      <a href="/studio/">Studio</a>
+      <a href="/studio/swarm.html">Swarm</a>
+      <a href="/pets/">Pets</a>
+      <a href="/vault/">Vault</a>
+      <a href="/adytum/">Adytum</a>
+      <a href="/hub/">Hub</a>
+    </nav>
 
-    <main id="main" class="hero">
-      <div class="stage">
-        <img class="media" src="/assets/media/land/studio-hero.jpg" alt="" width="1920" height="1080" />
-      </div>
-      <div class="shade"></div>
-      <div class="copy">
-        <p class="kicker">Studio · this machine</p>
-        <h1>The working surface.</h1>
-        <p class="lede">
-          This page is a door. Full Studio runs on your machine after you
-          install the binary for this device.
-        </p>
-        <div class="doors">
-          <a class="door js-deck" href="http://127.0.0.1:8484/"><b>Deck</b><span>Open chat</span></a>
-          <a class="door" href="/studio/swarm.html"><b>Swarm</b><span>Who is live</span></a>
-          <a class="door" href="/pets/"><b>Pets</b><span>Companions</span></a>
-          <a class="door" href="/vault/"><b>Vault</b><span>Local keys</span></a>
-          <a class="door" href="/adytum/"><b>Adytum</b><span>Plan first</span></a>
+    <main id="main">
+      <section class="hero" aria-label="Studio">
+        <div class="stage">
+          <video class="media" autoplay muted loop playsinline poster="/assets/media/land/studio-hero.jpg">
+            <source src="/assets/media/land/studio-hero.mp4" type="video/mp4" />
+          </video>
         </div>
-        <div class="cta">
-          <a class="btn btn-on js-deck" href="http://127.0.0.1:8484/">Open the deck</a>
-          <a class="btn btn-off" href="/hub/">Back to hub</a>
+        <div class="shade"></div>
+        <div class="col">
+          <div class="hair" aria-hidden="true"></div>
+          <p class="kicker">Studio · this machine</p>
+          <h1>Name a site.</h1>
+          <p class="lede">
+            This page is a door. Full Studio runs on your machine after you
+            install the binary. <strong>Plan in Adytum</strong>, then pour the brief here.
+          </p>
+          <div class="cta">
+            <a class="btn btn-on js-deck" href="http://127.0.0.1:8484/">Open the deck</a>
+            <a class="btn btn-off" href="/adytum/">Plan in Adytum</a>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <a class="band" href="/studio/swarm.html">
+        <div class="stage">
+          <video class="media" data-lazy muted loop playsinline poster="/assets/media/deck/swarm.jpg">
+            <source src="/assets/media/deck/swarm.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="shade"></div>
+        <div class="col">
+          <p class="kicker">Swarm</p>
+          <h2>Who is live on the bus.</h2>
+          <p>A map, not a dashboard. Only the agents that are actually here.</p>
+          <span class="go">Open Swarm →</span>
+        </div>
+      </a>
+
+      <a class="band east" href="/pets/">
+        <div class="stage">
+          <video class="media" data-lazy muted loop playsinline poster="/assets/media/hero-pet-roster.jpg">
+            <source src="/assets/media/hero-pet-roster.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="shade"></div>
+        <div class="col">
+          <p class="kicker">Hangar</p>
+          <h2>Sixteen jobs. Not mascots.</h2>
+          <p>Inspect, harden, index, remember. Open one when the work matches.</p>
+          <span class="go">Open the hangar →</span>
+        </div>
+      </a>
+
+      <a class="band mid" href="/adytum/">
+        <div class="stage">
+          <video class="media" data-lazy muted loop playsinline poster="/assets/media/land/adytum-wide.jpg">
+            <source src="/assets/media/land/adytum.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="shade"></div>
+        <div class="col">
+          <p class="kicker">Adytum</p>
+          <h2>Purpose first.</h2>
+          <p>Keys 0–21. When the coin is set, pour the brief into Studio.</p>
+          <span class="go">Enter Adytum →</span>
+        </div>
+      </a>
+
+      <section class="more">
+        <p class="kicker">Also on this machine</p>
+        <h2>The rest of the rooms.</h2>
+        <ul class="rooms">
+          <li><a href="/studio/swarm.html"><b>Swarm Arena</b><span>3D kinetic battle & boids flocking.</span></a></li>
+          <li><a href="/studio/bus-monitor.html"><b>Bus NOC</b><span>Sub-millisecond SSE stream & logs.</span></a></li>
+          <li><a href="/studio/agent-composer.html"><b>Composer</b><span>Wire multi-agent DAGs visually.</span></a></li>
+          <li><a href="/studio/consensus.html"><b>Consensus</b><span>3-Way AST debate & arbitration.</span></a></li>
+          <li><a href="/studio/math-pillars.html"><b>Math Academy</b><span>3-tier tensor observability & labs.</span></a></li>
+          <li><a href="/studio/models.html"><b>Model Foundry</b><span>GPU VRAM sizer & spirit matrix.</span></a></li>
+          <li><a href="/studio/mission-control.html"><b>Mission Control</b><span>Capability inventory & horizon.</span></a></li>
+          <li><a href="/studio/connectors.html"><b>Connectors</b><span>9 loopback & cloud edge adapters.</span></a></li>
+          <li><a href="/studio/omnipost.html"><b>OmniPost</b><span>60fps video forge & social repurposer.</span></a></li>
+          <li><a href="/studio/vision-link.html"><b>Vision Link</b><span>21-point hand tracking spatial HUD.</span></a></li>
+          <li><a href="/studio/brand.html"><b>Brand Vault</b><span>16-Mascot doctrine & SVG seals.</span></a></li>
+          <li><a href="/studio/chronicle.html"><b>Chronicle</b><span>Engineering milestones & roadmap.</span></a></li>
+          <li><a href="/vault/"><b>BYOK Vault</b><span>Argon2id encrypted key container.</span></a></li>
+          <li><a class="js-docs" href="/docs/"><b>Docs</b><span>Operator notes for port topology.</span></a></li>
+        </ul>
+      </section>
     </main>
 
-    <details>
-      <summary>More tools</summary>
-      <div class="more">
-        <a href="/studio/consensus.html">Consensus</a>
-        <a href="/studio/agent-composer.html">Composer</a>
-        <a href="/studio/models.html">Models</a>
-        <a href="/studio/math-pillars.html">Math</a>
-        <a href="/studio/omnipost.html">OmniPost</a>
-        <a href="/studio/chronicle.html">Chronicle</a>
-        <a href="/docs/">Docs</a>
-      </div>
-    </details>
-
-    <footer>
-      <span>Zoth · NullAI</span>
-      <span><a href="/hub/">Hub</a> · <a class="js-deck" href="http://127.0.0.1:8484/">Deck</a></span>
+    <footer class="site">
+      <span>Zoth · NullAI · this page is a preview</span>
+      <span><a href="/hub/">Hub</a> · <a class="js-deck" href="http://127.0.0.1:8484/">Deck</a> · <a href="/hub/#install">Install</a></span>
     </footer>
 
     <script src="/assets/zoth-gate.js"></script>
@@ -236,13 +357,41 @@
       (function () {
         var deck = location.port === "8484" ? "/" : "http://127.0.0.1:8484/";
         document.querySelectorAll(".js-deck").forEach(function (a) { a.setAttribute("href", deck); });
-        var bar = document.querySelector("header.bar");
+        if (location.port === "8484") {
+          document.querySelectorAll(".js-docs").forEach(function (a) {
+            a.setAttribute("href", "http://127.0.0.1:8088/docs/");
+          });
+        }
+        var bar = document.getElementById("topbar");
         var burger = document.querySelector(".burger");
+        function onScroll() { bar.classList.toggle("on", window.scrollY > 24); }
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
         if (burger) {
           burger.addEventListener("click", function () {
-            var open = bar.classList.toggle("menu-open");
+            var open = document.body.classList.toggle("menu-open");
             burger.setAttribute("aria-expanded", open ? "true" : "false");
+            burger.textContent = open ? "Close" : "Menu";
           });
+          document.querySelectorAll(".drawer a").forEach(function (a) {
+            a.addEventListener("click", function () {
+              document.body.classList.remove("menu-open");
+              burger.setAttribute("aria-expanded", "false");
+              burger.textContent = "Menu";
+            });
+          });
+        }
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) {
+          document.querySelectorAll("video").forEach(function (v) { v.removeAttribute("autoplay"); v.pause(); });
+        } else if ("IntersectionObserver" in window) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) e.target.play().catch(function () {});
+              else e.target.pause();
+            });
+          }, { threshold: 0.28 });
+          document.querySelectorAll("video[data-lazy]").forEach(function (v) { io.observe(v); });
         }
       })();
     </script>
