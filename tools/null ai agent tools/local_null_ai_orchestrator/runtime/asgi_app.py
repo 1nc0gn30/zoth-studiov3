@@ -1267,6 +1267,94 @@ async def api_preview_container_stop(request: Request) -> Response:
     return _json_response({"status": "stopped"})
 
 
+# ── AI Tools & Installer Routes ──
+
+async def api_tools_status(request: Request) -> Response:
+    try:
+        from runtime.tool_registry_installer import get_complete_tools_inventory
+        inv = get_complete_tools_inventory()
+        return _json_response(inv)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_tools_install(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    tool_id = (body or {}).get("tool_id", "")
+    try:
+        from runtime.tool_registry_installer import run_automated_installer
+        res = run_automated_installer(tool_id)
+        return _json_response(res)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+# ── Templates Engine Routes ──
+
+async def api_templates_catalog(request: Request) -> Response:
+    try:
+        from runtime.template_site_engine import get_template_catalog
+        return _json_response({"templates": get_template_catalog()})
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_templates_hydrate(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    template_id = (body or {}).get("templateId", "saas-vault")
+    custom_overrides = (body or {}).get("customOverrides", body or {})
+    try:
+        from runtime.template_site_engine import hydrate_site_template
+        pub_dir = _public_dir()
+        previews_dir = pub_dir / "previews"
+        previews_dir.mkdir(parents=True, exist_ok=True)
+        res = hydrate_site_template(template_id, custom_overrides, previews_dir)
+        return _json_response(res)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+# ── Drive Projects Vault Routes ──
+
+async def api_drive_projects(request: Request) -> Response:
+    try:
+        from runtime.drive_projects_vault import scan_all_drive_projects
+        return _json_response(scan_all_drive_projects())
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_drive_import(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    path_val = (body or {}).get("path", "")
+    try:
+        from runtime.drive_projects_vault import convert_project_to_template_blueprint
+        return _json_response(convert_project_to_template_blueprint(path_val))
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_studio_generate_site(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    try:
+        from runtime.swarm_site_generator import synthesize_swarm_website
+        pub_dir = _public_dir()
+        previews_dir = pub_dir / "previews"
+        previews_dir.mkdir(parents=True, exist_ok=True)
+        res = synthesize_swarm_website(body or {}, previews_dir)
+        return _json_response(res)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
 # ── Catch-all for unmatched API routes ──
 
 async def api_catchall(request: Request) -> Response:
@@ -1409,12 +1497,32 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         # Studio
         Route("/api/studio/frameworks", api_studio_frameworks),
         Route("/api/studio/projects", api_studio_projects),
+        # Studio & Fast Foundry
+        Route("/api/studio/frameworks", api_studio_frameworks),
+        Route("/api/studio/projects", api_studio_projects),
         Route("/api/studio/agent-status", api_studio_agent_status),
         Route("/api/studio/generate", api_studio_generate, methods=["POST"]),
+        Route("/api/studio/generate-site", api_studio_generate_site, methods=["POST"]),
+        Route("/api/swarm/generate-site", api_studio_generate_site, methods=["POST"]),
         Route("/api/studio/build", api_studio_build, methods=["POST"]),
         Route("/api/studio/deploy", api_studio_deploy, methods=["POST"]),
         Route("/api/studio/generate-prompt", api_studio_generate_prompt, methods=["POST"]),
         Route("/api/studio/assign-agents", api_studio_assign_agents, methods=["POST"]),
+
+        # AI Tools & Harnesses Installer
+        Route("/api/tools/status", api_tools_status),
+        Route("/api/ai-workbench/status", api_tools_status),
+        Route("/api/tools/install", api_tools_install, methods=["POST"]),
+        Route("/api/ai-workbench/install", api_tools_install, methods=["POST"]),
+
+        # Template Engine & Customizer
+        Route("/api/templates/catalog", api_templates_catalog),
+        Route("/api/templates/hydrate", api_templates_hydrate, methods=["POST"]),
+        Route("/api/templates/customize", api_templates_hydrate, methods=["POST"]),
+
+        # Drive Projects Vault
+        Route("/api/drive/projects", api_drive_projects),
+        Route("/api/drive/import-as-template", api_drive_import, methods=["POST"]),
 
         # Agents
         Route("/api/agents", api_agents, methods=["GET", "POST"]),

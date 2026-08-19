@@ -1175,6 +1175,50 @@ def command_serve(args: argparse.Namespace) -> int:
                     self._send_json({"error": str(e)}, 500)
                 return
 
+            if path in ("/api/templates/catalog", "/api/studio/templates"):
+                try:
+                    from runtime.template_site_engine import get_template_catalog
+                    self._send_json({"templates": get_template_catalog()})
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/drive/projects", "/api/projects/drive"):
+                try:
+                    from runtime.drive_projects_vault import scan_all_drive_projects
+                    self._send_json(scan_all_drive_projects())
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/tools/status", "/api/ai-workbench/status"):
+                try:
+                    from runtime.tool_registry_installer import get_complete_tools_inventory
+                    inv = get_complete_tools_inventory()
+                    # Backwards compatibility map for ai-workbench
+                    tools_map = {t["id"]: {"installed": t["installed"], "version": t["version"], "running": t.get("running", False), "install_cmd": t["install_cmd"]} for t in inv["tools"]}
+                    inv["tools_map"] = tools_map
+                    self._send_json(inv)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/tools/install", "/api/ai-workbench/install"):
+                content_len = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(content_len) if content_len else b"{}"
+                try:
+                    data = json.loads(body) if body else {}
+                except json.JSONDecodeError:
+                    data = {}
+                tool_id = data.get("tool_id", "")
+                try:
+                    from runtime.tool_registry_installer import run_automated_installer
+                    res = run_automated_installer(tool_id)
+                    self._send_json(res)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
             # ─── API: security scan-status ───
             if path == "/api/security/scan-status":
                 scan_file = REPORTS_DIR / "security-scan.json"
@@ -1185,109 +1229,6 @@ def command_serve(args: argparse.Namespace) -> int:
                         self._send_json({"status": "ok", "findings_count": 0, "high_count": 0, "medium_count": 0, "low_count": 0, "files_scanned": 0, "timestamp": ""})
                 else:
                     self._send_json({"status": "no_scan", "findings_count": 0, "high_count": 0, "medium_count": 0, "low_count": 0, "files_scanned": 0, "timestamp": ""})
-                return
-
-            # ─── API: AI Workbench ───
-            if path == "/api/ai-workbench/status":
-                import shutil as _shutil
-                # Ensure user paths are in PATH for tool discovery
-                _extra_paths = [
-                    os.path.expanduser("~/.local/bin"),
-                    os.path.expanduser("~/go/bin"),
-                    os.path.expanduser("~/.npm-global/bin"),
-                    "/usr/local/bin",
-                    "/snap/bin",
-                ]
-                _saved_path = os.environ.get("PATH", "")
-                os.environ["PATH"] = _saved_path + os.pathsep + os.pathsep.join(_extra_paths)
-                tools_status = {}
-                ai_tools = [
-                    ("codex", ["codex"], "npm install -g @openai/codex"),
-                    ("gemini", ["gemini"], "npm install -g @google/gemini-cli"),
-                    ("ollama", ["ollama"], "curl -fsSL https://ollama.com/install.sh | sh"),
-                    ("hexstrike", ["hexstrike_mcp", "hexstrike_server"], "sudo apt install hexstrike-ai"),
-                    ("aider", ["aider"], "pip install aider-chat"),
-                    ("openai-cli", ["openai"], "pip install openai"),
-                    ("copilot", ["github-copilot-cli", "copilot"], "npm install -g @githubnext/github-copilot-cli"),
-                    ("llm", ["llm"], "pip install llm"),
-                    ("fabric", ["fabric"], "pip install fabric"),
-                    ("continue", ["continue"], "code --install-extension continue.continue"),
-                    ("hermes", ["hermes"], "pip install hermes"),
-                    ("aicommit", ["aicommit"], "pip install aicommit"),
-                ]
-                # Directories to search for tool binaries (Parrot OS + user local)
-                _search_dirs = [
-                    "/usr/local/bin", "/usr/local/sbin", "/usr/bin", "/usr/sbin",
-                    "/bin", "/sbin", "/snap/bin",
-                    os.path.expanduser("~/.local/bin"),
-                    os.path.expanduser("~/go/bin"),
-                    os.path.expanduser("~/.npm-global/bin"),
-                ]
-                for tool_id, cmds, install_cmd in ai_tools:
-                    found = False
-                    ver = None
-                    for cmd in cmds:
-                        # Try shutil.which first
-                        p = _shutil.which(cmd)
-                        # Fall back to direct path search
-                        if not p:
-                            for d in _search_dirs:
-                                candidate = os.path.join(d, cmd)
-                                if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
-                                    p = candidate
-                                    break
-                        if p:
-                            found = True
-                            try:
-                                result = subprocess.run([p, "--version"], capture_output=True, text=True, timeout=5, check=False)
-                                ver = (result.stdout or result.stderr or "").strip().split("\n")[0][:60]
-                            except Exception:
-                                ver = None
-                            break
-                    # Special: check ollama server
-                    if tool_id == "ollama" and found:
-                        try:
-                            s = __import__("socket").socket(__import__("socket").AF_INET, __import__("socket").SOCK_STREAM)
-                            s.settimeout(2)
-                            ollama_running = s.connect_ex(("127.0.0.1", 11434)) == 0
-                            s.close()
-                        except Exception:
-                            ollama_running = False
-                        tools_status[tool_id] = {"installed": True, "version": ver, "running": ollama_running, "install_cmd": install_cmd}
-                    else:
-                        tools_status[tool_id] = {"installed": found, "version": ver, "install_cmd": install_cmd}
-                # Restore original PATH
-                os.environ["PATH"] = _saved_path
-                self._send_json({"tools": tools_status})
-                return
-
-            if path == "/api/ai-workbench/install":
-                content_len = int(self.headers.get("Content-Length", 0))
-                body = self.rfile.read(content_len) if content_len else b"{}"
-                try:
-                    data = json.loads(body) if body else {}
-                except json.JSONDecodeError:
-                    data = {}
-                tool_id = data.get("tool_id", "")
-                install_cmd = data.get("install_cmd", "")
-                if not install_cmd:
-                    self._send_json({"error": "install_cmd required"}, 400)
-                    return
-                # Expand PATH for the install process too
-                _extra_paths = [
-                    os.path.expanduser("~/.local/bin"),
-                    os.path.expanduser("~/go/bin"),
-                    os.path.expanduser("~/.npm-global/bin"),
-                    "/usr/local/bin",
-                    "/snap/bin",
-                ]
-                install_env = os.environ.copy()
-                install_env["PATH"] = install_env.get("PATH", "") + os.pathsep + os.pathsep.join(_extra_paths)
-                try:
-                    proc = subprocess.Popen(install_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=install_env)
-                    self._send_json({"status": "started", "pid": proc.pid, "tool_id": tool_id, "install_cmd": install_cmd})
-                except Exception as e:
-                    self._send_json({"error": str(e)}, 500)
                 return
 
             if path == "/api/ai-workbench/run":
@@ -1513,6 +1454,49 @@ def command_serve(args: argparse.Namespace) -> int:
                     from runtime.sandbox_engine import create_and_build_project
                     result = create_and_build_project(project_name, instructions, selected_options)
                     self._send_json(result)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            # ─── API: swarm generate-site (Multi-Agent Synthesizer) ───
+            if path in ("/api/swarm/generate-site", "/api/studio/generate-site"):
+                try:
+                    from runtime.swarm_site_generator import synthesize_swarm_website
+                    if ZOTH_PUBLIC_DIR and ZOTH_PUBLIC_DIR.exists():
+                        previews_dir = ZOTH_PUBLIC_DIR / "previews"
+                    else:
+                        previews_dir = ORCH_DIR.parent / "public" / "previews"
+                    previews_dir.mkdir(parents=True, exist_ok=True)
+                    res = synthesize_swarm_website(data, previews_dir)
+                    self._send_json(res)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            # ─── API: template hydrate & customize ───
+            if path in ("/api/templates/hydrate", "/api/templates/customize", "/api/studio/hydrate"):
+                template_id = data.get("templateId", "saas-vault")
+                custom_overrides = data.get("customOverrides", data)
+                try:
+                    from runtime.template_site_engine import hydrate_site_template
+                    if ZOTH_PUBLIC_DIR and ZOTH_PUBLIC_DIR.exists():
+                        previews_dir = ZOTH_PUBLIC_DIR / "previews"
+                    else:
+                        previews_dir = ORCH_DIR.parent / "public" / "previews"
+                    previews_dir.mkdir(parents=True, exist_ok=True)
+                    res = hydrate_site_template(template_id, custom_overrides, previews_dir)
+                    self._send_json(res)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            # ─── API: drive import as template ───
+            if path in ("/api/drive/import-as-template", "/api/projects/import-as-template"):
+                project_path = data.get("path", "")
+                try:
+                    from runtime.drive_projects_vault import convert_project_to_template_blueprint
+                    res = convert_project_to_template_blueprint(project_path)
+                    self._send_json(res)
                 except Exception as e:
                     self._send_json({"error": str(e)}, 500)
                 return

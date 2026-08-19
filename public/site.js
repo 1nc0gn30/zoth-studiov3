@@ -395,41 +395,166 @@
     setTimeout(runProbes, 400);
   }
 
-  /* ---------- Count-up stats ---------- */
-  const counters = [...document.querySelectorAll('[data-count]')];
-  if (counters.length) {
-    const runCount = (el) => {
-      const target = parseFloat(el.dataset.count || '0');
-      const suffix = el.dataset.suffix || '';
-      if (reduce) {
-        el.textContent = `${target}${suffix}`;
-        return;
-      }
-      const start = performance.now();
-      const dur = 1200;
-      const tick = (now) => {
-        const t = Math.min(1, (now - start) / dur);
-        const eased = 1 - Math.pow(1 - t, 3);
-        const val = Math.round(target * eased);
-        el.textContent = `${val}${suffix}`;
-        if (t < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
-    if ('IntersectionObserver' in window) {
-      const cio = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            runCount(entry.target);
-            cio.unobserve(entry.target);
-          });
-        },
-        { threshold: 0.5 }
-      );
-      counters.forEach((el) => cio.observe(el));
-    } else {
-      counters.forEach(runCount);
+  /* ---------- AI Tools Matrix & OS-Aware Installer ---------- */
+  let activeToolData = null;
+  let currentToolOS = 'linux';
+  let toolsInventory = [];
+
+  const initToolMatrix = async () => {
+    const grid = document.getElementById('tool-logo-grid');
+    if (!grid) return;
+
+    // Detect browser OS
+    const navPlat = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+    if (navPlat.includes('mac')) currentToolOS = 'macos';
+    else if (navPlat.includes('win')) currentToolOS = 'windows';
+    else currentToolOS = 'linux';
+
+    const osBadge = document.getElementById('matrix-os-badge');
+    if (osBadge) {
+      const osNames = { linux: '🐧 Linux / Parrot OS', macos: '🍎 macOS', windows: '🪟 Windows' };
+      osBadge.textContent = `Host OS: ${osNames[currentToolOS] || 'Linux'}`;
     }
+
+    // Try fetching live tools status from local orchestrator
+    try {
+      const res = await fetch('http://127.0.0.1:8484/api/tools/status');
+      if (res.ok) {
+        const data = await res.json();
+        toolsInventory = data.tools || [];
+        if (data.host_os) currentToolOS = data.host_os;
+      }
+    } catch (e) {
+      // Offline fallback
+    }
+
+    if (!toolsInventory.length) {
+      toolsInventory = [
+        { id: 'antigravity', name: 'Antigravity CLI', icon: '🐺', category: 'Security & AST', installed: true, version: '1.1.15', desc: 'Autonomous pair programming agent with deep AST invariants, security verification, and multi-agent cascades.', doc_route: '/docs/', github: 'https://github.com/google/antigravity', install_options: { linux: 'curl -fsSL https://antigravity.google.com/install.sh | bash', macos: 'brew install google/tap/antigravity', windows: 'irm https://antigravity.google.com/install.ps1 | iex' } },
+        { id: 'hermes', name: 'Hermes Agent', icon: '🐲', category: 'JSON Schemas', installed: true, version: '0.20.0', desc: 'Autonomous tool-calling agent with strict JSON schema compliance and multi-provider slots.', doc_route: '/docs/', github: 'https://github.com/NousResearch/Hermes-Agent', install_options: { linux: 'pip install --upgrade hermes-agent', macos: 'pip3 install hermes-agent', windows: 'pip install hermes-agent' } },
+        { id: 'grok', name: 'Grok Build CLI', icon: '🦊', category: 'High-Throughput', installed: true, version: '1.0.5', desc: 'High-velocity streaming code generator with GitHub Octokit harness and instant TUI.', doc_route: '/docs/', github: 'https://github.com/xai-org/grok-cli', install_options: { linux: 'npm install -g @xai/grok-cli || cargo install grok-cli', macos: 'npm install -g @xai/grok-cli', windows: 'npm install -g @xai/grok-cli' } },
+        { id: 'claude', name: 'Claude Code', icon: '🟣', category: 'Reasoning', installed: false, version: 'Not Detected', desc: 'Agentic coding tool that navigates codebases, edits files, and executes commands with deep reasoning.', doc_route: '/docs/', github: 'https://github.com/anthropics/claude-code', install_options: { linux: 'npm install -g @anthropic-ai/claude-code', macos: 'npm install -g @anthropic-ai/claude-code', windows: 'npm install -g @anthropic-ai/claude-code' } },
+        { id: 'opencode', name: 'OpenCode', icon: '🧩', category: 'Fullstack Agent', installed: true, version: '2026.4.11', desc: 'Open agent execution protocol with full-stack DAG orchestrator and containerized tool execution.', doc_route: '/docs/', github: 'https://github.com/openclaw-ai/opencode', install_options: { linux: 'pip install opencode-ai || npm install -g opencode', macos: 'pip3 install opencode-ai', windows: 'pip install opencode-ai' } },
+        { id: 'codex', name: 'Codex CLI', icon: '🤖', category: 'Code Generator', installed: true, version: '0.135.0', desc: 'Structured code generation and migration assistant with strict syntax guarantees.', doc_route: '/docs/', github: 'https://github.com/openai/codex-cli', install_options: { linux: 'npm install -g @openai/codex', macos: 'npm install -g @openai/codex', windows: 'npm install -g @openai/codex' } },
+        { id: 'aider', name: 'Aider Coder', icon: '⚡', category: 'Git Pair Coder', installed: true, version: '0.86.2', desc: 'AI pair programming in your terminal, with automated git commits and AST diff patching.', doc_route: '/docs/', github: 'https://github.com/paul-gauthier/aider', install_options: { linux: 'pip install aider-chat', macos: 'brew install aider || pip install aider-chat', windows: 'pip install aider-chat' } },
+        { id: 'ollama', name: 'Ollama Local', icon: '🦙', category: 'Local Neural', installed: true, version: '0.30.10', desc: 'Run open-weight frontier models completely offline on 127.0.0.1:11434.', doc_route: '/docs/', github: 'https://github.com/ollama/ollama', install_options: { linux: 'curl -fsSL https://ollama.com/install.sh | sh', macos: 'brew install ollama', windows: 'winget install Ollama.Ollama' } },
+        { id: 'lafvin', name: 'Lafvin Companion', icon: '🦾', category: 'ESP32 Hardware', installed: false, version: 'Not Detected', desc: 'Physical desktop companion bridge with ST7789 TFT screen rendering and DSP audio chime.', doc_route: '/docs/', github: 'https://github.com/NullAITech/zoth-studio', install_options: { linux: 'pip install pyserial edge-tts Pillow', macos: 'pip3 install pyserial edge-tts Pillow', windows: 'pip install pyserial edge-tts Pillow' } },
+        { id: 'zoth-vault', name: 'Argon2id Vault', icon: '🔒', category: 'BYOK Vault', installed: false, version: 'Not Detected', desc: 'Rust-powered sovereign BYOK vault daemon keeping all API keys encrypted on loopback :8787.', doc_route: '/vault/index.html', github: 'https://github.com/NullAITech/zoth-studio', install_options: { linux: 'cargo build --release', macos: 'cargo build --release', windows: 'cargo build --release' } },
+        { id: 'subsweep', name: 'SubSweep OSINT', icon: '🔍', category: 'Recon & Surface', installed: false, version: 'Not Detected', desc: 'Fast attack surface discovery, TLS certificate monitoring, and security header auditing.', doc_route: '/studio/subsweep.html', github: 'https://github.com/NullAITech/zoth-studio', install_options: { linux: 'pip install requests dnspython cryptography', macos: 'pip3 install requests dnspython cryptography', windows: 'pip install requests dnspython cryptography' } },
+        { id: 'radare2', name: 'Radare2 (R2)', icon: '💀', category: 'Reverse Eng', installed: true, version: 'Installed', desc: 'Advanced UNIX reverse engineering framework and command-line disassembler.', doc_route: '/docs/', github: 'https://github.com/radareorg/radare2', install_options: { linux: 'sudo apt install radare2', macos: 'brew install radare2', windows: 'winget install radareorg.radare2' } }
+      ];
+    }
+
+    grid.innerHTML = '';
+    toolsInventory.forEach((tool, idx) => {
+      const card = document.createElement('div');
+      card.className = `tool-logo-card ${idx === 0 ? 'active' : ''}`;
+      card.dataset.id = tool.id;
+      
+      const isInst = !!tool.installed;
+      const statusBadge = isInst
+        ? `<span class="tool-logo-status online">🟢 Ready</span>`
+        : `<span class="tool-logo-status offline">🟡 Install</span>`;
+
+      card.innerHTML = `
+        <span class="tool-logo-icon">${tool.icon || '🤖'}</span>
+        <span class="tool-logo-name">${tool.name}</span>
+        ${statusBadge}
+      `;
+
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.tool-logo-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        showToolInspector(tool);
+      });
+
+      grid.appendChild(card);
+    });
+
+    if (toolsInventory.length) {
+      showToolInspector(toolsInventory[0]);
+    }
+  };
+
+  function showToolInspector(tool) {
+    activeToolData = tool;
+    const card = document.getElementById('tool-inspector-card');
+    if (!card) return;
+    card.style.display = 'block';
+
+    document.getElementById('tool-insp-emoji').textContent = tool.icon || '🤖';
+    document.getElementById('tool-insp-title').textContent = tool.name;
+    document.getElementById('tool-insp-category').textContent = tool.category || 'AI Agent';
+    document.getElementById('tool-insp-desc').textContent = tool.desc || '';
+    
+    const isInst = !!tool.installed;
+    const statusText = document.getElementById('tool-insp-status-text');
+    if (statusText) {
+      statusText.innerHTML = isInst
+        ? `<span style="color:#34d399;">🟢 Installed (${tool.version || 'Active'})</span>`
+        : `<span style="color:#fbbf24;">🟡 Not Detected on Host — Ready to Install</span>`;
+    }
+
+    const docLink = document.getElementById('tool-doc-link');
+    if (docLink) docLink.href = tool.doc_route || '/docs/';
+    const gitLink = document.getElementById('tool-git-link');
+    if (gitLink) gitLink.href = tool.github || 'https://github.com/NullAITech/zoth-studio';
+
+    updateToolCmdBox();
   }
+
+  function updateToolCmdBox() {
+    if (!activeToolData) return;
+    const cmd = activeToolData.install_options?.[currentToolOS] || activeToolData.install_cmd || activeToolData.install_options?.linux || 'curl -fsSL https://nullai.tech/install.sh | bash';
+    const codeEl = document.getElementById('tool-insp-cmd');
+    if (codeEl) codeEl.textContent = cmd;
+
+    document.querySelectorAll('.tool-os-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.os === currentToolOS);
+    });
+  }
+
+  window.switchToolOS = function(osKey) {
+    currentToolOS = osKey;
+    updateToolCmdBox();
+  };
+
+  window.copyToolCommand = function() {
+    const codeEl = document.getElementById('tool-insp-cmd');
+    if (!codeEl) return;
+    navigator.clipboard.writeText(codeEl.textContent).then(() => {
+      const btn = document.getElementById('tool-copy-btn');
+      if (btn) {
+        btn.textContent = '✓ Copied';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      }
+    });
+  };
+
+  window.triggerAutoInstall = async function() {
+    if (!activeToolData) return;
+    const msg = document.getElementById('install-stream-msg');
+    if (msg) {
+      msg.style.display = 'block';
+      msg.textContent = `⏳ Initiating automated install for ${activeToolData.name}...`;
+    }
+
+    try {
+      const res = await fetch('http://127.0.0.1:8484/api/tools/install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool_id: activeToolData.id })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (msg) msg.textContent = `🚀 [Started PID ${data.pid}] Running: ${data.install_cmd}`;
+      } else {
+        throw new Error('Local install endpoint unavailable');
+      }
+    } catch (err) {
+      if (msg) msg.textContent = `ℹ️ Copy command above and run in your terminal: ${document.getElementById('tool-insp-cmd').textContent}`;
+    }
+  };
+
+  initToolMatrix();
 })();

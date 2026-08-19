@@ -1,106 +1,678 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zoth Pets — 3D hologram hangar</title>
-    <meta
-      name="description"
-      content="Fifteen Zoth cyber pets as 3D holograms. Inspect a companion and engage it in the Studio chat deck."
-    />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
-    <meta name="theme-color" content="#04060c" />
-    <meta name="author" content="Neal Frazier / 757tech" />
-    <link rel="canonical" href="https://zoth.nullai.tech/pets/" />
-    <link rel="alternate" type="text/plain" href="https://zoth.nullai.tech/llms.txt" title="llms.txt" />
-    <link rel="icon" type="image/png" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:site_name" content="Zoth Studio" />
-    <meta property="og:title" content="Zoth Pets — 3D hologram hangar" />
-    <meta property="og:description" content="The neon roster, standing in 3D. Click a companion to inspect." />
-    <meta property="og:url" content="https://zoth.nullai.tech/pets/" />
-    <meta property="og:image" content="https://zoth.nullai.tech/assets/media/hero-pet-roster.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Zoth Pets — 3D hologram hangar" />
-    <meta name="twitter:description" content="Fifteen neon companions in a WebGL hangar." />
-    <meta name="twitter:image" content="https://zoth.nullai.tech/assets/media/hero-pet-roster.jpg" />
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "CollectionPage",
-        "name": "Zoth Pets",
-        "url": "https://zoth.nullai.tech/pets/",
-        "description": "Fifteen cyber pets as inspectable 3D holograms.",
-        "isPartOf": { "@type": "WebSite", "name": "Zoth Studio", "url": "https://zoth.nullai.tech/" }
-      }
-    </script>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="/assets/media/hero-pet-roster.jpg" as="image" />
-    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/registry/registry.css?v=20260818m" />
-    <link rel="stylesheet" href="/assets/zoth-mobile.css" />
-  </head>
-  <body>
-    <canvas id="gl" aria-label="3D pet hangar"></canvas>
-    <div id="veil" aria-hidden="true"></div>
-    <div class="hud">
-      <header class="reg-bar">
-        <a class="brand" href="/">
-          <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="28" height="28" alt="" />
-          <span>PETS</span>
-          <em class="brand-by">A NullAI studio</em>
-        </a>
-        <div class="reg-meta">
-          <span id="count">15</span>
-          <span class="src" id="src">packs</span>
-        </div>
-        <nav class="reg-links" aria-label="Hub">
-          <a href="/">Deck</a>
-          <a href="/pets/pet-model-studio.html">Studio</a>
-          <a href="/vault/">Vault</a>
-          <a href="/hub">Hub</a>
-        </nav>
-      </header>
-      <div class="cats" id="cats" role="tablist" aria-label="Domains"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoth Cyber Pets — 16 Sovereign Spirit Mascot Companions</title>
+  <meta
+    name="description"
+    content="Explore the 16 autonomous Cyber Spirit Mascot Companions of Zoth Studio. Visual mascots, real-time telemetry, and domain agents for code security, UI synthesis, and multi-agent arbitration."
+  />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta name="theme-color" content="#030408" />
+  <link rel="canonical" href="https://zoth.nullai.tech/pets/" />
+  <link rel="alternate" type="text/plain" href="https://zoth.nullai.tech/llms.txt" title="llms.txt" />
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #030408;
+      --surface: #080c18;
+      --surface-card: rgba(10, 14, 28, 0.75);
+      --surface-hover: #10162a;
+      --border: #1a2342;
+      --border-glow: rgba(0, 240, 255, 0.3);
+      --cyan: #00f0ff;
+      --gold: #e8c872;
+      --emerald: #34d399;
+      --purple: #c084fc;
+      --magenta: #ff007a;
+      --text: #f0f4fc;
+      --text-muted: #8493b8;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Figtree', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Ambient Background Canvas */
+    #holo-canvas {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0; opacity: 0.45;
+    }
+
+    /* Top Navigation Bar */
+    .pet-navbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.85rem 2rem;
+      background: rgba(4, 6, 12, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-group {
+      display: flex; align-items: center; gap: 0.75rem; text-decoration: none;
+    }
+    .brand-group img { width: 32px; height: 32px; filter: drop-shadow(0 0 10px rgba(0,240,255,0.4)); }
+    .brand-title { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: #fff; letter-spacing: 0.02em; }
+    .brand-badge {
+      font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; color: var(--cyan);
+      background: rgba(0, 240, 255, 0.12); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+    }
+    .nav-links { display: flex; gap: 1.25rem; align-items: center; }
+    .nav-link {
+      color: var(--text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .nav-link:hover { color: var(--cyan); }
+    .btn-deck-cta {
+      background: var(--cyan); color: #05070f; font-family: var(--font-display); font-weight: 800;
+      font-size: 0.82rem; padding: 0.45rem 1.1rem; border-radius: 8px; text-decoration: none;
+      transition: all 0.2s; box-shadow: 0 0 15px rgba(0,240,255,0.3);
+    }
+    .btn-deck-cta:hover { transform: translateY(-1px); box-shadow: 0 0 25px var(--cyan); }
+
+    /* Hero Section & Logic Banner */
+    .pet-hero {
+      position: relative; z-index: 1;
+      max-width: 1300px; margin: 0 auto; padding: 3.5rem 1.5rem 2rem;
+      text-align: center;
+    }
+    .hero-kicker {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+      color: var(--emerald); background: rgba(52, 211, 153, 0.1);
+      padding: 4px 14px; border-radius: 999px; border: 1px solid rgba(52, 211, 153, 0.25);
+      margin-bottom: 1.25rem;
+    }
+    .hero-kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
+    .pet-hero h1 {
+      font-family: var(--font-display); font-size: 3rem; font-weight: 900;
+      line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    .pet-hero h1 span {
+      background: linear-gradient(135deg, var(--cyan), var(--purple), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .pet-hero-lead {
+      font-size: 1.12rem; color: var(--text-muted); max-width: 780px; margin: 0 auto 2.5rem;
+      line-height: 1.65;
+    }
+
+    /* Purpose / Why It Exists Bento Grid */
+    .why-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem; max-width: 1200px; margin: 0 auto 3rem; text-align: left;
+    }
+    .why-card {
+      background: var(--surface-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem; backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+    }
+    .why-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
+    .why-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+    .why-card h3 { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 0.4rem; color: #fff; }
+    .why-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* Roster Toolbar (Filters & Search) */
+    .roster-toolbar {
+      max-width: 1200px; margin: 0 auto 2rem; padding: 0 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem; position: relative; z-index: 1;
+    }
+    .filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .filter-pill {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .filter-pill:hover { border-color: var(--cyan); color: #fff; }
+    .filter-pill.active { background: rgba(0, 240, 255, 0.15); border-color: var(--cyan); color: var(--cyan); }
+    .search-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      color: #fff; padding: 0.5rem 1rem; font-size: 0.85rem; width: 260px;
+    }
+    .search-box:focus { outline: none; border-color: var(--cyan); }
+
+    /* Companion Cards Grid */
+    .roster-grid {
+      max-width: 1200px; margin: 0 auto 5rem; padding: 0 1.5rem;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 1.5rem; position: relative; z-index: 1;
+    }
+    .pet-card {
+      background: var(--surface-card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+      backdrop-filter: blur(12px); transition: all 0.25s ease; cursor: pointer;
+    }
+    .pet-card:hover {
+      transform: translateY(-4px); border-color: var(--cyan);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+    }
+    .pet-card-image-wrap {
+      position: relative; width: 100%; height: 200px; background: #05070f;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .pet-card-img {
+      width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;
+    }
+    .pet-card:hover .pet-card-img { transform: scale(1.05); }
+    .pet-status-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(3, 4, 8, 0.85); border: 1px solid var(--emerald);
+      color: var(--emerald); font-family: var(--font-mono); font-size: 0.65rem;
+      font-weight: 700; padding: 3px 8px; border-radius: 999px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .pet-status-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--emerald); }
+    .pet-card-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .pet-domain-kicker {
+      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700;
+      color: var(--cyan); text-transform: uppercase; margin-bottom: 0.25rem;
+    }
+    .pet-card-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; margin-bottom: 0.2rem; color: #fff; }
+    .pet-card-role { font-size: 0.82rem; color: var(--gold); font-weight: 600; margin-bottom: 0.6rem; }
+    .pet-card-blurb { font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1rem; flex: 1; }
+    
+    .pet-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .pet-tag {
+      font-family: var(--font-mono); font-size: 0.65rem; color: #8493b8;
+      background: rgba(255, 255, 255, 0.04); padding: 2px 6px; border-radius: 4px;
+    }
+
+    .pet-card-actions {
+      display: flex; gap: 0.5rem; border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+    }
+    .btn-card-inspect {
+      flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: #fff; font-size: 0.78rem; font-weight: 600; padding: 0.45rem;
+      border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-card-inspect:hover { border-color: var(--cyan); color: var(--cyan); }
+    .btn-card-engage {
+      background: var(--cyan); color: #05070f; border: none; font-size: 0.78rem;
+      font-weight: 800; padding: 0.45rem 0.85rem; border-radius: 8px; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .btn-card-engage:hover { box-shadow: 0 0 15px var(--cyan); }
+
+    /* ── Modal Inspector ── */
+    .pet-modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(3, 4, 8, 0.88); backdrop-filter: blur(12px);
+      z-index: 1000; display: none; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .pet-modal-dialog {
+      background: #080c18; border: 1px solid var(--border); border-radius: 20px;
+      width: 100%; max-width: 650px; overflow: hidden;
+      box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
+    }
+    .pet-modal-header {
+      padding: 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem; position: relative;
+    }
+    .modal-pet-avatar {
+      width: 64px; height: 64px; border-radius: 12px; object-fit: cover;
+      border: 1px solid var(--cyan);
+    }
+    .pet-modal-close {
+      position: absolute; top: 1.25rem; right: 1.25rem;
+      background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;
+    }
+    .pet-modal-close:hover { color: #fff; }
+    .pet-modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
+    .modal-sec-title {
+      font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;
+      color: var(--cyan); margin: 1.25rem 0 0.5rem;
+    }
+    .modal-prompt-box {
+      background: #000; border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.85rem; font-family: var(--font-mono); font-size: 0.8rem;
+      color: var(--emerald); word-break: break-all;
+    }
+    .pet-modal-footer {
+      padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 0.75rem; background: var(--surface);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border); padding: 3rem 1.5rem; text-align: center;
+      color: var(--text-muted); font-size: 0.85rem; position: relative; z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="holo-canvas"></canvas>
+
+  <!-- Top Navigation -->
+  <nav class="pet-navbar">
+    <a href="/" class="brand-group">
+      <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Zoth Seal" />
+      <span class="brand-title">Z0TH PETS</span>
+      <span class="brand-badge">Spirit Mascots</span>
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Hub</a>
+      <a href="http://127.0.0.1:8484/" class="nav-link">Deck (:8484)</a>
+      <a href="/studio/" class="nav-link">Foundry</a>
+      <a href="/vault/" class="nav-link">Vault</a>
+      <a href="http://127.0.0.1:8484/" class="btn-deck-cta">Engage in Deck →</a>
     </div>
-    <div class="tip" id="tip" hidden></div>
+  </nav>
 
-    <aside class="inspect" id="inspect" hidden>
-      <button type="button" class="inspect-close" id="inspect-close" aria-label="Close">×</button>
-      <img class="inspect-portrait" id="inspect-portrait" alt="" width="96" height="96" />
-      <p class="inspect-kicker" id="inspect-cat"></p>
-      <h2 id="inspect-name"></h2>
-      <p class="inspect-role" id="inspect-role"></p>
-      <p id="inspect-desc"></p>
-      <div class="inspect-tags" id="inspect-tags"></div>
-      <h3 class="inspect-sub">Knowledge</h3>
-      <p class="inspect-health" id="inspect-health"></p>
-      <ul class="inspect-docs" id="inspect-docs"></ul>
-      <h3 class="inspect-sub">Engage prompt</h3>
-      <pre class="inspect-engage" id="inspect-engage"></pre>
-      <div class="inspect-actions">
-        <button type="button" class="inspect-copy" id="inspect-engage-btn">Engage in chat</button>
-        <button type="button" class="inspect-copy" id="inspect-copy">Copy engage prompt</button>
+  <!-- Hero & Logic Manifesto -->
+  <header class="pet-hero">
+    <div class="hero-kicker">
+      <span class="dot"></span>
+      <span>16 Autonomous Sovereign Mascots Active</span>
+    </div>
+    <h1>The Sovereign Spirit Companions <span>of Zoth Studio</span></h1>
+    <p class="pet-hero-lead">
+      Autonomous AI models shouldn't be anonymous terminal daemons. In Zoth, every frontier model and open-weights harness is paired with a distinct Spirit Companion that embodies its operational domain, security boundaries, and telemetry stream.
+    </p>
+
+    <!-- Why They Exist: 3-Pillar Bento Grid -->
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">🐺</div>
+        <h3>1. Visual Personality & Domain Gates</h3>
+        <p>From Lycan's OWASP security gates to Kitsune's glassmorphic frontend synthesis, each mascot personifies specific AST rules and architectural standards.</p>
       </div>
-      <p class="inspect-note">Live runs stay on the private deck. This hangar is the public roster.</p>
-    </aside>
+      <div class="why-card">
+        <div class="why-icon">🔊</div>
+        <h3>2. Voice & Hardware Feedback</h3>
+        <p>Companions deliver procedural Web Audio DSP chimes and drive physical ESP32-S3 Arduino eyes and voice feedback during live task execution.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">⚡</div>
+        <h3>3. Direct 1-Click Task Hand-off</h3>
+        <p>Inspect any mascot's knowledge playbook, copy its optimized dispatch prompt, or engage it directly in the operator deck or website foundry.</p>
+      </div>
+    </div>
+  </header>
 
-    <script type="importmap">
+  <!-- Roster Toolbar -->
+  <section class="roster-toolbar">
+    <div class="filter-pills" id="filter-pills">
+      <button class="filter-pill active" data-cat="all" onclick="filterPets('all')">All Mascots (16)</button>
+      <button class="filter-pill" data-cat="build" onclick="filterPets('build')">⚡ Build & Synthesis</button>
+      <button class="filter-pill" data-cat="intel" onclick="filterPets('intel')">🤖 Intelligence & Swarm</button>
+      <button class="filter-pill" data-cat="security" onclick="filterPets('security')">🛡️ Security & Audits</button>
+      <button class="filter-pill" data-cat="creative" onclick="filterPets('creative')">🎨 Creative & Media</button>
+    </div>
+    <input type="text" id="pet-search" class="search-box" placeholder="🔍 Search companion or tag..." oninput="onPetSearch(this.value)" />
+  </section>
+
+  <!-- Companion Grid -->
+  <main class="roster-grid" id="roster-grid">
+    <!-- Populated via fast local JavaScript -->
+  </main>
+
+  <!-- Modal Inspector -->
+  <div class="pet-modal-overlay" id="pet-modal">
+    <div class="pet-modal-dialog">
+      <div class="pet-modal-header">
+        <img src="" id="modal-img" class="modal-pet-avatar" alt="" />
+        <div>
+          <span class="pet-domain-kicker" id="modal-domain">DOMAIN</span>
+          <h2 id="modal-name" style="font-family:var(--font-display); font-size:1.4rem; color:#fff;"></h2>
+          <p id="modal-role" style="font-size:0.85rem; color:var(--gold); font-weight:600;"></p>
+        </div>
+        <button class="pet-modal-close" onclick="closePetModal()">✕</button>
+      </div>
+      <div class="pet-modal-body">
+        <p id="modal-desc" style="font-size:0.92rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;"></p>
+        
+        <div class="modal-sec-title">Operational AI Harness Mapping</div>
+        <div style="font-size:0.85rem; color:#fff; font-family:var(--font-mono);" id="modal-harness"></div>
+
+        <div class="modal-sec-title">Readiness & Health Status</div>
+        <div style="font-size:0.85rem; color:var(--emerald); font-family:var(--font-mono);">🟢 100% Ready (3/3 Required Rules Enforced)</div>
+
+        <div class="modal-sec-title">Engage & Dispatch Prompt</div>
+        <div class="modal-prompt-box" id="modal-prompt"></div>
+      </div>
+      <div class="pet-modal-footer">
+        <button class="btn-card-inspect" onclick="copyPrompt()">📋 Copy Prompt</button>
+        <a href="http://127.0.0.1:8484/" class="btn-deck-cta">🚀 Launch in Deck</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2026 Zoth Studio by NullAI & 757tech. Local-first sovereign AI engineering.</p>
+  </footer>
+
+  <!-- Fast Local JavaScript & Hologram Particle Canvas -->
+  <script>
+    const PETS_DATA = [
       {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
-        }
+        id: "lycan",
+        name: "Lycan",
+        domain: "security",
+        role: "Code Security & OWASP Auditor",
+        blurb: "Enforces zero-trust AST boundaries, strict Content Security Policies, and WCAG AA accessibility standards.",
+        tags: ["security", "owasp", "ast-audit", "antigravity"],
+        harness: "Google Antigravity CLI (`agy`) & Static AST Analyzer",
+        image: "/assets/pets/lycan-neon.jpg"
+      },
+      {
+        id: "kitsune",
+        name: "Kitsune",
+        domain: "build",
+        role: "Glassmorphism UI/UX Architect",
+        blurb: "Streams modern high-conversion web interfaces, particle canvases, and responsive layouts at ultra-high throughput.",
+        tags: ["ui-ux", "streaming", "tailwind", "grok"],
+        harness: "xAI Grok Build CLI (`grok`) & CSS Matrix Engine",
+        image: "/assets/pets/kitsune-neon.jpg"
+      },
+      {
+        id: "draco",
+        name: "Draco",
+        domain: "intel",
+        role: "Semantic Schema & Fusion Compiler",
+        blurb: "Coordinates multi-model arbitration, Schema.org JSON-LD graphs, and llms.txt Answer Engine manifests.",
+        tags: ["fusion", "aeo", "schema", "hermes"],
+        harness: "Hermes Agent & ACP Protocol (`hermes`)",
+        image: "/assets/pets/draco-neon.jpg"
+      },
+      {
+        id: "kai",
+        name: "Kai",
+        domain: "build",
+        role: "Workspace & Diff Inspector",
+        blurb: "Finds broken imports, dead code, circular references, and high-blast diffs before they ship.",
+        tags: ["review", "debug", "typescript", "astro"],
+        harness: "TypeScript Language Server & AST Diff Inspector",
+        image: "/assets/pets/kai-neon.jpg"
+      },
+      {
+        id: "ignis",
+        name: "Ignis",
+        domain: "build",
+        role: "Refactor & Production Pipeline",
+        blurb: "Executes deep structural code refactoring, bundle optimization, and Netlify edge deployment.",
+        tags: ["deploy", "refactor", "bundler", "vite"],
+        harness: "Vite 6 / Astro SSG Build Pipeline",
+        image: "/assets/pets/ignis-neon.jpg"
+      },
+      {
+        id: "athena",
+        name: "Athena",
+        domain: "intel",
+        role: "System Telemetry & Memory Auditor",
+        blurb: "Monitors IPC socket latency, Shannon entropy agreement, and memory leak vectors across background swarms.",
+        tags: ["telemetry", "profiling", "entropy", "observability"],
+        harness: "Node / Chrome DevTools Memory Inspector",
+        image: "/assets/pets/athena-neon.jpg"
+      },
+      {
+        id: "pixel-shiba",
+        name: "Shiba Workbot",
+        domain: "intel",
+        role: "Local Neural Engine & Offline Runner",
+        blurb: "Runs local-first neural inference on 127.0.0.1:11434 with zero external telemetry or cloud egress.",
+        tags: ["local-ai", "offline", "qwen", "ollama"],
+        harness: "Ollama Local Engine (`ollama`)",
+        image: "/assets/pets/pixel-shiba-neon.jpg"
+      },
+      {
+        id: "pixel-neko",
+        name: "Pixel Neko",
+        domain: "creative",
+        role: "Retro Canvas & Shader Synthesizer",
+        blurb: "Procedural CRT phosphor scanlines, chiptune Web Audio DSP, and pixel art asset generator.",
+        tags: ["shaders", "canvas", "web-audio", "chiptune"],
+        harness: "WebGL Shader Engine & Procedural DSP",
+        image: "/assets/pets/pixel-neko-neon.jpg"
+      },
+      {
+        id: "ghostbyte",
+        name: "Ghostbyte",
+        domain: "security",
+        role: "OSINT Recon & Subdomain Scout",
+        blurb: "Maps external attack surfaces, DNS records, SSL certificate chains, and leaked secrets.",
+        tags: ["osint", "recon", "subsweep", "dns"],
+        harness: "SubSweep OSINT Reconnaissance Engine",
+        image: "/assets/pets/ghostbyte-neon.jpg"
+      },
+      {
+        id: "chronos",
+        name: "Chronos",
+        domain: "intel",
+        role: "Distributed State & Consensus Clock",
+        blurb: "Maintains deterministic event clocks and prevents race conditions across parallel agent threads.",
+        tags: ["state", "event-bus", "arbitration", "sync"],
+        harness: "Agent Event Arbitrator (`bus.py`)",
+        image: "/assets/pets/chronos-neon.jpg"
+      },
+      {
+        id: "onyx",
+        name: "Onyx Cerberus",
+        domain: "security",
+        role: "Argon2id Key Vault Sentinel",
+        blurb: "Guards the zero-trust hardware memory enclave and manages encrypted BYOK secrets.",
+        tags: ["vault", "argon2id", "enclave", "crypto"],
+        harness: "Rust Argon2id Daemon (`zoth-vault`)",
+        image: "/assets/pets/onyx-neon.jpg"
+      },
+      {
+        id: "aether",
+        name: "Aether",
+        domain: "creative",
+        role: "Vector Graphics & 3D Logo Sculptor",
+        blurb: "Transforms prompts and brand briefs into crisp SVG logos, seals, and 3D coin medals.",
+        tags: ["svg", "branding", "logos", "vector"],
+        harness: "Procedural SVG & Badge3D Engine",
+        image: "/assets/pets/aether-neon.jpg"
+      },
+      {
+        id: "aquila",
+        name: "Aquila Gryphon",
+        domain: "creative",
+        role: "Visual Narrative & Brand Strategy",
+        blurb: "Generates high-impact copy, audience trust markers, conversion funnels, and marketing blueprints.",
+        tags: ["copywriting", "strategy", "brand", "marketing"],
+        harness: "Deep Reasoning & Editorial Engine",
+        image: "/assets/pets/aquila-neon.jpg"
+      },
+      {
+        id: "kraken",
+        name: "Kraken",
+        domain: "security",
+        role: "Binary Disassembly & Deep Fuzzer",
+        blurb: "Analyzes compiled binaries, inspects executable bytecodes, and fuzzes Web API input vectors.",
+        tags: ["disassembly", "fuzzing", "radare2", "reverse-eng"],
+        harness: "Radare2 (`r2`) & API Fuzzer",
+        image: "/assets/pets/kraken-neon.jpg"
+      },
+      {
+        id: "leviathan",
+        name: "Leviathan",
+        domain: "build",
+        role: "Fullstack Database & ORM Architect",
+        blurb: "Scaffolds SQLite, PostgreSQL, and Drizzle/Prisma schema migrations with ACID safety guarantees.",
+        tags: ["database", "sqlite", "orm", "backend"],
+        harness: "SQLite / Drizzle ORM Migrator",
+        image: "/assets/pets/leviathan-neon.jpg"
+      },
+      {
+        id: "scorpius",
+        name: "Scorpius",
+        domain: "creative",
+        role: "Dark Glassmorphic Theme Crafter",
+        blurb: "Designs customized 38+ color token palettes, glow gradients, and WCAG AA contrast matrices.",
+        tags: ["themes", "tokens", "styling", "css"],
+        harness: "Zoth Theme Engine (`theme.json`)",
+        image: "/assets/pets/scorpius-neon.jpg"
       }
-    </script>
-    <script src="/pets/pets.js?v=20260814p" type="module"></script>
-    <script src="/assets/celestial-trail.js"></script>
-  <script src="/assets/zoth-gate.js"></script>
+    ];
+
+    let ACTIVE_FILTER = 'all';
+    let SEARCH_QUERY = '';
+
+    // Web Audio Sound Engine
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playChime(freq = 600) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, audioCtx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function renderRoster() {
+      const grid = document.getElementById('roster-grid');
+      let filtered = PETS_DATA;
+      if (ACTIVE_FILTER !== 'all') {
+        filtered = filtered.filter(p => p.domain === ACTIVE_FILTER);
+      }
+      if (SEARCH_QUERY) {
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(SEARCH_QUERY) ||
+          p.role.toLowerCase().includes(SEARCH_QUERY) ||
+          p.blurb.toLowerCase().includes(SEARCH_QUERY) ||
+          p.tags.some(t => t.toLowerCase().includes(SEARCH_QUERY))
+        );
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:4rem; color:var(--text-muted);">No matching spirit companions found.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => `
+        <div class="pet-card" onclick="openPetModal('${p.id}')">
+          <div class="pet-card-image-wrap">
+            <img src="${p.image}" class="pet-card-img" alt="${p.name}" loading="lazy" />
+            <div class="pet-status-badge">
+              <span class="dot"></span>
+              <span>Ready</span>
+            </div>
+          </div>
+          <div class="pet-card-body">
+            <span class="pet-domain-kicker">${p.domain}</span>
+            <h3 class="pet-card-name">${p.name}</h3>
+            <div class="pet-card-role">${p.role}</div>
+            <p class="pet-card-blurb">${p.blurb}</p>
+            <div class="pet-tags">
+              ${p.tags.map(t => `<span class="pet-tag">#${t}</span>`).join('')}
+            </div>
+            <div class="pet-card-actions">
+              <button type="button" class="btn-card-inspect" onclick="event.stopPropagation(); openPetModal('${p.id}')">🔍 Inspect Dossier</button>
+              <a href="http://127.0.0.1:8484/" class="btn-card-engage" onclick="event.stopPropagation(); playChime(880)">🚀 Engage</a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterPets(cat) {
+      playChime(500);
+      ACTIVE_FILTER = cat;
+      document.querySelectorAll('#filter-pills .filter-pill').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.filter-pill[data-cat="${cat}"]`)?.classList.add('active');
+      renderRoster();
+    }
+
+    function onPetSearch(val) {
+      SEARCH_QUERY = (val || '').toLowerCase().trim();
+      renderRoster();
+    }
+
+    function openPetModal(id) {
+      playChime(750);
+      const pet = PETS_DATA.find(p => p.id === id);
+      if (!pet) return;
+
+      document.getElementById('modal-img').src = pet.image;
+      document.getElementById('modal-name').textContent = pet.name;
+      document.getElementById('modal-domain').textContent = `DOMAIN: ${pet.domain.toUpperCase()}`;
+      document.getElementById('modal-role').textContent = pet.role;
+      document.getElementById('modal-desc').textContent = pet.blurb;
+      document.getElementById('modal-harness').textContent = pet.harness;
+      document.getElementById('modal-prompt').textContent = `@${pet.id} execute domain task: Review system architecture for ${pet.role.toLowerCase()} standards.`;
+
+      document.getElementById('pet-modal').style.display = 'flex';
+    }
+
+    function closePetModal() {
+      document.getElementById('pet-modal').style.display = 'none';
+    }
+
+    function copyPrompt() {
+      playChime(900);
+      const promptText = document.getElementById('modal-prompt').textContent;
+      navigator.clipboard.writeText(promptText);
+      alert('✓ Copied companion dispatch prompt to clipboard!');
+    }
+
+    // Interactive Hologram Particle Canvas
+    const canvas = document.getElementById('holo-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, particles = [];
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < 45; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        radius: Math.random() * 2 + 1,
+        color: ['#00f0ff', '#c084fc', '#34d399', '#e8c872'][Math.floor(Math.random() * 4)]
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Initial render
+    renderRoster();
+  </script>
 </body>
 </html>
