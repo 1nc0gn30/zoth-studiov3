@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Azoth — operator of the box</title>
+    <meta
+      name="description"
+      content="Azoth is the operator of Zoth Studio. Mask on. He stays on this machine and explains the work in three lines."
+    />
+    <link rel="canonical" href="https://zoth.nullai.tech/zoth/" />
+    <meta name="theme-color" content="#050508" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://zoth.nullai.tech/zoth/" />
+    <meta property="og:title" content="Azoth — operator of the box" />
+    <meta property="og:description" content="The masked operator of Zoth Studio. Face of the mark. Voice on loopback." />
+    <meta property="og:image" content="https://zoth.nullai.tech/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://zoth.nullai.tech/og-image.jpg" />
+    <link rel="preload" href="/assets/mascot/azoth-hero.jpg" as="image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/zoth-tip.css" />
+    <link rel="stylesheet" href="/assets/zoth-guide.css" />
+    <style>
+      :root {
+        --bg: #050508;
+        --gold: #e8c872;
+        --text: #f7f4ee;
+        --mute: #a8a4c2;
+        --line: rgba(247, 244, 238, 0.1);
+        --font-display: Fraunces, "Iowan Old Style", Palatino, serif;
+        --font-sans: Inter, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, monospace;
+        --pad: clamp(20px, 4vw, 48px);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { background: var(--bg); color: var(--text); font-family: var(--font-sans); }
+      body { overflow-x: hidden; }
+      a { color: inherit; }
+      img, video { display: block; max-width: 100%; }
+      .skip { position: absolute; left: 14px; top: -48px; background: var(--gold); color: #111; padding: 8px 12px; z-index: 80; }
+      .skip:focus { top: 12px; }
+      header.bar {
+        position: fixed; inset: 0 0 auto; z-index: 40;
+        display: flex; align-items: center; gap: 18px;
+        padding: 14px var(--pad);
+        transition: background 0.3s ease, border-color 0.3s ease;
+        border-bottom: 1px solid transparent;
+      }
+      header.bar.on { background: rgba(5,5,8,0.88); backdrop-filter: blur(18px); border-bottom-color: var(--line); }
+      .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+      .brand img {
+        width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+        border: 1px solid rgba(232, 200, 114, 0.45);
+      }
+      .brand strong { display: block; font-family: var(--font-display); font-size: 1.18rem; letter-spacing: -0.03em; font-weight: 600; }
+      .brand small {
+        display: block; color: var(--gold); font-family: var(--font-mono);
+        font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      nav.menu { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-left: auto; align-items: center; }
+      nav.menu a {
+        text-decoration: none; font-family: var(--font-mono); font-size: 0.7rem;
+        font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+        color: #c8c4d6; padding: 8px 0; position: relative;
+      }
+      nav.menu a::after {
+        content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
+        background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.28s ease;
+      }
+      nav.menu a:hover, nav.menu a.on { color: var(--text); }
+      nav.menu a:hover::after, nav.menu a.on::after { transform: scaleX(1); }
+      .burger {
+        display: none; margin-left: auto;
+        background: none; border: 1px solid var(--line); color: var(--text);
+        font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em;
+        text-transform: uppercase; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+      }
+      .drawer {
+        display: none; position: fixed; inset: 0; z-index: 38;
+        background: #050508; padding: 96px var(--pad) 40px;
+        flex-direction: column; gap: 6px;
+      }
+      body.menu-open .drawer { display: flex; }
+      .drawer a {
+        text-decoration: none; font-family: var(--font-display);
+        font-size: clamp(1.8rem, 8vw, 2.6rem); letter-spacing: -0.03em;
+        padding: 8px 0; border-bottom: 1px solid var(--line);
+      }
+      .hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; }
+      .stage { position: absolute; inset: 0; overflow: hidden; }
+      .media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 72% 38%; }
+      .shade {
+        position: absolute; inset: 0;
+        background:
+          linear-gradient(90deg, rgba(5,5,8,0.9) 0%, rgba(5,5,8,0.5) 42%, rgba(5,5,8,0.08) 74%),
+          linear-gradient(180deg, rgba(5,5,8,0.28) 0%, rgba(5,5,8,0.08) 40%, #050508 100%);
+      }
+      .col {
+        position: relative; z-index: 2;
+        width: min(36rem, calc(100% - 40px));
+        padding: 0 var(--pad) 80px;
+      }
+      .hair { width: 42px; height: 1px; background: var(--gold); margin-bottom: 16px; }
+      .kicker {
+        font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.18em;
+        text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+      }
+      h1 {
+        font-family: var(--font-display); font-weight: 600;
+        font-size: clamp(3rem, 8vw, 5.6rem);
+        letter-spacing: -0.045em; line-height: 0.9;
+      }
+      .lede { margin: 16px 0 26px; color: var(--mute); font-size: 1.06rem; line-height: 1.6; max-width: 24rem; }
+      .lede strong { color: var(--text); }
+      .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+      .btn {
+        display: inline-flex; align-items: center; text-decoration: none;
+        font-family: var(--font-mono); font-weight: 600; font-size: 0.78rem;
+        letter-spacing: 0.04em; border-radius: 999px; padding: 12px 18px;
+      }
+      .btn-on { background: var(--gold); color: #14110a; }
+      .btn-off { border: 1px solid var(--line); }
+      .band {
+        position: relative; min-height: 100svh;
+        display: flex; align-items: flex-end;
+      }
+      .band .shade {
+        position: absolute; inset: 0;
+        background: linear-gradient(180deg, rgba(5,5,8,0.08) 0%, rgba(5,5,8,0.55) 50%, #050508 100%);
+      }
+      .band .col { padding: 56px var(--pad) 64px; width: min(42rem, 100%); }
+      .band h2 {
+        font-family: var(--font-display); font-weight: 600;
+        font-size: clamp(2.1rem, 5vw, 3.5rem);
+        letter-spacing: -0.035em; line-height: 0.96;
+      }
+      .band p { margin-top: 12px; color: var(--mute); max-width: 32rem; line-height: 1.6; }
+      .facts {
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        margin-top: 28px;
+        max-width: 34rem;
+      }
+      .facts li {
+        border-top: 1px solid var(--line);
+        padding: 14px 0;
+        display: grid;
+        grid-template-columns: 7rem 1fr;
+        gap: 16px;
+      }
+      .facts b { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; }
+      .facts span { color: var(--mute); font-size: 0.92rem; line-height: 1.5; }
+      footer.site {
+        border-top: 1px solid var(--line);
+        padding: 28px var(--pad);
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; color: var(--mute);
+      }
+      footer.site a { text-decoration: none; }
+      @media (max-width: 760px) {
+        nav.menu { display: none; }
+        .burger { display: inline-flex; }
+        .hero .media { object-position: 78% 32%; }
+        .col { width: calc(100% - 16px); padding: 0 18px 36px; }
+        .facts li { grid-template-columns: 1fr; gap: 4px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to main content</a>
+    <header class="bar" id="topbar">
+      <a class="brand js-hub" href="/">
+        <img src="/assets/mascot/azoth-mask.jpg" alt="" width="36" height="36" />
+        <span><strong>Zoth</strong><small>by NullAI</small></span>
+      </a>
+      <button class="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
+      <nav class="menu" aria-label="Primary">
+        <a class="on" href="/zoth/">Azoth</a>
+        <a class="js-deck" href="http://127.0.0.1:8484/">Deck</a>
+        <a href="/studio/">Studio</a>
+        <a href="#pets" onclick="location.href='/#pets'">Pets</a>
+        <a href="/adytum/">Adytum</a>
+        <a href="/docs/">Docs</a>
+      </nav>
+    </header>
+    <nav class="drawer" id="drawer" aria-label="Mobile">
+      <a href="/zoth/">Azoth</a>
+      <a class="js-deck" href="http://127.0.0.1:8484/">Deck</a>
+      <a href="/studio/">Studio</a>
+      <a href="/#pets">Pets</a>
+      <a href="/adytum/">Adytum</a>
+      <a href="/docs/">Docs</a>
+      <a class="js-hub" href="/">Hub</a>
+    </nav>
+
+    <main id="main">
+      <section class="hero" aria-label="Azoth">
+        <div class="stage">
+          <video class="media" autoplay muted loop playsinline poster="/assets/mascot/azoth-hero.jpg">
+            <source src="/assets/media/land/azoth-hero.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="shade"></div>
+        <div class="col">
+          <div class="hair" aria-hidden="true"></div>
+          <p class="kicker">The operator</p>
+          <h1>Azoth</h1>
+          <p class="lede">
+            The studio is <strong>Zoth</strong>. He is <strong>Azoth</strong>.
+            Mask on. He stays on this machine and talks in three lines.
+          </p>
+          <div class="cta">
+            <a class="btn btn-on js-deck" href="http://127.0.0.1:8484/">Ask him on the deck</a>
+            <a class="btn btn-off js-hub" href="/">Back to the hub</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" data-guide="The studio is Zoth. He is Azoth.|The mask is the mark.|He explains the hard parts in three lines.">
+        <div class="col">
+          <p class="kicker">Who he is</p>
+          <h2>Face of the box. Not a pet.</h2>
+          <p>
+            Azoth is the operator. The sixteen in the hangar are jobs.
+            He is the one who meets you first, wears the mark, and
+            stays on loopback.
+          </p>
+          <ul class="facts">
+            <li><b>Name</b><span>Azoth. The studio takes the short form: Zoth.</span></li>
+            <li><b>Mark</b><span>The split mask — porcelain, gold slash, violet eyes — is the favicon and the OG.</span></li>
+            <li><b>Work</b><span>Digest bubbles on dense pages. Voice of the deck. Never a cloud host.</span></li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site">
+      <span>Azoth · operator · Zoth Studio</span>
+      <span><a class="js-hub" href="/">Hub</a> · <a href="/#install">Install</a></span>
+    </footer>
+
+    <script src="/assets/zoth-tip.js"></script>
+    <script src="/assets/zoth-gate.js"></script>
+    <script src="/assets/zoth-guide.js"></script>
+    <script src="/assets/celestial-trail.js"></script>
+    <script>
+      (function () {
+        var deck = location.port === "8484" ? "/" : "http://127.0.0.1:8484/";
+        document.querySelectorAll(".js-deck").forEach(function (a) { a.setAttribute("href", deck); });
+        var bar = document.getElementById("topbar");
+        var burger = document.querySelector(".burger");
+        function onScroll() { bar.classList.toggle("on", window.scrollY > 24); }
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        if (burger) {
+          burger.addEventListener("click", function () {
+            var open = document.body.classList.toggle("menu-open");
+            burger.setAttribute("aria-expanded", open ? "true" : "false");
+            burger.textContent = open ? "Close" : "Menu";
+          });
+          document.querySelectorAll(".drawer a").forEach(function (a) {
+            a.addEventListener("click", function () {
+              document.body.classList.remove("menu-open");
+              burger.setAttribute("aria-expanded", "false");
+              burger.textContent = "Menu";
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

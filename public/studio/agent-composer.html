@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800;900&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css?v=20260818b" />
+    <link rel="stylesheet" href="/assets/zoth-preview.css" />
     <style>
       :root {
         --bg-composer: #03050a;
@@ -585,7 +586,7 @@
       }
     </style>
   </head>
-  <body>
+  <body data-film="/assets/media/deck/composer.mp4" data-poster="/assets/media/deck/composer.jpg" data-kicker="Composer · preview" data-title="Wire the work, then run it here" data-lede="The canvas is a look. Full DAGs run on the local deck." data-film-mode="under" data-guide="This canvas is a look.|Full DAGs run on the local deck.|Install, then wire agents on this box.">
     <a class="skip-link" href="#main">Skip to main content</a>
 
     <header class="site-header is-scrolled">
@@ -1091,9 +1092,41 @@
           if (selectedNode) deleteNode(selectedNode.id);
         };
 
+        // Dynamic Socket Center Calculation
+        function getSocketCenter(nodeId, type) {
+          const nodeEl = document.getElementById(nodeId);
+          if (!nodeEl) {
+            const n = nodes.find(item => item.id === nodeId);
+            if (!n) return null;
+            return {
+              x: type === 'out' ? n.x + 260 : n.x,
+              y: n.y + 40
+            };
+          }
+          const socketWrap = nodeEl.querySelector(type === 'out' ? '.socket-wrap.wrap-out' : '.socket-wrap.wrap-in');
+          if (!socketWrap) {
+            const rect = nodeEl.getBoundingClientRect();
+            const cRect = container.getBoundingClientRect();
+            return {
+              x: type === 'out' ? (rect.right - cRect.left) : (rect.left - cRect.left),
+              y: (rect.top - cRect.top + rect.height / 2)
+            };
+          }
+          const sRect = socketWrap.getBoundingClientRect();
+          const cRect = container.getBoundingClientRect();
+          return {
+            x: sRect.left - cRect.left + sRect.width / 2,
+            y: sRect.top - cRect.top + sRect.height / 2
+          };
+        }
+
         // Universal Socket Click-to-Connect (Bi-directional)
         window.handleSocketClick = function(e, nodeId, type) {
           e.stopPropagation();
+          const rect = container.getBoundingClientRect();
+          currentMousePos.x = e.clientX - rect.left;
+          currentMousePos.y = e.clientY - rect.top;
+
           if (!activeSocketStart) {
             // First socket clicked
             activeSocketStart = { nodeId, type };
@@ -1101,6 +1134,7 @@
             e.currentTarget.classList.add('socket-active');
             wiringHelper.style.display = 'inline-flex';
             wiringHelper.textContent = `⚡ Connect from [${nodes.find(n => n.id === nodeId)?.title || 'Node'}]... Click 2nd card socket`;
+            drawWires();
             playTone(440);
           } else {
             // Second socket clicked
@@ -1110,6 +1144,7 @@
               activeSocketStart = null;
               document.querySelectorAll('.socket-wrap').forEach(s => s.classList.remove('socket-active'));
               wiringHelper.style.display = 'none';
+              drawWires();
               playTone(220);
               return;
             }
@@ -1124,10 +1159,10 @@
               toId = first.nodeId;
             }
 
-            addConnection(fromId, toId);
             activeSocketStart = null;
             document.querySelectorAll('.socket-wrap').forEach(s => s.classList.remove('socket-active'));
             wiringHelper.style.display = 'none';
+            addConnection(fromId, toId);
           }
         };
 
@@ -1137,6 +1172,9 @@
           if (!exists) {
             connections.push({ from: fromId, to: toId });
             drawWires();
+            requestAnimationFrame(drawWires);
+            setTimeout(drawWires, 10);
+            setTimeout(drawWires, 50);
             updateStatus();
             updateLivePython();
             renderInspectorRoutes();
@@ -1147,6 +1185,7 @@
         window.removeConnection = function(fromId, toId) {
           connections = connections.filter(c => !(c.from === fromId && c.to === toId));
           drawWires();
+          requestAnimationFrame(drawWires);
           updateStatus();
           updateLivePython();
           renderInspectorRoutes();
@@ -1204,6 +1243,7 @@
             document.getElementById('inspector-form').style.display = 'none';
           }
           drawWires();
+          requestAnimationFrame(drawWires);
           updateStatus();
           updateLivePython();
           refreshInspectorNodeDropdown();
@@ -1223,12 +1263,12 @@
 
           // Draw active floating wire if dragging socket
           if (activeSocketStart) {
-            const startNode = nodes.find(n => n.id === activeSocketStart.nodeId);
-            if (startNode) {
-              const x1 = activeSocketStart.type === 'out' ? startNode.x + 260 : startNode.x;
-              const y1 = startNode.y + 40;
-              const x2 = currentMousePos.x;
-              const y2 = currentMousePos.y;
+            const startPt = getSocketCenter(activeSocketStart.nodeId, activeSocketStart.type);
+            if (startPt) {
+              const x1 = startPt.x;
+              const y1 = startPt.y;
+              const x2 = currentMousePos.x || x1;
+              const y2 = currentMousePos.y || y1;
               const dx = Math.max(40, Math.abs(x2 - x1) * 0.5);
               const pathData = `M ${x1} ${y1} C ${x1 + (activeSocketStart.type === 'out' ? dx : -dx)} ${y1}, ${x2 + (activeSocketStart.type === 'out' ? -dx : dx)} ${y2}, ${x2} ${y2}`;
 
@@ -1241,16 +1281,16 @@
 
           // Draw established connections
           connections.forEach(c => {
-            const fromNode = nodes.find(n => n.id === c.from);
-            const toNode = nodes.find(n => n.id === c.to);
-            if (!fromNode || !toNode) return;
+            const p1 = getSocketCenter(c.from, 'out');
+            const p2 = getSocketCenter(c.to, 'in');
+            if (!p1 || !p2) return;
 
-            const x1 = fromNode.x + 260;
-            const y1 = fromNode.y + 40;
-            const x2 = toNode.x;
-            const y2 = toNode.y + 40;
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
 
-            const dx = Math.max(60, (x2 - x1) * 0.5);
+            const dx = Math.max(60, Math.abs(x2 - x1) * 0.5);
             const pathData = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -1481,6 +1521,7 @@
         });
       })();
     </script>
+    <script src="/assets/zoth-preview.js"></script>
     <script src="/assets/celestial-trail.js"></script>
   </body>
 </html>

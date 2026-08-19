@@ -72,17 +72,27 @@
 
   function css() {
     return [
-      "#zoth-ribbon{position:fixed;inset:0 0 auto;z-index:60;display:none;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;",
-      "padding:8px 16px;background:#14110a;color:#f7f4ee;border-bottom:1px solid rgba(232,200,114,.35);",
-      "font-family:Inter,system-ui,sans-serif;font-size:.82rem;line-height:1.4}",
+      ":root{--zoth-ribbon:0px}",
+      "html.zoth-preview{--zoth-ribbon:36px;scroll-padding-top:36px}",
+      "html.zoth-preview body{padding-top:36px!important}",
+      "#zoth-ribbon{position:fixed;top:0;left:0;right:0;z-index:80;display:none;align-items:center;justify-content:center;gap:10px;",
+      "height:36px;padding:0 12px;background:#14110a;color:#f7f4ee;border-bottom:1px solid rgba(232,200,114,.35);",
+      "font-family:Inter,system-ui,sans-serif;font-size:.78rem;line-height:1;white-space:nowrap;overflow:hidden}",
       "#zoth-ribbon.on{display:flex}",
-      "html.zoth-preview{scroll-padding-top:44px}",
-      "html.zoth-preview header.bar,html.zoth-preview .zoth-bar,html.zoth-preview .site-header{top:36px}",
+      "#zoth-ribbon .zoth-r-copy{overflow:hidden;text-overflow:ellipsis;min-width:0}",
+      "html.zoth-preview header.bar,html.zoth-preview .zoth-bar,html.zoth-preview .site-header,html.zoth-preview .reg-bar,",
+      "html.zoth-preview .deck-page .site-header,html.zoth-preview .fixed.top-0{top:36px!important}",
+      "@media (max-width:760px){html.zoth-preview{--zoth-ribbon:40px}html.zoth-preview body{padding-top:40px!important}",
+      "#zoth-ribbon{height:40px;font-size:.72rem}",
+      "html.zoth-preview header.bar,html.zoth-preview .zoth-bar,html.zoth-preview .site-header,html.zoth-preview .reg-bar,",
+      "html.zoth-preview .deck-page .site-header{top:40px!important}",
+      "html.zoth-preview .oracle-shell{overflow-y:auto!important;overflow-x:hidden!important;",
+      "justify-content:flex-start!important;height:auto!important;min-height:calc(100dvh - 40px)!important;padding-left:16px!important;padding-right:16px!important;padding-bottom:28px!important}}",
       "#zoth-ribbon strong{color:#e8c872;font-weight:600}",
       "#zoth-ribbon button,#zoth-ribbon a.zoth-r-go{background:none;border:1px solid rgba(232,200,114,.45);color:#e8c872;",
       "font-family:JetBrains Mono,ui-monospace,monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;",
       "padding:5px 10px;border-radius:999px;cursor:pointer;text-decoration:none}",
-      "#zoth-modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:20px;",
+      "#zoth-modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:20px;",
       "background:rgba(5,5,8,.72)}",
       "#zoth-modal.on{display:flex}",
       "#zoth-modal .sheet{width:min(34rem,100%);background:#09090f;color:#f7f4ee;border:1px solid rgba(232,200,114,.28);",
@@ -122,7 +132,7 @@
     var ribbon = document.createElement("div");
     ribbon.id = "zoth-ribbon";
     ribbon.innerHTML =
-      "<span>This site is a <strong>preview</strong>. Full tools run on your machine after you install the binary for this device.</span>" +
+      "<span class='zoth-r-copy'>Preview. Install the binary for full tools on this device.</span>" +
       "<button type='button' data-zoth-open>Install</button>";
     document.body.appendChild(ribbon);
 
@@ -220,7 +230,16 @@
     });
   }
 
+  function rewriteHubLinks() {
+    document.querySelectorAll("a.js-hub, a[href='/hub/'], a[href='/hub'], a[href^='/hub/#']").forEach(function (a) {
+      var href = a.getAttribute("href") || "";
+      var hash = href.indexOf("#") >= 0 ? href.slice(href.indexOf("#")) : "";
+      a.setAttribute("href", onDeck() ? "/hub/" + hash : (hash || "/"));
+    });
+  }
+
   function boot() {
+    rewriteHubLinks();
     ensureUi();
     document.addEventListener("click", intercept, true);
     deckAlive().then(function (ok) {

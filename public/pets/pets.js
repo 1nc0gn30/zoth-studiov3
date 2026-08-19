@@ -353,19 +353,39 @@ function makeFigure(pet, tex) {
   return g;
 }
 
+function renderHangarGrid() {
+  const root = $("hangar-roster");
+  if (!root) return;
+  root.replaceChildren();
+  visiblePets().forEach((pet) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.innerHTML = `<img src="${pet.neon}" alt="" /><b>${pet.name}</b><span>${pet.role}</span>`;
+    btn.addEventListener("click", () => openInspect(pet));
+    li.append(btn);
+    root.append(li);
+  });
+}
+
+const useGL = !isMobile();
 const canvas = $("gl");
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: !isMobile(),
-  alpha: false,
-  powerPreference: "high-performance",
-  stencil: false,
-});
-renderer.setClearColor(0x07060a, 1);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile() ? 1.15 : 1.5));
-renderer.setSize(window.innerWidth || 1440, window.innerHeight || 900, false);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.NoToneMapping;
+const renderer = useGL
+  ? new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance",
+      stencil: false,
+    })
+  : null;
+if (renderer) {
+  renderer.setClearColor(0x07060a, 1);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setSize(window.innerWidth || 1440, window.innerHeight || 900, false);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.NoToneMapping;
+}
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x07060a, 0.038);
@@ -483,7 +503,8 @@ function renderCats() {
       filter = id;
       if (selectedId && !visiblePets().some((p) => p.id === selectedId)) closeInspect();
       renderCats();
-      layoutArc();
+      renderHangarGrid();
+      if (renderer) layoutArc();
     });
     $("cats").append(b);
   });
@@ -586,6 +607,7 @@ function closeInspect() {
 }
 
 function hitTest(x, y) {
+  if (!renderer || !canvas) return null;
   const rect = canvas.getBoundingClientRect();
   pointer.x = ((x - rect.left) / rect.width) * 2 - 1;
   pointer.y = -((y - rect.top) / rect.height) * 2 + 1;
@@ -664,6 +686,7 @@ window.addEventListener("click", (e) => {
 });
 
 function resize() {
+  if (!renderer) return;
   const w = window.innerWidth;
   const h = window.innerHeight;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, w < 800 ? 1.15 : 1.5));
@@ -677,6 +700,7 @@ window.addEventListener("resize", resize, { passive: true });
 
 let t0 = performance.now();
 function tick(now) {
+  if (!renderer) return;
   const t = (now - t0) / 1000;
   figures.forEach((f) => {
     const rest = f.userData.rest;
@@ -719,10 +743,16 @@ function revealWall() {
 }
 
 async function boot() {
+  renderCats();
+  renderHangarGrid();
+  await loadKnowledge();
+  if (!renderer) {
+    document.body.classList.add("hangar-flat");
+    $("veil")?.classList.add("is-off");
+    return;
+  }
   resize();
   renderer.render(scene, camera);
-  renderCats();
-  await loadKnowledge();
 
   const hullTex = await loadTex("/assets/media/hero-pet-roster.jpg");
   if (hullTex) {
