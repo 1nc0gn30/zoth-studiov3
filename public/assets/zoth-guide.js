@@ -6,13 +6,14 @@
   "use strict";
   if (typeof document === "undefined") return;
 
-  var FACE = "/assets/mascot/zoth-cinematic.jpg";
-  var BUST = "/assets/mascot/zoth-avatar.jpg";
+  var FACE = "/assets/mascot/azoth-hero.jpg";
+  var BUST = "/assets/mascot/azoth-bust.jpg";
   var SEAL = "/assets/brand/zoth-seal-master.jpg";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function placeFaces() {
     document.querySelectorAll("[data-face]").forEach(function (stage) {
+      if (stage === document.body || stage === document.documentElement) return;
       if (stage.querySelector(".zoth-face")) return;
       var side = stage.getAttribute("data-face") || "east";
       if (side === "off") return;
@@ -46,7 +47,7 @@
     box.innerHTML =
       '<img src="' + BUST + '" alt="" width="72" height="92" />' +
       '<div class="bubble">' +
-      '<p class="who">Zoth</p>' +
+      '<p class="who"><a href="/zoth/" style="color:inherit;text-decoration:none">Azoth</a></p>' +
       '<ol class="lines"></ol>' +
       '<button class="x" type="button" aria-label="Dismiss">×</button>' +
       "</div>";
