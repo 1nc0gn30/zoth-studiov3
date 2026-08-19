@@ -5,7 +5,7 @@ import {
   petPortrait,
   loadPetTexture,
   fallbackPetTexture,
-} from "./pet-models.js?v=20260814p";
+} from "./pet-models.js?v=20260819s";
 
 const PETS = [
   {

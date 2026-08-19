@@ -1897,7 +1897,35 @@ def command_serve(args: argparse.Namespace) -> int:
                 # Write the full prompt for reference
                 (project_dir / "PROMPT.md").write_text(full_prompt)
 
-                if codex_path:
+                agy_path = shutil.which("agy") or ("/home/neo/.local/bin/agy" if os.path.exists("/home/neo/.local/bin/agy") else None)
+                hermes_path = shutil.which("hermes")
+                grok_path = shutil.which("grok")
+
+                if agy_path:
+                    # ── Google Antigravity Cloud CLI mode ──
+                    cmd = [
+                        agy_path, "-p",
+                        f"Autonomous Studio Builder: Read PROMPT.md in current directory and build the complete website: {full_prompt}",
+                        "--dangerously-skip-permissions",
+                        "--add-dir", str(project_dir),
+                    ]
+                    try:
+                        log_file = open(task_dir / "antigravity-stdout.log", "w")
+                        err_file = open(task_dir / "antigravity-stderr.log", "w")
+                        proc = subprocess.Popen(cmd, cwd=str(project_dir), stdout=log_file, stderr=err_file)
+                        agent_pid = proc.pid
+                        agent_mode = "antigravity"
+                        self.SERVER_REGISTRY[f"studio-{safe}"] = {
+                            "name": f"Studio: {name}",
+                            "type": "agent",
+                            "process": proc,
+                            "port": None,
+                            "cwd": str(project_dir),
+                        }
+                        results.append({"framework": studio, "status": "spawning", "mode": "antigravity", "pid": agent_pid})
+                    except Exception as e:
+                        results.append({"framework": "antigravity", "status": "error", "error": str(e)})
+                elif codex_path:
                     # ── Codex exec mode ──
                     cmd = [
                         codex_path, "exec",
@@ -1924,9 +1952,20 @@ def command_serve(args: argparse.Namespace) -> int:
                         results.append({"framework": studio, "status": "spawning", "mode": "codex", "pid": agent_pid})
                     except Exception as e:
                         results.append({"framework": "codex", "status": "error", "error": str(e)})
+                elif hermes_path:
+                    # ── Hermes Agent mode ──
+                    cmd = [hermes_path, "-z", full_prompt, "--yolo"]
+                    try:
+                        log_file = open(task_dir / "hermes-stdout.log", "w")
+                        err_file = open(task_dir / "hermes-stderr.log", "w")
+                        proc = subprocess.Popen(cmd, cwd=str(project_dir), stdout=log_file, stderr=err_file)
+                        agent_pid = proc.pid
+                        agent_mode = "hermes"
+                        results.append({"framework": studio, "status": "spawning", "mode": "hermes", "pid": agent_pid})
+                    except Exception as e:
+                        results.append({"framework": "hermes", "status": "error", "error": str(e)})
                 elif ollama_path:
-                    # ── Ollama mode: use ollama run to generate site ──
-                    # First check if ollama serve is running
+                    # ── Ollama mode: Local AI fallback ──
                     try:
                         s = __import__("socket").socket(__import__("socket").AF_INET, __import__("socket").SOCK_STREAM)
                         s.settimeout(2)
@@ -1935,7 +1974,6 @@ def command_serve(args: argparse.Namespace) -> int:
                     except Exception:
                         results.append({"framework": studio, "status": "error", "error": "Ollama is not running. Start it with: ollama serve"})
                     else:
-                        # Use ollama to generate the site via the agent-runner
                         runner = ORCH_DIR / "studio-agents" / "agent-runner.py"
                         if runner.exists():
                             cmd = [sys.executable, str(runner), "--task-dir", str(task_dir), "--studio", studio, "--model", model, "--output-dir", str(project_dir)]
@@ -1947,21 +1985,16 @@ def command_serve(args: argparse.Namespace) -> int:
                             except Exception as e:
                                 results.append({"framework": "agent-runner", "status": "error", "error": str(e)})
                         else:
-                            # Direct ollama run fallback
                             cmd = [ollama_path, "run", model, full_prompt]
                             try:
                                 proc = subprocess.Popen(cmd, cwd=str(project_dir), stdout=open(task_dir / "ollama-stdout.log", "w"), stderr=open(task_dir / "ollama-stderr.log", "w"))
                                 agent_pid = proc.pid
                                 agent_mode = "ollama"
-                                self.SERVER_REGISTRY[f"studio-{safe}"] = {
-                                    "name": f"Studio: {name}", "type": "agent", "process": proc, "port": None, "cwd": str(project_dir),
-                                }
                                 results.append({"framework": studio, "status": "spawning", "mode": "ollama", "pid": agent_pid})
                             except Exception as e:
                                 results.append({"framework": "ollama", "status": "error", "error": str(e)})
                 else:
-                    # No AI backend available
-                    results.append({"framework": studio, "status": "error", "error": "No AI backend found. Install codex or ollama."})
+                    results.append({"framework": studio, "status": "error", "error": "No AI backend found. Install agy, codex, or hermes."})
 
                 # ── Store build result ──
                 build_result = {

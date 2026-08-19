@@ -2,26 +2,34 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>3D Pets Sanctuary — Space Liquid Fluid Dynamics & Web Audio Engine</title>
-    <meta name="description" content="GPU-accelerated 3D pet companion sanctuary with custom Simplex Space Liquid vertex displacement shaders, Web Audio acoustic synthesizers, interactive petting, and direct Nexus 3D Studio exporter." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>3D Pets Sanctuary — Neural Node Matrix & Companion Forge</title>
+    <meta name="description" content="GPU-accelerated 3D pet companion sanctuary with true volumetric figurines, Web Audio acoustic synthesizers, interactive petting, and direct Nexus 3D Studio exporter." />
     <meta name="theme-color" content="#05060a" />
     <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
-    <link rel="stylesheet" href="/styles.css?v=20260816s" />
-    <link rel="stylesheet" href="/pets/pets.css?v=20260816s" />
-    <link rel="stylesheet" href="/studio/studio.css?v=20260816s" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css?v=20260819s" />
+    <link rel="stylesheet" href="/pets/pets.css?v=20260819s" />
+    <link rel="stylesheet" href="/studio/studio.css?v=20260819s" />
     
     <script type="importmap">
       {
         "imports": {
-          "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/"
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
       }
     </script>
     <style>
+      :root {
+        --cyan: #00f0ff;
+        --purple: #a855f7;
+        --gold: #fbbf24;
+      }
       .btn-nexus-export {
-        background: linear-gradient(135deg, #00e5ff 0%, #d946ef 100%);
+        background: linear-gradient(135deg, #00e5ff 0%, #7c3aed 100%);
         color: #030408;
         font-weight: 800;
         border: none;
@@ -86,27 +94,136 @@
         background: var(--cyan);
         transition: width 0.3s ease;
       }
+      #three-stage canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+        touch-action: none;
+      }
+      .roster-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+      }
+      .roster-card img {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+    
+    /* Homepage Matching Navbar */
+    header.bar {
+      position: fixed; inset: 0 0 auto; z-index: 40;
+      display: flex; align-items: center; gap: 18px;
+      padding: 14px 24px;
+      background: rgba(5, 5, 8, 0.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .brand img {
+      width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+      border: 1px solid rgba(232, 200, 114, 0.45);
+    }
+    .brand strong {
+      display: block; font-family: var(--font-display); font-size: 1.18rem;
+      letter-spacing: -0.03em; font-weight: 600; color: #fff;
+    }
+    .brand small {
+      display: block; color: var(--gold); font-family: var(--font-mono);
+      font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    nav.menu { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-left: auto; align-items: center; }
+    nav.menu a {
+      text-decoration: none; font-family: var(--font-mono); font-size: 0.7rem;
+      font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #c8c4d6; padding: 8px 0; position: relative; transition: color 0.2s;
+    }
+    nav.menu a::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
+      background: var(--gold); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.28s ease;
+    }
+    nav.menu a:hover, nav.menu a.on { color: var(--text); }
+    nav.menu a:hover::after, nav.menu a.on::after { transform: scaleX(1); }
+    nav.menu a.git {
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 999px; padding: 6px 12px;
+    }
+    .progress {
+      position: fixed; inset: 0 auto auto 0; z-index: 50;
+      height: 2px; width: 100%; background: var(--gold); pointer-events: none;
+    }
+    .burger {
+      display: none; margin-left: auto;
+      background: none; border: 1px solid rgba(255, 255, 255, 0.08); color: #fff;
+      font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+    }
+    .drawer {
+      display: none; position: fixed; inset: 0; z-index: 38;
+      background: #050508;
+      padding: 96px 24px 40px;
+      flex-direction: column; gap: 6px;
+    }
+    body.menu-open .drawer { display: flex; }
+    .drawer a {
+      text-decoration: none; font-family: var(--font-display);
+      font-size: clamp(1.6rem, 7vw, 2.4rem); letter-spacing: -0.03em;
+      padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: #fff;
+    }
+    .drawer a:hover, .drawer a.on { color: var(--gold); }
+    .drawer .sub {
+      font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); border: 0; margin-top: 18px;
+    }
+    @media (max-width: 880px) {
+      nav.menu { display: none; }
+      .burger { display: inline-flex; }
+    }
+
     </style>
+    <link rel="stylesheet" href="/assets/zoth-mobile.css" />
   </head>
   <body class="deck-page">
     <a class="skip-link" href="#main">Skip to main content</a>
-    <header class="site-header is-scrolled">
-      <div class="nav">
-        <a class="brand" href="/">
-          <img class="brand-logo" src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="40" height="40" alt="Zoth Studio logo" />
-          <span class="brand-text"><strong>ZOTH</strong><small>3D Pet Sanctuary</small></span>
-        </a>
-        <nav class="nav-desktop" aria-label="Primary">
-          <a href="/studio/">Dashboard</a>
-          <a href="/studio/nexus-3d.html">Nexus 3D</a>
-          <a href="/studio/fusion-arena.html">⚔️ Fusion Arena</a>
-          <a href="/pets/spawn-pets.html" class="is-active">3D Pets Sanctuary</a>
-          <a href="/studio/agent-composer.html">Agent Composer</a>
-          <a href="/studio/peer-bus.html">Peer Bus</a>
-          <a href="/showcase.html">Showcase</a>
-        </nav>
-      </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <header class="bar" id="topbar">
+      <a class="brand" href="/">
+        <img src="/assets/mascot/azoth-mask.jpg" alt="" width="36" height="36" />
+        <span><strong>Zoth</strong><small>by NullAI</small></span>
+      </a>
+      <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
+      <nav class="menu" aria-label="Primary">
+        <a href="/zoth/">Azoth</a>
+        <a href="http://127.0.0.1:8484/">Deck</a>
+        <a href="/signal/">Signal</a>
+        <a href="/studio/">Studio</a>
+        <a href="/studio/swarm.html">Swarm</a>
+        <a class="on" href="/pets/">Pets</a>
+        <a href="/pets/studio.html">3D Studio</a>
+        <a href="/vault/">Vault</a>
+        <a href="/adytum/">Adytum</a>
+        <a href="/docs/">Docs</a>
+        <a class="git" href="https://github.com/NullAITech/zoth-studio" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
     </header>
+
+    <nav class="drawer" id="drawer" aria-label="Mobile">
+      <a href="/zoth/">Azoth</a>
+      <a href="http://127.0.0.1:8484/">Deck</a>
+      <a href="/signal/">Signal Bridge</a>
+      <a href="/studio/">Studio</a>
+      <a href="/studio/swarm.html">Swarm</a>
+      <a class="on" href="/pets/">Pets Roster</a>
+      <a href="/pets/studio.html">3D Pet Studio</a>
+      <a href="/vault/">Vault</a>
+      <a href="/adytum/">Adytum</a>
+      <a href="/docs/">Docs</a>
+      <a class="sub" href="https://github.com/NullAITech/zoth-studio">GitHub Upstream</a>
+      <a class="sub" href="/#install">Download Binaries</a>
+    </nav>
 
     <main id="main" class="pets-main-container">
       <div class="sanctuary-layout">
@@ -114,14 +231,16 @@
         <section class="sanctuary-stage" id="canvas-host">
           <div class="stage-top-hud">
             <div class="hud-pill-row">
-              <span class="hud-pill">✨ Space Liquid Simplex GPU Shader</span>
+              <span class="hud-pill">✨ 3D Volumetric Companion Figurine</span>
               <span class="hud-pill" id="active-pet-name">Kai · Holographic Cat</span>
             </div>
             <div class="hud-pill-row">
-              <button class="hud-pill-btn active" id="btn-audio-toggle" onclick="toggleAudioSynth()">🔊 Web Audio: Active</button>
-              <button class="hud-pill-btn" onclick="triggerHarmonicChirp()">🎵 Play Chirp</button>
-              <a id="btn-open-nexus" href="/studio/nexus-3d.html" class="btn-nexus-export">🚀 Customize in Nexus 3D</a>
-              <button id="btn-send-to-nexus" class="btn-nexus-export" style="background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);">📤 Send to Nexus 3D</button>
+              <button class="hud-pill-btn active" id="btn-formation-toggle" onclick="toggleFormation()">💫 Formation: Solo</button>
+              <button class="hud-pill-btn" id="btn-env-toggle" onclick="cycleEnvironment()">🌌 Atmosphere: Cyber</button>
+              <button class="hud-pill-btn active" id="btn-audio-toggle" onclick="toggleAudioSynth()">🔊 Audio</button>
+              <button class="hud-pill-btn" onclick="triggerHarmonicChirp()">🎵 Chirp</button>
+              <a id="btn-open-studio" href="/pets/pet-studio.html?pet=kai" class="btn-nexus-export">💎 Open 3D Studio</a>
+              <a id="btn-open-nexus" href="/studio/nexus-3d.html?pet=kai" class="btn-nexus-export" style="background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);">🚀 Nexus 3D</a>
             </div>
           </div>
           <div id="three-stage"></div>
@@ -165,8 +284,8 @@
 
           <!-- Pet Selector Strip -->
           <div class="roster-section">
-            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Companion Roster</label>
-            <div class="roster-grid" id="roster-list"></div>
+            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Companion Roster (24 Sovereign Pets)</label>
+            <div class="roster-grid" id="roster-list" style="max-height: 220px; overflow-y: auto;"></div>
           </div>
         </aside>
       </div>
@@ -175,22 +294,46 @@
     <script type="module">
       import * as THREE from 'three';
       import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import {
+        createPetFigure,
+        petPortrait,
+        loadPetTexture,
+        fallbackPetTexture,
+        PET_SPECIES,
+        TASK_VIBES
+      } from './pet-models.js?v=20260819s';
 
       let scene, camera, renderer, controls;
-      let activePetMesh, activeEmberParticles;
+      let activePetFigure = null;
       let currentPetId = 'kai';
       let audioCtx = null, soundEnabled = true;
       let energyLevel = 88;
 
       const ROSTER = [
-        { id: "kai", name: "Kai", species: "Holographic Cat", color: 0x00e5ff, shape: "cat", prompt: "Kai is ready to inspect your code, verify schemas, and hunt syntax anomalies!" },
-        { id: "draco", name: "Draco", species: "Cyber Dragon", color: 0xd946ef, shape: "dragon", prompt: "Draco is compiling multi-agent fusion pipelines and breathing plasma shaders!" },
-        { id: "athena", name: "Athena", species: "Mecha Owl", color: 0xa78bfa, shape: "owl", prompt: "Athena is mapping knowledge graphs, AEO entity schemas, and architectural briefs!" },
-        { id: "lycan", name: "Lycan", species: "Cybernetic Wolf", color: 0xef4444, shape: "wolf", prompt: "Lycan is threat-modeling security endpoints and guarding loopback ports!" },
-        { id: "ignis", name: "Ignis", species: "Neon Phoenix", color: 0xf59e0b, shape: "phoenix", prompt: "Ignis is ready to resurrect stalled pipelines and illuminate dark code paths!" },
-        { id: "kitsune", name: "Kitsune", species: "Cyber Fox", color: 0xfb923c, shape: "fox", prompt: "Kitsune is polishing UI hierarchy, micro-interactions, and visual harmony!" },
-        { id: "ghostbyte", name: "GhostByte", species: "NullAI Ghost", color: 0x38bdf8, shape: "ghost", prompt: "GhostByte is weaving holographic swarm particle streams and quantum shaders!" },
-        { id: "zoth", name: "Zoth Core", species: "Hermetic Tesseract", color: 0xfbbf24, shape: "tesseract", prompt: "Zoth Master Sovereign Core is orchestrating all 16 studio nodes on localhost!" }
+        { id: "kai", name: "Kai", species: "Holographic Cat", color: 0x00e5ff, prompt: "Kai is ready to inspect your workspace, verify schemas, and hunt syntax anomalies!" },
+        { id: "draco", name: "Draco", species: "Cyber Dragon", color: 0xffaa00, prompt: "Draco is compiling multi-agent fusion pipelines and breathing plasma shaders!" },
+        { id: "athena", name: "Athena", species: "Mecha Owl", color: 0xa855f7, prompt: "Athena is mapping knowledge graphs, AEO entity schemas, and architectural briefs!" },
+        { id: "lycan", name: "Lycan", species: "Cybernetic Wolf", color: 0x10b981, prompt: "Lycan is threat-modeling security endpoints and guarding loopback ports!" },
+        { id: "ignis", name: "Ignis", species: "Neon Phoenix", color: 0xff007a, prompt: "Ignis is ready to resurrect stalled pipelines and illuminate dark code paths!" },
+        { id: "kitsune", name: "Kitsune", species: "Cyber Fox", color: 0xff7700, prompt: "Kitsune is polishing UI hierarchy, micro-interactions, and visual harmony!" },
+        { id: "pixel-neko", name: "Pixel-Neko", species: "16-Bit Retro Cat", color: 0x00f0ff, prompt: "Pixel-Neko is indexing local project folders and tools!" },
+        { id: "pixel-shiba", name: "Pixel-Shiba", species: "16-Bit Cyber Doge", color: 0xffcc00, prompt: "Pixel-Shiba is guarding vault keys and storage boundaries!" },
+        { id: "radical-minion", name: "Radical Minion", species: "Hermes Partner", color: 0x00d4aa, prompt: "Radical Minion is ready to run Hermes autonomous playbooks!" },
+        { id: "glitchcat", name: "Glitchcat", species: "RGB Glitch Cat", color: 0xff0055, prompt: "Glitchcat breaks stale chrome so the composition can land." },
+        { id: "circuit-pup", name: "Circuit Pup", species: "LED Circuit Dog", color: 0x00ffff, prompt: "Circuit Pup sniffs live ports, local daemons, and missing CLIs." },
+        { id: "terminal-ghost", name: "Terminal Ghost", species: "Phosphor Spirit", color: 0x38bdf8, prompt: "Terminal Ghost haunts agent feeds until the logs are verified." },
+        { id: "savage-codex", name: "Savage Codex", species: "Hacker Familiar", color: 0xeab308, prompt: "Savage Codex reads diffs like a threat model for security gaps." },
+        { id: "ai-workbot", name: "AI Workbot", species: "Task Robot", color: 0x6366f1, prompt: "AI Workbot turns a chat request into a claimed swarm checklist." },
+        { id: "binary", name: "Binary", species: "Data Spirit", color: 0x22c55e, prompt: "Binary keeps schema, llms.txt, and connector bits honest." },
+        { id: "aquila", name: "Aquila", species: "Cyber Eagle", color: 0x00f0ff, prompt: "Aquila delivers sub-millisecond API routing and edge dispatch." },
+        { id: "leviathan", name: "Leviathan", species: "Cyber Whale", color: 0x06b6d4, prompt: "Leviathan indexes dense vector embeddings and long-context RAG memory." },
+        { id: "onyx", name: "Onyx", species: "Shadow Panther", color: 0xff007a, prompt: "Onyx runs stealth penetration audits and SubSweep recon." },
+        { id: "chronos", name: "Chronos", species: "Cyber Stag", color: 0x38bdf8, prompt: "Chronos traverses DAG execution graphs and git rollback checkpoints." },
+        { id: "aether", name: "Aether", species: "Cyber Griffin", color: 0xfbbf24, prompt: "Aether orchestrates asynchronous multi-agent consensus." },
+        { id: "kraken", name: "Kraken", species: "Cyber Octopus", color: 0x00f0ff, prompt: "Kraken inspects raw packet streams and fuzzes Web API input vectors." },
+        { id: "scorpius", name: "Scorpius", species: "Cyber Scorpion", color: 0x00e5ff, prompt: "Scorpius delivers precision security strikes and crafts glassmorphic themes." },
+        { id: "ghostbyte", name: "Ghostbyte", species: "NullAI Ghost", color: 0x00e5ff, prompt: "Ghostbyte is weaving holographic swarm particle streams and quantum shaders!" },
+        { id: "zoth", name: "Zoth Core", species: "Hermetic Tesseract", color: 0xfbbf24, prompt: "Zoth Master Sovereign Core is orchestrating all 16 studio nodes on localhost!" }
       ];
 
       function getAudioContext() {
@@ -232,13 +375,12 @@
             osc.stop(now + 0.35);
           } else if (type === 'meditate') {
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(432, now); // 432 Hz healing harmonic
+            osc.frequency.setValueAtTime(432, now);
             gain.gain.setValueAtTime(0.2, now);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
             osc.start(now);
             osc.stop(now + 0.8);
           } else {
-            // Default chirp
             osc.type = 'sine';
             osc.frequency.setValueAtTime(587.33, now);
             osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.15);
@@ -250,57 +392,160 @@
         } catch(e) {}
       }
 
+      const texCache = new Map();
+      async function resolveTex(id) {
+        const url = petPortrait(id);
+        if (texCache.has(url)) return texCache.get(url);
+        const tex = (await loadPetTexture(THREE, url)) || fallbackPetTexture(THREE);
+        texCache.set(url, tex);
+        return tex;
+      }
+
       function initStage() {
         const container = document.getElementById('three-stage');
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x020306, 0.02);
+        scene.fog = new THREE.FogExp2(0x020306, 0.03);
 
         camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
-        camera.position.set(0, 1.5, 6);
+        camera.position.set(0, 1.45, 5.2);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
         container.appendChild(renderer.domElement);
 
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 1.2;
+        controls.autoRotateSpeed = 1.0;
+        controls.target.set(0, 0.98, 0);
 
-        const amb = new THREE.AmbientLight(0xffffff, 0.85);
+        amb = new THREE.AmbientLight(0x7888b8, 0.7);
         scene.add(amb);
-        const dir = new THREE.DirectionalLight(0x00e5ff, 2.2);
-        dir.position.set(5, 10, 7);
+        dir = new THREE.DirectionalLight(0xffffff, 1.4);
+        dir.position.set(4, 8, 6);
         scene.add(dir);
 
+        rim = new THREE.PointLight(0x00f0ff, 3.0, 16);
+        rim.position.set(-3, 2, -3);
+        scene.add(rim);
+
         // Platform Grid
-        const grid = new THREE.GridHelper(20, 20, 0x00e5ff, 0x111625);
-        grid.position.y = -1.2;
+        const grid = new THREE.GridHelper(16, 16, 0x00e5ff, 0x111625);
+        grid.position.y = 0;
         scene.add(grid);
 
         renderRoster();
         loadSelectedPet(ROSTER[0]);
 
-        window.addEventListener('resize', () => {
-          camera.aspect = container.clientWidth / container.clientHeight;
+        function onResize() {
+          const w = container.clientWidth || window.innerWidth;
+          const h = container.clientHeight || window.innerHeight;
+          camera.aspect = w / h;
           camera.updateProjectionMatrix();
-          renderer.setSize(container.clientWidth, container.clientHeight);
+          renderer.setSize(w, h);
+        }
+        window.addEventListener('resize', onResize, { passive: true });
+        if (window.ResizeObserver) {
+          new ResizeObserver(onResize).observe(container);
+        }
+
+        window.addEventListener('pointermove', (e) => {
+          const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+          const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+          if (activePetFigure && activePetFigure.setGaze) {
+            activePetFigure.setGaze(nx, ny);
+          }
         });
 
+        const clock = new THREE.Clock();
         function animate() {
           requestAnimationFrame(animate);
+          const t = clock.getElapsedTime();
+          const delta = clock.getDelta();
           controls.update();
-          if (activePetMesh) {
-            activePetMesh.rotation.y += 0.01;
+
+          if (activePetFigure && activePetFigure.tick) {
+            activePetFigure.tick(t, delta);
           }
-          if (activeEmberParticles) {
-            activeEmberParticles.rotation.y += 0.005;
-          }
+
+          // Tick Tri-Orbit multi-pet formation
+          orbitalFigures.forEach((fig, idx) => {
+            if (fig && fig.group) {
+              const u = fig.group.userData;
+              const angle = u.angle + t * 0.8;
+              fig.group.position.x = Math.cos(angle) * u.radius;
+              fig.group.position.z = Math.sin(angle) * u.radius;
+              fig.group.position.y = 0.98 + Math.sin(t * 2 + idx) * 0.2;
+              fig.group.rotation.y = -angle + Math.PI / 2;
+              if (fig.tick) fig.tick(t, delta);
+            }
+          });
+
           renderer.render(scene, camera);
         }
         animate();
       }
+
+      let formationMode = 'solo';
+      let orbitalFigures = [];
+      let envPresetIdx = 0;
+      let amb, dir, rim;
+      const ENV_PRESETS = [
+        { name: 'Cyber Neon', amb: 0x7888b8, dir: 0xffffff, rim: 0x00f0ff, fog: 0x020306, exposure: 1.1 },
+        { name: 'Solar Day', amb: 0xffe8d6, dir: 0xfff4e6, rim: 0xffaa00, fog: 0x100804, exposure: 1.25 },
+        { name: 'Void Twilight', amb: 0x3b1d60, dir: 0xa855f7, rim: 0x00f0ff, fog: 0x05020c, exposure: 1.3 }
+      ];
+
+      window.cycleEnvironment = function() {
+        if (!amb || !dir || !rim) return;
+        envPresetIdx = (envPresetIdx + 1) % ENV_PRESETS.length;
+        const p = ENV_PRESETS[envPresetIdx];
+        amb.color.setHex(p.amb);
+        dir.color.setHex(p.dir);
+        rim.color.setHex(p.rim);
+        if (scene.fog) scene.fog.color.setHex(p.fog);
+        renderer.toneMappingExposure = p.exposure;
+        document.getElementById('btn-env-toggle').textContent = `🌌 Atmosphere: ${p.name}`;
+        playSound('charge');
+      };
+
+      window.toggleFormation = async function() {
+        formationMode = formationMode === 'solo' ? 'tri' : 'solo';
+        document.getElementById('btn-formation-toggle').textContent = formationMode === 'solo' ? '💫 Formation: Solo' : '💫 Formation: Tri-Orbit';
+        
+        orbitalFigures.forEach(fig => {
+          scene.remove(fig.group);
+          fig.dispose();
+        });
+        orbitalFigures = [];
+
+        if (formationMode === 'tri') {
+          const petIds = [currentPetId === 'draco' ? 'kai' : 'draco', currentPetId === 'athena' ? 'lycan' : 'athena'];
+          for (let i = 0; i < petIds.length; i++) {
+            const pid = petIds[i];
+            const pData = ROSTER.find(r => r.id === pid) || ROSTER[0];
+            const tex = await resolveTex(pid);
+            const fig = createPetFigure(THREE, {
+              id: pid,
+              color: pData.color,
+              texture: tex,
+              style: 'realistic',
+              initialVibe: 'fusion',
+              withAura: true
+            });
+            fig.group.scale.setScalar(0.65);
+            fig.group.userData = { angle: ((i + 1) / 3) * Math.PI * 2, radius: 3.2 };
+            scene.add(fig.group);
+            orbitalFigures.push(fig);
+          }
+          playSound('charge');
+        }
+      };
 
       function renderRoster() {
         const list = document.getElementById('roster-list');
@@ -308,107 +553,56 @@
         ROSTER.forEach(pet => {
           const card = document.createElement('div');
           card.className = 'roster-card' + (pet.id === currentPetId ? ' active' : '');
-          card.innerHTML = `<strong>${pet.name}</strong><small>${pet.species}</small>`;
+          card.innerHTML = `
+            <img src="${petPortrait(pet.id)}" alt="${pet.name}" loading="lazy" />
+            <div>
+              <strong>${pet.name}</strong><br />
+              <small style="color:var(--cyan);font-family:var(--font-mono);font-size:0.65rem;">${pet.species}</small>
+            </div>
+          `;
           card.onclick = () => loadSelectedPet(pet);
           list.appendChild(card);
         });
       }
 
-      function loadSelectedPet(pet) {
+      let loadGen = 0;
+      async function loadSelectedPet(pet) {
+        const gen = ++loadGen;
         currentPetId = pet.id;
         document.getElementById('active-pet-name').innerText = `${pet.name} · ${pet.species}`;
         document.getElementById('pet-intro-msg').innerHTML = `<strong>${pet.name}:</strong> "${pet.prompt}"`;
         document.getElementById('chat-input').placeholder = `Ask ${pet.name} anything...`;
         
-        // Link to customize in Nexus 3D
+        document.getElementById('btn-open-studio').href = `/pets/pet-studio.html?pet=${pet.id}`;
         document.getElementById('btn-open-nexus').href = `/studio/nexus-3d.html?pet=${pet.id}`;
 
-        // Send pet to Nexus 3D as serialized mesh state
-        const btnSendToNexus = document.getElementById('btn-send-to-nexus');
-        if (btnSendToNexus) {
-          btnSendToNexus.onclick = () => {
-            try {
-              const state = {
-                petId: pet.id,
-                name: pet.name,
-                species: pet.species,
-                color: '#' + pet.color.toString(16).padStart(6, '0'),
-                prompt: pet.prompt,
-                exportedAt: new Date().toISOString()
-              };
-              sessionStorage.setItem('zoth-nexus-payload', JSON.stringify(state));
-              window.open(`/studio/nexus-3d.html?pet=${encodeURIComponent(pet.id)}&source=sanctuary`, '_blank');
-            } catch (e) {
-              window.open(`/studio/nexus-3d.html?pet=${encodeURIComponent(pet.id)}`, '_blank');
-            }
-          };
+        if (activePetFigure) {
+          scene.remove(activePetFigure.group);
+          activePetFigure.dispose();
+          activePetFigure = null;
         }
 
-        if (activePetMesh) scene.remove(activePetMesh);
-        if (activeEmberParticles) scene.remove(activeEmberParticles);
+        const tex = await resolveTex(pet.id);
+        if (gen !== loadGen) return;
 
-        // Procedural Custom Pet Meshes
-        const group = new THREE.Group();
-        const bodyMat = new THREE.MeshPhysicalMaterial({
+        activePetFigure = createPetFigure(THREE, {
+          id: pet.id,
           color: pet.color,
-          emissive: pet.color,
-          emissiveIntensity: 0.5,
-          roughness: 0.15,
-          metalness: 0.85
+          texture: tex,
+          style: "realistic",
+          initialVibe: "idle",
+          withAura: true,
         });
 
-        if (pet.shape === 'cat') {
-          const bodyGeo = new THREE.SphereGeometry(0.9, 32, 32);
-          const body = new THREE.Mesh(bodyGeo, bodyMat);
-          group.add(body);
-          const earGeo = new THREE.ConeGeometry(0.3, 0.7, 4);
-          const earL = new THREE.Mesh(earGeo, bodyMat);
-          earL.position.set(-0.5, 0.8, 0);
-          earL.rotation.z = 0.3;
-          const earR = new THREE.Mesh(earGeo, bodyMat);
-          earR.position.set(0.5, 0.8, 0);
-          earR.rotation.z = -0.3;
-          group.add(earL, earR);
-        } else if (pet.shape === 'dragon') {
-          const torusGeo = new THREE.TorusKnotGeometry(0.7, 0.22, 64, 16);
-          const dragon = new THREE.Mesh(torusGeo, bodyMat);
-          group.add(dragon);
-        } else if (pet.shape === 'tesseract') {
-          const boxGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
-          const innerGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
-          const wireMat = new THREE.MeshBasicMaterial({ color: pet.color, wireframe: true });
-          group.add(new THREE.Mesh(boxGeo, wireMat));
-          group.add(new THREE.Mesh(innerGeo, bodyMat));
-        } else if (pet.shape === 'owl') {
-          const icoGeo = new THREE.IcosahedronGeometry(0.9, 1);
-          group.add(new THREE.Mesh(icoGeo, bodyMat));
-        } else if (pet.shape === 'wolf') {
-          const dodecaGeo = new THREE.DodecahedronGeometry(0.9, 0);
-          group.add(new THREE.Mesh(dodecaGeo, bodyMat));
-        } else {
-          const octGeo = new THREE.OctahedronGeometry(0.9, 1);
-          group.add(new THREE.Mesh(octGeo, bodyMat));
-        }
-
-        // Orbit ring
-        const ringG = new THREE.TorusGeometry(1.5, 0.03, 16, 64);
-        const ringM = new THREE.MeshBasicMaterial({ color: pet.color });
-        const ring = new THREE.Mesh(ringG, ringM);
-        ring.rotation.x = Math.PI / 2.5;
-        group.add(ring);
-
-        activePetMesh = group;
-        activePetMesh.position.y = 0;
-        scene.add(activePetMesh);
-
+        scene.add(activePetFigure.group);
         renderRoster();
         playSound('chirp');
       }
 
       window.petCompanion = function() {
-        if (activePetMesh) {
-          activePetMesh.position.y = 0.4;
-          setTimeout(() => { if (activePetMesh) activePetMesh.position.y = 0; }, 250);
+        if (activePetFigure) {
+          activePetFigure.group.position.y += 0.35;
+          setTimeout(() => { if (activePetFigure) activePetFigure.group.position.y -= 0.35; }, 220);
         }
         playSound('purr');
         energyLevel = Math.min(100, energyLevel + 4);
@@ -423,7 +617,7 @@
 
       window.meditateCompanion = function() {
         controls.autoRotateSpeed = 0.4;
-        setTimeout(() => { controls.autoRotateSpeed = 1.2; }, 3000);
+        setTimeout(() => { controls.autoRotateSpeed = 1.0; }, 3000);
         playSound('meditate');
       };
 
@@ -471,3 +665,4 @@
     <script src="/assets/celestial-trail.js"></script>
   </body>
 </html>
+

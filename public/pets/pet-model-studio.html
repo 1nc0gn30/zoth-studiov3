@@ -2,267 +2,810 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Zoth Pets — 3D Model Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Zoth 3D Pet Studio — Volumetric Hologram Matrix</title>
+  <meta name="description" content="Interactive GPU-accelerated 3D companion studio with volumetric relief figurines, procedural kinetic task vibes, 16 sovereign mascots, and mobile touch optimization." />
+  <meta name="theme-color" content="#050508" />
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
+
+  <!-- Fonts matching Homepage -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/zoth-mobile.css" />
+
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
   <style>
     :root {
-      --bg: #05050c;
-      --panel: rgba(8, 8, 18, 0.92);
-      --line: rgba(168, 85, 247, 0.45);
-      --text: #f3f0ff;
-      --muted: #8f8aa8;
-      --cyan: #22d3ee;
+      --bg: #050508;
+      --panel: rgba(8, 12, 24, 0.88);
+      --panel-border: rgba(0, 240, 255, 0.22);
+      --panel-border-bright: rgba(0, 240, 255, 0.6);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #f7f4ee;
+      --muted: #8290b0;
+      --cyan: #00f0ff;
+      --purple: #a855f7;
+      --gold: #e8c872;
+      --emerald: #10b981;
+      --magenta: #ff007a;
+      --font-display: 'Syne', system-ui, sans-serif;
+      --font-body: 'Figtree', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --pad: clamp(16px, 4vw, 48px);
     }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-    #host { position: fixed; inset: 0; }
-    header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 5;
-      display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
-      padding: 12px 16px; background: linear-gradient(180deg, #05050c 0%, transparent 100%);
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; height: 100svh;
+      overflow: hidden; background: var(--bg); color: var(--text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      touch-action: manipulation;
     }
-    h1 { margin: 0; font-size: 1.05rem; letter-spacing: -.02em; }
-    h1 span { color: var(--cyan); }
-    .sub { color: var(--cyan); font-size: .68rem; margin: 0 0 2px; letter-spacing: .14em; text-transform: uppercase; }
-    .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    button, select {
-      appearance: none; border: 1px solid var(--line); background: var(--panel);
-      color: var(--text); border-radius: 999px; padding: 7px 12px; font: inherit; cursor: pointer;
+
+    /* Shared Top Navigation Bar matching index.html */
+    .skip {
+      position: fixed; top: -60px; left: 16px; z-index: 100;
+      background: var(--gold); color: #050508; font-weight: 700;
+      padding: 8px 16px; border-radius: 6px; text-decoration: none;
+      transition: top 0.2s ease;
     }
-    button:hover, select:hover { border-color: var(--cyan); color: var(--cyan); }
-    button.primary { background: linear-gradient(135deg, #7c3aed, #0891b2); border: none; font-weight: 600; }
-    aside {
-      position: fixed; top: 78px; right: 12px; width: min(280px, calc(100vw - 24px));
-      background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
-      padding: 12px; z-index: 5; backdrop-filter: blur(14px);
+    .skip:focus { top: 12px; }
+
+    header.bar {
+      position: fixed; inset: 0 0 auto; z-index: 40;
+      display: flex; align-items: center; gap: 18px;
+      padding: 14px var(--pad);
+      background: rgba(5, 5, 8, 0.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
     }
-    aside img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: #0b0b14; }
-    aside h2 { margin: 8px 0 2px; font-size: 1rem; }
-    aside p { margin: 0 0 8px; color: var(--muted); font-size: .78rem; }
-    .strip {
-      position: fixed; left: 12px; right: 12px; bottom: 10px; z-index: 5;
-      display: flex; gap: 6px; overflow-x: auto; padding: 6px 8px;
-      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .brand img {
+      width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+      border: 1px solid rgba(232, 200, 114, 0.45);
     }
-    .chip { flex: 0 0 auto; width: 76px; text-align: center; cursor: pointer; border: 1px solid transparent; border-radius: 10px; padding: 4px; }
-    .chip.active { border-color: var(--cyan); }
-    .chip img { width: 68px; height: 68px; object-fit: cover; border-radius: 8px; display: block; }
-    .chip b { display: block; font-size: .68rem; margin-top: 4px; }
-    a { color: var(--cyan); text-decoration: none; }
+    .brand strong {
+      display: block; font-family: var(--font-display); font-size: 1.18rem;
+      letter-spacing: -0.03em; font-weight: 600; color: #fff;
+    }
+    .brand small {
+      display: block; color: var(--gold); font-family: var(--font-mono);
+      font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    nav.menu { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-left: auto; align-items: center; }
+    nav.menu a {
+      text-decoration: none; font-family: var(--font-mono); font-size: 0.7rem;
+      font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #c8c4d6; padding: 8px 0; position: relative; transition: color 0.2s;
+    }
+    nav.menu a::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
+      background: var(--gold); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.28s ease;
+    }
+    nav.menu a:hover, nav.menu a.on { color: var(--text); }
+    nav.menu a:hover::after, nav.menu a.on::after { transform: scaleX(1); }
+    nav.menu a.git {
+      border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+    }
+    nav.menu a.git::after { display: none; }
+    .progress {
+      position: fixed; inset: 0 auto auto 0; z-index: 50;
+      height: 2px; width: 100%; background: var(--gold); pointer-events: none;
+    }
+    .burger {
+      display: none; margin-left: auto;
+      background: none; border: 1px solid var(--line); color: var(--text);
+      font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+    }
+
+    .drawer {
+      display: none; position: fixed; inset: 0; z-index: 38;
+      background: #050508;
+      padding: 96px var(--pad) 40px;
+      flex-direction: column; gap: 6px;
+    }
+    body.menu-open .drawer { display: flex; }
+    .drawer a {
+      text-decoration: none; font-family: var(--font-display);
+      font-size: clamp(1.6rem, 7vw, 2.4rem); letter-spacing: -0.03em;
+      padding: 8px 0; border-bottom: 1px solid var(--line); color: #fff;
+    }
+    .drawer a:hover, .drawer a.on { color: var(--gold); }
+    .drawer .sub {
+      font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); border: 0; margin-top: 18px;
+    }
+
+    /* 3D Viewport Host */
+    #host {
+      position: fixed; inset: 0;
+      width: 100vw; height: 100svh;
+      z-index: 1; touch-action: none;
+    }
+    #host canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      touch-action: none;
+    }
+
+    /* Ambient Glow */
+    .ambient-glow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(0, 240, 255, 0.08), transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.08), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(232, 200, 114, 0.04), transparent 65%);
+    }
+
+    /* Floating Studio Toolbar */
+    .studio-toolbar {
+      position: fixed; top: 76px; left: 16px; right: 16px; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 8px 14px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+    }
+    .pet-select {
+      background: #030408; border: 1px solid var(--panel-border);
+      color: #fff; font-family: var(--font-mono); font-size: 0.8rem;
+      padding: 6px 12px; border-radius: 8px; outline: none; cursor: pointer;
+    }
+    .vibes-group { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    .vibes-group::-webkit-scrollbar { display: none; }
+    .vibe-chip {
+      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line);
+      color: var(--muted); font-family: var(--font-mono); font-size: 0.72rem;
+      padding: 4px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .vibe-chip:hover { color: #fff; border-color: var(--cyan); }
+    .vibe-chip.active {
+      background: rgba(0, 240, 255, 0.15); border-color: var(--cyan);
+      color: var(--cyan); font-weight: 700; box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+    .tool-btns { display: flex; gap: 6px; }
+    .btn-tool {
+      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line);
+      color: var(--text); font-family: var(--font-mono); font-size: 0.75rem;
+      padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-tool:hover { border-color: var(--cyan); background: rgba(0, 240, 255, 0.1); }
+    .btn-tool.active { border-color: var(--gold); color: var(--gold); }
+
+    /* Mascot Info HUD Panel */
+    .mascot-hud {
+      position: fixed; bottom: 20px; left: 16px; z-index: 20;
+      width: clamp(280px, 32vw, 420px);
+      background: var(--panel); border: 1px solid var(--panel-border);
+      border-radius: 16px; padding: 1.25rem; backdrop-filter: blur(20px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+      transition: transform 0.3s ease;
+    }
+    .mascot-hud-header { display: flex; gap: 12px; align-items: center; margin-bottom: 0.75rem; }
+    .mascot-thumb {
+      width: 48px; height: 48px; border-radius: 10px; object-fit: cover;
+      border: 1px solid var(--cyan);
+    }
+    .mascot-kicker {
+      font-family: var(--font-mono); font-size: 0.65rem; color: var(--gold);
+      text-transform: uppercase; letter-spacing: 0.12em;
+    }
+    .mascot-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: #fff; }
+    .mascot-role { font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); }
+    .mascot-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.45; margin-bottom: 0.85rem; }
+    .harness-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 0.72rem; color: #050508;
+      background: var(--gold); padding: 3px 10px; border-radius: 999px;
+      font-weight: 700; margin-bottom: 0.85rem;
+    }
+    .hud-actions { display: flex; gap: 6px; }
+    .btn-hud {
+      flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line);
+      color: #fff; font-family: var(--font-mono); font-size: 0.74rem; padding: 6px;
+      border-radius: 6px; cursor: pointer; text-align: center; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-hud:hover { border-color: var(--cyan); background: rgba(0, 240, 255, 0.12); }
+    .btn-hud.cta { background: var(--cyan); color: #050508; font-weight: 700; border: none; }
+
+    /* Touch Controls Hint */
+    .touch-hint {
+      position: fixed; bottom: 20px; right: 16px; z-index: 15;
+      font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);
+      background: rgba(5, 5, 8, 0.7); padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--line); pointer-events: none;
+    }
+
+    @media (max-width: 880px) {
+      nav.menu { display: none; }
+      .burger { display: inline-flex; }
+      .studio-toolbar { top: 68px; flex-wrap: wrap; }
+      .mascot-hud { bottom: 12px; left: 12px; right: 12px; width: auto; }
+      .touch-hint { display: none; }
+    }
   </style>
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
 </head>
 <body>
-  <div id="host"></div>
-  <header>
-    <div>
-      <p class="sub">A NullAI studio</p>
-      <h1>Zoth Pets <span>// 3D Model Studio</span></h1>
-    </div>
-    <div class="row">
-      <select id="task-vibe">
-        <option value="idle">🧘 Idle / Rest Vibe</option>
-        <option value="coding">⚡ Coding / Build Vibe</option>
-        <option value="security">🛡️ Security / Scan Vibe</option>
-        <option value="aeo">🦉 AEO / Knowledge Vibe</option>
-        <option value="fusion">🔥 Fusion / Swarm Vibe</option>
-        <option value="celebrate">🎉 Shipped / Victory Vibe</option>
-      </select>
-      <select id="style">
-        <option value="realistic">Realistic sculpt</option>
-        <option value="pixel">Voxel / pixel</option>
-        <option value="chibi">Chibi sculpt</option>
-      </select>
-      <button id="wire">Wireframe</button>
-      <button id="reset">Reset cam</button>
-    </div>
+  <a class="skip" href="#host">Skip to 3D Canvas</a>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <div class="ambient-glow"></div>
+
+  <!-- Shared Homepage Top Navigation Bar -->
+  <header class="bar" id="topbar">
+    <a class="brand" href="/">
+      <img src="/assets/mascot/azoth-mask.jpg" alt="" width="36" height="36" />
+      <span><strong>Zoth</strong><small>by NullAI</small></span>
+    </a>
+    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
+    <nav class="menu" aria-label="Primary">
+      <a href="/zoth/">Azoth</a>
+      <a href="http://127.0.0.1:8484/">Deck</a>
+      <a href="/signal/">Signal</a>
+      <a href="/studio/">Studio</a>
+      <a href="/studio/swarm.html">Swarm</a>
+      <a href="/pets/">Pets</a>
+      <a class="on" href="/pets/studio.html">3D Studio</a>
+      <a href="/vault/">Vault</a>
+      <a href="/adytum/">Adytum</a>
+      <a href="/docs/">Docs</a>
+      <a class="git" href="https://github.com/NullAITech/zoth-studio" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
   </header>
-  <aside>
-    <img id="ref" alt="Reference avatar" />
-    <h2 id="name">Kai</h2>
-    <p id="meta">Holographic Cat</p>
-    <p id="vibe-desc">Current Task Vibe: <b>Idle</b>. Switch vibes above to watch procedural kinetics, scanning shields, and kinetic halos adapt in real time.</p>
-  </aside>
-  <div class="strip" id="strip"></div>
 
-  <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-    import { createPetFigure, petPortrait, loadPetTexture, fallbackPetTexture } from './pet-models.js';
+  <!-- Shared Mobile Drawer -->
+  <nav class="drawer" id="drawer" aria-label="Mobile">
+    <a href="/zoth/">Azoth</a>
+    <a href="http://127.0.0.1:8484/">Deck</a>
+    <a href="/signal/">Signal Bridge</a>
+    <a href="/studio/">Studio</a>
+    <a href="/studio/swarm.html">Swarm</a>
+    <a href="/pets/">Pets Roster</a>
+    <a class="on" href="/pets/studio.html">3D Pet Studio</a>
+    <a href="/vault/">Vault</a>
+    <a href="/adytum/">Adytum</a>
+    <a href="/docs/">Docs</a>
+    <a class="sub" href="https://github.com/NullAITech/zoth-studio">GitHub Upstream</a>
+    <a class="sub" href="/#install">Download Binaries</a>
+  </nav>
 
-    const ROSTER = [
-      {id:"kai",name:"Kai",species:"Holographic Cat",color:0x22d3ee},
-      {id:"draco",name:"Draco",species:"Cyber Dragon",color:0xd946ef},
-      {id:"athena",name:"Athena",species:"Mecha Owl",color:0xa78bfa},
-      {id:"lycan",name:"Lycan",species:"Cybernetic Wolf",color:0xef4444},
-      {id:"ignis",name:"Ignis",species:"Neon Phoenix",color:0xf59e0b},
-      {id:"kitsune",name:"Kitsune",species:"Cyber Fox",color:0xfb923c},
-      {id:"pixel-neko",name:"Pixel-Neko",species:"16-Bit Retro Cat",color:0xf472b6},
-      {id:"pixel-shiba",name:"Pixel-Shiba",species:"16-Bit Cyber Doge",color:0xfbbf24},
-      {id:"radical-minion",name:"Radical Minion",species:"Hermes Partner",color:0xeab308},
-      {id:"glitchcat",name:"Glitchcat",species:"RGB Glitch Cat",color:0xff6ad5},
-      {id:"circuit-pup",name:"Circuit Pup",species:"LED Circuit Dog",color:0x7ee787},
-      {id:"terminal-ghost",name:"Terminal Ghost",species:"Phosphor Spirit",color:0x86efac},
-      {id:"savage-codex",name:"Savage Codex",species:"Hacker Familiar",color:0x00ff9d},
-      {id:"ai-workbot",name:"AI Workbot",species:"Task Robot",color:0x8b5cf6},
-      {id:"binary",name:"Binary",species:"Data Spirit",color:0x67e8f9},
+  <!-- 3D Canvas Host -->
+  <div id="host"></div>
+
+  <!-- Studio Toolbar -->
+  <div class="studio-toolbar">
+    <select class="pet-select" id="pet-picker" aria-label="Select Mascot Companion">
+      <!-- Injected via JavaScript -->
+    </select>
+
+    <div class="vibes-group">
+      <button class="vibe-chip active" data-vibe="rest">🧘 Rest</button>
+      <button class="vibe-chip" data-vibe="code">⚡ Code</button>
+      <button class="vibe-chip" data-vibe="scan">🛡️ Scan</button>
+      <button class="vibe-chip" data-vibe="aeo">🦉 AEO</button>
+      <button class="vibe-chip" data-vibe="swarm">🔥 Swarm</button>
+      <button class="vibe-chip" data-vibe="shipped">🎉 Shipped</button>
+    </div>
+
+    <!-- Camera Presets -->
+    <div style="display: flex; gap: 4px;" class="cam-presets-row">
+      <button class="btn-tool active" id="cam-hero" data-cam="hero" title="Hero View">📐 Hero</button>
+      <button class="btn-tool" id="cam-front" data-cam="front" title="Front View">🎯 Front</button>
+      <button class="btn-tool" id="cam-face" data-cam="face" title="Close-Up Face">🔍 Face</button>
+      <button class="btn-tool" id="cam-top" data-cam="top" title="Top-Down">🛸 Top</button>
+    </div>
+
+    <div class="tool-btns">
+      <button class="btn-tool active" id="btn-orbit">🔄 Orbit</button>
+      <button class="btn-tool" id="btn-wire">🕸️ Mesh</button>
+      <button class="btn-tool" id="btn-reset">🎯 Center</button>
+      <button class="btn-tool" id="btn-speak">🔊 Speak</button>
+    </div>
+  </div>
+
+  <!-- Collapsible Shader Customizer Drawer -->
+  <div class="shader-drawer" id="shader-drawer" style="position: fixed; top: 130px; right: 16px; z-index: 20; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px 16px; backdrop-filter: blur(20px); width: 220px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.7);">
+    <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold); font-weight: 700;">
+      <span>🎛️ PBR SHADERS</span>
+      <span style="font-size: 0.65rem; color: var(--cyan); cursor: pointer;" id="btn-reset-shaders">Reset</span>
+    </div>
+    <div class="slider-row">
+      <label style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted); display: flex; justify-content: space-between;">
+        <span>Exposure Glow</span><span id="val-bloom">1.25</span>
+      </label>
+      <input type="range" id="slide-bloom" min="0.5" max="2.5" step="0.05" value="1.25" style="width: 100%; accent-color: var(--cyan); cursor: pointer;" />
+    </div>
+    <div class="slider-row">
+      <label style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted); display: flex; justify-content: space-between;">
+        <span>Obsidian Metal</span><span id="val-metal">0.88</span>
+      </label>
+      <input type="range" id="slide-metal" min="0.0" max="1.0" step="0.05" value="0.88" style="width: 100%; accent-color: var(--gold); cursor: pointer;" />
+    </div>
+    <div class="slider-row">
+      <label style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted); display: flex; justify-content: space-between;">
+        <span>Surface Rough</span><span id="val-rough">0.20</span>
+      </label>
+      <input type="range" id="slide-rough" min="0.0" max="1.0" step="0.05" value="0.20" style="width: 100%; accent-color: var(--purple); cursor: pointer;" />
+    </div>
+  </div>
+
+  <!-- Audio Spectrum Visualizer HUD -->
+  <div class="spectrum-hud" id="spectrum-hud" style="position: fixed; bottom: 20px; right: 16px; z-index: 20; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(16px);">
+    <canvas id="spectrum-canvas" width="100" height="28" style="display: block; border-radius: 4px; background: rgba(0,0,0,0.5);"></canvas>
+    <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--cyan); line-height: 1.3;">
+      <div>NEURAL DSP</div>
+      <div style="color: var(--gold); font-size: 0.60rem;" id="dsp-status">ONLINE</div>
+    </div>
+  </div>
+
+  <!-- Mascot Info HUD Panel -->
+  <div class="mascot-hud" id="mascot-hud">
+    <div class="mascot-hud-header">
+      <img src="/assets/pets/azoth-neon.jpg" alt="" class="mascot-thumb" id="hud-thumb" onerror="this.src='/assets/mascot/azoth-mask.jpg'" />
+      <div>
+        <div class="mascot-kicker" id="hud-kicker">LEAD ARCHITECT</div>
+        <div class="mascot-name" id="hud-name">⚡ Azoth</div>
+        <div class="mascot-role" id="hud-role">Lead Architect & Pair Programmer</div>
+      </div>
+    </div>
+    <div class="harness-badge" id="hud-harness">⚡ Google Antigravity CLI (agy)</div>
+    <div class="mascot-desc" id="hud-desc">Sovereign Antigravity AI pair programming assistant with deep codebase reasoning and autonomous execution.</div>
+    <div class="hud-actions" style="margin-bottom: 6px;">
+      <a class="btn-hud" href="/pets/">🐾 Hangar</a>
+      <a class="btn-hud" id="btn-open-nexus" href="/studio/nexus-3d.html?pet=azoth">🚀 Nexus 3D</a>
+      <a class="btn-hud" id="btn-open-arena" href="/studio/fusion-arena.html?pet1=azoth">⚔️ Arena</a>
+    </div>
+    <div class="hud-actions">
+      <button class="btn-hud" id="btn-export-obj" title="Download Wavefront OBJ 3D Mesh">📦 Download OBJ</button>
+      <button class="btn-hud cta" id="btn-copy-sig">Copy CLI</button>
+    </div>
+  </div>
+
+  <div class="touch-hint" style="display:none">👆 Drag to rotate · Scroll/pinch to zoom</div>
+
+  <!-- 3D Engine Script -->
+  <script src="/pets/pet-models.js"></script>
+  <script>
+    // Mascots Metadata
+    const MASCOTS = [
+      { id: "azoth", name: "Azoth", emoji: "⚡", domain: "LEAD ARCHITECT", role: "Lead Architect & Pair Programmer", harness: "⚡ Google Antigravity CLI (agy)", desc: "Sovereign Antigravity AI pair programming assistant with deep codebase reasoning and autonomous execution on Parrot OS." },
+      { id: "lycan", name: "Lycan", emoji: "🐺", domain: "SECURITY & AST", role: "Security & AST Validation", harness: "🐺 Google Antigravity Sentinel (agy)", desc: "Lead security architect enforcing Python AST boundaries, OWASP Top 10 mitigation, and mathematical observability." },
+      { id: "kitsune", name: "Kitsune", emoji: "🦊", domain: "HIGH THROUGHPUT", role: "High-Throughput Execution", harness: "🦊 xAI Grok CLI (grok)", desc: "Rapid concurrent code synthesizer with GitHub Octokit tool harnesses and multi-repo pull request workflows." },
+      { id: "draco", name: "Draco", emoji: "🐲", domain: "JSON & SCHEMAS", role: "JSON Schemas & Tools", harness: "🐲 Hermes Agent CLI (hermes)", desc: "Schema validator and function caller orchestrating complex visual DAG automation playbooks." },
+      { id: "zoth", name: "Zoth", emoji: "⚡", domain: "SOVEREIGN COMPANION", role: "Sovereign Local Companion", harness: "🟢 Local Ollama Engine (:11434)", desc: "Zero-cloud private local AI model (zoth-ai:latest / qwen2.5-coder) running directly on machine loopback." },
+      { id: "workbot", name: "Workbot", emoji: "🤖", domain: "LOCAL NEURAL", role: "Local Neural Weights", harness: "🤖 Ollama Private Host (:11434)", desc: "Offline worker performing AST linting, code translation, and background summarization with zero network leakage." },
+      { id: "kai", name: "Kai", emoji: "🔥", domain: "INSPECTION & A11Y", role: "Site Inspector & A11y Auditor", harness: "🔥 Chrome DevTools MCP", desc: "Live DOM inspector and accessibility tester verifying WCAG-AA standards and Lighthouse performance metrics." },
+      { id: "athena", name: "Athena", emoji: "🦉", domain: "KNOWLEDGE & AEO", role: "AEO & Knowledge Graph", harness: "🦉 llms.txt & Obsidian Engine", desc: "Answer Engine Optimization architect curating llms.txt manifests and bidirectional Obsidian knowledge vaults." },
+      { id: "pixelneko", name: "Pixel-Neko", emoji: "🐱", domain: "REGISTRY & BUS", role: "Tool Registry Indexer", harness: "🐱 Zoth Contract Bus", desc: "Contract-validated registry indexer managing 47+ chained tools and multi-runtime bridges." },
+      { id: "shiba", name: "Pixel-Shiba", emoji: "🐕", domain: "VAULT SENTINEL", role: "Argon2id Vault Gatekeeper", harness: "🐕 Rust XChaCha20 Daemon (:8787)", desc: "Hardware-contained BYOK vault warden with Argon2id key derivation and secure memory zeroization." },
+      { id: "aquila", name: "Aquila", emoji: "🦅", domain: "EDGE & TELEMETRY", role: "Edge Routing & Telemetry", harness: "🦅 Global Edge Isolates", desc: "Global CDN edge isolate router orchestrating waterfall latency telemetry and DNS health checks." },
+      { id: "leviathan", name: "Leviathan", emoji: "🐉", domain: "VECTOR MATRIX", role: "Vector Memory Matrix", harness: "🐉 Local Vector Database", desc: "Long-term episodic memory engine with local embedding indexing for cross-session reasoning." },
+      { id: "onyx", name: "Onyx", emoji: "🐆", domain: "RED TEAM", role: "Red Team OSINT Recon", harness: "🐆 OWASP Threat Modeler", desc: "Attack surface mapper and TLS 1.3 cert probe identifying exposed endpoints and security misconfigurations." },
+      { id: "chronos", name: "Chronos", emoji: "🦌", domain: "DAG CHRONICLE", role: "DAG & Milestone Chronicle", harness: "🦌 Git DAG Synthesizer", desc: "Project milestone tracker generating topological execution graphs and structured release logs." },
+      { id: "aether", name: "Aether", emoji: "🛸", domain: "SWARM BUS", role: "Swarm Bus Event Conductor", harness: "🛸 SSE & Pub/Sub Streamer", desc: "Real-time pub/sub event broadcaster orchestrating lockless IPC telemetry between agents." },
+      { id: "scorpius", name: "Scorpius", emoji: "🦂", domain: "EXPLOIT AUDITOR", role: "Zero-Day Exploit Auditor", harness: "🦂 Memory Boundary Fuzzer", desc: "Privilege boundary penetration tester auditing buffer overflows, token leakage, and sanitized inputs." }
     ];
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x05050c);
-    scene.fog = new THREE.FogExp2(0x05050c, 0.045);
-
-    const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.08, 80);
-    camera.position.set(0.2, 1.45, 5.1);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.08;
-    document.getElementById('host').appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.minDistance = 2.4;
-    controls.maxDistance = 12;
-    controls.target.set(0, 1.05, 0);
-
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.48, 0.35, 0.82));
-    composer.addPass(new OutputPass());
-
-    scene.add(new THREE.AmbientLight(0x8b7bb8, 0.55));
-    const key = new THREE.DirectionalLight(0xffffff, 1.15);
-    key.position.set(3, 6, 4);
-    scene.add(key);
-    const rim = new THREE.PointLight(0x22d3ee, 2.2, 20);
-    rim.position.set(-3, 2, -2);
-    scene.add(rim);
-    const fill = new THREE.PointLight(0xf472b6, 1.2, 16);
-    fill.position.set(3, 1.4, 2);
-    scene.add(fill);
-
-    const floor = new THREE.Mesh(
-      new THREE.CircleGeometry(2.4, 64),
-      new THREE.MeshStandardMaterial({ color: 0x0c0c16, metalness: 0.7, roughness: 0.28, emissive: 0x12081e, emissiveIntensity: 0.4 })
-    );
-    floor.rotation.x = -Math.PI / 2;
-    scene.add(floor);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(1.05, 0.018, 10, 80),
-      new THREE.MeshBasicMaterial({ color: 0xa855f7 })
-    );
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = 0.02;
-    scene.add(ring);
-
-    const cache = new Map();
-    async function resolveTex(id) {
-      const url = petPortrait(id);
-      if (cache.has(url)) return cache.get(url);
-      const tex = (await loadPetTexture(THREE, url)) || fallbackPetTexture(THREE);
-      cache.set(url, tex);
-      return tex;
-    }
-
-    let current = null;
-    let showGen = 0;
-    const startId = new URLSearchParams(location.search).get("pet") || location.hash.replace("#", "");
-    let selected = ROSTER.find((p) => p.id === startId) || ROSTER[0];
-    let wire = false;
-
-    async function show(pet) {
-      const gen = ++showGen;
-      selected = pet;
-      if (current) {
-        scene.remove(current.group);
-        current.dispose();
-        current = null;
+    // Mobile Drawer Toggle
+    const burger = document.getElementById("burger");
+    burger.addEventListener("click", () => {
+      const open = document.body.classList.toggle("menu-open");
+      burger.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.getElementById("drawer").addEventListener("click", (e) => {
+      if (e.target.tagName === "A") {
+        document.body.classList.remove("menu-open");
+        burger.setAttribute("aria-expanded", "false");
       }
-      const style = document.getElementById('style').value;
-      const tex = await resolveTex(pet.id);
-      if (gen !== showGen) return;
-      const vibe = document.getElementById('task-vibe').value;
-      current = createPetFigure(THREE, { id: pet.id, color: pet.color, texture: tex, style, initialVibe: vibe });
-      scene.add(current.group);
-      current.group.traverse((o) => {
-        if (o.material && 'wireframe' in o.material) o.material.wireframe = wire;
-      });
-      document.getElementById('name').textContent = pet.name;
-      document.getElementById('meta').textContent = pet.species;
-      document.getElementById('vibe-desc').innerHTML = `Current Task Vibe: <b>${vibe.toUpperCase()}</b>. Procedural aura, wireframe rotation, and kinematic frequency adapted.`;
-      document.getElementById('ref').src = petPortrait(pet.id);
-      document.querySelectorAll('.chip').forEach((el) => {
-        el.classList.toggle('active', el.dataset.id === pet.id);
-      });
-      const next = `?pet=${pet.id}`;
-      if (location.search !== next) history.replaceState(null, "", next);
-    }
-
-    const strip = document.getElementById('strip');
-    ROSTER.forEach((pet) => {
-      const el = document.createElement('div');
-      el.className = 'chip' + (pet.id === selected.id ? ' active' : '');
-      el.dataset.id = pet.id;
-      el.innerHTML = `<img src="${petPortrait(pet.id)}" alt="${pet.name}" /><b>${pet.name}</b>`;
-      el.onclick = () => show(pet);
-      strip.appendChild(el);
     });
 
-    document.getElementById('task-vibe').onchange = (e) => {
-      const vibe = e.target.value;
-      if (!current) return;
-      current.setTaskVibe(vibe);
-      document.getElementById('vibe-desc').innerHTML = `Current Task Vibe: <b>${vibe.toUpperCase()}</b>. Procedural aura, wireframe rotation, and kinematic frequency adapted.`;
-    };
-    document.getElementById('style').onchange = () => show(selected);
-    document.getElementById('wire').onclick = () => {
-      wire = !wire;
-      if (current) {
-        current.group.traverse((o) => {
-          if (o.material && 'wireframe' in o.material) o.material.wireframe = wire;
+    // Populate Select Options
+    const picker = document.getElementById("pet-picker");
+    picker.innerHTML = MASCOTS.map(m => `<option value="${m.id}">${m.emoji} ${m.name} — ${m.role}</option>`).join("");
+
+    // Read Query Param
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialPetId = urlParams.get("pet") || "azoth";
+    if (MASCOTS.some(m => m.id === initialPetId)) {
+      picker.value = initialPetId;
+    }
+
+    // Three.js Scene Setup
+    const container = document.getElementById("host");
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0.5, 4.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    container.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0x00f0ff, 1.8);
+    mainLight.position.set(3, 4, 3);
+    scene.add(mainLight);
+
+    const goldLight = new THREE.DirectionalLight(0xe8c872, 1.2);
+    goldLight.position.set(-3, -2, 2);
+    scene.add(goldLight);
+
+    const purpleLight = new THREE.PointLight(0xa855f7, 2.0, 10);
+    purpleLight.position.set(0, -1, 2);
+    scene.add(purpleLight);
+
+    // Dynamic Pet Figure
+    let petFigure = null;
+    let autoRotate = true;
+    let wireframeMode = false;
+    let currentVibe = "rest";
+
+    const textureLoader = new THREE.TextureLoader();
+
+    async function loadMascot3D(id) {
+      if (petFigure && petFigure.group) {
+        scene.remove(petFigure.group);
+        if (petFigure.dispose) petFigure.dispose();
+      }
+
+      const mascot = MASCOTS.find(m => m.id === id) || MASCOTS[0];
+      const texPath = window.PetModels ? window.PetModels.petPortrait(id) : (id === 'azoth' ? '/assets/mascot/azoth-quantum-orb.jpg' : `/assets/pets/${id}-neon.jpg`);
+
+      let texture = null;
+      if (window.PetModels) {
+        texture = await window.PetModels.loadPetTexture(THREE, texPath);
+        petFigure = window.PetModels.createPetFigure(THREE, {
+          id: id,
+          color: (window.PetModels.PET_SPECIES[id] && window.PetModels.PET_SPECIES[id].vibeColor) || "#00f0ff",
+          texture: texture,
+          style: "realistic",
+          initialVibe: currentVibe,
+          withAura: true
         });
       }
-    };
-    document.getElementById('reset').onclick = () => {
-      camera.position.set(0.2, 1.45, 5.1);
-      controls.target.set(0, 1.05, 0);
-    };
 
-    window.addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-      composer.setSize(innerWidth, innerHeight);
+      if (petFigure && petFigure.group) {
+        scene.add(petFigure.group);
+      }
+
+      // Update HUD
+      const thumbEl = document.getElementById("hud-thumb");
+      if (thumbEl) thumbEl.src = texPath;
+      const kickerEl = document.getElementById("hud-kicker");
+      if (kickerEl) kickerEl.textContent = mascot.domain;
+      const nameEl = document.getElementById("hud-name");
+      if (nameEl) nameEl.textContent = `${mascot.emoji} ${mascot.name}`;
+      const roleEl = document.getElementById("hud-role");
+      if (roleEl) roleEl.textContent = mascot.role;
+      const harnessEl = document.getElementById("hud-harness");
+      if (harnessEl) harnessEl.textContent = mascot.harness;
+      const descEl = document.getElementById("hud-desc");
+      if (descEl) descEl.textContent = mascot.desc;
+
+      try {
+        sessionStorage.setItem("zoth_active_pet", id);
+      } catch (e) {}
+
+      // Update Cross-Studio Links
+      const nexusLink = document.getElementById("btn-open-nexus");
+      if (nexusLink) nexusLink.href = `/studio/nexus-3d.html?pet=${id}`;
+      const arenaLink = document.getElementById("btn-open-arena");
+      if (arenaLink) arenaLink.href = `/studio/fusion-arena.html?pet1=${id}`;
+    }
+
+    loadMascot3D(picker.value);
+
+    picker.addEventListener("change", (e) => {
+      loadMascot3D(e.target.value);
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set("pet", e.target.value);
+      window.history.replaceState({}, "", newUrl);
     });
 
-    const clock = new THREE.Clock();
-    function tick() {
-      requestAnimationFrame(tick);
-      const t = clock.getElapsedTime();
-      ring.rotation.z = t * 0.2;
-      if (current && current.tick) current.tick(t, camera);
-      controls.update();
-      composer.render();
+    // Camera Presets with Smooth Interpolation
+    let targetCamPos = new THREE.Vector3(0, 0.5, 4.2);
+    let targetLookAt = new THREE.Vector3(0, 0, 0);
+
+    const CAM_PRESETS = {
+      hero: { pos: [0, 0.5, 4.2], look: [0, 0, 0] },
+      front: { pos: [0, 0, 3.8], look: [0, 0, 0] },
+      face: { pos: [0, 0.35, 2.2], look: [0, 0.35, 0] },
+      top: { pos: [0, 4.2, 0.8], look: [0, 0, 0] }
+    };
+
+    document.querySelectorAll(".cam-presets-row button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".cam-presets-row button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const mode = btn.dataset.cam;
+        if (CAM_PRESETS[mode]) {
+          targetCamPos.set(...CAM_PRESETS[mode].pos);
+          targetLookAt.set(...CAM_PRESETS[mode].look);
+        }
+      });
+    });
+
+    // PBR Shader Controls
+    const slideBloom = document.getElementById("slide-bloom");
+    const slideMetal = document.getElementById("slide-metal");
+    const slideRough = document.getElementById("slide-rough");
+
+    function applyPBRParams() {
+      const exposure = parseFloat(slideBloom.value);
+      const metalness = parseFloat(slideMetal.value);
+      const roughness = parseFloat(slideRough.value);
+
+      renderer.toneMappingExposure = exposure;
+      document.getElementById("val-bloom").textContent = exposure.toFixed(2);
+      document.getElementById("val-metal").textContent = metalness.toFixed(2);
+      document.getElementById("val-rough").textContent = roughness.toFixed(2);
+
+      if (petFigure && petFigure.setMaterialParams) {
+        petFigure.setMaterialParams({ metalness, roughness });
+      } else if (petFigure && petFigure.group) {
+        petFigure.group.traverse(child => {
+          if (child.isMesh && child.material && !child.material.isMeshBasicMaterial) {
+            child.material.metalness = metalness;
+            child.material.roughness = roughness;
+            child.material.needsUpdate = true;
+          }
+        });
+      }
     }
-    show(selected);
-    tick();
+
+    slideBloom.addEventListener("input", applyPBRParams);
+    slideMetal.addEventListener("input", applyPBRParams);
+    slideRough.addEventListener("input", applyPBRParams);
+
+    document.getElementById("btn-reset-shaders").addEventListener("click", () => {
+      slideBloom.value = 1.25;
+      slideMetal.value = 0.88;
+      slideRough.value = 0.20;
+      applyPBRParams();
+    });
+
+    // 1-Click Wavefront OBJ Exporter
+    document.getElementById("btn-export-obj").addEventListener("click", () => {
+      const current = MASCOTS.find(m => m.id === picker.value) || MASCOTS[0];
+      if (!petFigure || !window.PetModels || !window.PetModels.exportFigureToOBJ) {
+        alert("3D Figure Engine is initializing. Please wait...");
+        return;
+      }
+      const objData = window.PetModels.exportFigureToOBJ(THREE, petFigure, current.name);
+      const blob = new Blob([objData], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `zoth-${current.id}-3d-model.obj`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // Real-Time Web Audio Oscilloscope Spectrum Visualizer
+    let audioCtx = null;
+    let analyser = null;
+    const spectrumCanvas = document.getElementById("spectrum-canvas");
+    const spectrumCtx = spectrumCanvas ? spectrumCanvas.getContext("2d") : null;
+
+    function initAudioDSP() {
+      if (audioCtx) return audioCtx;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+      audioCtx = new AudioContextClass();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      return audioCtx;
+    }
+
+    function playSynthesizedChirp(freq = 440, duration = 0.3) {
+      try {
+        const ctx = initAudioDSP();
+        if (!ctx) return;
+        if (ctx.state === "suspended") ctx.resume();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.8, ctx.currentTime + duration);
+
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(analyser);
+        analyser.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+        document.getElementById("dsp-status").textContent = "VOCALIZING";
+        setTimeout(() => { document.getElementById("dsp-status").textContent = "ONLINE"; }, duration * 1000 + 100);
+      } catch (e) {}
+    }
+
+    function drawSpectrum() {
+      if (!spectrumCtx || !analyser) {
+        if (spectrumCtx) {
+          // Idle ambient simulation
+          spectrumCtx.fillStyle = "#030408";
+          spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+          spectrumCtx.fillStyle = "#00f0ff";
+          const t = Date.now() * 0.003;
+          for (let i = 0; i < 16; i++) {
+            const h = Math.sin(t + i * 0.4) * 4 + 6;
+            spectrumCtx.fillRect(i * 6 + 4, spectrumCanvas.height - h, 4, h);
+          }
+        }
+        return;
+      }
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      analyser.getByteFrequencyData(dataArray);
+
+      spectrumCtx.fillStyle = "#030408";
+      spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+
+      const barWidth = (spectrumCanvas.width / 16) - 1;
+      for (let i = 0; i < 16; i++) {
+        const v = (dataArray[i * 2] || 0) / 255;
+        const barHeight = Math.max(v * spectrumCanvas.height, 2);
+        spectrumCtx.fillStyle = i % 2 === 0 ? "#00f0ff" : "#e8c872";
+        spectrumCtx.fillRect(i * (barWidth + 1) + 2, spectrumCanvas.height - barHeight, barWidth, barHeight);
+      }
+    }
+
+    // Vibe Chips Listener
+    const vibeChips = document.querySelectorAll(".vibe-chip");
+    vibeChips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        vibeChips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        currentVibe = chip.dataset.vibe;
+        if (petFigure && petFigure.setTaskVibe) {
+          petFigure.setTaskVibe(currentVibe);
+        }
+        playSynthesizedChirp(520, 0.25);
+      });
+    });
+
+    // Toolbar Buttons
+    const btnOrbit = document.getElementById("btn-orbit");
+    btnOrbit.addEventListener("click", () => {
+      autoRotate = !autoRotate;
+      btnOrbit.classList.toggle("active", autoRotate);
+    });
+
+    const btnWire = document.getElementById("btn-wire");
+    btnWire.addEventListener("click", () => {
+      wireframeMode = !wireframeMode;
+      btnWire.classList.toggle("active", wireframeMode);
+      if (petFigure && petFigure.group) {
+        petFigure.group.traverse(child => {
+          if (child.isMesh && child.material) {
+            child.material.wireframe = wireframeMode;
+          }
+        });
+      }
+    });
+
+    const btnReset = document.getElementById("btn-reset");
+    btnReset.addEventListener("click", () => {
+      targetCamPos.set(0, 0.5, 4.2);
+      targetLookAt.set(0, 0, 0);
+      if (petFigure && petFigure.group) {
+        petFigure.group.rotation.set(0, 0, 0);
+      }
+    });
+
+    const btnSpeak = document.getElementById("btn-speak");
+    btnSpeak.addEventListener("click", () => {
+      const current = MASCOTS.find(m => m.id === picker.value);
+      if (!current) return;
+      playSynthesizedChirp(440, 0.4);
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(`Greetings Operator. I am ${current.name}, ${current.role} of Zoth Studio.`);
+        window.speechSynthesis.speak(utter);
+      }
+    });
+
+    document.getElementById("btn-copy-sig").addEventListener("click", () => {
+      const current = MASCOTS.find(m => m.id === picker.value);
+      if (!current) return;
+      navigator.clipboard.writeText(`@${current.id} report active mission status`);
+      alert(`Copied command: @${current.id} report active mission status`);
+    });
+
+    // Touch & Pointer Drag Rotation
+    let isDragging = false;
+    let prevPointerX = 0;
+    let prevPointerY = 0;
+
+    container.addEventListener("pointerdown", (e) => {
+      isDragging = true;
+      prevPointerX = e.clientX;
+      prevPointerY = e.clientY;
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!petFigure || !petFigure.group) return;
+      const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+      if (petFigure.setGaze) petFigure.setGaze(nx, ny);
+
+      if (!isDragging) return;
+      const deltaX = e.clientX - prevPointerX;
+      const deltaY = e.clientY - prevPointerY;
+      prevPointerX = e.clientX;
+      prevPointerY = e.clientY;
+
+      petFigure.group.rotation.y += deltaX * 0.008;
+      petFigure.group.rotation.x += deltaY * 0.008;
+    });
+
+    window.addEventListener("pointerup", () => { isDragging = false; });
+    window.addEventListener("pointercancel", () => { isDragging = false; });
+
+    // Wheel Zoom
+    window.addEventListener("wheel", (e) => {
+      targetCamPos.z = Math.min(Math.max(targetCamPos.z + e.deltaY * 0.003, 1.8), 7.0);
+    }, { passive: true });
+
+    // Window Resize & ResizeObserver for robust layout adaptation
+    function handleResize() {
+      const w = container.clientWidth || window.innerWidth;
+      const h = container.clientHeight || window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+    window.addEventListener("resize", handleResize, { passive: true });
+    if (window.ResizeObserver) {
+      new ResizeObserver(handleResize).observe(container);
+    }
+
+    // Animation Render Loop
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const elapsed = clock.getElapsedTime();
+
+      // Smooth camera interpolation
+      camera.position.lerp(targetCamPos, 0.08);
+
+      if (petFigure) {
+        if (petFigure.tick) petFigure.tick(elapsed, delta);
+        if (petFigure.update) petFigure.update(delta, elapsed);
+      }
+
+      if (autoRotate && !isDragging && petFigure && petFigure.group) {
+        petFigure.group.rotation.y += 0.4 * delta;
+      }
+
+      drawSpectrum();
+      renderer.render(scene, camera);
+    }
+    animate();
   </script>
-  <script src="/assets/celestial-trail.js"></script>
 </body>
 </html>

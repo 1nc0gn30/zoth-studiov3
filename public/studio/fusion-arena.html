@@ -204,7 +204,7 @@
           <a href="/studio/">Dashboard</a>
           <a href="/studio/nexus-3d.html">Nexus 3D</a>
           <a href="/studio/fusion-arena.html" class="is-active" style="color:var(--magenta); font-weight:700;">⚔️ Fusion Arena</a>
-          <a href="/studio/omnipost.html">OmniPost</a>
+          <a href="/pets/pet-studio.html">💎 3D Studio</a>
           <a href="/pets/spawn-pets.html">3D Pets</a>
           <a href="/studio/agent-composer.html">Composer</a>
           <a href="/studio/math-pillars.html">Math Pillars</a>
@@ -336,6 +336,14 @@
       let clock = new THREE.Clock();
       let audioCtx = null;
       let battleLogs = [];
+      let petModelsEngine = null;
+
+      async function loadPetEngine() {
+        if (!petModelsEngine) {
+          petModelsEngine = await import('/pets/pet-models.js?v=20260819ultra');
+        }
+        return petModelsEngine;
+      }
 
       function getAudioContext() {
         if (!audioCtx) {
@@ -382,12 +390,85 @@
             osc.start(now);
             osc.stop(now + 0.4);
           }
+        } catch (e) {}
+      }
+
+      async function spawnPetCombatant(idx, petId) {
+        try {
+          const engine = await loadPetEngine();
+          const { createPetFigure, loadPetTexture, fallbackPetTexture, petPortrait, PET_SPECIES } = engine;
+          
+          const id = petId || (idx === 0 ? 'kai' : idx === 1 ? 'draco' : idx === 2 ? 'athena' : 'ghostbyte');
+          const spec = PET_SPECIES[id] || { name: id, species: 'Cyber Combatant', vibeColor: '#00e5ff', harness: '@swarm' };
+          const color = spec.vibeColor || '#00e5ff';
+          
+          const tex = (await loadPetTexture(THREE, petPortrait(id))) || fallbackPetTexture(THREE);
+          const figure = createPetFigure(THREE, {
+            id: id,
+            color: color,
+            texture: tex,
+            style: 'realistic',
+            initialVibe: 'fusion',
+            withAura: true
+          });
+
+          figure.group.scale.setScalar(0.72);
+
+          const angle = (idx / 4) * Math.PI * 2;
+          const radius = 5.0;
+          const grp = new THREE.Group();
+          grp.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+          grp.add(figure.group);
+
+          grp.userData = {
+            initialAngle: angle,
+            speed: 0.8 + idx * 0.2,
+            radius: radius,
+            name: spec.name || id,
+            petId: id,
+            petFigure: figure,
+            species: spec.species,
+            role: spec.role,
+            harness: spec.harness,
+            color: color
+          };
+
+          if (combatants[idx]) {
+            scene.remove(combatants[idx]);
+            if (combatants[idx].userData && combatants[idx].userData.petFigure) {
+              combatants[idx].userData.petFigure.dispose();
+            }
+          }
+
+          combatants[idx] = grp;
+          scene.add(grp);
+          updateRosterCard(idx, spec, id, petPortrait(id));
         } catch (e) {
-          // Soft fail for audio policies
+          console.error("Failed to spawn pet combatant:", e);
+          spawnCombatant(idx, 0x00e5ff, petId || 'Fighter');
         }
       }
 
-      function initArena() {
+      function updateRosterCard(idx, spec, id, portraitUrl) {
+        const rosterList = document.getElementById('agent-roster-list');
+        if (!rosterList) return;
+        const cards = rosterList.querySelectorAll('.agent-card');
+        if (cards[idx]) {
+          cards[idx].innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="${portraitUrl || '/assets/pets/kai-neon.jpg'}" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" />
+                <strong style="color: ${spec.vibeColor || 'var(--cyan)'};">@${spec.name || id}</strong>
+              </div>
+              <span class="hud-pill" style="font-size: 0.62rem; padding: 2px 6px; border-color: ${spec.vibeColor || 'var(--cyan)'}; color: ${spec.vibeColor || 'var(--cyan)'};">${(spec.domain || 'COMBATANT').toUpperCase()}</span>
+            </div>
+            <small style="color: var(--muted); margin-top: 2px;">${spec.role || spec.species || 'Companion Fighter'} · <em>${spec.harness || '@swarm'}</em></small>
+            <div class="meter-bar"><div class="meter-fill" style="width: ${100 - idx*4}%; background: ${spec.vibeColor || 'var(--cyan)'};"></div></div>
+          `;
+        }
+      }
+
+      async function initArena() {
         const host = document.getElementById('arena-canvas');
         scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x020306, 0.012);
@@ -442,11 +523,56 @@
         ring.position.y = -1.89;
         scene.add(ring);
 
-        // Spawn Interactive Combatant Orbs
-        spawnCombatant(0, 0x00e5ff, 'Antigravity');
-        spawnCombatant(1, 0xfbbf24, 'Grok');
-        spawnCombatant(2, 0xd946ef, 'Hermes');
-        spawnCombatant(3, 0x38bdf8, 'GhostByte');
+        // Read URL parameters or Session Storage
+        const urlParams = new URLSearchParams(window.location.search);
+        const p1 = urlParams.get('pet1') || urlParams.get('pet') || sessionStorage.getItem('zoth_arena_pet1') || sessionStorage.getItem('zoth_active_pet') || 'kai';
+        const p2 = urlParams.get('pet2') || sessionStorage.getItem('zoth_arena_pet2') || (p1 === 'draco' ? 'kai' : 'draco');
+        const p3 = urlParams.get('pet3') || 'athena';
+        const p4 = urlParams.get('pet4') || 'ghostbyte';
+
+        await Promise.all([
+          spawnPetCombatant(0, p1),
+          spawnPetCombatant(1, p2),
+          spawnPetCombatant(2, p3),
+          spawnPetCombatant(3, p4)
+        ]);
+
+        logBattle(`⚡ Swarm Combatants deployed: @${p1} vs @${p2}!`);
+
+        spawnSwarmParticleTornado();
+
+        window.addEventListener('resize', onResize);
+        animate();
+      }
+
+      function spawnCombatant(idx, color, name) {
+        const grp = new THREE.Group();
+        const angle = (idx / 4) * Math.PI * 2;
+        const radius = 5.0;
+
+        grp.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+
+        const geo = new THREE.OctahedronGeometry(1.0, 1);
+        const mat = new THREE.MeshPhysicalMaterial({
+          color: color,
+          emissive: color,
+          emissiveIntensity: 0.8,
+          roughness: 0.1,
+          metalness: 0.8
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        grp.add(mesh);
+
+        const ringG = new THREE.TorusGeometry(1.6, 0.05, 16, 64);
+        const ringM = new THREE.MeshBasicMaterial({ color: color });
+        const r1 = new THREE.Mesh(ringG, ringM);
+        r1.rotation.x = Math.PI / 3;
+        grp.add(r1);
+
+        grp.userData = { initialAngle: angle, speed: 0.8 + idx * 0.2, radius: radius, name: name };
+        combatants[idx] = grp;
+        scene.add(grp);
+      }
 
         spawnSwarmParticleTornado();
 
@@ -607,14 +733,18 @@
       function animate() {
         requestAnimationFrame(animate);
         const t = clock.getElapsedTime();
+        const dt = clock.getDelta();
 
         combatants.forEach((c, i) => {
+          if (!c) return;
           const d = c.userData;
           c.position.x = Math.cos(d.initialAngle + t * d.speed) * d.radius;
           c.position.z = Math.sin(d.initialAngle + t * d.speed) * d.radius;
-          c.position.y = Math.sin(t * 2 + i) * 0.8;
-          c.rotation.x += 0.02;
-          c.rotation.y += 0.03;
+          c.position.y = Math.sin(t * 2 + i) * 0.5;
+
+          if (d.petFigure && d.petFigure.tick) {
+            d.petFigure.tick(t, dt);
+          }
         });
 
         if (vortexParticles) {

@@ -84,11 +84,10 @@ def _get_handler_attr(name: str, default=None):
 # ── Route handlers ──
 
 async def dashboard_index(request: Request) -> Response:
-    # DASHBOARD_DIR is already .../dashboard/dist
     for candidate in (
+        (_orch_dir or Path()) / "dashboard.html",
         (_dashboard_dir or Path()) / "index.html",
         (_dashboard_dir or Path()) / "dist" / "index.html",
-        (_orch_dir or Path()) / "dashboard.html",
     ):
         if candidate.exists() and candidate.is_file():
             return _file_response(candidate)

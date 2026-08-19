@@ -239,6 +239,7 @@
         transform: translateY(-1px);
       }
     </style>
+      <link rel="stylesheet" href="/assets/zoth-mobile.css" />
   </head>
   <body class="deck-page">
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -429,6 +430,55 @@
       let isRecording = false;
       let mediaRecorder = null;
       let recordedChunks = [];
+      let petModelsEngine = null;
+      let petFigures = [];
+
+      async function loadPetEngine() {
+        if (!petModelsEngine) {
+          petModelsEngine = await import('/pets/pet-models.js?v=20260819ultra');
+        }
+        return petModelsEngine;
+      }
+
+      async function spawnPetFigure(petId, vibe = 'idle') {
+        try {
+          const engine = await loadPetEngine();
+          const { createPetFigure, loadPetTexture, fallbackPetTexture, petPortrait, PET_SPECIES } = engine;
+          
+          const id = petId || 'kai';
+          const spec = PET_SPECIES[id] || { name: id, vibeColor: '#00e5ff', species: 'Cyber Familiar' };
+          const color = spec.vibeColor || '#00e5ff';
+          
+          const tex = (await loadPetTexture(THREE, petPortrait(id))) || fallbackPetTexture(THREE);
+          const figure = createPetFigure(THREE, {
+            id: id,
+            color: color,
+            texture: tex,
+            style: 'realistic',
+            initialVibe: vibe,
+            withAura: true
+          });
+
+          const group = figure.group;
+          group.position.set(0, 0.98, 0);
+          group.name = `Companion: ${spec.name || id}`;
+          group.userData = { isPet: true, petId: id, figure: figure };
+
+          scene.add(group);
+          meshList.push(group);
+          petFigures.push(figure);
+
+          selectObject(group);
+          updateOutliner();
+          updateStats();
+          
+          const tag = document.querySelector('.viewport-top-hud .tag-pill');
+          if (tag) tag.textContent = `🐾 3D Volumetric Companion: ${spec.name || id} (${spec.species || 'Familiar'})`;
+        } catch (e) {
+          console.error("Failed to spawn pet in Nexus 3D:", e);
+          spawnPrimitive('crystal');
+        }
+      }
 
       function initNexus3D() {
         const host = document.getElementById('three-viewport');
@@ -486,8 +536,14 @@
         // Ambient Particle System
         initParticleSystem();
 
-        // Spawn Initial Hero Geometry
-        spawnPrimitive('crystal');
+        // Ingest Pet Parameter or Fallback to Hero Geometry
+        const urlParams = new URLSearchParams(window.location.search);
+        const petParam = urlParams.get('pet') || sessionStorage.getItem('zoth_active_pet');
+        if (petParam) {
+          spawnPetFigure(petParam);
+        } else {
+          spawnPrimitive('crystal');
+        }
 
         // Drag & Drop Custom GLB/OBJ Files into Viewport
         host.addEventListener('dragover', (e) => e.preventDefault());
@@ -502,7 +558,10 @@
           if (e.key === 'Delete') deleteSelectedMesh();
         });
 
-        window.addEventListener('resize', onResize);
+        window.addEventListener('resize', onResize, { passive: true });
+        if (window.ResizeObserver) {
+          new ResizeObserver(onResize).observe(host);
+        }
         animate();
       }
 
@@ -900,12 +959,20 @@
         btn.textContent = '⚡ Synthesizing...';
 
         setTimeout(() => {
-          if (prompt.includes('tesseract') || prompt.includes('4d') || prompt.includes('hypercube')) {
+          const knownPets = ['kai', 'draco', 'athena', 'lycan', 'ignis', 'kitsune', 'azoth', 'zoth', 'workbot', 'aquila', 'leviathan', 'onyx', 'chronos', 'aether', 'kraken', 'scorpius', 'ghostbyte', 'glitchcat', 'binary', 'pet', 'cat', 'dog', 'wolf', 'dragon'];
+          const matchedPet = knownPets.find(p => prompt.includes(p));
+          
+          if (matchedPet) {
+            let pid = matchedPet;
+            if (pid === 'azoth') pid = 'zoth';
+            if (pid === 'cat' || pid === 'pet') pid = 'kai';
+            if (pid === 'dog' || pid === 'wolf') pid = 'lycan';
+            if (pid === 'dragon') pid = 'draco';
+            spawnPetFigure(pid);
+          } else if (prompt.includes('tesseract') || prompt.includes('4d') || prompt.includes('hypercube')) {
             spawnPrimitive('tesseract');
           } else if (prompt.includes('dna') || prompt.includes('helix') || prompt.includes('neural')) {
             spawnPrimitive('helix');
-          } else if (prompt.includes('pet') || prompt.includes('dog') || prompt.includes('kai')) {
-            spawnPrimitive('voxel_kai');
           } else if (prompt.includes('mobius') || prompt.includes('knot')) {
             spawnPrimitive('mobius');
           } else {
@@ -942,16 +1009,25 @@
 
       function onResize() {
         const host = document.getElementById('three-viewport');
-        camera.aspect = host.clientWidth / host.clientHeight;
+        if (!host || !camera || !renderer || !composer) return;
+        const w = host.clientWidth || window.innerWidth;
+        const h = host.clientHeight || window.innerHeight;
+        camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        renderer.setSize(host.clientWidth, host.clientHeight);
-        composer.setSize(host.clientWidth, host.clientHeight);
+        renderer.setSize(w, h);
+        composer.setSize(w, h);
       }
 
       function animate() {
         requestAnimationFrame(animate);
         const dt = clock.getDelta();
+        const t = clock.getElapsedTime();
         if (mixer) mixer.update(dt);
+
+        // Tick companion procedural aura rings, gaze and floating levitation
+        petFigures.forEach(fig => {
+          if (fig && fig.tick) fig.tick(t, dt);
+        });
 
         // Ambient particles slow drift
         if (particleSystem) {

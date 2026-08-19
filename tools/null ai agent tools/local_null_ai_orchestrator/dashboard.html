@@ -4,25 +4,133 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ZOTH Studio — Tranquil Obsidian Knowledge Graph & Cyberpunk OS</title>
-<link rel="icon" type="image/png" href="/zoth_logo_nobg.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/zoth-mobile.css" />
+<link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg">
 <style>
+  
   :root {
-    --bg-dark: #040609;
-    --card-bg: rgba(12, 16, 24, 0.78);
+    --bg-dark: #050508;
+    --card-bg: rgba(10, 14, 24, 0.84);
     --card-border: rgba(255, 255, 255, 0.08);
-    --card-border-glow: rgba(0, 242, 254, 0.35);
-    --accent-cyan: #00f2fe;
-    --accent-green: #00ff87;
-    --accent-purple: #9d4edd;
-    --accent-pink: #f72585;
+    --card-border-glow: rgba(0, 240, 255, 0.35);
+    --accent-cyan: #00f0ff;
+    --accent-green: #34d399;
+    --accent-purple: #c084fc;
+    --accent-pink: #ff007a;
     --accent-yellow: #f59e0b;
-    --text-main: #f8fafc;
+    --gold: #e8c872;
+    --text-main: #f7f4ee;
     --text-muted: #94a3b8;
-    --term-bg: #070a0f;
+    --term-bg: #030408;
+    --font-display: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --pad: clamp(16px, 4vw, 48px);
   }
+
+  body {
+    font-family: var(--font-body) !important;
+    background: var(--bg-dark) !important;
+    padding-top: 80px !important;
+  }
+
+  h1, h2, h3, h4, .brand-title {
+    font-family: var(--font-display) !important;
+  }
+
+  code, pre, .mono, .nav-group-label, .deck-link, .tab-btn {
+    font-family: var(--font-mono) !important;
+  }
+
+  /* Shared Top Navigation Bar matching index.html */
+  .skip {
+    position: fixed; top: -60px; left: 16px; z-index: 100;
+    background: var(--gold); color: #050508; font-weight: 700;
+    padding: 8px 16px; border-radius: 6px; text-decoration: none;
+    transition: top 0.2s ease;
+  }
+  .skip:focus { top: 12px; }
+
+  header.bar {
+    position: fixed; inset: 0 0 auto; z-index: 50;
+    display: flex; align-items: center; gap: 18px;
+    padding: 14px var(--pad);
+    background: rgba(5, 5, 8, 0.92);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--card-border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+  .brand img {
+    width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+    border: 1px solid rgba(232, 200, 114, 0.45);
+  }
+  .brand strong {
+    display: block; font-family: var(--font-display); font-size: 1.18rem;
+    letter-spacing: -0.03em; font-weight: 600; color: #fff;
+  }
+  .brand small {
+    display: block; color: var(--gold); font-family: var(--font-mono);
+    font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  nav.menu { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-left: auto; align-items: center; }
+  nav.menu a {
+    text-decoration: none; font-family: var(--font-mono); font-size: 0.7rem;
+    font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #c8c4d6; padding: 8px 0; position: relative; transition: color 0.2s;
+  }
+  nav.menu a::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
+    background: var(--gold); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.28s ease;
+  }
+  nav.menu a:hover, nav.menu a.on { color: var(--text-main); }
+  nav.menu a:hover::after, nav.menu a.on::after { transform: scaleX(1); }
+  nav.menu a.git {
+    border: 1px solid var(--card-border); border-radius: 999px; padding: 6px 12px;
+  }
+  nav.menu a.git::after { display: none; }
+  .progress {
+    position: fixed; inset: 0 auto auto 0; z-index: 60;
+    height: 2px; width: 100%; background: var(--gold); pointer-events: none;
+  }
+  .burger {
+    display: none; margin-left: auto;
+    background: none; border: 1px solid var(--card-border); color: var(--text-main);
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em;
+    text-transform: uppercase; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+  }
+
+  .drawer {
+    display: none; position: fixed; inset: 0; z-index: 48;
+    background: #050508;
+    padding: 96px var(--pad) 40px;
+    flex-direction: column; gap: 6px;
+  }
+  body.menu-open .drawer { display: flex; }
+  .drawer a {
+    text-decoration: none; font-family: var(--font-display);
+    font-size: clamp(1.6rem, 7vw, 2.4rem); letter-spacing: -0.03em;
+    padding: 8px 0; border-bottom: 1px solid var(--card-border); color: #fff;
+  }
+  .drawer a:hover, .drawer a.on { color: var(--gold); }
+  .drawer .sub {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-muted); border: 0; margin-top: 18px;
+  }
+
+  /* Deck Control Sub-Bar */
+  header.deck-bar {
+    margin-top: 10px;
+    margin-bottom: 18px !important;
+    background: rgba(10, 14, 24, 0.88) !important;
+    border: 1px solid var(--card-border) !important;
+    backdrop-filter: blur(20px) !important;
+  }
+
 
   * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
 
@@ -668,38 +776,76 @@
     <input type="range" min="0.2" max="1.0" step="0.1" value="0.65" style="width:100%;margin-top:10px" oninput="setGlowOpacity(this.value)">
   </div>
 </div>
-<div class="container">
-  <!-- Header -->
+<a class="skip" href="#main-deck">Skip to deck controls</a>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- Shared Homepage Top Navigation Bar -->
+<header class="bar" id="topbar">
+  <a class="brand" href="/">
+    <img src="/assets/mascot/azoth-mask.jpg" alt="Azoth Mask" width="36" height="36" />
+    <span><strong>Zoth</strong><small>by NullAI</small></span>
+  </a>
+  <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
+  <nav class="menu" aria-label="Primary">
+    <a href="/zoth/">Azoth</a>
+    <a class="on" href="/">Deck</a>
+    <a href="/signal/">Signal</a>
+    <a href="/studio/">Studio</a>
+    <a href="/studio/swarm.html">Swarm</a>
+    <a href="/pets/">Pets</a>
+    <a href="/pets/studio.html">3D Studio</a>
+    <a href="/vault/">Vault</a>
+    <a href="/adytum/">Adytum</a>
+    <a href="/docs/">Docs</a>
+    <a class="git" href="https://github.com/NullAITech/zoth-studio" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </nav>
+</header>
+
+<!-- Shared Mobile Drawer -->
+<nav class="drawer" id="drawer" aria-label="Mobile">
+  <a href="/zoth/">Azoth</a>
+  <a class="on" href="/">Deck</a>
+  <a href="/signal/">Signal Bridge</a>
+  <a href="/studio/">Studio</a>
+  <a href="/studio/swarm.html">Swarm</a>
+  <a href="/pets/">Pets</a>
+  <a href="/pets/studio.html">3D Pet Studio</a>
+  <a href="/vault/">Vault</a>
+  <a href="/adytum/">Adytum</a>
+  <a href="/docs/">Docs</a>
+  <a class="sub" href="https://github.com/NullAITech/zoth-studio">GitHub Upstream</a>
+  <a class="sub" href="/#install">Download Binaries</a>
+</nav>
+
+<div class="container" id="main-deck">
+  <!-- Sub-Bar: Telemetry & Deck Actions -->
   <header class="deck-bar">
-    <div class="logo-box" onclick="cycleLogoVariation()" title="Click to cycle logo variations">
-      <img src="/zoth_logo.png" alt="Zoth Studio Logo" class="logo-img" id="headerLogoImg" onerror="this.src='/zoth_logo_nobg.png'">
+    <div class="logo-box" onclick="cycleLogoVariation()" title="Zoth Sovereign Local Deck">
+      <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Zoth Studio Seal" class="logo-img" id="headerLogoImg" onerror="this.src='/assets/mascot/azoth-mask.jpg'">
       <div class="logo-title">
-        <h1 style="display:flex;align-items:center">
+        <h1 style="display:flex;align-items:center;font-family:var(--font-display)">
           ZOTH
-          <span class="logo-mode-badge" id="logoModeLabel">Studio</span>
+          <span class="logo-mode-badge" id="logoModeLabel" style="font-family:var(--font-mono);background:rgba(232,200,114,0.15);color:var(--gold);border-color:rgba(232,200,114,0.3)">Deck :8484</span>
         </h1>
-        <p>Local operator deck · :8484</p>
+        <p style="font-family:var(--font-mono)">Local Sovereign Operator Deck</p>
       </div>
     </div>
 
     <div class="telemetry-bar">
       <div class="telemetry-item"><span style="color:var(--accent-cyan)">FPS</span> <span id="fpsVal">60</span></div>
       <div class="telemetry-item"><span style="color:var(--accent-green)">TOOLS</span> <span id="telemetryTools">298</span></div>
-      <div class="telemetry-item"><span style="color:var(--accent-purple)">PET</span> <span id="petNameTag" style="color:var(--accent-cyan)">Kai</span></div>
+      <div class="telemetry-item"><span style="color:var(--gold)">SENTINEL</span> <span id="petNameTag" style="color:var(--gold)">Lycan</span></div>
       <div class="telemetry-item"><span style="color:var(--accent-pink)">AUDIO</span> <span id="audioVal" style="cursor:pointer" onclick="toggleAudioFX()">ON</span></div>
     </div>
 
     <div class="header-actions">
-      <a class="deck-link" href="/">Hub</a>
-      <a class="deck-link" href="/vault/">Vault</a>
-      <a class="deck-link" href="/studio/swarm.html">Swarm</a>
-      <button class="preset-btn" style="border-color:var(--accent-cyan);color:var(--accent-cyan);font-weight:700" onclick="openCmdPalette()" title="Press CMD + K or CTRL + K">Search <span style="font-size:0.68rem;opacity:0.8;margin-left:4px">⌘K</span></button>
-      <button class="preset-btn" style="border-color:var(--accent-purple);color:var(--accent-purple);font-weight:700" onclick="toggleThemeDrawer()">Theme</button>
+      <button class="preset-btn" style="border-color:var(--accent-cyan);color:var(--accent-cyan);font-weight:700;font-family:var(--font-mono)" onclick="openCmdPalette()" title="Press CMD + K or CTRL + K">Search <span style="font-size:0.68rem;opacity:0.8;margin-left:4px">⌘K</span></button>
+      <button class="preset-btn" style="border-color:var(--accent-purple);color:var(--accent-purple);font-weight:700;font-family:var(--font-mono)" onclick="toggleThemeDrawer()">Theme</button>
       <div class="status-badge">
         <div class="dot"></div>
-        <span>Online</span>
+        <span style="font-family:var(--font-mono)">Online</span>
       </div>
-      <button class="shutdown-btn" onclick="shutdownServer()">Shut down</button>
+      <button class="shutdown-btn" style="font-family:var(--font-mono)" onclick="shutdownServer()">Shut down</button>
     </div>
   </header>
 
@@ -736,7 +882,7 @@
     <div class="main-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:16px">
         <div style="display:flex;align-items:center;gap:18px">
-          <img src="/zoth_logo_nobg.png" alt="Agent Studio Logo" style="width:58px;height:58px">
+          <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Agent Studio Logo" style="width:58px;height:58px">
           <div>
             <h2 style="font-family:'Outfit',sans-serif;font-size:1.35rem;color:#fff">Run studio</h2>
             <p style="font-size:0.88rem;color:var(--text-muted)">Keys stay on this machine. Pick a provider, then run.</p>
@@ -942,7 +1088,7 @@ Waiting for run execution...</pre>
   <div id="tab-studio" class="tab-content">
     <div class="main-card">
       <div style="display:flex;align-items:center;gap:18px;margin-bottom:16px;flex-wrap:wrap">
-        <img src="/zoth_logo_nobg.png" alt="Neon Badge" style="width:56px;height:56px;object-fit:cover;filter:drop-shadow(0 0 14px var(--accent-cyan))">
+        <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Neon Badge" style="width:56px;height:56px;object-fit:cover;filter:drop-shadow(0 0 14px var(--accent-cyan))">
         <div>
           <h2 style="font-family:'Outfit',sans-serif;font-size:1.4rem;color:#fff">✨ Zoth Studio Powerhouse AI Configurator</h2>
           <p style="font-size:0.88rem;color:var(--text-muted)">Configure essential, advanced, and commonly forgotten features before pushing AI to build or iterate your web app from scratch.</p>
@@ -1618,24 +1764,24 @@ Waiting for run execution...</pre>
       <div class="media-grid">
         <div class="media-card">
           <div class="media-preview-box">
-            <img src="/zoth_logo.png" alt="Zoth Studio Full Logo">
+            <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Zoth Studio Full Logo">
           </div>
           <div style="text-align:center">
             <h4 style="font-family:'Outfit',sans-serif;color:#fff">Zoth Studio Full Emblem</h4>
             <p style="font-size:0.75rem;color:var(--text-muted);font-family:'Fira Code',monospace">PNG • 1024x1024 • Full Color</p>
           </div>
-          <button class="preset-btn" style="width:100%" onclick="window.open('/zoth_logo.png', '_blank')">🔍 View High-Res</button>
+          <button class="preset-btn" style="width:100%" onclick="window.open('/assets/brand/zoth-seal-hermetic-on-dark.svg', '_blank')">🔍 View High-Res</button>
         </div>
 
         <div class="media-card">
           <div class="media-preview-box">
-            <img src="/zoth_logo_nobg.png" alt="Zoth Studio Vector Badge">
+            <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Zoth Studio Vector Badge">
           </div>
           <div style="text-align:center">
             <h4 style="font-family:'Outfit',sans-serif;color:#fff">Neon Vector Emblem</h4>
             <p style="font-size:0.75rem;color:var(--accent-cyan);font-family:'Fira Code',monospace">PNG • Transparent BG</p>
           </div>
-          <button class="preset-btn" style="width:100%" onclick="window.open('/zoth_logo_nobg.png', '_blank')">🔍 View High-Res</button>
+          <button class="preset-btn" style="width:100%" onclick="window.open('/assets/brand/zoth-seal-hermetic-on-dark.svg', '_blank')">🔍 View High-Res</button>
         </div>
 
         <div class="media-card">
@@ -1717,9 +1863,9 @@ Waiting for run execution...</pre>
   let audioEnabled = true;
 
   const logoModes = [
-    {src: '/zoth_logo.png', label: 'Full Color'},
-    {src: '/zoth_logo_bw.png', label: 'Black & White'},
-    {src: '/zoth_logo_nobg.png', label: 'Neon Vector'}
+    {src: '/assets/brand/zoth-seal-hermetic-on-dark.svg', label: 'Full Color'},
+    {src: '/assets/brand/zoth-seal-hermetic-dark.jpg', label: 'Black & White'},
+    {src: '/assets/brand/zoth-seal-hermetic-on-dark.svg', label: 'Neon Vector'}
   ];
   let logoIdx = 0;
 
@@ -2780,6 +2926,25 @@ Waiting for run execution...</pre>
   }
 
   loadData();
+
+  // Burger drawer controller
+  const burger = document.getElementById("burger");
+  if (burger) {
+    burger.addEventListener("click", () => {
+      const open = document.body.classList.toggle("menu-open");
+      burger.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+  const drawer = document.getElementById("drawer");
+  if (drawer) {
+    drawer.addEventListener("click", (e) => {
+      if (e.target.tagName === "A") {
+        document.body.classList.remove("menu-open");
+        if (burger) burger.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
 </script>
 </body>
 </html>
