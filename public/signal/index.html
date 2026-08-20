@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/assets/zoth-mobile.css" />
     <link rel="stylesheet" href="/assets/zoth-annotator.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
       :root {
         --sig-bg: #030408;
@@ -24,44 +25,50 @@
         --sig-purple: #a855f7;
         --font-mono: 'IBM Plex Mono', monospace;
         --font-display: 'Syne', sans-serif;
+        --font-body: 'Figtree', sans-serif;
+        --pad: clamp(14px, 3.5vw, 32px);
       }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body.signal-deck {
         background: var(--sig-bg);
         color: #f1f5f9;
-        font-family: 'Figtree', sans-serif;
+        font-family: var(--font-body);
         min-height: 100vh;
         overflow-x: hidden;
       }
       .sig-container {
         max-width: 1680px;
         margin: 0 auto;
-        padding: 20px 20px 80px;
+        padding: 16px var(--pad) 80px;
       }
+
       /* Top header */
       .sig-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 16px;
-        padding-bottom: 18px;
+        gap: 14px;
+        padding-bottom: 16px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        margin-bottom: 24px;
+        margin-bottom: 20px;
       }
       .sig-brand {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
         text-decoration: none;
       }
       .sig-brand img {
-        width: 42px; height: 42px;
-        filter: drop-shadow(0 0 16px var(--sig-cyan));
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        border: 1px solid var(--sig-gold);
+        box-shadow: 0 0 14px rgba(232, 200, 114, 0.4);
+        object-fit: cover;
       }
       .sig-brand-text h1 {
         font-family: var(--font-display);
-        font-size: 1.65rem;
+        font-size: 1.45rem;
         font-weight: 800;
         letter-spacing: -0.02em;
         background: linear-gradient(135deg, #fff 40%, var(--sig-cyan) 80%, var(--sig-gold) 100%);
@@ -70,22 +77,27 @@
       }
       .sig-brand-text span {
         font-family: var(--font-mono);
-        font-size: 0.72rem;
+        font-size: 0.68rem;
         color: var(--sig-gold);
         letter-spacing: 0.12em;
         text-transform: uppercase;
       }
-      .sig-nav-links {
+      .sig-header-actions {
         display: flex;
         align-items: center;
         gap: 10px;
+      }
+      .sig-nav-links {
+        display: flex;
+        align-items: center;
+        gap: 6px 10px;
         flex-wrap: wrap;
       }
       .sig-btn-link {
         font-family: var(--font-mono);
-        font-size: 0.76rem;
+        font-size: 0.72rem;
         color: #94a3b8;
-        padding: 8px 14px;
+        padding: 6px 12px;
         border-radius: 999px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         text-decoration: none;
@@ -104,9 +116,10 @@
         border: 1px solid rgba(16, 185, 129, 0.35);
         color: var(--sig-emerald);
         font-family: var(--font-mono);
-        font-size: 0.75rem;
-        padding: 6px 14px;
+        font-size: 0.72rem;
+        padding: 6px 12px;
         border-radius: 999px;
+        min-height: 36px;
       }
       .pulse-dot {
         width: 8px; height: 8px;
@@ -120,18 +133,103 @@
         50% { opacity: 0.4; transform: scale(0.85); }
       }
 
+      .burger {
+        display: none;
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        min-height: 40px;
+      }
+      nav.drawer {
+        display: none;
+        position: fixed;
+        inset: 68px 0 0;
+        z-index: 99;
+        background: rgba(3, 4, 8, 0.98);
+        backdrop-filter: blur(24px);
+        padding: 24px var(--pad);
+        flex-direction: column;
+        gap: 12px;
+        border-bottom: 1px solid var(--sig-panel-border);
+        overflow-y: auto;
+      }
+      body.menu-open nav.drawer { display: flex; }
+      nav.drawer a {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        text-decoration: none;
+        color: #fff;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      nav.drawer a:hover { color: var(--sig-gold); }
+
+      /* Mobile Segmented Cockpit Tabs */
+      .mobile-cockpit-tabs {
+        display: none;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
       /* 3-Column Layout */
       .sig-grid {
         display: grid;
-        grid-template-columns: 320px 1fr 340px;
+        grid-template-columns: 310px 1fr 330px;
         gap: 20px;
       }
-      @media (max-width: 1200px) {
-        .sig-grid { grid-template-columns: 280px 1fr; }
+      @media (max-width: 1240px) {
+        .sig-grid { grid-template-columns: 270px 1fr; }
         .sig-sidebar-right { grid-column: 1 / -1; }
       }
+      @media (max-width: 900px) {
+        .sig-nav-links { display: none; }
+        .burger { display: inline-flex; }
+      }
       @media (max-width: 880px) {
-        .sig-grid { grid-template-columns: 1fr; }
+        .sig-grid { display: flex; flex-direction: column; gap: 16px; }
+        .mobile-cockpit-tabs {
+          display: flex;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+        .cockpit-tab-btn {
+          flex: 1;
+          min-height: 44px;
+          padding: 8px 12px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #94a3b8;
+          font-family: var(--font-mono);
+          font-size: 0.78rem;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+          touch-action: manipulation;
+        }
+        .cockpit-tab-btn.active {
+          background: rgba(0, 229, 255, 0.12);
+          border-color: var(--sig-cyan);
+          color: var(--sig-cyan);
+          box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+        }
+        .sig-card-agents, .sig-card-stream, .sig-card-telemetry {
+          display: none;
+        }
+        .sig-card-agents.is-active, .sig-card-stream.is-active, .sig-card-telemetry.is-active {
+          display: flex !important;
+        }
+      }
+      @media (min-width: 881px) {
+        .sig-card-agents, .sig-card-stream, .sig-card-telemetry {
+          display: flex !important;
+        }
       }
 
       /* Glass Panels */
@@ -139,10 +237,9 @@
         background: var(--sig-panel);
         border: 1px solid var(--sig-panel-border);
         border-radius: 16px;
-        padding: 20px;
+        padding: 18px;
         backdrop-filter: blur(20px);
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-        display: flex;
         flex-direction: column;
       }
       .card-title {
@@ -162,7 +259,7 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        max-height: 520px;
+        max-height: 540px;
         overflow-y: auto;
         padding-right: 4px;
       }
@@ -176,21 +273,28 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        min-height: 48px;
+        touch-action: manipulation;
       }
       .mascot-item:hover, .mascot-item.selected {
         border-color: var(--sig-cyan);
         background: rgba(0, 229, 255, 0.08);
         transform: translateX(3px);
       }
-      .mascot-emoji { font-size: 1.4rem; }
-      .mascot-info strong { display: block; font-size: 0.85rem; color: #fff; }
+      .mascot-item img {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .mascot-info strong { display: block; font-size: 0.85rem; color: #fff; line-height: 1.2; }
       .mascot-info span { font-size: 0.72rem; color: #94a3b8; font-family: var(--font-mono); }
 
       /* Live Stream Console */
       .stream-console {
         flex: 1;
-        min-height: 480px;
-        max-height: 600px;
+        min-height: 380px;
+        max-height: 520px;
         overflow-y: auto;
         background: rgba(2, 4, 10, 0.85);
         border: 1px solid rgba(255, 255, 255, 0.08);
@@ -200,14 +304,16 @@
         flex-direction: column;
         gap: 12px;
         margin-bottom: 16px;
+        -webkit-overflow-scrolling: touch;
       }
       .msg-bubble {
         padding: 12px 16px;
         border-radius: 12px;
         max-width: 92%;
-        font-size: 0.86rem;
+        font-size: 0.88rem;
         line-height: 1.55;
         animation: fadeIn 0.25s ease-out both;
+        word-break: break-word;
       }
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(6px); }
@@ -247,7 +353,21 @@
         margin-bottom: 4px;
         display: flex;
         justify-content: space-between;
+        align-items: center;
         gap: 10px;
+      }
+      .msg-speak-btn {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: var(--sig-gold);
+        font-family: var(--font-mono);
+        font-size: 0.64rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .msg-speak-btn:hover {
+        background: rgba(232, 200, 114, 0.15);
       }
       .msg-text {
         white-space: pre-wrap;
@@ -263,18 +383,23 @@
       .quick-actions {
         display: flex;
         gap: 6px;
-        flex-wrap: wrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
       }
       .chip-btn {
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: #94a3b8;
         font-family: var(--font-mono);
-        font-size: 0.72rem;
-        padding: 4px 10px;
+        font-size: 0.74rem;
+        padding: 6px 12px;
+        min-height: 38px;
         border-radius: 999px;
         cursor: pointer;
+        white-space: nowrap;
         transition: all 0.15s ease;
+        touch-action: manipulation;
       }
       .chip-btn:hover {
         color: var(--sig-cyan);
@@ -283,21 +408,50 @@
       }
       .input-wrapper {
         display: flex;
-        gap: 10px;
+        gap: 8px;
+        align-items: flex-end;
+      }
+      .btn-voice-memo {
+        min-width: 48px;
+        min-height: 48px;
+        height: 48px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 229, 255, 0.35);
+        background: rgba(0, 229, 255, 0.08);
+        color: var(--sig-cyan);
+        font-size: 1.25rem;
+        display: inline-grid;
+        place-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        touch-action: manipulation;
+        flex-shrink: 0;
+      }
+      .btn-voice-memo:hover, .btn-voice-memo.recording {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+        color: #f87171;
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+        animation: memoPulse 1.2s infinite;
+      }
+      @keyframes memoPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.06); }
       }
       .sig-textarea {
         flex: 1;
         background: rgba(2, 4, 10, 0.8);
         border: 1px solid rgba(0, 229, 255, 0.25);
         border-radius: 12px;
-        padding: 12px 16px;
+        padding: 12px 14px;
         color: #fff;
         font-family: var(--font-mono);
-        font-size: 0.88rem;
+        font-size: 16px; /* Prevents iOS auto-zoom */
         outline: none;
         resize: none;
         min-height: 48px;
         max-height: 140px;
+        box-sizing: border-box;
       }
       .sig-textarea:focus {
         border-color: var(--sig-cyan);
@@ -308,13 +462,17 @@
         color: #030408;
         border: none;
         border-radius: 12px;
-        padding: 0 24px;
+        padding: 0 20px;
+        min-height: 48px;
+        height: 48px;
         font-family: var(--font-display);
         font-weight: 800;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         cursor: pointer;
         transition: all 0.2s ease;
         box-shadow: 0 0 20px rgba(0, 229, 255, 0.35);
+        touch-action: manipulation;
+        flex-shrink: 0;
       }
       .btn-send:hover {
         transform: translateY(-2px);
@@ -337,6 +495,7 @@
         border-radius: 8px;
         font-family: var(--font-mono);
         font-size: 0.78rem;
+        min-height: 42px;
       }
       .tel-item .label { color: #94a3b8; }
       .tel-item .status { font-weight: 600; }
@@ -347,17 +506,20 @@
       <!-- Site Header -->
       <header class="sig-header">
         <a class="sig-brand" href="/">
-          <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Sigil" style="width:40px;height:40px;border-radius:50%;border:1px solid #e8c872;box-shadow:0 0 14px rgba(232,200,114,0.4);object-fit:cover" />
+          <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Sigil" />
           <div class="sig-brand-text">
             <h1>ZOTH SIGNAL BRIDGE</h1>
             <span>Autonomous Swarm & Mobile NOC</span>
           </div>
         </a>
-        <div class="sig-nav-links">
+        <div class="sig-header-actions">
           <span class="sig-live-pill" id="signalStatusPill">
             <span class="pulse-dot"></span>
             <span id="signalStatusText">CONNECTING TO SSE...</span>
           </span>
+          <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
+        </div>
+        <nav class="sig-nav-links" aria-label="Primary">
           <a class="sig-btn-link" href="/#for-everyone" data-tip="Zero-Code Showcases — How non-tech founders, creators & teams depend on Zoth.">✦ For You</a>
           <a class="sig-btn-link" href="/zoth/" data-tip="Master Azoth — Sovereign Alchemical AI Core & Synthesis Engine.">Azoth</a>
           <a class="sig-btn-link" href="/agents/" data-tip="Sovereign Agent Pantheon — 21 AI nodes with live cognitive test sandboxes.">Agents</a>
@@ -372,79 +534,195 @@
           <a class="sig-btn-link" href="/adytum/" data-tip="Adytum Sanctum — Keys 0–21 architectural planning rite before building.">Adytum</a>
           <a class="sig-btn-link js-docs" href="/docs/" data-tip="Master Operator Manual — Port topology, 1-click install scripts, and API guide.">Docs</a>
           <a class="sig-btn-link" href="https://github.com/NullAITech/zoth-studio" target="_blank" rel="noopener noreferrer" data-tip="GitHub Repository — Open source code, Debian packages, and release binaries.">GitHub</a>
-        </div>
+        </nav>
       </header>
+
+      <!-- Mobile Drawer -->
+      <nav class="drawer" id="drawer" aria-label="Mobile">
+        <a href="/#for-everyone">✦ For You (No-Code)</a>
+        <a href="/zoth/">Azoth Lead Core</a>
+        <a href="/agents/">Agents Pantheon (21)</a>
+        <a class="js-deck" href="http://127.0.0.1:8484/">Deck (:8484)</a>
+        <a href="/signal/">Signal Bridge</a>
+        <a href="/studio/">Studio Directory</a>
+        <a href="/studio/swarm.html">Swarm Arena</a>
+        <a href="/studio/consensus.html">Consensus Arena</a>
+        <a href="/pets/">Pets Hangar</a>
+        <a href="/pets/pet-studio.html">💎 3D Pet Studio</a>
+        <a href="/vault/">BYOK Vault</a>
+        <a href="/adytum/">Adytum Sanctum</a>
+        <a class="js-docs" href="/docs/">Docs</a>
+        <a href="https://github.com/NullAITech/zoth-studio">GitHub Upstream</a>
+      </nav>
+
+      <!-- Mobile Segmented View Tabs -->
+      <div class="mobile-cockpit-tabs" id="cockpitTabs">
+        <button type="button" class="cockpit-tab-btn active" data-tab="stream" onclick="switchCockpitTab('stream')">💬 Live Stream</button>
+        <button type="button" class="cockpit-tab-btn" data-tab="agents" onclick="switchCockpitTab('agents')">🤖 Agents (21)</button>
+        <button type="button" class="cockpit-tab-btn" data-tab="telemetry" onclick="switchCockpitTab('telemetry')">📊 Telemetry NOC</button>
+      </div>
 
       <!-- 3-Column Cockpit -->
       <main class="sig-grid">
         <!-- Left: Sovereign Agent Spirits Roster -->
-        <aside class="sig-card">
+        <aside class="sig-card sig-card-agents" id="tabPanelAgents">
           <div class="card-title">
             <span>Sovereign Agents</span>
             <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-cyan);">21 Active</span>
           </div>
           <div class="mascot-list" id="mascotList">
             <div class="mascot-item selected" onclick="selectMascot('azoth', 'Master Azoth')">
-              <img src="/assets/agents/azoth.jpg" alt="Azoth" style="width:32px;height:32px;border-radius:50%;border:1px solid #e8c872;object-fit:cover" />
+              <img src="/assets/agents/azoth.jpg" alt="Azoth" style="border:1px solid #e8c872;" />
               <div class="mascot-info">
                 <strong>@Azoth</strong>
                 <span>Lead Sovereign Core</span>
               </div>
             </div>
             <div class="mascot-item" onclick="selectMascot('antigravity', 'Antigravity')">
-              <img src="/assets/agents/antigravity.jpg" alt="Antigravity" style="width:32px;height:32px;border-radius:50%;border:1px solid #7c9cff;object-fit:cover" />
+              <img src="/assets/agents/antigravity.jpg" alt="Antigravity" style="border:1px solid #7c9cff;" />
               <div class="mascot-info">
                 <strong>@Antigravity</strong>
                 <span>Lead Orchestrator</span>
               </div>
             </div>
             <div class="mascot-item" onclick="selectMascot('grok', 'Grok')">
-              <img src="/assets/agents/grok.jpg" alt="Grok" style="width:32px;height:32px;border-radius:50%;border:1px solid #00d4aa;object-fit:cover" />
+              <img src="/assets/agents/grok.jpg" alt="Grok" style="border:1px solid #00d4aa;" />
               <div class="mascot-info">
                 <strong>@Grok</strong>
                 <span>Astrolabe Oracle</span>
               </div>
             </div>
             <div class="mascot-item" onclick="selectMascot('hermes', 'Hermes')">
-              <img src="/assets/agents/hermes.jpg" alt="Hermes" style="width:32px;height:32px;border-radius:50%;border:1px solid #ffaa40;object-fit:cover" />
+              <img src="/assets/agents/hermes.jpg" alt="Hermes" style="border:1px solid #ffaa40;" />
               <div class="mascot-info">
                 <strong>@Hermes</strong>
                 <span>Tool & Dispatch Engine</span>
               </div>
             </div>
             <div class="mascot-item" onclick="selectMascot('ghostbyte', 'GhostByte')">
-              <img src="/assets/agents/ghostbyte.jpg" alt="GhostByte" style="width:32px;height:32px;border-radius:50%;border:1px solid #c084fc;object-fit:cover" />
+              <img src="/assets/agents/ghostbyte.jpg" alt="GhostByte" style="border:1px solid #c084fc;" />
               <div class="mascot-info">
                 <strong>@GhostByte</strong>
                 <span>Vault Sentinel</span>
               </div>
             </div>
-            <div class="mascot-item" onclick="selectMascot('lycan', 'Lycan')">
-              <img src="/assets/agents/lycan.jpg" alt="Lycan" style="width:32px;height:32px;border-radius:50%;border:1px solid #e8c872;object-fit:cover" />
-              <div class="mascot-info">
-                <strong>@Lycan</strong>
-                <span>SecOps & Auditor</span>
-              </div>
-            </div>
             <div class="mascot-item" onclick="selectMascot('kai', 'Kai')">
-              <img src="/assets/agents/kai.jpg" alt="Kai" style="width:32px;height:32px;border-radius:50%;border:1px solid #38bdf8;object-fit:cover" />
+              <img src="/assets/agents/kai.jpg" alt="Kai" style="border:1px solid #38bdf8;" />
               <div class="mascot-info">
                 <strong>@Kai</strong>
-                <span>Offline Daemon Loop</span>
+                <span>Workspace Inspector</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('draco', 'Draco')">
+              <img src="/assets/agents/draco.jpg" alt="Draco" style="border:1px solid #fb923c;" />
+              <div class="mascot-info">
+                <strong>@Draco</strong>
+                <span>Consensus & Fusion</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('ignis', 'Ignis')">
+              <img src="/assets/agents/ignis.jpg" alt="Ignis" style="border:1px solid #f87171;" />
+              <div class="mascot-info">
+                <strong>@Ignis</strong>
+                <span>Refactor & CI Finisher</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('lycan', 'Lycan')">
+              <img src="/assets/agents/lycan.jpg" alt="Lycan" style="border:1px solid #e8c872;" />
+              <div class="mascot-info">
+                <strong>@Lycan</strong>
+                <span>SecOps & OWASP</span>
               </div>
             </div>
             <div class="mascot-item" onclick="selectMascot('athena', 'Athena')">
-              <img src="/assets/agents/athena.jpg" alt="Athena" style="width:32px;height:32px;border-radius:50%;border:1px solid #a78bfa;object-fit:cover" />
+              <img src="/assets/agents/athena.jpg" alt="Athena" style="border:1px solid #a78bfa;" />
               <div class="mascot-info">
                 <strong>@Athena</strong>
-                <span>Knowledge & AEO</span>
+                <span>AEO & Knowledge Graph</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('kitsune', 'Kitsune')">
+              <img src="/assets/agents/kitsune.jpg" alt="Kitsune" style="border:1px solid #f472b6;" />
+              <div class="mascot-info">
+                <strong>@Kitsune</strong>
+                <span>UI / AX Design Taste</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('pixel-neko', 'Pixel-Neko')">
+              <img src="/assets/agents/pixel-neko.jpg" alt="Pixel-Neko" style="border:1px solid #38bdf8;" />
+              <div class="mascot-info">
+                <strong>@Pixel-Neko</strong>
+                <span>Tool Bench Registry</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('pixel-shiba', 'Pixel-Shiba')">
+              <img src="/assets/agents/pixel-shiba.jpg" alt="Pixel-Shiba" style="border:1px solid #e8c872;" />
+              <div class="mascot-info">
+                <strong>@Pixel-Shiba</strong>
+                <span>Argon2id Vault Guard</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('radical-minion', 'Radical Minion')">
+              <img src="/assets/agents/radical-minion.jpg" alt="Radical Minion" style="border:1px solid #facc15;" />
+              <div class="mascot-info">
+                <strong>@Radical-Minion</strong>
+                <span>Fast Subagent Runner</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('aquila', 'Aquila')">
+              <img src="/assets/agents/aquila.jpg" alt="Aquila" style="border:1px solid #38bdf8;" />
+              <div class="mascot-info">
+                <strong>@Aquila</strong>
+                <span>Edge & Mesh Router</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('leviathan', 'Leviathan')">
+              <img src="/assets/agents/leviathan.jpg" alt="Leviathan" style="border:1px solid #818cf8;" />
+              <div class="mascot-info">
+                <strong>@Leviathan</strong>
+                <span>Vector Memory Matrix</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('onyx', 'Onyx')">
+              <img src="/assets/agents/onyx.jpg" alt="Onyx" style="border:1px solid #f43f5e;" />
+              <div class="mascot-info">
+                <strong>@Onyx</strong>
+                <span>Red Team Threat Auditor</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('chronos', 'Chronos')">
+              <img src="/assets/agents/chronos.jpg" alt="Chronos" style="border:1px solid #a855f7;" />
+              <div class="mascot-info">
+                <strong>@Chronos</strong>
+                <span>DAG Temporal Orchestrator</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('aether', 'Aether')">
+              <img src="/assets/agents/aether.jpg" alt="Aether" style="border:1px solid #2dd4bf;" />
+              <div class="mascot-info">
+                <strong>@Aether</strong>
+                <span>Swarm Bus Conductor</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('kraken', 'Kraken')">
+              <img src="/assets/agents/kraken.jpg" alt="Kraken" style="border:1px solid #06b6d4;" />
+              <div class="mascot-info">
+                <strong>@Kraken</strong>
+                <span>ESP32 Hardware Bridge</span>
+              </div>
+            </div>
+            <div class="mascot-item" onclick="selectMascot('scorpius', 'Scorpius')">
+              <img src="/assets/agents/scorpius.jpg" alt="Scorpius" style="border:1px solid #ef4444;" />
+              <div class="mascot-info">
+                <strong>@Scorpius</strong>
+                <span>Zero-Day Gatekeeper</span>
               </div>
             </div>
           </div>
         </aside>
 
         <!-- Center: Live Signal Stream & Command Dispatcher -->
-        <section class="sig-card">
+        <section class="sig-card sig-card-stream is-active" id="tabPanelStream">
           <div class="card-title">
             <span>Live Signal Messenger Stream</span>
             <span style="font-family:var(--font-mono); font-size:0.72rem; color:#94a3b8;" id="msgCountLabel">0 Messages</span>
@@ -468,14 +746,15 @@
               <button class="chip-btn" onclick="quickCommand('Azoth: give me a quick status update')">Status Check</button>
             </div>
             <div class="input-wrapper">
-              <textarea id="promptInput" class="sig-textarea" placeholder="Type a message or command (e.g. Azoth: check system health)..." rows="2" onkeydown="handleKey(event)"></textarea>
-              <button class="btn-send" onclick="sendPrompt()">SEND ➔</button>
+              <button class="btn-voice-memo" id="btnVoiceMemo" type="button" aria-label="Record voice memo / speak command" title="Record Voice Memo" onclick="toggleVoiceMemo()">🎙️</button>
+              <textarea id="promptInput" class="sig-textarea" placeholder="Type or speak a command (e.g. Azoth: check system health)..." rows="2" onkeydown="handleKey(event)"></textarea>
+              <button class="btn-send" onclick="sendPrompt()" aria-label="Send message">SEND ➔</button>
             </div>
           </div>
         </section>
 
         <!-- Right: Telemetry & Port Monitor -->
-        <aside class="sig-card sig-sidebar-right">
+        <aside class="sig-card sig-sidebar-right sig-card-telemetry" id="tabPanelTelemetry">
           <div class="card-title">
             <span>Swarm Telemetry</span>
             <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-emerald);">Parrot OS</span>
@@ -521,13 +800,33 @@
       const msgCountLabel = document.getElementById("msgCountLabel");
       const statusPill = document.getElementById("signalStatusPill");
       const statusText = document.getElementById("signalStatusText");
+      const btnVoiceMemo = document.getElementById("btnVoiceMemo");
       let messageCount = 0;
+
+      // Mobile Cockpit Segmented Switcher
+      function switchCockpitTab(tabName) {
+        document.querySelectorAll(".cockpit-tab-btn").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.tab === tabName);
+        });
+        const panelStream = document.getElementById("tabPanelStream");
+        const panelAgents = document.getElementById("tabPanelAgents");
+        const panelTelemetry = document.getElementById("tabPanelTelemetry");
+
+        if (panelStream) panelStream.classList.toggle("is-active", tabName === "stream");
+        if (panelAgents) panelAgents.classList.toggle("is-active", tabName === "agents");
+        if (panelTelemetry) panelTelemetry.classList.toggle("is-active", tabName === "telemetry");
+      }
 
       function selectMascot(slug, name) {
         document.querySelectorAll(".mascot-item").forEach(el => el.classList.remove("selected"));
-        event.currentTarget.classList.add("selected");
+        if (event && event.currentTarget) {
+          event.currentTarget.classList.add("selected");
+        }
         currentMascotPrefix = `@${name} `;
         promptInput.value = currentMascotPrefix;
+        if (window.innerWidth <= 880) {
+          switchCockpitTab('stream');
+        }
         promptInput.focus();
       }
 
@@ -540,6 +839,16 @@
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           sendPrompt();
+        }
+      }
+
+      function speakText(text) {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.speak(utter);
+        } else {
+          alert("Speech synthesis not supported in this browser.");
         }
       }
 
@@ -557,12 +866,16 @@
 
         bubble.classList.add(typeClass);
 
+        const safeText = escapeHtml(msg.text || "");
         bubble.innerHTML = `
           <div class="msg-meta">
-            <span>${msg.sender || "Agent"} · ${msg.type.toUpperCase()}</span>
-            <span>${msg.timestamp || ""}</span>
+            <span>${msg.sender || "Agent"} · ${(msg.type || "MSG").toUpperCase()}</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span>${msg.timestamp || ""}</span>
+              <button type="button" class="msg-speak-btn" onclick="speakText('${escapeQuotes(msg.text || "")}')" title="Listen to memo">🔊 Listen</button>
+            </div>
           </div>
-          <div class="msg-text">${escapeHtml(msg.text || "")}</div>
+          <div class="msg-text">${safeText}</div>
         `;
 
         streamConsole.appendChild(bubble);
@@ -573,6 +886,10 @@
         const div = document.createElement("div");
         div.textContent = text;
         return div.innerHTML;
+      }
+
+      function escapeQuotes(text) {
+        return (text || '').replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, " ");
       }
 
       async function sendPrompt() {
@@ -597,6 +914,62 @@
             timestamp: new Date().toLocaleTimeString()
           });
         }
+      }
+
+      // Voice Memo Recording Integration
+      let recognition = null;
+      let isRecording = false;
+
+      function toggleVoiceMemo() {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+          alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or a compatible mobile browser.");
+          return;
+        }
+
+        if (isRecording) {
+          if (recognition) recognition.stop();
+          isRecording = false;
+          btnVoiceMemo.classList.remove("recording");
+          btnVoiceMemo.textContent = "🎙️";
+          return;
+        }
+
+        recognition = new SpeechRec();
+        recognition.lang = 'en-US';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = function() {
+          isRecording = true;
+          btnVoiceMemo.classList.add("recording");
+          btnVoiceMemo.textContent = "🔴";
+        };
+
+        recognition.onresult = function(e) {
+          let transcript = "";
+          for (let i = e.resultIndex; i < e.results.length; ++i) {
+            transcript += e.results[i][0].transcript;
+          }
+          if (transcript) {
+            promptInput.value = currentMascotPrefix + transcript;
+          }
+        };
+
+        recognition.onerror = function(err) {
+          console.error("Speech rec error:", err);
+          isRecording = false;
+          btnVoiceMemo.classList.remove("recording");
+          btnVoiceMemo.textContent = "🎙️";
+        };
+
+        recognition.onend = function() {
+          isRecording = false;
+          btnVoiceMemo.classList.remove("recording");
+          btnVoiceMemo.textContent = "🎙️";
+        };
+
+        recognition.start();
       }
 
       // Initialize SSE Stream
@@ -635,6 +1008,21 @@
           console.log("History fetch notice:", err);
         }
       }
+
+      // Burger Menu Controller
+      const burger = document.getElementById("burger");
+      if (burger) {
+        burger.addEventListener("click", () => {
+          const open = document.body.classList.toggle("menu-open");
+          burger.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      }
+      document.getElementById("drawer").addEventListener("click", (e) => {
+        if (e.target.tagName === "A") {
+          document.body.classList.remove("menu-open");
+          burger.setAttribute("aria-expanded", "false");
+        }
+      });
 
       window.addEventListener("DOMContentLoaded", () => {
         loadHistory();
