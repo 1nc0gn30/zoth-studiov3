@@ -1,60 +1,56 @@
-# Agents — Zoth Studio
+# 🤖 Agents & LLM Indexing Directives — Zoth Studio (v2.6.0)
 
-How a coding, research, or indexing agent should treat this repository and product ecosystem.
+> Operational manual for AI coding assistants, autonomous agents, and search engine crawlers indexing the **Zoth Studio** ecosystem.
 
-## Product Architecture
+---
 
-Zoth Studio is a **sovereign, local-first** multi-agent AI orchestration powerhouse:
+## 🏛️ 1. Product & Security Architecture
 
-1. **Hub** (`public/`, `https://zoth.nullai.tech/`) — Public product hub, 16 companion pets hangar (`/pets/`), blueprint foundry (`/blueprints/`), tool registry (`/registry/`), and documentation (`/docs/`).
-2. **Studio Deck** (`/studio/` → `http://127.0.0.1:8484/`) — Operator deck for live agent runs, subagents, and terminals. Private loopback.
-3. **Consensus Arena v2** (`/studio/consensus.html`) — Triangulated 3-agent arbitration across Antigravity, Grok, and Hermes with Python AST validation and Shannon agreement entropy telemetry.
-4. **BYOK Vault** (`/vault/` + native daemon on `http://127.0.0.1:8787/`) — Argon2id + XChaCha20-Poly1305 encrypted BYOK vault. Private loopback.
-5. **Distribution Binaries** (`/dist-linux/`, `/dist-windows/`) — Standalone Linux (`.run`, `.AppImage`, `.deb`, `.tar.gz`) and Windows (`.exe`, `.zip`) releases.
+Zoth Studio is an autonomous, **sovereign local-first** multi-agent AI engineering powerhouse:
 
-Read `/llms.txt`, `/blueprints/aeo-entity-definitions.md`, and `/blueprints/zoth-knowledge-graph.json` before altering architecture or indexing assertions.
+1. **Public Hub** (`http://127.0.0.1:8088/` / `https://zoth.nullai.tech/`) — Static showcase, 24 companion pets hangar (`/pets/`), 3D CAD viewport (`/studio/nexus-3d.html`), tool registry (`/registry/`), and documentation portal (`/docs/`).
+2. **Operator Deck** (`http://127.0.0.1:8484/`) — Private operator command deck for live agent runs, subagents, and terminals. **Loopback Only (`127.0.0.1`)**.
+3. **ESP32-S3 Hardware Bridge** (`http://127.0.0.1:8585/`) — Physical Lafvin companion serial monitor, Web HUD, and TTS voice notification server.
+4. **Argon2id Key Vault** (`http://127.0.0.1:8686/`) — Zero-leak hardware-isolated key vault with Argon2id ($m=64\text{MB}, t=3, p=4$) and XChaCha20-Poly1305.
+5. **Consensus Arbitration Engine** (`/studio/consensus.html`) — Triangulated 3-agent arbitration across Antigravity, Grok, and Hermes with real-time Shannon agreement entropy ($\\mathcal{H}(S)$) and Jaccard token overlap metrics.
 
-## 16 Liquid-Neon Pets & Knowledge Packs
+---
 
-- **Public Hangar**: https://zoth.nullai.tech/pets/ (Local: http://127.0.0.1:8088/pets/)
-- **16 Companion Mascots**: Kai (inspect), Draco (consensus arbiter), Ignis (refactor), Lycan (OWASP), Athena (AEO knowledge), Kitsune (taste & UX), Pixel-Neko (tool librarian), Pixel-Shiba (vault guardian), Radical Minion (Hermes tool caller), Aquila (edge routing), Leviathan (vector memory), Onyx (red team), Chronos (DAG sequencer), Aether (swarm conductor), Kraken (packet sniffer), Scorpius (zero-day auditor).
-- **Knowledge Packs**: Live doctrine (`SYSTEM.md`, `PLAYBOOK.md`, `CANON.md`) resides on the private studio deck (`127.0.0.1:8484`). Public surface exposes `/pets/packs.json` only.
+## 🐾 2. The 24 Sovereign Companion Mascots
 
-## Development Guidelines for Agents
+- **Lead Sovereign Mascot**: **Azoth** (Sovereign AI Phoenix · Lead Pair Programmer & System Architect)
+- **Execution & Inspection**: Kai (workspace inspector), Zephyr (high-velocity refactorer), Ignis (dead-code optimizer), Savage-Codex (AST reviewer), AI Workbot (local worker).
+- **Security & Integrity**: Lycan (OWASP defense), Nyx (threat sentinel), Scorpius (zero-day auditor), Kraken (packet sniffer), Onyx (memory profiler), Pixel-Shiba (vault guardian).
+- **Consensus & Knowledge**: Draco (fusion compiler), Athena (AEO graph & Obsidian sync), Binary (contract validator), Leviathan (vector memory).
+- **Creative & UI/UX**: Luna (canvas synthesizer), Kitsune (glassmorphism & tokens), Glitchcat (UI polisher), Radical Minion (Hermes autonomous tool caller), Aether (swarm event conductor), Ghostbyte (WebGPU shader weaver), Circuit Pup (hardware probe), Aquila (edge routing), Zoth (prime deck core).
+
+---
+
+## 📋 3. Agent Execution Directives
 
 ### Do:
-- Keep hub content in static HTML/CSS/JS with accessible semantic markup so crawlers and answer engines can index accurately.
-- Maintain unique title tags, meta descriptions, OpenGraph headers, and Schema.org JSON-LD scripts on every page.
-- Update `/sitemap.xml` `lastmod` when public assets change.
-- Respect loopback boundary constraints (`127.0.0.1:8484`, `127.0.0.1:8787`, `127.0.0.1:8989`).
-- Ensure all API connectors and blueprints support zero-key offline mock fallbacks.
+- Enforce strict local-first loopback security boundaries (`127.0.0.1`).
+- Maintain accessible semantic markup, OpenGraph headers, and structured JSON-LD schemas.
+- Keep `llms.txt`, `sitemap.xml`, and `ai.txt` synchronized with code changes.
+- Ensure all tool connectors support zero-key offline mock fallbacks.
 
 ### Do Not:
-- Proxy private loopback ports (`:8484`, `:8787`, `:8989`) through the public CDN/Nginx server.
-- Commit plaintext secrets or API keys to `public/` or git repositories.
-- Invent paid SaaS subscription tiers, cloud registration walls, or hosted multi-tenant services.
-- Hallucinate dependencies or alter pre-wired blueprint interfaces without AST invariant checks.
+- Proxy private loopback ports (`:8484`, `:8585`, `:8686`) through public CDN tunnels.
+- Commit plaintext secrets or unencrypted API keys.
+- Alter contract schemas in `data/project-manifest.json` without AST verification.
 
-## Key Local Commands
+---
+
+## 🚀 4. Canonical Local Commands
 
 ```bash
-# Web Stack (Local Hub)
-cd hosting && ./scripts/up.sh local
+# 1. Master Workspace Launcher
+cd /media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/zoth-studio
+./start-zoth-studio.sh --with-bridge --with-vault
 
-# Operator Deck Daemon
-cd "tools/null ai agent tools/local_null_ai_orchestrator"
-python3 orchestrator.py serve
+# 2. Hardware Serial & TTS Bridge
+./start-hardware-bridge.sh
 
-# Cryptographic Vault Daemon
-cd vault-daemon && ./scripts/run-local.sh
+# 3. Cryptographic Key Vault Daemon
+./start-vault-daemon.sh
 ```
-
-## Canonical References
-
-- Canonical Public Hub: https://zoth.nullai.tech/
-- Blueprint Foundry: https://zoth.nullai.tech/blueprints/
-- Machine Manifest: https://zoth.nullai.tech/llms.txt
-- Discovery Manifest: https://zoth.nullai.tech/ai.txt
-- Knowledge Graph: https://zoth.nullai.tech/blueprints/zoth-knowledge-graph.json
-- AEO Ontology Definitions: https://zoth.nullai.tech/blueprints/aeo-entity-definitions.md
-- Sitemap XML: https://zoth.nullai.tech/sitemap.xml

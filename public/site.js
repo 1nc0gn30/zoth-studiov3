@@ -556,5 +556,19 @@
     }
   };
 
+  // Inject In-Browser Visual Annotator & Agent Feedback Overlay
+  function loadAnnotatorOverlay() {
+    if (window.__ZOTH_ANNOTATOR_LOADED__ || document.querySelector('script[src*="zoth-annotator.js"]')) return;
+    const s = document.createElement('script');
+    s.src = '/assets/zoth-annotator.js';
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadAnnotatorOverlay);
+  } else {
+    loadAnnotatorOverlay();
+  }
+
   initToolMatrix();
 })();

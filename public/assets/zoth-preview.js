@@ -66,4 +66,5 @@
   }
   addScript("/assets/zoth-guide.js");
   addScript("/assets/celestial-trail.js");
+  addScript("/assets/zoth-annotator.js");
 })();

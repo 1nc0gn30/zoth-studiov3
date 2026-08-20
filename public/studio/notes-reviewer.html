@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZOTH Studio — Visual Notes & Swarm Agent Reviewer</title>
+  <meta name="description" content="Manage, inspect, and dispatch visual UI annotations and agent tasks across Zoth Studio and preview surfaces.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/zoth-tip.css">
+  <link rel="stylesheet" href="/assets/zoth-guide.css">
+  <link rel="stylesheet" href="/assets/zoth-annotator.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root {
+      --bg: #05070d;
+      --card-bg: rgba(14, 20, 34, 0.88);
+      --card-border: rgba(0, 240, 255, 0.18);
+      --cyan: #00f0ff;
+      --gold: #e8c872;
+      --pink: #ff007a;
+      --green: #34d399;
+      --purple: #c084fc;
+      --text: #f7f4ee;
+      --text-dim: #94a3b8;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Figtree', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header.top-bar {
+      padding: 12px 24px;
+      background: rgba(7, 10, 18, 0.95);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--gold);
+      object-fit: cover;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .brand-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links-sub {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-sub-btn {
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-decoration: none;
+      padding: 5px 9px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.2s;
+    }
+
+    .nav-sub-btn:hover, .nav-sub-btn.active {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a class="brand-wrap" href="/">
+      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Logo" class="brand-logo">
+      <div>
+        <div class="brand-title">ZOTH Visual Notes Reviewer</div>
+        <div class="brand-subtitle">Autonomous Swarm Feedback & Dispatch Deck</div>
+      </div>
+    </a>
+    <div class="header-actions">
+      <nav class="nav-links-sub" aria-label="Studio Nav">
+        <a class="nav-sub-btn" href="/#for-everyone" data-tip="Zero-Code Showcases — How non-tech founders & creators depend on Zoth.">✦ For You</a>
+        <a class="nav-sub-btn" href="/agents/" data-tip="Sovereign Agent Pantheon — 21 AI nodes with live test sandboxes.">Agents</a>
+        <a class="nav-sub-btn js-deck" href="http://127.0.0.1:8484/" data-tip="Local Sovereign Operator Deck (:8484).">Deck</a>
+        <a class="nav-sub-btn" href="/signal/" data-tip="Signal Swarm Bridge — Mobile phone NOC with live SSE streaming.">Signal</a>
+        <a class="nav-sub-btn" href="/studio/" data-tip="Studio Directory — 15 visual workstations.">Studio</a>
+        <a class="nav-sub-btn" href="/studio/swarm.html" data-tip="3D Swarm Command Arena — Real-time WebGL battle arena.">Swarm</a>
+        <a class="nav-sub-btn" href="/studio/consensus.html" data-tip="Consensus Battle Arena v2 — 3-Agent triangulation.">Consensus</a>
+        <a class="nav-sub-btn" href="/pets/pet-studio.html" data-tip="3D Figurine Studio — GPU-accelerated volumetric figurines.">💎 3D Studio</a>
+        <a class="nav-sub-btn" href="/vault/" data-tip="BYOK Vault — Argon2id encrypted local key container.">Vault</a>
+      </nav>
+      <button class="btn btn-ghost" id="btn-refresh" data-tip="Reload visual annotations from localStorage & swarm memory">🔄 Refresh</button>
+      <button class="btn btn-gold" id="btn-export-all" data-tip="Copy complete task prompt formatted for Antigravity & Swarm agents">📋 Copy Swarm Briefing</button>
+    </div>
+  </header>
+
+    .container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--cyan);
+    }
+
+    .controls-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-select {
+      background: rgba(5, 7, 13, 0.9);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .filter-select:focus {
+      border-color: var(--cyan);
+    }
+
+    .btn {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: #050508;
+      font-weight: 700;
+      box-shadow: 0 0 14px rgba(232, 200, 114, 0.3);
+    }
+
+    .btn-gold:hover {
+      background: #f5de99;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--cyan);
+      color: #fff;
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    .note-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .note-box:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 8px 24px rgba(0, 240, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .note-box.resolved {
+      opacity: 0.65;
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+
+    .note-box-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .note-category-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      background: rgba(232, 200, 114, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(232, 200, 114, 0.2);
+    }
+
+    .note-priority-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .note-priority-badge.Urgent {
+      background: rgba(255, 0, 122, 0.2);
+      color: var(--pink);
+      border: 1px solid var(--pink);
+    }
+
+    .note-priority-badge.High {
+      background: rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+      border: 1px solid #f59e0b;
+    }
+
+    .note-text-body {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #fff;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .note-meta-table {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      color: var(--text-dim);
+    }
+
+    .note-meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .note-meta-val {
+      color: var(--cyan);
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .note-agents-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .note-agent-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--cyan);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+    }
+
+    .note-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--card-bg);
+      border: 1px dashed var(--card-border);
+      border-radius: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div class="brand-wrap">
+      <img src="/favicon.png" alt="Zoth Logo" class="brand-logo">
+      <div>
+        <div class="brand-title">ZOTH Visual Notes Reviewer</div>
+        <div class="brand-subtitle">Autonomous Swarm Feedback & Visual Dispatch Deck</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="/" class="btn btn-ghost">← Back to Hub</a>
+      <button class="btn btn-ghost" id="btn-refresh">🔄 Refresh</button>
+      <button class="btn btn-gold" id="btn-export-all">📋 Copy Swarm Briefing</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stats-bar">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Total Notes</div>
+          <div class="stat-val" id="stat-total">0</div>
+        </div>
+        <span style="font-size:24px">📝</span>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Open Notes</div>
+          <div class="stat-val" id="stat-open" style="color:var(--gold)">0</div>
+        </div>
+        <span style="font-size:24px">⏳</span>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Tagged for Antigravity</div>
+          <div class="stat-val" id="stat-agy" style="color:#7c9cff">0</div>
+        </div>
+        <span style="font-size:24px">🤖</span>
+      </div>
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Resolved Notes</div>
+          <div class="stat-val" id="stat-resolved" style="color:var(--green)">0</div>
+        </div>
+        <span style="font-size:24px">✅</span>
+      </div>
+    </section>
+
+    <section class="controls-bar">
+      <div class="filter-group">
+        <label style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">FILTER BY:</label>
+        <select class="filter-select" id="filter-agent">
+          <option value="all">All Agents</option>
+          <option value="antigravity">@antigravity (Google)</option>
+          <option value="grok">@grok (xAI)</option>
+          <option value="hermes">@hermes</option>
+          <option value="ui-designer">@ui-designer</option>
+          <option value="ax-specialist">@ax-specialist</option>
+          <option value="seo-specialist">@seo-specialist</option>
+        </select>
+        <select class="filter-select" id="filter-status">
+          <option value="all">All Statuses</option>
+          <option value="open" selected>Open Only</option>
+          <option value="resolved">Resolved</option>
+        </select>
+        <select class="filter-select" id="filter-category">
+          <option value="all">All Categories</option>
+          <option value="UI / Visual">UI / Visual</option>
+          <option value="Bug / Broken">Bug / Broken</option>
+          <option value="Copy / Content">Copy / Content</option>
+          <option value="UX / Flow">UX / Flow</option>
+          <option value="AX (Accessibility)">AX (Accessibility)</option>
+          <option value="SEO / Metadata">SEO / Metadata</option>
+          <option value="Feature Request">Feature Request</option>
+        </select>
+      </div>
+      <div>
+        <input type="search" id="search-input" placeholder="Search note contents or selectors..." class="filter-select" style="width:260px">
+      </div>
+    </section>
+
+    <section id="notes-container" class="notes-grid"></section>
+  </main>
+
+  <script src="/assets/zoth-annotator.js"></script>
+  <script>
+    (function () {
+      let notes = [];
+      const STORAGE_KEY = 'zoth_visual_annotations_v2';
+      const API_ENDPOINT = '/api/annotations';
+
+      async function loadNotes() {
+        try {
+          const res = await fetch(API_ENDPOINT);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.annotations)) {
+              notes = data.annotations;
+            }
+          }
+        } catch (e) {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) notes = JSON.parse(raw);
+        }
+        render();
+      }
+
+      function updateStats() {
+        document.getElementById('stat-total').textContent = notes.length;
+        document.getElementById('stat-open').textContent = notes.filter(n => n.status !== 'resolved').length;
+        document.getElementById('stat-agy').textContent = notes.filter(n => (n.tagged_agents || []).includes('antigravity') && n.status !== 'resolved').length;
+        document.getElementById('stat-resolved').textContent = notes.filter(n => n.status === 'resolved').length;
+      }
+
+      function render() {
+        updateStats();
+        const container = document.getElementById('notes-container');
+        const filterAgent = document.getElementById('filter-agent').value;
+        const filterStatus = document.getElementById('filter-status').value;
+        const filterCategory = document.getElementById('filter-category').value;
+        const search = document.getElementById('search-input').value.toLowerCase().trim();
+
+        let filtered = notes;
+
+        if (filterAgent !== 'all') {
+          filtered = filtered.filter(n => (n.tagged_agents || []).includes(filterAgent));
+        }
+        if (filterStatus === 'open') {
+          filtered = filtered.filter(n => n.status !== 'resolved');
+        } else if (filterStatus === 'resolved') {
+          filtered = filtered.filter(n => n.status === 'resolved');
+        }
+        if (filterCategory !== 'all') {
+          filtered = filtered.filter(n => n.category === filterCategory);
+        }
+        if (search) {
+          filtered = filtered.filter(n =>
+            (n.text && n.text.toLowerCase().includes(search)) ||
+            (n.selector && n.selector.toLowerCase().includes(search)) ||
+            (n.pathname && n.pathname.toLowerCase().includes(search))
+          );
+        }
+
+        if (!filtered.length) {
+          container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <p style="font-size:32px; margin-bottom:12px">✨</p>
+              <h3 style="font-family:var(--font-display); font-size:18px; margin-bottom:6px">No Notes Matching Criteria</h3>
+              <p style="color:var(--text-dim); font-size:13px">Use the Zoth Annotator tool on any page (Ctrl+Alt+A) to leave notes.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filtered.map(n => `
+          <div class="note-box ${n.status === 'resolved' ? 'resolved' : ''}">
+            <div class="note-box-header">
+              <span class="note-category-badge">${n.category || 'General'}</span>
+              <span class="note-priority-badge ${n.priority || 'Normal'}">${n.priority || 'Normal'}</span>
+            </div>
+
+            <div class="note-text-body">${escapeHtml(n.text)}</div>
+
+            <div class="note-agents-row">
+              ${(n.tagged_agents || []).map(a => `<span class="note-agent-pill">@${a}</span>`).join('')}
+            </div>
+
+            <div class="note-meta-table">
+              <div class="note-meta-row">
+                <span>Page:</span>
+                <a href="${n.page_url || n.pathname || '/'}" target="_blank" class="note-meta-val" style="color:var(--cyan); text-decoration:none">${n.pathname || '/'} ↗</a>
+              </div>
+              ${n.selector ? `
+                <div class="note-meta-row">
+                  <span>Selector:</span>
+                  <span class="note-meta-val" title="${escapeHtml(n.selector)}">${escapeHtml(n.selector)}</span>
+                </div>
+              ` : ''}
+              <div class="note-meta-row">
+                <span>Created:</span>
+                <span class="note-meta-val" style="color:var(--text-dim)">${n.created_local || n.created_at || ''}</span>
+              </div>
+            </div>
+
+            <div class="note-footer">
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">${n.id}</span>
+              <div style="display:flex; gap:8px">
+                <button class="btn btn-ghost btn-resolve" data-id="${n.id}">
+                  ${n.status === 'resolved' ? '↩ Reopen' : '✓ Resolve'}
+                </button>
+                <button class="btn btn-ghost btn-delete" data-id="${n.id}" style="color:var(--pink)">✕ Delete</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        // Action handlers
+        container.querySelectorAll('.btn-resolve').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            const note = notes.find(n => n.id === id);
+            if (note) {
+              note.status = note.status === 'resolved' ? 'open' : 'resolved';
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+              try {
+                await fetch('/api/annotations/resolve', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id, status: note.status })
+                });
+              } catch (e) {}
+              render();
+            }
+          });
+        });
+
+        container.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            if (confirm('Delete this annotation?')) {
+              notes = notes.filter(n => n.id !== id);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+              try {
+                await fetch(`/api/annotations?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+              } catch (e) {}
+              render();
+            }
+          });
+        });
+      }
+
+      function escapeHtml(str) {
+        return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // Event Listeners
+      document.getElementById('btn-refresh').addEventListener('click', loadNotes);
+      document.getElementById('filter-agent').addEventListener('change', render);
+      document.getElementById('filter-status').addEventListener('change', render);
+      document.getElementById('filter-category').addEventListener('change', render);
+      document.getElementById('search-input').addEventListener('input', render);
+
+      document.getElementById('btn-export-all').addEventListener('click', () => {
+        if (window.ZothAnnotator) {
+          const briefing = window.ZothAnnotator.exportBriefing();
+          navigator.clipboard.writeText(briefing).then(() => {
+            alert('Copied complete Swarm briefing prompt to clipboard!');
+          });
+        }
+      });
+
+      loadNotes();
+    })();
+  </script>
+  <script src="/assets/zoth-tip.js" defer></script>
+  <script src="/assets/zoth-annotator.js" defer></script>
+</body>
+</html>
