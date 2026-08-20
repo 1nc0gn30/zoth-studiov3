@@ -250,16 +250,406 @@
       border: 1px solid var(--line); pointer-events: none;
     }
 
+    /* Mobile Segmented Switcher */
+    .mobile-segmented-bar {
+      display: none;
+    }
+    .mobile-tabs-track {
+      display: flex;
+      gap: var(--fib-8);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 2px;
+    }
+    .mobile-tabs-track::-webkit-scrollbar {
+      display: none;
+    }
+    .mobile-tab-btn {
+      flex: 1 0 auto;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 8px 14px;
+      border-radius: var(--rad-xs);
+      border: 1px solid var(--panel-border);
+      background: rgba(8, 12, 24, 0.85);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+    .mobile-tab-btn:hover {
+      border-color: var(--cyan);
+      color: #fff;
+      background: rgba(0, 240, 255, 0.08);
+    }
+    .mobile-tab-btn.active {
+      background: rgba(0, 240, 255, 0.16);
+      border-color: var(--cyan);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
+    }
+    .mobile-tab-btn .tab-icon {
+      font-size: 0.92rem;
+    }
+
+    /* Mobile Responsive Architecture (<=880px) */
     @media (max-width: 880px) {
       nav.menu { display: none; }
-      .burger { display: inline-flex; }
-      .studio-toolbar { top: var(--fib-55); flex-wrap: wrap; }
-      .mascot-hud { bottom: var(--fib-13); left: var(--fib-13); right: var(--fib-13); width: auto; }
-      .touch-hint { display: none; }
+      .burger { display: inline-flex; min-height: 44px; align-items: center; }
+      body {
+        overflow-y: auto !important;
+        padding-bottom: var(--fib-55);
+      }
+
+      /* Sticky Mobile Segmented Bar */
+      .mobile-segmented-bar {
+        display: block;
+        position: fixed;
+        top: 56px;
+        left: var(--fib-13);
+        right: var(--fib-13);
+        z-index: 95;
+        background: rgba(5, 5, 8, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--panel-border-bright);
+        border-radius: var(--rad-md);
+        padding: 4px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75);
+      }
+
+      /* 44px Touch Targets */
+      .vibe-chip {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 14px;
+        font-size: 0.76rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-tool {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 12px;
+        font-size: 0.76rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pet-select {
+        min-height: 44px;
+        width: 100%;
+        font-size: 16px;
+        padding: 10px 14px;
+      }
+      .btn-hud {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px 14px;
+        font-size: 0.76rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .slider-row input[type="range"] {
+        height: 32px;
+      }
+
+      /* 1. Mode: 3D Figurine */
+      body[data-mobile-tab="figurine"] #host {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100svh;
+        z-index: 1;
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="figurine"] #host canvas {
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="figurine"] .studio-toolbar {
+        position: fixed;
+        top: 114px;
+        left: var(--fib-13);
+        right: var(--fib-13);
+        z-index: 30;
+        display: flex;
+        flex-direction: column;
+        gap: var(--fib-8);
+        padding: var(--fib-8) var(--fib-13);
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+      body[data-mobile-tab="figurine"] .vibes-group {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      body[data-mobile-tab="figurine"] .cam-presets-row,
+      body[data-mobile-tab="figurine"] .tool-btns {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      body[data-mobile-tab="figurine"] #shader-drawer {
+        display: none !important;
+      }
+      body[data-mobile-tab="figurine"] #spectrum-hud {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 30;
+        display: flex !important;
+      }
+      body[data-mobile-tab="figurine"] #mascot-hud {
+        display: none !important;
+      }
+      body[data-mobile-tab="figurine"] .touch-hint {
+        display: block;
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 25;
+        white-space: nowrap;
+        background: rgba(5, 5, 8, 0.85);
+        backdrop-filter: blur(12px);
+      }
+
+      /* 2. Mode: Studio Controls & Shaders */
+      body[data-mobile-tab="controls"] #host {
+        position: relative;
+        width: calc(100vw - var(--fib-21) * 2);
+        height: clamp(240px, 38vh, 340px);
+        margin: 114px var(--fib-21) var(--fib-13) var(--fib-21);
+        border-radius: var(--rad-md);
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+        z-index: 10;
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="controls"] #host canvas {
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="controls"] .studio-toolbar {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-13) var(--fib-21);
+        display: flex;
+        flex-direction: column;
+        gap: var(--fib-13);
+        padding: var(--fib-13);
+        box-sizing: border-box;
+      }
+      body[data-mobile-tab="controls"] .vibes-group {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      body[data-mobile-tab="controls"] .cam-presets-row,
+      body[data-mobile-tab="controls"] .tool-btns {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      body[data-mobile-tab="controls"] #shader-drawer {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-13) var(--fib-21);
+        display: flex !important;
+        box-sizing: border-box;
+        padding: var(--fib-13) var(--fib-21);
+      }
+      body[data-mobile-tab="controls"] #spectrum-hud {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-34) var(--fib-21);
+        display: flex !important;
+        box-sizing: border-box;
+        justify-content: space-between;
+      }
+      body[data-mobile-tab="controls"] #mascot-hud {
+        display: none !important;
+      }
+      body[data-mobile-tab="controls"] .touch-hint {
+        display: none;
+      }
+
+      /* 3. Mode: Mascot Dossier */
+      body[data-mobile-tab="dossier"] #host {
+        position: relative;
+        width: calc(100vw - var(--fib-21) * 2);
+        height: clamp(240px, 38vh, 340px);
+        margin: 114px var(--fib-21) var(--fib-13) var(--fib-21);
+        border-radius: var(--rad-md);
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+        z-index: 10;
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="dossier"] #host canvas {
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="dossier"] .studio-toolbar {
+        display: none !important;
+      }
+      body[data-mobile-tab="dossier"] #shader-drawer {
+        display: none !important;
+      }
+      body[data-mobile-tab="dossier"] #spectrum-hud {
+        display: none !important;
+      }
+      body[data-mobile-tab="dossier"] #mascot-hud {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-55) var(--fib-21);
+        display: flex !important;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding: var(--fib-21) var(--fib-13);
+      }
+      body[data-mobile-tab="dossier"] .touch-hint {
+        display: none;
+      }
+
+      /* 4. Mode: All */
+      body[data-mobile-tab="all"] #host {
+        position: relative;
+        width: calc(100vw - var(--fib-21) * 2);
+        height: clamp(240px, 38vh, 340px);
+        margin: 114px var(--fib-21) var(--fib-13) var(--fib-21);
+        border-radius: var(--rad-md);
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+        z-index: 10;
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="all"] #host canvas {
+        touch-action: pan-y;
+      }
+      body[data-mobile-tab="all"] .studio-toolbar {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-13) var(--fib-21);
+        display: flex !important;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
+      body[data-mobile-tab="all"] #shader-drawer {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-13) var(--fib-21);
+        display: flex !important;
+        box-sizing: border-box;
+      }
+      body[data-mobile-tab="all"] #spectrum-hud {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-13) var(--fib-21);
+        display: flex !important;
+        box-sizing: border-box;
+      }
+      body[data-mobile-tab="all"] #mascot-hud {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        right: auto;
+        width: calc(100vw - var(--fib-21) * 2);
+        margin: 0 var(--fib-21) var(--fib-55) var(--fib-21);
+        display: flex !important;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
+      body[data-mobile-tab="all"] .touch-hint {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .mobile-tab-btn {
+        padding: 6px 8px;
+        font-size: 0.68rem;
+      }
+      .vibe-chip {
+        padding: 6px 10px;
+        font-size: 0.72rem;
+      }
+      .btn-tool {
+        padding: 6px 8px;
+        font-size: 0.70rem;
+      }
+    }
+
+    @media (min-width: 881px) {
+      .mobile-segmented-bar {
+        display: none !important;
+      }
+      #host {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100svh !important;
+        margin: 0 !important;
+      }
+      .studio-toolbar {
+        position: fixed !important;
+        top: var(--fib-89) !important;
+        left: var(--fib-21) !important;
+        right: var(--fib-21) !important;
+        width: auto !important;
+        display: flex !important;
+      }
+      #shader-drawer {
+        position: fixed !important;
+        top: 130px !important;
+        right: 16px !important;
+        width: 220px !important;
+        display: flex !important;
+      }
+      #spectrum-hud {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 16px !important;
+        display: flex !important;
+      }
+      #mascot-hud {
+        position: fixed !important;
+        bottom: var(--fib-21) !important;
+        left: var(--fib-21) !important;
+        width: clamp(280px, 32vw, 420px) !important;
+        display: block !important;
+      }
     }
   </style>
 </head>
-<body>
+<body data-mobile-tab="figurine">
   <a class="skip" href="#host">Skip to 3D Canvas</a>
   <div class="progress" id="progress" aria-hidden="true"></div>
   <div class="ambient-glow"></div>
@@ -307,6 +697,29 @@
     <a class="sub" href="https://github.com/NullAITech/zoth-studio">GitHub Upstream</a>
     <a class="sub" href="/#install">Download Binaries</a>
   </nav>
+
+  <!-- Mobile Segmented Switcher (Visible <=880px) -->
+  <nav class="mobile-segmented-bar" id="pet-mobile-tabs" aria-label="Mobile Pet Studio Navigation">
+    <div class="mobile-tabs-track">
+      <button class="mobile-tab-btn active" data-tab="figurine" onclick="setPetMobileTab('figurine')">
+        <span class="tab-icon">💎</span>
+        <span class="tab-label">3D Figurine</span>
+      </button>
+      <button class="mobile-tab-btn" data-tab="controls" onclick="setPetMobileTab('controls')">
+        <span class="tab-icon">🎛️</span>
+        <span class="tab-label">Studio Controls</span>
+      </button>
+      <button class="mobile-tab-btn" data-tab="dossier" onclick="setPetMobileTab('dossier')">
+        <span class="tab-icon">📜</span>
+        <span class="tab-label">Mascot Dossier</span>
+      </button>
+      <button class="mobile-tab-btn" data-tab="all" onclick="setPetMobileTab('all')">
+        <span class="tab-icon">👁️</span>
+        <span class="tab-label">All</span>
+      </button>
+    </div>
+  </nav>
+
 
   <!-- 3D Canvas Host -->
   <div id="host"></div>
@@ -810,6 +1223,47 @@
     }, { passive: true });
 
     // Window Resize & ResizeObserver for robust layout adaptation
+    // Mobile Segmented Switcher Controller
+    function setPetMobileTab(tab) {
+      document.body.setAttribute('data-mobile-tab', tab);
+      document.querySelectorAll('#pet-mobile-tabs .mobile-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+      });
+      setTimeout(() => {
+        handleResize();
+      }, 60);
+      playSynthesizedChirp(587.33, 0.2);
+    }
+
+    // 2-Finger Pinch Zoom Support for Touch Screens
+    let initialTouchDist = null;
+    let initialCamZ = 4.2;
+
+    window.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 2) {
+        initialTouchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialCamZ = targetCamPos.z;
+      }
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2 && initialTouchDist) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const scale = initialTouchDist / dist;
+        targetCamPos.z = Math.min(Math.max(initialCamZ * scale, 1.8), 7.0);
+      }
+    }, { passive: true });
+
+    window.addEventListener("touchend", () => {
+      initialTouchDist = null;
+    }, { passive: true });
+
     function handleResize() {
       const w = container.clientWidth || window.innerWidth;
       const h = container.clientHeight || window.innerHeight;

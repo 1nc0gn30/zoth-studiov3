@@ -167,8 +167,13 @@
       /* Grid Layouts — Golden Split Ratio 1.618fr 1fr */
       .omni-grid {
         display: grid;
-        grid-template-columns: minmax(320px, var(--phi-sidebar, 377px)) 1.618fr;
+        grid-template-columns: minmax(0, var(--phi-sidebar, 377px)) 1.618fr;
         gap: var(--fib-21, 21px);
+        min-width: 0;
+        width: 100%;
+      }
+      .omni-grid > * {
+        min-width: 0;
       }
       @media (max-width: 1024px) {
         .omni-grid { grid-template-columns: 1fr; }
@@ -182,6 +187,8 @@
         display: flex;
         flex-direction: column;
         gap: var(--fib-21, 21px);
+        min-width: 0;
+        box-sizing: border-box;
       }
 
       .card-title {
@@ -258,8 +265,14 @@
       /* Multi-platform Preview Matrix */
       .preview-matrix {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
         gap: var(--fib-21, 21px);
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .preview-matrix > * {
+        min-width: 0;
       }
       .preview-card {
         background: var(--omni-card);
@@ -269,6 +282,9 @@
         display: flex;
         flex-direction: column;
         gap: var(--fib-13, 13px);
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
       }
       .preview-card-head {
         display: flex;
@@ -363,6 +379,73 @@
         color: var(--omni-cyan);
       }
 
+      /* Mobile Segmented Switcher for Shorts Studio */
+      .shorts-mobile-tabs {
+        display: none;
+        gap: var(--fib-8, 8px);
+        margin-bottom: var(--fib-21, 21px);
+        background: rgba(9, 13, 24, 0.92);
+        padding: var(--fib-5, 5px);
+        border-radius: var(--fib-radius-md, 13px);
+        border: 1px solid var(--omni-border);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .shorts-tab-btn {
+        flex: 1 1 0;
+        min-width: 120px;
+        padding: var(--fib-8, 8px) var(--fib-13, 13px);
+        border-radius: var(--fib-radius-sm, 8px);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: var(--fib-font-micro, 13px);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--fib-8, 8px);
+        min-height: 44px;
+        white-space: nowrap;
+        box-sizing: border-box;
+      }
+
+      .shorts-tab-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .shorts-tab-btn.active {
+        color: var(--omni-cyan);
+        background: rgba(0, 240, 255, 0.12);
+        border-color: var(--omni-cyan);
+        box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+      }
+
+      .shorts-stage-right-col {
+        display: flex;
+        flex-direction: column;
+        gap: var(--fib-21, 21px);
+      }
+
+      .form-textarea, .preview-body, .scene-card textarea, pre {
+        -webkit-overflow-scrolling: touch;
+        word-break: break-word;
+        overflow-x: auto;
+      }
+
+      @media (max-width: 880px) {
+        .shorts-mobile-tabs { display: flex; }
+        .shorts-stage-grid { display: block; margin-bottom: var(--fib-21, 21px); }
+        .shorts-stage-right-col { display: contents; }
+        .shorts-panel { display: none !important; }
+        .shorts-panel.mobile-active { display: flex !important; width: 100%; margin-bottom: var(--fib-21, 21px); }
+      }
+
       /* Thumbnail Forge */
       .thumb-stage-wrap {
         display: flex;
@@ -407,7 +490,9 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
+        min-height: 44px;
         text-decoration: none;
+        box-sizing: border-box;
       }
       .btn-primary {
         background: var(--omni-cyan);
@@ -635,9 +720,16 @@
 
       <!-- TAB 3: Shorts & Reels Video Studio -->
       <section id="tab-shorts" class="omni-view">
+        <!-- Mobile Segmented Switcher for Shorts Studio -->
+        <nav class="shorts-mobile-tabs" aria-label="Shorts Mobile Views">
+          <button class="shorts-tab-btn active" onclick="setShortsMobileView('stage')">📱 Video Stage</button>
+          <button class="shorts-tab-btn" onclick="setShortsMobileView('timeline')">🎬 Scene Timeline</button>
+          <button class="shorts-tab-btn" onclick="setShortsMobileView('render')">⚙️ Render Config</button>
+        </nav>
+
         <div class="shorts-stage-grid">
-          <!-- Mobile Screen Previewer -->
-          <div class="omni-card" style="align-items:center;">
+          <!-- Mobile Screen Previewer / Video Stage -->
+          <div class="omni-card shorts-panel mobile-active" id="shorts-pane-stage" style="align-items:center;">
             <div class="card-title" style="width:100%;">
               <span>9:16 Shorts Canvas</span>
               <span class="pill" style="border-color:var(--omni-emerald); color:var(--omni-emerald);">60 FPS</span>
@@ -661,76 +753,85 @@
             <div style="display:flex; gap:8px; width:100%; margin-top:10px; flex-wrap:wrap;">
               <button class="btn-omni btn-primary" id="btn-play-shorts" style="flex:1;">▶ Preview Motion</button>
               <button class="btn-omni btn-secondary" id="btn-speech-shorts" style="flex:1;">🔊 Voice Synthesizer</button>
-              <button class="btn-omni btn-magenta" id="btn-record-shorts" style="width:100%; margin-top:4px;">📹 Record & Download WebM Video (60 FPS)</button>
             </div>
           </div>
 
-          <!-- Script Builder & Beat Sheet -->
-          <div class="omni-card shorts-script-editor">
-            <div class="card-title">
-              <span>Viral 4-Beat Shorts Script & Sound FX Engine</span>
-              <div style="display:flex; gap:8px;">
-                <button class="btn-omni btn-secondary" onclick="openReadmeToVideoModal()">📄 README ➔ Video</button>
-                <button class="btn-omni btn-magenta" id="btn-gen-shorts-ai">✨ AI Refresh</button>
+          <!-- Right Column: Timeline & Render Panels -->
+          <div class="shorts-stage-right-col">
+            <!-- Scene Timeline Panel -->
+            <div class="omni-card shorts-script-editor shorts-panel" id="shorts-pane-timeline">
+              <div class="card-title">
+                <span>Viral 4-Beat Scene Timeline</span>
+                <button class="btn-omni btn-magenta btn-sm" id="btn-gen-shorts-ai">✨ AI Refresh</button>
               </div>
-            </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 14px;">
+              <div class="scene-card">
+                <div class="scene-head"><span>BEAT 1: HOOK (0s - 3s)</span><span>Visual: Rapid 3D Zoom</span></div>
+                <textarea id="beat1-text" class="form-textarea" style="min-height:60px;">Stop building AI apps that depend on 10 external cloud APIs. Here is why local-first changes everything.</textarea>
+              </div>
+
+              <div class="scene-card">
+                <div class="scene-head"><span>BEAT 2: THE PROBLEM (3s - 12s)</span><span>Visual: Glitch Matrix</span></div>
+                <textarea id="beat2-text" class="form-textarea" style="min-height:60px;">Your API keys expire, rate limits break your deployments, and your user secrets leak over public tunnels.</textarea>
+              </div>
+
+              <div class="scene-card">
+                <div class="scene-head"><span>BEAT 3: THE SOLUTION (12s - 25s)</span><span>Visual: Liquid Shader Wave</span></div>
+                <textarea id="beat3-text" class="form-textarea" style="min-height:60px;">Zoth Studio runs entirely on loopback. You get local Ollama neural co-pilots, full 3D CAD modeling, and autonomous multi-agent swarms with zero key leakage.</textarea>
+              </div>
+
+              <div class="scene-card">
+                <div class="scene-head"><span>BEAT 4: CALL TO ACTION (25s - 30s)</span><span>Visual: Brand Seal Pulse</span></div>
+                <textarea id="beat4-text" class="form-textarea" style="min-height:50px;">Clone the repo on GitHub and take back control of your AI workflow.</textarea>
+              </div>
+
+              <!-- Sound FX Palette -->
               <div>
-                <label class="form-label" style="font-size:0.75rem;">Script Blueprint Preset</label>
-                <select id="shorts-script-preset" class="form-select" onchange="loadShortsPreset(this.value)">
-                  <option value="local_ai">⚡ Local AI Sovereignty (Zero Cloud APIs)</option>
-                  <option value="security">🛡️ Zero-Day Security & Kernel Hardening</option>
-                  <option value="web3">💎 Autonomous Smart Agents & DeFi</option>
-                  <option value="indie">🚀 Indie Hacker: Ship in 8 Micro-Steps</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label" style="font-size:0.75rem;">Motion Canvas Theme</label>
-                <select id="shorts-theme-select" class="form-select">
-                  <option value="nebula">🌌 Cyber Nebula (Cyan & Violet)</option>
-                  <option value="matrix">⚡ Digital Matrix (Acid Green & Black)</option>
-                  <option value="crimson">🔥 Crimson Void (Red & Amber)</option>
-                  <option value="quantum">🧊 Quantum Ice (Electric Blue & White)</option>
-                </select>
+                <div class="form-label" style="margin-bottom:6px;">Synthesized Web Audio SFX</div>
+                <div class="sfx-bar">
+                  <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('laser')">⚡ Laser</button>
+                  <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('whoosh')">💨 Whoosh</button>
+                  <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('warp')">🌌 Warp Ascent</button>
+                  <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('chime')">🔔 Crystal Chime</button>
+                  <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('bass')">💥 Bass Drop</button>
+                </div>
               </div>
             </div>
 
-            <div class="scene-card">
-              <div class="scene-head"><span>BEAT 1: HOOK (0s - 3s)</span><span>Visual: Rapid 3D Zoom</span></div>
-              <textarea id="beat1-text" class="form-textarea" style="min-height:60px;">Stop building AI apps that depend on 10 external cloud APIs. Here is why local-first changes everything.</textarea>
-            </div>
-
-            <div class="scene-card">
-              <div class="scene-head"><span>BEAT 2: THE PROBLEM (3s - 12s)</span><span>Visual: Glitch Matrix</span></div>
-              <textarea id="beat2-text" class="form-textarea" style="min-height:60px;">Your API keys expire, rate limits break your deployments, and your user secrets leak over public tunnels.</textarea>
-            </div>
-
-            <div class="scene-card">
-              <div class="scene-head"><span>BEAT 3: THE SOLUTION (12s - 25s)</span><span>Visual: Liquid Shader Wave</span></div>
-              <textarea id="beat3-text" class="form-textarea" style="min-height:60px;">Zoth Studio runs entirely on loopback. You get local Ollama neural co-pilots, full 3D CAD modeling, and autonomous multi-agent swarms with zero key leakage.</textarea>
-            </div>
-
-            <div class="scene-card">
-              <div class="scene-head"><span>BEAT 4: CALL TO ACTION (25s - 30s)</span><span>Visual: Brand Seal Pulse</span></div>
-              <textarea id="beat4-text" class="form-textarea" style="min-height:50px;">Clone the repo on GitHub and take back control of your AI workflow.</textarea>
-            </div>
-
-            <!-- Sound FX Palette -->
-            <div>
-              <div class="form-label" style="margin-bottom:6px;">Synthesized Web Audio SFX</div>
-              <div class="sfx-bar">
-                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('laser')">⚡ Laser</button>
-                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('whoosh')">💨 Whoosh</button>
-                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('warp')">🌌 Warp Ascent</button>
-                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('chime')">🔔 Crystal Chime</button>
-                <button class="btn-omni btn-secondary btn-sm" onclick="playSfx('bass')">💥 Bass Drop</button>
+            <!-- Render Config & Exporters Panel -->
+            <div class="omni-card shorts-panel" id="shorts-pane-render">
+              <div class="card-title">
+                <span>Shorts Engine & Render Config</span>
+                <button class="btn-omni btn-secondary btn-sm" onclick="openReadmeToVideoModal()">📄 README ➔ Video</button>
               </div>
-            </div>
 
-            <div style="display:flex; gap:10px;">
-              <button class="btn-omni btn-primary" id="btn-update-canvas-captions">🔄 Update Canvas Timeline</button>
-              <button class="btn-omni btn-secondary" id="btn-export-script-md">📥 Download Script (.md)</button>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 14px;">
+                <div>
+                  <label class="form-label" style="font-size:0.75rem;">Script Blueprint Preset</label>
+                  <select id="shorts-script-preset" class="form-select" onchange="loadShortsPreset(this.value)">
+                    <option value="local_ai">⚡ Local AI Sovereignty (Zero Cloud APIs)</option>
+                    <option value="security">🛡️ Zero-Day Security & Kernel Hardening</option>
+                    <option value="web3">💎 Autonomous Smart Agents & DeFi</option>
+                    <option value="indie">🚀 Indie Hacker: Ship in 8 Micro-Steps</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" style="font-size:0.75rem;">Motion Canvas Theme</label>
+                  <select id="shorts-theme-select" class="form-select">
+                    <option value="nebula">🌌 Cyber Nebula (Cyan & Violet)</option>
+                    <option value="matrix">⚡ Digital Matrix (Acid Green & Black)</option>
+                    <option value="crimson">🔥 Crimson Void (Red & Amber)</option>
+                    <option value="quantum">🧊 Quantum Ice (Electric Blue & White)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button class="btn-omni btn-magenta" id="btn-record-shorts" style="width:100%; margin-bottom:12px;">📹 Record & Download WebM Video (60 FPS)</button>
+
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-omni btn-primary" id="btn-update-canvas-captions" style="flex:1;">🔄 Update Canvas Timeline</button>
+                <button class="btn-omni btn-secondary" id="btn-export-script-md" style="flex:1;">📥 Download Script (.md)</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1546,6 +1647,18 @@
           box.prepend(row);
           input.value = '';
         });
+
+        // Shorts Mobile View Switcher
+        window.setShortsMobileView = function(viewKey) {
+          document.querySelectorAll('.shorts-tab-btn').forEach(b => b.classList.remove('active'));
+          const activeBtn = Array.from(document.querySelectorAll('.shorts-tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(viewKey));
+          if (activeBtn) activeBtn.classList.add('active');
+
+          document.querySelectorAll('.shorts-panel').forEach(p => p.classList.remove('mobile-active'));
+          const target = document.getElementById('shorts-pane-' + viewKey);
+          if (target) target.classList.add('mobile-active');
+          playSfx('warp');
+        };
 
         // Initial setup
         renderMatrix(defaultOutputs);

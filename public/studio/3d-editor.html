@@ -26,6 +26,27 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
     <style>
+      :root {
+        --bg-cad: #05070f;
+        --panel-bg: rgba(10, 14, 26, 0.88);
+        --cyan-cad: #00e5ff;
+        --gold-cad: #e8c872;
+        --purple-cad: #d946ef;
+        --border-cad: rgba(0, 229, 255, 0.2);
+        --radius: 12px;
+
+        /* Fibonacci Spacing & Golden Ratio Rhythm */
+        --fib-5: 5px;
+        --fib-8: 8px;
+        --fib-13: 13px;
+        --fib-21: 21px;
+        --fib-34: 34px;
+        --fib-55: 55px;
+        --fib-radius-sm: 8px;
+        --fib-radius-md: 13px;
+        --fib-radius-lg: 21px;
+      }
+
       .studio-layout {
         display: grid;
         grid-template-columns: 360px 1fr 380px;
@@ -35,12 +56,257 @@
         background: #020306;
         box-sizing: border-box;
       }
-      @media (max-width: 1280px) {
+      @media (max-width: 1280px) and (min-width: 881px) {
         .studio-layout {
-          grid-template-columns: 320px 1fr;
+          grid-template-columns: 320px 1fr 320px;
         }
-        .studio-layout > aside:last-child {
-          display: none;
+      }
+
+      /* Mobile Segmented Switcher */
+      .mobile-segmented-bar {
+        display: none;
+      }
+      .mobile-tabs-track {
+        display: flex;
+        gap: var(--fib-8, 8px);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+      }
+      .mobile-tabs-track::-webkit-scrollbar {
+        display: none;
+      }
+      .mobile-tab-btn {
+        flex: 1 0 auto;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 14px;
+        border-radius: var(--fib-radius-sm, 8px);
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        background: rgba(10, 14, 26, 0.85);
+        color: #94a3b8;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.76rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        touch-action: manipulation;
+      }
+      .mobile-tab-btn:hover {
+        border-color: var(--cyan-cad);
+        color: #fff;
+        background: rgba(0, 229, 255, 0.08);
+      }
+      .mobile-tab-btn.active {
+        background: rgba(0, 229, 255, 0.18);
+        border-color: var(--cyan-cad);
+        color: #fff;
+        box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+      }
+      .mobile-tab-btn .tab-icon {
+        font-size: 0.95rem;
+      }
+
+      /* Mobile Responsive Breakpoints (<=880px) */
+      @media (max-width: 880px) {
+        body.deck-page {
+          overflow-x: hidden;
+        }
+        .site-header {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+        }
+        .mobile-segmented-bar {
+          display: block;
+          position: sticky;
+          top: 56px;
+          z-index: 80;
+          background: rgba(5, 7, 13, 0.96);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(0, 229, 255, 0.25);
+          padding: 6px 12px;
+          margin-bottom: 0;
+        }
+        .studio-layout {
+          display: flex;
+          flex-direction: column;
+          height: auto;
+          min-height: calc(100vh - 120px);
+          padding: var(--fib-13, 13px);
+          gap: var(--fib-13, 13px);
+          overflow-y: visible;
+        }
+
+        /* Dedicated 3D Canvas Geometry */
+        .viewport-container {
+          height: clamp(280px, 42vh, 380px);
+          min-height: 280px;
+          width: 100%;
+          border-radius: var(--fib-radius-md, 13px);
+          touch-action: pan-y;
+          position: relative;
+        }
+        #three-viewport {
+          width: 100%;
+          height: 100%;
+          touch-action: pan-y;
+        }
+        #three-viewport canvas {
+          touch-action: pan-y;
+        }
+
+        .viewport-top-hud {
+          top: 8px;
+          left: 8px;
+          right: 8px;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .viewport-bottom-hud {
+          bottom: 8px;
+          left: 8px;
+          right: 8px;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .hud-group {
+          padding: 4px 6px;
+          gap: 4px;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          max-width: 100%;
+        }
+
+        /* Touch-Friendly Controls (44px min tap targets) */
+        .btn-cad {
+          min-height: 44px;
+          min-width: 44px;
+          padding: 8px 12px;
+          font-size: 0.78rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .hud-group button {
+          min-height: 44px;
+          min-width: 44px;
+          padding: 6px 10px;
+          font-size: 0.74rem;
+        }
+        .tag-pill {
+          min-height: 44px;
+          padding: 8px 12px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+        }
+        .outliner-item {
+          min-height: 44px;
+          padding: 10px 12px;
+        }
+        .catalog-card {
+          min-height: 44px;
+          padding: 10px 12px;
+        }
+        .slider-row {
+          min-height: 44px;
+        }
+        .slider-row input[type="range"] {
+          height: 28px;
+        }
+        .prompt-box {
+          min-height: 88px;
+          font-size: 16px;
+        }
+        .btn-ai-gen {
+          min-height: 48px;
+          font-size: 0.88rem;
+        }
+
+        /* Panel Glass Mobile Formatting */
+        .panel-glass {
+          padding: var(--fib-21, 21px) var(--fib-13, 13px);
+          border-radius: var(--fib-radius-md, 13px);
+          gap: var(--fib-13, 13px);
+          max-height: none;
+          overflow-y: visible;
+        }
+
+        /* Mobile Segmented Switcher Visibility Rules */
+        .studio-layout[data-mobile-tab="viewport"] #viewport-host {
+          display: block !important;
+          height: clamp(340px, 60vh, 520px);
+        }
+        .studio-layout[data-mobile-tab="viewport"] #panel-geometry,
+        .studio-layout[data-mobile-tab="viewport"] #panel-ai-materials {
+          display: none !important;
+        }
+
+        .studio-layout[data-mobile-tab="geometry"] #panel-geometry {
+          display: flex !important;
+          width: 100%;
+        }
+        .studio-layout[data-mobile-tab="geometry"] #viewport-host,
+        .studio-layout[data-mobile-tab="geometry"] #panel-ai-materials {
+          display: none !important;
+        }
+
+        .studio-layout[data-mobile-tab="materials"] #panel-ai-materials {
+          display: flex !important;
+          width: 100%;
+        }
+        .studio-layout[data-mobile-tab="materials"] #viewport-host,
+        .studio-layout[data-mobile-tab="materials"] #panel-geometry {
+          display: none !important;
+        }
+
+        .studio-layout[data-mobile-tab="all"] #viewport-host {
+          display: block !important;
+          height: clamp(280px, 42vh, 380px);
+        }
+        .studio-layout[data-mobile-tab="all"] #panel-geometry,
+        .studio-layout[data-mobile-tab="all"] #panel-ai-materials {
+          display: flex !important;
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .studio-layout {
+          padding: var(--fib-8, 8px);
+          gap: var(--fib-8, 8px);
+        }
+        .mobile-segmented-bar {
+          padding: 4px 8px;
+        }
+        .mobile-tab-btn {
+          padding: 6px 10px;
+          font-size: 0.70rem;
+        }
+      }
+
+      @media (min-width: 881px) {
+        .mobile-segmented-bar {
+          display: none !important;
+        }
+        .studio-layout {
+          display: grid !important;
+          grid-template-columns: 320px 1fr 340px !important;
+        }
+        #panel-geometry, #viewport-host, #panel-ai-materials {
+          display: flex !important;
+        }
+        #viewport-host {
+          display: block !important;
         }
       }
       .panel-glass {
@@ -263,9 +529,31 @@
     </header>
 
     <main id="main">
-      <div class="studio-layout">
+      <!-- Mobile Segmented Switcher (Visible <=880px) -->
+      <nav class="mobile-segmented-bar" id="nexus-mobile-tabs" aria-label="Mobile 3D Workstation Navigation">
+        <div class="mobile-tabs-track">
+          <button class="mobile-tab-btn active" data-tab="viewport" onclick="setNexusMobileTab('viewport')">
+            <span class="tab-icon">🪐</span>
+            <span class="tab-label">3D Viewport</span>
+          </button>
+          <button class="mobile-tab-btn" data-tab="geometry" onclick="setNexusMobileTab('geometry')">
+            <span class="tab-icon">🧊</span>
+            <span class="tab-label">Geometry & Tree</span>
+          </button>
+          <button class="mobile-tab-btn" data-tab="materials" onclick="setNexusMobileTab('materials')">
+            <span class="tab-icon">🎨</span>
+            <span class="tab-label">AI & Materials</span>
+          </button>
+          <button class="mobile-tab-btn" data-tab="all" onclick="setNexusMobileTab('all')">
+            <span class="tab-icon">📜</span>
+            <span class="tab-label">All Panels</span>
+          </button>
+        </div>
+      </nav>
+
+      <div class="studio-layout" data-mobile-tab="viewport">
         <!-- Left Panel: Scene Outliner, CAD Tools & Procedural Forge -->
-        <aside class="panel-glass">
+        <aside class="panel-glass" id="panel-geometry">
           <div>
             <span class="tag-pill">📐 CAD HIERARCHY</span>
             <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Scene Outliner</h3>
@@ -375,7 +663,7 @@
         </section>
 
         <!-- Right Panel: AI Mesh Synthesizer & Telemetry -->
-        <aside class="panel-glass">
+        <aside class="panel-glass" id="panel-ai-materials">
           <div>
             <span class="tag-pill">🤖 AI MESH CO-PILOT</span>
             <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Neural 3D Synthesis</h3>
@@ -501,6 +789,10 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.target.set(0, 1.5, 0);
+        controls.touches = {
+          ONE: THREE.TOUCH.ROTATE,
+          TWO: THREE.TOUCH.DOLLY_PAN
+        };
 
         // TransformControls
         transformControls = new THREE.TransformControls(camera, renderer.domElement);
@@ -1005,6 +1297,23 @@
           });
         });
         document.getElementById('stat-vert-count').textContent = totalVerts.toLocaleString() || '1,248';
+      }
+
+      /* Mobile Segmented Switcher Navigation */
+      function setNexusMobileTab(tab) {
+        const layout = document.querySelector('.studio-layout');
+        if (layout) {
+          layout.setAttribute('data-mobile-tab', tab);
+        }
+        document.querySelectorAll('#nexus-mobile-tabs .mobile-tab-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+        });
+        if (tab === 'viewport' || tab === 'all') {
+          setTimeout(() => {
+            if (typeof onResize === 'function') onResize();
+            window.dispatchEvent(new Event('resize'));
+          }, 60);
+        }
       }
 
       function onResize() {

@@ -218,6 +218,8 @@
         flex-direction: column;
         gap: var(--fib-13, 13px);
         transition: all 0.2s;
+        -webkit-overflow-scrolling: touch;
+        word-break: break-word;
       }
       .recon-node-card:hover {
         border-color: var(--recon-cyan);
@@ -228,18 +230,21 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: var(--fib-8, 8px);
       }
       .node-domain {
         font-family: var(--font-mono);
         font-size: 0.88rem;
         font-weight: 700;
         color: #fff;
+        word-break: break-all;
       }
       .node-status {
         font-family: var(--font-mono);
         font-size: var(--fib-font-micro, 13px);
         padding: var(--fib-3, 3px) var(--fib-8, 8px);
         border-radius: var(--fib-radius-xs, 5px);
+        white-space: nowrap;
       }
       .status-ok { background: rgba(16, 185, 129, 0.12); color: var(--recon-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
       .status-waf { background: rgba(168, 85, 247, 0.12); color: var(--recon-purple); border: 1px solid rgba(168, 85, 247, 0.3); }
@@ -249,6 +254,80 @@
         font-size: var(--fib-font-micro, 13px);
         color: #94a3b8;
         font-family: var(--font-mono);
+        gap: var(--fib-8, 8px);
+      }
+
+      /* Mobile Segmented Switcher */
+      .subsweep-mobile-tabs {
+        display: none;
+        gap: var(--fib-8, 8px);
+        margin-bottom: var(--fib-21, 21px);
+        background: rgba(9, 13, 24, 0.92);
+        padding: var(--fib-5, 5px);
+        border-radius: var(--fib-radius-md, 13px);
+        border: 1px solid var(--recon-border);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .subsweep-tab-btn {
+        flex: 1 1 0;
+        min-width: 120px;
+        padding: var(--fib-8, 8px) var(--fib-13, 13px);
+        border-radius: var(--fib-radius-sm, 8px);
+        border: 1px solid transparent;
+        background: transparent;
+        color: #94a3b8;
+        font-family: var(--font-mono);
+        font-size: var(--fib-font-micro, 13px);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--fib-8, 8px);
+        min-height: 44px;
+        white-space: nowrap;
+        box-sizing: border-box;
+      }
+
+      .subsweep-tab-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .subsweep-tab-btn.active {
+        color: var(--recon-purple);
+        background: rgba(168, 85, 247, 0.14);
+        border-color: var(--recon-purple);
+        box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+      }
+
+      @media (max-width: 880px) {
+        .subsweep-mobile-tabs { display: flex; }
+        .subsweep-panel { display: none !important; }
+        .subsweep-panel.mobile-active { display: block !important; width: 100%; margin-bottom: var(--fib-21, 21px); }
+        .recon-telemetry-grid.subsweep-panel.mobile-active { display: grid !important; }
+      }
+
+      @media (max-width: 768px) {
+        .recon-container { padding: var(--fib-13, 13px) var(--fib-13, 13px) var(--fib-55, 55px); }
+        .recon-header { flex-direction: column; align-items: flex-start; gap: var(--fib-13, 13px); padding-bottom: var(--fib-13, 13px); margin-bottom: var(--fib-21, 21px); }
+        .nav-links { width: 100%; gap: var(--fib-5, 5px); }
+        .btn-ghost-recon { flex: 1 1 auto; text-align: center; font-size: 0.76rem; min-height: 44px; justify-content: center; }
+        .btn-recon { min-height: 44px; width: 100%; justify-content: center; }
+        .recon-card { padding: var(--fib-21, 21px) var(--fib-13, 13px); border-radius: var(--fib-radius-md, 13px); margin-bottom: var(--fib-21, 21px); }
+        .recon-input { min-width: 100%; font-size: 0.9rem; padding: var(--fib-13, 13px); }
+        .recon-telemetry-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fib-13, 13px); margin-bottom: var(--fib-21, 21px); }
+        .tel-card { padding: var(--fib-13, 13px); }
+        .tel-card .val { font-size: 1.4rem; }
+        .nodes-grid { grid-template-columns: 1fr; gap: var(--fib-13, 13px); }
+      }
+
+      @media (max-width: 480px) {
+        .recon-container { padding: var(--fib-8, 8px) var(--fib-8, 8px) var(--fib-34, 34px); }
+        .recon-telemetry-grid { grid-template-columns: 1fr; gap: var(--fib-8, 8px); }
       }
     </style>
   <link rel="stylesheet" href="/assets/zoth-tip.css" />
@@ -286,8 +365,15 @@
         </nav>
       </header>
 
+      <!-- Mobile Segmented View Switcher -->
+      <nav class="subsweep-mobile-tabs" aria-label="SubSweep Mobile Views">
+        <button class="subsweep-tab-btn active" onclick="setSubsweepMobileView('probe')">🔍 Target Probe</button>
+        <button class="subsweep-tab-btn" onclick="setSubsweepMobileView('nodes')">🌐 Discovered Nodes</button>
+        <button class="subsweep-tab-btn" onclick="setSubsweepMobileView('telemetry')">🛡️ Security Telemetry</button>
+      </nav>
+
       <!-- Target Search Bar -->
-      <section class="recon-card">
+      <section class="recon-card subsweep-panel mobile-active" id="pane-subsweep-probe">
         <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Target Scope</span>
         <div class="search-bar-row">
           <input type="text" id="target-domain-input" class="recon-input" value="zoth.nullai.tech" placeholder="Enter target domain (e.g. nullai.tech, 757tech.pro)..." />
@@ -301,7 +387,7 @@
       </section>
 
       <!-- Telemetry Strip -->
-      <div class="recon-telemetry-grid">
+      <div class="recon-telemetry-grid subsweep-panel" id="pane-subsweep-telemetry">
         <div class="tel-card">
           <div class="label">Discovered Subdomains</div>
           <div class="val" id="count-subdomains">8 Verified</div>
@@ -321,7 +407,7 @@
       </div>
 
       <!-- Discovered Surface Nodes -->
-      <section class="recon-card">
+      <section class="recon-card subsweep-panel" id="pane-subsweep-nodes">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <h3 style="font-family:var(--font-display); font-size:1.3rem; color:#fff;">Verified Surface Endpoints</h3>
           <span id="scan-status-pill" style="font-family:var(--font-mono); font-size:0.78rem; color:var(--recon-emerald);">● Scan Live & Ready</span>
@@ -437,6 +523,16 @@
         a.href = url;
         a.download = `recon_scan_${Date.now()}.json`;
         a.click();
+      }
+
+      function setSubsweepMobileView(viewKey) {
+        document.querySelectorAll('.subsweep-tab-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = Array.from(document.querySelectorAll('.subsweep-tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(viewKey));
+        if (activeBtn) activeBtn.classList.add('active');
+
+        document.querySelectorAll('.subsweep-panel').forEach(p => p.classList.remove('mobile-active'));
+        const target = document.getElementById('pane-subsweep-' + viewKey);
+        if (target) target.classList.add('mobile-active');
       }
     </script>
     <script src="/assets/zoth-gate.js"></script>

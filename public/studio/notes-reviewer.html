@@ -355,6 +355,8 @@
       justify-content: space-between;
       padding-top: 10px;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .empty-state {
@@ -363,6 +365,162 @@
       background: var(--card-bg);
       border: 1px dashed var(--card-border);
       border-radius: 16px;
+    }
+
+    /* Mobile Status Chips */
+    .mobile-status-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .status-chip-btn {
+      flex: 1;
+      min-height: 44px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      touch-action: manipulation;
+    }
+
+    .status-chip-btn.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--cyan);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Filter Drawer for Mobile */
+    .filter-drawer-toggle {
+      display: none;
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      align-items: center;
+      justify-content: space-between;
+      touch-action: manipulation;
+    }
+
+    /* Note Inspection Sheet */
+    dialog.note-inspect-sheet {
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 20px 20px 0 0;
+      background: #080c16;
+      color: var(--text);
+      width: 100%;
+      max-width: 100%;
+      max-height: 85vh;
+      position: fixed;
+      bottom: 0;
+      top: auto;
+      left: 0;
+      right: 0;
+      margin: 0;
+      padding: 16px 20px env(safe-area-inset-bottom, 20px);
+      box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.85), 0 0 32px rgba(0, 240, 255, 0.18);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      animation: sheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    dialog.note-inspect-sheet::backdrop {
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+    }
+    @keyframes sheetSlideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.3);
+      margin: 0 auto 14px;
+    }
+
+    @media (max-width: 880px) {
+      .container {
+        padding: 14px 12px 64px;
+        gap: 14px;
+      }
+      .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .stat-card {
+        padding: 12px 14px;
+      }
+      .stat-val {
+        font-size: 20px;
+      }
+      .controls-bar {
+        padding: 14px 12px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-drawer-toggle {
+        display: flex;
+      }
+      .filter-drawer-content {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        margin-top: 10px;
+      }
+      .filter-drawer-content.is-open {
+        display: flex;
+      }
+      .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
+      .filter-select {
+        width: 100% !important;
+        min-height: 48px;
+        font-size: 16px !important;
+      }
+      #search-input {
+        width: 100% !important;
+        min-height: 48px;
+        font-size: 16px !important;
+      }
+      .notes-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .note-box {
+        padding: 14px;
+      }
+      .btn {
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 13px;
+        touch-action: manipulation;
+      }
     }
   </style>
 </head>
@@ -394,6 +552,13 @@
   </header>
 
   <main class="container">
+    <!-- Mobile Status Chips Kanban Row -->
+    <section class="mobile-status-chips" id="statusChipsBar" role="tablist" aria-label="Status filter">
+      <button type="button" class="status-chip-btn active" data-status="open" id="chip-open">🟡 Open Notes</button>
+      <button type="button" class="status-chip-btn" data-status="resolved" id="chip-resolved">🟢 Resolved</button>
+      <button type="button" class="status-chip-btn" data-status="all" id="chip-all">🟣 All Notes</button>
+    </section>
+
     <section class="stats-bar">
       <div class="stat-card">
         <div>
@@ -426,32 +591,41 @@
     </section>
 
     <section class="controls-bar">
-      <div class="filter-group">
-        <label style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">FILTER BY:</label>
-        <select class="filter-select" id="filter-agent">
-          <option value="all">All Agents</option>
-          <option value="antigravity">@antigravity (Google)</option>
-          <option value="grok">@grok (xAI)</option>
-          <option value="hermes">@hermes</option>
-          <option value="ui-designer">@ui-designer</option>
-          <option value="ax-specialist">@ax-specialist</option>
-          <option value="seo-specialist">@seo-specialist</option>
-        </select>
-        <select class="filter-select" id="filter-status">
-          <option value="all">All Statuses</option>
-          <option value="open" selected>Open Only</option>
-          <option value="resolved">Resolved</option>
-        </select>
-        <select class="filter-select" id="filter-category">
-          <option value="all">All Categories</option>
-          <option value="UI / Visual">UI / Visual</option>
-          <option value="Bug / Broken">Bug / Broken</option>
-          <option value="Copy / Content">Copy / Content</option>
-          <option value="UX / Flow">UX / Flow</option>
-          <option value="AX (Accessibility)">AX (Accessibility)</option>
-          <option value="SEO / Metadata">SEO / Metadata</option>
-          <option value="Feature Request">Feature Request</option>
-        </select>
+      <button type="button" class="filter-drawer-toggle" id="btn-drawer-toggle" aria-expanded="false">
+        <span>🎛️ Agent & Category Filters</span>
+        <span id="drawer-arrow">▾</span>
+      </button>
+
+      <div class="filter-drawer-content" id="filter-drawer-content">
+        <div class="filter-group">
+          <label style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">AGENT:</label>
+          <select class="filter-select" id="filter-agent">
+            <option value="all">All Agents</option>
+            <option value="antigravity">@antigravity (Google)</option>
+            <option value="grok">@grok (xAI)</option>
+            <option value="hermes">@hermes</option>
+            <option value="ui-designer">@ui-designer</option>
+            <option value="ax-specialist">@ax-specialist</option>
+            <option value="seo-specialist">@seo-specialist</option>
+          </select>
+          <label style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">STATUS:</label>
+          <select class="filter-select" id="filter-status">
+            <option value="all">All Statuses</option>
+            <option value="open" selected>Open Only</option>
+            <option value="resolved">Resolved</option>
+          </select>
+          <label style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">CATEGORY:</label>
+          <select class="filter-select" id="filter-category">
+            <option value="all">All Categories</option>
+            <option value="UI / Visual">UI / Visual</option>
+            <option value="Bug / Broken">Bug / Broken</option>
+            <option value="Copy / Content">Copy / Content</option>
+            <option value="UX / Flow">UX / Flow</option>
+            <option value="AX (Accessibility)">AX (Accessibility)</option>
+            <option value="SEO / Metadata">SEO / Metadata</option>
+            <option value="Feature Request">Feature Request</option>
+          </select>
+        </div>
       </div>
       <div>
         <input type="search" id="search-input" placeholder="Search note contents or selectors..." class="filter-select" style="width:260px">
@@ -461,12 +635,23 @@
     <section id="notes-container" class="notes-grid"></section>
   </main>
 
+  <!-- Note Inspection Bottom Sheet -->
+  <dialog id="note-inspect-dialog" class="note-inspect-sheet">
+    <div class="sheet-handle"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="font-family:var(--font-display); font-size:1.15rem; color:#fff;" id="inspect-title">Note Details</h3>
+      <button type="button" class="btn btn-ghost" id="btn-close-inspect" style="min-height:36px; padding:4px 10px;">✕ Close</button>
+    </div>
+    <div id="note-inspect-body" style="display:flex; flex-direction:column; gap:14px;"></div>
+  </dialog>
+
   <script src="/assets/zoth-annotator.js"></script>
   <script>
     (function () {
       let notes = [];
       const STORAGE_KEY = 'zoth_visual_annotations_v2';
       const API_ENDPOINT = '/api/annotations';
+      const inspectDialog = document.getElementById('note-inspect-dialog');
 
       async function loadNotes() {
         try {
@@ -489,6 +674,97 @@
         document.getElementById('stat-open').textContent = notes.filter(n => n.status !== 'resolved').length;
         document.getElementById('stat-agy').textContent = notes.filter(n => (n.tagged_agents || []).includes('antigravity') && n.status !== 'resolved').length;
         document.getElementById('stat-resolved').textContent = notes.filter(n => n.status === 'resolved').length;
+      }
+
+      function setStatusFilter(statusVal) {
+        const sel = document.getElementById('filter-status');
+        if (sel) sel.value = statusVal;
+        document.querySelectorAll('.status-chip-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-status') === statusVal);
+        });
+        render();
+      }
+
+      function openNoteInspection(note) {
+        if (!inspectDialog || !note) return;
+        const body = document.getElementById('note-inspect-body');
+        body.innerHTML = `
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="note-category-badge">${note.category || 'General'}</span>
+            <span class="note-priority-badge ${note.priority || 'Normal'}">${note.priority || 'Normal'}</span>
+            <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim); margin-left:auto;">${note.status === 'resolved' ? '🟢 Resolved' : '🟡 Open'}</span>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; color:#fff; font-size:15px; line-height:1.55; white-space:pre-wrap; word-break:break-word;">
+            ${escapeHtml(note.text || '')}
+          </div>
+
+          <div class="note-agents-row">
+            ${(note.tagged_agents || []).map(a => `<span class="note-agent-pill">@${a}</span>`).join('')}
+          </div>
+
+          <div class="note-meta-table">
+            <div class="note-meta-row">
+              <span>Page:</span>
+              <a href="${note.page_url || note.pathname || '/'}" target="_blank" class="note-meta-val" style="color:var(--cyan); text-decoration:none">${note.pathname || '/'} ↗</a>
+            </div>
+            ${note.selector ? `
+              <div class="note-meta-row">
+                <span>Selector:</span>
+                <span class="note-meta-val" title="${escapeHtml(note.selector)}">${escapeHtml(note.selector)}</span>
+              </div>
+            ` : ''}
+            <div class="note-meta-row">
+              <span>Created:</span>
+              <span class="note-meta-val" style="color:var(--text-dim)">${note.created_local || note.created_at || ''}</span>
+            </div>
+            <div class="note-meta-row">
+              <span>ID:</span>
+              <span class="note-meta-val" style="color:var(--text-dim)">${note.id || ''}</span>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <button class="btn btn-gold inspect-resolve-btn" style="flex:1" data-id="${note.id}">
+              ${note.status === 'resolved' ? '↩ Reopen Note' : '✓ Mark as Resolved'}
+            </button>
+            <button class="btn btn-ghost inspect-delete-btn" style="color:var(--pink)" data-id="${note.id}">
+              ✕ Delete
+            </button>
+          </div>
+        `;
+
+        body.querySelector('.inspect-resolve-btn')?.addEventListener('click', async () => {
+          note.status = note.status === 'resolved' ? 'open' : 'resolved';
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+          try {
+            await fetch('/api/annotations/resolve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: note.id, status: note.status })
+            });
+          } catch (e) {}
+          inspectDialog.close();
+          render();
+        });
+
+        body.querySelector('.inspect-delete-btn')?.addEventListener('click', async () => {
+          if (confirm('Delete this annotation?')) {
+            notes = notes.filter(n => n.id !== note.id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+            try {
+              await fetch(`/api/annotations?id=${encodeURIComponent(note.id)}`, { method: 'DELETE' });
+            } catch (e) {}
+            inspectDialog.close();
+            render();
+          }
+        });
+
+        if (typeof inspectDialog.showModal === 'function') {
+          inspectDialog.showModal();
+        } else {
+          inspectDialog.setAttribute('open', '');
+        }
       }
 
       function render() {
@@ -563,17 +839,26 @@
 
             <div class="note-footer">
               <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">${n.id}</span>
-              <div style="display:flex; gap:8px">
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button class="btn btn-ghost btn-inspect" data-id="${n.id}">🔍 Inspect</button>
                 <button class="btn btn-ghost btn-resolve" data-id="${n.id}">
                   ${n.status === 'resolved' ? '↩ Reopen' : '✓ Resolve'}
                 </button>
-                <button class="btn btn-ghost btn-delete" data-id="${n.id}" style="color:var(--pink)">✕ Delete</button>
+                <button class="btn btn-ghost btn-delete" data-id="${n.id}" style="color:var(--pink)">✕ Del</button>
               </div>
             </div>
           </div>
         `).join('');
 
         // Action handlers
+        container.querySelectorAll('.btn-inspect').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const note = notes.find(n => n.id === id);
+            if (note) openNoteInspection(note);
+          });
+        });
+
         container.querySelectorAll('.btn-resolve').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = btn.getAttribute('data-id');
@@ -615,9 +900,35 @@
       // Event Listeners
       document.getElementById('btn-refresh').addEventListener('click', loadNotes);
       document.getElementById('filter-agent').addEventListener('change', render);
-      document.getElementById('filter-status').addEventListener('change', render);
+      document.getElementById('filter-status').addEventListener('change', (e) => {
+        setStatusFilter(e.target.value);
+      });
       document.getElementById('filter-category').addEventListener('change', render);
       document.getElementById('search-input').addEventListener('input', render);
+
+      // Status chip buttons
+      document.querySelectorAll('.status-chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const st = btn.getAttribute('data-status');
+          setStatusFilter(st);
+        });
+      });
+
+      // Filter Drawer toggle
+      const drawerToggle = document.getElementById('btn-drawer-toggle');
+      const drawerContent = document.getElementById('filter-drawer-content');
+      if (drawerToggle && drawerContent) {
+        drawerToggle.addEventListener('click', () => {
+          const open = drawerContent.classList.toggle('is-open');
+          drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+          document.getElementById('drawer-arrow').textContent = open ? '▴' : '▾';
+        });
+      }
+
+      // Close inspect dialog
+      document.getElementById('btn-close-inspect')?.addEventListener('click', () => {
+        inspectDialog?.close();
+      });
 
       document.getElementById('btn-export-all').addEventListener('click', () => {
         if (window.ZothAnnotator) {

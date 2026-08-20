@@ -52,12 +52,65 @@
         display: grid;
         grid-template-columns: 310px 1fr;
         gap: 36px;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
       }
+      .docs-layout > * {
+        min-width: 0;
+      }
+
+      /* Mobile Collapsible TOC Drawer & Responsive Polish */
+      .docs-toc-toggle {
+        display: none;
+        width: 100%;
+        min-height: 48px;
+        padding: 12px 18px;
+        background: #0b0b10;
+        border: 1px solid var(--docs-line);
+        border-radius: 12px;
+        color: var(--docs-cyan);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        touch-action: manipulation;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      }
+
       @media (max-width: 1080px) {
-        .docs-layout { grid-template-columns: 1fr; padding: 18px 14px 64px; }
-        .docs-nav { position: static !important; width: 100% !important; max-height: none !important; }
+        .docs-layout { grid-template-columns: 1fr; padding: 18px 14px 64px; gap: 16px; }
+        .docs-toc-toggle { display: flex; }
+        .docs-nav {
+          display: none;
+          position: static !important;
+          width: 100% !important;
+          max-height: 70vh !important;
+          margin-bottom: 16px;
+          border-radius: 12px;
+          padding: 16px;
+        }
+        .docs-nav.is-open {
+          display: flex !important;
+          animation: tocDrawerSlide 0.22s ease-out;
+        }
+        @keyframes tocDrawerSlide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         .docs-header-banner { padding: 22px 16px; }
         .docs-header-banner h1 { font-size: 1.55rem; }
+        .doc-section { padding: 20px 16px !important; }
+      }
+
+      @media (max-width: 640px) {
+        .docs-search-input {
+          font-size: 16px !important;
+          min-height: 48px;
+        }
       }
 
       /* Sidebar Navigation */
@@ -240,15 +293,26 @@
         font-size: 0.96rem;
       }
 
-      /* Tables */
+      /* Responsive API Tables */
+      .doc-table-wrap {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        display: block;
+        border-radius: 10px;
+        margin: 18px 0;
+      }
       .doc-table {
         width: 100%;
+        max-width: 100%;
         border-collapse: collapse;
-        margin: 18px 0;
         font-size: 0.88rem;
         border: 1px solid var(--docs-line-subtle);
         border-radius: 10px;
-        overflow: hidden;
+        overflow-x: auto;
+        display: block;
+        -webkit-overflow-scrolling: touch;
       }
       .doc-table th, .doc-table td {
         padding: 12px 16px;
@@ -267,7 +331,7 @@
         background: rgba(255, 255, 255, 0.02);
       }
 
-      /* Interactive Code Snippets */
+      /* Interactive Code Snippets & Touchable 44px Copy Blocks */
       .doc-code-wrap {
         position: relative;
         background: #060812;
@@ -281,10 +345,10 @@
         justify-content: space-between;
         align-items: center;
         background: #090d1c;
-        padding: 6px 14px;
+        padding: 8px 14px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         font-family: var(--font-mono);
-        font-size: 0.72rem;
+        font-size: 0.76rem;
         color: var(--docs-muted);
       }
       .doc-code-copy {
@@ -292,11 +356,19 @@
         border: 1px solid var(--docs-line);
         color: var(--docs-cyan);
         font-family: var(--font-mono);
-        font-size: 0.7rem;
-        padding: 3px 8px;
-        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 6px 14px;
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.15s ease;
+        touch-action: manipulation;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
       }
       .doc-code-copy:hover {
         background: var(--docs-cyan);
@@ -309,6 +381,7 @@
         font-size: 0.85rem;
         color: #e2e8f0;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
         line-height: 1.55;
       }
 
@@ -369,9 +442,15 @@
       /* Tool Cards Grid */
       .tool-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
         gap: 16px;
         margin-top: 16px;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .tool-grid > * {
+        min-width: 0;
       }
       @media (max-width: 768px) {
         .tool-grid { grid-template-columns: 1fr; }
@@ -385,6 +464,9 @@
         flex-direction: column;
         gap: 10px;
         transition: all 0.2s ease;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
       }
       .tool-item-card:hover {
         border-color: rgba(0, 240, 255, 0.35);
@@ -467,8 +549,14 @@
     </header>
 
     <main id="main" class="docs-layout">
+      <!-- Mobile Collapsible TOC Drawer Trigger -->
+      <button type="button" class="docs-toc-toggle" id="docsTocToggle" aria-expanded="false" aria-controls="docsNav">
+        <span>📑 Table of Contents (12 Topics)</span>
+        <span id="docsTocArrow">▾</span>
+      </button>
+
       <!-- Sidebar Navigation -->
-      <nav class="docs-nav" aria-label="Documentation Index">
+      <nav class="docs-nav" id="docsNav" aria-label="Documentation Index">
         <div class="docs-search-box">
           <span class="docs-search-icon">🔍</span>
           <input type="text" id="docs-filter" class="docs-search-input" placeholder="Search 47 tools & guides..." />
@@ -1414,6 +1502,28 @@ chmod +x dist-linux/Zoth_Studio-v2.6.0-x86_64.AppImage
             card.style.display = 'flex';
           } else {
             card.style.display = 'none';
+          }
+        });
+      }
+
+      // Mobile TOC Drawer Controller
+      const tocToggle = document.getElementById('docsTocToggle');
+      const docsNav = document.getElementById('docsNav');
+      const tocArrow = document.getElementById('docsTocArrow');
+
+      if (tocToggle && docsNav) {
+        tocToggle.addEventListener('click', () => {
+          const isOpen = docsNav.classList.toggle('is-open');
+          tocToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          if (tocArrow) tocArrow.textContent = isOpen ? '▴' : '▾';
+        });
+
+        // Auto close TOC drawer when user selects a section on mobile
+        docsNav.addEventListener('click', (e) => {
+          if (e.target.closest('a') && window.innerWidth <= 1080) {
+            docsNav.classList.remove('is-open');
+            tocToggle.setAttribute('aria-expanded', 'false');
+            if (tocArrow) tocArrow.textContent = '▾';
           }
         });
       }

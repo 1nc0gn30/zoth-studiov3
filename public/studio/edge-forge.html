@@ -179,6 +179,9 @@
         font-size: var(--fib-font-micro, 13px);
         line-height: 1.618;
         resize: vertical;
+        -webkit-overflow-scrolling: touch;
+        word-break: break-word;
+        overflow-x: auto;
       }
 
       .action-row {
@@ -200,7 +203,9 @@
         cursor: pointer;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: var(--fib-8, 8px);
+        min-height: 44px;
         transition: all 0.2s;
       }
       .btn-edge:hover {
@@ -216,6 +221,10 @@
         padding: var(--fib-8, 8px) var(--fib-13, 13px);
         border-radius: var(--fib-radius-sm, 8px);
         cursor: pointer;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         transition: all 0.2s;
       }
       .btn-ghost-edge:hover {
@@ -259,6 +268,84 @@
       }
       .node-name { color: var(--edge-cyan); font-weight: 700; }
       .node-ping { color: var(--edge-emerald); font-size: 0.7rem; margin-top: 2px; }
+
+      /* Mobile Segmented Switcher */
+      .forge-mobile-tabs {
+        display: none;
+        gap: var(--fib-8, 8px);
+        margin-bottom: var(--fib-21, 21px);
+        background: rgba(9, 13, 24, 0.92);
+        padding: var(--fib-5, 5px);
+        border-radius: var(--fib-radius-md, 13px);
+        border: 1px solid var(--edge-border);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .forge-tab-btn {
+        flex: 1 1 0;
+        min-width: 120px;
+        padding: var(--fib-8, 8px) var(--fib-13, 13px);
+        border-radius: var(--fib-radius-sm, 8px);
+        border: 1px solid transparent;
+        background: transparent;
+        color: #94a3b8;
+        font-family: var(--font-mono);
+        font-size: var(--fib-font-micro, 13px);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--fib-8, 8px);
+        min-height: 44px;
+        white-space: nowrap;
+        box-sizing: border-box;
+      }
+
+      .forge-tab-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .forge-tab-btn.active {
+        color: var(--edge-cyan);
+        background: rgba(0, 240, 255, 0.12);
+        border-color: var(--edge-cyan);
+        box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+      }
+
+      .forge-right-col {
+        display: flex;
+        flex-direction: column;
+        gap: var(--fib-34, 34px);
+      }
+
+      @media (max-width: 880px) {
+        .forge-mobile-tabs { display: flex; }
+        .forge-grid { display: block; margin-bottom: var(--fib-21, 21px); }
+        .forge-right-col { display: contents; }
+        .forge-panel { display: none !important; }
+        .forge-panel.mobile-active { display: flex !important; width: 100%; margin-bottom: var(--fib-21, 21px); }
+      }
+
+      @media (max-width: 768px) {
+        .forge-container { padding: var(--fib-13, 13px) var(--fib-13, 13px) var(--fib-55, 55px); }
+        .forge-header { flex-direction: column; align-items: flex-start; gap: var(--fib-13, 13px); padding-bottom: var(--fib-13, 13px); margin-bottom: var(--fib-21, 21px); }
+        .nav-links { width: 100%; gap: var(--fib-5, 5px); }
+        .btn-ghost-edge { flex: 1 1 auto; text-align: center; font-size: 0.76rem; min-height: 44px; }
+        .forge-card { padding: var(--fib-21, 21px) var(--fib-13, 13px); border-radius: var(--fib-radius-md, 13px); gap: var(--fib-13, 13px); }
+        .template-selector-bar { gap: var(--fib-5, 5px); }
+        .tpl-btn { min-height: 44px; padding: var(--fib-8, 8px) var(--fib-13, 13px); }
+        .nodes-list { grid-template-columns: repeat(2, 1fr); gap: var(--fib-8, 8px); }
+      }
+
+      @media (max-width: 480px) {
+        .forge-container { padding: var(--fib-8, 8px) var(--fib-8, 8px) var(--fib-34, 34px); }
+        .nodes-list { grid-template-columns: 1fr; gap: var(--fib-8, 8px); }
+        .tpl-btn { flex: 1 1 auto; }
+      }
     </style>
   <link rel="stylesheet" href="/assets/zoth-tip.css" />
   <link rel="stylesheet" href="/assets/zoth-mobile.css" />
@@ -295,10 +382,17 @@
         </nav>
       </header>
 
+      <!-- Mobile Segmented View Switcher -->
+      <nav class="forge-mobile-tabs" aria-label="Edge Forge Mobile Views">
+        <button class="forge-tab-btn active" onclick="setForgeMobileView('editor')">⚡ Code Editor</button>
+        <button class="forge-tab-btn" onclick="setForgeMobileView('nodes')">🌍 Edge Nodes</button>
+        <button class="forge-tab-btn" onclick="setForgeMobileView('waterfall')">⏱️ Waterfall Latency</button>
+      </nav>
+
       <!-- Main Workspace -->
       <main class="forge-grid">
         <!-- Left: Code Editor & Execution -->
-        <section class="forge-card">
+        <section class="forge-card forge-panel mobile-active" id="pane-forge-editor">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Template Library</span>
             <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--edge-emerald);">● V8 Engine Ready</span>
@@ -336,7 +430,7 @@
               <span>Simulated Execution Log</span>
               <span id="test-status-badge" style="color:var(--edge-cyan);">HTTP 200 OK · 1.4ms</span>
             </div>
-            <pre id="test-output-log" style="color:#38bdf8; max-height:140px; overflow-y:auto; line-height:1.5;">{
+            <pre id="test-output-log" style="color:#38bdf8; max-height:140px; overflow-y:auto; line-height:1.5; -webkit-overflow-scrolling:touch; word-break:break-word;">{
   "status": "ok",
   "worker": "zoth-edge-iad1",
   "runtime": "v8-isolate-sandboxed",
@@ -348,40 +442,46 @@
         </section>
 
         <!-- Right: Global Clusters & Waterflow Telemetry -->
-        <aside class="forge-card">
-          <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Execution Waterfall (TTFB: 1.42ms)</span>
-          <div class="waterfall-box">
-            <div class="waterfall-bar-row">
-              <span class="wf-label">DNS Resolve</span>
-              <div class="wf-track"><div class="wf-fill" style="width:14%; background:var(--edge-cyan);"></div></div>
-              <span class="wf-val">0.2ms</span>
-            </div>
-            <div class="waterfall-bar-row">
-              <span class="wf-label">TLS Handshake</span>
-              <div class="wf-track"><div class="wf-fill" style="width:28%; background:var(--edge-gold);"></div></div>
-              <span class="wf-val">0.4ms</span>
-            </div>
-            <div class="waterfall-bar-row">
-              <span class="wf-label">V8 Isolate Exec</span>
-              <div class="wf-track"><div class="wf-fill" style="width:58%; background:var(--edge-magenta);"></div></div>
-              <span class="wf-val">0.8ms</span>
+        <aside class="forge-right-col">
+          <!-- Waterfall Panel -->
+          <div class="forge-card forge-panel" id="pane-forge-waterfall">
+            <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Execution Waterfall (TTFB: 1.42ms)</span>
+            <div class="waterfall-box">
+              <div class="waterfall-bar-row">
+                <span class="wf-label">DNS Resolve</span>
+                <div class="wf-track"><div class="wf-fill" style="width:14%; background:var(--edge-cyan);"></div></div>
+                <span class="wf-val">0.2ms</span>
+              </div>
+              <div class="waterfall-bar-row">
+                <span class="wf-label">TLS Handshake</span>
+                <div class="wf-track"><div class="wf-fill" style="width:28%; background:var(--edge-gold);"></div></div>
+                <span class="wf-val">0.4ms</span>
+              </div>
+              <div class="waterfall-bar-row">
+                <span class="wf-label">V8 Isolate Exec</span>
+                <div class="wf-track"><div class="wf-fill" style="width:58%; background:var(--edge-magenta);"></div></div>
+                <span class="wf-val">0.8ms</span>
+              </div>
             </div>
           </div>
 
-          <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase; margin-top:8px;">Active Global Edge Clusters (8 Nodes)</span>
-          <div class="nodes-list">
-            <div class="node-card"><div class="node-name">IAD1 · US-East</div><div class="node-ping">● 0.8 ms avg</div></div>
-            <div class="node-card"><div class="node-name">SFO1 · US-West</div><div class="node-ping">● 1.1 ms avg</div></div>
-            <div class="node-card"><div class="node-name">LHR1 · London</div><div class="node-ping">● 1.4 ms avg</div></div>
-            <div class="node-card"><div class="node-name">FRA1 · Frankfurt</div><div class="node-ping">● 1.2 ms avg</div></div>
-            <div class="node-card"><div class="node-name">NRT1 · Tokyo</div><div class="node-ping">● 1.8 ms avg</div></div>
-            <div class="node-card"><div class="node-name">SIN1 · Singapore</div><div class="node-ping">● 2.1 ms avg</div></div>
-            <div class="node-card"><div class="node-name">SYD1 · Sydney</div><div class="node-ping">● 2.6 ms avg</div></div>
-            <div class="node-card"><div class="node-name">GRU1 · São Paulo</div><div class="node-ping">● 2.9 ms avg</div></div>
-          </div>
+          <!-- Nodes List Panel -->
+          <div class="forge-card forge-panel" id="pane-forge-nodes">
+            <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Active Global Edge Clusters (8 Nodes)</span>
+            <div class="nodes-list">
+              <div class="node-card"><div class="node-name">IAD1 · US-East</div><div class="node-ping">● 0.8 ms avg</div></div>
+              <div class="node-card"><div class="node-name">SFO1 · US-West</div><div class="node-ping">● 1.1 ms avg</div></div>
+              <div class="node-card"><div class="node-name">LHR1 · London</div><div class="node-ping">● 1.4 ms avg</div></div>
+              <div class="node-card"><div class="node-name">FRA1 · Frankfurt</div><div class="node-ping">● 1.2 ms avg</div></div>
+              <div class="node-card"><div class="node-name">NRT1 · Tokyo</div><div class="node-ping">● 1.8 ms avg</div></div>
+              <div class="node-card"><div class="node-name">SIN1 · Singapore</div><div class="node-ping">● 2.1 ms avg</div></div>
+              <div class="node-card"><div class="node-name">SYD1 · Sydney</div><div class="node-ping">● 2.6 ms avg</div></div>
+              <div class="node-card"><div class="node-name">GRU1 · São Paulo</div><div class="node-ping">● 2.9 ms avg</div></div>
+            </div>
 
-          <div style="background:rgba(4,6,14,0.8); border:1px solid var(--edge-border); border-radius:10px; padding:12px; font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; margin-top:auto;">
-            Security Invariant: <span style="color:#fff;">Strict zero-trust V8 isolate sandboxing. Zero persistent storage leakage across tenant invocations.</span>
+            <div style="background:rgba(4,6,14,0.8); border:1px solid var(--edge-border); border-radius:10px; padding:12px; font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; margin-top:auto;">
+              Security Invariant: <span style="color:#fff;">Strict zero-trust V8 isolate sandboxing. Zero persistent storage leakage across tenant invocations.</span>
+            </div>
           </div>
         </aside>
       </main>
@@ -516,6 +616,16 @@
             }
           }, null, 2);
         }, 250);
+      }
+
+      function setForgeMobileView(viewKey) {
+        document.querySelectorAll('.forge-tab-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = Array.from(document.querySelectorAll('.forge-tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(viewKey));
+        if (activeBtn) activeBtn.classList.add('active');
+
+        document.querySelectorAll('.forge-panel').forEach(p => p.classList.remove('mobile-active'));
+        const target = document.getElementById('pane-forge-' + viewKey);
+        if (target) target.classList.add('mobile-active');
       }
 
       window.addEventListener('DOMContentLoaded', () => {

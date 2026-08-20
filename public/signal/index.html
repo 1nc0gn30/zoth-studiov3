@@ -214,38 +214,89 @@
         .burger { display: inline-flex; }
       }
       @media (max-width: 880px) {
-        .sig-grid { display: flex; flex-direction: column; gap: var(--fib-21); }
+        .sig-container {
+          padding: var(--fib-13) var(--fib-13) var(--fib-89) !important;
+          max-width: 100% !important;
+        }
+        .sig-header {
+          margin-bottom: var(--fib-13);
+          padding-bottom: var(--fib-13);
+        }
+        .sig-grid { display: flex; flex-direction: column; gap: var(--fib-13); }
         .mobile-cockpit-tabs {
           display: flex;
+          gap: 6px;
           overflow-x: auto;
-          padding-bottom: 4px;
+          padding-bottom: 6px;
+          -webkit-overflow-scrolling: touch;
+          margin-bottom: var(--fib-13);
         }
         .cockpit-tab-btn {
           flex: 1;
-          min-height: 44px;
-          padding: var(--fib-13) var(--fib-21);
+          min-height: 48px;
+          padding: 10px 14px;
           border-radius: var(--rad-md);
           background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.12);
           color: #94a3b8;
           font-family: var(--font-mono);
-          font-size: 0.78rem;
+          font-size: 0.82rem;
           font-weight: 600;
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.2s ease;
           touch-action: manipulation;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
         }
         .cockpit-tab-btn.active {
-          background: rgba(0, 229, 255, 0.12);
+          background: rgba(0, 229, 255, 0.15);
           border-color: var(--sig-cyan);
           color: var(--sig-cyan);
-          box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+          box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
         }
         .sig-card-agents, .sig-card-stream, .sig-card-telemetry {
           display: none;
         }
         .sig-card-agents.is-active, .sig-card-stream.is-active, .sig-card-telemetry.is-active {
+          display: flex !important;
+          width: 100% !important;
+          padding: var(--fib-13) !important;
+        }
+        .stream-console {
+          padding: var(--fib-13) var(--fib-13) !important;
+          min-height: 420px !important;
+          max-height: calc(100vh - 310px) !important;
+        }
+        .msg-bubble {
+          max-width: 98% !important;
+          padding: 10px 14px !important;
+          font-size: 0.86rem !important;
+        }
+        .dispatch-bar {
+          gap: 8px !important;
+        }
+        .chip-btn {
+          min-height: 44px !important;
+          padding: 8px 14px !important;
+          font-size: 0.78rem !important;
+        }
+        .input-wrapper {
+          gap: 6px !important;
+        }
+        .sig-textarea {
+          min-height: 48px !important;
+          font-size: 16px !important;
+          padding: 12px 14px !important;
+        }
+        .btn-send {
+          min-height: 48px !important;
+          padding: 0 18px !important;
+          font-size: 0.85rem !important;
+        }
+        .sig-floating-voice-fab {
           display: flex !important;
         }
       }
@@ -253,6 +304,38 @@
         .sig-card-agents, .sig-card-stream, .sig-card-telemetry {
           display: flex !important;
         }
+        .sig-floating-voice-fab {
+          display: none !important;
+        }
+      }
+
+      /* Floating Voice Memo Button for Mobile */
+      .sig-floating-voice-fab {
+        display: none;
+        position: fixed;
+        bottom: 24px;
+        right: 20px;
+        z-index: 95;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(10, 14, 26, 0.96));
+        border: 2px solid var(--sig-cyan);
+        color: var(--sig-cyan);
+        font-size: 1.4rem;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 229, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        touch-action: manipulation;
+      }
+      .sig-floating-voice-fab:hover, .sig-floating-voice-fab.recording {
+        background: rgba(239, 68, 68, 0.35);
+        border-color: #ef4444;
+        color: #fca5a5;
+        box-shadow: 0 0 24px rgba(239, 68, 68, 0.6);
+        animation: memoPulse 1.2s infinite;
       }
 
       /* Glass Panels */
@@ -814,6 +897,9 @@
           </div>
         </aside>
       </main>
+
+      <!-- Floating Voice Memo Action Button for Mobile Thumb Reach -->
+      <button type="button" class="sig-floating-voice-fab" id="floatingVoiceFab" aria-label="Record voice memo / speak command" title="Record Voice Memo" onclick="toggleVoiceMemo()">🎙️</button>
     </div>
 
     <script>
@@ -945,6 +1031,7 @@
 
       function toggleVoiceMemo() {
         const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const fab = document.getElementById("floatingVoiceFab");
         if (!SpeechRec) {
           alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or a compatible mobile browser.");
           return;
@@ -955,6 +1042,7 @@
           isRecording = false;
           btnVoiceMemo.classList.remove("recording");
           btnVoiceMemo.textContent = "🎙️";
+          if (fab) { fab.classList.remove("recording"); fab.textContent = "🎙️"; }
           return;
         }
 
@@ -967,6 +1055,7 @@
           isRecording = true;
           btnVoiceMemo.classList.add("recording");
           btnVoiceMemo.textContent = "🔴";
+          if (fab) { fab.classList.add("recording"); fab.textContent = "🔴"; }
         };
 
         recognition.onresult = function(e) {
@@ -984,12 +1073,14 @@
           isRecording = false;
           btnVoiceMemo.classList.remove("recording");
           btnVoiceMemo.textContent = "🎙️";
+          if (fab) { fab.classList.remove("recording"); fab.textContent = "🎙️"; }
         };
 
         recognition.onend = function() {
           isRecording = false;
           btnVoiceMemo.classList.remove("recording");
           btnVoiceMemo.textContent = "🎙️";
+          if (fab) { fab.classList.remove("recording"); fab.textContent = "🎙️"; }
         };
 
         recognition.start();
