@@ -23,6 +23,18 @@
       const search = window.location.search || '';
       const hash = window.location.hash || '';
 
+      // Explicit query/hash flags for testing in staging
+      const hasDevFlag = search.includes('dev=true') || 
+                         search.includes('annotate=true') || 
+                         hash.includes('dev') || 
+                         hash.includes('annotate') ||
+                         localStorage.getItem('zoth_dev_mode') === 'true';
+
+      // Explicit Production Guard: Never mount on production domains unless explicitly requested via flag
+      if ((hostname.includes('nullai.tech') || hostname.includes('zoth.io') || hostname.includes('zoth.studio')) && !hasDevFlag) {
+        return false;
+      }
+
       // Localhost / Loopback / Local IP dev servers
       const isLocalhost = hostname === 'localhost' || 
                           hostname === '127.0.0.1' || 
@@ -34,13 +46,6 @@
 
       // Custom dev ports (e.g., :8484, :8088, :3000, :5173, :8080, etc.)
       const isDevPort = port !== '' && port !== '80' && port !== '443';
-
-      // Explicit query/hash flags for testing in staging
-      const hasDevFlag = search.includes('dev=true') || 
-                         search.includes('annotate=true') || 
-                         hash.includes('dev') || 
-                         hash.includes('annotate') ||
-                         localStorage.getItem('zoth_dev_mode') === 'true';
 
       // Only mount on dev server or when explicitly enabled
       return isLocalhost || isDevPort || hasDevFlag;

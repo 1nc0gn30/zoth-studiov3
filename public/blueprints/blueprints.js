@@ -502,11 +502,11 @@ function renderBlueprints() {
       </div>
 
       <div class="card-footer">
-        <button class="btn-card-detail" type="button" onclick="openBlueprintModal('${bp.id}')">
+        <button class="btn-card-detail" type="button" aria-label="View Blueprint Specification" onclick="openBlueprintModal('${bp.id}')">
           <span>View Spec</span>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <button class="btn-card-add" type="button" onclick="addToComposer('${bp.id}')">
+        <button class="btn-card-add" type="button" aria-label="Add Blueprint to Composer" onclick="addToComposer('${bp.id}')">
           + Add to Composer
         </button>
       </div>

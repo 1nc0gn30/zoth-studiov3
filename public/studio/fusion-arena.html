@@ -21,15 +21,77 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
-    <style>
+      <style>
+      :root {
+        --cyan: #00e5ff;
+        --magenta: #d946ef;
+        --purple: #a855f7;
+        --emerald: #10b981;
+        --amber: #f59e0b;
+        --muted: #8b949e;
+        --text: #f0f6fc;
+        --font-mono: 'IBM Plex Mono', monospace;
+        --font-display: 'Syne', sans-serif;
+        --radius: 16px;
+        --radius-sm: 10px;
+
+        /* Sacred Fibonacci Spacing Tokens & Golden Ratio (Phi = 1.6180339887) */
+        --phi: 1.6180339887;
+        --phi-inv: 0.6180339887;
+        --phi-major: 61.8%;
+        --phi-minor: 38.2%;
+        --phi-split: 1.618fr 1fr;
+        --phi-split-inv: 1fr 1.618fr;
+        --phi-sidebar: 377px;
+        --phi-gutter: 233px;
+
+        /* Fibonacci Spacing Scale */
+        --fib-1: 1px;
+        --fib-2: 2px;
+        --fib-3: 3px;
+        --fib-5: 5px;
+        --fib-8: 8px;
+        --fib-13: 13px;
+        --fib-21: 21px;
+        --fib-34: 34px;
+        --fib-55: 55px;
+        --fib-89: 89px;
+        --fib-144: 144px;
+        --fib-233: 233px;
+        --fib-377: 377px;
+        --fib-610: 610px;
+
+        /* Fibonacci Border Radius Scale */
+        --fib-radius-xs: 5px;
+        --fib-radius-sm: 8px;
+        --fib-radius-md: 13px;
+        --fib-radius-lg: 21px;
+        --fib-radius-xl: 34px;
+        --fib-radius-pill: 9999px;
+
+        /* Sacred Typography Scale */
+        --fib-font-micro: 13px;
+        --fib-font-body: 16px;
+        --fib-font-subhead: 21px;
+        --fib-font-title: 34px;
+        --fib-font-hero: 55px;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
       .arena-layout {
         display: grid;
-        grid-template-columns: 360px 1fr 380px;
-        gap: 16px;
+        grid-template-columns: minmax(0, var(--phi-sidebar, 377px)) 1.618fr minmax(0, var(--phi-sidebar, 377px));
+        gap: var(--fib-21, 21px);
         height: calc(100vh - 70px);
-        padding: 12px 16px;
+        padding: var(--fib-13, 13px) var(--fib-21, 21px);
         background: #020306;
         box-sizing: border-box;
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: hidden;
       }
       @media (max-width: 1200px) {
         .arena-layout { grid-template-columns: 320px 1fr; }
@@ -40,7 +102,8 @@
           grid-template-columns: 1fr;
           height: auto;
           min-height: 0;
-          padding: 10px;
+          padding: var(--fib-13, 13px);
+          gap: var(--fib-13, 13px);
         }
         .arena-layout > aside { display: block !important; }
         .arena-layout > section {
@@ -51,22 +114,24 @@
       .panel-glass {
         background: rgba(10, 14, 26, 0.94);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius);
-        padding: 16px;
+        border-radius: var(--fib-radius-lg, 21px);
+        padding: var(--fib-21, 21px);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: var(--fib-13, 13px);
         overflow-y: auto;
         backdrop-filter: blur(20px);
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        min-width: 0;
       }
       .viewport-stage {
         position: relative;
         background: radial-gradient(circle at 50% 50%, #0d152c 0%, #020306 100%);
         border: 1px solid rgba(0, 229, 255, 0.35);
-        border-radius: var(--radius);
+        border-radius: var(--fib-radius-lg, 21px);
         overflow: hidden;
         box-shadow: inset 0 0 60px rgba(0, 229, 255, 0.08);
+        min-width: 0;
       }
       #arena-canvas {
         width: 100%;
@@ -75,28 +140,28 @@
       }
       .top-hud-bar {
         position: absolute;
-        top: 14px;
-        left: 14px;
-        right: 14px;
+        top: var(--fib-13, 13px);
+        left: var(--fib-13, 13px);
+        right: var(--fib-13, 13px);
         display: flex;
         justify-content: space-between;
         pointer-events: none;
         z-index: 10;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: var(--fib-8, 8px);
       }
       .bottom-hud-bar {
         position: absolute;
-        bottom: 14px;
-        left: 14px;
-        right: 14px;
+        bottom: var(--fib-13, 13px);
+        left: var(--fib-13, 13px);
+        right: var(--fib-13, 13px);
         display: flex;
         justify-content: space-between;
         align-items: center;
         pointer-events: none;
         z-index: 10;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: var(--fib-8, 8px);
       }
       .hud-pill {
         background: rgba(4, 6, 14, 0.9);
@@ -104,14 +169,15 @@
         color: var(--cyan);
         font-family: var(--font-mono);
         font-size: 0.72rem;
-        padding: 5px 12px;
-        border-radius: 999px;
+        padding: var(--fib-8, 8px) var(--fib-13, 13px);
+        border-radius: var(--fib-radius-pill, 9999px);
         backdrop-filter: blur(10px);
         pointer-events: auto;
         display: inline-flex;
         align-items: center;
         gap: 6px;
         cursor: pointer;
+        min-height: 44px;
       }
       .hud-pill:hover {
         background: rgba(0, 229, 255, 0.18);
@@ -120,13 +186,14 @@
       .agent-card {
         background: rgba(18, 24, 42, 0.75);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius-sm);
-        padding: 12px;
+        border-radius: var(--fib-radius-md, 13px);
+        padding: var(--fib-13, 13px) var(--fib-21, 21px);
         display: flex;
         flex-direction: column;
         gap: 6px;
         cursor: pointer;
         transition: all 0.2s ease;
+        min-height: 44px;
       }
       .agent-card:hover, .agent-card.selected {
         border-color: var(--cyan);
@@ -139,8 +206,8 @@
       .telemetry-feed {
         background: rgba(0, 0, 0, 0.65);
         border: 1px solid rgba(0, 229, 255, 0.2);
-        border-radius: var(--radius-sm);
-        padding: 12px;
+        border-radius: var(--fib-radius-md, 13px);
+        padding: var(--fib-13, 13px);
         font-family: var(--font-mono);
         font-size: 0.75rem;
         line-height: 1.5;
@@ -152,7 +219,7 @@
       }
       .tele-line {
         display: flex;
-        gap: 8px;
+        gap: var(--fib-8, 8px);
       }
       .tele-time { color: var(--muted); }
       .tele-agent { color: var(--cyan); font-weight: 700; }
@@ -162,8 +229,8 @@
         color: #030408;
         font-weight: 800;
         border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
+        padding: var(--fib-8, 8px) var(--fib-21, 21px);
+        border-radius: var(--fib-radius-sm, 8px);
         font-size: 0.82rem;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -172,6 +239,7 @@
         justify-content: center;
         gap: 6px;
         width: 100%;
+        min-height: 44px;
       }
       .btn-action:hover {
         box-shadow: 0 0 25px var(--cyan);
@@ -188,7 +256,7 @@
         height: 100%;
         transition: width 0.3s ease;
       }
-    </style>
+  </style>
     <link rel="stylesheet" href="/assets/zoth-tip.css" />
     <link rel="stylesheet" href="/assets/zoth-mobile.css" />
     <link rel="stylesheet" href="/assets/zoth-preview.css" />

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>3D Pets Sanctuary — Neural Node Matrix & Companion Forge</title>
     <meta name="description" content="GPU-accelerated 3D pet companion sanctuary with true volumetric figurines, Web Audio acoustic synthesizers, interactive petting, and direct Nexus 3D Studio exporter." />
     <meta name="theme-color" content="#05060a" />
@@ -10,9 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260819s" />
-    <link rel="stylesheet" href="/pets/pets.css?v=20260819s" />
-    <link rel="stylesheet" href="/studio/studio.css?v=20260819s" />
+    <link rel="stylesheet" href="/pets/pets.css" />
+    <link rel="stylesheet" href="/assets/zoth-mobile.css" />
     
     <script type="importmap">
       {
@@ -27,45 +26,85 @@
         --cyan: #00f0ff;
         --purple: #a855f7;
         --gold: #fbbf24;
+        --emerald: #34d399;
+        --magenta: #ff007a;
+        --bg-deep: #030408;
+
+        /* Sacred Geometry & Fibonacci Scale Tokens */
+        --phi: 1.618;
+        --fib-1: 1px;
+        --fib-2: 2px;
+        --fib-3: 3px;
+        --fib-5: 5px;
+        --fib-8: 8px;
+        --fib-13: 13px;
+        --fib-21: 21px;
+        --fib-34: 34px;
+        --fib-55: 55px;
+        --fib-89: 89px;
+        --fib-144: 144px;
+        --fib-233: 233px;
+
+        --rad-xs: 5px;
+        --rad-sm: 8px;
+        --rad-md: 13px;
+        --rad-lg: 21px;
+        --rad-xl: 34px;
       }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        max-width: 100vw;
+        overflow-x: hidden;
+        width: 100%;
+        touch-action: manipulation;
+      }
+
       .btn-nexus-export {
         background: linear-gradient(135deg, #00e5ff 0%, #7c3aed 100%);
         color: #030408;
         font-weight: 800;
         border: none;
-        padding: 8px 14px;
-        border-radius: 8px;
+        padding: var(--fib-8) var(--fib-13);
+        border-radius: var(--rad-sm);
         cursor: pointer;
-        font-size: 0.8rem;
+        font-size: 0.76rem;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: var(--fib-5);
         transition: all 0.2s ease;
         text-decoration: none;
+        min-height: 38px;
+        touch-action: manipulation;
       }
       .btn-nexus-export:hover {
-        box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+        box-shadow: 0 0 var(--fib-21) rgba(0, 229, 255, 0.6);
         transform: translateY(-2px);
       }
       .interaction-bar {
         display: flex;
-        gap: 8px;
-        margin-top: 10px;
+        gap: var(--fib-8);
+        margin-top: var(--fib-8);
         flex-wrap: wrap;
       }
       .btn-interact {
         background: rgba(255, 255, 255, 0.06);
         border: 1px solid rgba(0, 240, 255, 0.25);
         color: #fff;
-        font-family: 'IBM Plex Mono', monospace;
+        font-family: var(--font-mono);
         font-size: 0.78rem;
-        padding: 6px 12px;
-        border-radius: 8px;
+        padding: var(--fib-8) var(--fib-13);
+        border-radius: var(--rad-sm);
         cursor: pointer;
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: var(--fib-5);
+        min-height: 40px;
+        touch-action: manipulation;
       }
       .btn-interact:hover {
         background: rgba(0, 240, 255, 0.15);
@@ -75,12 +114,12 @@
       .stat-meter {
         background: rgba(0, 0, 0, 0.5);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 6px;
-        padding: 8px 10px;
+        border-radius: var(--rad-sm);
+        padding: var(--fib-8) var(--fib-13);
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        font-family: 'IBM Plex Mono', monospace;
+        gap: var(--fib-5);
+        font-family: var(--font-mono);
         font-size: 0.72rem;
       }
       .stat-bar {
@@ -94,35 +133,54 @@
         background: var(--cyan);
         transition: width 0.3s ease;
       }
+      
+      /* 3D WebGL Canvas Touch Polish */
+      .sanctuary-stage, #canvas-host, #three-stage {
+        touch-action: pan-y;
+      }
       #three-stage canvas {
         width: 100% !important;
         height: 100% !important;
         display: block;
-        touch-action: none;
+        touch-action: pan-y;
       }
       .roster-card {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 6px;
+        gap: var(--fib-8);
+        padding: var(--fib-8);
+        border-radius: var(--rad-sm);
+        background: rgba(14, 20, 36, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        touch-action: manipulation;
+      }
+      .roster-card:hover, .roster-card.active {
+        border-color: var(--cyan);
+        background: rgba(0, 240, 255, 0.12);
+        box-shadow: 0 0 var(--fib-13) rgba(0, 240, 255, 0.3);
       }
       .roster-card img {
-        width: 36px;
-        height: 36px;
-        border-radius: 6px;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--rad-xs);
         object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid rgba(0, 240, 255, 0.3);
       }
     
-    /* Homepage Matching Navbar */
+    /* Top Navigation Bar */
     header.bar {
       position: fixed; inset: 0 0 auto; z-index: 40;
-      display: flex; align-items: center; gap: 18px;
-      padding: 14px 24px;
+      display: flex; align-items: center; gap: var(--fib-21);
+      padding: var(--fib-13) var(--fib-21);
       background: rgba(5, 5, 8, 0.88);
       backdrop-filter: blur(18px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      max-width: 100vw;
     }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .brand { display: flex; align-items: center; gap: var(--fib-13); text-decoration: none; flex-shrink: 0; }
     .brand img {
       width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
       border: 1px solid rgba(232, 200, 114, 0.45);
@@ -135,11 +193,11 @@
       display: block; color: var(--gold); font-family: var(--font-mono);
       font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
     }
-    nav.menu { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-left: auto; align-items: center; }
+    nav.menu { display: flex; flex-wrap: wrap; gap: 2px var(--fib-21); margin-left: auto; align-items: center; }
     nav.menu a {
       text-decoration: none; font-family: var(--font-mono); font-size: 0.7rem;
       font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
-      color: #c8c4d6; padding: 8px 0; position: relative; transition: color 0.2s;
+      color: #c8c4d6; padding: var(--fib-8) 0; position: relative; transition: color 0.2s;
     }
     nav.menu a::after {
       content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
@@ -149,7 +207,7 @@
     nav.menu a:hover, nav.menu a.on { color: var(--text); }
     nav.menu a:hover::after, nav.menu a.on::after { transform: scaleX(1); }
     nav.menu a.git {
-      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 999px; padding: 6px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 999px; padding: 6px var(--fib-13);
     }
     .progress {
       position: fixed; inset: 0 auto auto 0; z-index: 50;
@@ -159,35 +217,82 @@
       display: none; margin-left: auto;
       background: none; border: 1px solid rgba(255, 255, 255, 0.08); color: #fff;
       font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em;
-      text-transform: uppercase; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+      text-transform: uppercase; padding: var(--fib-8) var(--fib-13); border-radius: 999px; cursor: pointer;
+      min-height: 44px; min-width: 44px;
+      touch-action: manipulation;
     }
     .drawer {
       display: none; position: fixed; inset: 0; z-index: 38;
       background: #050508;
-      padding: 96px 24px 40px;
-      flex-direction: column; gap: 6px;
+      padding: var(--fib-89) var(--fib-21) var(--fib-34);
+      flex-direction: column; gap: var(--fib-8);
+      overflow-y: auto;
+      max-width: 100vw;
     }
     body.menu-open .drawer { display: flex; }
     .drawer a {
       text-decoration: none; font-family: var(--font-display);
-      font-size: clamp(1.6rem, 7vw, 2.4rem); letter-spacing: -0.03em;
-      padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: #fff;
+      font-size: clamp(1.4rem, 6vw, 2.2rem); letter-spacing: -0.03em;
+      padding: var(--fib-8) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: #fff;
+      min-height: 44px; display: flex; align-items: center;
     }
     .drawer a:hover, .drawer a.on { color: var(--gold); }
     .drawer .sub {
       font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--muted); border: 0; margin-top: 18px;
+      text-transform: uppercase; color: var(--muted); border: 0; margin-top: var(--fib-21);
     }
     @media (max-width: 880px) {
       nav.menu { display: none; }
       .burger { display: inline-flex; }
     }
 
+    .btn-glow {
+      background: linear-gradient(135deg, var(--cyan) 0%, #0891b2 100%);
+      color: #030408;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.84rem;
+      border: none;
+      border-radius: var(--rad-sm);
+      cursor: pointer;
+      min-height: 44px;
+      padding: var(--fib-8) var(--fib-21);
+      touch-action: manipulation;
+      transition: all 0.2s ease;
+    }
+    .btn-glow:hover {
+      box-shadow: 0 0 var(--fib-13) rgba(0, 240, 255, 0.5);
+    }
+
+    @media (max-width: 640px) {
+      header.bar {
+        padding: var(--fib-8) var(--fib-13);
+      }
+      .pets-main-container {
+        padding: 72px var(--fib-8) var(--fib-21) !important;
+      }
+      .sanctuary-stage {
+        min-height: 300px !important;
+        height: 42vh !important;
+      }
+      .stage-top-hud {
+        top: var(--fib-8);
+        left: var(--fib-8);
+        right: var(--fib-8);
+      }
+      .hud-pill-row {
+        gap: var(--fib-5);
+      }
+      .hud-pill, .hud-pill-btn, .btn-nexus-export {
+        font-size: 0.68rem;
+        padding: 4px var(--fib-8);
+        min-height: 34px;
+      }
+    }
     </style>
-    <link rel="stylesheet" href="/assets/zoth-mobile.css" />
   </head>
   <body class="deck-page">
-    <a class="skip-link" href="#main">Skip to main content</a>
+    <a class="skip-link" href="#main" style="position:fixed;top:-60px;left:16px;z-index:100;background:var(--gold);color:#050508;padding:8px 16px;border-radius:6px;transition:top 0.2s;">Skip to main content</a>
     <div class="progress" id="progress" aria-hidden="true"></div>
     <header class="bar" id="topbar">
       <a class="brand" href="/">
@@ -201,7 +306,8 @@
         <a href="/signal/">Signal</a>
         <a href="/studio/">Studio</a>
         <a href="/studio/swarm.html">Swarm</a>
-        <a class="on" href="/pets/">Pets</a>
+        <a href="/pets/">Pets Roster</a>
+        <a class="on" href="/pets/spawn-pets.html">Sanctuary</a>
         <a href="/pets/studio.html">3D Studio</a>
         <a href="/vault/">Vault</a>
         <a href="/adytum/">Adytum</a>
@@ -216,7 +322,8 @@
       <a href="/signal/">Signal Bridge</a>
       <a href="/studio/">Studio</a>
       <a href="/studio/swarm.html">Swarm</a>
-      <a class="on" href="/pets/">Pets Roster</a>
+      <a href="/pets/">Pets Roster</a>
+      <a class="on" href="/pets/spawn-pets.html">Sanctuary</a>
       <a href="/pets/studio.html">3D Pet Studio</a>
       <a href="/vault/">Vault</a>
       <a href="/adytum/">Adytum</a>
@@ -225,13 +332,13 @@
       <a class="sub" href="/#install">Download Binaries</a>
     </nav>
 
-    <main id="main" class="pets-main-container">
+    <main id="main" class="pets-main-container" style="padding-top: 80px;">
       <div class="sanctuary-layout">
         <!-- Center 3D Stage -->
         <section class="sanctuary-stage" id="canvas-host">
           <div class="stage-top-hud">
             <div class="hud-pill-row">
-              <span class="hud-pill">✨ 3D Volumetric Companion Figurine</span>
+              <span class="hud-pill">✨ 3D Companion Figurine</span>
               <span class="hud-pill" id="active-pet-name">Kai · Holographic Cat</span>
             </div>
             <div class="hud-pill-row">
@@ -239,7 +346,7 @@
               <button class="hud-pill-btn" id="btn-env-toggle" onclick="cycleEnvironment()">🌌 Atmosphere: Cyber</button>
               <button class="hud-pill-btn active" id="btn-audio-toggle" onclick="toggleAudioSynth()">🔊 Audio</button>
               <button class="hud-pill-btn" onclick="triggerHarmonicChirp()">🎵 Chirp</button>
-              <a id="btn-open-studio" href="/pets/pet-studio.html?pet=kai" class="btn-nexus-export">💎 Open 3D Studio</a>
+              <a id="btn-open-studio" href="/pets/studio.html?pet=kai" class="btn-nexus-export">💎 3D Studio</a>
               <a id="btn-open-nexus" href="/studio/nexus-3d.html?pet=kai" class="btn-nexus-export" style="background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);">🚀 Nexus 3D</a>
             </div>
           </div>
@@ -250,7 +357,7 @@
         <aside class="sanctuary-sidebar">
           <div class="sidebar-header">
             <span class="hud-pill">💬 PET COMPANION LINK</span>
-            <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Neural Node Sanctuary</h3>
+            <h3 style="margin: 4px 0; font-family: var(--font-display); font-size: 1.15rem; color: #fff;">Neural Node Sanctuary</h3>
           </div>
 
           <!-- Pet Interaction Controls & Energy Meter -->
@@ -278,14 +385,14 @@
           </div>
 
           <div class="chat-input-row">
-            <input type="text" id="chat-input" class="chat-input-box" placeholder="Ask Kai anything..." onkeydown="if(event.key==='Enter') sendPetChat()" />
-            <button class="btn btn-glow" style="padding: 8px 14px;" onclick="sendPetChat()">Send</button>
+            <input type="text" id="chat-input" class="chat-input-box" placeholder="Ask Kai anything..." onkeydown="if(event.key==='Enter') sendPetChat()" aria-label="Chat with active companion" />
+            <button class="btn-glow" onclick="sendPetChat()">Send</button>
           </div>
 
           <!-- Pet Selector Strip -->
           <div class="roster-section">
-            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Companion Roster (24 Sovereign Pets)</label>
-            <div class="roster-grid" id="roster-list" style="max-height: 220px; overflow-y: auto;"></div>
+            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;">Companion Roster (24 Sovereign Pets)</label>
+            <div class="roster-grid" id="roster-list" style="max-height: 240px; overflow-y: auto;"></div>
           </div>
         </aside>
       </div>
@@ -310,30 +417,31 @@
       let energyLevel = 88;
 
       const ROSTER = [
+        { id: "azoth", name: "Azoth", species: "Hermetic Sovereign Core", color: 0xe8c872, prompt: "Azoth is synthesizing autonomous codebase directives and hermetic alchemical plans." },
+        { id: "zoth", name: "Zoth", species: "Loopback Operator Core", color: 0xfbbf24, prompt: "Zoth is coordinating local multi-agent sessions with zero cloud telemetry." },
         { id: "kai", name: "Kai", species: "Holographic Cat", color: 0x00e5ff, prompt: "Kai is ready to inspect your workspace, verify schemas, and hunt syntax anomalies!" },
         { id: "draco", name: "Draco", species: "Cyber Dragon", color: 0xffaa00, prompt: "Draco is compiling multi-agent fusion pipelines and breathing plasma shaders!" },
-        { id: "athena", name: "Athena", species: "Mecha Owl", color: 0xa855f7, prompt: "Athena is mapping knowledge graphs, AEO entity schemas, and architectural briefs!" },
-        { id: "lycan", name: "Lycan", species: "Cybernetic Wolf", color: 0x10b981, prompt: "Lycan is threat-modeling security endpoints and guarding loopback ports!" },
         { id: "ignis", name: "Ignis", species: "Neon Phoenix", color: 0xff007a, prompt: "Ignis is ready to resurrect stalled pipelines and illuminate dark code paths!" },
+        { id: "lycan", name: "Lycan", species: "Cybernetic Wolf", color: 0x10b981, prompt: "Lycan is threat-modeling security endpoints and guarding loopback ports!" },
+        { id: "athena", name: "Athena", species: "Mecha Owl", color: 0xa855f7, prompt: "Athena is mapping knowledge graphs, AEO entity schemas, and architectural briefs!" },
         { id: "kitsune", name: "Kitsune", species: "Cyber Fox", color: 0xff7700, prompt: "Kitsune is polishing UI hierarchy, micro-interactions, and visual harmony!" },
         { id: "pixel-neko", name: "Pixel-Neko", species: "16-Bit Retro Cat", color: 0x00f0ff, prompt: "Pixel-Neko is indexing local project folders and tools!" },
         { id: "pixel-shiba", name: "Pixel-Shiba", species: "16-Bit Cyber Doge", color: 0xffcc00, prompt: "Pixel-Shiba is guarding vault keys and storage boundaries!" },
         { id: "radical-minion", name: "Radical Minion", species: "Hermes Partner", color: 0x00d4aa, prompt: "Radical Minion is ready to run Hermes autonomous playbooks!" },
-        { id: "glitchcat", name: "Glitchcat", species: "RGB Glitch Cat", color: 0xff0055, prompt: "Glitchcat breaks stale chrome so the composition can land." },
-        { id: "circuit-pup", name: "Circuit Pup", species: "LED Circuit Dog", color: 0x00ffff, prompt: "Circuit Pup sniffs live ports, local daemons, and missing CLIs." },
-        { id: "terminal-ghost", name: "Terminal Ghost", species: "Phosphor Spirit", color: 0x38bdf8, prompt: "Terminal Ghost haunts agent feeds until the logs are verified." },
-        { id: "savage-codex", name: "Savage Codex", species: "Hacker Familiar", color: 0xeab308, prompt: "Savage Codex reads diffs like a threat model for security gaps." },
-        { id: "ai-workbot", name: "AI Workbot", species: "Task Robot", color: 0x6366f1, prompt: "AI Workbot turns a chat request into a claimed swarm checklist." },
-        { id: "binary", name: "Binary", species: "Data Spirit", color: 0x22c55e, prompt: "Binary keeps schema, llms.txt, and connector bits honest." },
+        { id: "ai-workbot", name: "Workbot", species: "Task Robot", color: 0x6366f1, prompt: "Workbot is executing local Ollama neural weights and background task lists." },
         { id: "aquila", name: "Aquila", species: "Cyber Eagle", color: 0x00f0ff, prompt: "Aquila delivers sub-millisecond API routing and edge dispatch." },
         { id: "leviathan", name: "Leviathan", species: "Cyber Whale", color: 0x06b6d4, prompt: "Leviathan indexes dense vector embeddings and long-context RAG memory." },
         { id: "onyx", name: "Onyx", species: "Shadow Panther", color: 0xff007a, prompt: "Onyx runs stealth penetration audits and SubSweep recon." },
         { id: "chronos", name: "Chronos", species: "Cyber Stag", color: 0x38bdf8, prompt: "Chronos traverses DAG execution graphs and git rollback checkpoints." },
-        { id: "aether", name: "Aether", species: "Cyber Griffin", color: 0xfbbf24, prompt: "Aether orchestrates asynchronous multi-agent consensus." },
-        { id: "kraken", name: "Kraken", species: "Cyber Octopus", color: 0x00f0ff, prompt: "Kraken inspects raw packet streams and fuzzes Web API input vectors." },
-        { id: "scorpius", name: "Scorpius", species: "Cyber Scorpion", color: 0x00e5ff, prompt: "Scorpius delivers precision security strikes and crafts glassmorphic themes." },
-        { id: "ghostbyte", name: "Ghostbyte", species: "NullAI Ghost", color: 0x00e5ff, prompt: "Ghostbyte is weaving holographic swarm particle streams and quantum shaders!" },
-        { id: "zoth", name: "Zoth Core", species: "Hermetic Tesseract", color: 0xfbbf24, prompt: "Zoth Master Sovereign Core is orchestrating all 16 studio nodes on localhost!" }
+        { id: "aether", name: "Aether", species: "Cyber Griffin", color: 0xfbbf24, prompt: "Aether orchestrates real-time pub/sub swarm event streams." },
+        { id: "scorpius", name: "Scorpius", species: "Cyber Scorpion", color: 0xef4444, prompt: "Scorpius delivers precision boundary security audits." },
+        { id: "kraken", name: "Kraken", species: "Thread Leviathan", color: 0x8b5cf6, prompt: "Kraken balances multi-threaded parallel subagent execution pools." },
+        { id: "ghostbyte", name: "Ghostbyte", species: "Phosphor Daemon", color: 0x00e5ff, prompt: "Ghostbyte is inspecting live telemetry feeds and terminal processes." },
+        { id: "glitchcat", name: "Glitchcat", species: "RGB Glitch Cat", color: 0xff0055, prompt: "Glitchcat breaks stale chrome so the composition can land." },
+        { id: "circuit-pup", name: "Circuit Pup", species: "LED Circuit Dog", color: 0x00ffff, prompt: "Circuit Pup sniffs live ports, local daemons, and missing CLIs." },
+        { id: "terminal-ghost", name: "Terminal Ghost", species: "Phosphor Spirit", color: 0x38bdf8, prompt: "Terminal Ghost haunts agent feeds until the logs are verified." },
+        { id: "savage-codex", name: "Savage Codex", species: "Hacker Familiar", color: 0xeab308, prompt: "Savage Codex reads diffs like a threat model for security gaps." },
+        { id: "binary", name: "Binary", species: "Byte Sentinel", color: 0x22c55e, prompt: "Binary keeps schema, ELF bytecode, and connector bits honest." }
       ];
 
       function getAudioContext() {
@@ -401,18 +509,30 @@
         return tex;
       }
 
+      let amb, dir, rim;
+      const ENV_PRESETS = [
+        { name: 'Cyber Neon', amb: 0x7888b8, dir: 0xffffff, rim: 0x00f0ff, fog: 0x020306, exposure: 1.1 },
+        { name: 'Solar Day', amb: 0xffe8d6, dir: 0xfff4e6, rim: 0xffaa00, fog: 0x100804, exposure: 1.25 },
+        { name: 'Void Twilight', amb: 0x3b1d60, dir: 0xa855f7, rim: 0x00f0ff, fog: 0x05020c, exposure: 1.3 }
+      ];
+      let envPresetIdx = 0;
+      let formationMode = 'solo';
+      let orbitalFigures = [];
+
       function initStage() {
         const container = document.getElementById('three-stage');
         scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x020306, 0.03);
 
-        camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+        const w = container.clientWidth || window.innerWidth;
+        const h = container.clientHeight || 480;
+
+        camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
         camera.position.set(0, 1.45, 5.2);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.setSize(w, h);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.1;
         container.appendChild(renderer.domElement);
@@ -420,34 +540,47 @@
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
+        controls.maxDistance = 12;
+        controls.minDistance = 2.0;
+        controls.maxPolarAngle = Math.PI / 2 + 0.1;
+        controls.target.set(0, 0.9, 0);
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 1.0;
-        controls.target.set(0, 0.98, 0);
+        controls.autoRotateSpeed = 0.6;
+        controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 
-        amb = new THREE.AmbientLight(0x7888b8, 0.7);
+        amb = new THREE.AmbientLight(ENV_PRESETS[0].amb, 1.6);
         scene.add(amb);
-        dir = new THREE.DirectionalLight(0xffffff, 1.4);
-        dir.position.set(4, 8, 6);
+
+        dir = new THREE.DirectionalLight(ENV_PRESETS[0].dir, 2.4);
+        dir.position.set(4, 8, 5);
         scene.add(dir);
 
-        rim = new THREE.PointLight(0x00f0ff, 3.0, 16);
+        rim = new THREE.PointLight(ENV_PRESETS[0].rim, 4.0, 15);
         rim.position.set(-3, 2, -3);
         scene.add(rim);
 
-        // Platform Grid
-        const grid = new THREE.GridHelper(16, 16, 0x00e5ff, 0x111625);
-        grid.position.y = 0;
+        // Ground Pedestal Ring
+        const ringGeo = new THREE.RingGeometry(1.6, 2.2, 64);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.35 });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = -0.02;
+        scene.add(ring);
+
+        // Grid Floor
+        const grid = new THREE.GridHelper(20, 20, 0x00f0ff, 0x141b30);
+        grid.position.y = -0.03;
         scene.add(grid);
 
         renderRoster();
-        loadSelectedPet(ROSTER[0]);
+        loadSelectedPet(ROSTER[2] || ROSTER[0]); // Default to Kai
 
         function onResize() {
-          const w = container.clientWidth || window.innerWidth;
-          const h = container.clientHeight || window.innerHeight;
-          camera.aspect = w / h;
+          const nw = container.clientWidth || window.innerWidth;
+          const nh = container.clientHeight || 480;
+          camera.aspect = nw / nh;
           camera.updateProjectionMatrix();
-          renderer.setSize(w, h);
+          renderer.setSize(nw, nh);
         }
         window.addEventListener('resize', onResize, { passive: true });
         if (window.ResizeObserver) {
@@ -460,7 +593,7 @@
           if (activePetFigure && activePetFigure.setGaze) {
             activePetFigure.setGaze(nx, ny);
           }
-        });
+        }, { passive: true });
 
         const clock = new THREE.Clock();
         function animate() {
@@ -491,16 +624,6 @@
         animate();
       }
 
-      let formationMode = 'solo';
-      let orbitalFigures = [];
-      let envPresetIdx = 0;
-      let amb, dir, rim;
-      const ENV_PRESETS = [
-        { name: 'Cyber Neon', amb: 0x7888b8, dir: 0xffffff, rim: 0x00f0ff, fog: 0x020306, exposure: 1.1 },
-        { name: 'Solar Day', amb: 0xffe8d6, dir: 0xfff4e6, rim: 0xffaa00, fog: 0x100804, exposure: 1.25 },
-        { name: 'Void Twilight', amb: 0x3b1d60, dir: 0xa855f7, rim: 0x00f0ff, fog: 0x05020c, exposure: 1.3 }
-      ];
-
       window.cycleEnvironment = function() {
         if (!amb || !dir || !rim) return;
         envPresetIdx = (envPresetIdx + 1) % ENV_PRESETS.length;
@@ -520,7 +643,7 @@
         
         orbitalFigures.forEach(fig => {
           scene.remove(fig.group);
-          fig.dispose();
+          if (fig.dispose) fig.dispose();
         });
         orbitalFigures = [];
 
@@ -554,8 +677,8 @@
           const card = document.createElement('div');
           card.className = 'roster-card' + (pet.id === currentPetId ? ' active' : '');
           card.innerHTML = `
-            <img src="${petPortrait(pet.id)}" alt="${pet.name}" loading="lazy" />
-            <div>
+            <img src="${petPortrait(pet.id)}" alt="${pet.name}" loading="lazy" onerror="this.src='/assets/mascot/azoth-mask.jpg'" />
+            <div style="min-width:0; overflow:hidden;">
               <strong>${pet.name}</strong><br />
               <small style="color:var(--cyan);font-family:var(--font-mono);font-size:0.65rem;">${pet.species}</small>
             </div>
@@ -573,12 +696,12 @@
         document.getElementById('pet-intro-msg').innerHTML = `<strong>${pet.name}:</strong> "${pet.prompt}"`;
         document.getElementById('chat-input').placeholder = `Ask ${pet.name} anything...`;
         
-        document.getElementById('btn-open-studio').href = `/pets/pet-studio.html?pet=${pet.id}`;
+        document.getElementById('btn-open-studio').href = `/pets/studio.html?pet=${pet.id}`;
         document.getElementById('btn-open-nexus').href = `/studio/nexus-3d.html?pet=${pet.id}`;
 
         if (activePetFigure) {
           scene.remove(activePetFigure.group);
-          activePetFigure.dispose();
+          if (activePetFigure.dispose) activePetFigure.dispose();
           activePetFigure = null;
         }
 
@@ -660,9 +783,27 @@
         }, 400);
       };
 
+      // Burger Drawer Toggle
+      const burger = document.getElementById("burger");
+      if (burger) {
+        burger.addEventListener("click", () => {
+          const open = document.body.classList.toggle("menu-open");
+          burger.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      }
+      const drawer = document.getElementById("drawer");
+      if (drawer) {
+        drawer.addEventListener("click", (e) => {
+          if (e.target.tagName === "A") {
+            document.body.classList.remove("menu-open");
+            if (burger) burger.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
+
       window.onload = initStage;
     </script>
-    <script src="/assets/celestial-trail.js"></script>
+    <script src="/assets/zoth-tip.js" defer></script>
+    <script src="/assets/zoth-annotator.js" defer></script>
   </body>
 </html>
-

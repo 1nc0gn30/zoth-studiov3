@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
   <title>Zoth 3D Pet Studio — Volumetric Hologram Matrix</title>
-  <meta name="description" content="Interactive GPU-accelerated 3D companion studio with volumetric relief figurines, procedural kinetic task vibes, 16 sovereign mascots, and mobile touch optimization." />
+  <meta name="description" content="Interactive GPU-accelerated 3D companion studio with volumetric relief figurines, procedural kinetic task vibes, 24 sovereign mascots, and mobile touch optimization." />
   <meta name="theme-color" content="#050508" />
   <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
 
@@ -12,7 +12,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/zoth-tip.css" />
   <link rel="stylesheet" href="/assets/zoth-mobile.css" />
+  <link rel="stylesheet" href="/assets/zoth-annotator.css" />
 
   <!-- Three.js (Local Sovereign Vendor) -->
   <script src="/assets/vendor/three.min.js"></script>
@@ -25,214 +27,487 @@
       --panel-border-bright: rgba(0, 240, 255, 0.6);
       --line: rgba(255, 255, 255, 0.08);
       --text: #f7f4ee;
-      --muted: #8290b0;
+      --muted: #94a3b8;
       --cyan: #00f0ff;
       --purple: #a855f7;
       --gold: #e8c872;
-      --emerald: #10b981;
+      --emerald: #34d399;
       --magenta: #ff007a;
       --font-display: 'Syne', system-ui, sans-serif;
       --font-body: 'Figtree', system-ui, sans-serif;
       --font-mono: 'IBM Plex Mono', monospace;
       --pad: clamp(16px, 4vw, 48px);
+
+      /* Sacred Geometry & Fibonacci Scale Tokens */
+      --phi: 1.618;
+      --fib-1: 1px;
+      --fib-2: 2px;
+      --fib-3: 3px;
+      --fib-5: 5px;
+      --fib-8: 8px;
+      --fib-13: 13px;
+      --fib-21: 21px;
+      --fib-34: 34px;
+      --fib-55: 55px;
+      --fib-89: 89px;
+      --fib-144: 144px;
+      --fib-233: 233px;
+
+      --rad-xs: 5px;
+      --rad-sm: 8px;
+      --rad-md: 13px;
+      --rad-lg: 21px;
+      --rad-xl: 34px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     html, body {
-      width: 100%; height: 100%; height: 100svh;
-      overflow: hidden; background: var(--bg); color: var(--text);
+      width: 100%;
+      height: 100%;
+      height: 100svh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
       font-family: var(--font-body);
       -webkit-font-smoothing: antialiased;
       touch-action: manipulation;
+      max-width: 100vw;
     }
 
-    /* Shared Top Navigation Bar matching index.html */
+    /* Top Navigation Bar */
     .skip {
-      position: fixed; top: -60px; left: 16px; z-index: 100;
-      background: var(--gold); color: #050508; font-weight: 700;
-      padding: 8px 16px; border-radius: 6px; text-decoration: none;
+      position: fixed;
+      top: -60px;
+      left: 16px;
+      z-index: 100;
+      background: var(--gold);
+      color: #050508;
+      font-weight: 700;
+      padding: var(--fib-8) var(--fib-21);
+      border-radius: var(--rad-xs);
+      text-decoration: none;
       transition: top 0.2s ease;
     }
-    .skip:focus { top: 12px; }
+    .skip:focus {
+      top: 12px;
+    }
 
     header.bar {
-      position: fixed; inset: 0 0 auto; z-index: 40;
-      display: flex; align-items: center; gap: 18px;
-      padding: 14px var(--pad);
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: var(--fib-21);
+      padding: var(--fib-13) var(--pad);
       background: rgba(5, 5, 8, 0.88);
       backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--line);
+      max-width: 100vw;
     }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--fib-13);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
     .brand img {
-      width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
       border: 1px solid rgba(232, 200, 114, 0.45);
     }
     .brand strong {
-      display: block; font-family: var(--font-display); font-size: 1.18rem;
-      letter-spacing: -0.03em; font-weight: 600; color: #fff;
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.18rem;
+      letter-spacing: -0.03em;
+      font-weight: 600;
+      color: #fff;
     }
     .brand small {
-      display: block; color: var(--gold); font-family: var(--font-mono);
-      font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+      display: block;
+      color: var(--gold);
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
     }
-    nav.menu { display: flex; flex-wrap: wrap; gap: 2px 18px; margin-left: auto; align-items: center; }
+    nav.menu {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px var(--fib-21);
+      margin-left: auto;
+      align-items: center;
+    }
     nav.menu a {
-      text-decoration: none; font-family: var(--font-mono); font-size: 0.7rem;
-      font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
-      color: #c8c4d6; padding: 8px 0; position: relative; transition: color 0.2s;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #c8c4d6;
+      padding: var(--fib-8) 0;
+      position: relative;
+      transition: color 0.2s;
     }
     nav.menu a::after {
-      content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
-      background: var(--gold); transform: scaleX(0); transform-origin: left;
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 4px;
+      height: 1px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
       transition: transform 0.28s ease;
     }
-    nav.menu a:hover, nav.menu a.on { color: var(--text); }
-    nav.menu a:hover::after, nav.menu a.on::after { transform: scaleX(1); }
-    nav.menu a.git {
-      border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+    nav.menu a:hover, nav.menu a.on {
+      color: var(--text);
     }
-    nav.menu a.git::after { display: none; }
+    nav.menu a:hover::after, nav.menu a.on::after {
+      transform: scaleX(1);
+    }
+    nav.menu a.git {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px var(--fib-13);
+    }
+    nav.menu a.git::after {
+      display: none;
+    }
     .progress {
-      position: fixed; inset: 0 auto auto 0; z-index: 50;
-      height: 2px; width: 100%; background: var(--gold); pointer-events: none;
+      position: fixed;
+      inset: 0 auto auto 0;
+      z-index: 50;
+      height: 2px;
+      width: 100%;
+      background: var(--gold);
+      pointer-events: none;
     }
     .burger {
-      display: none; margin-left: auto;
-      background: none; border: 1px solid var(--line); color: var(--text);
-      font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em;
-      text-transform: uppercase; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+      display: none;
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: var(--fib-8) var(--fib-13);
+      border-radius: 999px;
+      cursor: pointer;
+      min-height: 44px;
+      min-width: 44px;
+      touch-action: manipulation;
     }
 
     .drawer {
-      display: none; position: fixed; inset: 0; z-index: 38;
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 38;
       background: #050508;
-      padding: 96px var(--pad) 40px;
-      flex-direction: column; gap: 6px;
+      padding: var(--fib-89) var(--pad) var(--fib-34);
+      flex-direction: column;
+      gap: var(--fib-8);
+      overflow-y: auto;
+      max-width: 100vw;
     }
-    body.menu-open .drawer { display: flex; }
+    body.menu-open .drawer {
+      display: flex;
+    }
     .drawer a {
-      text-decoration: none; font-family: var(--font-display);
-      font-size: clamp(1.6rem, 7vw, 2.4rem); letter-spacing: -0.03em;
-      padding: 8px 0; border-bottom: 1px solid var(--line); color: #fff;
+      text-decoration: none;
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 6vw, 2.2rem);
+      letter-spacing: -0.03em;
+      padding: var(--fib-8) 0;
+      border-bottom: 1px solid var(--line);
+      color: #fff;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
     }
-    .drawer a:hover, .drawer a.on { color: var(--gold); }
+    .drawer a:hover, .drawer a.on {
+      color: var(--gold);
+    }
     .drawer .sub {
-      font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--muted); border: 0; margin-top: 18px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 0;
+      margin-top: var(--fib-21);
     }
 
-    /* 3D Viewport Host */
+    /* 3D WebGL Host with touch-action: pan-y */
     #host {
-      position: fixed; inset: 0;
-      width: 100vw; height: 100svh;
-      z-index: 1; touch-action: none;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: pan-y;
     }
     #host canvas {
       width: 100% !important;
       height: 100% !important;
       display: block;
-      touch-action: none;
+      touch-action: pan-y;
+    }
+
+    /* Studio Toolbar */
+    .studio-toolbar {
+      position: fixed;
+      bottom: var(--fib-21);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: var(--fib-8);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--rad-xl);
+      padding: var(--fib-8) var(--fib-13);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 var(--fib-21) rgba(0, 240, 255, 0.15);
+      max-width: min(1100px, calc(100vw - 26px));
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .pet-select {
+      background: rgba(14, 20, 36, 0.9);
+      border: 1px solid var(--panel-border-bright);
+      color: #fff;
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: var(--fib-8) var(--fib-13);
+      border-radius: var(--rad-sm);
+      outline: none;
+      cursor: pointer;
+      min-height: 40px;
+      touch-action: manipulation;
+    }
+
+    .vibes-group {
+      display: flex;
+      gap: var(--fib-5);
+      overflow-x: auto;
+      scrollbar-width: none;
+      max-width: 100%;
+    }
+    .vibes-group::-webkit-scrollbar {
+      display: none;
+    }
+    .vibe-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: var(--fib-5) var(--fib-8);
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      touch-action: manipulation;
+    }
+    .vibe-chip:hover {
+      color: #fff;
+      border-color: var(--cyan);
+    }
+    .vibe-chip.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 var(--fib-13) rgba(0, 240, 255, 0.4);
+    }
+
+    .tool-btns {
+      display: flex;
+      gap: var(--fib-5);
+      align-items: center;
+    }
+    .btn-tool {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: var(--fib-5) var(--fib-8);
+      border-radius: var(--rad-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      touch-action: manipulation;
+    }
+    .btn-tool:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--cyan);
+      color: #fff;
+    }
+    .btn-tool.active {
+      background: var(--gold);
+      color: #050508;
+      border-color: var(--gold);
+      font-weight: 700;
+    }
+
+    /* Companion Dossier HUD Card */
+    .dossier-card {
+      position: fixed;
+      top: 88px;
+      left: var(--fib-21);
+      z-index: 20;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--rad-md);
+      padding: var(--fib-13) var(--fib-21);
+      backdrop-filter: blur(20px);
+      max-width: 320px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: var(--fib-8);
+    }
+    .dossier-header {
+      display: flex;
+      gap: var(--fib-13);
+      align-items: center;
+    }
+    .dossier-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--rad-xs);
+      object-fit: cover;
+      border: 1px solid var(--cyan);
+    }
+    .dossier-domain {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .dossier-name {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .dossier-role {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--cyan);
+    }
+    .dossier-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .dossier-harness {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--line);
+      border-radius: var(--rad-xs);
+      padding: var(--fib-5) var(--fib-8);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--emerald);
+      word-break: break-all;
+    }
+
+    /* Collapsible Shader Drawer */
+    .shader-drawer {
+      position: fixed;
+      top: 88px;
+      right: var(--fib-21);
+      z-index: 20;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--rad-md);
+      padding: var(--fib-13) var(--fib-21);
+      backdrop-filter: blur(20px);
+      width: 230px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--fib-8);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75);
+    }
+    .shader-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .shader-row input[type="range"] {
+      width: 100%;
+      accent-color: var(--cyan);
+      cursor: pointer;
     }
 
     /* Ambient Glow */
     .ambient-glow {
-      position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background:
-        radial-gradient(circle at 15% 20%, rgba(0, 240, 255, 0.08), transparent 45%),
-        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.08), transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(232, 200, 114, 0.04), transparent 65%);
-    }
-
-    /* Floating Studio Toolbar */
-    .studio-toolbar {
-      position: fixed; top: 76px; left: 16px; right: 16px; z-index: 20;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; padding: 8px 14px;
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: 12px;
-      backdrop-filter: blur(18px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
-    }
-    .pet-select {
-      background: #030408; border: 1px solid var(--panel-border);
-      color: #fff; font-family: var(--font-mono); font-size: 0.8rem;
-      padding: 6px 12px; border-radius: 8px; outline: none; cursor: pointer;
-    }
-    .vibes-group { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-    .vibes-group::-webkit-scrollbar { display: none; }
-    .vibe-chip {
-      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line);
-      color: var(--muted); font-family: var(--font-mono); font-size: 0.72rem;
-      padding: 4px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .vibe-chip:hover { color: #fff; border-color: var(--cyan); }
-    .vibe-chip.active {
-      background: rgba(0, 240, 255, 0.15); border-color: var(--cyan);
-      color: var(--cyan); font-weight: 700; box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
-    }
-    .tool-btns { display: flex; gap: 6px; }
-    .btn-tool {
-      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line);
-      color: var(--text); font-family: var(--font-mono); font-size: 0.75rem;
-      padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
-    }
-    .btn-tool:hover { border-color: var(--cyan); background: rgba(0, 240, 255, 0.1); }
-    .btn-tool.active { border-color: var(--gold); color: var(--gold); }
-
-    /* Mascot Info HUD Panel */
-    .mascot-hud {
-      position: fixed; bottom: 20px; left: 16px; z-index: 20;
-      width: clamp(280px, 32vw, 420px);
-      background: var(--panel); border: 1px solid var(--panel-border);
-      border-radius: 16px; padding: 1.25rem; backdrop-filter: blur(20px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
-      transition: transform 0.3s ease;
-    }
-    .mascot-hud-header { display: flex; gap: 12px; align-items: center; margin-bottom: 0.75rem; }
-    .mascot-thumb {
-      width: 48px; height: 48px; border-radius: 10px; object-fit: cover;
-      border: 1px solid var(--cyan);
-    }
-    .mascot-kicker {
-      font-family: var(--font-mono); font-size: 0.65rem; color: var(--gold);
-      text-transform: uppercase; letter-spacing: 0.12em;
-    }
-    .mascot-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: #fff; }
-    .mascot-role { font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); }
-    .mascot-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.45; margin-bottom: 0.85rem; }
-    .harness-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-family: var(--font-mono); font-size: 0.72rem; color: #050508;
-      background: var(--gold); padding: 3px 10px; border-radius: 999px;
-      font-weight: 700; margin-bottom: 0.85rem;
-    }
-    .hud-actions { display: flex; gap: 6px; }
-    .btn-hud {
-      flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line);
-      color: #fff; font-family: var(--font-mono); font-size: 0.74rem; padding: 6px;
-      border-radius: 6px; cursor: pointer; text-align: center; text-decoration: none;
-      transition: all 0.2s;
-    }
-    .btn-hud:hover { border-color: var(--cyan); background: rgba(0, 240, 255, 0.12); }
-    .btn-hud.cta { background: var(--cyan); color: #050508; font-weight: 700; border: none; }
-
-    /* Touch Controls Hint */
-    .touch-hint {
-      position: fixed; bottom: 20px; right: 16px; z-index: 15;
-      font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);
-      background: rgba(5, 5, 8, 0.7); padding: 6px 12px; border-radius: 999px;
-      border: 1px solid var(--line); pointer-events: none;
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.04) 0%, transparent 60%);
     }
 
     @media (max-width: 880px) {
       nav.menu { display: none; }
       .burger { display: inline-flex; }
-      .studio-toolbar { top: 68px; flex-wrap: wrap; }
-      .mascot-hud { bottom: 12px; left: 12px; right: 12px; width: auto; }
-      .touch-hint { display: none; }
+      .dossier-card {
+        top: 72px;
+        left: var(--fib-13);
+        max-width: calc(100vw - 26px);
+      }
+      .shader-drawer {
+        display: none;
+      }
+      .studio-toolbar {
+        bottom: var(--fib-13);
+        padding: var(--fib-5) var(--fib-8);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .dossier-card {
+        display: none; /* Hide floating dossier on small mobile to maximize 3D stage */
+      }
+      .cam-presets-row {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 320px) {
+      .pet-select { width: 100%; }
+      .studio-toolbar { width: 100%; }
     }
   </style>
 </head>
@@ -241,7 +516,7 @@
   <div class="progress" id="progress" aria-hidden="true"></div>
   <div class="ambient-glow"></div>
 
-  <!-- Shared Homepage Top Navigation Bar -->
+  <!-- Top Navigation Bar -->
   <header class="bar" id="topbar">
     <a class="brand" href="/">
       <img src="/assets/mascot/azoth-mask.jpg" alt="" width="36" height="36" />
@@ -263,7 +538,7 @@
     </nav>
   </header>
 
-  <!-- Shared Mobile Drawer -->
+  <!-- Mobile Drawer -->
   <nav class="drawer" id="drawer" aria-label="Mobile">
     <a href="/zoth/">Azoth</a>
     <a href="http://127.0.0.1:8484/">Deck</a>
@@ -279,13 +554,13 @@
     <a class="sub" href="/#install">Download Binaries</a>
   </nav>
 
-  <!-- 3D Canvas Host -->
+  <!-- 3D Canvas Host with touch-action: pan-y -->
   <div id="host"></div>
 
   <!-- Studio Toolbar -->
   <div class="studio-toolbar">
     <select class="pet-select" id="pet-picker" aria-label="Select Mascot Companion">
-      <!-- Injected via JavaScript -->
+      <!-- Injected dynamically via JS -->
     </select>
 
     <div class="vibes-group">
@@ -310,119 +585,100 @@
       <button class="btn-tool" id="btn-wire">🕸️ Mesh</button>
       <button class="btn-tool" id="btn-reset">🎯 Center</button>
       <button class="btn-tool" id="btn-speak">🔊 Speak</button>
+      <button class="btn-tool" id="btn-export-obj" style="background: rgba(0, 240, 255, 0.12); border-color: var(--cyan); color: var(--cyan);">💎 OBJ</button>
     </div>
   </div>
 
-  <!-- Collapsible Shader Customizer Drawer -->
-  <div class="shader-drawer" id="shader-drawer" style="position: fixed; top: 130px; right: 16px; z-index: 20; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px 16px; backdrop-filter: blur(20px); width: 220px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.7);">
+  <!-- Companion Dossier Floating HUD Card -->
+  <div class="dossier-card" id="dossier-card">
+    <div class="dossier-header">
+      <img class="dossier-avatar" id="dossier-avatar" src="/assets/pets/kai-neon.jpg" alt="Mascot Avatar" onerror="this.src='/assets/mascot/azoth-mask.jpg'" />
+      <div>
+        <div class="dossier-domain" id="dossier-domain">CODE DOMAIN</div>
+        <div class="dossier-name" id="dossier-name">Kai</div>
+        <div class="dossier-role" id="dossier-role">Site Inspector & A11y Auditor</div>
+      </div>
+    </div>
+    <p class="dossier-desc" id="dossier-desc">
+      Kai prowls the workspace for broken imports, dead code paths, and WCAG accessibility gaps.
+    </p>
+    <div class="dossier-harness" id="dossier-harness">
+      @kai (Chrome DevTools MCP)
+    </div>
+    <div style="display: flex; gap: 6px; margin-top: 2px;">
+      <button class="btn-tool" id="btn-copy-sig" style="flex: 1; min-height: 34px;">📋 Copy @Cmd</button>
+      <canvas id="spectrum-canvas" width="90" height="26" style="border-radius: 4px; background: rgba(0,0,0,0.5);"></canvas>
+    </div>
+  </div>
+
+  <!-- Collapsible Shader Drawer -->
+  <div class="shader-drawer" id="shader-drawer">
     <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold); font-weight: 700;">
       <span>🎛️ PBR SHADERS</span>
       <span style="font-size: 0.65rem; color: var(--cyan); cursor: pointer;" id="btn-reset-shaders">Reset</span>
     </div>
-    <div class="slider-row">
-      <label style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted); display: flex; justify-content: space-between;">
-        <span>Exposure Glow</span><span id="val-bloom">1.25</span>
-      </label>
-      <input type="range" id="slide-bloom" min="0.5" max="2.5" step="0.05" value="1.25" style="width: 100%; accent-color: var(--cyan); cursor: pointer;" />
+    <div class="shader-row">
+      <label>Metalness: <span id="val-metal">0.65</span></label>
+      <input type="range" id="rng-metal" min="0" max="1" step="0.05" value="0.65" />
     </div>
-    <div class="slider-row">
-      <label style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted); display: flex; justify-content: space-between;">
-        <span>Obsidian Metal</span><span id="val-metal">0.88</span>
-      </label>
-      <input type="range" id="slide-metal" min="0.0" max="1.0" step="0.05" value="0.88" style="width: 100%; accent-color: var(--gold); cursor: pointer;" />
+    <div class="shader-row">
+      <label>Roughness: <span id="val-rough">0.25</span></label>
+      <input type="range" id="rng-rough" min="0" max="1" step="0.05" value="0.25" />
     </div>
-    <div class="slider-row">
-      <label style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted); display: flex; justify-content: space-between;">
-        <span>Surface Rough</span><span id="val-rough">0.20</span>
-      </label>
-      <input type="range" id="slide-rough" min="0.0" max="1.0" step="0.05" value="0.20" style="width: 100%; accent-color: var(--purple); cursor: pointer;" />
+    <div class="shader-row">
+      <label>Glow: <span id="val-glow">1.4</span></label>
+      <input type="range" id="rng-glow" min="0.2" max="3" step="0.1" value="1.4" />
+    </div>
+    <div style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); display: flex; justify-content: space-between;">
+      <span>DSP DSP: <span style="color: var(--cyan);" id="dsp-status">IDLE</span></span>
+      <span>AURA: <span style="color: var(--gold);">KINETIC</span></span>
     </div>
   </div>
 
-  <!-- Audio Spectrum Visualizer HUD -->
-  <div class="spectrum-hud" id="spectrum-hud" style="position: fixed; bottom: 20px; right: 16px; z-index: 20; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(16px);">
-    <canvas id="spectrum-canvas" width="100" height="28" style="display: block; border-radius: 4px; background: rgba(0,0,0,0.5);"></canvas>
-    <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--cyan); line-height: 1.3;">
-      <div>NEURAL DSP</div>
-      <div style="color: var(--gold); font-size: 0.60rem;" id="dsp-status">ONLINE</div>
-    </div>
-  </div>
-
-  <!-- Mascot Info HUD Panel -->
-  <div class="mascot-hud" id="mascot-hud">
-    <div class="mascot-hud-header">
-      <img src="/assets/pets/azoth-neon.jpg" alt="" class="mascot-thumb" id="hud-thumb" onerror="this.src='/assets/mascot/azoth-mask.jpg'" />
-      <div>
-        <div class="mascot-kicker" id="hud-kicker">LEAD ARCHITECT</div>
-        <div class="mascot-name" id="hud-name">⚡ Azoth</div>
-        <div class="mascot-role" id="hud-role">Lead Architect & Pair Programmer</div>
-      </div>
-    </div>
-    <div class="harness-badge" id="hud-harness">⚡ Google Antigravity CLI (agy)</div>
-    <div class="mascot-desc" id="hud-desc">Sovereign Antigravity AI pair programming assistant with deep codebase reasoning and autonomous execution.</div>
-    <div class="hud-actions" style="margin-bottom: 6px;">
-      <a class="btn-hud" href="/pets/">🐾 Hangar</a>
-      <a class="btn-hud" id="btn-open-nexus" href="/studio/nexus-3d.html?pet=azoth">🚀 Nexus 3D</a>
-      <a class="btn-hud" id="btn-open-arena" href="/studio/fusion-arena.html?pet1=azoth">⚔️ Arena</a>
-    </div>
-    <div class="hud-actions">
-      <button class="btn-hud" id="btn-export-obj" title="Download Wavefront OBJ 3D Mesh">📦 Download OBJ</button>
-      <button class="btn-hud cta" id="btn-copy-sig">Copy CLI</button>
-    </div>
-  </div>
-
-  <div class="touch-hint" style="display:none">👆 Drag to rotate · Scroll/pinch to zoom</div>
-
-  <!-- 3D Engine Script -->
   <script type="module">
     import * as PetModels from '/pets/pet-models.js';
     window.PetModels = PetModels;
 
-    // Mascots Metadata
     const MASCOTS = [
-      { id: "azoth", name: "Azoth", emoji: "⚡", domain: "LEAD ARCHITECT", role: "Lead Architect & Pair Programmer", harness: "⚡ Google Antigravity CLI (agy)", desc: "Sovereign Antigravity AI pair programming assistant with deep codebase reasoning and autonomous execution on Parrot OS." },
-      { id: "lycan", name: "Lycan", emoji: "🐺", domain: "SECURITY & AST", role: "Security & AST Validation", harness: "🐺 Google Antigravity Sentinel (agy)", desc: "Lead security architect enforcing Python AST boundaries, OWASP Top 10 mitigation, and mathematical observability." },
-      { id: "kitsune", name: "Kitsune", emoji: "🦊", domain: "HIGH THROUGHPUT", role: "High-Throughput Execution", harness: "🦊 xAI Grok CLI (grok)", desc: "Rapid concurrent code synthesizer with GitHub Octokit tool harnesses and multi-repo pull request workflows." },
-      { id: "draco", name: "Draco", emoji: "🐲", domain: "JSON & SCHEMAS", role: "JSON Schemas & Tools", harness: "🐲 Hermes Agent CLI (hermes)", desc: "Schema validator and function caller orchestrating complex visual DAG automation playbooks." },
-      { id: "zoth", name: "Zoth", emoji: "⚡", domain: "SOVEREIGN COMPANION", role: "Sovereign Local Companion", harness: "🟢 Local Ollama Engine (:11434)", desc: "Zero-cloud private local AI model (zoth-ai:latest / qwen2.5-coder) running directly on machine loopback." },
-      { id: "workbot", name: "Workbot", emoji: "🤖", domain: "LOCAL NEURAL", role: "Local Neural Weights", harness: "🤖 Ollama Private Host (:11434)", desc: "Offline worker performing AST linting, code translation, and background summarization with zero network leakage." },
-      { id: "kai", name: "Kai", emoji: "🔥", domain: "INSPECTION & A11Y", role: "Site Inspector & A11y Auditor", harness: "🔥 Chrome DevTools MCP", desc: "Live DOM inspector and accessibility tester verifying WCAG-AA standards and Lighthouse performance metrics." },
-      { id: "athena", name: "Athena", emoji: "🦉", domain: "KNOWLEDGE & AEO", role: "AEO & Knowledge Graph", harness: "🦉 llms.txt & Obsidian Engine", desc: "Answer Engine Optimization architect curating llms.txt manifests and bidirectional Obsidian knowledge vaults." },
-      { id: "pixelneko", name: "Pixel-Neko", emoji: "🐱", domain: "REGISTRY & BUS", role: "Tool Registry Indexer", harness: "🐱 Zoth Contract Bus", desc: "Contract-validated registry indexer managing 47+ chained tools and multi-runtime bridges." },
-      { id: "shiba", name: "Pixel-Shiba", emoji: "🐕", domain: "VAULT SENTINEL", role: "Argon2id Vault Gatekeeper", harness: "🐕 Rust XChaCha20 Daemon (:8787)", desc: "Hardware-contained BYOK vault warden with Argon2id key derivation and secure memory zeroization." },
-      { id: "aquila", name: "Aquila", emoji: "🦅", domain: "EDGE & TELEMETRY", role: "Edge Routing & Telemetry", harness: "🦅 Global Edge Isolates", desc: "Global CDN edge isolate router orchestrating waterfall latency telemetry and DNS health checks." },
-      { id: "leviathan", name: "Leviathan", emoji: "🐉", domain: "VECTOR MATRIX", role: "Vector Memory Matrix", harness: "🐉 Local Vector Database", desc: "Long-term episodic memory engine with local embedding indexing for cross-session reasoning." },
-      { id: "onyx", name: "Onyx", emoji: "🐆", domain: "RED TEAM", role: "Red Team OSINT Recon", harness: "🐆 OWASP Threat Modeler", desc: "Attack surface mapper and TLS 1.3 cert probe identifying exposed endpoints and security misconfigurations." },
-      { id: "chronos", name: "Chronos", emoji: "🦌", domain: "DAG CHRONICLE", role: "DAG & Milestone Chronicle", harness: "🦌 Git DAG Synthesizer", desc: "Project milestone tracker generating topological execution graphs and structured release logs." },
-      { id: "aether", name: "Aether", emoji: "🛸", domain: "SWARM BUS", role: "Swarm Bus Event Conductor", harness: "🛸 SSE & Pub/Sub Streamer", desc: "Real-time pub/sub event broadcaster orchestrating lockless IPC telemetry between agents." },
-      { id: "scorpius", name: "Scorpius", emoji: "🦂", domain: "EXPLOIT AUDITOR", role: "Zero-Day Exploit Auditor", harness: "🦂 Memory Boundary Fuzzer", desc: "Privilege boundary penetration tester auditing buffer overflows, token leakage, and sanitized inputs." }
+      { id: "azoth", name: "Azoth", emoji: "🔮", domain: "LEAD CORE", role: "Hermetic Sovereign Core & Alchemical Magus", harness: "@azoth (Google Antigravity agy CLI)", desc: "Primary autonomous Antigravity coding agent with full codebase reasoning and terminal execution.", vibeColor: "#e8c872" },
+      { id: "zoth", name: "Zoth", emoji: "⚡", domain: "LEAD CORE", role: "Local Operator Loopback Core", harness: "Local Operator Deck (:8484)", desc: "Multi-agent coordinator running with zero-telemetry private local loopback.", vibeColor: "#fbbf24" },
+      { id: "kai", name: "Kai", emoji: "🐱", domain: "CODE DOMAIN", role: "Site Inspector & A11y Auditor", harness: "@kai (Chrome DevTools MCP)", desc: "Prowls the workspace for broken imports, dead code paths, and WCAG accessibility gaps.", vibeColor: "#00f0ff" },
+      { id: "draco", name: "Draco", emoji: "🐉", domain: "CODE DOMAIN", role: "Fusion Compiler & DAG Synthesizer", harness: "@hermes (Hermes Agent CLI)", desc: "Fuses multi-model outputs into one executable plan with schema contracts and AST validation.", vibeColor: "#ffaa00" },
+      { id: "ignis", name: "Ignis", emoji: "🔥", domain: "CODE DOMAIN", role: "Refactor & WASM Specialist", harness: "@ignis (Local WASM Engine)", desc: "Burns dead weight: refactors bloated codebases, accelerates WASM pipelines, and ships green builds.", vibeColor: "#ff007a" },
+      { id: "lycan", name: "Lycan", emoji: "🐺", domain: "SECURITY", role: "OWASP Sentinel & AST Enforcer", harness: "@antigravity (Google Antigravity agy CLI)", desc: "Hunts insecure defaults, missing headers, XSS traps, and auth gaps with zero exploit payloads.", vibeColor: "#34d399" },
+      { id: "athena", name: "Athena", emoji: "🦉", domain: "KNOWLEDGE", role: "Knowledge Graph & AEO Architect", harness: "@athena (llms.txt & Obsidian Graph)", desc: "Keeps the vault and entity graph honest: Answer Engine Optimization, schema integrity, and semantic vector indexing.", vibeColor: "#c084fc" },
+      { id: "kitsune", name: "Kitsune", emoji: "🦊", domain: "CREATIVE", role: "Taste & Motion Designer", harness: "@grok (xAI Grok CLI)", desc: "Owns motion, sacred typography, and cyber dark aesthetics when interfaces look generic.", vibeColor: "#ff7700" },
+      { id: "pixel-neko", name: "Pixel-Neko", emoji: "👾", domain: "OPS & TOOLS", role: "Tool Registry Indexer", harness: "@registry (47+ Chained Tool Indexer)", desc: "Contract-validated registry indexer maintaining tags, paths, and instant fuzzy lookup for 298+ tools.", vibeColor: "#00f0ff" },
+      { id: "pixel-shiba", name: "Pixel-Shiba", emoji: "🐕", domain: "SECURITY", role: "BYOK Vault Guardian & Keymaster", harness: "@vault (Argon2id Vault Daemon on :8787)", desc: "Protects BYOK cryptographic secrets with hardware isolation and loopback encryption.", vibeColor: "#fbbf24" },
+      { id: "radical-minion", name: "Radical Minion", emoji: "🤖", domain: "AUTONOMY", role: "Hermes Autonomous Partner", harness: "@hermes (Hermes Autonomous Engine)", desc: "Multi-step autonomous execution partner drafting verifiable playbooks with human checkpoint gates.", vibeColor: "#00d4aa" },
+      { id: "ai-workbot", name: "Workbot", emoji: "🦾", domain: "AUTONOMY", role: "Local Neural Weights Engine", harness: "@ollama (Ollama Local Weights on :11434)", desc: "Zero-cloud private local neural inference powering qwen2.5-coder, deepseek-r1, and hermes-3.", vibeColor: "#6366f1" },
+      { id: "aquila", name: "Aquila", emoji: "🦅", domain: "NETWORK", role: "Global Edge Dispatcher", harness: "@edge (Edge CDN & DNS Mapper)", desc: "Real-time CDN edge dispatcher, DNS health monitor, and low-latency packet routing arbitrator.", vibeColor: "#00f0ff" },
+      { id: "leviathan", name: "Leviathan", emoji: "🐋", domain: "KNOWLEDGE", role: "Vector Memory Matrix", harness: "@memory (Local Vector Matrix)", desc: "Long-term episodic memory engine with local embedding indexing for multi-turn cross-session reasoning.", vibeColor: "#06b6d4" },
+      { id: "onyx", name: "Onyx", emoji: "🐆", domain: "SECURITY", role: "Stealth Recon & Red Team", harness: "@subsweep (SubSweep OSINT Recon)", desc: "Attack surface mapper and TLS 1.3 certificate probe auditing exposed endpoints.", vibeColor: "#ff007a" },
+      { id: "chronos", name: "Chronos", emoji: "🦌", domain: "CODE DOMAIN", role: "Temporal DAG & Git Navigator", harness: "@git (Git DAG Synthesizer)", desc: "Topological milestone tracker, branching visualizer, and Git DAG dependency resolver.", vibeColor: "#38bdf8" },
+      { id: "aether", name: "Aether", emoji: "🛸", domain: "NETWORK", role: "Swarm Bus Event Conductor", harness: "@swarm (SSE & Pub/Sub Streamer)", desc: "Real-time pub/sub event broadcaster orchestrating lockless IPC telemetry between autonomous agents.", vibeColor: "#fbbf24" },
+      { id: "scorpius", name: "Scorpius", emoji: "🦂", domain: "SECURITY", role: "Zero-Day Exploit Auditor", harness: "@fuzzer (Memory Boundary Fuzzer)", desc: "Privilege boundary penetration tester auditing buffer bounds and sanitized input vectors.", vibeColor: "#ef4444" },
+      { id: "kraken", name: "Kraken", emoji: "🐙", domain: "OPS & TOOLS", role: "Multi-Core Thread Leviathan", harness: "@kraken (Async Thread Pool Engine)", desc: "Spawns and balances multi-threaded parallel subagents across all CPU cores with zero deadlocks.", vibeColor: "#8b5cf6" },
+      { id: "ghostbyte", name: "Ghostbyte", emoji: "👻", domain: "LEAD CORE", role: "Phosphor Terminal Daemon", harness: "@ghostbyte (NullAI Terminal Spirit)", desc: "Invisible background daemon inspecting process feeds, unhandled rejections, and signal broadcasts.", vibeColor: "#00f0ff" },
+      { id: "glitchcat", name: "Glitchcat", emoji: "🐱‍💻", domain: "CREATIVE", role: "RGB Glitch Cat", harness: "@glitchcat (CSS & Layout Anarchist)", desc: "Breaks stale chrome and generic typography to introduce organic cyber accents and dynamic motion.", vibeColor: "#ff0055" },
+      { id: "circuit-pup", name: "Circuit Pup", emoji: "🐕‍🦺", domain: "OPS & TOOLS", role: "LED Circuit Dog", harness: "@ports (Local Port Sentinel)", desc: "Sniffs active TCP ports, loopback daemons, and missing CLI binaries across the operator environment.", vibeColor: "#00ffff" },
+      { id: "terminal-ghost", name: "Terminal Ghost", emoji: "📟", domain: "OPS & TOOLS", role: "Phosphor Spirit", harness: "@logs (Telemetry Log Streamer)", desc: "Haunts agent terminal feeds to extract structured traces, root causes, and clean execution summaries.", vibeColor: "#38bdf8" },
+      { id: "savage-codex", name: "Savage Codex", emoji: "📜", domain: "SECURITY", role: "Hacker Familiar", harness: "@threat (Threat Model Synthesizer)", desc: "Reviews git diffs with an adversary mindset, catching auth lapses and secret leaks.", vibeColor: "#eab308" },
+      { id: "binary", name: "Binary", emoji: "0️⃣", domain: "CODE DOMAIN", role: "Low-Level Byte Sentinel", harness: "@asm (Bytecode & Hex Disassembler)", desc: "Disassembles binary payloads, validates ELF headers, and verifies checksum signatures.", vibeColor: "#10b981" }
     ];
 
-    // Mobile Drawer Toggle
-    const burger = document.getElementById("burger");
-    if (burger) {
-      burger.addEventListener("click", () => {
-        const open = document.body.classList.toggle("menu-open");
-        burger.setAttribute("aria-expanded", open ? "true" : "false");
-      });
-    }
-    const drawer = document.getElementById("drawer");
-    if (drawer) {
-      drawer.addEventListener("click", (e) => {
-        if (e.target.tagName === "A") {
-          document.body.classList.remove("menu-open");
-          if (burger) burger.setAttribute("aria-expanded", "false");
-        }
-      });
-    }
-
-    // Populate Select Options
+    // Populate Mascot Picker
     const picker = document.getElementById("pet-picker");
-    picker.innerHTML = MASCOTS.map(m => `<option value="${m.id}">${m.emoji} ${m.name} — ${m.role}</option>`).join("");
+    MASCOTS.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.id;
+      opt.textContent = `${m.emoji} ${m.name} — ${m.domain}`;
+      picker.appendChild(opt);
+    });
 
-    // Read Query Param
+    // Parse URL params for default pet selection
     const urlParams = new URLSearchParams(window.location.search);
-    const initialPetId = urlParams.get("pet") || "azoth";
+    const initialPetId = urlParams.get("pet") || "kai";
     if (MASCOTS.some(m => m.id === initialPetId)) {
       picker.value = initialPetId;
     }
@@ -431,8 +687,6 @@
     const container = document.getElementById("host");
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 0.5, 4.2);
-
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -440,157 +694,160 @@
     renderer.toneMappingExposure = 1.25;
     container.appendChild(renderer.domElement);
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    // Initial Camera Position
+    const targetCamPos = new THREE.Vector3(0, 0.5, 4.2);
+    const targetLookAt = new THREE.Vector3(0, 0, 0);
+    camera.position.copy(targetCamPos);
+    camera.lookAt(targetLookAt);
+
+    // Dynamic Lighting
+    const ambientLight = new THREE.AmbientLight(0xd4e4ff, 1.4);
     scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0x00f0ff, 1.8);
-    mainLight.position.set(3, 4, 3);
-    scene.add(mainLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
 
-    const goldLight = new THREE.DirectionalLight(0xe8c872, 1.2);
-    goldLight.position.set(-3, -2, 2);
-    scene.add(goldLight);
+    const rimLight = new THREE.PointLight(0x00f0ff, 4.0, 16);
+    rimLight.position.set(-4, 3, -4);
+    scene.add(rimLight);
 
-    const purpleLight = new THREE.PointLight(0xa855f7, 2.0, 10);
-    purpleLight.position.set(0, -1, 2);
-    scene.add(purpleLight);
+    const goldFill = new THREE.PointLight(0xe8c872, 2.5, 14);
+    goldFill.position.set(4, -2, 3);
+    scene.add(goldFill);
 
-    // Dynamic Pet Figure
+    // Grid Floor
+    const grid = new THREE.GridHelper(16, 16, 0x00f0ff, 0x141b30);
+    grid.position.y = -1.2;
+    scene.add(grid);
+
+    // Orbit Ring
+    const ringGeo = new THREE.RingGeometry(1.6, 2.0, 64);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.35 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = -1.19;
+    scene.add(ring);
+
+    // State Variables
     let petFigure = null;
     let autoRotate = true;
     let wireframeMode = false;
     let currentVibe = "rest";
+    let texture = null;
 
-    const textureLoader = new THREE.TextureLoader();
+    // Load Pet Model
+    async function loadPet(id) {
+      const current = MASCOTS.find(m => m.id === id) || MASCOTS[0];
+      
+      // Update Dossier Floating HUD
+      const avatarPath = window.PetModels ? window.PetModels.petPortrait(id) : `/assets/pets/${id}-neon.jpg`;
+      document.getElementById("dossier-avatar").src = avatarPath;
+      document.getElementById("dossier-domain").textContent = current.domain;
+      document.getElementById("dossier-name").textContent = `${current.emoji} ${current.name}`;
+      document.getElementById("dossier-role").textContent = current.role;
+      document.getElementById("dossier-desc").textContent = current.desc;
+      document.getElementById("dossier-harness").textContent = current.harness;
 
-    async function loadMascot3D(id) {
+      // Update Rim Light color to mascot vibe
+      if (current.vibeColor) {
+        rimLight.color.set(current.vibeColor);
+      }
+
       if (petFigure && petFigure.group) {
         scene.remove(petFigure.group);
         if (petFigure.dispose) petFigure.dispose();
+        petFigure = null;
       }
 
-      const mascot = MASCOTS.find(m => m.id === id) || MASCOTS[0];
-      const texPath = window.PetModels ? window.PetModels.petPortrait(id) : (id === 'azoth' ? '/assets/mascot/azoth-quantum-orb.jpg' : `/assets/pets/${id}-neon.jpg`);
-
-      let texture = null;
+      const texPath = window.PetModels ? window.PetModels.petPortrait(id) : `/assets/pets/${id}-neon.jpg`;
       if (window.PetModels) {
         texture = await window.PetModels.loadPetTexture(THREE, texPath);
         petFigure = window.PetModels.createPetFigure(THREE, {
           id: id,
-          color: (window.PetModels.PET_SPECIES[id] && window.PetModels.PET_SPECIES[id].vibeColor) || "#00f0ff",
+          color: (window.PetModels.PET_SPECIES[id] && window.PetModels.PET_SPECIES[id].vibeColor) || current.vibeColor || "#00f0ff",
           texture: texture,
           style: "realistic",
           initialVibe: currentVibe,
-          withAura: true
+          withAura: true,
+          metalness: parseFloat(document.getElementById("rng-metal").value),
+          roughness: parseFloat(document.getElementById("rng-rough").value),
+          glowIntensity: parseFloat(document.getElementById("rng-glow").value)
         });
       }
 
       if (petFigure && petFigure.group) {
         scene.add(petFigure.group);
+        if (wireframeMode) {
+          petFigure.group.traverse(child => {
+            if (child.isMesh && child.material) child.material.wireframe = true;
+          });
+        }
       }
-
-      // Update HUD
-      const thumbEl = document.getElementById("hud-thumb");
-      if (thumbEl) thumbEl.src = texPath;
-      const kickerEl = document.getElementById("hud-kicker");
-      if (kickerEl) kickerEl.textContent = mascot.domain;
-      const nameEl = document.getElementById("hud-name");
-      if (nameEl) nameEl.textContent = `${mascot.emoji} ${mascot.name}`;
-      const roleEl = document.getElementById("hud-role");
-      if (roleEl) roleEl.textContent = mascot.role;
-      const harnessEl = document.getElementById("hud-harness");
-      if (harnessEl) harnessEl.textContent = mascot.harness;
-      const descEl = document.getElementById("hud-desc");
-      if (descEl) descEl.textContent = mascot.desc;
-
-      try {
-        sessionStorage.setItem("zoth_active_pet", id);
-      } catch (e) {}
-
-      // Update Cross-Studio Links
-      const nexusLink = document.getElementById("btn-open-nexus");
-      if (nexusLink) nexusLink.href = `/studio/nexus-3d.html?pet=${id}`;
-      const arenaLink = document.getElementById("btn-open-arena");
-      if (arenaLink) arenaLink.href = `/studio/fusion-arena.html?pet1=${id}`;
     }
 
-    loadMascot3D(picker.value);
-
+    // Picker Listener
     picker.addEventListener("change", (e) => {
-      loadMascot3D(e.target.value);
-      const newUrl = new URL(window.location);
-      newUrl.searchParams.set("pet", e.target.value);
-      window.history.replaceState({}, "", newUrl);
+      loadPet(e.target.value);
     });
+    loadPet(picker.value);
 
-    // Camera Presets with Smooth Interpolation
-    let targetCamPos = new THREE.Vector3(0, 0.5, 4.2);
-    let targetLookAt = new THREE.Vector3(0, 0, 0);
-
-    const CAM_PRESETS = {
-      hero: { pos: [0, 0.5, 4.2], look: [0, 0, 0] },
-      front: { pos: [0, 0, 3.8], look: [0, 0, 0] },
-      face: { pos: [0, 0.35, 2.2], look: [0, 0.35, 0] },
-      top: { pos: [0, 4.2, 0.8], look: [0, 0, 0] }
-    };
-
-    document.querySelectorAll(".cam-presets-row button").forEach(btn => {
+    // Camera Presets
+    const camButtons = document.querySelectorAll("[data-cam]");
+    camButtons.forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".cam-presets-row button").forEach(b => b.classList.remove("active"));
+        camButtons.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         const mode = btn.dataset.cam;
-        if (CAM_PRESETS[mode]) {
-          targetCamPos.set(...CAM_PRESETS[mode].pos);
-          targetLookAt.set(...CAM_PRESETS[mode].look);
+        if (mode === "hero") {
+          targetCamPos.set(0, 0.5, 4.2);
+        } else if (mode === "front") {
+          targetCamPos.set(0, 0.2, 3.6);
+        } else if (mode === "face") {
+          targetCamPos.set(0, 0.35, 2.2);
+        } else if (mode === "top") {
+          targetCamPos.set(0, 4.2, 0.5);
         }
       });
     });
 
-    // PBR Shader Controls
-    const slideBloom = document.getElementById("slide-bloom");
-    const slideMetal = document.getElementById("slide-metal");
-    const slideRough = document.getElementById("slide-rough");
+    // PBR Shader Controls Listener
+    function updatePBRMaterials() {
+      const metal = parseFloat(document.getElementById("rng-metal").value);
+      const rough = parseFloat(document.getElementById("rng-rough").value);
+      const glow = parseFloat(document.getElementById("rng-glow").value);
 
-    function applyPBRParams() {
-      const exposure = parseFloat(slideBloom.value);
-      const metalness = parseFloat(slideMetal.value);
-      const roughness = parseFloat(slideRough.value);
+      document.getElementById("val-metal").textContent = metal.toFixed(2);
+      document.getElementById("val-rough").textContent = rough.toFixed(2);
+      document.getElementById("val-glow").textContent = glow.toFixed(1);
 
-      renderer.toneMappingExposure = exposure;
-      document.getElementById("val-bloom").textContent = exposure.toFixed(2);
-      document.getElementById("val-metal").textContent = metalness.toFixed(2);
-      document.getElementById("val-rough").textContent = roughness.toFixed(2);
-
-      if (petFigure && petFigure.setMaterialParams) {
-        petFigure.setMaterialParams({ metalness, roughness });
-      } else if (petFigure && petFigure.group) {
+      if (petFigure && petFigure.group) {
         petFigure.group.traverse(child => {
-          if (child.isMesh && child.material && !child.material.isMeshBasicMaterial) {
-            child.material.metalness = metalness;
-            child.material.roughness = roughness;
-            child.material.needsUpdate = true;
+          if (child.isMesh && child.material) {
+            if (child.material.metalness !== undefined) child.material.metalness = metal;
+            if (child.material.roughness !== undefined) child.material.roughness = rough;
+            if (child.material.emissiveIntensity !== undefined) child.material.emissiveIntensity = glow;
           }
         });
       }
     }
 
-    slideBloom.addEventListener("input", applyPBRParams);
-    slideMetal.addEventListener("input", applyPBRParams);
-    slideRough.addEventListener("input", applyPBRParams);
+    document.getElementById("rng-metal").addEventListener("input", updatePBRMaterials);
+    document.getElementById("rng-rough").addEventListener("input", updatePBRMaterials);
+    document.getElementById("rng-glow").addEventListener("input", updatePBRMaterials);
 
     document.getElementById("btn-reset-shaders").addEventListener("click", () => {
-      slideBloom.value = 1.25;
-      slideMetal.value = 0.88;
-      slideRough.value = 0.20;
-      applyPBRParams();
+      document.getElementById("rng-metal").value = 0.65;
+      document.getElementById("rng-rough").value = 0.25;
+      document.getElementById("rng-glow").value = 1.4;
+      updatePBRMaterials();
     });
 
-    // 1-Click Wavefront OBJ Exporter
+    // OBJ 3D Model Exporter
     document.getElementById("btn-export-obj").addEventListener("click", () => {
-      const current = MASCOTS.find(m => m.id === picker.value) || MASCOTS[0];
-      if (!petFigure || !window.PetModels || !window.PetModels.exportFigureToOBJ) {
-        alert("3D Figure Engine is initializing. Please wait...");
+      const current = MASCOTS.find(m => m.id === picker.value);
+      if (!current || !petFigure || !window.PetModels || !window.PetModels.exportFigureToOBJ) {
+        alert("3D model mesh is still loading or exporter unavailable.");
         return;
       }
       const objData = window.PetModels.exportFigureToOBJ(THREE, petFigure, current.name);
@@ -642,22 +899,23 @@
 
         osc.start();
         osc.stop(ctx.currentTime + duration);
-        document.getElementById("dsp-status").textContent = "VOCALIZING";
-        setTimeout(() => { document.getElementById("dsp-status").textContent = "ONLINE"; }, duration * 1000 + 100);
+        const statusEl = document.getElementById("dsp-status");
+        if (statusEl) statusEl.textContent = "VOCALIZING";
+        setTimeout(() => { if (statusEl) statusEl.textContent = "ONLINE"; }, duration * 1000 + 100);
       } catch (e) {}
     }
 
     function drawSpectrum() {
       if (!spectrumCtx || !analyser) {
-        if (spectrumCtx) {
+        if (spectrumCtx && spectrumCanvas) {
           // Idle ambient simulation
           spectrumCtx.fillStyle = "#030408";
           spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
           spectrumCtx.fillStyle = "#00f0ff";
           const t = Date.now() * 0.003;
-          for (let i = 0; i < 16; i++) {
-            const h = Math.sin(t + i * 0.4) * 4 + 6;
-            spectrumCtx.fillRect(i * 6 + 4, spectrumCanvas.height - h, 4, h);
+          for (let i = 0; i < 12; i++) {
+            const h = Math.sin(t + i * 0.4) * 3 + 5;
+            spectrumCtx.fillRect(i * 7 + 4, spectrumCanvas.height - h, 5, h);
           }
         }
         return;
@@ -670,8 +928,8 @@
       spectrumCtx.fillStyle = "#030408";
       spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
 
-      const barWidth = (spectrumCanvas.width / 16) - 1;
-      for (let i = 0; i < 16; i++) {
+      const barWidth = (spectrumCanvas.width / 12) - 1;
+      for (let i = 0; i < 12; i++) {
         const v = (dataArray[i * 2] || 0) / 255;
         const barHeight = Math.max(v * spectrumCanvas.height, 2);
         spectrumCtx.fillStyle = i % 2 === 0 ? "#00f0ff" : "#e8c872";
@@ -734,14 +992,20 @@
       }
     });
 
-    document.getElementById("btn-copy-sig").addEventListener("click", () => {
+    document.getElementById("btn-copy-sig").addEventListener("click", function() {
       const current = MASCOTS.find(m => m.id === picker.value);
       if (!current) return;
       navigator.clipboard.writeText(`@${current.id} report active mission status`);
-      alert(`Copied command: @${current.id} report active mission status`);
+      const orig = this.textContent;
+      this.textContent = "✓ Copied!";
+      this.style.color = "var(--emerald)";
+      setTimeout(() => {
+        this.textContent = orig;
+        this.style.color = "";
+      }, 1800);
     });
 
-    // Touch & Pointer Drag Rotation
+    // Touch & Pointer Drag Rotation with touch-action: pan-y compatibility
     let isDragging = false;
     let prevPointerX = 0;
     let prevPointerY = 0;
@@ -776,7 +1040,7 @@
       targetCamPos.z = Math.min(Math.max(targetCamPos.z + e.deltaY * 0.003, 1.8), 7.0);
     }, { passive: true });
 
-    // Window Resize & ResizeObserver for robust layout adaptation
+    // Window Resize & ResizeObserver
     function handleResize() {
       const w = container.clientWidth || window.innerWidth;
       const h = container.clientHeight || window.innerHeight;
@@ -787,6 +1051,24 @@
     window.addEventListener("resize", handleResize, { passive: true });
     if (window.ResizeObserver) {
       new ResizeObserver(handleResize).observe(container);
+    }
+
+    // Burger Drawer Toggle
+    const burger = document.getElementById("burger");
+    if (burger) {
+      burger.addEventListener("click", () => {
+        const open = document.body.classList.toggle("menu-open");
+        burger.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    }
+    const drawer = document.getElementById("drawer");
+    if (drawer) {
+      drawer.addEventListener("click", (e) => {
+        if (e.target.tagName === "A") {
+          document.body.classList.remove("menu-open");
+          if (burger) burger.setAttribute("aria-expanded", "false");
+        }
+      });
     }
 
     // Animation Render Loop
@@ -814,5 +1096,7 @@
     }
     animate();
   </script>
+  <script src="/assets/zoth-tip.js" defer></script>
+  <script src="/assets/zoth-annotator.js" defer></script>
 </body>
 </html>
