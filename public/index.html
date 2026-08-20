@@ -24,14 +24,12 @@
     <meta property="og:image" content="https://zoth.nullai.tech/og-image.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Zoth — local-first studio by NullAI" />
-    <meta name="twitter:image" content="https://zoth.nullai.tech/og-image.jpg" />
-    <link rel="preload" href="/assets/media/land/hub-hero.jpg" as="image" />
-    <link rel="preload" href="/assets/media/land/hub-hero.mp4" as="video" type="video/mp4" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
+      crossorigin="anonymous"
     />
     <link rel="stylesheet" href="/assets/zoth-guide.css" />
     <style>
@@ -138,8 +136,16 @@
       .hero {
         position: relative; min-height: 100svh;
         display: flex; align-items: flex-end;
+        background: #050508 url('/assets/media/land/hub-hero.jpg') 78% 36% / cover no-repeat;
       }
-      .stage { position: absolute; inset: 0; overflow: hidden; }
+      .stage {
+        position: absolute; inset: 0; overflow: hidden;
+        background: #050508 url('/assets/media/land/hub-hero.jpg') 78% 36% / cover no-repeat;
+      }
+      .note .stage { background-image: url('/assets/media/land/study.jpg'); }
+      .band .stage { background-image: url('/assets/media/land/studio-hero.jpg'); }
+      .pets-hero .stage { background-image: url('/assets/media/land/pets-hangar.jpg'); }
+      .install .stage { background-image: url('/assets/media/land/adytum-wide.jpg'); }
       .media {
         position: absolute; inset: 0; width: 100%; height: 100%;
         object-fit: cover;
@@ -1641,7 +1647,6 @@
       </div>
     </footer>
 
-    <script src="/assets/zoth-tip.js"></script>
     <script src="/assets/zoth-gate.js"></script>
     <script src="/assets/zoth-guide.js"></script>
     <script src="/assets/celestial-trail.js"></script>
@@ -1718,15 +1723,25 @@
               if (e.isIntersecting) v.play().catch(function () {});
               else v.pause();
             });
-          }, { threshold: 0.28 });
+          }, { threshold: 0.1 });
           document.querySelectorAll("video[data-lazy]").forEach(function (v) { io.observe(v); });
 
           var rise = new IntersectionObserver(function (entries) {
             entries.forEach(function (e) {
-              if (e.isIntersecting) e.target.classList.add("in");
+              if (e.isIntersecting) {
+                e.target.classList.add("in");
+                rise.unobserve(e.target);
+              }
             });
-          }, { threshold: 0.18, rootMargin: "0px 0px -8% 0px" });
-          document.querySelectorAll("[data-rise]").forEach(function (el) { rise.observe(el); });
+          }, { threshold: 0.02, rootMargin: "60px 0px 60px 0px" });
+          document.querySelectorAll("[data-rise]").forEach(function (el) {
+            var rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight + 100) {
+              el.classList.add("in");
+            } else {
+              rise.observe(el);
+            }
+          });
         } else {
           document.querySelectorAll("[data-rise]").forEach(function (el) { el.classList.add("in"); });
         }
