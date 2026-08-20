@@ -15,6 +15,45 @@
 (function () {
   'use strict';
 
+  // Strict Dev Server Guard: NEVER show annotation UI on public production website
+  function isDevEnvironment() {
+    try {
+      const hostname = window.location.hostname || '';
+      const port = window.location.port || '';
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+
+      // Localhost / Loopback / Local IP dev servers
+      const isLocalhost = hostname === 'localhost' || 
+                          hostname === '127.0.0.1' || 
+                          hostname === '0.0.0.0' || 
+                          hostname.startsWith('192.168.') || 
+                          hostname.startsWith('10.') || 
+                          hostname.endsWith('.local') || 
+                          hostname.endsWith('.internal');
+
+      // Custom dev ports (e.g., :8484, :8088, :3000, :5173, :8080, etc.)
+      const isDevPort = port !== '' && port !== '80' && port !== '443';
+
+      // Explicit query/hash flags for testing in staging
+      const hasDevFlag = search.includes('dev=true') || 
+                         search.includes('annotate=true') || 
+                         hash.includes('dev') || 
+                         hash.includes('annotate') ||
+                         localStorage.getItem('zoth_dev_mode') === 'true';
+
+      // Only mount on dev server or when explicitly enabled
+      return isLocalhost || isDevPort || hasDevFlag;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  if (!isDevEnvironment()) {
+    // Completely silent exit on public production website (e.g. zoth.nullai.tech)
+    return;
+  }
+
   if (window.__ZOTH_ANNOTATOR_LOADED__) return;
   window.__ZOTH_ANNOTATOR_LOADED__ = true;
 
