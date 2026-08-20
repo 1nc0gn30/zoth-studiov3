@@ -14,8 +14,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/zoth-mobile.css" />
 
-  <!-- Three.js from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js (Local Sovereign Vendor) -->
+  <script src="/assets/vendor/three.min.js"></script>
 
   <style>
     :root {
@@ -374,8 +374,10 @@
   <div class="touch-hint" style="display:none">👆 Drag to rotate · Scroll/pinch to zoom</div>
 
   <!-- 3D Engine Script -->
-  <script src="/pets/pet-models.js"></script>
-  <script>
+  <script type="module">
+    import * as PetModels from '/pets/pet-models.js';
+    window.PetModels = PetModels;
+
     // Mascots Metadata
     const MASCOTS = [
       { id: "azoth", name: "Azoth", emoji: "⚡", domain: "LEAD ARCHITECT", role: "Lead Architect & Pair Programmer", harness: "⚡ Google Antigravity CLI (agy)", desc: "Sovereign Antigravity AI pair programming assistant with deep codebase reasoning and autonomous execution on Parrot OS." },
@@ -398,16 +400,21 @@
 
     // Mobile Drawer Toggle
     const burger = document.getElementById("burger");
-    burger.addEventListener("click", () => {
-      const open = document.body.classList.toggle("menu-open");
-      burger.setAttribute("aria-expanded", open ? "true" : "false");
-    });
-    document.getElementById("drawer").addEventListener("click", (e) => {
-      if (e.target.tagName === "A") {
-        document.body.classList.remove("menu-open");
-        burger.setAttribute("aria-expanded", "false");
-      }
-    });
+    if (burger) {
+      burger.addEventListener("click", () => {
+        const open = document.body.classList.toggle("menu-open");
+        burger.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    }
+    const drawer = document.getElementById("drawer");
+    if (drawer) {
+      drawer.addEventListener("click", (e) => {
+        if (e.target.tagName === "A") {
+          document.body.classList.remove("menu-open");
+          if (burger) burger.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
 
     // Populate Select Options
     const picker = document.getElementById("pet-picker");
