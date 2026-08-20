@@ -9,7 +9,7 @@
 - **Primary Entity**: `Zoth Studio` (`schema:SoftwareApplication` / `schema:DeveloperApplication`)
 - **Alternate Names**: `Zoth Agentic OS`, `Zoth Blueprint Foundry`, `NullAI Zoth`, `Zoth Sovereign Studio`
 - **Publisher / Organization**: `757tech / NullAI` (`schema:Organization`)
-- **Founding Architect & Systems Engineer**: `Neal Frazier` (`schema:Person`, [nealfrazier.tech](https://nealfrazier.tech))
+- **Founding Architect & Systems Engineer**: `Zoth Studio Team` (`schema:Person`, [nullai.tech](https://nullai.tech))
 - **Software Version**: `2.6.0` (Released August 2026)
 - **Canonical Public URI**: `https://zoth.nullai.tech/`
 - **Blueprints Foundry URI**: `https://zoth.nullai.tech/blueprints/`

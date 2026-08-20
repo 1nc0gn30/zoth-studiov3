@@ -2,7 +2,7 @@
 
 > **Version**: 2.0.0 (Local AI & Swarm Router Release)  
 > **Last Updated**: August 13, 2026  
-> **Maintainer**: 757tech / Neal Frazier  
+> **Maintainer**: 757tech / Zoth Studio Team  
 > **Stack**: Local Ollama (`zoth-ai:latest`), Starlette/Uvicorn, Three.js, Docker Nginx, Argon2id BYOK Vault, Tailwind/CSS  
 
 ---
@@ -69,7 +69,7 @@ python3 tools/generate_transparency_report.py
 
 ## 🔀 4. Multi-Agent Swarm Router & Tool Dispatcher
 
-Located at [`studio-agents/zoth_router.py`](file:///media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth/tools/null%20ai%20agent%20tools/local_null_ai_orchestrator/studio-agents/zoth_router.py), the swarm router classifies incoming intents and pairs local AI with specialized peer models:
+Located at [`studio-agents/zoth_router.py`](file://./f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth/tools/null%20ai%20agent%20tools/local_null_ai_orchestrator/studio-agents/zoth_router.py), the swarm router classifies incoming intents and pairs local AI with specialized peer models:
 
 1. **Local Code & Architecture** ➡️ Routed directly to `zoth-ai:latest`.
 2. **Visual & Image Generation** ➡️ Routed to image synthesis pipeline.
@@ -103,7 +103,7 @@ curl -X POST http://127.0.0.1:8484/api/zoth/swarm \
 
 ## 📱 6. UI & Responsive Design System Standards
 
-Both the Public Hub ([`public/index.html`](file:///media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth/public/index.html)) and the Operator Deck ([`dashboard.html`](file:///media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth/tools/null%20ai%20agent%20tools/local_null_ai_orchestrator/dashboard.html)) strictly follow the Zoth Design Philosophy:
+Both the Public Hub ([`public/index.html`](file://./f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth/public/index.html)) and the Operator Deck ([`dashboard.html`](file://./f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth/tools/null%20ai%20agent%20tools/local_null_ai_orchestrator/dashboard.html)) strictly follow the Zoth Design Philosophy:
 
 - **Typography Scale**: Syne (Display Headlines) + Figtree/Inter (Body UI) + IBM Plex Mono / Fira Code (Technical Telemetry).
 - **Aesthetic**: Futuristic glassmorphic surfaces (`backdrop-filter: blur(20px)`), refined cyan/synthwave accents, and zero textureless surfaces.

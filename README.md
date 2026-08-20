@@ -184,4 +184,4 @@ python3 -m http.server 8088 --directory public
 
 Distributed under the **MIT Sovereign License**. Free for personal, commercial, and sovereign offline use.
 
-**Engineered with Mathematical Precision by NullAI · Neal Frazier.**
+**Engineered with Mathematical Precision by NullAI · Zoth Studio Team.**

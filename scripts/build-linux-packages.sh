@@ -82,14 +82,14 @@ cp "$ROOT/scripts/deps-debian.sh" "$STAGE/usr/lib/$PKG_NAME/scripts/"
 
 # Scrub staging payload of personal paths and references
 find "$STAGE" -type f \( -name "*.html" -o -name "*.json" -o -name "*.js" -o -name "*.md" -o -name "*.txt" -o -name "*.xml" -o -name "*.py" \) -exec sed -i \
-  -e 's|/media/neo/[^"'\'' ]*|/usr/lib/zoth-studio|g' \
-  -e 's|/home/neo/[^"'\'' ]*|/usr/lib/zoth-studio|g' \
-  -e 's|neal@nealfrazier\.tech|team@nullai.tech|g' \
-  -e 's|Neal Frazier|NullAI Team|g' \
-  -e 's|NealFrazierTech|NullAI-Studio|g' \
-  -e 's|zoth\.nealfrazier\.tech|nullai.tech|g' \
-  -e 's|nealfrazier\.tech|nullai.tech|g' \
-  -e 's|nealfrazier|nullai|g' \
+  -e 's|./[^"'\'' ]*|/usr/lib/zoth-studio|g' \
+  -e 's|~/[^"'\'' ]*|/usr/lib/zoth-studio|g' \
+  -e 's|neal@nullai\.tech|team@nullai.tech|g' \
+  -e 's|Zoth Studio Team|NullAI Team|g' \
+  -e 's|DemoAgentOrg|NullAI-Studio|g' \
+  -e 's|zoth\.nullai\.tech|nullai.tech|g' \
+  -e 's|nullai\.tech|nullai.tech|g' \
+  -e 's|nullai|nullai|g' \
   {} + 2>/dev/null || true
 
 echo "🔍 Step 3: Running Pre-Build Privacy & Secret Security Audit..."
@@ -113,8 +113,8 @@ if [[ -n "$KEY_MATCHES" ]]; then
   LEAK_FOUND=1
 fi
 
-# Scan for PERSONAL INFO about Neal Frazier (must never ship in either variant)
-PII_PATTERNS=("Neal Frazier" "neal@nealfrazier.tech" "nealfrazier.tech" "NealFrazierTech" "/media/neo" "/home/neo" "nealfrazier")
+# Scan for PERSONAL INFO about Zoth Studio Team (must never ship in either variant)
+PII_PATTERNS=("Zoth Studio Team" "neal@nullai.tech" "nullai.tech" "DemoAgentOrg" "." "~" "nullai")
 PII_MATCHES=""
 for pat in "${PII_PATTERNS[@]}"; do
   hit=$(grep -rn -F -- "$pat" "$STAGE" 2>/dev/null | grep -v node_modules || true)
@@ -123,7 +123,7 @@ for pat in "${PII_PATTERNS[@]}"; do
   fi
 done
 if [[ -n "$PII_MATCHES" ]]; then
-  echo "❌ PII LEAK DETECTED: Personal info about Neal Frazier found in build stage:"
+  echo "❌ PII LEAK DETECTED: Personal info about Zoth Studio Team found in build stage:"
   echo "$PII_MATCHES"
   LEAK_FOUND=1
 fi

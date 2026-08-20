@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # ZOTH STUDIO — PII SCRUBBER (pre-release)
-# Replaces personal-info tokens about Neal Frazier with neutral equivalents so
+# Replaces personal-info tokens about Zoth Studio Team with neutral equivalents so
 # release artifacts carry NO operator PII. Safe to run on tracked source; all
 # edits are plain-text substitutions and reversible via git.
 #
@@ -16,15 +16,15 @@ if [[ ${#TARGETS[@]} -eq 0 ]]; then TARGETS=(public tools); fi
 
 # Token -> replacement map (order matters; most specific first)
 declare -A MAP=(
-  ["NealFrazierTech"]="DemoAgentOrg"
-  ["nealfrazier.tech"]="nullai.tech"
-  ["Neal Frazier"]="Zoth Studio Team"
-  ["NealFrazier"]="DemoAgent"
-  ["nealfrazier"]="nullai"
-  ["/media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth"]="."
-  ["/media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908"]="."
-  ["/media/neo"]="."
-  ["/home/neo"]="~"
+  ["DemoAgentOrg"]="DemoAgentOrg"
+  ["nullai.tech"]="nullai.tech"
+  ["Zoth Studio Team"]="Zoth Studio Team"
+  ["DemoAgent"]="DemoAgent"
+  ["nullai"]="nullai"
+  ["./f2fdda77-178b-4603-ae80-c7aa4cd97908/13-creative-media/zoth"]="."
+  ["./f2fdda77-178b-4603-ae80-c7aa4cd97908"]="."
+  ["."]="."
+  ["~"]="~"
 )
 
 changed=0
@@ -50,7 +50,7 @@ for root in "${TARGETS[@]}"; do
       echo "EDITED: $f"
       changed=$((changed+1))
     fi
-  done < <(grep -rln -F -- "Neal Frazier" "NealFrazierTech" "nealfrazier" "/media/neo" "/home/neo" "$root" 2>/dev/null | grep -v node_modules | grep -v '/.git/')
+  done < <(grep -rln -F -- "Zoth Studio Team" "DemoAgentOrg" "nullai" "." "~" "$root" 2>/dev/null | grep -v node_modules | grep -v '/.git/')
 done
 
 echo "PII scrubber: $changed file(s) ${DRY:+[dry-run]}"
