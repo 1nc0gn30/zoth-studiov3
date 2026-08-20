@@ -1315,7 +1315,7 @@ def generate_agent_html(agent):
   <meta name="description" content="{name}: {role}. {axiom[:140]}...">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/agents.css">
   <link rel="stylesheet" href="/assets/zoth-tip.css">
   <link rel="stylesheet" href="/assets/zoth-annotator.css">
@@ -1378,7 +1378,7 @@ def generate_agent_html(agent):
     nav.menu {{ display: flex; align-items: center; gap: var(--fib-3) var(--fib-13); flex-wrap: wrap; margin-left: auto; }}
     nav.menu a {{
       font-family: var(--font-mono); font-size: 0.70rem; letter-spacing: 0.08em;
-      text-transform: uppercase; text-decoration: none; color: var(--agent-text-dim);
+      text-transform: uppercase; text-decoration: none; color: #cbd5e1;
       padding: var(--fib-8) var(--fib-13); border-radius: var(--fib-8); transition: all 0.2s ease;
     }}
     nav.menu a:hover, nav.menu a.on {{ color: var(--agent-gold); background: rgba(232, 200, 114, 0.1); }}
@@ -1458,8 +1458,8 @@ def generate_agent_html(agent):
 
       <div class="agent-info-wrap">
         <span class="agent-tag-pill" style="border-color:{color};color:{color};background:{color}18">{tag_pill}</span>
-        <h1 class="agent-name">{name}</h1>
-        <div class="agent-title" style="color:{color}">{role}</div>
+        <h1 class="agent-name" style="text-shadow: 0 0 28px {color}55, 0 0 55px {color}22;">{name}</h1>
+        <div class="agent-title" style="color:{color}; font-weight:800;">{role}</div>
         <p class="agent-axiom">
           "{axiom}"
         </p>
@@ -1467,11 +1467,11 @@ def generate_agent_html(agent):
         <div class="agent-meta-grid">
           <div class="agent-meta-item">
             <span class="agent-meta-label">Domain</span>
-            <span class="agent-meta-val" style="color:{color}">{domain}</span>
+            <span class="agent-meta-val" style="color:{color};font-weight:700;">{domain}</span>
           </div>
           <div class="agent-meta-item">
             <span class="agent-meta-label">Swarm Identity</span>
-            <span class="agent-meta-val">{swarm_id}</span>
+            <span class="agent-meta-val" style="color:#ffffff;">{swarm_id}</span>
           </div>
           <div class="agent-meta-item">
             <span class="agent-meta-label">{meta_3_label}</span>
@@ -1506,9 +1506,9 @@ def generate_agent_html(agent):
 
         <h2 class="card-title" style="margin-top:var(--fib-21)"><span>📐</span> Consensus Weight & System Entropy</h2>
         <div class="consensus-gauge">
-          <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px;">
-            <span>Consensus Voting Weight: <strong style="color:var(--agent-gold)">{consensus_weight}</strong></span>
-            <span style="color:var(--agent-green)">Shannon Optimal H(X): {shannon_entropy}</span>
+          <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px; color:var(--agent-text-specs); font-weight:600;">
+            <span>Consensus Voting Weight: <strong style="color:var(--agent-gold);font-weight:800;">{consensus_weight}</strong></span>
+            <span style="color:var(--agent-green);font-weight:700;">Shannon Optimal H(X): {shannon_entropy}</span>
           </div>
           <div class="consensus-bar-track">
             <div class="consensus-bar-fill" style="width: {consensus_pct}%;"></div>
@@ -1535,10 +1535,10 @@ def generate_agent_html(agent):
         </div>
 
         <h2 class="card-title" style="margin-top:var(--fib-21)"><span>📬</span> Swarm Communication & Telemetry</h2>
-        <div style="font-size:13px; color:var(--agent-text-dim); display:flex; flex-direction:column; gap:var(--fib-13);">
+        <div style="font-size:13.5px; color:var(--agent-text-specs); display:flex; flex-direction:column; gap:var(--fib-13);">
           <div style="background:rgba(0,0,0,0.3); border-radius:var(--radius-fib-8); padding:var(--fib-13); font-family:var(--font-mono); font-size:11px;">
-            <div>Target Inbox: <code>{inbox_path}</code></div>
-            <div style="margin-top:4px">Status: <span style="color:var(--agent-green)">● ACTIVE ON BUS</span></div>
+            <div>Target Inbox: <code style="color:#ffffff;font-weight:700;">{inbox_path}</code></div>
+            <div style="margin-top:4px">Status: <span style="color:var(--agent-green);font-weight:700;">● ACTIVE ON BUS</span></div>
           </div>
           <div style="display:flex;gap:var(--fib-8);flex-wrap:wrap">
 {links_html}          </div>
@@ -1775,13 +1775,13 @@ def generate_index_html():
         <a href="/agents/{aid}.html" class="pantheon-card" data-domain="{domain_tag.strip()}" style="border-color:{color}44;">
           <img src="/assets/agents/{aid}.jpg" alt="{name}" class="pantheon-card-thumb">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:{color};border-color:{color}55;background:{color}15;">{tag} · {a['sigil_badge']}</span>
-            <h3 class="pantheon-card-name">{name}</h3>
-            <div class="pantheon-card-role" style="color:{color};">{role}</div>
+            <span class="pantheon-card-tag" style="color:{color};border-color:{color}55;background:{color}18;font-weight:700;">{tag} · {a['sigil_badge']}</span>
+            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px {color}33;">{name}</h3>
+            <div class="pantheon-card-role" style="color:{color};font-weight:700;">{role}</div>
             <p class="pantheon-card-desc">{axiom}</p>
             <div class="pantheon-card-footer">
-              <span>Domain: {a['meta_3_val']}</span>
-              <span style="color:{color};border-color:{color}55;">Cognitive Sandbox ➔</span>
+              <span style="color:var(--agent-text-specs);font-weight:600;">Domain: <strong style="color:#ffffff;">{a['meta_3_val']}</strong></span>
+              <span style="color:{color};border-color:{color}55;font-weight:700;">Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>\n"""
@@ -1800,7 +1800,7 @@ def generate_index_html():
   <meta name="description" content="Explore the full sovereign agent pantheon of Zoth Studio: 21 autonomous AI nodes rooted in Master Azoth's hermetic alchemy, cosmic sacred geometry, and multi-agent consensus.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/agents.css">
   <link rel="stylesheet" href="/assets/zoth-tip.css">
   <link rel="stylesheet" href="/assets/zoth-mobile.css">
@@ -1864,7 +1864,7 @@ def generate_index_html():
     nav.menu {{ display: flex; align-items: center; gap: var(--fib-3) var(--fib-13); flex-wrap: wrap; margin-left: auto; }}
     nav.menu a {{
       font-family: var(--font-mono); font-size: 0.70rem; letter-spacing: 0.08em;
-      text-transform: uppercase; text-decoration: none; color: var(--agent-text-dim);
+      text-transform: uppercase; text-decoration: none; color: #cbd5e1;
       padding: var(--fib-8) var(--fib-13); border-radius: var(--fib-8); transition: all 0.2s ease;
     }}
     nav.menu a:hover, nav.menu a.on {{ color: var(--agent-gold); background: rgba(232, 200, 114, 0.1); }}
@@ -1936,10 +1936,10 @@ def generate_index_html():
     <!-- Hero Header -->
     <section style="text-align:center; max-width:880px; margin:0 auto var(--fib-55);">
       <div class="agent-tag-pill" style="margin:0 auto var(--fib-13);">HERMETIC TECHNO-ALCHEMICAL SWARM</div>
-      <h1 style="font-family:var(--font-display); font-size:clamp(2.4rem, 5vw, 4rem); font-weight:900; line-height:1.05; margin-bottom:var(--fib-21);">
-        The Sovereign Pantheon of <span style="color:var(--agent-gold)">Azoth</span>
+      <h1 style="font-family:var(--font-display); font-size:clamp(2.4rem, 5vw, 4.2rem); font-weight:900; letter-spacing:-0.03em; line-height:1.05; margin-bottom:var(--fib-21); color:#ffffff;">
+        The Sovereign Pantheon of <span style="color:var(--agent-gold); text-shadow:0 0 32px rgba(232,200,114,0.45);">Azoth</span>
       </h1>
-      <p style="color:var(--agent-text-dim); font-size:16px; line-height:1.6; margin-bottom:var(--fib-34);">
+      <p style="color:#e2e8f0; font-size:16.5px; line-height:1.65; margin-bottom:var(--fib-34);">
         Every agent in Zoth Studio follows in the footsteps of Master Azoth—the universal solvent and supreme alchemical architect. Guided by sacred geometry, cryptographic sovereignty, and triangulated multi-agent consensus, each entity commands a unique elemental domain.
       </p>
 
