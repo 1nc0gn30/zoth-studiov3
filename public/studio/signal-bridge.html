@@ -50,6 +50,15 @@
         --fib-233: 233px;
         --fib-377: 377px;
         --fib-610: 610px;
+        --fib-987: 987px;
+
+        /* Radius aliases */
+        --radius-fib-xs: 5px;
+        --radius-fib-sm: 8px;
+        --radius-fib-md: 13px;
+        --radius-fib-lg: 21px;
+        --radius-fib-xl: 34px;
+        --radius-fib-pill: 9999px;
 
         /* Fibonacci Border Radius Scale */
         --fib-radius-xs: 5px;
@@ -398,6 +407,139 @@
           padding: var(--fib-13, 13px);
         }
       }
+    
+    /* Mobile Segmented Switcher for Signal Bridge */
+    .mobile-segmented-bar {
+      display: none;
+    }
+    .mobile-tabs-track {
+      display: flex;
+      gap: var(--fib-8, 8px);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 4px;
+      margin-bottom: var(--fib-13, 13px);
+    }
+    .mobile-tabs-track::-webkit-scrollbar {
+      display: none;
+    }
+    .mobile-tab-btn {
+      flex: 1 0 auto;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 8px 14px;
+      border-radius: var(--fib-radius-sm, 8px);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      background: rgba(12, 18, 34, 0.85);
+      color: #8b949e;
+      font-family: var(--font-display, 'Syne', sans-serif);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .mobile-tab-btn.active {
+      background: rgba(0, 229, 255, 0.18);
+      border-color: #00e5ff;
+      color: #00e5ff;
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+    }
+
+    @media (max-width: 880px) {
+      .mobile-segmented-bar { display: block; }
+      .sig-grid {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .sig-pane {
+        display: none !important;
+      }
+      .sig-pane.is-mobile-active {
+        display: flex !important;
+        width: 100% !important;
+      }
+    }
+    @media (min-width: 881px) {
+      .mobile-segmented-bar { display: none !important; }
+      .sig-pane { display: flex !important; }
+    }
+
+
+    /* Mobile-Only Desktop Insight Tooltip / Banner */
+    .mobile-desktop-insight {
+      display: none;
+    }
+    @media (max-width: 880px) {
+      .mobile-desktop-insight {
+        display: flex;
+        align-items: center;
+        gap: var(--fib-13, 13px);
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        border-radius: var(--radius-fib-md, var(--fib-radius-md, 13px));
+        padding: var(--fib-13, 13px) var(--fib-13, 13px);
+        margin: 0 0 var(--fib-13, 13px) 0;
+        box-sizing: border-box;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        color: var(--text, #f0f6fc);
+        min-width: 0;
+      }
+      .mobile-desktop-insight .insight-icon {
+        font-size: 1.3rem;
+        flex-shrink: 0;
+      }
+      .mobile-desktop-insight .insight-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--fib-3, 3px);
+        min-width: 0;
+      }
+      .mobile-desktop-insight .insight-text strong {
+        color: var(--cyan, #00f0ff);
+        font-weight: 600;
+        font-size: 0.88rem;
+      }
+      .mobile-desktop-insight .insight-text span {
+        color: var(--text-dim, var(--muted, #8b949e));
+        font-size: 0.8rem;
+      }
+      .mobile-desktop-insight .insight-close {
+        background: transparent;
+        border: none;
+        color: var(--text-dim, var(--muted, #8b949e));
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: var(--fib-8, 8px);
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-fib-sm, var(--fib-radius-sm, 8px));
+        flex-shrink: 0;
+      }
+    }
+
+
+    /* Touch & Overflow Safety */
+    pre, code, table, .table-container, .code-block, .log-container, .notes-grid, .message-stream {
+      overflow-x: auto;
+      word-break: break-word;
+      -webkit-overflow-scrolling: touch;
+    }
+    button, input, select, .btn, .btn-pill, .mascot-item {
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+
     </style>
   </head>
   <body class="signal-deck">
@@ -425,10 +567,39 @@
         </div>
       </header>
 
+    <!-- Mobile-Only Desktop Insight Tooltip / Banner -->
+    <div class="mobile-desktop-insight" role="note">
+      <span class="insight-icon">💡</span>
+      <div class="insight-text">
+        <strong>Mobile Focused Mode Active</strong>
+        <span>Optimized for touch & speed. Want full multi-pane inspection & spatial 3D tools? Open this workstation on desktop.</span>
+      </div>
+      <button class="insight-close" type="button" aria-label="Dismiss insight" onclick="this.parentElement.style.display='none'">✕</button>
+    </div>
+
+
       <!-- 3-Column Cockpit -->
+            <!-- Mobile Segmented Switcher (Visible <=880px) -->
+      <nav class="mobile-segmented-bar" id="sig-mobile-tabs" aria-label="Mobile Signal Bridge Views">
+        <div class="mobile-tabs-track">
+          <button class="mobile-tab-btn active" data-tab="stream" onclick="setSigMobileTab('stream')">
+            <span class="tab-icon">📡</span>
+            <span class="tab-label">Live Stream</span>
+          </button>
+          <button class="mobile-tab-btn" data-tab="mascots" onclick="setSigMobileTab('mascots')">
+            <span class="tab-icon">🐾</span>
+            <span class="tab-label">Mascots</span>
+          </button>
+          <button class="mobile-tab-btn" data-tab="controls" onclick="setSigMobileTab('controls')">
+            <span class="tab-icon">⚡</span>
+            <span class="tab-label">Bridge NOC</span>
+          </button>
+        </div>
+      </nav>
+
       <main class="sig-grid">
         <!-- Left: 16 Mascot Spirit Roster -->
-        <aside class="sig-card">
+        <aside class="sig-card sig-pane" id="sig-pane-mascots">
           <div class="card-title">
             <span>Mascot Spirits</span>
             <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-cyan);">16 Active</span>
@@ -494,7 +665,7 @@
         </aside>
 
         <!-- Center: Live Signal Stream & Command Dispatcher -->
-        <section class="sig-card">
+        <section class="sig-card sig-pane is-mobile-active" id="sig-pane-stream">
           <div class="card-title">
             <span>Live Signal Messenger Stream</span>
             <span style="font-family:var(--font-mono); font-size:0.72rem; color:#94a3b8;" id="msgCountLabel">0 Messages</span>
@@ -525,7 +696,7 @@
         </section>
 
         <!-- Right: Telemetry & Port Monitor -->
-        <aside class="sig-card sig-sidebar-right">
+        <aside class="sig-card sig-sidebar-right sig-pane" id="sig-pane-controls">
           <div class="card-title">
             <span>Swarm Telemetry</span>
             <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-emerald);">Parrot OS</span>
