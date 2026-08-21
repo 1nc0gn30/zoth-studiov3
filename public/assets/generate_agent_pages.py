@@ -1286,7 +1286,7 @@ def generate_agent_html(agent):
     cards_html = ""
     for img_path, card_title, card_sub, card_col in visual_cards:
         cards_html += f"""          <div class="form-mini-card">
-            <img src="{img_path}" alt="{card_title}">
+            <img src="{img_path}" alt="{name} {card_title} — {card_sub}">
             <div><strong style="color:{card_col}">{card_title}</strong><br><small>{card_sub}</small></div>
           </div>\n"""
 
@@ -1313,6 +1313,83 @@ def generate_agent_html(agent):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{name} — {role} | Zoth Studio Agent Codex</title>
   <meta name="description" content="{name}: {role}. {axiom[:140]}...">
+  <link rel="canonical" href="https://zoth.nullai.tech/agents/{agent_id}.html">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <meta name="theme-color" content="#050508">
+  
+  <!-- OpenGraph / Facebook -->
+  <meta property="og:type" content="profile">
+  <meta property="og:site_name" content="Zoth Studio">
+  <meta property="og:url" content="https://zoth.nullai.tech/agents/{agent_id}.html">
+  <meta property="og:title" content="{name} — {role} | Zoth Studio Agent Codex">
+  <meta property="og:description" content="{name}: {role}. {axiom[:140]}...">
+  <meta property="og:image" content="https://zoth.nullai.tech/assets/agents/{agent_id}.jpg">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{name} — {role} | Zoth Studio">
+  <meta name="twitter:description" content="{name}: {role}. {axiom[:140]}...">
+  <meta name="twitter:image" content="https://zoth.nullai.tech/assets/agents/{agent_id}.jpg">
+
+  <!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@graph": [
+      {{
+        "@type": "Person",
+        "@id": "https://zoth.nullai.tech/agents/{agent_id}.html#agent",
+        "name": "{name}",
+        "jobTitle": "{role}",
+        "description": "{axiom}",
+        "image": "https://zoth.nullai.tech/assets/agents/{agent_id}.jpg",
+        "url": "https://zoth.nullai.tech/agents/{agent_id}.html",
+        "knowsAbout": ["{domain}", "Autonomous AI Agents", "Local-First LLM Architecture", "Multi-Agent Consensus"],
+        "worksFor": {{
+          "@type": "Organization",
+          "name": "Zoth Studio",
+          "url": "https://zoth.nullai.tech/"
+        }}
+      }},
+      {{
+        "@type": "WebPage",
+        "@id": "https://zoth.nullai.tech/agents/{agent_id}.html",
+        "url": "https://zoth.nullai.tech/agents/{agent_id}.html",
+        "name": "{name} — {role} | Zoth Studio Agent Codex",
+        "description": "{name}: {role}. {axiom[:140]}...",
+        "inLanguage": "en-US",
+        "speakable": {{
+          "@type": "SpeakableSpecification",
+          "cssSelector": [".agent-name", ".agent-title", ".agent-axiom", ".doctrine-box", ".capability-item"]
+        }},
+        "breadcrumb": {{
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {{
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://zoth.nullai.tech/"
+            }},
+            {{
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Agents Pantheon",
+              "item": "https://zoth.nullai.tech/agents/"
+            }},
+            {{
+              "@type": "ListItem",
+              "position": 3,
+              "name": "{name}",
+              "item": "https://zoth.nullai.tech/agents/{agent_id}.html"
+            }}
+          ]
+        }}
+      }}
+    ]
+  }}
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -1357,6 +1434,26 @@ def generate_agent_html(agent):
       --phi: 1.6180339887;
       --golden-split: 1.618fr 1fr;
     }}
+    .skip-to-content {{
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      background: var(--agent-gold, #fbbf24);
+      color: #050508;
+      padding: 10px 18px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      border-radius: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      transition: top 0.2s ease;
+    }}
+    .skip-to-content:focus {{
+      top: 16px;
+      outline: 2px solid #ffffff;
+      outline-offset: 2px;
+    }}
     /* Standard Master Topbar */
     header.bar {{
       position: sticky; top: 0; z-index: 100;
@@ -1400,17 +1497,18 @@ def generate_agent_html(agent):
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
   <div class="ambient-mesh"></div>
   <canvas id="rune-canvas" class="rune-matrix-canvas"></canvas>
 
   <!-- Standard Master Top Navigation Bar -->
-  <header class="bar" id="topbar">
-    <a class="brand" href="/">
-      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Sigil" width="36" height="36">
+  <header class="bar" id="topbar" role="banner">
+    <a class="brand" href="/" aria-label="Zoth Studio Home">
+      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Studio Seal" width="36" height="36">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
-    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
-    <nav class="menu" aria-label="Primary">
+    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Toggle navigation menu">Menu</button>
+    <nav class="menu" aria-label="Primary navigation" role="navigation">
       <a href="/#for-everyone" data-tip="Zero-Code Showcases — How non-tech founders, creators & teams depend on Zoth.">✦ For You</a>
       <a href="/zoth/" data-tip="Master Azoth — Sovereign Alchemical AI Core & Synthesis Engine.">Azoth</a>
       <a class="on" href="/agents/" data-tip="Sovereign Agent Pantheon — 21 AI nodes with live cognitive test sandboxes.">Agents</a>
@@ -1419,6 +1517,7 @@ def generate_agent_html(agent):
       <a href="/studio/" data-tip="Studio Directory — 15 visual workstations, 3D arenas, and DAG composers.">Studio</a>
       <a href="/studio/swarm.html" data-tip="3D Swarm Command Arena — Real-time WebGL kinetic battle arena and orbital stations.">Swarm</a>
       <a href="/studio/consensus.html" data-tip="Consensus Battle Arena v2 — 3-Agent triangulation and Python AST synthesis.">Consensus</a>
+      <a href="/social/" data-tip="Social Wall — Sovereign builder dispatches, community transmissions & viral showcase.">Social Wall</a>
       <a href="/pets/" data-tip="Companion Hangar — 16 autonomous spirits, task vibes, and CLI harnesses.">Pets</a>
       <a href="/pets/pet-studio.html" data-tip="3D Figurine Studio — GPU-accelerated volumetric figurines and task vibes.">💎 3D Studio</a>
       <a href="/vault/" data-tip="BYOK Vault — Argon2id encrypted local hardware key container with zero cloud KMS.">Vault</a>
@@ -1429,7 +1528,7 @@ def generate_agent_html(agent):
   </header>
 
   <!-- Mobile Drawer -->
-  <nav class="drawer" id="drawer" aria-label="Mobile">
+  <nav class="drawer" id="drawer" aria-label="Mobile navigation" role="navigation">
     <a href="/#for-everyone">✦ For You (No-Code)</a>
     <a href="/zoth/">Azoth Lead Core</a>
     <a href="/agents/">Agents Pantheon (21)</a>
@@ -1438,6 +1537,7 @@ def generate_agent_html(agent):
     <a href="/studio/">Studio Directory</a>
     <a href="/studio/swarm.html">Swarm Arena</a>
     <a href="/studio/consensus.html">Consensus Arena</a>
+    <a href="/social/">Social Wall</a>
     <a href="/pets/">Pets Hangar</a>
     <a href="/pets/pet-studio.html">💎 3D Pet Studio</a>
     <a href="/vault/">BYOK Vault</a>
@@ -1447,18 +1547,18 @@ def generate_agent_html(agent):
     <a href="/#install">Download Binaries</a>
   </nav>
 
-  <main class="container" style="padding-top:var(--fib-34)">
-    <section class="agent-hero">
+  <main id="main-content" class="container" role="main" style="padding-top:var(--fib-34)">
+    <section class="agent-hero" aria-labelledby="agent-title-heading">
       <div class="agent-portrait-wrap" style="border-color:{color};box-shadow:0 0 var(--fib-21) {color}55">
-        <img src="/assets/agents/{agent_id}.jpg" alt="{name}" class="agent-portrait-img">
+        <img src="/assets/agents/{agent_id}.jpg" alt="{name} — {role} Sovereign Portrait" class="agent-portrait-img">
         <div class="agent-sigil-badge" style="border-color:{color};color:{color}">
-          <span>{icon}</span> {sigil_badge}
+          <span aria-hidden="true">{icon}</span> {sigil_badge}
         </div>
       </div>
 
       <div class="agent-info-wrap">
         <span class="agent-tag-pill" style="border-color:{color};color:{color};background:{color}18">{tag_pill}</span>
-        <h1 class="agent-name" style="text-shadow: 0 0 28px {color}55, 0 0 55px {color}22;">{name}</h1>
+        <h1 id="agent-title-heading" class="agent-name" style="text-shadow: 0 0 28px {color}55, 0 0 55px {color}22;">{name}</h1>
         <div class="agent-title" style="color:{color}; font-weight:800;">{role}</div>
         <p class="agent-axiom">
           "{axiom}"
@@ -1773,7 +1873,7 @@ def generate_index_html():
 
         cards_code += f"""        <!-- {name} -->
         <a href="/agents/{aid}.html" class="pantheon-card" data-domain="{domain_tag.strip()}" style="border-color:{color}44;">
-          <img src="/assets/agents/{aid}.jpg" alt="{name}" class="pantheon-card-thumb">
+          <img src="/assets/agents/{aid}.jpg" alt="{name} — {role}" class="pantheon-card-thumb">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag" style="color:{color};border-color:{color}55;background:{color}18;font-weight:700;">{tag} · {a['sigil_badge']}</span>
             <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px {color}33;">{name}</h3>
@@ -1796,8 +1896,64 @@ def generate_index_html():
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZOTH Agent Pantheon & Codex — 21 Sovereign AI Entities</title>
+  <title>Sovereign Agent Pantheon — 21 AI Nodes | Zoth Studio</title>
   <meta name="description" content="Explore the full sovereign agent pantheon of Zoth Studio: 21 autonomous AI nodes rooted in Master Azoth's hermetic alchemy, cosmic sacred geometry, and multi-agent consensus.">
+  <link rel="canonical" href="https://zoth.nullai.tech/agents/">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <meta name="theme-color" content="#050508">
+
+  <!-- OpenGraph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Zoth Studio">
+  <meta property="og:url" content="https://zoth.nullai.tech/agents/">
+  <meta property="og:title" content="Sovereign Agent Pantheon — 21 AI Nodes | Zoth Studio">
+  <meta property="og:description" content="Explore the full sovereign agent pantheon of Zoth Studio: 21 autonomous AI nodes rooted in Master Azoth's hermetic alchemy, cosmic sacred geometry, and multi-agent consensus.">
+  <meta property="og:image" content="https://zoth.nullai.tech/og-image.jpg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sovereign Agent Pantheon — 21 AI Nodes | Zoth Studio">
+  <meta name="twitter:description" content="Explore the full sovereign agent pantheon of Zoth Studio: 21 autonomous AI nodes rooted in Master Azoth's hermetic alchemy, cosmic sacred geometry, and multi-agent consensus.">
+  <meta name="twitter:image" content="https://zoth.nullai.tech/og-image.jpg">
+
+  <!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@graph": [
+      {{
+        "@type": "CollectionPage",
+        "@id": "https://zoth.nullai.tech/agents/",
+        "url": "https://zoth.nullai.tech/agents/",
+        "name": "Sovereign Agent Pantheon — 21 AI Nodes | Zoth Studio",
+        "description": "Explore the full sovereign agent pantheon of Zoth Studio: 21 autonomous AI nodes rooted in Master Azoth's hermetic alchemy, cosmic sacred geometry, and multi-agent consensus.",
+        "inLanguage": "en-US",
+        "speakable": {{
+          "@type": "SpeakableSpecification",
+          "cssSelector": ["h1", ".agent-tag-pill", "main p", ".pantheon-card-name", ".pantheon-card-role"]
+        }},
+        "breadcrumb": {{
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {{
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://zoth.nullai.tech/"
+            }},
+            {{
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Agents Pantheon",
+              "item": "https://zoth.nullai.tech/agents/"
+            }}
+          ]
+        }}
+      }}
+    ]
+  }}
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -1843,6 +1999,26 @@ def generate_index_html():
       --phi: 1.6180339887;
       --golden-split: 1.618fr 1fr;
     }}
+    .skip-to-content {{
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      background: var(--agent-gold, #fbbf24);
+      color: #050508;
+      padding: 10px 18px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      border-radius: 8px;
+      z-index: 1000;
+      text-decoration: none;
+      transition: top 0.2s ease;
+    }}
+    .skip-to-content:focus {{
+      top: 16px;
+      outline: 2px solid #ffffff;
+      outline-offset: 2px;
+    }}
     /* Standard Master Topbar with Fibonacci Geometry */
     header.bar {{
       position: sticky; top: 0; z-index: 100;
@@ -1885,17 +2061,18 @@ def generate_index_html():
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
   <div class="ambient-mesh"></div>
   <canvas id="rune-canvas" class="rune-matrix-canvas"></canvas>
 
   <!-- Standard Master Top Navigation Bar -->
-  <header class="bar" id="topbar">
-    <a class="brand" href="/">
-      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Sigil" width="36" height="36">
+  <header class="bar" id="topbar" role="banner">
+    <a class="brand" href="/" aria-label="Zoth Studio Home">
+      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Studio Seal" width="36" height="36">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
-    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer">Menu</button>
-    <nav class="menu" aria-label="Primary">
+    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Toggle navigation menu">Menu</button>
+    <nav class="menu" aria-label="Primary navigation" role="navigation">
       <a href="/#for-everyone" data-tip="Zero-Code Showcases — How non-tech founders, creators & teams depend on Zoth.">✦ For You</a>
       <a href="/zoth/" data-tip="Master Azoth — Sovereign Alchemical AI Core & Synthesis Engine.">Azoth</a>
       <a class="on" href="/agents/" data-tip="Sovereign Agent Pantheon — 21 AI nodes with live cognitive test sandboxes.">Agents</a>
@@ -1904,6 +2081,7 @@ def generate_index_html():
       <a href="/studio/" data-tip="Studio Directory — 15 visual workstations, 3D arenas, and DAG composers.">Studio</a>
       <a href="/studio/swarm.html" data-tip="3D Swarm Command Arena — Real-time WebGL kinetic battle arena and orbital stations.">Swarm</a>
       <a href="/studio/consensus.html" data-tip="Consensus Battle Arena v2 — 3-Agent triangulation and Python AST synthesis.">Consensus</a>
+      <a href="/social/" data-tip="Social Wall — Sovereign builder dispatches, community transmissions & viral showcase.">Social Wall</a>
       <a href="/pets/" data-tip="Companion Hangar — 16 autonomous spirits, task vibes, and CLI harnesses.">Pets</a>
       <a href="/pets/pet-studio.html" data-tip="3D Figurine Studio — GPU-accelerated volumetric figurines and task vibes.">💎 3D Studio</a>
       <a href="/vault/" data-tip="BYOK Vault — Argon2id encrypted local hardware key container with zero cloud KMS.">Vault</a>
@@ -1914,7 +2092,7 @@ def generate_index_html():
   </header>
 
   <!-- Mobile Drawer -->
-  <nav class="drawer" id="drawer" aria-label="Mobile">
+  <nav class="drawer" id="drawer" aria-label="Mobile navigation" role="navigation">
     <a href="/#for-everyone">✦ For You (No-Code)</a>
     <a href="/zoth/">Azoth Lead Core</a>
     <a href="/agents/">Agents Pantheon (21)</a>
@@ -1923,6 +2101,7 @@ def generate_index_html():
     <a href="/studio/">Studio Directory</a>
     <a href="/studio/swarm.html">Swarm Arena</a>
     <a href="/studio/consensus.html">Consensus Arena</a>
+    <a href="/social/">Social Wall</a>
     <a href="/pets/">Pets Hangar</a>
     <a href="/pets/pet-studio.html">💎 3D Pet Studio</a>
     <a href="/vault/">BYOK Vault</a>
@@ -1932,7 +2111,7 @@ def generate_index_html():
     <a href="/#install">Download Binaries</a>
   </nav>
 
-  <main class="container" style="padding-top:var(--fib-34)">
+  <main id="main-content" class="container" role="main" style="padding-top:var(--fib-34)">
     <!-- Hero Header -->
     <section style="text-align:center; max-width:880px; margin:0 auto var(--fib-55);">
       <div class="agent-tag-pill" style="margin:0 auto var(--fib-13);">HERMETIC TECHNO-ALCHEMICAL SWARM</div>

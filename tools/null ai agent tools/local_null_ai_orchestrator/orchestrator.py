@@ -1814,6 +1814,31 @@ created: {now_utc}
                     self._send_json({"error": str(e)}, 500)
                 return
 
+            # ─── API: X (Twitter) Ducky-Post Dispatch ───
+            if path == "/api/x/ducky-post":
+                post_text = data.get("text", "").strip()
+                media_path = data.get("media", "").strip()
+                auto_submit = bool(data.get("auto_submit", True))
+                if not post_text:
+                    self._send_json({"error": "text is required"}, 400)
+                    return
+                script_path = TOP_ROOT / "zoth-studio" / "tools-and-automation" / "zoth_ducky_poster.py"
+                cmd = [sys.executable, str(script_path), post_text]
+                if media_path:
+                    cmd.extend(["--media", media_path])
+                if not auto_submit:
+                    cmd.append("--no-submit")
+                try:
+                    res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                    self._send_json({
+                        "status": "dispatched",
+                        "output": res.stdout,
+                        "error": res.stderr
+                    })
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
             # ─── API: astro build ───
             if path == "/api/astro/build":
                 if not ASTRO_TOOL_DIR.exists():
