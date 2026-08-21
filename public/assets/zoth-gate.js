@@ -92,10 +92,12 @@
   function css() {
     return [
       ":root{--zoth-ribbon:0px}",
-      "html.zoth-preview{--zoth-ribbon:38px;scroll-padding-top:38px}",
+      "html.zoth-preview{--zoth-ribbon:38px;scroll-padding-top:calc(64px + 38px)}",
       "html.zoth-preview body{padding-top:38px!important}",
-      "#zoth-ribbon{position:fixed;top:0;left:0;right:0;z-index:99999;display:none;align-items:center;justify-content:space-between;gap:12px;",
-      "height:38px;padding:0 16px;background:rgba(10,14,26,0.95);backdrop-filter:blur(16px);color:#f7f4ee;border-bottom:1px solid rgba(0,240,255,0.35);",
+      "html.zoth-preview header.bar, html.zoth-preview header.topbar, html.zoth-preview .comic-topbar, html.zoth-preview header[role=\"banner\"], html.zoth-preview #topbar{top:38px!important}",
+      "html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(64px + 38px)!important}",
+      "#zoth-ribbon{position:fixed;top:0;left:0;right:0;z-index:100000;display:none;align-items:center;justify-content:space-between;gap:12px;",
+      "height:38px;padding:0 16px;background:rgba(10,14,26,0.96);backdrop-filter:blur(16px);color:#f7f4ee;border-bottom:1px solid rgba(0,240,255,0.35);",
       "font-family:Inter,system-ui,sans-serif;font-size:.82rem;line-height:1;box-shadow:0 4px 20px rgba(0,0,0,0.5)}",
       "#zoth-ribbon.on{display:flex}",
       "#zoth-ribbon .zoth-r-left{display:flex;align-items:center;gap:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
@@ -105,7 +107,7 @@
       "#zoth-ribbon button.zoth-btn-install:hover{transform:scale(1.04);box-shadow:0 0 16px rgba(232,200,114,0.7)}",
       "#zoth-ribbon a.zoth-btn-social{background:rgba(255,255,255,0.08);color:#e2e8f0;font-family:JetBrains Mono,monospace;font-size:.72rem;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);text-decoration:none;transition:all .2s ease}",
       "#zoth-ribbon a.zoth-btn-social:hover{background:rgba(255,255,255,0.15);color:#fff}",
-      "@media (max-width:760px){#zoth-ribbon{height:42px;font-size:.74rem}html.zoth-preview{--zoth-ribbon:42px}#zoth-ribbon .zoth-hide-mobile{display:none}}",
+      "@media (max-width:760px){#zoth-ribbon{height:42px;font-size:.74rem}html.zoth-preview{--zoth-ribbon:42px;scroll-padding-top:calc(56px + 42px)}html.zoth-preview body{padding-top:42px!important}html.zoth-preview header.bar, html.zoth-preview header.topbar, html.zoth-preview .comic-topbar, html.zoth-preview header[role=\"banner\"], html.zoth-preview #topbar{top:42px!important}html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(56px + 42px)!important}#zoth-ribbon .zoth-hide-mobile{display:none}}",
       
       "#zoth-modal{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(3,5,10,0.85);backdrop-filter:blur(12px)}",
       "#zoth-modal.on{display:flex;animation:zothModalFadeIn .2s ease-out}",
