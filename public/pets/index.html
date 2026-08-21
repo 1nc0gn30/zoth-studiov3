@@ -2036,16 +2036,64 @@
       copyFeedback(this, "Copy Cmd");
     });
 
-    // Speech Preview
-    document.getElementById("btn-voice-preview").addEventListener("click", () => {
+    // Speech & Neural Audio Preview
+    let currentPetAudio = null;
+    document.getElementById("btn-voice-preview").addEventListener("click", function() {
       if (!currentModalPet) return;
+      const btn = this;
+      const origText = btn.textContent;
+
+      if (currentPetAudio) {
+        currentPetAudio.pause();
+        currentPetAudio.currentTime = 0;
+        currentPetAudio = null;
+      }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(`Greetings Operator. I am ${currentModalPet.name}, ${currentModalPet.title} for Zoth Studio on Parrot OS.`);
-        window.speechSynthesis.speak(utter);
-      } else {
-        alert("Speech synthesis is not supported in this browser.");
       }
+
+      btn.textContent = "🔊 Transmitting Voice...";
+      btn.style.borderColor = "var(--cyan)";
+      btn.style.color = "var(--cyan)";
+
+      // Try pet-specific audio, agent audio, or mascot audio
+      const candidates = [
+        `/assets/audio/pets/pet-${currentModalPet.id}.mp3`,
+        `/assets/audio/agents/${currentModalPet.id}.mp3`,
+        `/assets/audio/mascot/${currentModalPet.id}.mp3`
+      ];
+
+      function tryPlay(index) {
+        if (index >= candidates.length) {
+          // Fallback to browser SpeechSynthesis
+          if ('speechSynthesis' in window) {
+            const utter = new SpeechSynthesisUtterance(`Greetings Operator. I am ${currentModalPet.name}, ${currentModalPet.title} for Zoth Studio.`);
+            utter.onend = () => { btn.textContent = origText; btn.style.borderColor = ""; btn.style.color = ""; };
+            utter.onerror = () => { btn.textContent = origText; btn.style.borderColor = ""; btn.style.color = ""; };
+            window.speechSynthesis.speak(utter);
+          } else {
+            btn.textContent = origText; btn.style.borderColor = ""; btn.style.color = "";
+          }
+          return;
+        }
+
+        const audio = new Audio(candidates[index]);
+        currentPetAudio = audio;
+        audio.onended = () => {
+          btn.textContent = origText;
+          btn.style.borderColor = "";
+          btn.style.color = "";
+          currentPetAudio = null;
+        };
+        audio.onerror = () => {
+          tryPlay(index + 1);
+        };
+        audio.play().catch(() => {
+          tryPlay(index + 1);
+        });
+      }
+
+      tryPlay(0);
     });
 
     // Initial Render

@@ -1648,38 +1648,74 @@ def generate_agent_html(agent):
   </main>
 
   <script>
-    // Voice Synthesizer
+    // Neural Audio & Voice Synthesizer
+    let currentAgentAudio = null;
     function speakAgentAxiom(agentId, agentName, text, pitch, rate) {{
-      if (!('speechSynthesis' in window)) {{
-        alert("Speech synthesis is not supported in this browser environment.");
-        return;
-      }}
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.pitch = pitch || 1.0;
-      utter.rate = rate || 1.0;
-
-      const voices = window.speechSynthesis.getVoices();
-      if (voices && voices.length > 0) {{
-        const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Google') || v.name.includes('Premium')));
-        if (preferred) utter.voice = preferred;
-      }}
-
       const btn = document.getElementById("voice-btn-" + agentId);
+      const origHTML = btn ? btn.innerHTML : "🔊 Hear Voice Axiom";
+      
+      if (currentAgentAudio) {{
+        currentAgentAudio.pause();
+        currentAgentAudio.currentTime = 0;
+        currentAgentAudio = null;
+      }}
+      if ('speechSynthesis' in window) {{
+        window.speechSynthesis.cancel();
+      }}
+
       if (btn) {{
-        const origHTML = btn.innerHTML;
         btn.innerHTML = "🔊 Transmitting Voice...";
         btn.classList.add("btn-speaking");
-        utter.onend = () => {{
-          btn.innerHTML = origHTML;
-          btn.classList.remove("btn-speaking");
-        }};
-        utter.onerror = () => {{
-          btn.innerHTML = origHTML;
-          btn.classList.remove("btn-speaking");
-        }};
       }}
-      window.speechSynthesis.speak(utter);
+
+      // 1. Play high-fidelity neural MP3 voice file
+      const audioSrc = "/assets/audio/agents/" + agentId + ".mp3";
+      const audio = new Audio(audioSrc);
+      currentAgentAudio = audio;
+
+      audio.onended = () => {{
+        if (btn) {{
+          btn.innerHTML = origHTML;
+          btn.classList.remove("btn-speaking");
+        }}
+        currentAgentAudio = null;
+      }};
+
+      audio.onerror = () => {{
+        // Fallback to browser SpeechSynthesis if audio file is unavailable
+        if ('speechSynthesis' in window) {{
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.pitch = pitch || 1.0;
+          utter.rate = rate || 1.0;
+          const voices = window.speechSynthesis.getVoices();
+          if (voices && voices.length > 0) {{
+            const preferred = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Google') || v.name.includes('Premium')));
+            if (preferred) utter.voice = preferred;
+          }}
+          utter.onend = () => {{
+            if (btn) {{
+              btn.innerHTML = origHTML;
+              btn.classList.remove("btn-speaking");
+            }}
+          }};
+          utter.onerror = () => {{
+            if (btn) {{
+              btn.innerHTML = origHTML;
+              btn.classList.remove("btn-speaking");
+            }}
+          }};
+          window.speechSynthesis.speak(utter);
+        }} else {{
+          if (btn) {{
+            btn.innerHTML = origHTML;
+            btn.classList.remove("btn-speaking");
+          }}
+        }}
+      }};
+
+      audio.play().catch(() => {{
+        audio.onerror();
+      }});
     }}
 
     // Simulated Neural Streaming Typing & Telemetry
