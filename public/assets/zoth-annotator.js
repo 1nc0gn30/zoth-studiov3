@@ -16,39 +16,38 @@
   'use strict';
 
   // Strict Dev Server Guard: NEVER show annotation UI on public production website
+  // Strictly disabled on zoth.nullai.tech and all public domains to protect private conversations and notes.
   function isDevEnvironment() {
     try {
-      const hostname = window.location.hostname || '';
-      const port = window.location.port || '';
-      const search = window.location.search || '';
-      const hash = window.location.hash || '';
+      const hostname = (window.location.hostname || '').toLowerCase();
 
-      // Explicit query/hash flags for testing in staging
-      const hasDevFlag = search.includes('dev=true') || 
-                         search.includes('annotate=true') || 
-                         hash.includes('dev') || 
-                         hash.includes('annotate') ||
-                         localStorage.getItem('zoth_dev_mode') === 'true';
-
-      // Explicit Production Guard: Never mount on production domains unless explicitly requested via flag
-      if ((hostname.includes('nullai.tech') || hostname.includes('zoth.io') || hostname.includes('zoth.studio')) && !hasDevFlag) {
+      // Absolute Production Domain Blocklist: NEVER mount or reveal notes on public hosts
+      if (
+        hostname === 'zoth.nullai.tech' ||
+        hostname.includes('nullai.tech') ||
+        hostname.includes('zoth.io') ||
+        hostname.includes('zoth.studio') ||
+        hostname.includes('netlify.app') ||
+        hostname.includes('vercel.app') ||
+        hostname.includes('github.io') ||
+        hostname.includes('pages.dev')
+      ) {
         return false;
       }
 
-      // Localhost / Loopback / Local IP dev servers
-      const isLocalhost = hostname === 'localhost' || 
-                          hostname === '127.0.0.1' || 
-                          hostname === '0.0.0.0' || 
-                          hostname.startsWith('192.168.') || 
-                          hostname.startsWith('10.') || 
-                          hostname.endsWith('.local') || 
-                          hostname.endsWith('.internal');
+      // Strictly allow ONLY local dev environments (loopback & private LAN IPs)
+      const isLocalhost =
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '0.0.0.0' ||
+        hostname === '[::1]' ||
+        hostname.startsWith('192.168.') ||
+        hostname.startsWith('10.') ||
+        hostname.startsWith('172.16.') ||
+        hostname.endsWith('.local') ||
+        hostname.endsWith('.internal');
 
-      // Custom dev ports (e.g., :8484, :8088, :3000, :5173, :8080, etc.)
-      const isDevPort = port !== '' && port !== '80' && port !== '443';
-
-      // Only mount on dev server or when explicitly enabled
-      return isLocalhost || isDevPort || hasDevFlag;
+      return isLocalhost;
     } catch (e) {
       return false;
     }
@@ -56,6 +55,7 @@
 
   if (!isDevEnvironment()) {
     // Completely silent exit on public production website (e.g. zoth.nullai.tech)
+    // No UI elements, no storage access, and no notes/conversations rendered.
     return;
   }
 
