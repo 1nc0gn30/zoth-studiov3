@@ -1231,17 +1231,47 @@
 
           <!-- Output Platform Cards Matrix -->
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-              <h2 style="font-family:'Syne', sans-serif; font-size:1.15rem; margin:0;">Platform Tailored Previews</h2>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <h2 style="font-family:'Syne', sans-serif; font-size:1.15rem; margin:0;">Platform Tailored Previews</h2>
+                <div class="view-mode-toggle">
+                  <button class="btn-mode active" id="btn-mode-cards" onclick="switchPreviewMode('cards')">🎴 Card View</button>
+                  <button class="btn-mode" id="btn-mode-simulator" onclick="switchPreviewMode('simulator')">📱 Live Feed Simulator</button>
+                </div>
+              </div>
               <div style="display:flex; gap:8px;">
                 <button class="btn-omni btn-secondary" id="btn-copy-all">📋 Copy All</button>
                 <button class="btn-omni btn-secondary" id="btn-export-zip">💾 Export JSON</button>
               </div>
             </div>
 
+
+            
             <div class="preview-matrix" id="preview-matrix-container">
               <!-- Rendered dynamically -->
             </div>
+
+            <!-- Interactive Smartphone Feed Simulator -->
+            <div id="feed-simulator-wrap" style="display:none; justify-content:center; align-items:center; padding:20px 0;">
+              <div class="mockup-phone">
+                <div class="mockup-notch"></div>
+                <div class="mockup-screen">
+                  <!-- Simulator Header Tabs -->
+                  <div class="mockup-header-tabs">
+                    <button class="sim-tab active" onclick="loadSimPlatform('x')">𝕏 Post</button>
+                    <button class="sim-tab" onclick="loadSimPlatform('linkedin')">💼 LinkedIn</button>
+                    <button class="sim-tab" onclick="loadSimPlatform('instagram')">📸 Insta</button>
+                    <button class="sim-tab" onclick="loadSimPlatform('discord')">👾 Discord</button>
+                  </div>
+                  <!-- Simulator Post Container -->
+                  <div id="sim-post-container" class="sim-post-body">
+                    <!-- Loaded dynamically -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -1278,6 +1308,30 @@
             <div class="form-group">
               <label class="form-label">Badge Pill Text</label>
               <input type="text" id="thumb-badge" class="form-input" value="⚡ ZOTH STUDIO V2.6" />
+            </div>
+
+            
+            <div class="form-group">
+              <label class="form-label">Cyberpunk HUD Overlay</label>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; cursor:pointer; color:#fff;">
+                  <input type="checkbox" id="thumb-reticle" checked onchange="renderThumbnailCanvas()" /> [ + ] Reticle & Telemetry HUD
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; cursor:pointer; color:#fff;">
+                  <input type="checkbox" id="thumb-scanlines" checked onchange="renderThumbnailCanvas()" /> Scanlines
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Mascot Spirit Stencil</label>
+              <select id="thumb-mascot" class="form-select" onchange="renderThumbnailCanvas()">
+                <option value="azoth">👑 Master Azoth (Sovereign Alchemist)</option>
+                <option value="lycan">🐺 Lycan Spirit (OffSec Red Team)</option>
+                <option value="draco">🐉 Draco Cyber Dragon (Multi-Agent)</option>
+                <option value="kai">🐱 Kai Holographic Cat (AST Auditor)</option>
+                <option value="none">🚫 No Mascot Stencil</option>
+              </select>
             </div>
 
             <div class="form-group">
@@ -2194,9 +2248,10 @@
         });
 
         // Viral Hooks Generator
+        
         const sampleHooks = [
+          { type: 'Contrarian', hook: "Stop building AI apps that depend on 10 external cloud APIs. Here is why local-first changes everything." },
           { type: 'Curiosity Gap', hook: "Almost nobody realizes what happens when you remove cloud APIs from your AI stack." },
-          { type: 'Contrarian', hook: "Centralized SaaS AI wrappers are dead. Here is the architecture taking over in 2026." },
           { type: 'Stat Bomb', hook: "92% of AI production incidents stem from 3rd-party API rate limits and key rotation failures." },
           { type: 'Story Opener', hook: "I spent 48 hours rebuilding my entire creative workflow on Parrot OS with zero cloud dependencies." },
           { type: 'Framework', hook: "The 3-layer stack for 100% private, sovereign AI agent swarms on local silicon." },
@@ -2212,25 +2267,33 @@
             const card = document.createElement('div');
             card.style.background = '#060913';
             card.style.border = '1px solid var(--omni-line)';
-            card.style.borderRadius = '10px';
-            card.style.padding = '14px';
+            card.style.borderRadius = '12px';
+            card.style.padding = '16px';
             card.style.display = 'flex';
             card.style.flexDirection = 'column';
-            card.style.gap = '8px';
+            card.style.gap = '10px';
             card.innerHTML = `
               <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--omni-cyan);">
                 <span>#0${idx + 1} · ${h.type.toUpperCase()}</span>
-                <span style="cursor:pointer; color:var(--muted);" onclick="navigator.clipboard.writeText('${h.hook.replace(/'/g, "\\'")}'); playSfx('chime'); alert('Hook copied!');">📋 Copy</span>
+                <span class="pill" style="font-size:0.65rem; border-color:rgba(0,240,255,0.3); color:var(--omni-cyan);">HIGH RETENTION</span>
               </div>
-              <div style="font-size:0.92rem; font-weight:600; line-height:1.4;">"${h.hook}"</div>
+              <div style="font-size:0.92rem; font-weight:600; line-height:1.4; color:#fff;">"${h.hook}"</div>
+              <div style="display:flex; gap:6px; margin-top:4px;">
+                <button class="btn-omni btn-primary btn-sm" onclick="injectHookToRepurposer('${h.hook.replace(/'/g, "\\'")}')">⚡ Repurpose This</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${h.hook.replace(/'/g, "\\'")}'); playSfx('chime'); this.textContent='✅ Copied!'; setTimeout(()=>this.textContent='📋 Copy', 1500);">📋 Copy</button>
+              </div>
             `;
             grid.appendChild(card);
           });
         }
-        document.getElementById('btn-gen-hooks').addEventListener('click', () => {
-          renderHooks();
-          playSfx('whoosh');
-        });
+
+        const btnGenHooks = document.getElementById('btn-gen-hooks');
+        if (btnGenHooks) {
+          btnGenHooks.addEventListener('click', () => {
+            renderHooks();
+            playSfx('whoosh');
+          });
+        }
         renderHooks();
 
         // Thread Splitter

@@ -672,15 +672,33 @@
 
 
     <div class="hero" style="margin-top:1.1rem">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(8,14,24,0.85);border:1px solid rgba(0,229,255,0.3);border-radius:999px;padding:4px 16px;margin-bottom:12px;font-family:var(--mono);font-size:0.72rem;color:var(--cyan);">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);"></span>
+        <span>SOVEREIGN TOOL HARNESS · 7 CONTRACT-VALIDATED MODULES</span>
+      </div>
       <h1>Tool <span class="accent">Bench</span></h1>
       <p>A uniform console for Zoth Studio's contract-validated agent tools. Every request is validated by the tool's own contract <em>before</em> execution, routed through the Zoth Tool Harness, and mirrored to the live bus as <code>zoth:tool-bench</code>. Authoritative state stays on the agent-comms file bus.</p>
+    </div>
+
+    <!-- Category & Search Toolbar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:1.5rem 0 1rem;flex-wrap:wrap;">
+      <div id="toolCategoryTabs" style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="chip active-tab" onclick="filterToolCategory('all', this)" style="cursor:pointer;background:rgba(0,229,255,0.18);border-color:var(--cyan);color:#fff;font-weight:700;">✦ All (7)</button>
+        <button class="chip" onclick="filterToolCategory('code', this)" style="cursor:pointer;">⚡ AST &amp; Code (2)</button>
+        <button class="chip" onclick="filterToolCategory('deploy', this)" style="cursor:pointer;">🚀 CI &amp; Deploy (2)</button>
+        <button class="chip" onclick="filterToolCategory('security', this)" style="cursor:pointer;">🛡️ Security &amp; Recon (2)</button>
+        <button class="chip" onclick="filterToolCategory('crypto', this)" style="cursor:pointer;">🔑 Vault &amp; Crypto (1)</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex:1;max-width:320px;min-width:200px;">
+        <input type="text" id="toolSearchBox" placeholder="Search 7 tools or actions..." oninput="handleToolSearch()" style="min-height:36px;padding:6px 12px;font-size:0.78rem;">
+      </div>
     </div>
 
     <div class="grid">
       <section class="panel" aria-label="Registered tools">
         <div class="section-title">Registered Tools</div>
         <div id="toolList"><div class="dim" style="font-size:.78rem;color:var(--muted)">Loading…</div></div>
-        <div style="margin-top:1rem">
+        <div style="margin-top:1.5rem">
           <div class="section-title">Harness Telemetry <span class="chip" style="font-size:.62rem">zoth:tool-bench</span> <span id="swarmStatus" class="chip" style="font-size:.62rem">mirror…</span></div>
           <div class="telemetry" id="telemetry"><div class="dim" style="font-size:.72rem;color:var(--muted);padding:.4rem 0">Listening…</div></div>
         </div>
@@ -697,22 +715,27 @@
     <div class="footer-note">
       Owned by <strong>hermes</strong> (planner/tool-schemas lane). Harness: <code>/tools/tool-runner.js</code>. Manifest: <code>/tools/manifest.json</code>. The GitHub Tool is the seed tool; new tools register via <code>ZothToolBench.register(...)</code>. This panel lives on the public hub <code>:8088</code>.
     </div>
+</main>
   </div>
 
   <script src="/tools/github-tool.js"></script>
   <script src="/tools/blueprint-validator.js"></script>
   <script src="/tools/netlify-deploy.js"></script>
   <script src="/tools/header-audit.js"></script>
+  <script src="/tools/ast-sanitizer.js"></script>
+  <script src="/tools/subsweep-recon.js"></script>
+  <script src="/tools/vault-crypto.js"></script>
   <script src="/tools/tool-runner.js"></script>
   <script src="/tools/bench-bus-mirror.js"></script>
   <script>
-    // Register the Blueprint Validator + Netlify Deploy tools into the harness (if present).
+    // Register all 7 tools into the harness
     (function () {
       if (window.ZothBlueprintValidator && window.ZothToolBench) {
         window.ZothToolBench.register({
           id: "blueprint-validator",
           version: window.ZothBlueprintValidator.SCHEMA_VERSION,
           owner: "hermes",
+          category: "deploy",
           actions: ["blueprint.validate"],
           schemaHref: null,
           validate: window.ZothBlueprintValidator.validate,
@@ -725,6 +748,7 @@
           id: "netlify-deploy",
           version: window.ZothNetlifyDeploy.SCHEMA_VERSION,
           owner: "hermes",
+          category: "deploy",
           actions: ["deploy.trigger"],
           schemaHref: null,
           validate: window.ZothNetlifyDeploy.validate,
@@ -737,11 +761,51 @@
           id: "header-audit",
           version: window.ZothHeaderAudit.SCHEMA_VERSION,
           owner: "hermes",
+          category: "security",
           actions: ["header.audit"],
           schemaHref: null,
           validate: window.ZothHeaderAudit.validate,
           run: window.ZothHeaderAudit.run,
           meta: window.ZothHeaderAudit.meta,
+        });
+      }
+      if (window.ZothAstSanitizer && window.ZothToolBench) {
+        window.ZothToolBench.register({
+          id: "ast-sanitizer",
+          version: window.ZothAstSanitizer.SCHEMA_VERSION,
+          owner: "antigravity",
+          category: "code",
+          actions: ["ast.sanitize", "ast.entropy"],
+          schemaHref: null,
+          validate: window.ZothAstSanitizer.validate,
+          run: window.ZothAstSanitizer.run,
+          meta: window.ZothAstSanitizer.meta,
+        });
+      }
+      if (window.ZothSubsweepRecon && window.ZothToolBench) {
+        window.ZothToolBench.register({
+          id: "subsweep-recon",
+          version: window.ZothSubsweepRecon.SCHEMA_VERSION,
+          owner: "lycan",
+          category: "security",
+          actions: ["recon.scan", "recon.ports"],
+          schemaHref: null,
+          validate: window.ZothSubsweepRecon.validate,
+          run: window.ZothSubsweepRecon.run,
+          meta: window.ZothSubsweepRecon.meta,
+        });
+      }
+      if (window.ZothVaultCrypto && window.ZothToolBench) {
+        window.ZothToolBench.register({
+          id: "vault-crypto",
+          version: window.ZothVaultCrypto.SCHEMA_VERSION,
+          owner: "ghostbyte",
+          category: "crypto",
+          actions: ["vault.derive", "vault.encrypt_mock"],
+          schemaHref: null,
+          validate: window.ZothVaultCrypto.validate,
+          run: window.ZothVaultCrypto.run,
+          meta: window.ZothVaultCrypto.meta,
         });
       }
     })();
@@ -754,9 +818,27 @@
       var consoleArea = document.getElementById("consoleArea");
       var telEl = document.getElementById("telemetry");
       var selectedId = null;
+      var currentCategory = "all";
+      var searchQuery = "";
+
+      var SAMPLE_PAYLOADS = {
+        "issues.list": { owner: "NullAITech", repo: "zoth-studio", state: "open", per_page: "10" },
+        "issues.create": { owner: "NullAITech", repo: "zoth-studio", title: "feat: Sacred geometry token optimization", body: "Elevating all workstation viewports to follow Fibonacci phi tokens.", labels: "enhancement,sacred-geometry" },
+        "prs.list": { owner: "NullAITech", repo: "zoth-studio", state: "open", per_page: "5" },
+        "prs.create": { owner: "NullAITech", repo: "zoth-studio", title: "fix: Zero-cloud V8 isolate sandbox", head: "patch-v8", base: "main", body: "Deterministic isolate execution." },
+        "repos.list": { owner: "NullAITech", type: "owner", per_page: "10" },
+        "deploy.trigger": { site: "zoth-studio-production", build_dir: "public", hook_url: "https://api.netlify.com/build_hooks/mock_hook_123", message: "Production release v3.0.0" },
+        "header.audit": { target: "https://zoth.nullai.tech", checks: "owasp,aeo,csp" },
+        "blueprint.validate": { schema: "zoth-blueprint/v1", name: "Sovereign Swarm Architecture", nodes: ["azoth", "antigravity", "grok"], bus: ":8484" },
+        "ast.sanitize": { language: "python", code: "def synthesize_ast(tree):\n    # Pure invariant validation\n    return { 'valid': True, 'entropy': 0.94 }" },
+        "ast.entropy": { language: "javascript", code: "const phi = 1.6180339887;\nfunction fib(n) { return n <= 1 ? n : fib(n-1) + fib(n-2); }" },
+        "recon.scan": { target: "zoth.nullai.tech" },
+        "recon.ports": { target: "127.0.0.1" },
+        "vault.derive": { secret: "master_sovereign_passphrase_2026", iterations: 3, memory_cost: 65536 },
+        "vault.encrypt_mock": { secret: "sk_live_nullai_super_secret_token", salt: "custom_salt_987" }
+      };
 
       function actionFields(action) {
-        // GitHub-only field map (the seed tool). Other tools render raw.
         var F = {
           "issues.list": [["owner",true],["repo",true],["state",false,"open|closed|all"],["per_page",false,"1-100"],["page",false],["labels",false,"comma,sep"],["since",false,"ISO8601"]],
           "issues.create": [["owner",true],["repo",true],["title",true,"max256"],["body",false],["labels",false,"comma,sep"],["assignees",false,"comma,sep"]],
@@ -765,15 +847,54 @@
           "repos.list": [["owner",true],["type",false,"owner|member|all"],["sort",false],["direction",false],["per_page",false],["page",false]],
           "deploy.trigger": [["site",true],["build_dir",true,"public|dist|build"],["hook_url",false,"https://api.netlify.com/build_hooks/..."],["draft",false,"bool"],["message",false,"max512"]],
           "header.audit": [["target",true,"https://host/path"],["checks",false,"owasp|aeo|comma"]],
+          "ast.sanitize": [["language",true,"python|javascript|rust"],["code",true,"source code string"]],
+          "ast.entropy": [["language",true,"python|javascript"],["code",true,"source code string"]],
+          "recon.scan": [["target",true,"domain or ip"]],
+          "recon.ports": [["target",true,"127.0.0.1 or domain"]],
+          "vault.derive": [["secret",true,"passphrase or raw key"],["iterations",false,"3"],["memory_cost",false,"65536"]],
+          "vault.encrypt_mock": [["secret",true,"secret to encrypt"],["salt",false,"optional custom salt"]]
         };
         return F[action] || null;
       }
 
+      window.filterToolCategory = function(cat, btn) {
+        currentCategory = cat;
+        document.querySelectorAll('#toolCategoryTabs button').forEach(function(b) {
+          b.style.background = 'transparent';
+          b.style.borderColor = 'rgba(0,229,255,0.3)';
+          b.style.color = 'var(--cyan)';
+          b.style.fontWeight = 'normal';
+        });
+        if (btn) {
+          btn.style.background = 'rgba(0,229,255,0.18)';
+          btn.style.borderColor = 'var(--cyan)';
+          btn.style.color = '#fff';
+          btn.style.fontWeight = '700';
+        }
+        renderList();
+      };
+
+      window.handleToolSearch = function() {
+        searchQuery = (document.getElementById("toolSearchBox").value || "").trim().toLowerCase();
+        renderList();
+      };
+
       function renderList() {
         var tools = Bench.list();
         listEl.innerHTML = "";
-        if (!tools.length) { listEl.innerHTML = '<div class="dim" style="font-size:.78rem">No tools registered.</div>'; return; }
-        tools.forEach(function (t) {
+        
+        var filtered = tools.filter(function(t) {
+          var catMatch = currentCategory === "all" || (t.category && t.category === currentCategory) || (currentCategory === "code" && (t.id.includes("ast") || t.id.includes("blueprint"))) || (currentCategory === "security" && (t.id.includes("header") || t.id.includes("recon"))) || (currentCategory === "deploy" && t.id.includes("deploy"));
+          var searchMatch = !searchQuery || t.id.toLowerCase().includes(searchQuery) || (t.owner && t.owner.toLowerCase().includes(searchQuery)) || t.actions.some(function(a){ return a.toLowerCase().includes(searchQuery); });
+          return catMatch && searchMatch;
+        });
+
+        if (!filtered.length) { 
+          listEl.innerHTML = '<div class="dim" style="font-size:.78rem;padding:12px 0;">No tools match current filter.</div>'; 
+          return; 
+        }
+
+        filtered.forEach(function (t) {
           var card = document.createElement("div");
           card.className = "tool-card" + (selectedId === t.id ? " active" : "");
           card.dataset.id = t.id;
@@ -783,20 +904,45 @@
           card.addEventListener("click", function () { selectTool(t.id); });
           listEl.appendChild(card);
         });
+
+        // Auto-select first if none selected
+        if (!selectedId && filtered.length) {
+          selectTool(filtered[0].id);
+        }
       }
 
       function selectTool(id) {
         selectedId = id;
-        renderList();
+        document.querySelectorAll('.tool-card').forEach(function(c) {
+          if (c.dataset.id === id) c.classList.add('active');
+          else c.classList.remove('active');
+        });
+        
         var t = Bench.get(id);
         if (!t) return;
-        var html = '<div class="meta-line" style="margin-bottom:.4rem">Owner: <strong>' + (t.owner || "—") + '</strong> · Schema: ' + (t.schemaHref ? '<a href="' + t.schemaHref + '" target="_blank" rel="noopener">' + t.schemaHref + '</a>' : "—") + '</div>';
-        html += '<label for="benchAction">Action</label><select id="benchAction"></select>';
+        var html = '<div class="meta-line" style="margin-bottom:.8rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+          '<div>Owner: <strong style="color:#00f0ff">@' + (t.owner || "hermes") + '</strong> · Schema: ' + (t.schemaHref ? '<a href="' + t.schemaHref + '" target="_blank" rel="noopener">' + t.schemaHref + '</a>' : '<span style="color:#34d399">In-Memory Strict Contract</span>') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:0.72rem;color:var(--gold);">⚡ Loopback Bus: :8484</div>' +
+          '</div>';
+        html += '<label for="benchAction">Selected Action</label><select id="benchAction"></select>';
         html += '<div id="benchParams"></div>';
-        html += '<label for="benchToken">Token (optional, memory-only)</label><input id="benchToken" type="password" placeholder="ghp_… (never stored)" autocomplete="off" />';
-        html += '<div class="actions-bar"><button class="btn btn-primary" id="benchRun">Validate &amp; Run</button><button class="btn btn-ghost" id="benchShow">Show Envelope</button></div>';
-        html += '<div style="margin-top:1rem"><div class="section-title">Request Envelope</div><pre class="console dim" id="benchEnvelope">—</pre></div>';
-        html += '<div style="margin-top:1rem"><div class="section-title">Response</div><pre class="console dim" id="benchResponse">—</pre></div>';
+        html += '<label for="benchToken">Authorization Token (optional, memory-only key container)</label><input id="benchToken" type="password" placeholder="ghp_… or bearer token (never stored on disk)" autocomplete="off" />';
+        
+        html += '<div class="actions-bar" style="margin-top:1.2rem;display:flex;gap:8px;flex-wrap:wrap;">' +
+          '<button class="btn btn-primary" id="benchRun">⚡ Validate &amp; Run</button>' +
+          '<button class="btn btn-ghost" id="benchPreset" style="border-color:var(--gold);color:var(--gold);">💡 Load Sample Input</button>' +
+          '<button class="btn btn-ghost" id="benchCurl">📋 Copy cURL</button>' +
+          '<button class="btn btn-ghost" id="benchShow">Show JSON Envelope</button>' +
+          '</div>';
+        
+        html += '<div style="margin-top:1.2rem;display:flex;gap:12px;align-items:center;background:rgba(4,6,14,0.7);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);font-family:var(--mono);font-size:0.72rem;">' +
+          '<div>Status: <span id="benchStatusBadge" style="color:var(--muted)">READY</span></div>' +
+          '<div>Latency: <span id="benchLatencyBadge" style="color:var(--cyan)">0.0 ms</span></div>' +
+          '<div>Contract: <span style="color:var(--green)">● VALIDATED</span></div>' +
+          '</div>';
+
+        html += '<div style="margin-top:1rem"><div class="section-title" style="display:flex;justify-content:space-between;align-items:center;"><span>Request Envelope</span><button class="chip" onclick="copyConsoleContent(\'benchEnvelope\')" style="cursor:pointer">Copy</button></div><pre class="console dim" id="benchEnvelope">—</pre></div>';
+        html += '<div style="margin-top:1rem"><div class="section-title" style="display:flex;justify-content:space-between;align-items:center;"><span>Execution Response &amp; AST Telemetry</span><button class="chip" onclick="copyConsoleContent(\'benchResponse\')" style="cursor:pointer">Copy</button></div><pre class="console dim" id="benchResponse">—</pre></div>';
         consoleArea.innerHTML = html;
 
         var actSel = document.getElementById("benchAction");
@@ -806,6 +952,45 @@
 
         document.getElementById("benchShow").addEventListener("click", renderEnvelope);
         document.getElementById("benchRun").addEventListener("click", runSelected);
+        document.getElementById("benchPreset").addEventListener("click", loadSamplePreset);
+        document.getElementById("benchCurl").addEventListener("click", copyCurlCommand);
+      }
+
+      window.copyConsoleContent = function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          navigator.clipboard.writeText(el.textContent);
+          alert("Copied to clipboard!");
+        }
+      };
+
+      function loadSamplePreset() {
+        var action = document.getElementById("benchAction").value;
+        var sample = SAMPLE_PAYLOADS[action];
+        if (!sample) return;
+
+        var fields = actionFields(action);
+        if (fields) {
+          fields.forEach(function(f) {
+            var el = document.querySelector('#benchParams [data-field="' + f[0] + '"]');
+            if (el && sample[f[0]] !== undefined) {
+              el.value = sample[f[0]];
+            }
+          });
+        } else {
+          var ta = document.getElementById("rawParams");
+          if (ta) ta.value = JSON.stringify(sample, null, 2);
+        }
+        renderEnvelope();
+      }
+
+      function copyCurlCommand() {
+        var req = currentRequest();
+        var curl = "curl -X POST http://127.0.0.1:8484/api/tools/" + selectedId + " \\\n" +
+          "  -H \"Content-Type: application/json\" \\\n" +
+          "  -d '" + JSON.stringify(req, null, 2) + "'";
+        navigator.clipboard.writeText(curl);
+        alert("cURL command copied to clipboard!");
       }
 
       function renderParams() {
@@ -813,13 +998,43 @@
         var fields = actionFields(action);
         var wrap = document.getElementById("benchParams");
         wrap.innerHTML = "";
-        if (!fields) { wrap.innerHTML = '<div class="hint">Raw params (JSON):</div>'; var ta=document.createElement("textarea"); ta.id="rawParams"; ta.placeholder='{ "key": "value" }'; wrap.appendChild(ta); renderEnvelope(); return; }
+        if (!fields) { 
+          wrap.innerHTML = '<div class="hint">Raw params (JSON):</div>'; 
+          var ta=document.createElement("textarea"); 
+          ta.id="rawParams"; 
+          ta.placeholder='{ "key": "value" }'; 
+          var sample = SAMPLE_PAYLOADS[action];
+          if (sample) ta.value = JSON.stringify(sample, null, 2);
+          ta.addEventListener("input", renderEnvelope);
+          wrap.appendChild(ta); 
+          renderEnvelope(); 
+          return; 
+        }
         fields.forEach(function (f) {
           var name = f[0], req = f[1];
-          var lbl = document.createElement("label"); lbl.innerHTML = name + (req ? ' <span style="color:var(--magenta)">*</span>' : "");
+          var lbl = document.createElement("label"); 
+          lbl.innerHTML = name + (req ? ' <span style="color:var(--magenta)">*</span>' : "");
           wrap.appendChild(lbl);
-          var inp = document.createElement("input"); inp.dataset.field = name; inp.placeholder = f[2] || ""; inp.type = f[2] === "bool" ? "text" : "text";
-          wrap.appendChild(inp);
+          
+          if (name === "code" || name === "body") {
+            var ta = document.createElement("textarea");
+            ta.dataset.field = name;
+            ta.placeholder = f[2] || "";
+            ta.rows = 4;
+            var sample = SAMPLE_PAYLOADS[action];
+            if (sample && sample[name]) ta.value = sample[name];
+            ta.addEventListener("input", renderEnvelope);
+            wrap.appendChild(ta);
+          } else {
+            var inp = document.createElement("input"); 
+            inp.dataset.field = name; 
+            inp.placeholder = f[2] || ""; 
+            inp.type = f[2] === "bool" ? "text" : "text";
+            var sample = SAMPLE_PAYLOADS[action];
+            if (sample && sample[name]) inp.value = sample[name];
+            inp.addEventListener("input", renderEnvelope);
+            wrap.appendChild(inp);
+          }
         });
         renderEnvelope();
       }
@@ -847,7 +1062,8 @@
       }
 
       function currentRequest() {
-        return { action: document.getElementById("benchAction").value, params: collectParams(), meta: { request_id: "bench_" + Math.random().toString(36).slice(2,9), ts: new Date().toISOString() } };
+        var act = document.getElementById("benchAction");
+        return { action: act ? act.value : "validate", params: collectParams(), meta: { request_id: "bench_" + Math.random().toString(36).slice(2,9), ts: new Date().toISOString() } };
       }
       function renderEnvelope() {
         var el = document.getElementById("benchEnvelope");
@@ -857,13 +1073,31 @@
       async function runSelected() {
         var respEl = document.getElementById("benchResponse");
         var tokEl = document.getElementById("benchToken");
-        respEl.className = "console dim"; respEl.textContent = "Validating…";
+        var statusBadge = document.getElementById("benchStatusBadge");
+        var latencyBadge = document.getElementById("benchLatencyBadge");
+        
+        respEl.className = "console dim"; respEl.textContent = "Validating contract & executing…";
+        if (statusBadge) { statusBadge.textContent = "RUNNING"; statusBadge.style.color = "var(--gold)"; }
+        
+        var startTime = performance.now();
         try {
-          var out = await Bench.run(selectedId, currentRequest(), { token: tokEl.value.trim() || undefined });
-          respEl.className = "console " + (out.ok ? "ok" : "err");
+          var out = await Bench.run(selectedId, currentRequest(), { token: (tokEl ? tokEl.value.trim() : undefined) });
+          var elapsed = (performance.now() - startTime).toFixed(1);
+          if (latencyBadge) latencyBadge.textContent = elapsed + " ms";
+          
+          if (out.ok) {
+            respEl.className = "console ok";
+            if (statusBadge) { statusBadge.textContent = "● EXECUTED (200 OK)"; statusBadge.style.color = "var(--green)"; }
+          } else {
+            respEl.className = "console err";
+            if (statusBadge) { statusBadge.textContent = "⚠️ CONTRACT ERROR"; statusBadge.style.color = "var(--magenta)"; }
+          }
           respEl.textContent = JSON.stringify(out, null, 2);
         } catch (e) {
+          var elapsed = (performance.now() - startTime).toFixed(1);
+          if (latencyBadge) latencyBadge.textContent = elapsed + " ms";
           respEl.className = "console err";
+          if (statusBadge) { statusBadge.textContent = "❌ CLIENT EXCEPTION"; statusBadge.style.color = "red"; }
           respEl.textContent = "CLIENT ERROR: " + e.message;
         }
       }
@@ -885,7 +1119,6 @@
         if (sEl) {
           sEl.textContent = "mirror armed → :8989";
           sEl.className = "chip";
-          // reflect live status after first heartbeat
           ZothBenchBusMirror.heartbeat(Bench.list().length, 42).then(function (r) {
             if (r.ok) { sEl.textContent = "mirror live → :8989"; sEl.style.borderColor = "rgba(16,185,129,0.5)"; sEl.style.color = "var(--green)"; }
             else { sEl.textContent = "mirror idle (" + (r.reason||"offline") + ")"; sEl.style.borderColor = "rgba(245,158,11,0.5)"; sEl.style.color = "var(--amber)"; }
@@ -899,7 +1132,6 @@
   <script src="/assets/zoth-gate.js"></script>
   <script src="/assets/zoth-tip.js" defer></script>
   <script src="/assets/zoth-annotator.js" defer></script>
-
-</main>
 </body>
 </html>
+

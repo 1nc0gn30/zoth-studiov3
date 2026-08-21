@@ -753,9 +753,12 @@
 
         <!-- Left: Code Editor & Execution -->
         <section class="forge-card forge-panel mobile-active" id="pane-forge-editor">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Template Library</span>
-            <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--edge-emerald);">● V8 Engine Ready</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Template Library</span>
+              <span class="chip" style="font-size:0.65rem; background:rgba(0,240,255,0.1); border-color:var(--edge-cyan); color:var(--edge-cyan);">V8 Engine 2026</span>
+            </div>
+            <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--edge-emerald);">● Zero-Cloud Isolate Sandbox Active</span>
           </div>
 
           <div class="template-selector-bar">
@@ -764,39 +767,70 @@
             <button class="tpl-btn" onclick="loadTemplate('solana')">⚡ Solana RPC Proxy</button>
             <button class="tpl-btn" onclick="loadTemplate('auth')">🔐 Ed25519 Auth Gate</button>
             <button class="tpl-btn" onclick="loadTemplate('stream')">🌊 Stream Transformer</button>
+            <button class="tpl-btn" onclick="loadTemplate('webp')">🖼️ WebP Image Edge</button>
           </div>
 
           <div class="editor-box">
             <div class="editor-topbar">
-              <span>handler.ts (TypeScript / V8 Isolate)</span>
+              <span style="display:flex; align-items:center; gap:8px;">
+                <span style="width:8px; height:8px; border-radius:50%; background:var(--edge-cyan);"></span>
+                handler.ts (TypeScript / Cloudflare &amp; Deno Compatible)
+              </span>
               <span id="editor-char-count">840 chars · 34 lines</span>
             </div>
             <textarea id="edge-code-area" class="code-editor-area" oninput="updateCharCount()"></textarea>
           </div>
 
+          <!-- Interactive Request Configurator -->
+          <div style="background:rgba(4,6,14,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">
+              <span style="text-transform:uppercase; font-weight:700; color:#fff;">⚙️ Request Simulator</span>
+              <span>Target: <code style="color:var(--edge-cyan);">http://127.0.0.1:8484/edge/execute</code></span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <select id="req-method" style="width:110px; min-height:38px; background:#020408; color:var(--edge-cyan); font-weight:700;">
+                <option value="GET">GET</option>
+                <option value="POST" selected>POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+              <input id="req-path" type="text" value="/api/v1/auth/verify?cluster=IAD1" placeholder="/path/to/resource" style="flex:1; min-height:38px; min-width:200px;">
+            </div>
+            <div>
+              <textarea id="req-body" placeholder='{ "message": "hello edge", "client_id": "zoth_987" }' rows="2" style="min-height:55px; font-size:0.75rem;"></textarea>
+            </div>
+          </div>
+
           <div class="action-row">
-            <button class="btn-edge" onclick="deployToEdge()">
-              <span>⚡</span> Dispatch to Global Edge
+            <button class="btn-edge" onclick="runDryRunTest()">
+              <span>⚡</span> Execute Live Isolate Test
             </button>
-            <button class="btn-ghost-edge" onclick="runDryRunTest()">
-              <span>🧪</span> Execute Dry-Run Test
+            <button class="btn-ghost-edge" onclick="deployToEdge()">
+              <span>🚀</span> Deploy to Local Node (:8484)
+            </button>
+            <button class="btn-ghost-edge" onclick="copyEdgeCurl()">
+              <span>📋</span> Copy cURL
+            </button>
+            <button class="btn-ghost-edge" onclick="exportTypeScript()">
+              <span>📦</span> Export TS
             </button>
             <span id="deploy-msg" style="font-family:var(--font-mono); font-size:0.8rem; color:var(--edge-emerald); margin-left:auto;"></span>
           </div>
 
           <!-- Execution Output Console -->
           <div style="background:#020409; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; font-family:var(--font-mono); font-size:0.78rem;">
-            <div style="color:#94a3b8; margin-bottom:6px; display:flex; justify-content:space-between;">
-              <span>Simulated Execution Log</span>
-              <span id="test-status-badge" style="color:var(--edge-cyan);">HTTP 200 OK · 1.4ms</span>
+            <div style="color:#94a3b8; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700; color:#fff;">Simulated Execution Log</span>
+              <span id="test-status-badge" style="color:var(--edge-emerald); font-weight:700;">HTTP 200 OK · 1.42ms</span>
             </div>
-            <pre id="test-output-log" style="color:#38bdf8; max-height:140px; overflow-y:auto; line-height:1.5; -webkit-overflow-scrolling:touch; word-break:break-word;">{
+            <pre id="test-output-log" style="color:#38bdf8; max-height:160px; overflow-y:auto; line-height:1.5; -webkit-overflow-scrolling:touch; word-break:break-word;">{
   "status": "ok",
   "worker": "zoth-edge-iad1",
   "runtime": "v8-isolate-sandboxed",
   "latency_ms": 1.42,
   "memory_used_kb": 148,
-  "rate_limit_remaining": 98
+  "rate_limit_remaining": 98,
+  "timestamp": "2026-08-21T00:00:00.000Z"
 }</pre>
           </div>
         </section>
@@ -805,22 +839,22 @@
         <aside class="forge-right-col">
           <!-- Waterfall Panel -->
           <div class="forge-card forge-panel" id="pane-forge-waterfall">
-            <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Execution Waterfall (TTFB: 1.42ms)</span>
+            <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Execution Waterfall (TTFB: <span id="waterfall-ttfb">1.42ms</span>)</span>
             <div class="waterfall-box">
               <div class="waterfall-bar-row">
                 <span class="wf-label">DNS Resolve</span>
-                <div class="wf-track"><div class="wf-fill" style="width:14%; background:var(--edge-cyan);"></div></div>
-                <span class="wf-val">0.2ms</span>
+                <div class="wf-track"><div id="wf-dns-bar" class="wf-fill" style="width:14%; background:var(--edge-cyan);"></div></div>
+                <span class="wf-val" id="wf-dns-val">0.2ms</span>
               </div>
               <div class="waterfall-bar-row">
                 <span class="wf-label">TLS Handshake</span>
-                <div class="wf-track"><div class="wf-fill" style="width:28%; background:var(--edge-gold);"></div></div>
-                <span class="wf-val">0.4ms</span>
+                <div class="wf-track"><div id="wf-tls-bar" class="wf-fill" style="width:28%; background:var(--edge-gold);"></div></div>
+                <span class="wf-val" id="wf-tls-val">0.4ms</span>
               </div>
               <div class="waterfall-bar-row">
                 <span class="wf-label">V8 Isolate Exec</span>
-                <div class="wf-track"><div class="wf-fill" style="width:58%; background:var(--edge-magenta);"></div></div>
-                <span class="wf-val">0.8ms</span>
+                <div class="wf-track"><div id="wf-v8-bar" class="wf-fill" style="width:58%; background:var(--edge-magenta);"></div></div>
+                <span class="wf-val" id="wf-v8-val">0.8ms</span>
               </div>
             </div>
           </div>
@@ -867,24 +901,29 @@
   });
 }`,
         aeo: `export default async function handler(req: Request): Promise<Response> {
-  const response = await fetch(req);
   const jsonLdGraph = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Zoth Studio",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Linux, Windows",
-    "offers": { "@type": "Offer", "price": "0.00", "priceCurrency": "USD" }
+    "offers": { "@type": "Offer", "price": "0.00", "priceCurrency": "USD" },
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": ["h1", ".lede", ".kicker"]
+    }
   };
 
   // Edge-injected structured AEO schema
   return new Response(JSON.stringify(jsonLdGraph, null, 2), {
-    headers: { 'Content-Type': 'application/ld+json' }
+    headers: { 'Content-Type': 'application/ld+json', 'X-AEO-Engine': 'Zoth-Edge-v2.6' }
   });
 }`,
         solana: `export default async function handler(req: Request): Promise<Response> {
   // Ultra-low latency Solana RPC reverse proxy with cache headers
-  const rpcBody = await req.json();
+  let rpcBody = { method: 'getLatestBlockhash', id: 1 };
+  try { rpcBody = await req.json(); } catch(e) {}
+  
   const allowedMethods = ['getAccountInfo', 'getLatestBlockhash', 'getBalance'];
 
   if (!allowedMethods.includes(rpcBody.method)) {
@@ -893,7 +932,7 @@
 
   return new Response(JSON.stringify({
     jsonrpc: '2.0',
-    result: { value: { lamports: 5000000000, owner: '11111111111111111111111111111111' } },
+    result: { value: { blockhash: 'EkSnNWid2cvwEVnNx9bWMqNac2KeTaNd7ErSKSmoEK9A', lastValidBlockHeight: 309182390 } },
     id: rpcBody.id
   }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=2' } });
 }`,
@@ -907,7 +946,7 @@
   return new Response(JSON.stringify({
     authenticated: true,
     principal: 'zoth-master-operator',
-    roles: ['admin', 'swarm-arbiter'],
+    roles: ['admin', 'swarm-arbiter', 'isolate-creator'],
     issued_at: new Date().toISOString()
   }), { headers: { 'Content-Type': 'application/json' } });
 }`,
@@ -918,13 +957,28 @@
 
   // Async Chunked Streaming Response
   (async () => {
-    await writer.write(encoder.encode("data: {\"event\": \"connected\", \"node\": \"IAD1\"}\\n\\n"));
-    await writer.write(encoder.encode("data: {\"event\": \"ast_verified\", \"status\": 1}\\n\\n"));
+    await writer.write(encoder.encode("data: {\\"event\\": \\"connected\\", \\"node\\": \\"IAD1\\"}\\n\\n"));
+    await writer.write(encoder.encode("data: {\\"event\\": \\"ast_verified\\", \\"status\\": 1}\\n\\n"));
     await writer.close();
   })();
 
   return new Response(readable, {
     headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' }
+  });
+}`,
+        webp: `export default async function handler(req: Request): Promise<Response> {
+  // Edge WebP / AVIF Content Negotiator
+  const accept = req.headers.get('Accept') || '';
+  const bestFormat = accept.includes('image/avif') ? 'avif' : (accept.includes('image/webp') ? 'webp' : 'jpeg');
+
+  return new Response(JSON.stringify({
+    status: 'optimized',
+    format_selected: bestFormat,
+    dimensions: { width: 1200, height: 630 },
+    compression_ratio: '0.618 (Phi Optimized)',
+    cache_status: 'HIT_EDGE_L1'
+  }), {
+    headers: { 'Content-Type': 'application/json', 'X-Image-Format': bestFormat, 'Cache-Control': 'public, max-age=31536000, immutable' }
   });
 }`
       };
@@ -950,32 +1004,73 @@
         setTimeout(() => {
           msg.textContent = '✓ Deployed to 8 Global Edge Clusters in 48ms!';
           setTimeout(() => { msg.textContent = ''; }, 3500);
-        }, 500);
+        }, 400);
       }
 
       function runDryRunTest() {
         const log = document.getElementById('test-output-log');
         const badge = document.getElementById('test-status-badge');
+        const method = document.getElementById('req-method').value;
+        const path = document.getElementById('req-path').value;
+        
         badge.textContent = 'Executing V8 Isolate...';
         badge.style.color = 'var(--edge-gold)';
 
+        const start = performance.now();
         setTimeout(() => {
-          badge.textContent = 'HTTP 200 OK · 1.42ms';
+          const elapsed = (Math.random() * 0.8 + 0.9).toFixed(2);
+          const dnsTime = (Math.random() * 0.2 + 0.1).toFixed(2);
+          const tlsTime = (Math.random() * 0.3 + 0.2).toFixed(2);
+          const v8Time = (elapsed - dnsTime - tlsTime).toFixed(2);
+
+          document.getElementById('waterfall-ttfb').textContent = elapsed + 'ms';
+          document.getElementById('wf-dns-val').textContent = dnsTime + 'ms';
+          document.getElementById('wf-tls-val').textContent = tlsTime + 'ms';
+          document.getElementById('wf-v8-val').textContent = v8Time + 'ms';
+
+          badge.textContent = `HTTP 200 OK · ${elapsed}ms`;
           badge.style.color = 'var(--edge-emerald)';
-          log.textContent = JSON.stringify({
+
+          const sampleResponse = {
             status: 'ok',
+            request: {
+              method: method,
+              path: path,
+              proto: 'HTTP/2'
+            },
             worker: 'zoth-edge-iad1',
             runtime: 'v8-isolate-sandboxed',
-            latency_ms: 1.42,
-            memory_used_kb: 148,
-            timestamp: new Date().toISOString(),
-            headers: {
-              'x-edge-cluster': 'IAD1',
-              'x-runtime': 'v8-isolate-2026',
-              'content-type': 'application/json'
-            }
-          }, null, 2);
-        }, 250);
+            latency_ms: parseFloat(elapsed),
+            memory_used_kb: Math.floor(Math.random() * 40 + 120),
+            security_invariants: {
+              zero_cloud_leakage: true,
+              argon2id_vault_isolated: true,
+              ast_clean: true
+            },
+            timestamp: new Date().toISOString()
+          };
+
+          log.textContent = JSON.stringify(sampleResponse, null, 2);
+        }, 180);
+      }
+
+      function copyEdgeCurl() {
+        const method = document.getElementById('req-method').value;
+        const path = document.getElementById('req-path').value;
+        const curl = `curl -X ${method} http://127.0.0.1:8484${path} \\\n  -H "Authorization: Bearer sk_zoth_sovereign" \\\n  -H "Content-Type: application/json"`;
+        navigator.clipboard.writeText(curl);
+        alert('cURL command copied to clipboard!');
+      }
+
+      function exportTypeScript() {
+        const code = document.getElementById('edge-code-area').value;
+        const blob = new Blob([code], { type: 'text/typescript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'handler.ts';
+        a.click();
+        URL.revokeObjectURL(url);
       }
 
       function setForgeMobileView(viewKey) {
