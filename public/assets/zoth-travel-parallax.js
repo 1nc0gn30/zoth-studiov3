@@ -1,5 +1,5 @@
 /**
- * Zoth Studio — 3D Spatial Scroll Travel & Pinned Parallax Engine (v5.0)
+ * Zoth Studio — 3D Spatial Scroll Travel & Pinned Parallax Engine (v5.1)
  * Transforms linear scrolling into deep 3D spatial camera travel, bringing 3D chambers
  * into center focus and pushing past completed stages with depth blur and velocity.
  */
@@ -16,16 +16,14 @@
 
     if (!track || stages.length === 0) return;
 
-    // Mobile fallback gracefully uses standard layout
     if (isMobile) {
       stages.forEach(function(s) { s.classList.add("active"); });
       return;
     }
 
     var ticking = false;
-    var currentProgress = 0;
 
-    // 6 Waypoint ranges [start, center, end]
+    // 6 Waypoints matching the 6 chambers
     var waypoints = [
       { id: "hero", start: 0.00, center: 0.08, end: 0.18, title: "01 Swarm" },
       { id: "for-everyone", start: 0.18, center: 0.27, end: 0.38, title: "02 Creators" },
@@ -58,7 +56,6 @@
         }
       });
 
-      // Update HUD Dial & Waypoints
       if (hudDial) {
         hudDial.textContent = "WARP " + Math.round(prog * 100) + "%";
       }
@@ -67,7 +64,6 @@
         btn.classList.toggle("active", idx === activeIdx);
       });
 
-      // Shift 3D Cyber Space Grid
       if (spaceGrid) {
         spaceGrid.style.transform = "perspective(600px) rotateX(65deg) translateY(" + (120 - prog * 80) + "px) translateZ(" + (prog * 150) + "px) scale(2.2)";
       }
@@ -105,51 +101,6 @@
           behavior: "smooth"
         });
       });
-    });
-
-    // Keyboard Arrow/Page Navigation
-    window.addEventListener("keydown", function (e) {
-      if (["ArrowDown", "PageDown", " "].indexOf(e.key) !== -1 && !e.target.matches("input, textarea, select")) {
-        var trackRect = track.getBoundingClientRect();
-        var maxScroll = track.offsetHeight - window.innerHeight;
-        var scrolled = -trackRect.top;
-        var prog = Math.max(0, Math.min(1, scrolled / maxScroll));
-        
-        var currentIdx = 0;
-        for (var i = 0; i < waypoints.length; i++) {
-          if (prog >= waypoints[i].start && (prog < waypoints[i].end || i === waypoints.length - 1)) {
-            currentIdx = i;
-            break;
-          }
-        }
-        
-        if (currentIdx < waypoints.length - 1) {
-          e.preventDefault();
-          var nextWp = waypoints[currentIdx + 1];
-          var targetY = track.offsetTop + (nextWp.center * maxScroll);
-          window.scrollTo({ top: targetY, behavior: "smooth" });
-        }
-      } else if (["ArrowUp", "PageUp"].indexOf(e.key) !== -1 && !e.target.matches("input, textarea, select")) {
-        var trackRect = track.getBoundingClientRect();
-        var maxScroll = track.offsetHeight - window.innerHeight;
-        var scrolled = -trackRect.top;
-        var prog = Math.max(0, Math.min(1, scrolled / maxScroll));
-        
-        var currentIdx = 0;
-        for (var i = 0; i < waypoints.length; i++) {
-          if (prog >= waypoints[i].start && (prog < waypoints[i].end || i === waypoints.length - 1)) {
-            currentIdx = i;
-            break;
-          }
-        }
-        
-        if (currentIdx > 0) {
-          e.preventDefault();
-          var prevWp = waypoints[currentIdx - 1];
-          var targetY = track.offsetTop + (prevWp.center * maxScroll);
-          window.scrollTo({ top: targetY, behavior: "smooth" });
-        }
-      }
     });
 
     // Initial sync
