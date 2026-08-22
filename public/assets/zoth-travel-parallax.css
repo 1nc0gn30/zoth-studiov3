@@ -1,0 +1,273 @@
+/* =============================================================================
+   ZOTH STUDIO — 3D SPATIAL SCROLL TRAVEL & PINNED PARALLAX ENGINE (v5.0)
+   ============================================================================= */
+
+:root {
+  --travel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --stage-pad: clamp(16px, 4vw, 48px);
+}
+
+/* Master Scroll Track Container */
+.scroll-travel-track {
+  position: relative;
+  width: 100%;
+  height: 650vh; /* 3D Spatial Travel Height */
+  background: #04060c;
+  overflow: visible;
+}
+
+/* Pinned Viewport Camera Stage */
+.scroll-travel-viewport {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  contain: layout size;
+}
+
+/* 3D Deep Space Cyber Backdrop */
+.travel-space-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.travel-space-backdrop video,
+.travel-space-backdrop canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.25;
+  filter: saturate(1.2) contrast(1.15);
+  transition: transform 0.6s var(--travel-ease), opacity 0.6s ease;
+  will-change: transform;
+}
+
+/* Atmospheric Space Fog & Wireframe Grid */
+.travel-grid-mesh {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(600px) rotateX(65deg) translateY(120px) scale(2.2);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  opacity: 0.45;
+  transition: transform 0.8s var(--travel-ease);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3D SCENE STAGES (6 Continuous Spatial Chambers)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.travel-scene-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(56px, 7vh, 80px) var(--stage-pad);
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: perspective(1400px) translate3d(0, 45px, -550px) rotateX(8deg) scale(0.9);
+  filter: blur(10px);
+  transition: opacity 0.5s var(--travel-ease),
+              transform 0.6s var(--travel-ease),
+              filter 0.5s ease,
+              visibility 0.5s ease;
+  will-change: transform, opacity, filter;
+  z-index: 2;
+}
+
+/* Active Scene in Center Focus */
+.travel-scene-stage.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: perspective(1400px) translate3d(0, 0, 0) rotateX(0deg) scale(1);
+  filter: blur(0px);
+  z-index: 5;
+}
+
+/* Exited Scene (Pushed Past Camera) */
+.travel-scene-stage.pushed-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: perspective(1400px) translate3d(0, -45px, 350px) rotateX(-6deg) scale(1.15);
+  filter: blur(12px);
+  z-index: 1;
+}
+
+/* Inner Stage Containers */
+.hero-stage .hero-parallax-stage,
+.creators-stage .showcase-inner,
+.about-stage .note-copy,
+.agents-stage .stage-container,
+.pets-stage .pets-inner,
+.install-stage .install-inner {
+  width: min(1500px, 94vw) !important;
+  max-width: min(1500px, 94vw) !important;
+  max-height: 86vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(251, 191, 36, 0.4) transparent;
+  padding: clamp(20px, 3vh, 36px) clamp(18px, 3vw, 40px) !important;
+  background: rgba(6, 10, 22, 0.88) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  border: 1px solid rgba(0, 240, 255, 0.22) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 240, 255, 0.1) !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CYBERNETIC WAYPOINT HUD & FAST WARP SCRUBBER
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.travel-hud-nav {
+  position: fixed;
+  right: clamp(14px, 2.5vw, 32px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.hud-progress-dial {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold, #fbbf24);
+  background: rgba(8, 12, 24, 0.92);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  padding: 4px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.25);
+  margin-bottom: 4px;
+}
+
+.hud-waypoint-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.hud-waypoint-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  background: rgba(5, 7, 15, 0.92);
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hud-waypoint-btn:hover .hud-waypoint-label,
+.hud-waypoint-btn.active .hud-waypoint-label {
+  opacity: 1;
+  transform: translateX(0);
+  color: #fff;
+}
+
+.hud-waypoint-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.hud-waypoint-btn:hover .hud-waypoint-dot {
+  background: #00f0ff;
+  border-color: #00f0ff;
+  box-shadow: 0 0 12px #00f0ff;
+  transform: scale(1.3);
+}
+
+.hud-waypoint-btn.active .hud-waypoint-dot {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px #fbbf24, 0 0 30px rgba(251, 191, 36, 0.6);
+  transform: scale(1.45);
+}
+
+@media (max-width: 880px) {
+  .travel-hud-nav {
+    display: none !important;
+  }
+  .scroll-travel-track {
+    height: auto !important;
+  }
+  .scroll-travel-viewport {
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .travel-scene-stage {
+    position: relative !important;
+    inset: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    filter: none !important;
+    padding: 24px 10px !important;
+    min-height: auto !important;
+  }
+  .hero-stage .hero-parallax-stage,
+  .creators-stage .showcase-inner,
+  .about-stage .note-copy,
+  .agents-stage .stage-container,
+  .pets-stage .pets-inner,
+  .install-stage .install-inner {
+    max-height: none !important;
+    overflow-y: visible !important;
+    padding: 18px 12px !important;
+  }
+}
