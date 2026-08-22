@@ -1,13 +1,11 @@
 /**
- * Zoth Studio — 3D Spatial Scroll Travel & Pinned Parallax Engine (v5.1)
- * Transforms linear scrolling into deep 3D spatial camera travel, bringing 3D chambers
- * into center focus and pushing past completed stages with depth blur and velocity.
+ * Zoth Studio — 3D Spatial Scroll Travel & Pinned Parallax Engine (v5.2)
+ * Mobile-First: Gracefully disabled on mobile viewports (<= 880px) ensuring natural vertical scrolling.
  */
 (function () {
   "use strict";
 
   function initTravelParallax() {
-    var isMobile = window.innerWidth <= 880;
     var track = document.querySelector(".scroll-travel-track");
     var stages = document.querySelectorAll(".travel-scene-stage");
     var hudDial = document.getElementById("hudProgressDial");
@@ -16,14 +14,28 @@
 
     if (!track || stages.length === 0) return;
 
-    if (isMobile) {
-      stages.forEach(function(s) { s.classList.add("active"); });
+    function isMobile() {
+      return window.innerWidth <= 880;
+    }
+
+    function resetMobileStages() {
+      stages.forEach(function (s) {
+        s.classList.add("active");
+        s.classList.remove("pushed-out");
+        s.style.opacity = "";
+        s.style.transform = "";
+        s.style.visibility = "";
+        s.style.filter = "";
+      });
+    }
+
+    if (isMobile()) {
+      resetMobileStages();
       return;
     }
 
     var ticking = false;
 
-    // 6 Waypoints matching the 6 chambers
     var waypoints = [
       { id: "hero", start: 0.00, center: 0.08, end: 0.18, title: "01 Swarm" },
       { id: "for-everyone", start: 0.18, center: 0.27, end: 0.38, title: "02 Creators" },
@@ -34,8 +46,12 @@
     ];
 
     function updateScenes(prog) {
-      var activeIdx = 0;
+      if (isMobile()) {
+        resetMobileStages();
+        return;
+      }
 
+      var activeIdx = 0;
       for (var i = 0; i < waypoints.length; i++) {
         if (prog >= waypoints[i].start && (prog < waypoints[i].end || i === waypoints.length - 1)) {
           activeIdx = i;
@@ -70,6 +86,7 @@
     }
 
     function onScroll() {
+      if (isMobile()) return;
       var trackRect = track.getBoundingClientRect();
       var maxScroll = track.offsetHeight - window.innerHeight;
       if (maxScroll <= 0) return;
@@ -87,8 +104,14 @@
     }
 
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", function() {
+      if (isMobile()) {
+        resetMobileStages();
+      } else {
+        onScroll();
+      }
+    });
 
-    // Interactive Waypoint Clicks
     waypointBtns.forEach(function (btn, idx) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
