@@ -92,22 +92,35 @@
   function css() {
     return [
       ":root{--zoth-ribbon:0px}",
-      "html.zoth-preview{--zoth-ribbon:38px;scroll-padding-top:calc(64px + 38px)}",
-      "html.zoth-preview body{padding-top:38px!important}",
+      "html.zoth-preview{--zoth-ribbon:38px;scroll-padding-top:calc(56px + 38px + 12px)}",
+      "html.zoth-preview body{padding-top:calc(56px + 38px)!important}",
       "html.zoth-preview header.bar, html.zoth-preview header.topbar, html.zoth-preview .comic-topbar, html.zoth-preview header[role=\"banner\"], html.zoth-preview #topbar{top:38px!important}",
-      "html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(64px + 38px)!important}",
-      "#zoth-ribbon{position:fixed;top:0;left:0;right:0;z-index:100000;display:none;align-items:center;justify-content:space-between;gap:12px;",
+      "html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(56px + 38px)!important}",
+      "#zoth-ribbon{position:fixed;top:0;left:0;right:0;z-index:100000;display:none;align-items:center;justify-content:space-between;gap:10px;",
       "height:38px;padding:0 16px;background:rgba(10,14,26,0.96);backdrop-filter:blur(16px);color:#f7f4ee;border-bottom:1px solid rgba(0,240,255,0.35);",
-      "font-family:Inter,system-ui,sans-serif;font-size:.82rem;line-height:1;box-shadow:0 4px 20px rgba(0,0,0,0.5)}",
+      "font-family:Inter,system-ui,sans-serif;font-size:.82rem;line-height:1;box-shadow:0 4px 20px rgba(0,0,0,0.5);box-sizing:border-box}",
       "#zoth-ribbon.on{display:flex}",
-      "#zoth-ribbon .zoth-r-left{display:flex;align-items:center;gap:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
-      "#zoth-ribbon .zoth-r-badge{background:rgba(0,240,255,0.15);color:#00f0ff;border:1px solid rgba(0,240,255,0.4);font-family:JetBrains Mono,monospace;font-size:0.68rem;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:0.04em}",
+      "#zoth-ribbon .zoth-r-left{display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0;flex:1 1 auto}",
+      "#zoth-ribbon .zoth-r-badge{background:rgba(0,240,255,0.15);color:#00f0ff;border:1px solid rgba(0,240,255,0.4);font-family:JetBrains Mono,monospace;font-size:0.68rem;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:0.04em;flex-shrink:0}",
+      "#zoth-ribbon .zoth-r-text-desktop{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline}",
+      "#zoth-ribbon .zoth-r-text-mobile{display:none}",
       "#zoth-ribbon .zoth-r-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}",
-      "#zoth-ribbon button.zoth-btn-install{background:linear-gradient(135deg,#e8c872,#fbbf24);color:#0a0e1a;font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 0 10px rgba(232,200,114,0.4);transition:all .2s ease}",
+      "#zoth-ribbon button.zoth-btn-install{background:linear-gradient(135deg,#e8c872,#fbbf24);color:#0a0e1a;font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 0 10px rgba(232,200,114,0.4);transition:all .2s ease;white-space:nowrap}",
       "#zoth-ribbon button.zoth-btn-install:hover{transform:scale(1.04);box-shadow:0 0 16px rgba(232,200,114,0.7)}",
-      "#zoth-ribbon a.zoth-btn-social{background:rgba(255,255,255,0.08);color:#e2e8f0;font-family:JetBrains Mono,monospace;font-size:.72rem;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);text-decoration:none;transition:all .2s ease}",
+      "#zoth-ribbon a.zoth-btn-social{background:rgba(255,255,255,0.08);color:#e2e8f0;font-family:JetBrains Mono,monospace;font-size:.72rem;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);text-decoration:none;transition:all .2s ease;white-space:nowrap}",
       "#zoth-ribbon a.zoth-btn-social:hover{background:rgba(255,255,255,0.15);color:#fff}",
-      "@media (max-width:760px){#zoth-ribbon{height:42px;font-size:.74rem}html.zoth-preview{--zoth-ribbon:42px;scroll-padding-top:calc(56px + 42px)}html.zoth-preview body{padding-top:42px!important}html.zoth-preview header.bar, html.zoth-preview header.topbar, html.zoth-preview .comic-topbar, html.zoth-preview header[role=\"banner\"], html.zoth-preview #topbar{top:42px!important}html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(56px + 42px)!important}#zoth-ribbon .zoth-hide-mobile{display:none}}",
+      "@media (max-width:760px){",
+      "#zoth-ribbon{height:40px;font-size:.74rem;padding:0 10px;gap:6px}",
+      "html.zoth-preview{--zoth-ribbon:40px;scroll-padding-top:calc(56px + 40px + 8px)}",
+      "html.zoth-preview body{padding-top:calc(56px + 40px)!important}",
+      "html.zoth-preview header.bar, html.zoth-preview header.topbar, html.zoth-preview .comic-topbar, html.zoth-preview header[role=\"banner\"], html.zoth-preview #topbar{top:40px!important}",
+      "html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(56px + 40px)!important}",
+      "#zoth-ribbon .zoth-hide-mobile{display:none}",
+      "#zoth-ribbon .zoth-r-badge{font-size:0.62rem;padding:2px 5px}",
+      "#zoth-ribbon .zoth-r-text-desktop{display:none}",
+      "#zoth-ribbon .zoth-r-text-mobile{display:inline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.72rem;min-width:0}",
+      "#zoth-ribbon button.zoth-btn-install{padding:4px 10px;font-size:.68rem}",
+      "}",
       
       "#zoth-modal{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(3,5,10,0.85);backdrop-filter:blur(12px)}",
       "#zoth-modal.on{display:flex;animation:zothModalFadeIn .2s ease-out}",
@@ -170,12 +183,16 @@
     ribbon.id = "zoth-ribbon";
     ribbon.innerHTML =
       '<div class="zoth-r-left">' +
-        '<span class="zoth-r-badge">WEB PREVIEW</span>' +
-        '<span>Full sovereign multi-agent tools run on your local machine (:8484)</span>' +
+        '<span class="zoth-r-badge">PREVIEW</span>' +
+        '<span class="zoth-r-text-desktop">Full sovereign multi-agent tools run on your local machine (:8484)</span>' +
+        '<span class="zoth-r-text-mobile">Local Hub (:8484)</span>' +
       '</div>' +
       '<div class="zoth-r-actions">' +
         '<a href="/social/" class="zoth-btn-social zoth-hide-mobile">🎬 46 Video Demos</a>' +
-        '<button type="button" class="zoth-btn-install" data-zoth-open>🚀 Install Desktop App</button>' +
+        '<button type="button" class="zoth-btn-install" data-zoth-open>' +
+          '<span class="zoth-r-text-desktop">🚀 Install Desktop App</span>' +
+          '<span class="zoth-r-text-mobile">⚡ Install</span>' +
+        '</button>' +
       '</div>';
     document.body.appendChild(ribbon);
 
