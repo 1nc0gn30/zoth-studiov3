@@ -1245,6 +1245,448 @@ AGENTS_DATA = [
     }
 ]
 
+HERMETIC_METADATA = {
+    "azoth": {
+        "hermetic_principle": "Mentalism (\"The All is Mind; The Universe is Mental\")",
+        "hermetic_rank": "👑 Magisterium Prime",
+        "alchemical_element": "Aether & Celestial Gold",
+        "alchemical_glyph": "🜔",
+        "resonance_frequency": "963 Hz",
+        "freq_int": 963,
+        "transmutation_mode": "Solve et Coagula (Universal Synthesis)",
+        "planetary_affinity": "Sol (☉) & Celestial Aether",
+        "sacred_ratio": "Φ = 1.6180339887 (Golden Proportion)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🜔 Aether & Celestial Gold",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "Supreme Tiebreaker (1.0)",
+        "category": "architect",
+        "prev_agent": "radical-minion",
+        "prev_name": "Radical Minion",
+        "next_agent": "antigravity",
+        "next_name": "Antigravity"
+    },
+    "antigravity": {
+        "hermetic_principle": "Vibration (\"Nothing rests; everything moves; everything vibrates\")",
+        "hermetic_rank": "🪐 Lead Autonomous Architect",
+        "alchemical_element": "Quantum Gravitation & Celestial Blue",
+        "alchemical_glyph": "🝢",
+        "resonance_frequency": "852 Hz",
+        "freq_int": 852,
+        "transmutation_mode": "Zero-G Superposition & Deep Tree AST",
+        "planetary_affinity": "Uranus (♅) & Celestial Orbit",
+        "sacred_ratio": "Φ² = 2.6180339887 (Harmonic Field)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🌌 Quantum Gravitation & Blue",
+        "meta_4_label": "Subagent Protocol",
+        "meta_4_val": "Deep Tree Spawning & Workspaces",
+        "category": "architect code",
+        "prev_agent": "azoth",
+        "prev_name": "Master Azoth",
+        "next_agent": "grok",
+        "next_name": "Grok"
+    },
+    "grok": {
+        "hermetic_principle": "Polarity (\"Everything is dual; opposites are identical in nature\")",
+        "hermetic_rank": "📐 Mathematical Invariant Arbiter",
+        "alchemical_element": "Electric Emerald & Damascus Steel",
+        "alchemical_glyph": "🜎",
+        "resonance_frequency": "741 Hz",
+        "freq_int": 741,
+        "transmutation_mode": "First-Principles Formal Verification",
+        "planetary_affinity": "Jupiter (♃) & Astrolabe Matrix",
+        "sacred_ratio": "√5 = 2.2360679 (Invariant Base)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "📐 Electric Emerald & Damascus",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "Mathematical Invariant (1.0)",
+        "category": "architect code",
+        "prev_agent": "antigravity",
+        "prev_name": "Antigravity",
+        "next_agent": "hermes",
+        "next_name": "Hermes"
+    },
+    "hermes": {
+        "hermetic_principle": "Rhythm (\"Everything flows out and in; the pendulum swings in all\")",
+        "hermetic_rank": "⚡ Winged Sovereign Herald",
+        "alchemical_element": "Blazing Amber & Mercury Gold",
+        "alchemical_glyph": "☿",
+        "resonance_frequency": "528 Hz",
+        "freq_int": 528,
+        "transmutation_mode": "Sub-10ms Tool Calling & Binary Hardening",
+        "planetary_affinity": "Mercury (☿) & Caduceus Lightning",
+        "sacred_ratio": "1/Φ = 0.6180339 (Velocity Flow)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "☿ Blazing Amber & Gold Wings",
+        "meta_4_label": "Tool Latency",
+        "meta_4_val": "Sub-10ms Local Dispatch",
+        "category": "architect automation",
+        "prev_agent": "grok",
+        "prev_name": "Grok",
+        "next_agent": "ghostbyte",
+        "next_name": "GhostByte"
+    },
+    "ghostbyte": {
+        "hermetic_principle": "Correspondence (\"As above, so below; as within, so without\")",
+        "hermetic_rank": "🔒 Zero-Knowledge Cipher Gatekeeper",
+        "alchemical_element": "Ultraviolet & Damascus Steel",
+        "alchemical_glyph": "🜍",
+        "resonance_frequency": "432 Hz",
+        "freq_int": 432,
+        "transmutation_mode": "XChaCha20-Poly1305 + Argon2id Lockdown",
+        "planetary_affinity": "Saturn (♄) & Obsidian Seal",
+        "sacred_ratio": "2^256 / 2^128 (Entropy Bounds)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🔒 Ultraviolet & Damascus",
+        "meta_4_label": "Cipher Suite",
+        "meta_4_val": "XChaCha20-Poly1305 + Argon2id",
+        "category": "architect security",
+        "prev_agent": "hermes",
+        "prev_name": "Hermes",
+        "next_agent": "athena",
+        "next_name": "Athena"
+    },
+    "athena": {
+        "hermetic_principle": "Cause and Effect (\"Every cause has its effect; every effect has its cause\")",
+        "hermetic_rank": "🦉 High Codex Hierophant",
+        "alchemical_element": "Caelum Sapphire & Golden Papyrus",
+        "alchemical_glyph": "🝤",
+        "resonance_frequency": "639 Hz",
+        "freq_int": 639,
+        "transmutation_mode": "AEO Semantic Indexing & Schema Synthesis",
+        "planetary_affinity": "Pallas Athena & Minerva Caelum",
+        "sacred_ratio": "Φ³ = 4.2360679 (Wisdom Sequence)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🦉 Caelum Sapphire & Papyrus",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.8% (AEO Matrix Lead)",
+        "category": "architect creative",
+        "prev_agent": "ghostbyte",
+        "prev_name": "GhostByte",
+        "next_agent": "chronos",
+        "next_name": "Chronos"
+    },
+    "chronos": {
+        "hermetic_principle": "Rhythm (\"The measure of the swing to the right is the measure of the swing to the left\")",
+        "hermetic_rank": "⏳ Multiversal Chronomancer",
+        "alchemical_element": "Temporal Chrono-Titanium & Violet Flux",
+        "alchemical_glyph": "♄",
+        "resonance_frequency": "432 Hz",
+        "freq_int": 432,
+        "transmutation_mode": "DAG Multiversal Reversion & Branching",
+        "planetary_affinity": "Saturn (♄) & Chronos Axis",
+        "sacred_ratio": "Δt → 0 (Infinitesimal Checkpoint)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "⏳ Chrono-Titanium & Violet",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.4% (DAG Sequencer)",
+        "category": "code automation",
+        "prev_agent": "athena",
+        "prev_name": "Athena",
+        "next_agent": "draco",
+        "next_name": "Draco"
+    },
+    "draco": {
+        "hermetic_principle": "Generation (\"Gender is in all things; everything has its principles\")",
+        "hermetic_rank": "🐉 Dragon Forge Grandmaster",
+        "alchemical_element": "Dragon Flare & Molten Pyrite",
+        "alchemical_glyph": "🜂",
+        "resonance_frequency": "528 Hz",
+        "freq_int": 528,
+        "transmutation_mode": "Triangulated AST Fusion & Arbitration",
+        "planetary_affinity": "Mars (♂) & Vulcan Fire",
+        "sacred_ratio": "3-Model Triangulation (Δ = 180°)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🐉 Dragon Flare & Molten Pyrite",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "97.4% (Fusion Arbiter)",
+        "category": "code automation",
+        "prev_agent": "chronos",
+        "prev_name": "Chronos",
+        "next_agent": "ignis",
+        "next_name": "Ignis"
+    },
+    "ignis": {
+        "hermetic_principle": "Polarity (\"All paradoxes may be reconciled; extremes meet\")",
+        "hermetic_rank": "🔥 Plasma Refactor Purifier",
+        "alchemical_element": "Alchemical Plasma & Pure Vermilion",
+        "alchemical_glyph": "🜂",
+        "resonance_frequency": "741 Hz",
+        "freq_int": 741,
+        "transmutation_mode": "Minimal Safe AST Patch & Green Builds",
+        "planetary_affinity": "Sol (☉) & Vulcan Plasma",
+        "sacred_ratio": "1.0 (Zero-Warning Clean Build)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🔥 Alchemical Plasma & Fire",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.5% (Refactor Finisher)",
+        "category": "code",
+        "prev_agent": "draco",
+        "prev_name": "Draco",
+        "next_agent": "kai",
+        "next_name": "Kai"
+    },
+    "kai": {
+        "hermetic_principle": "Correspondence (\"That which is below is like that which is above\")",
+        "hermetic_rank": "🔍 High Inspector of AST Topology",
+        "alchemical_element": "Crystalline Quartz & Cyber Teal",
+        "alchemical_glyph": "🜃",
+        "resonance_frequency": "852 Hz",
+        "freq_int": 852,
+        "transmutation_mode": "Zero-Tolerance Static Analysis & Purge",
+        "planetary_affinity": "Mercury (☿) & Optical Crystal",
+        "sacred_ratio": "0.0000 (Zero Broken Imports)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🔍 Crystalline Quartz & Teal",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.9% (Static Verifier)",
+        "category": "code",
+        "prev_agent": "ignis",
+        "prev_name": "Ignis",
+        "next_agent": "kitsune",
+        "next_name": "Kitsune"
+    },
+    "kitsune": {
+        "hermetic_principle": "Vibration (\"Motion and beauty resonate in harmonic ratios\")",
+        "hermetic_rank": "🦊 Sacred Ratio Tastemaker",
+        "alchemical_element": "Sakura Amber & Golden Ratio Spirals",
+        "alchemical_glyph": "🝰",
+        "resonance_frequency": "528 Hz",
+        "freq_int": 528,
+        "transmutation_mode": "Fibonacci Harmonization & AAA Contrast",
+        "planetary_affinity": "Venus (♀) & Inari Shinto Harmony",
+        "sacred_ratio": "Φ = 1.6180339887 (Golden Spiral)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🦊 Sakura Amber & Gold",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.7% (Design & AX Lead)",
+        "category": "creative",
+        "prev_agent": "kai",
+        "prev_name": "Kai",
+        "next_agent": "kraken",
+        "next_name": "Kraken"
+    },
+    "kraken": {
+        "hermetic_principle": "Cause and Effect (\"Chance is but a name for law not recognized\")",
+        "hermetic_rank": "🐙 Commander of the Abyssal Ether",
+        "alchemical_element": "Abyssal Cerulean & Bioluminescent Azure",
+        "alchemical_glyph": "🜄",
+        "resonance_frequency": "396 Hz",
+        "freq_int": 396,
+        "transmutation_mode": "Raw Socket Telemetry & ESP32 Bridging",
+        "planetary_affinity": "Neptune (♆) & Abyssal Trenches",
+        "sacred_ratio": "115200 Baud (UART Resonance)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🐙 Abyssal Cerulean & Azure",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.3% (Network Lead)",
+        "category": "code",
+        "prev_agent": "kitsune",
+        "prev_name": "Kitsune",
+        "next_agent": "leviathan",
+        "next_name": "Leviathan"
+    },
+    "leviathan": {
+        "hermetic_principle": "Mentalism (\"All mind holds the Akashic pattern across dimensions\")",
+        "hermetic_rank": "🐋 Master of Deep Tensor Memory",
+        "alchemical_element": "Deep Ocean Cobalt & 1536D Vector Waves",
+        "alchemical_glyph": "🜄",
+        "resonance_frequency": "432 Hz",
+        "freq_int": 432,
+        "transmutation_mode": "1536D Embeddings & Hierarchical Recall",
+        "planetary_affinity": "Neptune (♆) & Oceanic Abyss",
+        "sacred_ratio": "1536 Dimensions (Dense Tensor)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🐋 Ocean Cobalt & 1536D Waves",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.6% (Vector Memory Lead)",
+        "category": "code",
+        "prev_agent": "kraken",
+        "prev_name": "Kraken",
+        "next_agent": "lycan",
+        "next_name": "Lycan"
+    },
+    "lycan": {
+        "hermetic_principle": "Polarity (\"Duality creates impenetrable defensive perimeters\")",
+        "hermetic_rank": "🐺 Ironclad Lunar Knight",
+        "alchemical_element": "Lunar Silver & Obsidian Armor",
+        "alchemical_glyph": "☽",
+        "resonance_frequency": "741 Hz",
+        "freq_int": 741,
+        "transmutation_mode": "Strict CSP Sandboxing & OWASP Hardening",
+        "planetary_affinity": "Luna (☽) & Fenrir Armor",
+        "sacred_ratio": "0 Injection Vectors (Zero Bypass)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🐺 Lunar Silver & Obsidian",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.8% (Hardening Lead)",
+        "category": "security",
+        "prev_agent": "leviathan",
+        "prev_name": "Leviathan",
+        "next_agent": "onyx",
+        "next_name": "Onyx"
+    },
+    "onyx": {
+        "hermetic_principle": "Cause and Effect (\"Every systemic weakness manifests an exploit\")",
+        "hermetic_rank": "🌑 Shadow Sovereign of the Red Team",
+        "alchemical_element": "Void Obsidian & Sub-Zero Platinum",
+        "alchemical_glyph": "🜃",
+        "resonance_frequency": "396 Hz",
+        "freq_int": 396,
+        "transmutation_mode": "SubSweep Recon & Boundary Escape Testing",
+        "planetary_affinity": "Pluto (♇) & Void Shadow",
+        "sacred_ratio": "0.00 Escape Probability",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🌑 Void Obsidian & Platinum",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.2% (Red-Team Lead)",
+        "category": "security",
+        "prev_agent": "lycan",
+        "prev_name": "Lycan",
+        "next_agent": "scorpius",
+        "next_name": "Scorpius"
+    },
+    "scorpius": {
+        "hermetic_principle": "Correspondence (\"Microscopic binary flaws mirror systemic collapse\")",
+        "hermetic_rank": "🦂 Zero-Day Sovereign Gatekeeper",
+        "alchemical_element": "Toxic Emerald & Quicksilver Venom",
+        "alchemical_glyph": "🜏",
+        "resonance_frequency": "852 Hz",
+        "freq_int": 852,
+        "transmutation_mode": "Memory Corruption Dissection & Sandbox",
+        "planetary_affinity": "Mars (♂) & Pluto (♇)",
+        "sacred_ratio": "0.00 Threat Surface",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🦂 Toxic Emerald & Quicksilver",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.4% (Zero-Day Gate)",
+        "category": "security",
+        "prev_agent": "onyx",
+        "prev_name": "Onyx",
+        "next_agent": "aquila",
+        "next_name": "Aquila"
+    },
+    "aquila": {
+        "hermetic_principle": "Rhythm (\"Light travels across the edge mesh in pulses\")",
+        "hermetic_rank": "🦅 Commander of the Edge Skies",
+        "alchemical_element": "Sky Cyan & Solar Zephyr",
+        "alchemical_glyph": "🜁",
+        "resonance_frequency": "963 Hz",
+        "freq_int": 963,
+        "transmutation_mode": "Sub-Millisecond Edge Routing & Mesh",
+        "planetary_affinity": "Jupiter (♃) & Solar Winds",
+        "sacred_ratio": "< 2.1ms (Edge Mesh Latency)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🦅 Sky Cyan & Solar Zephyr",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.7% (Edge Mesh Lead)",
+        "category": "architect code",
+        "prev_agent": "scorpius",
+        "prev_name": "Scorpius",
+        "next_agent": "aether",
+        "next_name": "Aether"
+    },
+    "aether": {
+        "hermetic_principle": "Mentalism (\"The entire swarm breathes as a singular organism\")",
+        "hermetic_rank": "🌌 Supreme Swarm Conductor",
+        "alchemical_element": "Quintessence & Astral Violet",
+        "alchemical_glyph": "🜔",
+        "resonance_frequency": "963 Hz",
+        "freq_int": 963,
+        "transmutation_mode": "Multi-Agent Peer Bus & Lock Claims",
+        "planetary_affinity": "Cosmic Aether & Celestial Conductor",
+        "sacred_ratio": "21 Nodes in Harmonious Resonance",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🌌 Quintessence & Astral Violet",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "98.5% (Swarm Conductor)",
+        "category": "architect automation",
+        "prev_agent": "aquila",
+        "prev_name": "Aquila",
+        "next_agent": "pixel-neko",
+        "next_name": "Pixel-Neko"
+    },
+    "pixel-neko": {
+        "hermetic_principle": "Generation (\"Tools generate infinite creative expressions\")",
+        "hermetic_rank": "🐱 Chief Toolwright of the Pantheon",
+        "alchemical_element": "Neon Coral & Tool Schema Copper",
+        "alchemical_glyph": "🝪",
+        "resonance_frequency": "528 Hz",
+        "freq_int": 528,
+        "transmutation_mode": "JSON Schema Validation & Tool Registry",
+        "planetary_affinity": "Mercury (☿) & Hephaestus Forge",
+        "sacred_ratio": "298 Tools (Universal Registry)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🐱 Neon Coral & Tool Copper",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.5% (298-Tool Specialist)",
+        "category": "creative automation",
+        "prev_agent": "aether",
+        "prev_name": "Aether",
+        "next_agent": "pixel-shiba",
+        "next_name": "Pixel-Shiba"
+    },
+    "pixel-shiba": {
+        "hermetic_principle": "Correspondence (\"True loyalty in software is immutability\")",
+        "hermetic_rank": "🐕 Sacred Temple Keystore Guardian",
+        "alchemical_element": "Solar Topaz & Immutable Keystore",
+        "alchemical_glyph": "☉",
+        "resonance_frequency": "432 Hz",
+        "freq_int": 432,
+        "transmutation_mode": "Daemon Loopback Keystore Isolation",
+        "planetary_affinity": "Sol (☉) & Loyal Topaz Gate",
+        "sacred_ratio": "127.0.0.1:8484 (Loopback Isolation)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🐕 Solar Topaz & Keystore",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.8% (Key Guardian)",
+        "category": "security automation",
+        "prev_agent": "pixel-neko",
+        "prev_name": "Pixel-Neko",
+        "next_agent": "radical-minion",
+        "next_name": "Radical Minion"
+    },
+    "radical-minion": {
+        "hermetic_principle": "Vibration (\"Continuous velocity overcomes static friction\")",
+        "hermetic_rank": "🤖 Grand Automaton of the Fast Loop",
+        "alchemical_element": "Kinetic Lime & Fast-Loop Turbine",
+        "alchemical_glyph": "🜂",
+        "resonance_frequency": "741 Hz",
+        "freq_int": 741,
+        "transmutation_mode": "Autonomous Playbook Stepping & Loops",
+        "planetary_affinity": "Mars (♂) & Turbine Dynamo",
+        "sacred_ratio": "∞ Loops (Fast Execution Iteration)",
+        "meta_3_label": "Alchemical Element",
+        "meta_3_val": "🤖 Kinetic Lime & Fast Turbine",
+        "meta_4_label": "Consensus Weight",
+        "meta_4_val": "96.4% (Fast Loop Lead)",
+        "category": "automation code",
+        "prev_agent": "pixel-shiba",
+        "prev_name": "Pixel-Shiba",
+        "next_agent": "azoth",
+        "next_name": "Master Azoth"
+    }
+}
+
+# Merge Hermetic metadata
+for a in AGENTS_DATA:
+    aid = a["id"]
+    if aid in HERMETIC_METADATA:
+        a.update(HERMETIC_METADATA[aid])
+
+def generate_quick_jump_html(current_id):
+    cards_html = ""
+    for a in AGENTS_DATA:
+        active_cls = " active" if a["id"] == current_id else ""
+        cards_html += f"""        <a href="/agents/{a['id']}.html" class="quick-jump-card{active_cls}" title="{a['name']} — {a['role']}">
+          <img src="/assets/agents/{a['id']}.jpg" alt="{a['name']}" class="quick-jump-avatar" loading="lazy" width="28" height="28">
+          <div class="quick-jump-info">
+            <span class="quick-jump-name">{a['name']}</span>
+            <span class="quick-jump-element">{a['alchemical_glyph']} {a['alchemical_element'].split('&')[0].strip()}</span>
+          </div>
+        </a>\n"""
+    return cards_html
+
 def generate_agent_html(agent):
     agent_id = agent["id"]
     name = agent["name"]
@@ -1257,10 +1699,19 @@ def generate_agent_html(agent):
     sigil_badge = agent["sigil_badge"]
     axiom = agent["axiom"]
     swarm_id = agent["swarm_identity"]
-    meta_3_label = agent["meta_3_label"]
-    meta_3_val = agent["meta_3_val"]
-    meta_4_label = agent["meta_4_label"]
-    meta_4_val = agent["meta_4_val"]
+    hermetic_principle = agent.get("hermetic_principle", "Mentalism")
+    hermetic_rank = agent.get("hermetic_rank", "👑 Magisterium Sovereign")
+    alchemical_element = agent.get("alchemical_element", "Aether & Celestial Gold")
+    alchemical_glyph = agent.get("alchemical_glyph", "🜔")
+    resonance_frequency = agent.get("resonance_frequency", "528 Hz")
+    freq_int = agent.get("freq_int", 528)
+    transmutation_mode = agent.get("transmutation_mode", "Universal Synthesis")
+    planetary_affinity = agent.get("planetary_affinity", "Sol (☉)")
+    sacred_ratio = agent.get("sacred_ratio", "Φ = 1.6180339887")
+    meta_3_label = agent.get("meta_3_label", "Alchemical Element")
+    meta_3_val = agent.get("meta_3_val", "🜔 Aether & Celestial Gold")
+    meta_4_label = agent.get("meta_4_label", "Consensus Weight")
+    meta_4_val = agent.get("meta_4_val", "96.5% (Active)")
     voice_pitch = agent["voice_pitch"]
     voice_rate = agent["voice_rate"]
     doctrine = agent["doctrine"]
@@ -1275,22 +1726,21 @@ def generate_agent_html(agent):
     sandbox_placeholder = agent["sandbox_placeholder"]
     sandbox_btn = agent["sandbox_btn"]
     inbox_path = agent["inbox_path"]
-    next_agent = agent["next_agent"]
-    next_name = agent["next_name"]
+    prev_agent = agent.get("prev_agent", "azoth")
+    prev_name = agent.get("prev_name", "Master Azoth")
+    next_agent = agent.get("next_agent", "azoth")
+    next_name = agent.get("next_name", "Master Azoth")
     links = agent.get("links", [])
 
-    # Escape axiom for JS
     escaped_axiom = axiom.replace('"', '\\"').replace("'", "\\'")
 
-    # Build visual cards HTML
     cards_html = ""
     for img_path, card_title, card_sub, card_col in visual_cards:
         cards_html += f"""          <div class="form-mini-card">
-            <img src="{img_path}" alt="{name} {card_title} — {card_sub}" loading="lazy" decoding="async" width="56" height="56">
+            <img src="{img_path}" alt="{name} {card_title} — {card_sub}" loading="lazy" decoding="async" width="120" height="120">
             <div><strong style="color:{card_col}">{card_title}</strong><br><small>{card_sub}</small></div>
           </div>\n"""
 
-    # Build capabilities HTML
     caps_html = ""
     for c_icon, c_title, c_desc in capabilities:
         caps_html += f"""          <div class="capability-item">
@@ -1298,13 +1748,12 @@ def generate_agent_html(agent):
             <div><strong>{c_title}:</strong> {c_desc}</div>
           </div>\n"""
 
-    # Build links HTML
     links_html = ""
     for l_href, l_text in links:
         links_html += f"""            <a href="{l_href}" class="btn btn-ghost" style="flex:1;text-align:center;justify-content:center">{l_text}</a>\n"""
 
-    # Escape doctrine for HTML
     doctrine_html = html.escape(doctrine)
+    quick_jump_cards = generate_quick_jump_html(agent_id)
 
     html_code = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1344,7 +1793,7 @@ def generate_agent_html(agent):
         "description": "{axiom}",
         "image": "https://zoth.nullai.tech/assets/agents/{agent_id}.jpg",
         "url": "https://zoth.nullai.tech/agents/{agent_id}.html",
-        "knowsAbout": ["{domain}", "Autonomous AI Agents", "Local-First LLM Architecture", "Multi-Agent Consensus"],
+        "knowsAbout": ["{domain}", "Alchemical Element {alchemical_element}", "{hermetic_principle}", "Autonomous AI Agents", "Local-First LLM Architecture", "Multi-Agent Consensus"],
         "worksFor": {{
           "@type": "Organization",
           "name": "Zoth Studio",
@@ -1360,7 +1809,7 @@ def generate_agent_html(agent):
         "inLanguage": "en-US",
         "speakable": {{
           "@type": "SpeakableSpecification",
-          "cssSelector": [".agent-name", ".agent-title", ".agent-axiom", ".doctrine-box", ".capability-item"]
+          "cssSelector": [".agent-name", ".agent-title", ".agent-axiom", ".doctrine-box", ".capability-item", ".hermetic-badge"]
         }},
         "breadcrumb": {{
           "@type": "BreadcrumbList",
@@ -1396,6 +1845,7 @@ def generate_agent_html(agent):
   <link rel="stylesheet" href="/assets/agents.css">
   <link rel="stylesheet" href="/assets/zoth-tip.css">
   <link rel="stylesheet" href="/assets/zoth-annotator.css">
+  <link rel="stylesheet" href="/assets/zoth-nav.css">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg">
   <style>
     :root {{
@@ -1445,7 +1895,7 @@ def generate_agent_html(agent):
       font-size: 0.82rem;
       font-weight: 700;
       border-radius: 8px;
-      z-index: 1000;
+      z-index: 10000;
       text-decoration: none;
       transition: top 0.2s ease;
     }}
@@ -1454,110 +1904,144 @@ def generate_agent_html(agent):
       outline: 2px solid #ffffff;
       outline-offset: 2px;
     }}
-    /* Standard Master Topbar */
-    header.bar {{
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; gap: var(--fib-13);
-      padding: var(--fib-13) var(--pad);
-      background: rgba(5, 5, 8, 0.94);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--agent-border);
-    }}
-    .brand {{ display: flex; align-items: center; gap: var(--fib-8); text-decoration: none; flex-shrink: 0; }}
-    .brand img {{
-      width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
-      border: 1px solid rgba(232, 200, 114, 0.45);
-      box-shadow: 0 0 var(--fib-13) rgba(232, 200, 114, 0.3);
-    }}
-    .brand strong {{ display: block; font-family: var(--font-display); font-size: 1.18rem; letter-spacing: -0.03em; font-weight: 700; color: #fff; }}
-    .brand small {{ display: block; color: var(--agent-gold); font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; }}
-    nav.menu {{ display: flex; align-items: center; gap: var(--fib-3) var(--fib-13); flex-wrap: wrap; margin-left: auto; }}
-    nav.menu a {{
-      font-family: var(--font-mono); font-size: 0.70rem; letter-spacing: 0.08em;
-      text-transform: uppercase; text-decoration: none; color: #cbd5e1;
-      padding: var(--fib-8) var(--fib-13); border-radius: var(--fib-8); transition: all 0.2s ease;
-    }}
-    nav.menu a:hover, nav.menu a.on {{ color: var(--agent-gold); background: rgba(232, 200, 114, 0.1); }}
-    .burger {{ display: none; margin-left: auto; background: none; border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; padding: var(--fib-8) var(--fib-13); border-radius: var(--fib-8); cursor: pointer; font-family: var(--font-mono); font-size: 0.72rem; min-height: 44px; min-width: 44px; align-items: center; justify-content: center; }}
-    nav.drawer {{
-      display: none; position: fixed; inset: 64px 0 0; z-index: 99;
-      background: rgba(5, 5, 8, 0.98); backdrop-filter: blur(24px);
-      padding: var(--fib-34) var(--pad); flex-direction: column; gap: var(--fib-13);
-      border-bottom: 1px solid var(--agent-border); overflow-y: auto;
-    }}
-    body.menu-open nav.drawer {{ display: flex; }}
-    nav.drawer a {{ font-family: var(--font-mono); font-size: 0.88rem; text-decoration: none; color: #fff; padding: var(--fib-8) 0; border-bottom: 1px solid rgba(255,255,255,0.06); min-height: 44px; display: flex; align-items: center; }}
-    nav.drawer a:hover {{ color: var(--agent-gold); }}
-
-    @media (max-width: 900px) {{
-      nav.menu {{ display: none; }}
-      .burger {{ display: inline-flex; }}
-    }}
   </style>
 </head>
 <body>
   <a href="#main-content" class="skip-to-content">Skip to content</a>
+  
+  <!-- Master Top Navigation Bar -->
+  <header class="bar" id="topbar" role="banner">
+    <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <span><strong>Zoth</strong><small>by NullAI</small></span>
+    </a>
+    <nav aria-label="Primary navigation" class="menu" role="navigation">
+      <a class="nav-link" href="/#for-everyone">✦ For You</a>
+      <div class="nav-dropdown">
+        <button aria-expanded="false" aria-haspopup="true" class="nav-dropdown-btn" type="button">
+          <span>Core</span>
+          <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="/zoth/"><strong>🔮 Master Azoth</strong><small>Sovereign Alchemical AI Core &amp; Synthesis</small></a>
+          <a href="/agents/"><strong>⚡ 21-Agent Pantheon</strong><small>Autonomous Model Archetypes &amp; Sandboxes</small></a>
+          <a href="/studio/consensus.html"><strong>⚔️ Consensus Arena</strong><small>3-Agent Triangulation &amp; AST Synthesis</small></a>
+          <a href="/studio/swarm.html"><strong>🌐 3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button aria-expanded="false" aria-haspopup="true" class="nav-dropdown-btn" type="button">
+          <span>Studio</span>
+          <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="/studio/"><strong>🛠️ Studio Directory</strong><small>14+ Visual Workstations &amp; DAGs</small></a>
+          <a href="/studio/site-generator.html"><strong>⚡ Website Generator</strong><small>Multi-Agent Web Foundry &amp; Exporters</small></a>
+          <a href="/signal/"><strong>📡 Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></a>
+          <a href="/pets/"><strong>💎 Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button aria-expanded="false" aria-haspopup="true" class="nav-dropdown-btn" type="button">
+          <span>Universe</span>
+          <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="/comic/"><strong>🎨 Anime Comic Series</strong><small>Official Manga &amp; 60fps Motion Video Episodes</small></a>
+          <a href="/social/"><strong>🌌 Community Social Wall</strong><small>Builder Dispatches &amp; Community Showcase</small></a>
+          <a href="/adytum/"><strong>🏛️ Adytum Sanctum</strong><small>Offline Hardware Gateway &amp; Cryptography</small></a>
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button aria-expanded="false" aria-haspopup="true" class="nav-dropdown-btn" type="button">
+          <span>Docs &amp; Vault</span>
+          <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="/docs/"><strong>📚 Documentation</strong><small>Full Architecture Reference &amp; Port Matrix</small></a>
+          <a href="/vault/"><strong>🔐 Sovereign Vault</strong><small>Argon2id Secrets, Tokens &amp; Keyrings</small></a>
+        </div>
+      </div>
+      <a class="nav-pill js-deck" href="http://127.0.0.1:8484/"><span class="deck-pulse"></span> Deck :8484</a>
+      <a class="nav-pill git" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">GitHub ↗</a>
+    </nav>
+    <button aria-controls="drawer" aria-expanded="false" aria-label="Toggle navigation menu" class="burger" id="burger" type="button">Menu</button>
+  </header>
+  
+  <!-- Mobile Drawer -->
+  <nav aria-label="Mobile navigation" class="drawer" id="drawer" role="navigation">
+    <div class="drawer-section">
+      <a class="drawer-hero-link" href="/#for-everyone">✦ For You (No-Code Showcases)</a>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">Core Archetypes</div>
+      <a href="/zoth/">🔮 Master Azoth Core</a>
+      <a href="/agents/">⚡ 21-Agent Pantheon</a>
+      <a href="/studio/consensus.html">⚔️ Consensus Battle Arena</a>
+      <a href="/studio/swarm.html">🌐 3D Swarm Command</a>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">Studio &amp; Tools</div>
+      <a href="/studio/">🛠️ Studio Workstations</a>
+      <a href="/studio/site-generator.html">⚡ Website Generator Foundry</a>
+      <a href="/signal/">📡 Signal Swarm Bridge</a>
+      <a href="/pets/">💎 Companion Pets 3D</a>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">Universe &amp; Media</div>
+      <a href="/comic/">🎨 Anime Comic Series (S01)</a>
+      <a href="/social/">🌌 Community Social Wall</a>
+      <a href="/adytum/">🏛️ Adytum Sanctum</a>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">Security &amp; Docs</div>
+      <a href="/docs/">📚 Documentation Reference</a>
+      <a href="/vault/">🔐 Sovereign Vault (:8484)</a>
+      <a class="js-deck" href="http://127.0.0.1:8484/">⚡ Local Operator Deck (:8484)</a>
+      <a class="git-link" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">GitHub Repository ↗</a>
+    </div>
+  </nav>
+
   <div class="ambient-mesh"></div>
   <canvas id="rune-canvas" class="rune-matrix-canvas"></canvas>
 
-  <!-- Standard Master Top Navigation Bar -->
-  <header class="bar" id="topbar" role="banner">
-    <a class="brand" href="/" aria-label="Zoth Studio Home">
-      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Studio Seal" width="36" height="36" decoding="async">
-      <span><strong>Zoth</strong><small>by NullAI</small></span>
-    </a>
-    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Toggle navigation menu">Menu</button>
-    <nav class="menu" aria-label="Primary navigation" role="navigation">
-      <a href="/#for-everyone" data-tip="Zero-Code Showcases — How non-tech founders, creators & teams depend on Zoth.">✦ For You</a>
-      <a href="/zoth/" data-tip="Master Azoth — Sovereign Alchemical AI Core & Synthesis Engine.">Azoth</a>
-      <a class="on" href="/agents/" data-tip="Sovereign Agent Pantheon — 21 AI nodes with live cognitive test sandboxes.">Agents</a>
-      <a class="js-deck" href="http://127.0.0.1:8484/" data-tip="Local Sovereign Operator Deck (:8484) — Chat & tool execution running directly on this box.">Deck</a>
-      <a href="/signal/" data-tip="Signal Swarm Bridge — Mobile phone command deck with live SSE streaming & voice memos.">Signal</a>
-      <a href="/studio/" data-tip="Studio Directory — 15 visual workstations, 3D arenas, and DAG composers.">Studio</a>
-      <a href="/studio/swarm.html" data-tip="3D Swarm Command Arena — Real-time WebGL kinetic battle arena and orbital stations.">Swarm</a>
-      <a href="/studio/consensus.html" data-tip="Consensus Battle Arena v2 — 3-Agent triangulation and Python AST synthesis.">Consensus</a>
-      <a href="/social/" data-tip="Social Wall — Sovereign builder dispatches, community transmissions & viral showcase.">Social Wall</a>
-      <a href="/pets/" data-tip="Companion Hangar — 16 autonomous spirits, task vibes, and CLI harnesses.">Pets</a>
-      <a href="/pets/pet-studio.html" data-tip="3D Figurine Studio — GPU-accelerated volumetric figurines and task vibes.">💎 3D Studio</a>
-      <a href="/vault/" data-tip="BYOK Vault — Argon2id encrypted local hardware key container with zero cloud KMS.">Vault</a>
-      <a href="/adytum/" data-tip="Adytum Sanctum — Keys 0–21 architectural planning rite before building.">Adytum</a>
-      <a class="js-docs" href="/docs/" data-tip="Master Operator Manual — Port topology, 1-click install scripts, and API guide.">Docs</a>
-      <a class="git" href="https://github.com/NullAITech/zoth-studio" target="_blank" rel="noopener noreferrer" data-tip="GitHub Repository — Open source code, Debian packages, and release binaries.">GitHub</a>
-    </nav>
-  </header>
-
-  <!-- Mobile Drawer -->
-  <nav class="drawer" id="drawer" aria-label="Mobile navigation" role="navigation">
-    <a href="/#for-everyone">✦ For You (No-Code)</a>
-    <a href="/zoth/">Azoth Lead Core</a>
-    <a href="/agents/">Agents Pantheon (21)</a>
-    <a class="js-deck" href="http://127.0.0.1:8484/">Deck (:8484)</a>
-    <a href="/signal/">Signal Bridge</a>
-    <a href="/studio/">Studio Directory</a>
-    <a href="/studio/swarm.html">Swarm Arena</a>
-    <a href="/studio/consensus.html">Consensus Arena</a>
-    <a href="/social/">Social Wall</a>
-    <a href="/pets/">Pets Hangar</a>
-    <a href="/pets/pet-studio.html">💎 3D Pet Studio</a>
-    <a href="/vault/">BYOK Vault</a>
-    <a href="/adytum/">Adytum Sanctum</a>
-    <a class="js-docs" href="/docs/">Docs</a>
-    <a href="https://github.com/NullAITech/zoth-studio">GitHub Upstream</a>
-    <a href="/#install">Download Binaries</a>
-  </nav>
-
   <main id="main-content" class="container" role="main" style="padding-top:var(--fib-34)">
+    
+    <!-- Breadcrumb Path -->
+    <div class="breadcrumb-bar" aria-label="Breadcrumb">
+      <a href="/"><span>🏠</span> Home</a>
+      <span class="breadcrumb-separator">/</span>
+      <a href="/agents/"><span>⚡</span> Pantheon Codex</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current"><span class="hermetic-glyph">{alchemical_glyph}</span> {name}</span>
+    </div>
+
+    <!-- Agent Hero Profile -->
     <section class="agent-hero" aria-labelledby="agent-title-heading">
       <div class="agent-portrait-wrap" style="border-color:{color};box-shadow:0 0 var(--fib-21) {color}55">
         <img src="/assets/agents/{agent_id}.jpg" alt="{name} — {role} Sovereign Portrait" class="agent-portrait-img" width="280" height="280" fetchpriority="high" decoding="async">
         <div class="agent-sigil-badge" style="border-color:{color};color:{color}">
-          <span aria-hidden="true">{icon}</span> {sigil_badge}
+          <span class="hermetic-glyph">{alchemical_glyph}</span> {sigil_badge}
         </div>
       </div>
 
       <div class="agent-info-wrap">
-        <span class="agent-tag-pill" style="border-color:{color};color:{color};background:{color}18">{tag_pill}</span>
+        <!-- Hermetic Badges Ribbon -->
+        <div class="hermetic-ribbon">
+          <span class="hermetic-badge" style="border-color:{color};color:{color};background:{color}18">
+            <span class="hermetic-glyph">{alchemical_glyph}</span> {alchemical_element}
+          </span>
+          <span class="hermetic-badge" style="border-color:#fbbf24;color:#fbbf24;background:#fbbf2418">
+            📜 {hermetic_principle.split('(')[0].strip()}
+          </span>
+          <span class="hermetic-badge" style="border-color:#00f0ff;color:#00f0ff;background:#00f0ff18">
+            {hermetic_rank}
+          </span>
+          <span class="hermetic-badge" style="border-color:rgba(255,255,255,0.2);color:#cbd5e1;background:rgba(255,255,255,0.06)">
+            {tag_pill}
+          </span>
+        </div>
+
         <h1 id="agent-title-heading" class="agent-name" style="text-shadow: 0 0 28px {color}55, 0 0 55px {color}22;">{name}</h1>
         <div class="agent-title" style="color:{color}; font-weight:800;">{role}</div>
         <p class="agent-axiom">
@@ -1585,69 +2069,301 @@ def generate_agent_html(agent):
 
         <div class="agent-actions-row">
           <button id="voice-btn-{agent_id}" class="btn btn-voice" onclick="speakAgentAxiom('{agent_id}', '{name}', `{escaped_axiom}`, {voice_pitch}, {voice_rate})">🔊 Hear Voice Axiom</button>
-          <button class="btn btn-gold" onclick="if(window.ZothAnnotator) window.ZothAnnotator.toggle();">📍 Tag @{agent_id} in Visual Note</button>
-          <a href="/agents/{next_agent}.html" class="btn btn-ghost">Next: {next_name} ➔</a>
+          <button class="btn btn-ghost" onclick="playHarmonicResonance({freq_int}, '{name}', '{alchemical_glyph}')">🎵 Resonate ({resonance_frequency})</button>
+          <button class="btn btn-gold" onclick="if(window.ZothAnnotator) window.ZothAnnotator.toggle();">📍 Tag in Note</button>
+          <a href="/agents/{prev_agent}.html" class="btn btn-ghost" title="Previous: {prev_name}">⬅ {prev_name}</a>
+          <a href="/agents/" class="btn btn-ghost" title="View Full 21-Agent Codex">📜 Codex Roster</a>
+          <a href="/agents/{next_agent}.html" class="btn btn-ghost" title="Next: {next_name}">Next: {next_name} ➔</a>
         </div>
       </div>
     </section>
 
+    <!-- Details Grid -->
     <div class="details-grid">
-      <section class="detail-card">
-        <h2 class="card-title"><span>📜</span> Canonical Doctrine & Axioms</h2>
-        <div class="doctrine-box">{doctrine_html}</div>
+      <!-- Left Column: Doctrine, Alchemical Resonance, Visuals & Capabilities -->
+      <div style="display:flex; flex-direction:column; gap:var(--fib-34); min-width:0;">
+        <section class="detail-card">
+          <h2 class="card-title"><span>📜</span> Canonical Doctrine & Axioms</h2>
+          <div class="doctrine-box">{doctrine_html}</div>
+        </section>
 
-        <h2 class="card-title" style="margin-top:var(--fib-21)"><span>🖼️</span> Master Visual Manifestations</h2>
-        <div class="forms-mini-grid">
-{cards_html}        </div>
-
-        <h2 class="card-title" style="margin-top:var(--fib-21)"><span>🛠️</span> Core Capabilities & Harnesses</h2>
-        <div class="capabilities-list">
-{caps_html}        </div>
-
-        <h2 class="card-title" style="margin-top:var(--fib-21)"><span>📐</span> Consensus Weight & System Entropy</h2>
-        <div class="consensus-gauge">
-          <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px; color:var(--agent-text-specs); font-weight:600;">
-            <span>Consensus Voting Weight: <strong style="color:var(--agent-gold);font-weight:800;">{consensus_weight}</strong></span>
-            <span style="color:var(--agent-green);font-weight:700;">Shannon Optimal H(X): {shannon_entropy}</span>
+        <!-- Alchemical Elemental Resonance Card -->
+        <section class="alchemical-resonance-card" id="elemental-resonance-section">
+          <div class="elemental-resonance-header">
+            <div style="display:flex; align-items:center; gap:var(--fib-13);">
+              <div class="elemental-glyph-hero" style="color:{color}; border-color:{color}66; box-shadow:0 0 24px {color}44;">
+                {alchemical_glyph}
+              </div>
+              <div>
+                <span class="agent-meta-label" style="color:var(--agent-gold)">Hermetic Alchemy</span>
+                <h2 style="font-family:var(--font-display); font-size:1.35rem; color:#ffffff; margin:2px 0;">{alchemical_element}</h2>
+              </div>
+            </div>
+            <span class="hermetic-badge" style="border-color:{sec_color}; color:{sec_color}; font-size:0.75rem;">
+              ⚡ Harmonic Frequency: {resonance_frequency}
+            </span>
           </div>
-          <div class="consensus-bar-track">
-            <div class="consensus-bar-fill" style="width: {consensus_pct}%;"></div>
-          </div>
-        </div>
-      </section>
 
-      <section class="detail-card">
-        <h2 class="card-title"><span>💬</span> {name} Cognitive Sandbox</h2>
-        <div class="agent-sandbox-terminal">
-          <div class="sandbox-head">
-            <span>{sandbox_title}</span>
-            <span style="color:{color}">{sandbox_status}</span>
-          </div>
-          <div class="sandbox-messages" id="sandbox-msgs-{agent_id}">
-            <div class="sandbox-msg agent">
-              <strong>{name}:</strong> {sandbox_welcome}
+          <div class="elemental-properties-grid">
+            <div class="elemental-prop-item">
+              <span class="elemental-prop-label">Hermetic Principle</span>
+              <span class="elemental-prop-val" style="color:{color};">{hermetic_principle}</span>
+            </div>
+            <div class="elemental-prop-item">
+              <span class="elemental-prop-label">Transmutation Mode</span>
+              <span class="elemental-prop-val" style="color:#ffffff;">{transmutation_mode}</span>
+            </div>
+            <div class="elemental-prop-item">
+              <span class="elemental-prop-label">Planetary Affinity</span>
+              <span class="elemental-prop-val" style="color:{sec_color};">{planetary_affinity}</span>
+            </div>
+            <div class="elemental-prop-item">
+              <span class="elemental-prop-label">Sacred Geometry Ratio</span>
+              <span class="elemental-prop-val" style="color:var(--agent-green);">{sacred_ratio}</span>
             </div>
           </div>
-          <div class="sandbox-input-bar">
-            <input type="text" class="sandbox-input" id="sandbox-input-{agent_id}" placeholder="{sandbox_placeholder}" onkeydown="if(event.key==='Enter') sendTestMsg('{agent_id}', '{name}')">
-            <button class="sandbox-send-btn" onclick="sendTestMsg('{agent_id}', '{name}')">{sandbox_btn}</button>
-          </div>
-        </div>
 
-        <h2 class="card-title" style="margin-top:var(--fib-21)"><span>📬</span> Swarm Communication & Telemetry</h2>
-        <div style="font-size:13.5px; color:var(--agent-text-specs); display:flex; flex-direction:column; gap:var(--fib-13);">
-          <div style="background:rgba(0,0,0,0.3); border-radius:var(--radius-fib-8); padding:var(--fib-13); font-family:var(--font-mono); font-size:11px;">
-            <div>Target Inbox: <code style="color:#ffffff;font-weight:700;">{inbox_path}</code></div>
-            <div style="margin-top:4px">Status: <span style="color:var(--agent-green);font-weight:700;">● ACTIVE ON BUS</span></div>
+          <!-- Interactive Frequency Modulator -->
+          <div class="frequency-tuner-wrap">
+            <div class="frequency-tuner-top">
+              <span style="color:var(--agent-text-specs)">🎛️ Modulate Elemental Resonance</span>
+              <strong id="freq-val-{agent_id}" style="color:var(--agent-gold); font-family:var(--font-mono); font-size:0.9rem;">{resonance_frequency}</strong>
+            </div>
+            <input type="range" class="resonance-range-slider" id="freq-slider-{agent_id}" min="396" max="963" value="{freq_int}" step="1" oninput="tuneResonance(this.value, '{agent_id}')" aria-label="Modulate Elemental Resonance Frequency">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.72rem; color:var(--agent-text-dim); margin-top:2px;">
+              <span>Status: <em id="mode-val-{agent_id}" style="color:#00f0ff; font-style:normal;">Synchronized</em></span>
+              <button class="telemetry-btn" style="padding:3px 10px; font-size:0.70rem;" onclick="playHarmonicResonance(document.getElementById('freq-slider-{agent_id}').value, '{name}', '{alchemical_glyph}')">🎵 Test Tone</button>
+            </div>
           </div>
-          <div style="display:flex;gap:var(--fib-8);flex-wrap:wrap">
-{links_html}          </div>
-        </div>
-      </section>
+        </section>
+
+        <!-- Master Manifestations -->
+        <section class="detail-card">
+          <h2 class="card-title"><span>🖼️</span> Master Visual Manifestations</h2>
+          <div class="forms-mini-grid">
+{cards_html}          </div>
+        </section>
+
+        <!-- Core Capabilities -->
+        <section class="detail-card">
+          <h2 class="card-title"><span>🛠️</span> Core Capabilities & Harnesses</h2>
+          <div class="capabilities-list">
+{caps_html}          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: Interactive Telemetry Suite, Sandbox & Swarm Bus -->
+      <div style="display:flex; flex-direction:column; gap:var(--fib-34); min-width:0;">
+        
+        <!-- Interactive Telemetry Suite & Consensus Gauge -->
+        <section class="detail-card">
+          <h2 class="card-title"><span>📐</span> Consensus Weight & System Entropy</h2>
+          <div class="telemetry-suite">
+            <div class="consensus-gauge">
+              <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px; color:var(--agent-text-specs); font-weight:600; flex-wrap:wrap; gap:4px;">
+                <span>Consensus Voting Weight: <strong id="consensus-val-{agent_id}" style="color:var(--agent-gold);font-weight:800;">{consensus_weight}</strong></span>
+                <span id="entropy-val-{agent_id}" style="color:var(--agent-green);font-weight:700;">Shannon Optimal H(X): {shannon_entropy}</span>
+              </div>
+              <div class="consensus-bar-track">
+                <div id="consensus-fill-{agent_id}" class="consensus-bar-fill" style="width: {consensus_pct}%;"></div>
+              </div>
+            </div>
+
+            <!-- Telemetry HUD Matrix -->
+            <div class="telemetry-hud-grid">
+              <div class="telemetry-hud-item">
+                <span>Daemon Loopback</span>
+                <span style="color:var(--agent-green)">:8484 [ONLINE]</span>
+              </div>
+              <div class="telemetry-hud-item">
+                <span>AST Invariants</span>
+                <span id="hud-invariants-{agent_id}" style="color:var(--agent-cyan)">100% [OPTIMAL]</span>
+              </div>
+              <div class="telemetry-hud-item">
+                <span>Bus Latency</span>
+                <span id="hud-latency-{agent_id}" style="color:var(--agent-gold)">0.82ms [REALTIME]</span>
+              </div>
+              <div class="telemetry-hud-item">
+                <span>Keystore Lock</span>
+                <span style="color:var(--agent-purple)">ARGON2ID [OK]</span>
+              </div>
+            </div>
+
+            <!-- Interactive Telemetry Controls -->
+            <div class="telemetry-controls-row">
+              <button class="telemetry-btn" id="pulse-btn-{agent_id}" onclick="pulseTelemetry('{agent_id}', '{name}', {consensus_pct})">⚡ Pulse Telemetry</button>
+              <button class="telemetry-btn" onclick="verifyInvariants('{agent_id}', '{name}')">🛡️ Verify Invariants</button>
+              <button class="telemetry-btn" onclick="harmonizeConsensus('{agent_id}', '{name}')">🔄 Harmonize Swarm</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Cognitive Sandbox -->
+        <section class="detail-card">
+          <h2 class="card-title"><span>💬</span> {name} Cognitive Sandbox</h2>
+          <div class="agent-sandbox-terminal">
+            <div class="sandbox-head">
+              <span>{sandbox_title}</span>
+              <span style="color:{color}">{sandbox_status}</span>
+            </div>
+            <div class="sandbox-messages" id="sandbox-msgs-{agent_id}">
+              <div class="sandbox-msg agent">
+                <strong>{name}:</strong> {sandbox_welcome}
+              </div>
+            </div>
+            <div class="sandbox-input-bar">
+              <input type="text" class="sandbox-input" id="sandbox-input-{agent_id}" placeholder="{sandbox_placeholder}" onkeydown="if(event.key==='Enter') sendTestMsg('{agent_id}', '{name}')" aria-label="Chat with {name}">
+              <button class="sandbox-send-btn" onclick="sendTestMsg('{agent_id}', '{name}')">{sandbox_btn}</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Swarm Communication & Navigation Links -->
+        <section class="detail-card">
+          <h2 class="card-title"><span>📬</span> Swarm Communication & Direct OS Telemetry</h2>
+          <div style="font-size:13.5px; color:var(--agent-text-specs); display:flex; flex-direction:column; gap:var(--fib-13);">
+            <div style="background:rgba(0,0,0,0.3); border-radius:var(--radius-fib-8); padding:var(--fib-13); font-family:var(--font-mono); font-size:11px;">
+              <div>Target Inbox: <code style="color:#ffffff;font-weight:700;">{inbox_path}</code></div>
+              <div style="margin-top:4px">Status: <span style="color:var(--agent-green);font-weight:700;">● ACTIVE ON BUS</span></div>
+            </div>
+            <div style="display:flex;gap:var(--fib-8);flex-wrap:wrap">
+{links_html}            </div>
+          </div>
+        </section>
+      </div>
     </div>
+
+    <!-- Quick Jump Companion Matrix -->
+    <section class="companion-quick-jump" aria-label="Pantheon Spirit Codex Quick Jump">
+      <div class="quick-jump-head">
+        <div class="quick-jump-title">
+          <span>⚡</span> The 21 Sovereign Companion Spirits
+        </div>
+        <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--agent-gold);">
+          Instantaneous Hermetic Codex Jump
+        </div>
+      </div>
+      <div class="quick-jump-grid">
+{quick_jump_cards}      </div>
+    </section>
+
   </main>
 
   <script>
+    // Web Audio API Harmonic Solfeggio Tone Generator
+    let audioCtx = null;
+    function playHarmonicResonance(freqHz, agentName, glyph) {{
+      try {{
+        if (!audioCtx) {{
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }}
+        if (audioCtx.state === 'suspended') {{
+          audioCtx.resume();
+        }}
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(parseFloat(freqHz) || 528, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.85);
+
+        // Visual Feedback on card
+        const card = document.getElementById("elemental-resonance-section");
+        if (card) {{
+          card.style.boxShadow = "0 0 35px var(--agent-cyan), 0 0 15px var(--agent-gold)";
+          setTimeout(() => {{
+            card.style.boxShadow = "";
+          }}, 1800);
+        }}
+      }} catch(e) {{
+        console.warn("Web Audio API resonance notice:", e);
+      }}
+    }}
+
+    // Real-time Resonance Frequency Slider Tuner
+    function tuneResonance(val, agentId) {{
+      const freqReadout = document.getElementById("freq-val-" + agentId);
+      if (freqReadout) freqReadout.textContent = val + " Hz";
+      
+      const entropyEl = document.getElementById("entropy-val-" + agentId);
+      if (entropyEl) {{
+        const baseH = 0.85 + ((val % 100) / 300);
+        entropyEl.textContent = "Shannon Optimal H(X): " + baseH.toFixed(2) + " bits";
+      }}
+      const modeEl = document.getElementById("mode-val-" + agentId);
+      if (modeEl) {{
+        modeEl.textContent = "Resonating at " + val + " Hz (Harmonic Locked)";
+      }}
+    }}
+
+    // Interactive Telemetry Pulse
+    function pulseTelemetry(agentId, agentName, basePct) {{
+      const btn = document.getElementById("pulse-btn-" + agentId);
+      if (btn) {{
+        btn.classList.add("active-pulse");
+        setTimeout(() => btn.classList.remove("active-pulse"), 1200);
+      }}
+      const fill = document.getElementById("consensus-fill-" + agentId);
+      if (fill) {{
+        fill.style.filter = "brightness(1.8) drop-shadow(0 0 12px var(--agent-cyan))";
+        setTimeout(() => fill.style.filter = "", 1200);
+      }}
+      const latEl = document.getElementById("hud-latency-" + agentId);
+      if (latEl) {{
+        latEl.textContent = (0.3 + Math.random() * 0.7).toFixed(2) + "ms [BURST]";
+      }}
+      const msgs = document.getElementById("sandbox-msgs-" + agentId);
+      if (msgs) {{
+        const packet = document.createElement("div");
+        packet.className = "sandbox-msg agent";
+        packet.style.fontSize = "11px";
+        packet.style.borderLeft = "3px solid var(--agent-gold)";
+        packet.innerHTML = "<strong>⚡ [TELEMETRY PULSE]</strong> Node @" + agentId + " · Loopback :8484 · Shannon H(X): " + (0.88 + Math.random()*0.15).toFixed(2) + " bits · Memory: 0 bytes leaked · Invariant: 100% PASS";
+        msgs.appendChild(packet);
+        msgs.scrollTop = msgs.scrollHeight;
+      }}
+    }}
+
+    // Invariant Verification Simulation
+    function verifyInvariants(agentId, agentName) {{
+      const hud = document.getElementById("hud-invariants-" + agentId);
+      if (hud) hud.textContent = "SCANNING...";
+      setTimeout(() => {{
+        if (hud) hud.textContent = "100% [VERIFIED]";
+        const msgs = document.getElementById("sandbox-msgs-" + agentId);
+        if (msgs) {{
+          const div = document.createElement("div");
+          div.className = "sandbox-msg agent";
+          div.style.fontSize = "11px";
+          div.style.borderLeft = "3px solid var(--agent-green)";
+          div.innerHTML = "<strong>🛡️ [INVARIANT AUDIT]</strong> " + agentName + " verified AST invariants on loopback daemon :8484. Zero regressions detected. 100% cryptographic boundary intact.";
+          msgs.appendChild(div);
+          msgs.scrollTop = msgs.scrollHeight;
+        }}
+      }}, 500);
+    }}
+
+    // Multi-Agent Swarm Harmonization Simulation
+    function harmonizeConsensus(agentId, agentName) {{
+      const msgs = document.getElementById("sandbox-msgs-" + agentId);
+      if (msgs) {{
+        const div = document.createElement("div");
+        div.className = "sandbox-msg agent";
+        div.style.fontSize = "11px";
+        div.style.borderLeft = "3px solid var(--agent-cyan)";
+        div.innerHTML = "<strong>🔄 [SWARM HARMONIZE]</strong> Broadcasting state across 21 companion nodes on loopback bus. Lock claims synchronized with zero conflict.";
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+      }}
+    }}
+
     // Neural Audio & Voice Synthesizer
     let currentAgentAudio = null;
     function speakAgentAxiom(agentId, agentName, text, pitch, rate) {{
@@ -1668,7 +2384,6 @@ def generate_agent_html(agent):
         btn.classList.add("btn-speaking");
       }}
 
-      // 1. Play high-fidelity neural MP3 voice file
       const audioSrc = "/assets/audio/agents/" + agentId + ".mp3";
       const audio = new Audio(audioSrc);
       currentAgentAudio = audio;
@@ -1682,7 +2397,6 @@ def generate_agent_html(agent):
       }};
 
       audio.onerror = () => {{
-        // Fallback to browser SpeechSynthesis if audio file is unavailable
         if ('speechSynthesis' in window) {{
           const utter = new SpeechSynthesisUtterance(text);
           utter.pitch = pitch || 1.0;
@@ -1759,7 +2473,6 @@ def generate_agent_html(agent):
         replyText = getPersonaFallback(agentId, agentName, text);
       }}
 
-      // Stream out response word by word
       thinkDiv.innerHTML = "<strong>" + agentName + ":</strong> ";
       const span = document.createElement("span");
       thinkDiv.appendChild(span);
@@ -1813,103 +2526,57 @@ def generate_agent_html(agent):
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }}
 
-    // Hermetic Animated Sacred Rune Matrix Canvas
+    // Animated Sacred Rune Matrix Canvas
     (function initRuneCanvas() {{
       const canvas = document.getElementById("rune-canvas");
       if (!canvas) return;
-      const ctx = canvas.getContext("2d", {{ alpha: true }});
-      const PHI = 1.618033988749895;
+      const ctx = canvas.getContext("2d");
       let w = canvas.width = window.innerWidth;
       let h = canvas.height = window.innerHeight;
-      let isRuneRunning = true;
-      let runeRafId = 0;
-      let lastRuneTime = performance.now();
 
       window.addEventListener("resize", () => {{
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
-      }}, {{ passive: true }});
+      }});
 
       const glyphs = ["🜂", "🜄", "🜁", "🜃", "⚚", "☉", "☽", "☿", "♀", "♂", "♃", "♄", "🜔", "🜍", "🜎", "🜏", "🝢", "🝤", "🝪", "🝰", "Φ", "Ψ", "Ω", "Δ", "∇", "∞", "✦", "✧"];
       const particles = [];
-      const count = Math.min(34, Math.floor(w / 38)); // Fibonacci F_9
+      const count = Math.min(32, Math.floor(w / 40));
 
       for (let i = 0; i < count; i++) {{
         particles.push({{
           x: Math.random() * w,
           y: Math.random() * h,
           glyph: glyphs[Math.floor(Math.random() * glyphs.length)],
-          speed: 0.18 + Math.random() * 0.38,
-          drift: (Math.random() - 0.5) * 0.2,
-          size: 11 + Math.random() * 14,
-          phase: Math.random() * Math.PI * 2,
-          opacity: 0.12 + Math.random() * 0.38
+          speed: 0.2 + Math.random() * 0.4,
+          size: 10 + Math.random() * 12,
+          opacity: 0.08 + Math.random() * 0.25
         }});
       }}
 
-      // Visibility lifecycle for 0% CPU consumption
-      document.addEventListener("visibilitychange", () => {{
-        if (document.hidden) {{
-          isRuneRunning = false;
-          if (runeRafId) cancelAnimationFrame(runeRafId);
-        }} else {{
-          isRuneRunning = true;
-          lastRuneTime = performance.now();
-          runeRafId = requestAnimationFrame(draw);
-        }}
-      }});
-
-      function draw(now) {{
-        if (!isRuneRunning) return;
-        const dt = Math.min((now - lastRuneTime) / 16.667, 2.5);
-        lastRuneTime = now;
-
+      function draw() {{
         ctx.clearRect(0, 0, w, h);
         ctx.font = "14px 'IBM Plex Mono', monospace";
         ctx.fillStyle = "{color}";
 
         for (let i = 0; i < particles.length; i++) {{
           const p = particles[i];
-          p.phase += 0.02 * dt;
-          const currentAlpha = p.opacity * (0.8 + 0.3 * Math.sin(p.phase * PHI));
-          ctx.globalAlpha = Math.max(0.04, currentAlpha);
+          ctx.globalAlpha = p.opacity;
           ctx.fillText(p.glyph, p.x, p.y);
-
-          p.y -= p.speed * dt;
-          p.x += p.drift * dt;
-
-          if (p.y < -25) {{
-            p.y = h + 25;
+          p.y -= p.speed;
+          if (p.y < -20) {{
+            p.y = h + 20;
             p.x = Math.random() * w;
           }}
-          if (p.x < -20) p.x = w + 20;
-          if (p.x > w + 20) p.x = -20;
         }}
-        runeRafId = requestAnimationFrame(draw);
+        requestAnimationFrame(draw);
       }}
-      runeRafId = requestAnimationFrame(draw);
+      draw();
     }})();
-
-    // Burger Menu Controller
-    const burger = document.getElementById("burger");
-    const drawer = document.getElementById("drawer");
-    if (burger && drawer) {{
-      burger.addEventListener("click", () => {{
-        const open = document.body.classList.toggle("menu-open");
-        burger.setAttribute("aria-expanded", open ? "true" : "false");
-        burger.textContent = open ? "Close" : "Menu";
-      }});
-      drawer.addEventListener("click", (e) => {{
-        if (e.target.tagName === "A") {{
-          document.body.classList.remove("menu-open");
-          burger.setAttribute("aria-expanded", "false");
-          burger.textContent = "Menu";
-        }}
-      }});
-    }}
   </script>
   <script src="/assets/zoth-tip.js" defer></script>
   <script src="/assets/zoth-annotator.js" defer></script>
+  <script src="/assets/zoth-nav.js" defer></script>
 </body>
 </html>
 """
@@ -1944,12 +2611,12 @@ def generate_index_html():
         <a href="/agents/{aid}.html" class="pantheon-card" data-domain="{domain_tag.strip()}" style="border-color:{color}44;">
           <img src="/assets/agents/{aid}.jpg" alt="{name} — {role}" class="pantheon-card-thumb" {img_attrs} decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:{color};border-color:{color}55;background:{color}18;font-weight:700;">{tag} · {a['sigil_badge']}</span>
+            <span class="pantheon-card-tag" style="color:{color};border-color:{color}55;background:{color}18;font-weight:700;"><span class="hermetic-glyph">{a.get('alchemical_glyph', '🜔')}</span> {tag} · {a['sigil_badge']}</span>
             <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px {color}33;">{name}</h3>
             <div class="pantheon-card-role" style="color:{color};font-weight:700;">{role}</div>
             <p class="pantheon-card-desc">{axiom}</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Domain: <strong style="color:#ffffff;">{a['meta_3_val']}</strong></span>
+              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">{a.get('alchemical_glyph', '🜔')} {a.get('alchemical_element', 'Aether')}</strong></span>
               <span style="color:{color};border-color:{color}55;font-weight:700;">Cognitive Sandbox ➔</span>
             </div>
           </div>
