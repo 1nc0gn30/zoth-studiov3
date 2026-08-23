@@ -50,7 +50,7 @@
 
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <link rel="stylesheet" href="/styles/magic-ui.css?v=20260817">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="/assets/magic-ui.js?v=20260817" defer></script>
   <style>
     .skip-to-content {
@@ -1077,7 +1077,7 @@
   <a href="#main-content" class="skip-to-content">Skip to content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" / decoding="async" loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -1388,7 +1388,7 @@
 
     <footer class="site-footer" style="margin-top: 5rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
       <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="32" height="32" alt="Zoth Seal">
+        <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="32" height="32" alt="Zoth Seal" decoding="async" loading="lazy">
         <span style="font-size: 0.85rem; color: var(--text-dim);">© 2026 Zoth Studio · AI Model Foundry & Spirit Matrix Pro</span>
       </div>
       <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -1622,7 +1622,7 @@
         card.innerHTML = `
           <div class="card-top">
             <div class="model-brand">
-              <img class="model-logo-img" src="${m.logo}" alt="${m.name}" onerror="this.src='/assets/brand/zoth-seal-hermetic-on-dark.svg'">
+              <img class="model-logo-img" src="${m.logo}" alt="${m.name}" onerror="this.src='/assets/brand/zoth-seal-hermetic-on-dark.svg'" decoding="async" loading="lazy">
               <div>
                 <h3 class="model-title">${m.name}</h3>
                 <div class="model-org">${m.org}</div>
@@ -1800,64 +1800,129 @@
       window.location.href = '/studio/swarm.html';
     };
 
-    /* --- 3D WebGL Neural Core Hologram --- */
-    let coreScene, coreCamera, coreRenderer, coreLattice, coreNodes;
+    /* --- 3D WebGL Hermetic Neural Core Hologram --- */
+    let coreScene, coreCamera, coreRenderer, coreLattice, coreNodes, innerCore, octaCore;
     function initModelCoreCanvas() {
       const canvas = document.getElementById('model-core-canvas');
       if (!canvas || typeof THREE === 'undefined') return;
 
+      const PHI = 1.618033988749895;
       const rect = canvas.parentElement.getBoundingClientRect();
       const width = rect.width || 400;
       const height = rect.height || 260;
 
       coreScene = new THREE.Scene();
       coreCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-      coreCamera.position.set(0, 0, 4.5);
+      coreCamera.position.set(0, 0, 4.6);
 
-      coreRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      coreRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
       coreRenderer.setSize(width, height);
       coreRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
       coreLattice = new THREE.Group();
       coreScene.add(coreLattice);
 
-      // Core Icosahedron Wireframe
-      const icosaGeo = new THREE.IcosahedronGeometry(1.6, 1);
-      const wireEdges = new THREE.EdgesGeometry(icosaGeo);
-      const wireMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.45 });
-      const wireCore = new THREE.LineSegments(wireEdges, wireMat);
-      coreLattice.add(wireCore);
+      // Outer Sacred Dodecahedron (Solar Gold #fbbf24)
+      const dodecaGeo = new THREE.DodecahedronGeometry(1.65, 0);
+      const dodecaEdges = new THREE.EdgesGeometry(dodecaGeo);
+      const dodecaMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.5 });
+      const wireDodeca = new THREE.LineSegments(dodecaEdges, dodecaMat);
+      coreLattice.add(wireDodeca);
 
-      // Inner Pulsing Core
-      const innerGeo = new THREE.IcosahedronGeometry(0.8, 2);
-      const innerMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, wireframe: true, transparent: true, opacity: 0.7 });
-      const innerCore = new THREE.Mesh(innerGeo, innerMat);
-      coreLattice.add(innerCore);
+      // Nested Icosahedron Dual (Aether Cyan #00f0ff)
+      const icosaGeo = new THREE.IcosahedronGeometry(1.35, 1);
+      const icosaEdges = new THREE.EdgesGeometry(icosaGeo);
+      const icosaMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.35 });
+      const wireIcosa = new THREE.LineSegments(icosaEdges, icosaMat);
+      coreLattice.add(wireIcosa);
 
-      // Orbiting Node Particles
-      const nodeCount = 80;
+      // Inner Alchemical Octahedron (Emerald Verde #34d399)
+      const octaGeo = new THREE.OctahedronGeometry(0.7, 0);
+      const octaMat = new THREE.MeshBasicMaterial({ color: 0x34d399, wireframe: true, transparent: true, opacity: 0.85 });
+      octaCore = new THREE.Mesh(octaGeo, octaMat);
+      coreLattice.add(octaCore);
+
+      // 144 Orbiting Fibonacci Toroidal Particles (F_12)
+      const nodeCount = 144;
       const nodeGeo = new THREE.BufferGeometry();
       const pos = new Float32Array(nodeCount * 3);
+      const colors = new Float32Array(nodeCount * 3);
+
       for (let i = 0; i < nodeCount; i++) {
-        const u = (Math.random() - 0.5) * 3.2;
-        const v = (Math.random() - 0.5) * 3.2;
-        const w = (Math.random() - 0.5) * 3.2;
-        pos[i*3] = u; pos[i*3+1] = v; pos[i*3+2] = w;
+        const u = (i / nodeCount) * Math.PI * 2;
+        const v = u * PHI;
+        const rTor = 1.9 + Math.sin(v) * 0.4;
+
+        pos[i * 3] = Math.cos(u) * rTor;
+        pos[i * 3 + 1] = Math.sin(v) * 0.8;
+        pos[i * 3 + 2] = Math.sin(u) * rTor;
+
+        if (i % 3 === 0) {
+          // Solar Gold #fbbf24
+          colors[i * 3] = 0.98; colors[i * 3 + 1] = 0.75; colors[i * 3 + 2] = 0.14;
+        } else if (i % 3 === 1) {
+          // Aether Cyan #00f0ff
+          colors[i * 3] = 0.0; colors[i * 3 + 1] = 0.94; colors[i * 3 + 2] = 1.0;
+        } else {
+          // Emerald Verde #34d399
+          colors[i * 3] = 0.20; colors[i * 3 + 1] = 0.83; colors[i * 3 + 2] = 0.60;
+        }
       }
       nodeGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      const nodeMat = new THREE.PointsMaterial({ size: 0.08, color: 0x10b981, transparent: true, opacity: 0.9 });
+      nodeGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      const nodeMat = new THREE.PointsMaterial({ size: 0.075, vertexColors: true, transparent: true, opacity: 0.9 });
       coreNodes = new THREE.Points(nodeGeo, nodeMat);
       coreLattice.add(coreNodes);
 
+      // Lighting
+      const ambLight = new THREE.AmbientLight(0xffffff, 0.8);
+      coreScene.add(ambLight);
+      const pointGold = new THREE.PointLight(0xfbbf24, 1.5, 10);
+      pointGold.position.set(2, 3, 2);
+      coreScene.add(pointGold);
+
+      let isCoreRunning = true;
+      let coreRafId = 0;
+
+      // Intersection & Visibility Observer for Zero CPU when idle/hidden
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !document.hidden) {
+            if (!isCoreRunning) {
+              isCoreRunning = true;
+              coreRafId = requestAnimationFrame(animate);
+            }
+          } else {
+            isCoreRunning = false;
+            if (coreRafId) cancelAnimationFrame(coreRafId);
+          }
+        });
+      }, { threshold: 0.1 });
+      observer.observe(canvas);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          isCoreRunning = false;
+          if (coreRafId) cancelAnimationFrame(coreRafId);
+        } else {
+          isCoreRunning = true;
+          coreRafId = requestAnimationFrame(animate);
+        }
+      });
+
       function animate() {
-        requestAnimationFrame(animate);
-        coreLattice.rotation.y += 0.006;
-        coreLattice.rotation.x += 0.003;
-        innerCore.rotation.y -= 0.012;
-        if (coreNodes) coreNodes.rotation.y -= 0.002;
+        if (!isCoreRunning) return;
+        coreRafId = requestAnimationFrame(animate);
+        coreLattice.rotation.y += 0.005;
+        coreLattice.rotation.x += 0.0025;
+        if (octaCore) {
+          octaCore.rotation.y -= 0.01;
+          octaCore.rotation.z += 0.005;
+        }
+        if (coreNodes) coreNodes.rotation.y -= 0.003;
         coreRenderer.render(coreScene, coreCamera);
       }
-      animate();
+      coreRafId = requestAnimationFrame(animate);
 
       window.addEventListener('resize', () => {
         const r = canvas.parentElement.getBoundingClientRect();
@@ -1866,7 +1931,7 @@
           coreCamera.updateProjectionMatrix();
           coreRenderer.setSize(r.width, r.height);
         }
-      });
+      }, { passive: true });
     }
 
     /* --- VRAM Sizer Calculator --- */

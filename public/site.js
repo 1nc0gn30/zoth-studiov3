@@ -27,6 +27,7 @@
   const progress = document.querySelector('[data-scroll-progress]');
   const backTop = document.querySelector('[data-back-top]');
 
+  let scrollTicking = false;
   const onScrollChrome = () => {
     const y = window.scrollY || 0;
     if (header) header.classList.toggle('is-scrolled', y > 24);
@@ -37,13 +38,6 @@
     }
     if (backTop) backTop.hidden = y < 480;
   };
-  onScrollChrome();
-  window.addEventListener('scroll', onScrollChrome, { passive: true });
-  if (backTop) {
-    backTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
-    });
-  }
 
   /* ---------- Active section nav ---------- */
   const sectionIds = [
@@ -68,8 +62,26 @@
       link.classList.toggle('is-active', href === `#${current}`);
     });
   };
-  window.addEventListener('scroll', setActive, { passive: true });
+
+  const handleScrollUpdate = () => {
+    if (!scrollTicking) {
+      scrollTicking = true;
+      window.requestAnimationFrame(() => {
+        onScrollChrome();
+        setActive();
+        scrollTicking = false;
+      });
+    }
+  };
+
+  onScrollChrome();
   setActive();
+  window.addEventListener('scroll', handleScrollUpdate, { passive: true });
+  if (backTop) {
+    backTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
 
   const revealIfInView = () => {
     document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach((el) => {

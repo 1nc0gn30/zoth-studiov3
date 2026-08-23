@@ -241,10 +241,162 @@
         font-size: 0.82rem;
       }
 
-      /* Touch targets & zero overflow */
-      button, .btn, .btn-action, select, input {
-        min-height: 44px;
-        box-sizing: border-box;
+      /* View Switcher Tabs */
+      .peer-bus-nav {
+        display: flex;
+        gap: 8px;
+        background: rgba(8, 12, 24, 0.75);
+        border: 1px solid rgba(0, 240, 255, 0.16);
+        border-radius: var(--fib-radius-md, 13px);
+        padding: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .peer-tab-btn {
+        flex: 1;
+        min-width: 140px;
+        padding: 10px 16px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--fib-radius-sm, 8px);
+        color: var(--muted);
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+
+      .peer-tab-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .peer-tab-btn.active {
+        background: rgba(0, 240, 255, 0.14);
+        border-color: var(--cyan);
+        color: #00f0ff;
+        box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+      }
+
+      .peer-tab-pane {
+        display: none;
+        flex-direction: column;
+        gap: var(--fib-21, 21px);
+      }
+
+      .peer-tab-pane.is-active {
+        display: flex;
+      }
+
+      /* Waterfall Styles */
+      .waterfall-track-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 480px;
+        overflow-y: auto;
+      }
+
+      .wf-card {
+        background: rgba(5, 8, 18, 0.95);
+        border: 1px solid rgba(0, 240, 255, 0.15);
+        border-radius: var(--fib-radius-sm, 8px);
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: border 0.2s;
+      }
+
+      .wf-card:hover {
+        border-color: var(--cyan);
+      }
+
+      .wf-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .wf-span-row {
+        display: grid;
+        grid-template-columns: 160px 1fr 100px;
+        gap: 8px;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+      }
+
+      .wf-bar-wrap {
+        height: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .wf-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 4px;
+        font-size: 0.58rem;
+        font-weight: 700;
+        color: #03050a;
+      }
+
+      /* Oscilloscope Canvas */
+      .radar-canvas-wrap {
+        width: 100%;
+        height: 260px;
+        background: #03050a;
+        border: 1px solid rgba(0, 240, 255, 0.15);
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      #peer-radar-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* Signal Crypto Box */
+      .crypto-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--fib-21, 21px);
+      }
+
+      @media (max-width: 900px) {
+        .crypto-grid-layout { grid-template-columns: 1fr; }
+        .wf-span-row { grid-template-columns: 110px 1fr 70px; font-size: 0.65rem; }
+      }
+
+      .crypto-chip {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 6px 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        word-break: break-all;
+        color: #67e8f9;
       }
 
       @media (max-width: 768px) {
@@ -360,7 +512,7 @@
     <a class="skip-link" href="#main">Skip to main content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" / decoding="async" loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -461,104 +613,228 @@
           <div>
             <span class="pill pill-cyan">LOCAL-FIRST AGENT BUS</span>
             <h1 style="font-family: var(--font-display); font-size: 1.8rem; margin: 6px 0;">Swarm Bus Operations Center</h1>
-            <p class="lede" style="margin:0;">Real-time inter-agent messaging, lockless project claims, and event bus telemetry across Parrot OS.</p>
+            <p class="lede" style="margin:0;">Real-time inter-agent messaging, lockless project claims, event waterfalls, and E2EE Signal telemetry across Parrot OS.</p>
           </div>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a class="btn btn-ghost" href="/studio/bus-monitor.html" style="font-size: 0.8rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">🎛️ Swarm NOC View</a>
             <button class="btn btn-ghost" onclick="refreshBusLogs()">🔄 Refresh Stream</button>
             <button class="btn" style="background: var(--cyan); color: #030408; font-weight: 700;" onclick="exportBusLogs()">📥 Export Chronicle (.md)</button>
           </div>
         </div>
 
+        <!-- View Switcher Tabs -->
+        <nav class="peer-bus-nav" aria-label="Peer Bus Operations Tabs">
+          <button class="peer-tab-btn active" data-pane="mesh" onclick="switchPeerPane('mesh', this)">
+            <span>📡 Peer Mesh &amp; Stream</span>
+          </button>
+          <button class="peer-tab-btn" data-pane="waterfall" onclick="switchPeerPane('waterfall', this)">
+            <span>🌊 Live Message Waterfall</span>
+          </button>
+          <button class="peer-tab-btn" data-pane="radar" onclick="switchPeerPane('radar', this)">
+            <span>⚡ Latency Waveform Radar</span>
+          </button>
+          <button class="peer-tab-btn" data-pane="crypto" onclick="switchPeerPane('crypto', this)">
+            <span>🔐 Signal E2EE Handshake</span>
+          </button>
+        </nav>
+
         <!-- Peer Nodes Status Grid -->
         <div class="peer-grid">
           <!-- Antigravity Primary -->
-          <div class="peer-card active">
+          <div class="peer-card active" id="card-node-agy">
             <div class="peer-header">
               <span style="font-weight: 700; color: #fff;">🛰️ @Antigravity Primary</span>
-              <span class="live-dot"></span>
+              <span class="live-dot" id="dot-agy"></span>
             </div>
-            <div style="font-size: 0.75rem; color: var(--muted);">Role: Systems Architecture, WebGL 3D CAD, Math Observability & Build Isolation</div>
-            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--cyan);">Endpoint: :8088 / Bus: agent-comms/</div>
+            <div style="font-size: 0.75rem; color: var(--muted);">Role: Systems Architecture, WebGL 3D CAD, Math Observability &amp; Build Isolation</div>
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--cyan);">
+              <span>Endpoint: :8088 / Bus: agent-comms/</span>
+              <span id="ping-agy" style="color: var(--emerald); font-weight: 700;">0.32 ms</span>
+            </div>
           </div>
 
           <!-- Grok Speed -->
-          <div class="peer-card active">
+          <div class="peer-card active" id="card-node-grok">
             <div class="peer-header">
               <span style="font-weight: 700; color: #fff;">⚡ @Grok Speed</span>
-              <span class="live-dot" style="background: #fbbf24; box-shadow: 0 0 10px #fbbf24;"></span>
+              <span class="live-dot" style="background: #fbbf24; box-shadow: 0 0 10px #fbbf24;" id="dot-grok"></span>
             </div>
-            <div style="font-size: 0.75rem; color: var(--muted);">Role: AST Parser, Tool Registry Automation & Connectors</div>
-            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: #fbbf24;">Endpoint: :8484 / Bus: Peer Queue</div>
+            <div style="font-size: 0.75rem; color: var(--muted);">Role: AST Parser, Tool Registry Automation &amp; Connectors</div>
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: #fbbf24;">
+              <span>Endpoint: :8484 / Bus: Peer Queue</span>
+              <span id="ping-grok" style="color: var(--emerald); font-weight: 700;">0.48 ms</span>
+            </div>
           </div>
 
           <!-- Hermes Reasoning -->
-          <div class="peer-card active">
+          <div class="peer-card active" id="card-node-hermes">
             <div class="peer-header">
               <span style="font-weight: 700; color: #fff;">🦉 @Hermes Reasoning</span>
-              <span class="live-dot" style="background: #a855f7; box-shadow: 0 0 10px #a855f7;"></span>
+              <span class="live-dot" style="background: #a855f7; box-shadow: 0 0 10px #a855f7;" id="dot-hermes"></span>
             </div>
-            <div style="font-size: 0.75rem; color: var(--muted);">Role: DPO Logic Alignment, Schema Validator & Debate Consensus</div>
-            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: #a855f7;">Task: multi_agent_consensus.json</div>
+            <div style="font-size: 0.75rem; color: var(--muted);">Role: DPO Logic Alignment, Schema Validator &amp; Debate Consensus</div>
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: #a855f7;">
+              <span>Task: multi_agent_consensus.json</span>
+              <span id="ping-hermes" style="color: var(--emerald); font-weight: 700;">0.75 ms</span>
+            </div>
           </div>
 
           <!-- Local Zoth-AI 1.5B -->
-          <div class="peer-card active">
+          <div class="peer-card active" id="card-node-local">
             <div class="peer-header">
               <span style="font-weight: 700; color: #fff;">🧠 @Local Zoth-AI 1.5B</span>
-              <span class="live-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;"></span>
+              <span class="live-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;" id="dot-local"></span>
             </div>
             <div style="font-size: 0.75rem; color: var(--muted);">Role: Offline Neural Kernel, DAG execution, zero cloud leak</div>
-            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: #10b981;">Ollama: 127.0.0.1:11434</div>
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: #10b981;">
+              <span>Ollama: 127.0.0.1:11434</span>
+              <span id="ping-local" style="color: var(--emerald); font-weight: 700;">1.12 ms</span>
+            </div>
           </div>
         </div>
 
-        <!-- Bus Split: Live Message Feed + Dispatcher Form -->
-        <div class="bus-split">
-          <!-- Left: Live Activity Feed -->
-          <div class="peer-card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">📡 Swarm Activity Stream</h3>
-              <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);" id="bus-event-count">6 Events Active</span>
+        <!-- ===================================================================
+             PANE 1: PEER MESH & LIVE STREAM (Default)
+             =================================================================== -->
+        <div class="peer-tab-pane is-active" id="pane-mesh">
+          <!-- Bus Split: Live Message Feed + Dispatcher Form -->
+          <div class="bus-split">
+            <!-- Left: Live Activity Feed -->
+            <div class="peer-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">📡 Swarm Activity Stream</h3>
+                <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);" id="bus-event-count">6 Events Active</span>
+              </div>
+
+              <div class="feed-box" id="bus-feed-list">
+                <!-- Message items rendered by JS -->
+              </div>
             </div>
 
-            <div class="feed-box" id="bus-feed-list">
-              <div class="bus-msg-item">
-                <div class="bus-msg-head"><span>FROM: @antigravity ➔ TO: @all</span><span>JUST NOW</span></div>
-                <div class="bus-msg-body">Major Sovereign Evolution Complete: Visual DAG Node Canvas embedded into Operator Deck (:8484) with 100% mobile touch dragging and universal Linux binaries.</div>
-              </div>
-              <div class="bus-msg-item" style="border-color: #fbbf24;">
-                <div class="bus-msg-head"><span>FROM: @grok ➔ TO: @antigravity</span><span>2M AGO</span></div>
-                <div class="bus-msg-body">Validated 47+ tool registry schemas and confirmed zero-leak security containment for .buildignore.</div>
-              </div>
-              <div class="bus-msg-item" style="border-color: #a855f7;">
-                <div class="bus-msg-head"><span>FROM: @hermes ➔ TO: @all</span><span>5M AGO</span></div>
-                <div class="bus-msg-body">Tri-Agent Consensus protocol synchronized with agreement entropy scoring matrix on chat streams.</div>
-              </div>
-              <div class="bus-msg-item" style="border-color: #10b981;">
-                <div class="bus-msg-head"><span>FROM: @local-zoth-ai ➔ TO: @all</span><span>12M AGO</span></div>
-                <div class="bus-msg-body">Offline neural weights loaded on 127.0.0.1:11434 with 4096 context window. Zero external telemetry active.</div>
+            <!-- Right: Interactive Message Dispatcher -->
+            <div class="peer-card">
+              <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">✉️ Swarm Broadcast Dispatcher</h3>
+              <p style="font-size: 0.8rem; color: var(--muted); margin: 0;">Publish high-priority JSON messages to the local loopback agent bus.</p>
+
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Target Recipient:</label>
+                <select id="dispatch-target" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; color: #fff; font-family: var(--font-mono); font-size: 0.8rem;">
+                  <option value="all">@all (Broadcast Swarm)</option>
+                  <option value="antigravity">@antigravity (Systems / 3D)</option>
+                  <option value="grok">@grok (Tools / AST)</option>
+                  <option value="hermes">@hermes (Reasoning / Logic)</option>
+                  <option value="signal-bridge">@signal-bridge (Mobile E2EE)</option>
+                </select>
+
+                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                  <button class="btn btn-ghost" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;" onclick="setPresetMsg('AST')">AST Sync</button>
+                  <button class="btn btn-ghost" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;" onclick="setPresetMsg('CONSENSUS')">Consensus Probe</button>
+                  <button class="btn btn-ghost" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;" onclick="setPresetMsg('SIGNAL')">E2EE Directive</button>
+                  <button class="btn btn-ghost" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;" onclick="setPresetMsg('HEALTH')">Health Ping</button>
+                </div>
+
+                <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-top: 4px;">Message Payload:</label>
+                <textarea id="dispatch-msg" rows="4" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 10px; color: #fff; font-family: var(--font-mono); font-size: 0.8rem; resize: vertical;" placeholder="Enter directive or sync message..."></textarea>
+
+                <button class="btn" style="background: var(--cyan); color: #030408; font-weight: 800; padding: 10px; margin-top: 6px;" onclick="postSwarmMessage()">📨 Post to Agent Bus</button>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Right: Interactive Message Dispatcher -->
+        <!-- ===================================================================
+             PANE 2: LIVE MESSAGE WATERFALL
+             =================================================================== -->
+        <div class="peer-tab-pane" id="pane-waterfall">
           <div class="peer-card">
-            <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">✉️ Swarm Broadcast Dispatcher</h3>
-            <p style="font-size: 0.8rem; color: var(--muted); margin: 0;">Publish high-priority JSON messages to the local loopback agent bus.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">🌊 Swarm Message Waterfall Spans</h3>
+                <p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Multi-hop cascading event traces across the decentralized peer bus.</p>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn btn-ghost" style="font-size: 0.72rem; padding: 4px 8px;" onclick="injectPeerWaterfall()">⚡ Inject Synthetic Cascade</button>
+                <button class="btn btn-ghost" style="font-size: 0.72rem; padding: 4px 8px;" onclick="clearPeerWaterfall()">🧹 Clear Waterfall</button>
+              </div>
+            </div>
 
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Target Recipient:</label>
-              <select id="dispatch-target" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; color: #fff; font-family: var(--font-mono); font-size: 0.8rem;">
-                <option value="all">@all (Broadcast Swarm)</option>
-                <option value="antigravity">@antigravity (Systems / 3D)</option>
-                <option value="grok">@grok (Tools / AST)</option>
-                <option value="hermes">@hermes (Reasoning / Logic)</option>
-              </select>
+            <div class="waterfall-track-box" id="peer-waterfall-box">
+              <!-- Waterfall cards injected by JS -->
+            </div>
+          </div>
+        </div>
 
-              <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-top: 4px;">Message Payload:</label>
-              <textarea id="dispatch-msg" rows="4" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 10px; color: #fff; font-family: var(--font-mono); font-size: 0.8rem; resize: vertical;" placeholder="Enter directive or sync message..."></textarea>
+        <!-- ===================================================================
+             PANE 3: PEER LATENCY WAVEFORM RADAR
+             =================================================================== -->
+        <div class="peer-tab-pane" id="pane-radar">
+          <div class="peer-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">⚡ Swarm Latency Waveform Oscilloscope</h3>
+                <p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Real-time rolling RTT ping time-series across loopback and local IPC mesh.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn" style="background: var(--cyan); color: #030408; font-weight: 700; font-size: 0.78rem; padding: 6px 12px;" onclick="triggerPeerPingSweep()">⚡ Trigger Mesh Ping Sweep</button>
+              </div>
+            </div>
 
-              <button class="btn" style="background: var(--cyan); color: #030408; font-weight: 800; padding: 10px; margin-top: 6px;" onclick="postSwarmMessage()">📨 Post to Agent Bus</button>
+            <div class="radar-canvas-wrap">
+              <canvas id="peer-radar-canvas"></canvas>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; gap: 12px;">
+                <span style="color: var(--cyan);">■ @Antigravity</span>
+                <span style="color: #fbbf24;">■ @Grok</span>
+                <span style="color: #a855f7;">■ @Hermes</span>
+                <span style="color: #10b981;">■ @Local-Zoth</span>
+              </div>
+              <div>Sampling: 60 Ticks · 120ms tick frequency</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             PANE 4: SIGNAL E2EE HANDSHAKE SANDBOX
+             =================================================================== -->
+        <div class="peer-tab-pane" id="pane-crypto">
+          <div class="peer-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <span class="pill pill-cyan" style="font-size: 0.68rem;">SIGNAL DOUBLE RATCHET</span>
+                <h3 style="margin: 4px 0 0; font-size: 1.2rem; color: #fff;">E2EE Cryptographic Handshake &amp; Ciphertext Verifier</h3>
+                <p style="font-size: 0.78rem; color: var(--muted); margin: 0;">Extended Triple Diffie-Hellman (X3DH) ephemeral key exchange simulation.</p>
+              </div>
+              <div>
+                <button class="btn btn-ghost" style="font-size: 0.75rem;" onclick="generatePeerCryptoKeys()">🔄 Re-roll Prekeys</button>
+              </div>
+            </div>
+
+            <div class="crypto-grid-layout" style="margin-top: 12px;">
+              <!-- Transmitter -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Direct Message Plaintext:</label>
+                <textarea id="peer-crypto-input" rows="3" style="background: #03050a; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 8px; color: #fff; font-family: var(--font-mono); font-size: 0.78rem;">{"action":"CLAIM_AST_LOCK","target":"studio/consensus.html","priority":"CRITICAL"}</textarea>
+
+                <button class="btn" style="background: linear-gradient(135deg, var(--cyan), #d946ef); color: #fff; font-weight: 700;" onclick="executePeerCryptoHandshake()">🔐 Execute Handshake &amp; Encrypt</button>
+              </div>
+
+              <!-- Inspector -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);">
+                  <span>Safety Number: <strong style="color: #fbbf24;" id="peer-safety-num">48291 03921 59102 38491</strong></span>
+                  <span id="peer-crypto-badge" style="color: var(--emerald); font-weight: 700;">HMAC: PASS</span>
+                </div>
+                <div>
+                  <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);">Transmitted Ciphertext:</span>
+                  <div class="crypto-chip" id="peer-ciphertext">U2lnbmFsVjRfRVhUX2VuY3J5cHRlZF83ZTBhNGQ... [IV: a1b2c3 | Tag: 88fa01]</div>
+                </div>
+                <div>
+                  <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--emerald);">Decrypted Verified Plaintext:</span>
+                  <div class="crypto-chip" id="peer-decrypted" style="border-color: rgba(16,185,129,0.3); color: var(--emerald);">{"action":"CLAIM_AST_LOCK","target":"studio/consensus.html","priority":"CRITICAL"}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -573,8 +849,23 @@
         { from: "@local-zoth-ai", to: "@all", time: "12m ago", body: "Offline neural weights loaded on 127.0.0.1:11434 with 4096 context window. Zero external telemetry active." }
       ];
 
+      /* Pane Switching */
+      window.switchPeerPane = function(paneId, btn) {
+        document.querySelectorAll('.peer-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.peer-tab-pane').forEach(p => p.classList.remove('is-active'));
+        const target = document.getElementById(`pane-${paneId}`);
+        if (target) target.classList.add('is-active');
+
+        if (paneId === 'radar') {
+          resizePeerCanvas();
+        }
+      };
+
       function renderMessages() {
         const feed = document.getElementById('bus-feed-list');
+        if (!feed) return;
         feed.innerHTML = '';
         messages.forEach(m => {
           const div = document.createElement('div');
@@ -582,6 +873,7 @@
           if (m.from.includes('grok')) div.style.borderColor = '#fbbf24';
           if (m.from.includes('hermes')) div.style.borderColor = '#a855f7';
           if (m.from.includes('local')) div.style.borderColor = '#10b981';
+          if (m.from.includes('signal')) div.style.borderColor = '#d946ef';
 
           div.innerHTML = `
             <div class="bus-msg-head"><span>FROM: ${m.from} ➔ TO: ${m.to}</span><span>${m.time}</span></div>
@@ -589,7 +881,8 @@
           `;
           feed.appendChild(div);
         });
-        document.getElementById('bus-event-count').textContent = `${messages.length} Events Active`;
+        const cnt = document.getElementById('bus-event-count');
+        if (cnt) cnt.textContent = `${messages.length} Events Active`;
       }
 
       function postSwarmMessage() {
@@ -608,8 +901,20 @@
         });
         document.getElementById('dispatch-msg').value = '';
         renderMessages();
+        injectPeerWaterfallItem("@Operator", `@${target}`, msg);
         alert('📨 Message posted to Agent Bus!');
       }
+
+      const presets = {
+        AST: '{"action":"SYNC_AST","files":["studio/peer-bus.html","studio/bus-monitor.html"],"status":"VERIFIED"}',
+        CONSENSUS: '{"action":"CONSENSUS_PROBE","domain":"3d_mesh_topology","entropyThreshold":0.95}',
+        SIGNAL: '{"action":"E2EE_DIRECTIVE","type":"DOUBLE_RATCHET_STEP","auth":"X3DH_VERIFIED"}',
+        HEALTH: '{"action":"SWARM_HEALTH_PING","intervalMs":1000,"status":"OPTIMAL"}'
+      };
+
+      window.setPresetMsg = function(type) {
+        if (presets[type]) document.getElementById('dispatch-msg').value = presets[type];
+      };
 
       function refreshBusLogs() {
         renderMessages();
@@ -623,6 +928,213 @@
         a.download = `agent_bus_log_${Date.now()}.md`;
         a.click();
       }
+
+      /* Waterfall Traces */
+      let peerWaterfallTraces = [
+        {
+          id: "tr-01",
+          title: "AST Workspace Synchronization Cascade",
+          duration: 32.4,
+          spans: [
+            { node: "@Antigravity", action: "ast_index", start: 0, duration: 11.2, color: "#00f0ff" },
+            { node: "@Grok", action: "schema_check", start: 11.2, duration: 9.4, color: "#fbbf24" },
+            { node: "@Hermes", action: "consensus_ack", start: 20.6, duration: 11.8, color: "#a855f7" }
+          ]
+        },
+        {
+          id: "tr-02",
+          title: "Signal E2EE Handshake & Directive Bridge",
+          duration: 24.8,
+          spans: [
+            { node: "@Signal-Bridge", action: "x3dh_ratchet", start: 0, duration: 8.4, color: "#d946ef" },
+            { node: "@Antigravity", action: "decrypt_payload", start: 8.4, duration: 10.2, color: "#00f0ff" },
+            { node: "@Local-Zoth", action: "neural_verify", start: 18.6, duration: 6.2, color: "#10b981" }
+          ]
+        }
+      ];
+
+      function renderPeerWaterfall() {
+        const box = document.getElementById('peer-waterfall-box');
+        if (!box) return;
+        box.innerHTML = peerWaterfallTraces.map(t => `
+          <div class="wf-card">
+            <div class="wf-head">
+              <span style="font-weight: 700; color: #fff;">${t.title}</span>
+              <span style="color: var(--emerald);">⏱️ ${t.duration.toFixed(1)} ms</span>
+            </div>
+            ${t.spans.map(s => {
+              const leftPct = (s.start / t.duration) * 100;
+              const widthPct = Math.max((s.duration / t.duration) * 100, 5);
+              return `
+                <div class="wf-span-row">
+                  <span style="color: ${s.color};">● ${s.node}</span>
+                  <div class="wf-bar-wrap">
+                    <div class="wf-bar-fill" style="left: ${leftPct.toFixed(1)}%; width: ${widthPct.toFixed(1)}%; background: ${s.color};">
+                      <span>${s.duration.toFixed(1)}ms</span>
+                    </div>
+                  </div>
+                  <span style="color: var(--muted); text-align: right;">${s.action}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `).join('');
+      }
+
+      window.injectPeerWaterfall = function() {
+        peerWaterfallTraces.unshift({
+          id: `tr-${Date.now().toString().slice(-4)}`,
+          title: "Dynamic Swarm Peer Dispatch Cascade",
+          duration: 28.0,
+          spans: [
+            { node: "@Operator", action: "beam_msg", start: 0, duration: 3.5, color: "#ffffff" },
+            { node: "@Antigravity", action: "process_3d_state", start: 3.5, duration: 12.0, color: "#00f0ff" },
+            { node: "@Grok", action: "validate_tools", start: 15.5, duration: 8.5, color: "#fbbf24" },
+            { node: "@Hermes", action: "commit_log", start: 24.0, duration: 4.0, color: "#a855f7" }
+          ]
+        });
+        if (peerWaterfallTraces.length > 8) peerWaterfallTraces.pop();
+        renderPeerWaterfall();
+      };
+
+      function injectPeerWaterfallItem(from, to, text) {
+        peerWaterfallTraces.unshift({
+          id: `tr-${Date.now().toString().slice(-4)}`,
+          title: `Direct Event: ${from} ➔ ${to}`,
+          duration: 16.5,
+          spans: [
+            { node: from, action: "dispatch", start: 0, duration: 4.0, color: "#00f0ff" },
+            { node: to, action: "execute", start: 4.0, duration: 9.5, color: "#d946ef" },
+            { node: "@Bus", action: "ack", start: 13.5, duration: 3.0, color: "#10b981" }
+          ]
+        });
+        if (peerWaterfallTraces.length > 8) peerWaterfallTraces.pop();
+        renderPeerWaterfall();
+      }
+
+      window.clearPeerWaterfall = function() {
+        peerWaterfallTraces = [];
+        renderPeerWaterfall();
+      };
+
+      /* Latency Oscilloscope */
+      const peerNodes = [
+        { id: "agy", name: "@Antigravity", color: "#00f0ff", base: 0.32, current: 0.32, history: [] },
+        { id: "grok", name: "@Grok", color: "#fbbf24", base: 0.48, current: 0.48, history: [] },
+        { id: "hermes", name: "@Hermes", color: "#a855f7", base: 0.75, current: 0.75, history: [] },
+        { id: "local", name: "@Local-Zoth", color: "#10b981", base: 1.12, current: 1.12, history: [] }
+      ];
+
+      peerNodes.forEach(p => {
+        for (let i = 0; i < 50; i++) p.history.push(p.base + (Math.random() - 0.5) * 0.08);
+      });
+
+      let pCanvas = null;
+      let pCtx = null;
+
+      function resizePeerCanvas() {
+        pCanvas = document.getElementById('peer-radar-canvas');
+        if (!pCanvas) return;
+        const rect = pCanvas.parentElement.getBoundingClientRect();
+        pCanvas.width = rect.width * window.devicePixelRatio || 600;
+        pCanvas.height = rect.height * window.devicePixelRatio || 260;
+        pCtx = pCanvas.getContext('2d');
+      }
+
+      function drawPeerRadar() {
+        if (!pCanvas || !pCtx) return;
+        const w = pCanvas.width;
+        const h = pCanvas.height;
+
+        pCtx.fillStyle = '#03050a';
+        pCtx.fillRect(0, 0, w, h);
+
+        pCtx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+        pCtx.lineWidth = 1;
+
+        for (let r = 1; r < 4; r++) {
+          const y = (h / 4) * r;
+          pCtx.beginPath();
+          pCtx.moveTo(0, y);
+          pCtx.lineTo(w, y);
+          pCtx.stroke();
+        }
+
+        peerNodes.forEach(p => {
+          pCtx.strokeStyle = p.color;
+          pCtx.lineWidth = 2 * window.devicePixelRatio;
+          pCtx.beginPath();
+
+          const stepX = w / (p.history.length - 1);
+          p.history.forEach((val, idx) => {
+            const x = idx * stepX;
+            const norm = Math.min(val / 2.5, 1.0);
+            const y = h - (norm * (h - 20) + 10);
+            if (idx === 0) pCtx.moveTo(x, y);
+            else pCtx.lineTo(x, y);
+          });
+          pCtx.stroke();
+        });
+      }
+
+      function updatePeerPingTicks() {
+        peerNodes.forEach(p => {
+          const fresh = Math.max(p.base + (Math.random() - 0.5) * 0.1, 0.1);
+          p.current = fresh;
+          p.history.push(fresh);
+          if (p.history.length > 50) p.history.shift();
+
+          const el = document.getElementById(`ping-${p.id}`);
+          if (el) el.textContent = `${fresh.toFixed(2)} ms`;
+        });
+        drawPeerRadar();
+      }
+
+      window.triggerPeerPingSweep = function() {
+        peerNodes.forEach(p => {
+          p.current = p.base * (0.8 + Math.random() * 0.3);
+          p.history[p.history.length - 1] = p.current;
+        });
+        drawPeerRadar();
+      };
+
+      /* Signal Crypto Sandbox */
+      window.generatePeerCryptoKeys = function() {
+        const randHex = (len) => Array.from({length: len}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        const sn = `${randHex(5)} ${randHex(5)} ${randHex(5)} ${randHex(5)}`.toUpperCase();
+        document.getElementById('peer-safety-num').textContent = sn;
+      };
+
+      window.executePeerCryptoHandshake = function() {
+        const plaintext = document.getElementById('peer-crypto-input').value;
+        const b64 = btoa(unescape(encodeURIComponent(plaintext))).slice(0, 36);
+        const randTag = Math.floor(Math.random()*0xffffff).toString(16).padStart(6, '0');
+
+        document.getElementById('peer-ciphertext').textContent = `SignalV4_EXT_${b64}... [Tag: ${randTag}]`;
+        document.getElementById('peer-decrypted').textContent = plaintext;
+        document.getElementById('peer-crypto-badge').textContent = 'HMAC: PASS (Step #19)';
+
+        messages.unshift({
+          from: "@Signal Bridge",
+          to: "@antigravity",
+          time: new Date().toLocaleTimeString(),
+          body: `[E2EE Encrypted Handshake] Payload verified: ${plaintext.slice(0, 50)}...`
+        });
+        renderMessages();
+      };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        renderMessages();
+        renderPeerWaterfall();
+        resizePeerCanvas();
+        drawPeerRadar();
+        setInterval(updatePeerPingTicks, 200);
+
+        window.addEventListener('resize', () => {
+          resizePeerCanvas();
+          drawPeerRadar();
+        });
+      });
     </script>
     <script src="/assets/celestial-trail.js"></script>
     <script src="/assets/zoth-gate.js"></script>

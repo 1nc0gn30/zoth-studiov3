@@ -24,6 +24,15 @@
 
       // Track Definitions & Scales (Frequencies in Hz)
       this.tracks = {
+        solfeggio_432: {
+          name: "✨ 432Hz Sacred Solfeggio",
+          genre: "Hermetic Resonance & Golden Drone",
+          bpm: 72,
+          scale: [432.00, 528.00, 639.00, 741.00, 852.00, 963.00, 216.00, 288.00],
+          bassSeq: [108.00, 0, 0, 0, 144.00, 0, 0, 0, 216.00, 0, 0, 0, 108.00, 0, 0, 0],
+          leadSeq: [0, 1, 2, 0, 3, 0, 4, 5, 0, 1, 3, 2, 5, 4, 1, 0],
+          drumPattern: [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0]
+        },
         rubin_808: {
           name: "🧘 Rubin 808 Reducer",
           genre: "Minimalist Raw 808 & Silence",
@@ -64,8 +73,8 @@
           name: "👑 Hermetic Sovereign Sanctum",
           genre: "Ambient Ethereal Drone & Chimes",
           bpm: 86,
-          scale: [146.83, 164.81, 185.00, 220.00, 246.94, 293.66, 329.63, 370.00],
-          bassSeq: [73.42, 0, 0, 0, 92.50, 0, 0, 0, 110.00, 0, 0, 0, 73.42, 0, 0, 0],
+          scale: [216.00, 288.00, 324.00, 432.00, 528.00, 639.00, 864.00, 963.00],
+          bassSeq: [108.00, 0, 0, 0, 216.00, 0, 0, 0, 432.00, 0, 0, 0, 216.00, 0, 0, 0],
           leadSeq: [0, 2, 4, 6, 7, 5, 3, 1, 0, 2, 4, 6, 7, 6, 4, 2],
           drumPattern: [1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0]
         },
@@ -88,6 +97,7 @@
           drumPattern: [1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0]
         }
       };
+      this.targetVolume = 0.38;
     }
 
     initContext() {
@@ -95,7 +105,8 @@
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         
         this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(0.38, this.ctx.currentTime);
+        this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+        this.masterGain.gain.exponentialRampToValueAtTime(this.targetVolume, this.ctx.currentTime + 0.05);
 
         this.filterNode = this.ctx.createBiquadFilter();
         this.filterNode.type = 'lowpass';
@@ -130,6 +141,12 @@
         this.currentTrack = trackKey;
         this.bpm = this.tracks[trackKey].bpm;
       }
+      if (this.masterGain) {
+        const now = this.ctx.currentTime;
+        this.masterGain.gain.cancelScheduledValues(now);
+        this.masterGain.gain.setValueAtTime(Math.max(0.0001, this.masterGain.gain.value), now);
+        this.masterGain.gain.linearRampToValueAtTime(this.targetVolume, now + 0.05);
+      }
       this.isPlaying = true;
       this.step = 0;
       this.scheduleNextStep();
@@ -141,12 +158,19 @@
         clearTimeout(this.timerId);
         this.timerId = null;
       }
+      if (this.ctx && this.masterGain) {
+        const now = this.ctx.currentTime;
+        this.masterGain.gain.cancelScheduledValues(now);
+        this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+        this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+      }
     }
 
     scheduleNextStep() {
       if (!this.isPlaying) return;
 
       const track = this.tracks[this.currentTrack];
+      if (!track) return;
       const now = this.ctx.currentTime;
       const stepTime = (60 / this.bpm) / 4;
 
@@ -178,30 +202,46 @@
       const startFreq = isRubinHeavy ? 160 : 130;
       const endFreq = isRubinHeavy ? 28 : 35;
       const duration = isRubinHeavy ? 0.28 : 0.14;
+      const peak = isRubinHeavy ? 1.0 : 0.85;
 
       osc.frequency.setValueAtTime(startFreq, time);
       osc.frequency.exponentialRampToValueAtTime(endFreq, time + duration);
-      gain.gain.setValueAtTime(isRubinHeavy ? 1.0 : 0.85, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      
+      // Micro attack ramp to prevent DC pop
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(peak, time + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+      
       osc.connect(gain);
       gain.connect(this.filterNode);
       osc.start(time);
       osc.stop(time + duration);
+
+      setTimeout(() => {
+        try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+      }, (duration + 0.05) * 1000);
     }
 
     triggerSnare(time) {
       const noise = this.ctx.createBufferSource();
-      const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.1, this.ctx.sampleRate);
+      const buffer = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.1), this.ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
       noise.buffer = buffer;
+      
       const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(0.38, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(0.38, time + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.1);
+      
       noise.connect(gain);
       gain.connect(this.filterNode);
       noise.start(time);
       noise.stop(time + 0.1);
+
+      setTimeout(() => {
+        try { noise.disconnect(); gain.disconnect(); } catch(e) {}
+      }, 150);
     }
 
     triggerHiHat(time, accent) {
@@ -209,12 +249,20 @@
       const gain = this.ctx.createGain();
       osc.type = 'square';
       osc.frequency.setValueAtTime(7500, time);
-      gain.gain.setValueAtTime(accent ? 0.12 : 0.05, time);
+      
+      const peak = accent ? 0.12 : 0.05;
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(peak, time + 0.002);
       gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.035);
+      
       osc.connect(gain);
       gain.connect(this.filterNode);
       osc.start(time);
       osc.stop(time + 0.035);
+
+      setTimeout(() => {
+        try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+      }, 80);
     }
 
     triggerBass(time, freq, duration) {
@@ -222,12 +270,19 @@
       const gain = this.ctx.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(freq, time);
-      gain.gain.setValueAtTime(0.55, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(0.55, time + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+      
       osc.connect(gain);
       gain.connect(this.filterNode);
       osc.start(time);
       osc.stop(time + duration);
+
+      setTimeout(() => {
+        try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+      }, (duration + 0.05) * 1000);
     }
 
     triggerLead(time, freq, duration) {
@@ -235,24 +290,32 @@
       const gain = this.ctx.createGain();
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(freq * 2, time);
-      gain.gain.setValueAtTime(0.3, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+      
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.linearRampToValueAtTime(0.3, time + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+      
       osc.connect(gain);
       gain.connect(this.filterNode);
       gain.connect(this.delayNode);
       osc.start(time);
       osc.stop(time + duration);
+
+      setTimeout(() => {
+        try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+      }, (duration + 0.05) * 1000);
     }
 
     setFilterCutoff(freq) {
-      if (this.filterNode) {
-        this.filterNode.frequency.setValueAtTime(freq, this.ctx ? this.ctx.currentTime : 0);
+      if (this.filterNode && this.ctx) {
+        this.filterNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.02);
       }
     }
 
     setVolume(val) {
-      if (this.masterGain) {
-        this.masterGain.gain.setValueAtTime(val, this.ctx ? this.ctx.currentTime : 0);
+      this.targetVolume = parseFloat(val) || 0.35;
+      if (this.masterGain && this.ctx) {
+        this.masterGain.gain.setTargetAtTime(this.targetVolume, this.ctx.currentTime, 0.02);
       }
     }
 

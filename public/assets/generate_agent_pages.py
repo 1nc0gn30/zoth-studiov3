@@ -1286,7 +1286,7 @@ def generate_agent_html(agent):
     cards_html = ""
     for img_path, card_title, card_sub, card_col in visual_cards:
         cards_html += f"""          <div class="form-mini-card">
-            <img src="{img_path}" alt="{name} {card_title} — {card_sub}">
+            <img src="{img_path}" alt="{name} {card_title} — {card_sub}" loading="lazy" decoding="async" width="56" height="56">
             <div><strong style="color:{card_col}">{card_title}</strong><br><small>{card_sub}</small></div>
           </div>\n"""
 
@@ -1504,7 +1504,7 @@ def generate_agent_html(agent):
   <!-- Standard Master Top Navigation Bar -->
   <header class="bar" id="topbar" role="banner">
     <a class="brand" href="/" aria-label="Zoth Studio Home">
-      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Studio Seal" width="36" height="36">
+      <img src="/assets/mascot/azoth-mask.jpg" alt="Zoth Studio Seal" width="36" height="36" decoding="async">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Toggle navigation menu">Menu</button>
@@ -1550,7 +1550,7 @@ def generate_agent_html(agent):
   <main id="main-content" class="container" role="main" style="padding-top:var(--fib-34)">
     <section class="agent-hero" aria-labelledby="agent-title-heading">
       <div class="agent-portrait-wrap" style="border-color:{color};box-shadow:0 0 var(--fib-21) {color}55">
-        <img src="/assets/agents/{agent_id}.jpg" alt="{name} — {role} Sovereign Portrait" class="agent-portrait-img">
+        <img src="/assets/agents/{agent_id}.jpg" alt="{name} — {role} Sovereign Portrait" class="agent-portrait-img" width="280" height="280" fetchpriority="high" decoding="async">
         <div class="agent-sigil-badge" style="border-color:{color};color:{color}">
           <span aria-hidden="true">{icon}</span> {sigil_badge}
         </div>
@@ -1813,52 +1813,81 @@ def generate_agent_html(agent):
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }}
 
-    // Animated Sacred Rune Matrix Canvas
+    // Hermetic Animated Sacred Rune Matrix Canvas
     (function initRuneCanvas() {{
       const canvas = document.getElementById("rune-canvas");
       if (!canvas) return;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", {{ alpha: true }});
+      const PHI = 1.618033988749895;
       let w = canvas.width = window.innerWidth;
       let h = canvas.height = window.innerHeight;
+      let isRuneRunning = true;
+      let runeRafId = 0;
+      let lastRuneTime = performance.now();
 
       window.addEventListener("resize", () => {{
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
-      }});
+      }}, {{ passive: true }});
 
-      const glyphs = ["🜂", "🜄", "🜁", "🜃", "⚚", "☉", "☽", "☿", "♀", "♂", "♃", "♄", "🜔", "🜍", "🜎", "🜏", "🝢", "🝤", "🝪", "🝰", "Φ", "Ψ", "Ω", "Δ", "∇", "∞", "✦", "✧", "0", "1"];
+      const glyphs = ["🜂", "🜄", "🜁", "🜃", "⚚", "☉", "☽", "☿", "♀", "♂", "♃", "♄", "🜔", "🜍", "🜎", "🜏", "🝢", "🝤", "🝪", "🝰", "Φ", "Ψ", "Ω", "Δ", "∇", "∞", "✦", "✧"];
       const particles = [];
-      const count = Math.min(32, Math.floor(w / 40));
+      const count = Math.min(34, Math.floor(w / 38)); // Fibonacci F_9
 
       for (let i = 0; i < count; i++) {{
         particles.push({{
           x: Math.random() * w,
           y: Math.random() * h,
           glyph: glyphs[Math.floor(Math.random() * glyphs.length)],
-          speed: 0.2 + Math.random() * 0.5,
-          size: 10 + Math.random() * 14,
-          opacity: 0.1 + Math.random() * 0.35
+          speed: 0.18 + Math.random() * 0.38,
+          drift: (Math.random() - 0.5) * 0.2,
+          size: 11 + Math.random() * 14,
+          phase: Math.random() * Math.PI * 2,
+          opacity: 0.12 + Math.random() * 0.38
         }});
       }}
 
-      function draw() {{
+      // Visibility lifecycle for 0% CPU consumption
+      document.addEventListener("visibilitychange", () => {{
+        if (document.hidden) {{
+          isRuneRunning = false;
+          if (runeRafId) cancelAnimationFrame(runeRafId);
+        }} else {{
+          isRuneRunning = true;
+          lastRuneTime = performance.now();
+          runeRafId = requestAnimationFrame(draw);
+        }}
+      }});
+
+      function draw(now) {{
+        if (!isRuneRunning) return;
+        const dt = Math.min((now - lastRuneTime) / 16.667, 2.5);
+        lastRuneTime = now;
+
         ctx.clearRect(0, 0, w, h);
         ctx.font = "14px 'IBM Plex Mono', monospace";
         ctx.fillStyle = "{color}";
 
         for (let i = 0; i < particles.length; i++) {{
           const p = particles[i];
-          ctx.globalAlpha = p.opacity;
+          p.phase += 0.02 * dt;
+          const currentAlpha = p.opacity * (0.8 + 0.3 * Math.sin(p.phase * PHI));
+          ctx.globalAlpha = Math.max(0.04, currentAlpha);
           ctx.fillText(p.glyph, p.x, p.y);
-          p.y -= p.speed;
-          if (p.y < -20) {{
-            p.y = h + 20;
+
+          p.y -= p.speed * dt;
+          p.x += p.drift * dt;
+
+          if (p.y < -25) {{
+            p.y = h + 25;
             p.x = Math.random() * w;
           }}
+          if (p.x < -20) p.x = w + 20;
+          if (p.x > w + 20) p.x = -20;
         }}
-        requestAnimationFrame(draw);
+        runeRafId = requestAnimationFrame(draw);
       }}
-      draw();
+      runeRafId = requestAnimationFrame(draw);
     }})();
 
     // Burger Menu Controller
@@ -1888,7 +1917,7 @@ def generate_agent_html(agent):
 
 def generate_index_html():
     cards_code = ""
-    for a in AGENTS_DATA:
+    for idx, a in enumerate(AGENTS_DATA):
         aid = a["id"]
         name = a["name"]
         role = a["role"]
@@ -1907,9 +1936,13 @@ def generate_index_html():
         if aid in ["hermes", "radical-minion", "pixel-neko", "aether", "kraken", "chronos", "draco"]:
             domain_tag += " automation"
 
+        loading_attr = 'loading="lazy"' if idx >= 4 else 'loading="eager"'
+        fetch_attr = 'fetchpriority="high"' if idx == 0 else ''
+        img_attrs = f'{loading_attr} {fetch_attr}'.strip()
+
         cards_code += f"""        <!-- {name} -->
         <a href="/agents/{aid}.html" class="pantheon-card" data-domain="{domain_tag.strip()}" style="border-color:{color}44;">
-          <img src="/assets/agents/{aid}.jpg" alt="{name} — {role}" class="pantheon-card-thumb">
+          <img src="/assets/agents/{aid}.jpg" alt="{name} — {role}" class="pantheon-card-thumb" {img_attrs} decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag" style="color:{color};border-color:{color}55;background:{color}18;font-weight:700;">{tag} · {a['sigil_badge']}</span>
             <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px {color}33;">{name}</h3>
@@ -2105,7 +2138,7 @@ def generate_index_html():
   <!-- Standard Master Top Navigation Bar -->
   <header class="bar" id="topbar" role="banner">
     <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
-      <img src="/assets/mascot/azoth-mask.jpg" alt="Master Azoth Alchemical Persona Mask" width="36" height="36" />
+      <img src="/assets/mascot/azoth-mask.jpg" alt="Master Azoth Alchemical Persona Mask" width="36" height="36" decoding="async" />
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Toggle navigation menu">Menu</button>
@@ -2345,52 +2378,81 @@ def generate_index_html():
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }}
 
-    // Animated Rune Matrix Canvas
+    // Hermetic Animated Sacred Rune Matrix Canvas
     (function initRuneCanvas() {{
       const canvas = document.getElementById("rune-canvas");
       if (!canvas) return;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", {{ alpha: true }});
+      const PHI = 1.618033988749895;
       let w = canvas.width = window.innerWidth;
       let h = canvas.height = window.innerHeight;
+      let isRuneRunning = true;
+      let runeRafId = 0;
+      let lastRuneTime = performance.now();
 
       window.addEventListener("resize", () => {{
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
-      }});
+      }}, {{ passive: true }});
 
       const glyphs = ["🜂", "🜄", "🜁", "🜃", "⚚", "☉", "☽", "☿", "♀", "♂", "♃", "♄", "🜔", "🜍", "🜎", "🜏", "🝢", "🝤", "🝪", "🝰", "Φ", "Ψ", "Ω", "Δ", "∇", "∞", "✦", "✧"];
       const particles = [];
-      const count = Math.min(36, Math.floor(w / 36));
+      const count = Math.min(34, Math.floor(w / 38)); // Fibonacci F_9
 
       for (let i = 0; i < count; i++) {{
         particles.push({{
           x: Math.random() * w,
           y: Math.random() * h,
           glyph: glyphs[Math.floor(Math.random() * glyphs.length)],
-          speed: 0.2 + Math.random() * 0.4,
-          size: 11 + Math.random() * 12,
-          opacity: 0.08 + Math.random() * 0.25
+          speed: 0.18 + Math.random() * 0.38,
+          drift: (Math.random() - 0.5) * 0.2,
+          size: 11 + Math.random() * 14,
+          phase: Math.random() * Math.PI * 2,
+          opacity: 0.12 + Math.random() * 0.38
         }});
       }}
 
-      function draw() {{
+      // Visibility lifecycle for 0% CPU consumption
+      document.addEventListener("visibilitychange", () => {{
+        if (document.hidden) {{
+          isRuneRunning = false;
+          if (runeRafId) cancelAnimationFrame(runeRafId);
+        }} else {{
+          isRuneRunning = true;
+          lastRuneTime = performance.now();
+          runeRafId = requestAnimationFrame(draw);
+        }}
+      }});
+
+      function draw(now) {{
+        if (!isRuneRunning) return;
+        const dt = Math.min((now - lastRuneTime) / 16.667, 2.5);
+        lastRuneTime = now;
+
         ctx.clearRect(0, 0, w, h);
         ctx.font = "14px 'IBM Plex Mono', monospace";
-        ctx.fillStyle = "#e8c872";
+        ctx.fillStyle = "#fbbf24";
 
         for (let i = 0; i < particles.length; i++) {{
           const p = particles[i];
-          ctx.globalAlpha = p.opacity;
+          p.phase += 0.02 * dt;
+          const currentAlpha = p.opacity * (0.8 + 0.3 * Math.sin(p.phase * PHI));
+          ctx.globalAlpha = Math.max(0.04, currentAlpha);
           ctx.fillText(p.glyph, p.x, p.y);
-          p.y -= p.speed;
-          if (p.y < -20) {{
-            p.y = h + 20;
+
+          p.y -= p.speed * dt;
+          p.x += p.drift * dt;
+
+          if (p.y < -25) {{
+            p.y = h + 25;
             p.x = Math.random() * w;
           }}
+          if (p.x < -20) p.x = w + 20;
+          if (p.x > w + 20) p.x = -20;
         }}
-        requestAnimationFrame(draw);
+        runeRafId = requestAnimationFrame(draw);
       }}
-      draw();
+      runeRafId = requestAnimationFrame(draw);
     }})();
 
     // Burger Menu Controller

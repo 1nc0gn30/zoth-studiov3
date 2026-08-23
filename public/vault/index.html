@@ -197,7 +197,7 @@
   <a href="#main-content" class="skip-to-content">Skip to content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" / decoding="async" loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -285,18 +285,65 @@
     </div>
   </nav>
 
-    <div id="app"><main id="main-content" role="main">
+  <main id="main-content" role="main">
+    <div id="app">
       <canvas id="c" aria-label="3D vault"></canvas>
       <div class="vignette" aria-hidden="true"></div>
       <div class="scanlines" aria-hidden="true"></div>
 
-                  
+      <!-- Topbar HUD Controls -->
+      <header class="topbar vault-topbar" id="vault-topbar" role="toolbar" aria-label="Vault Security HUD">
+        <div class="topbar-left">
+          <div class="airgap-badge" id="airgap-badge" title="Parrot OS Local Airgap Standard — Volatile Ephemeral RAM Isolation">
+            <span class="sec-dot"></span>
+            <strong>PARROT AIRGAP</strong>
+            <span class="airgap-sub">127.0.0.1:8787 · mlock</span>
+          </div>
+          <span class="status-chip is-secure" id="backend-badge" title="Cryptographic Backend Enclave">
+            <span class="sec-dot"></span>
+            <span id="backend-label">Browser Enclave</span>
+          </span>
+        </div>
 
-    
+        <div class="topbar-center">
+          <button type="button" class="tb-hud-btn" id="btn-alchemical-seal" title="Hermetic Alchemical Seal & Cipher Suite">
+            <span class="alch-icon">🜚</span>
+            <span class="tb-btn-label">Alchemical Aegis</span>
+          </button>
+          <button type="button" class="tb-hud-btn" id="btn-argon2-telemetry" title="Argon2id Multi-Lane Telemetry (m=64MB, t=3, p=4)">
+            <span class="argon2-icon">⚡</span>
+            <span class="tb-btn-label">Argon2id HUD</span>
+            <span class="tb-param-pill">64MB · t3 · p4</span>
+          </button>
+          <button type="button" class="tb-hud-btn" id="btn-entropy-matrix" title="Live CSPRNG Hex Entropy & 64-Byte Matrix">
+            <span class="entropy-icon">0x</span>
+            <span class="tb-btn-label">Hex Entropy</span>
+            <span class="entropy-val-pill" id="tb-entropy-val">256-bit</span>
+          </button>
+        </div>
 
-    
-
-    
+        <div class="topbar-right top-actions">
+          <button type="button" class="tb tb-danger-btn" id="btn-zeroize-ram" title="Interactive RAM Buffer Zeroization & Sanitization">
+            <span class="purge-icon">🧼</span>
+            <span>Zeroize RAM</span>
+          </button>
+          <button type="button" class="tb icon-tb is-on" id="btn-rotate" aria-label="Toggle Orbit Rotation" aria-pressed="true" title="Toggle Orbit">⟳</button>
+          <button type="button" class="tb icon-tb" id="btn-focus" aria-label="Focus on Selected Key" title="Focus Key">◎</button>
+          <button type="button" class="tb icon-tb" id="btn-explode" aria-label="Scatter Key Cluster" aria-pressed="false" title="Scatter / Regroup">✦</button>
+          <button type="button" class="tb" id="btn-presets" hidden>Presets</button>
+          <span class="session-chip" id="autolock-badge" hidden>15:00</span>
+          <button type="button" class="tb tb-lock" id="btn-lock" hidden>Lock</button>
+          <details class="more-menu" id="toolbar-more" hidden>
+            <summary class="tb icon-tb" aria-label="More options">⋯</summary>
+            <div class="more-panel">
+              <button type="button" class="more-item" id="btn-open-audit">Audit log</button>
+              <button type="button" class="more-item" id="btn-open-security-menu">Security</button>
+              <button type="button" class="more-item" id="btn-change-pass">Rotate passphrase</button>
+              <button type="button" class="more-item danger-t" id="btn-more-zeroize">Zeroize memory</button>
+            </div>
+          </details>
+        </div>
+      </header>
 
       <!-- JS stubs -->
       <div id="sec-hud" hidden aria-hidden="true">
@@ -317,9 +364,13 @@
       <!-- GATE: pick path first, then passphrase -->
       <section class="gate" id="gate">
         <div class="gate-card" id="gate-card">
-          <div class="gate-mark" aria-hidden="true">
-            <span class="gate-ring"></span>
-            <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="48" height="48" alt="Zoth Studio Hermetic Crest & Alchemical Seal" />
+          <div class="gate-mark alchemical-gate-mark" id="gate-alch-mark" aria-hidden="true" title="The Azoth Hermetic Seal of Cryptographic Synthesis">
+            <span class="gate-ring ring-outer"></span>
+            <span class="gate-ring ring-inner"></span>
+            <span class="alch-glyph glyph-salt" title="Salt (Sal) — 128-bit CSPRNG Seed">🜔</span>
+            <span class="alch-glyph glyph-sulfur" title="Sulphur (Sulfur) — Master Nonce & Key Material">🜍</span>
+            <span class="alch-glyph glyph-mercury" title="Mercury (Mercurius) — Volatile Stream Cipher Key">🜈</span>
+            <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" width="56" height="56" alt="Zoth Studio Hermetic Crest & Alchemical Seal" / decoding="async" loading="lazy">
           </div>
           <div class="gate-probe" id="gate-probe" role="status" hidden>
             <span class="spinner" aria-hidden="true"></span>
@@ -374,15 +425,51 @@
             <label class="field" for="master-pass">
               <span id="pass-label">Passphrase</span>
               <div class="pass-row">
-                <input id="master-pass" type="password" autocomplete="current-password" placeholder="Enter passphrase" />
+                <input id="master-pass" type="password" autocomplete="current-password" placeholder="Enter passphrase" spellcheck="false" />
                 <button type="button" class="icon-btn" id="btn-toggle-master" aria-label="Show passphrase" aria-pressed="false">👁</button>
               </div>
-              <div class="strength" id="pass-strength" aria-hidden="true"><i></i></div>
+              <div class="strength" id="pass-strength" aria-hidden="true"><i id="pass-strength-bar"></i></div>
             </label>
+
+            <!-- Live Hex Entropy Telemetry -->
+            <div class="entropy-telemetry-hud" id="gate-entropy-hud">
+              <div class="entropy-metrics-row">
+                <div class="entropy-badge">
+                  <span class="entropy-label">SHANNON</span>
+                  <strong id="entropy-shannon-val">0.00 b/byte</strong>
+                </div>
+                <div class="entropy-badge">
+                  <span class="entropy-label">AIRGAP STRENGTH</span>
+                  <strong id="entropy-strength-val" class="entropy-grade-zero">Awaiting Input</strong>
+                </div>
+                <div class="entropy-badge">
+                  <span class="entropy-label">KEYSPACE</span>
+                  <strong id="entropy-bits-val">0 bits</strong>
+                </div>
+              </div>
+              <div class="live-hex-stream-row">
+                <span class="hex-stream-tag">TRNG /dev/urandom:</span>
+                <code id="gate-hex-bytes">0x7F 0x9A 0xC4 0x1E 0x88 0x02 0x5D 0xB3 0xF1 0x44</code>
+              </div>
+            </div>
+
+            <!-- Argon2id Telemetry Pill Badge -->
+            <div class="airgap-telemetry-card" id="gate-argon2-card">
+              <div class="atc-head">
+                <span class="atc-pill">ARGON2ID v19</span>
+                <span class="atc-pill">m=64MB (65536 KiB)</span>
+                <span class="atc-pill">t=3 PASSES</span>
+                <span class="atc-pill">p=4 LANES</span>
+              </div>
+              <div class="atc-body">
+                <span>🔒 Cipher: <strong>XChaCha20-Poly1305</strong> + <strong>AES-256-GCM</strong></span>
+                <span>🛡️ Memory: <strong>Parrot OS Airgap</strong> (mlock volatile RAM, 0 cloud KMS)</span>
+              </div>
+            </div>
 
             <label class="check" id="remember-wrap">
               <input type="checkbox" id="remember-session" checked />
-              <span>Auto-lock when idle</span>
+              <span>Auto-lock when idle (15 min)</span>
             </label>
 
             <button type="button" class="primary block" id="btn-gate-go">
@@ -404,6 +491,10 @@
 
           <div class="gate-links">
             <button type="button" class="text-btn" id="btn-gate-security">Security details</button>
+            <span class="sep">·</span>
+            <button type="button" class="text-btn" id="btn-gate-argon2">Argon2id Telemetry</button>
+            <span class="sep">·</span>
+            <button type="button" class="text-btn" id="btn-gate-seal">Hermetic Seal</button>
           </div>
           <p class="hint" id="gate-msg" role="status"></p>
           <p class="gate-meta" id="vault-exists-hint"></p>
@@ -468,7 +559,7 @@
               <input id="key-label" type="text" placeholder="Label" maxlength="64" required />
             </div>
             <div class="pass-row">
-              <input id="key-secret" type="password" autocomplete="off" placeholder="Paste secret" required />
+              <input id="key-secret" type="password" autocomplete="off" placeholder="Paste secret" required spellcheck="false" />
               <button type="button" class="icon-btn" id="btn-toggle-secret" aria-label="Show key">👁</button>
             </div>
             <p class="field-hint" id="key-format-hint"></p>
@@ -496,6 +587,7 @@
             <button type="button" class="text-btn" id="btn-export">Export</button>
             <button type="button" class="text-btn" id="btn-export-json">Backup</button>
             <button type="button" class="text-btn" id="btn-import">Import</button>
+            <button type="button" class="text-btn danger-t" id="btn-zeroize-panel" title="Purge and Zeroize volatile memory">Zeroize</button>
             <button type="button" class="text-btn danger-t" id="btn-wipe">Wipe</button>
           </div>
           <input type="file" id="import-file" accept=".env,.txt,.json,text/plain,application/json" hidden />
@@ -523,6 +615,355 @@
         <span id="session-status">locked</span>
       </footer>
     </div>
+
+    <!-- ZEROIZATION OVERLAY ANIMATION -->
+    <div id="zeroize-overlay" class="zeroize-overlay" hidden aria-hidden="true">
+      <div class="zeroize-matrix-bg" id="zeroize-matrix-bg"></div>
+      <div class="zeroize-terminal-card">
+        <div class="zt-head">
+          <span class="zt-icon">🧼</span>
+          <h3>PARROT OS AIRGAP MEMORY SANITIZER</h3>
+          <span class="zt-pill">DoD 5220.22-M / Gutmann</span>
+        </div>
+        <div class="zt-progress-bar">
+          <div class="zt-progress-fill" id="zt-progress-fill"></div>
+        </div>
+        <div class="zt-terminal-stream" id="zt-terminal-stream">
+          <p>[INIT] Requesting kernel memory purge for volatile enclave...</p>
+        </div>
+        <div class="zt-footer">
+          <span id="zt-status-text">Sweeping 65,536 KiB buffer with 0x00...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARGON2ID DERIVATION TELEMETRY DIALOG -->
+    <dialog id="argon2-dialog" class="sheet sheet-wide">
+      <div class="sheet-head">
+        <div>
+          <h3>Argon2id Derivation Telemetry</h3>
+          <p class="muted">Memory-Hard KDF Specification: m=64MB (65,536 KiB) · t=3 Passes · p=4 Parallel Lanes</p>
+        </div>
+        <button type="button" class="icon-btn" id="btn-close-argon2" aria-label="Close">✕</button>
+      </div>
+
+      <div class="argon2-dialog-body">
+        <!-- Specs Bar -->
+        <div class="argon2-spec-cards">
+          <div class="a2-spec-card">
+            <span class="a2-kicker">ALGORITHM</span>
+            <strong>Argon2id v19</strong>
+            <small>RFC 9106 Hybrid KDF</small>
+          </div>
+          <div class="a2-spec-card">
+            <span class="a2-kicker">MEMORY COST (m)</span>
+            <strong>65,536 KiB</strong>
+            <small>64 MiB mlock() DRAM</small>
+          </div>
+          <div class="a2-spec-card">
+            <span class="a2-kicker">TIME COST (t)</span>
+            <strong>3 Passes</strong>
+            <small>Sequential Matrix Folds</small>
+          </div>
+          <div class="a2-spec-card">
+            <span class="a2-kicker">PARALLELISM (p)</span>
+            <strong>4 Lanes</strong>
+            <small>16,384 KiB / Lane Slice</small>
+          </div>
+        </div>
+
+        <!-- 4 Lanes Visualizer -->
+        <div class="argon2-lanes-container">
+          <h4>Multi-Lane Parallel Memory Allocation Matrix</h4>
+          <div class="lane-bars-grid">
+            <div class="lane-card" id="lane-card-0">
+              <div class="lane-header">
+                <strong>Lane 0 (Memory Slice 0)</strong>
+                <span id="lane-stat-0">16,384 KiB / 16 MB</span>
+              </div>
+              <div class="lane-bar-track"><div class="lane-bar-fill" id="lane-fill-0" style="width: 100%"></div></div>
+              <span class="lane-sub">Blake2b-512 H₀ initial block indexing · Pass 1–3</span>
+            </div>
+            <div class="lane-card" id="lane-card-1">
+              <div class="lane-header">
+                <strong>Lane 1 (Memory Slice 1)</strong>
+                <span id="lane-stat-1">16,384 KiB / 16 MB</span>
+              </div>
+              <div class="lane-bar-track"><div class="lane-bar-fill" id="lane-fill-1" style="width: 100%"></div></div>
+              <span class="lane-sub">2D Hybrid inter-lane column mixing · Pass 1–3</span>
+            </div>
+            <div class="lane-card" id="lane-card-2">
+              <div class="lane-header">
+                <strong>Lane 2 (Memory Slice 2)</strong>
+                <span id="lane-stat-2">16,384 KiB / 16 MB</span>
+              </div>
+              <div class="lane-bar-track"><div class="lane-bar-fill" id="lane-fill-2" style="width: 100%"></div></div>
+              <span class="lane-sub">Diagonal address indexing & permutation · Pass 1–3</span>
+            </div>
+            <div class="lane-card" id="lane-card-3">
+              <div class="lane-header">
+                <strong>Lane 3 (Memory Slice 3)</strong>
+                <span id="lane-stat-3">16,384 KiB / 16 MB</span>
+              </div>
+              <div class="lane-bar-track"><div class="lane-bar-fill" id="lane-fill-3" style="width: 100%"></div></div>
+              <span class="lane-sub">Final block XOR compression & AEAD tag fold</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Benchmark Runner -->
+        <div class="argon2-benchmark-box">
+          <div class="benchmark-head">
+            <div>
+              <strong>Client-Side Hardware Derivation Benchmark</strong>
+              <p class="muted">Measure local CPU/RAM derivation latency, throughput (MB/s), and memory-hardness resistance.</p>
+            </div>
+            <button type="button" class="primary" id="btn-run-argon2-bench">
+              <span class="btn-label">Run Live Benchmark</span>
+              <span class="spinner btn-spinner" hidden></span>
+            </button>
+          </div>
+          <div class="benchmark-results" id="argon2-bench-results">
+            <div class="b-res-card">
+              <span>LATENCY (Δt)</span>
+              <strong id="bench-latency">—</strong>
+            </div>
+            <div class="b-res-card">
+              <span>THROUGHPUT</span>
+              <strong id="bench-throughput">—</strong>
+            </div>
+            <div class="b-res-card">
+              <span>ASIC RESISTANCE</span>
+              <strong id="bench-asic-cost">—</strong>
+            </div>
+            <div class="b-res-card">
+              <span>AIRGAP STATUS</span>
+              <strong id="bench-airgap-grade">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Defense Profile Table -->
+        <div class="argon2-defense-table-wrap">
+          <h4>KDF Brute-Force Defense Comparison</h4>
+          <table class="defense-table">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Memory Footprint</th>
+                <th>Parallelism</th>
+                <th>ASIC Resistance</th>
+                <th>GPU Botnet Defense</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="is-highlight">
+                <td><strong>Argon2id (m=64MB, t=3, p=4)</strong></td>
+                <td><span class="badge-ok">65,536 KiB</span></td>
+                <td>4 Parallel Lanes</td>
+                <td><span class="badge-ok">Maximum (SRAM Exhaustion)</span></td>
+                <td><span class="badge-ok">Saturated Memory Bus</span></td>
+              </tr>
+              <tr>
+                <td>PBKDF2-HMAC-SHA256 (120k)</td>
+                <td><span class="badge-bad">&lt; 1 KiB</span></td>
+                <td>1 Thread</td>
+                <td><span class="badge-bad">Vulnerable to ASICs</span></td>
+                <td><span class="badge-bad">High GPU Hashrate</span></td>
+              </tr>
+              <tr>
+                <td>bcrypt (cost=12)</td>
+                <td><span class="badge-warn">4 KiB</span></td>
+                <td>1 Thread</td>
+                <td><span class="badge-warn">Moderate (L1 cache)</span></td>
+                <td><span class="badge-warn">Moderate Resistance</span></td>
+              </tr>
+              <tr>
+                <td>scrypt (N=32768, r=8, p=1)</td>
+                <td><span class="badge-ok">32,768 KiB</span></td>
+                <td>1 Thread</td>
+                <td><span class="badge-ok">High</span></td>
+                <td><span class="badge-ok">Memory Bandwidth Bound</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- LIVE HEX ENTROPY MONITOR DIALOG -->
+    <dialog id="entropy-dialog" class="sheet sheet-wide">
+      <div class="sheet-head">
+        <div>
+          <h3>Live CSPRNG Hex Entropy & Byte Matrix</h3>
+          <p class="muted">Parrot OS Airgap Hardware TRNG Harvester & Shannon Metric</p>
+        </div>
+        <button type="button" class="icon-btn" id="btn-close-entropy" aria-label="Close">✕</button>
+      </div>
+
+      <div class="entropy-dialog-body">
+        <!-- Live Entropy Gauge Bar -->
+        <div class="entropy-main-stats">
+          <div class="e-stat-card">
+            <span>SHANNON ENTROPY</span>
+            <strong id="modal-shannon-val">7.982 b/byte</strong>
+            <small>Ideal Maximum: 8.000 bits/byte</small>
+          </div>
+          <div class="e-stat-card">
+            <span>TOTAL BIT STRENGTH</span>
+            <strong id="modal-bits-val">256 bits</strong>
+            <small>CSPRNG Hardware TRNG Seeding</small>
+          </div>
+          <div class="e-stat-card">
+            <span>AIRGAP COMPLIANCE</span>
+            <strong id="modal-grade-val" class="entropy-grade-sovereign">Parrot OS Sovereign</strong>
+            <small>NIST SP 800-63B / Airgap Grade</small>
+          </div>
+          <div class="e-stat-card">
+            <span>CRACK COMPLEXITY</span>
+            <strong id="modal-crack-val">&gt; 10¹⁸ Years</strong>
+            <small>Against 100 TH/s Argon2 cluster</small>
+          </div>
+        </div>
+
+        <!-- 64-Byte Live Hex Matrix (16x4) -->
+        <div class="hex-matrix-container">
+          <div class="hex-matrix-head">
+            <strong>Active 64-Byte TRNG Cryptographic Matrix</strong>
+            <span class="muted">Hover byte to inspect binary, decimal, and Hamming weight</span>
+          </div>
+          <div class="hex-matrix-grid" id="hex-matrix-grid">
+            <!-- Populated via JS with 64 dynamic interactive bytes -->
+          </div>
+          <div class="byte-inspector-card" id="byte-inspector-card">
+            <div class="bi-col"><span class="bi-label">HEX:</span> <strong id="bi-hex">0x00</strong></div>
+            <div class="bi-col"><span class="bi-label">BINARY:</span> <strong id="bi-bin">00000000</strong></div>
+            <div class="bi-col"><span class="bi-label">DECIMAL:</span> <strong id="bi-dec">0</strong></div>
+            <div class="bi-col"><span class="bi-label">ASCII / GLYPH:</span> <strong id="bi-ascii">·</strong></div>
+            <div class="bi-col"><span class="bi-label">HAMMING POPCOUNT:</span> <strong id="bi-pop">0 bits</strong></div>
+          </div>
+        </div>
+
+        <!-- TRNG Harvester Zone -->
+        <div class="trng-harvester-zone" id="trng-harvester-zone">
+          <div class="harvester-info">
+            <span class="harvester-icon">🌀</span>
+            <div>
+              <strong>Hardware TRNG Entropy Harvester</strong>
+              <p class="muted">Move cursor or gesture inside this zone to harvest microsecond jitter into the entropy pool.</p>
+            </div>
+          </div>
+          <div class="harvester-gauge">
+            <span>Harvested Jitter: <strong id="harvester-samples-count">0</strong> samples</span>
+            <div class="harvester-bar-track"><div class="harvester-bar-fill" id="harvester-bar-fill" style="width: 0%"></div></div>
+          </div>
+          <button type="button" class="ghost" id="btn-reseed-entropy">Reseed CSPRNG Pool</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- HERMETIC ALCHEMICAL SEAL DIALOG -->
+    <dialog id="seal-dialog" class="sheet sheet-wide">
+      <div class="sheet-head">
+        <div>
+          <h3>The Azoth Seal of Cryptographic Synthesis</h3>
+          <p class="muted">Hermetic Alchemical Aegis · Sacred Geometry & Cryptographic Correspondences</p>
+        </div>
+        <button type="button" class="icon-btn" id="btn-close-seal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="seal-dialog-body">
+        <div class="seal-hero-row">
+          <div class="seal-svg-wrap">
+            <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" class="seal-large-img" width="180" height="180" alt="Hermetic Alchemical Seal of Master Azoth" / decoding="async" loading="lazy">
+            <div class="seal-orbit-rings">
+              <div class="sor-ring sor-1"></div>
+              <div class="sor-ring sor-2"></div>
+            </div>
+          </div>
+          <div class="seal-formula-card">
+            <span class="sfc-kicker">HERMETIC AXIOM & FORMULA</span>
+            <h4>“VISITA INTERIORA TERRAE RECTIFICANDO INVENIES OCCULTUM LAPIDEM”</h4>
+            <p class="sfc-body">
+              <strong>The Airgap Axiom:</strong> <em>“As above in RAM, so below on Disk — but never transmitted into the Cloud.”</em>
+              Raw physical TRNG entropy is transmuted through memory-hard Argon2id iterations into unyielding cryptographic seals.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tria Prima Cards -->
+        <div class="tria-prima-grid">
+          <div class="tp-card">
+            <span class="tp-glyph">🜔</span>
+            <strong>Salt (Sal)</strong>
+            <span class="tp-role">The Memory Grid</span>
+            <p>128-bit CSPRNG seed & 65,536 KiB volatile RAM matrix providing memory-hard physical defense.</p>
+          </div>
+          <div class="tp-card">
+            <span class="tp-glyph">🜍</span>
+            <strong>Sulphur (Sulfur)</strong>
+            <span class="tp-role">The Master Secret</span>
+            <p>192-bit extended nonce & secret passphrase material driving the cryptographic permutation engine.</p>
+          </div>
+          <div class="tp-card">
+            <span class="tp-glyph">🜈</span>
+            <strong>Mercury (Mercurius)</strong>
+            <span class="tp-role">The Volatile Cipher</span>
+            <p>Ephemeral stream cipher keys residing exclusively in mlock() volatile RAM buffers, zeroized on exit.</p>
+          </div>
+          <div class="tp-card">
+            <span class="tp-glyph">🜚</span>
+            <strong>Azoth (Universal Synthesis)</strong>
+            <span class="tp-role">The Sovereign Enclave</span>
+            <p>The sovereign local synthesis uniting all 21 agent archetypes under hardware airgap isolation.</p>
+          </div>
+        </div>
+
+        <!-- Planetary Metals Table -->
+        <div class="planetary-ciphers-wrap">
+          <h4>The Seven Planetary Metals & Cryptographic Enclaves</h4>
+          <div class="planetary-grid">
+            <div class="planet-badge"><span>☉ Sol (Gold)</span> <small>AES-256-GCM Hardware Core</small></div>
+            <div class="planet-badge"><span>☽ Luna (Silver)</span> <small>XChaCha20-Poly1305 AEAD</small></div>
+            <div class="planet-badge"><span>☿ Mercurius (Quicksilver)</span> <small>Argon2id (m=64MB, t=3, p=4)</small></div>
+            <div class="planet-badge"><span>♀ Venus (Copper)</span> <small>Blake2b-512 Initial H₀</small></div>
+            <div class="planet-badge"><span>♂ Mars (Iron)</span> <small>Hardware TRNG /dev/urandom</small></div>
+            <div class="planet-badge"><span>♃ Jupiter (Tin)</span> <small>Local Loopback IPC Socket</small></div>
+            <div class="planet-badge"><span>♄ Saturn (Lead)</span> <small>mlock() Airgap Kernel Shield</small></div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- RAM BUFFER ZEROIZE DIALOG -->
+    <dialog id="zeroize-dialog" class="sheet">
+      <div class="sheet-head">
+        <div>
+          <h3>RAM Buffer Zeroization</h3>
+          <p class="muted">Anti-Forensics Volatile Memory Purge</p>
+        </div>
+        <button type="button" class="icon-btn" id="btn-close-zeroize" aria-label="Close">✕</button>
+      </div>
+      <div class="zeroize-dialog-body">
+        <div class="zd-warning-banner">
+          <span class="zd-warn-icon">⚠️</span>
+          <div>
+            <strong>Volatile Memory Sanitization</strong>
+            <p class="muted">This operation executes a 4-pass DoD 5220.22-M / Gutmann memory overwrite across all active key buffers, detaches the mlock heap, and locks the vault.</p>
+          </div>
+        </div>
+        <ul class="zd-passes-list">
+          <li><span>1</span> <strong>Pass 1:</strong> Overwrite plaintext pointers with <code>0x00</code> (Null Bytes)</li>
+          <li><span>2</span> <strong>Pass 2:</strong> Invert silicon gate potentials with <code>0xFF</code> (All Ones)</li>
+          <li><span>3</span> <strong>Pass 3:</strong> Overwrite analog memory remanence with CSPRNG TRNG noise</li>
+          <li><span>4</span> <strong>Pass 4:</strong> Unbind <code>mlock()</code> and force heap garbage collection</li>
+        </ul>
+        <div class="sheet-actions">
+          <button type="button" class="primary block danger-btn" id="btn-confirm-zeroize">Execute 4-Pass RAM Zeroization</button>
+          <button type="button" class="ghost block" id="btn-cancel-zeroize">Cancel</button>
+        </div>
+      </div>
+    </dialog>
 
     <dialog id="security-dialog" class="sheet">
       <div class="sheet-head">
@@ -581,6 +1022,7 @@
         <li><kbd>/</kbd> search</li>
         <li><kbd>E</kbd> export</li>
         <li><kbd>L</kbd> lock</li>
+        <li><kbd>Z</kbd> zeroize</li>
         <li><kbd>Esc</kbd> close</li>
       </ul>
       <button type="button" class="primary block" id="btn-close-shortcuts">Done</button>

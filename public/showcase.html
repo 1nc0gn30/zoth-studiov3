@@ -57,9 +57,9 @@
     <link rel="stylesheet" href="/styles.css?v=20260818a" />
     
     <!-- Three.js + OrbitControls + GLTFLoader -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
         <style>
     .skip-to-content {
@@ -913,7 +913,7 @@
     <a class="skip-link" href="#main">Skip to main content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" decoding="async" / loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -1688,32 +1688,32 @@
         <div class="live-deck" style="background: rgba(10, 14, 26, 0.94); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: var(--radius, 18px); padding: 30px; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);">
           <div class="gallery-grid">
             <div class="gallery-item">
-              <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Hermetic Seal SVG" />
+              <img src="/assets/brand/zoth-seal-hermetic-on-dark.svg" alt="Hermetic Seal SVG" loading="lazy" decoding="async" width="200" height="200" />
               <div class="gallery-title">Hermetic Cyber Seal (SVG)</div>
               <div class="gallery-sub">Glowing Neon Cyan & Gold Vector</div>
             </div>
             <div class="gallery-item">
-              <img src="/assets/brand/zoth-seal-hermetic-hd.jpg" alt="8K Insignia Master" />
+              <img src="/assets/brand/zoth-seal-hermetic-hd.jpg" alt="8K Insignia Master" loading="lazy" decoding="async" width="200" height="200" />
               <div class="gallery-title">8K Insignia Master</div>
               <div class="gallery-sub">Sacred Alchemical Linework</div>
             </div>
             <div class="gallery-item">
-              <img src="/assets/mascot/zoth-logo-badge.jpg" alt="Zoth App Icon" />
+              <img src="/assets/mascot/zoth-logo-badge.jpg" alt="Zoth App Icon" loading="lazy" decoding="async" width="200" height="200" />
               <div class="gallery-title">Zoth App Icon Badge</div>
               <div class="gallery-sub">Cybernetic Owl Emblem</div>
             </div>
             <div class="gallery-item">
-              <img src="/assets/mascot/zoth-hero-avatar.jpg" alt="Zoth Avatar" />
+              <img src="/assets/mascot/zoth-hero-avatar.jpg" alt="Zoth Avatar" loading="lazy" decoding="async" width="200" height="200" />
               <div class="gallery-title">Zoth Heroic Avatar</div>
               <div class="gallery-sub">Cinematic Profile Portrait</div>
             </div>
             <div class="gallery-item">
-              <img src="/assets/mascot/ghostbyte-avatar.jpg" alt="GhostByte Avatar" />
+              <img src="/assets/mascot/ghostbyte-avatar.jpg" alt="GhostByte Avatar" loading="lazy" decoding="async" width="200" height="200" />
               <div class="gallery-title">GhostByte 3D Mascot</div>
               <div class="gallery-sub">NullAI Holographic Companion</div>
             </div>
             <div class="gallery-item">
-              <img src="/assets/mascot/ghostbyte-logo.jpg" alt="GhostByte Logo" />
+              <img src="/assets/mascot/ghostbyte-logo.jpg" alt="GhostByte Logo" loading="lazy" decoding="async" width="200" height="200" />
               <div class="gallery-title">GhostByte Vector Logo</div>
               <div class="gallery-sub">Minimalist Tech Emblem</div>
             </div>
@@ -2091,57 +2091,109 @@
       }
 
       /* ═══════════════════════════════════════════════════════════════
-         Live GLSL Shader 2: Cosmic Particle Swirl
+         Live GLSL Shader 2: Hermetic Cosmic Particle Swirl
          ═══════════════════════════════════════════════════════════════ */
       let vortexCanvas, vortexCtx, vortexParticles = [];
       let isWarpSpeed = false;
+      let vortexRafId = 0;
+      let isVortexRunning = true;
+      let lastVortexTime = performance.now();
+      const PHI = 1.618033988749895;
+
+      const HERMETIC_VORTEX_PALETTE = [
+        { r: 251, g: 191, b: 36,  hex: '#fbbf24' }, // Solar Gold
+        { r: 0,   g: 240, b: 255, hex: '#00f0ff' }, // Aether Cyan
+        { r: 52,  g: 211, b: 153, hex: '#34d399' }  // Emerald Verde
+      ];
 
       function initVortexShader() {
         vortexCanvas = document.getElementById('canvas-vortex-shader');
         if (!vortexCanvas) return;
-        vortexCtx = vortexCanvas.getContext('2d');
+        vortexCtx = vortexCanvas.getContext('2d', { alpha: true });
         vortexCanvas.width = vortexCanvas.clientWidth;
         vortexCanvas.height = vortexCanvas.clientHeight;
 
-        const count = 300;
+        const count = 377; // Fibonacci number F_14
+        const goldenAngle = 137.507764 * (Math.PI / 180);
+
         for (let i = 0; i < count; i++) {
+          const norm = i / count;
+          const col = HERMETIC_VORTEX_PALETTE[i % HERMETIC_VORTEX_PALETTE.length];
           vortexParticles.push({
-            r: Math.random() * 120 + 20,
-            angle: Math.random() * Math.PI * 2,
-            speed: (Math.random() * 0.02 + 0.01) * (Math.random() > 0.5 ? 1 : -1),
-            size: Math.random() * 2.5 + 1,
-            color: Math.random() > 0.5 ? '#00e5ff' : '#d946ef'
+            r: Math.pow(norm, 0.618) * 140 + 12,
+            baseR: Math.pow(norm, 0.618) * 140 + 12,
+            angle: i * goldenAngle,
+            speed: (0.012 + (1 - norm) * 0.025) * (i % 2 === 0 ? 1 : 1.15),
+            size: Math.random() * 2.2 + 1.0,
+            color: col,
+            trail: []
           });
         }
 
-        function renderVortex() {
-          requestAnimationFrame(renderVortex);
-          vortexCtx.fillStyle = 'rgba(2, 3, 7, 0.15)';
+        // Viewport & Visibility Lifecycle for 0% CPU consumption
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && !document.hidden) {
+              if (!isVortexRunning) {
+                isVortexRunning = true;
+                lastVortexTime = performance.now();
+                vortexRafId = requestAnimationFrame(renderVortex);
+              }
+            } else {
+              isVortexRunning = false;
+              if (vortexRafId) cancelAnimationFrame(vortexRafId);
+            }
+          });
+        }, { threshold: 0.1 });
+        observer.observe(vortexCanvas);
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            isVortexRunning = false;
+            if (vortexRafId) cancelAnimationFrame(vortexRafId);
+          } else {
+            isVortexRunning = true;
+            lastVortexTime = performance.now();
+            vortexRafId = requestAnimationFrame(renderVortex);
+          }
+        });
+
+        function renderVortex(now) {
+          if (!isVortexRunning) return;
+          const dt = Math.min((now - lastVortexTime) / 16.667, 2.5);
+          lastVortexTime = now;
+
+          vortexRafId = requestAnimationFrame(renderVortex);
+
+          // Deep Void trail absorption (#050508)
+          vortexCtx.fillStyle = 'rgba(5, 5, 8, 0.18)';
           vortexCtx.fillRect(0, 0, vortexCanvas.width, vortexCanvas.height);
 
           const cx = vortexCanvas.width / 2;
           const cy = vortexCanvas.height / 2;
-          const speedMul = isWarpSpeed ? 3.5 : 1.0;
+          const speedMul = isWarpSpeed ? 3.8 : 1.0;
 
           vortexParticles.forEach(p => {
-            p.angle += p.speed * speedMul;
+            p.angle += p.speed * speedMul * dt;
             const x = cx + Math.cos(p.angle) * p.r;
-            const y = cy + Math.sin(p.angle) * p.r * 0.6;
+            const y = cy + Math.sin(p.angle) * p.r * 0.618; // Golden ratio elliptical projection
 
             vortexCtx.beginPath();
             vortexCtx.arc(x, y, p.size, 0, Math.PI * 2);
-            vortexCtx.fillStyle = p.color;
-            vortexCtx.shadowBlur = 10;
-            vortexCtx.shadowColor = p.color;
+            vortexCtx.fillStyle = p.color.hex;
+            vortexCtx.shadowBlur = 8;
+            vortexCtx.shadowColor = p.color.hex;
             vortexCtx.fill();
+            vortexCtx.shadowBlur = 0;
           });
         }
-        renderVortex();
+        vortexRafId = requestAnimationFrame(renderVortex);
       }
 
       function burstVortex() {
         vortexParticles.forEach(p => {
-          p.r += (Math.random() - 0.5) * 60;
+          p.r += (Math.random() - 0.5) * 75;
+          if (p.r < 10) p.r = 10;
         });
       }
 

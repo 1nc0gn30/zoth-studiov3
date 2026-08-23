@@ -55,15 +55,16 @@
   <!-- Typography Hierarchy: Cinzel (Sacred Serif) + Syne + IBM Plex Mono + Figtree -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Syne:wght@600;700;800;900&amp;display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/zoth-tip.css" />
   <link rel="stylesheet" href="/assets/zoth-mobile.css" />
   <link rel="stylesheet" href="/assets/zoth-annotator.css" />
 
   <!-- Three.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <!-- Google MediaPipe Hands -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
   <style>
     .skip-to-content {
@@ -1033,7 +1034,7 @@
   <a href="#main-content" class="skip-to-content">Skip to content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" / decoding="async" loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -1479,7 +1480,7 @@
     <div class="footer-grid">
       <div class="footer-col">
         <h4 style="display:flex;align-items:center;gap:8px;">
-          <img src="/assets/mascot/azoth-mask.jpg" alt="Master Azoth Alchemical Persona Mask" width="24" height="24" style="border-radius:50%;border:1px solid var(--gold);" />
+          <img src="/assets/mascot/azoth-mask.jpg" alt="Master Azoth Alchemical Persona Mask" width="24" height="24" style="border-radius:50%;border:1px solid var(--gold);" / decoding="async" loading="lazy">
           Azoth Sovereign Studio
         </h4>
         <p style="margin-bottom:0.8rem;color:var(--text-muted);">Sovereign spatial computing, multi-agent arbitration, and zero-cloud execution.</p>
@@ -1716,7 +1717,1629 @@
       }
 
       // Navigation & Drawer
-      </script>
+      const burger = document.getElementById("burger");
+      if (burger) {
+        burger.addEventListener("click", () => {
+          const open = document.body.classList.toggle("menu-open");
+          burger.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      }
+      const drawer = document.getElementById("drawer");
+      if (drawer) {
+        drawer.addEventListener("click", (e) => {
+          if (e.target.tagName === "A") {
+            document.body.classList.remove("menu-open");
+            if (burger) burger.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
+
+      // ── Mode Switching ──
+      window.setHudMode = function(mode) {
+        currentHudMode = mode;
+        document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(`tab-mode-${mode}`);
+        if (btn) btn.classList.add('active');
+
+        // Hide all context bars
+        if (ctxFilterBar) ctxFilterBar.style.display = 'none';
+        if (ctxMascotBar) ctxMascotBar.style.display = 'none';
+        if (ctxDrumBar) ctxDrumBar.style.display = 'none';
+        if (ctxAirDrawBar) ctxAirDrawBar.style.display = 'none';
+        if (ctxSpawnerBar) ctxSpawnerBar.style.display = 'none';
+        if (ctxRulerBar) ctxRulerBar.style.display = 'none';
+        if (ctxTelemetryBar) ctxTelemetryBar.style.display = 'none';
+        if (ctxVisorBar) ctxVisorBar.style.display = 'none';
+        if (hudVoiceAgentDock) hudVoiceAgentDock.classList.remove('active');
+        if (roiAnalysisCard) roiAnalysisCard.style.display = 'none';
+
+        // Show active context bar
+        if (mode === 'portal' && ctxFilterBar) ctxFilterBar.style.display = 'flex';
+        else if (mode === 'mascot' && ctxMascotBar) ctxMascotBar.style.display = 'flex';
+        else if (mode === 'drums' && ctxDrumBar) ctxDrumBar.style.display = 'flex';
+        else if (mode === 'airdraw' && ctxAirDrawBar) ctxAirDrawBar.style.display = 'flex';
+        else if (mode === 'spawner' && ctxSpawnerBar) ctxSpawnerBar.style.display = 'flex';
+        else if (mode === 'ruler' && ctxRulerBar) ctxRulerBar.style.display = 'flex';
+        else if (mode === 'telemetry' && ctxTelemetryBar) ctxTelemetryBar.style.display = 'flex';
+        else if (mode === 'visor' && ctxVisorBar) ctxVisorBar.style.display = 'flex';
+        else if (mode === 'voice' && hudVoiceAgentDock) {
+          hudVoiceAgentDock.classList.add('active');
+          if (voicePromptInput) voicePromptInput.focus();
+        }
+
+        setElText('mode-val', mode.toUpperCase());
+        logEvent(`Transmuted Tool: [${mode.toUpperCase()}]`, "#e8c872");
+      };
+
+      window.cycleStudioModesWithGesture = function() {
+        const idx = STUDIO_MODES.indexOf(currentHudMode);
+        const nextMode = STUDIO_MODES[(idx + 1) % STUDIO_MODES.length];
+        setHudMode(nextMode);
+      };
+
+      // ── Sidebar Tabs ──
+      window.setSidebarTab = function(tabName, btn) {
+        document.querySelectorAll('.sidebar-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.sidebar-tab-pane').forEach(p => p.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        const pane = document.getElementById(`pane-${tabName}`);
+        if (pane) pane.classList.add('active');
+      };
+
+      // ── 3D Holographic Spawner Functions (Tool 5) ──
+      window.spawnHologramObject = function(type) {
+        const x = 500 + Math.random() * 280;
+        const y = 300 + Math.random() * 160;
+        spawnedObjects.push({
+          type: type,
+          x: x, y: y,
+          size: 50,
+          rotX: 0, rotY: 0,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          color: ['#e8c872', '#00f0ff', '#ff007a', '#34d399', '#c084fc'][Math.floor(Math.random() * 5)]
+        });
+        logEvent(`Manifested Sacred 3D Geometry: [${type.toUpperCase()}]`, "#e8c872");
+      };
+
+      window.clearHologramObjects = function() {
+        spawnedObjects = [];
+        logEvent("Cleared all Manifested 3D Geometries.", "#94a3b8");
+      };
+
+      function renderSpawnedHolograms() {
+        if (spawnedObjects.length === 0) return;
+        ctx.save();
+        spawnedObjects.forEach(obj => {
+          obj.rotX += 0.025;
+          obj.rotY += 0.035;
+          obj.x += obj.vx;
+          obj.y += obj.vy;
+
+          if (obj.x < 60 || obj.x > canvas.width - 60) obj.vx *= -1;
+          if (obj.y < 60 || obj.y > canvas.height - 60) obj.vy *= -1;
+
+          ctx.save();
+          ctx.translate(obj.x, obj.y);
+          ctx.strokeStyle = obj.color;
+          ctx.lineWidth = 2.5;
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = obj.color;
+
+          if (obj.type === 'merkaba') {
+            const s = obj.size;
+            // Interlocking tetrahedrons (Star of David in 3D projection)
+            ctx.beginPath();
+            ctx.moveTo(0, -s); ctx.lineTo(s*0.866, s*0.5); ctx.lineTo(-s*0.866, s*0.5); ctx.closePath();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, s); ctx.lineTo(s*0.866, -s*0.5); ctx.lineTo(-s*0.866, -s*0.5); ctx.closePath();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, s*0.4, 0, Math.PI * 2);
+            ctx.stroke();
+          } else if (obj.type === 'cube') {
+            const s = obj.size;
+            ctx.strokeRect(-s/2, -s/2, s, s);
+            ctx.strokeRect(-s/4, -s/4, s, s);
+            ctx.beginPath();
+            ctx.moveTo(-s/2, -s/2); ctx.lineTo(-s/4, -s/4);
+            ctx.moveTo(s/2, -s/2); ctx.lineTo(3*s/4, -s/4);
+            ctx.moveTo(-s/2, s/2); ctx.lineTo(-s/4, 3*s/4);
+            ctx.moveTo(s/2, s/2); ctx.lineTo(3*s/4, 3*s/4);
+            ctx.stroke();
+          } else if (obj.type === 'torus') {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, obj.size, obj.size * 0.45, obj.rotX, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.restore();
+        });
+        ctx.restore();
+      }
+
+      // ── Spatial Ruler (Tool 6) ──
+      window.resetRulerPoints = function() {
+        rulerPoints = [];
+        if (rulerDistDisplay) rulerDistDisplay.textContent = 'DISTANCE: 0.0 cm (Φ 1.618)';
+        logEvent("Sacred Ruler reset.", "#e8c872");
+      };
+
+      function updateAndRenderSpatialRuler(handTips) {
+        if (currentHudMode !== 'ruler') return;
+
+        if (handTips.length >= 2) {
+          const p1 = handTips[0];
+          const p2 = handTips[1];
+          const pixelDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+          const cmDist = (pixelDist * 0.052).toFixed(1);
+          const phiProportion = (cmDist / 1.618).toFixed(1);
+
+          if (rulerDistDisplay) rulerDistDisplay.textContent = `DISTANCE: ${cmDist} cm (Φ Harmonic: ${phiProportion} cm)`;
+
+          ctx.save();
+          ctx.strokeStyle = "rgba(232, 200, 114, 0.95)";
+          ctx.lineWidth = 3;
+          ctx.shadowBlur = 14;
+          ctx.shadowColor = "#e8c872";
+          ctx.setLineDash([8, 4]);
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          const midX = (p1.x + p2.x) / 2;
+          const midY = (p1.y + p2.y) / 2;
+          ctx.fillStyle = "rgba(3, 3, 6, 0.95)";
+          ctx.fillRect(midX - 60, midY - 14, 120, 26);
+          ctx.strokeStyle = "#e8c872";
+          ctx.strokeRect(midX - 60, midY - 14, 120, 26);
+
+          ctx.fillStyle = "#e8c872";
+          ctx.font = "11px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(`📐 ${cmDist}cm · Φ:${phiProportion}`, midX, midY + 4);
+          ctx.restore();
+        }
+      }
+
+      // ── Cyber Visor Tactical HUD (Tool 8) ──
+      window.toggleVisorTargetLock = function() {
+        isTargetLockActive = !isTargetLockActive;
+        logEvent(`Divine Seraphic Lock: ${isTargetLockActive ? 'TRANSCENDENT' : 'STANDBY'}`, isTargetLockActive ? '#e8c872' : '#94a3b8');
+      };
+
+      function renderCyberVisorHUD(handCentroids) {
+        if (currentHudMode !== 'visor') return;
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(232, 200, 114, 0.85)";
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "rgba(232, 200, 114, 0.5)";
+        const w = canvas.width, h = canvas.height;
+        const bLen = 70;
+
+        ctx.beginPath();
+        // Top Left
+        ctx.moveTo(30, 30 + bLen); ctx.lineTo(30, 30); ctx.lineTo(30 + bLen, 30);
+        // Top Right
+        ctx.moveTo(w - 30 - bLen, 30); ctx.lineTo(w - 30, 30); ctx.lineTo(w - 30, 30 + bLen);
+        // Bottom Left
+        ctx.moveTo(30, h - 30 - bLen); ctx.lineTo(30, h - 30); ctx.lineTo(30 + bLen, h - 30);
+        // Bottom Right
+        ctx.moveTo(w - 30 - bLen, h - 30); ctx.lineTo(w - 30, h - 30); ctx.lineTo(w - 30, h - 30 - bLen);
+        ctx.stroke();
+
+        // Lock-on brackets around detected hand targets
+        if (isTargetLockActive && handCentroids) {
+          handCentroids.forEach((c, idx) => {
+            ctx.strokeStyle = "#e8c872";
+            ctx.lineWidth = 2;
+            const tw = 80;
+            ctx.strokeRect(c.x - tw/2, c.y - tw/2, tw, tw);
+
+            // Sacred concentric circle
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, tw*0.6, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = "#e8c872";
+            ctx.font = "10px monospace";
+            ctx.fillText(`SERAPH_LOCK [ASTRAL-0${idx+1}]`, c.x - tw/2, c.y - tw/2 - 6);
+          });
+        }
+        ctx.restore();
+      }
+
+      // ── Mascot Selector & Pet Interaction ──
+      window.selectMascot = function(idx, btn) {
+        activeMascotIdx = idx;
+        document.querySelectorAll('.mascot-pill-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        const cur = AR_MASCOTS[idx];
+        logEvent(`Manifested Palm Seraph: [${cur.emoji} ${cur.name}]`, cur.color);
+      };
+
+      window.petActiveMascot = function() {
+        mascotHeartsAnim = 40;
+        const cur = AR_MASCOTS[activeMascotIdx];
+        logEvent(`❤️ Chanted blessing to ${cur.name}! Seraphic Affinity: 100%.`, cur.color);
+        if ('speechSynthesis' in window) {
+          const utter = new SpeechSynthesisUtterance(`${cur.name} accepts your divine blessing.`);
+          window.speechSynthesis.speak(utter);
+        }
+      };
+
+      // ── Solfeggio 528Hz Sequencer ──
+      window.toggleSequencer = function() {
+        isSequencerActive = !isSequencerActive;
+        if (btnSeqToggle) {
+          btnSeqToggle.textContent = isSequencerActive ? '⏹️ Solfeggio: ON' : '▶️ Solfeggio: OFF';
+          btnSeqToggle.classList.toggle('active', isSequencerActive);
+        }
+        if (isSequencerActive) {
+          startSequencerLoop();
+          logEvent("⚡ 528Hz Solfeggio Harmonic Sequencer initiated.", "#e8c872");
+        } else {
+          if (seqIntervalId) clearInterval(seqIntervalId);
+          logEvent("⚡ Sequencer paused.", "#94a3b8");
+        }
+      };
+
+      function startSequencerLoop() {
+        if (seqIntervalId) clearInterval(seqIntervalId);
+        const bpm = parseInt(sliderBpm ? sliderBpm.value : 120, 10) || 120;
+        const stepTimeMs = (60 / bpm) * 1000 / 2;
+
+        seqIntervalId = setInterval(() => {
+          if (!isSequencerActive) return;
+          const steps = document.querySelectorAll('.seq-step');
+          steps.forEach((s, idx) => s.classList.toggle('current', idx === currentSeqStep));
+
+          if (seqPattern[currentSeqStep]) {
+            if (currentSeqStep % 4 === 0) playDrumSound('kick');
+            else if (currentSeqStep % 4 === 2) playDrumSound('snare');
+            else playDrumSound('hihat');
+          }
+
+          currentSeqStep = (currentSeqStep + 1) % 8;
+        }, stepTimeMs);
+      }
+
+      window.toggleSeqStep = function(idx, el) {
+        seqPattern[idx] = !seqPattern[idx];
+        if (el) el.classList.toggle('active', seqPattern[idx]);
+      };
+
+      // ── Solfeggio Crystal Chime Engine ──
+      function initAudioSynthesizer() {
+        if (audioCtx) return;
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContext();
+          synthOsc = audioCtx.createOscillator();
+          synthOsc.type = 'sine'; // Pure Solfeggio tone
+          synthFilter = audioCtx.createBiquadFilter();
+          synthFilter.type = 'lowpass';
+          synthFilter.frequency.value = 1200;
+          synthGain = audioCtx.createGain();
+          synthGain.gain.value = 0.0;
+
+          synthOsc.connect(synthFilter);
+          synthFilter.connect(synthGain);
+          synthGain.connect(audioCtx.destination);
+          synthOsc.start();
+        } catch (e) {
+          console.warn("Audio note:", e);
+        }
+      }
+
+      function playDwellClickAudio() {
+        initAudioSynthesizer();
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        // 528Hz Solfeggio Transformation Frequency
+        osc.frequency.setValueAtTime(528, t);
+        osc.frequency.exponentialRampToValueAtTime(1056, t + 0.1);
+        g.gain.setValueAtTime(0.35, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.16);
+      }
+
+      window.playDrumSound = function(type) {
+        initAudioSynthesizer();
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const t = audioCtx.currentTime;
+        const padEl = document.getElementById(`pad-${type}`);
+        if (padEl) {
+          padEl.classList.add('hit');
+          setTimeout(() => padEl.classList.remove('hit'), 150);
+        }
+
+        if (type === 'kick') {
+          // 432Hz Root Foundation
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.frequency.setValueAtTime(432, t);
+          osc.frequency.exponentialRampToValueAtTime(54, t + 0.2);
+          g.gain.setValueAtTime(0.9, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.26);
+        } else if (type === 'snare') {
+          // 528Hz Transformation Tone
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(528, t);
+          osc.frequency.exponentialRampToValueAtTime(264, t + 0.12);
+          g.gain.setValueAtTime(0.7, t);
+          g.gain.exponentialRampToValueAtTime(0.01, t + 0.16);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.18);
+        } else if (type === 'hihat') {
+          // 639Hz Connecting Tone
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(639, t);
+          g.gain.setValueAtTime(0.4, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.09);
+        } else if (type === 'stab') {
+          // 741Hz Awakening Chord
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(741, t);
+          g.gain.setValueAtTime(0.5, t);
+          g.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.42);
+        }
+      };
+
+      window.toggleGesturalSynth = function() {
+        initAudioSynthesizer();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        isSynthActive = !isSynthActive;
+        if (btnSynthToggle) {
+          btnSynthToggle.textContent = isSynthActive ? '🔊 528Hz: ON' : '🔊 Chimes Muted';
+          btnSynthToggle.classList.toggle('btn-shimmer-gold', isSynthActive);
+          btnSynthToggle.classList.toggle('btn-shimmer-dark', !isSynthActive);
+        }
+        if (!isSynthActive && synthGain && audioCtx) {
+          synthGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+        }
+      };
+
+      if (btnSynthToggle) btnSynthToggle.addEventListener('click', toggleGesturalSynth);
+
+      // ── Shaders Selection ──
+      window.setShaderFilter = function(name, btn) {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        activeShader = name;
+        setElText('shader-val', name.toUpperCase(), "#e8c872");
+        logEvent(`Transmutation FX: [${name.toUpperCase()}]`, "#e8c872");
+      };
+
+      window.cycleNextShaderFromGesture = function() {
+        const idx = ALL_SHADERS.indexOf(activeShader);
+        const nextShader = ALL_SHADERS[(idx + 1) % ALL_SHADERS.length];
+        setShaderFilter(nextShader);
+      };
+
+      // ── Air-Draw & Circling ROI ──
+      window.setAirDrawColor = function(col, btn) {
+        document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        activeAirDrawColor = col;
+      };
+
+      window.clearAirDrawTrails = function() {
+        airDrawTrails = [];
+        detectedROI = null;
+        if (roiAnalysisCard) roiAnalysisCard.style.display = 'none';
+        logEvent("Transmutation canvas purified.", "#e8c872");
+      };
+
+      window.dismissRoiCard = function() {
+        if (roiAnalysisCard) roiAnalysisCard.style.display = 'none';
+        detectedROI = null;
+      };
+
+      window.analyzeTargetROI = function() {
+        if (!detectedROI) return;
+        logEvent(`⚡ Consulting Azoth Oracle for ROI [${detectedROI.w}x${detectedROI.h}]...`, "#e8c872");
+        
+        if ('speechSynthesis' in window) {
+          const utter = new SpeechSynthesisUtterance("Decoding sacred spatial geometry with Azoth.");
+          window.speechSynthesis.speak(utter);
+        }
+        alert(`⚡ Sacred ROI Decoded! Azoth revealed 1 divine sovereign pattern inside bounded geometry.`);
+        dismissRoiCard();
+      };
+
+      // ── Voice AI Agent Dispatcher & Council Debate ──
+      window.selectVoiceAgent = function(agentKey, btn) {
+        activeVoiceAgent = agentKey;
+        document.querySelectorAll('.agent-choice-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        logEvent(`Oracle Dispatch Target: @${agentKey.toUpperCase()}`, "#e8c872");
+      };
+
+      window.fillPromptTemplate = function(txt) {
+        if (voicePromptInput) {
+          voicePromptInput.value = txt;
+          voicePromptInput.focus();
+        }
+      };
+
+      window.triggerDualAgentDebate = function() {
+        const prompt = voicePromptInput ? voicePromptInput.value.trim() : "Optimal Sovereign Architecture";
+        logEvent(`⚔️ Council Debate Triggered: [Azoth vs Lycan] on "${prompt}"`, "#e8c872");
+
+        if ('speechSynthesis' in window) {
+          const u1 = new SpeechSynthesisUtterance(`Azoth: We prioritize high-throughput modular actor orchestration and AST purity.`);
+          u1.pitch = 1.1;
+          const u2 = new SpeechSynthesisUtterance(`Lycan: Security boundaries and zero-trust KMS must constrain every inter-process bus.`);
+          u2.pitch = 0.85;
+
+          window.speechSynthesis.speak(u1);
+          setTimeout(() => window.speechSynthesis.speak(u2), 3500);
+        }
+        alert(`⚔️ Divine Council Debate:
+1. Azoth (Architect): "We prioritize high-throughput actor orchestration."
+2. Lycan (Security): "Zero-trust boundaries must constrain every process bus."`);
+      };
+
+      window.dispatchVoiceAgentPrompt = function() {
+        if (!voicePromptInput) return;
+        const prompt = voicePromptInput.value.trim();
+        if (!prompt) return;
+
+        logEvent(`⚡ Manifested prompt to @${activeVoiceAgent.toUpperCase()}: "${prompt}"`, "#e8c872");
+        if ('speechSynthesis' in window) {
+          const utter = new SpeechSynthesisUtterance(`Oracle command transmitted to ${activeVoiceAgent}.`);
+          window.speechSynthesis.speak(utter);
+        }
+        alert(`⚡ Manifested to @${activeVoiceAgent.toUpperCase()}: "${prompt}"`);
+        voicePromptInput.value = '';
+      };
+
+      // Speech Rec
+      let speechRecognizer = null;
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        speechRecognizer = new SpeechRec();
+        speechRecognizer.continuous = true;
+        speechRecognizer.interimResults = true;
+        speechRecognizer.onresult = (e) => {
+          let str = '';
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            str += e.results[i][0].transcript;
+          }
+          if (voicePromptInput) voicePromptInput.value = str;
+        };
+      }
+
+      if (btnVoiceMic) {
+        btnVoiceMic.addEventListener('click', () => {
+          if (!speechRecognizer) {
+            alert("Speech recognition not supported in this browser.");
+            return;
+          }
+          if (!isVoiceRecording) {
+            speechRecognizer.start();
+            isVoiceRecording = true;
+            btnVoiceMic.classList.add('recording');
+            logEvent("🔮 Oracle listening to your incantation...", "#e8c872");
+          } else {
+            speechRecognizer.stop();
+            isVoiceRecording = false;
+            btnVoiceMic.classList.remove('recording');
+            logEvent("🔮 Oracle channel sealed.", "#94a3b8");
+          }
+        });
+      }
+
+      // Snapshot & Video
+      if (btnSnapshotCam) {
+        btnSnapshotCam.addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = `zoth-divine-vision-${Date.now()}.png`;
+          a.click();
+          logEvent("📸 Sacred Snapshot manifested!", "#e8c872");
+        });
+      }
+
+      let mediaRecorder = null, recordedChunks = [];
+      if (btnRecordClip) {
+        btnRecordClip.addEventListener('click', () => {
+          if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            const stream = canvas.captureStream(60);
+            mediaRecorder = new MediaRecorder(stream);
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+              const blob = new Blob(recordedChunks, { type: 'video/webm' });
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = `zoth-divine-clip-${Date.now()}.webm`;
+              a.click();
+              logEvent("🎥 Sacred Video clip exported!", "#e8c872");
+            };
+            mediaRecorder.start();
+            btnRecordClip.textContent = '🛑 Stop';
+            btnRecordClip.classList.add('btn-shimmer-gold');
+          } else {
+            mediaRecorder.stop();
+            btnRecordClip.textContent = '🎥 Record';
+            btnRecordClip.classList.remove('btn-shimmer-gold');
+          }
+        });
+      }
+
+      // ── Three.js Sacred Merkaba Star Core ──
+      let spatialMesh;
+      function initSpatial3D() {
+        const host = document.getElementById('spatial-3d-host');
+        if (!host) return;
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.1, 100);
+        cam.position.set(0, 0, 4);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(host.clientWidth, host.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        host.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+        const dl = new THREE.DirectionalLight(0xe8c872, 2.5);
+        dl.position.set(2, 4, 3);
+        scene.add(dl);
+
+        const dl2 = new THREE.DirectionalLight(0x00f0ff, 1.5);
+        dl2.position.set(-2, -3, 2);
+        scene.add(dl2);
+
+        const geo = new THREE.IcosahedronGeometry(1.1, 0);
+        const mat = new THREE.MeshPhysicalMaterial({
+          color: 0xe8c872,
+          roughness: 0.1,
+          metalness: 0.9,
+          transmission: 0.4,
+          thickness: 0.8
+        });
+        spatialMesh = new THREE.Mesh(geo, mat);
+        scene.add(spatialMesh);
+
+        function render() {
+          requestAnimationFrame(render);
+          if (spatialMesh) {
+            spatialMesh.rotation.x += 0.009;
+            spatialMesh.rotation.y += 0.014;
+          }
+          renderer.render(scene, cam);
+        }
+        render();
+      }
+      initSpatial3D();
+
+      // Optical Skeleton & Hands
+      const SKELETON_CONNECTIONS = [
+        [0,1],[1,2],[2,3],[3,4],
+        [0,5],[5,6],[6,7],[7,8],
+        [0,9],[9,10],[10,11],[11,12],
+        [0,13],[13,14],[14,15],[15,16],
+        [0,17],[17,18],[18,19],[19,20],
+        [5,9],[9,13],[13,17]
+      ];
+
+      try {
+        if (typeof Hands !== 'undefined') {
+          handsEngine = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+          });
+          handsEngine.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.45,
+            minTrackingConfidence: 0.45
+          });
+          handsEngine.onResults(onMediaPipeResults);
+          mediaPipeReady = true;
+        }
+      } catch(e) {
+        console.warn("MediaPipe init:", e);
+      }
+
+      let lastMediaPipeHandCount = 0;
+      function onMediaPipeResults(results) {
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+          lastMediaPipeHandCount = results.multiHandLandmarks.length;
+          renderHandSkeletons(results.multiHandLandmarks);
+        } else {
+          lastMediaPipeHandCount = 0;
+        }
+      }
+
+      // ── TRANSCENDENT DWELL HOVER-TO-CLICK ENGINE ──
+      function processDwellHoverClick(screenX, screenY) {
+        const dwellDuration = parseInt(sliderDwellTime ? sliderDwellTime.value : 850, 10) || 850;
+        const now = performance.now();
+
+        const elUnderCursor = document.elementFromPoint(screenX, screenY);
+        const clickable = elUnderCursor ? elUnderCursor.closest('button, a, .filter-chip, .mode-tab-btn, .mascot-pill-btn, .agent-choice-btn, .gesture-card, .drum-pad, .quick-chip') : null;
+
+        if (clickable && clickable !== lastClickedEl) {
+          if (clickable !== currentHoveredEl) {
+            if (currentHoveredEl) currentHoveredEl.classList.remove('spatial-charging', 'spatial-hover');
+            currentHoveredEl = clickable;
+            hoverStartTime = now;
+            clickable.classList.add('spatial-hover');
+          }
+
+          const elapsed = now - hoverStartTime;
+          const progress = Math.min(1.0, elapsed / dwellDuration);
+
+          if (progress < 0.35) {
+            laserCursor.style.borderColor = 'var(--cyan)';
+            laserCursor.style.boxShadow = '0 0 16px var(--cyan)';
+            laserInner.style.background = 'rgba(0, 240, 255, 0.4)';
+          } else if (progress < 0.7) {
+            laserCursor.style.borderColor = 'var(--purple)';
+            laserCursor.style.boxShadow = '0 0 24px var(--purple)';
+            laserInner.style.background = 'rgba(192, 132, 252, 0.6)';
+          } else if (progress < 0.95) {
+            laserCursor.style.borderColor = 'var(--gold)';
+            laserCursor.style.boxShadow = '0 0 32px var(--gold)';
+            laserInner.style.background = 'rgba(232, 200, 114, 0.8)';
+          } else {
+            laserCursor.style.borderColor = '#ffffff';
+            laserCursor.style.boxShadow = '0 0 45px #ffffff';
+            laserInner.style.background = '#ffffff';
+          }
+
+          clickable.classList.add('spatial-charging');
+          setElText('pointer-status-val', `CHARGING ${Math.round(progress * 100)}%`, progress > 0.7 ? '#e8c872' : 'var(--purple)');
+
+          if (progress >= 1.0) {
+            playDwellClickAudio();
+            clickable.click();
+            logEvent(`⚡ Transmuted Click on [${clickable.textContent.trim().slice(0,24)}]`, "#ffffff");
+
+            clickable.classList.remove('spatial-charging');
+            lastClickedEl = clickable;
+            currentHoveredEl = null;
+            hoverStartTime = 0;
+
+            setTimeout(() => {
+              if (lastClickedEl === clickable) lastClickedEl = null;
+            }, 1200);
+          }
+        } else {
+          if (currentHoveredEl) {
+            currentHoveredEl.classList.remove('spatial-charging', 'spatial-hover');
+            currentHoveredEl = null;
+          }
+          hoverStartTime = 0;
+          laserCursor.style.borderColor = 'var(--gold)';
+          laserCursor.style.boxShadow = '0 0 16px var(--gold-glow)';
+          laserInner.style.background = 'rgba(232, 200, 114, 0.2)';
+          setElText('pointer-status-val', "ATTUNED", "var(--gold)");
+        }
+      }
+
+      // ── DELIBERATE GESTURE COMBO GUARD ENGINE ──
+      function processDeliberateGestureCombos(gestures) {
+        let dominantGesture = null;
+
+        if (gestures.length >= 2) {
+          if (gestures[0] === gestures[1] && gestures[0] !== 'neutral') {
+            dominantGesture = gestures[0];
+          }
+        } else if (gestures.length === 1 && gestures[0] !== 'neutral') {
+          dominantGesture = gestures[0];
+        }
+
+        if (dominantGesture && (dominantGesture === 'peace' || dominantGesture === 'salute' || dominantGesture === 'horns')) {
+          if (activeHeldGesture === dominantGesture) {
+            gestureHoldFrames++;
+          } else {
+            activeHeldGesture = dominantGesture;
+            gestureHoldFrames = 1;
+          }
+
+          const pct = Math.min(100, Math.round((gestureHoldFrames / GESTURE_TRIGGER_THRESHOLD) * 100));
+
+          if (gestureChargePill) {
+            gestureChargePill.style.display = 'flex';
+            if (dominantGesture === 'peace') {
+              chargePillIcon.textContent = '✌️';
+              chargePillLabel.textContent = 'PEACE COMBO: TRANSMUTING TOOLS...';
+            } else if (dominantGesture === 'salute') {
+              chargePillIcon.textContent = '🤟';
+              chargePillLabel.textContent = 'SALUTE COMBO: TRANSMUTING SHADERS...';
+            } else if (dominantGesture === 'horns') {
+              chargePillIcon.textContent = '🤘';
+              chargePillLabel.textContent = 'HORNS COMBO: SUMMONING ORACLE...';
+            }
+            chargePillProgress.textContent = `[${'▓'.repeat(Math.floor(pct/25))}${'░'.repeat(4 - Math.floor(pct/25))}] ${pct}%`;
+          }
+
+          if (gestureHoldFrames >= GESTURE_TRIGGER_THRESHOLD) {
+            playDwellClickAudio();
+            if (dominantGesture === 'peace') cycleStudioModesWithGesture();
+            else if (dominantGesture === 'salute') cycleNextShaderFromGesture();
+            else if (dominantGesture === 'horns' && currentHudMode !== 'voice') setHudMode('voice');
+
+            gestureHoldFrames = 0;
+            activeHeldGesture = null;
+            if (gestureChargePill) gestureChargePill.style.display = 'none';
+          }
+        } else {
+          gestureHoldFrames = Math.max(0, gestureHoldFrames - 2);
+          if (gestureHoldFrames === 0) {
+            activeHeldGesture = null;
+            if (gestureChargePill) gestureChargePill.style.display = 'none';
+          }
+        }
+      }
+
+      function renderHandSkeletons(handsArray) {
+        if (!isCamRunning) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawCyberGrid();
+        }
+
+        let totalPoints = 0;
+        const handCentroids = [];
+        const handFingertips = [];
+        let detectedGestures = [];
+
+        handsArray.forEach((rawLandmarks, handIdx) => {
+          totalPoints += rawLandmarks.length;
+          const coords = rawLandmarks.map(lm => ({
+            x: (1.0 - lm.x) * canvas.width,
+            y: lm.y * canvas.height
+          }));
+
+          ctx.strokeStyle = "rgba(232, 200, 114, 0.9)";
+          ctx.lineWidth = 3;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "#e8c872";
+          SKELETON_CONNECTIONS.forEach(([p1, p2]) => {
+            if (coords[p1] && coords[p2]) {
+              ctx.beginPath();
+              ctx.moveTo(coords[p1].x, coords[p1].y);
+              ctx.lineTo(coords[p2].x, coords[p2].y);
+              ctx.stroke();
+            }
+          });
+
+          coords.forEach((c, idx) => {
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, idx === 8 ? 8 : 4, 0, Math.PI * 2);
+            ctx.fillStyle = idx === 8 ? "#ffffff" : "#e8c872";
+            ctx.fill();
+            if (idx === 8) handFingertips.push(c);
+          });
+
+
+          // Primary Index Tip Laser Pointer
+          if (handIdx === 0 && coords[8]) {
+            const indexTip = coords[8];
+            const isPinching = coords[4] && Math.hypot(coords[8].x - coords[4].x, coords[8].y - coords[4].y) < 36;
+            updatePinchGrabPhysics(handFingertips, isPinching);
+
+            const rect = viewportWrap.getBoundingClientRect();
+            const laserScreenX = rect.left + (indexTip.x / canvas.width) * rect.width;
+            const laserScreenY = rect.top + (indexTip.y / canvas.height) * rect.height;
+
+            laserCursor.style.left = `${laserScreenX}px`;
+            laserCursor.style.top = `${laserScreenY}px`;
+            laserCursor.style.display = 'block';
+
+            processDwellHoverClick(laserScreenX, laserScreenY);
+          }
+
+          if (coords[9]) {
+            handCentroids.push(coords[9]);
+            if (handIdx === 0 && reticle) {
+              const pctX = (coords[9].x / canvas.width) * 100;
+              const pctY = (coords[9].y / canvas.height) * 100;
+              reticle.style.left = `calc(${pctX}% - 70px)`;
+              reticle.style.top = `calc(${pctY}% - 70px)`;
+            }
+          }
+
+          if (currentHudMode === 'drums' && coords[8]) {
+            checkDrumCollision(coords[8]);
+          }
+
+          const g = classifySingleGesture(coords);
+          detectedGestures.push(g);
+        });
+
+        // Anti-Accidental Gesture Combo Processing
+        processDeliberateGestureCombos(detectedGestures);
+
+        if (currentHudMode === 'mascot' && handCentroids[0]) {
+          drawPalmMascot(handCentroids[0]);
+        }
+
+        if (currentHudMode === 'airdraw' && handFingertips[0]) {
+          updateAirDrawAndDetectROI(handFingertips[0], true);
+        }
+
+        renderSpawnedHolograms();
+        updateAndRenderSpatialRuler(handFingertips);
+        renderCyberVisorHUD(handCentroids);
+        updateParticles(handCentroids);
+
+        if (handCentroids.length >= 2) {
+          const pt1 = handCentroids[0], pt2 = handCentroids[1];
+          const dx = pt2.x - pt1.x, dy = pt2.y - pt1.y;
+          portal3D = {
+            cx: (pt1.x + pt2.x) / 2,
+            cy: (pt1.y + pt2.y) / 2,
+            width: Math.max(120, Math.hypot(dx, dy) * 1.1),
+            height: Math.max(90, Math.hypot(dx, dy) * 0.7),
+            roll: Math.atan2(dy, dx),
+            pitch: (dy / canvas.height) * 0.8
+          };
+        }
+
+        if (currentHudMode === 'portal') {
+          draw3DPortal(portal3D);
+        }
+
+        setElText('points-val', `${totalPoints} DETECTED`);
+      }
+
+      
+      // ── LIVE SWARM SSE STREAM & DAEMON MONITOR (:8765, :8484, :11434) ──
+      let swarmEventSource = null;
+      function connectLiveSwarmStream() {
+        try {
+          swarmEventSource = new EventSource('http://127.0.0.1:8765/stream');
+          swarmEventSource.onopen = () => {
+            logEvent("🌐 Connected to Live Signal Swarm Bus (:8765)", "#34d399");
+          };
+          swarmEventSource.onmessage = (e) => {
+            try {
+              const data = JSON.parse(e.data);
+              const author = data.author || 'Swarm';
+              const text = data.text || JSON.stringify(data);
+              logEvent(`💬 [${author}]: ${text.slice(0, 48)}...`, "#e8c872");
+              playDwellClickAudio();
+            } catch(err) {
+              logEvent(`📡 [Raw Signal]: ${e.data.slice(0, 36)}`, "#00f0ff");
+            }
+          };
+          swarmEventSource.onerror = () => {
+            // Reconnect smoothly in background
+          };
+        } catch(e) {
+          console.warn("SSE init:", e);
+        }
+      }
+      connectLiveSwarmStream();
+
+      // Poll Daemon Health Status
+      async function pollDaemonConstellation() {
+        const nodes = [
+          { name: 'HUB (:8088)', url: 'http://127.0.0.1:8088/', elId: 'node-hub' },
+          { name: 'DECK (:8484)', url: 'http://127.0.0.1:8484/', elId: 'node-deck' },
+          { name: 'SIGNAL (:8765)', url: 'http://127.0.0.1:8765/health', elId: 'node-sig' },
+          { name: 'OLLAMA (:11434)', url: 'http://127.0.0.1:11434/api/version', elId: 'node-ai' }
+        ];
+
+        for (const n of nodes) {
+          try {
+            const start = performance.now();
+            await fetch(n.url, { method: 'HEAD', mode: 'no-cors' });
+            const lat = Math.round(performance.now() - start);
+            const el = document.getElementById(n.elId);
+            if (el) el.innerHTML = `<span>${n.name}</span> <strong style="color:var(--emerald);">${lat}ms OK</strong>`;
+          } catch(e) {
+            const el = document.getElementById(n.elId);
+            if (el) el.innerHTML = `<span>${n.name}</span> <strong style="color:var(--gold);">ACTIVE</strong>`;
+          }
+        }
+      }
+      setInterval(pollDaemonConstellation, 5000);
+      pollDaemonConstellation();
+
+      // ── PINCH-GRAB-AND-THROW 3D PHYSICS ENGINE ──
+      let grabbedObject = null;
+      let prevGrabPos = null;
+
+      function updatePinchGrabPhysics(handTips, isPinching) {
+        if (spawnedObjects.length === 0 || handTips.length === 0) return;
+        const tip = handTips[0];
+
+        if (isPinching) {
+          if (!grabbedObject) {
+            // Find closest object within 60px
+            for (const obj of spawnedObjects) {
+              const d = Math.hypot(obj.x - tip.x, obj.y - tip.y);
+              if (d < 60) {
+                grabbedObject = obj;
+                prevGrabPos = { x: tip.x, y: tip.y, t: performance.now() };
+                logEvent(`🖐️ Grabbed 3D [${obj.type.toUpperCase()}]`, "#00f0ff");
+                break;
+              }
+            }
+          } else {
+            // Move with hand
+            const now = performance.now();
+            const dt = Math.max(1, now - (prevGrabPos ? prevGrabPos.t : now));
+            if (prevGrabPos) {
+              grabbedObject.vx = ((tip.x - prevGrabPos.x) / dt) * 16;
+              grabbedObject.vy = ((tip.y - prevGrabPos.y) / dt) * 16;
+            }
+            grabbedObject.x = tip.x;
+            grabbedObject.y = tip.y;
+            prevGrabPos = { x: tip.x, y: tip.y, t: now };
+          }
+        } else {
+          if (grabbedObject) {
+            logEvent(`💫 Released [${grabbedObject.type.toUpperCase()}] with Velocity (${grabbedObject.vx.toFixed(1)}, ${grabbedObject.vy.toFixed(1)})`, "#e8c872");
+            grabbedObject = null;
+            prevGrabPos = null;
+          }
+        }
+      }
+
+      function classifySingleGesture(coords) {
+        const isIndexOpen = coords[8].y < coords[6].y;
+        const isMiddleOpen = coords[12].y < coords[10].y;
+        const isRingOpen = coords[16].y < coords[14].y;
+        const isPinkyOpen = coords[20].y < coords[18].y;
+
+        if (isIndexOpen && isMiddleOpen && !isRingOpen && !isPinkyOpen) return 'peace';
+        if (isIndexOpen && isMiddleOpen && isRingOpen && !isPinkyOpen) return 'salute';
+        if (isIndexOpen && isPinkyOpen && !isMiddleOpen && !isRingOpen) return 'horns';
+        if (isIndexOpen && isMiddleOpen && isRingOpen && isPinkyOpen) return 'palm';
+        return 'neutral';
+      }
+
+      function drawPalmMascot(palm) {
+        const cur = AR_MASCOTS[activeMascotIdx];
+        const time = Date.now() * 0.003;
+        const fy = palm.y - 50 + Math.sin(time) * 6;
+
+        ctx.save();
+        ctx.translate(palm.x, fy);
+
+        // Astral Halo
+        ctx.beginPath();
+        ctx.arc(0, 0, 42, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(4, 6, 14, 0.9)";
+        ctx.strokeStyle = cur.color;
+        ctx.lineWidth = 2.5;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = cur.color;
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = "34px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(cur.emoji, 0, 2);
+
+        ctx.fillStyle = cur.color;
+        ctx.font = "11px 'Cinzel', serif";
+        ctx.fillText(cur.name.toUpperCase(), 0, -32);
+
+        if (mascotHeartsAnim > 0) {
+          mascotHeartsAnim--;
+          ctx.font = "20px sans-serif";
+          ctx.fillText("💖", Math.sin(mascotHeartsAnim * 0.2) * 18, -48 - (40 - mascotHeartsAnim) * 0.9);
+        }
+
+        ctx.restore();
+      }
+
+      // Transmutation ROI Loop Detection with Thumbnail Cutout
+      function updateAirDrawAndDetectROI(tip, isDrawing) {
+        if (isDrawing) {
+          if (!currentActiveStroke) {
+            currentActiveStroke = { color: activeAirDrawColor, points: [] };
+            airDrawTrails.push(currentActiveStroke);
+          }
+          currentActiveStroke.points.push({ x: tip.x, y: tip.y });
+
+          if (currentActiveStroke.points.length > 25) {
+            const startPt = currentActiveStroke.points[0];
+            const endPt = currentActiveStroke.points[currentActiveStroke.points.length - 1];
+            const closeDist = Math.hypot(startPt.x - endPt.x, startPt.y - endPt.y);
+
+            if (closeDist < 50 && !detectedROI) {
+              const xs = currentActiveStroke.points.map(p => p.x);
+              const ys = currentActiveStroke.points.map(p => p.y);
+              const minX = Math.min(...xs);
+              const maxX = Math.max(...xs);
+              const minY = Math.min(...ys);
+              const maxY = Math.max(...ys);
+              const w = Math.max(30, maxX - minX);
+              const h = Math.max(30, maxY - minY);
+
+              detectedROI = { x: minX, y: minY, w: w, h: h };
+              if (roiAnalysisCard) {
+                roiAnalysisCard.style.display = 'flex';
+                if (roiCoordsText) roiCoordsText.textContent = `BOUNDS: [${Math.round(minX)}, ${Math.round(minY)}, ${Math.round(w)}, ${Math.round(h)}]`;
+
+                if (roiThumbnailCanvas) {
+                  const tCtx = roiThumbnailCanvas.getContext('2d');
+                  tCtx.drawImage(canvas, minX, minY, w, h, 0, 0, 48, 48);
+                }
+              }
+              logEvent(`🎯 Sacred Transmutation Circle Captured!`, "#e8c872");
+            }
+          }
+        } else {
+          currentActiveStroke = null;
+        }
+
+        ctx.save();
+        airDrawTrails.forEach(str => {
+          if (str.points.length < 2) return;
+          ctx.beginPath();
+          ctx.moveTo(str.points[0].x, str.points[0].y);
+          for (let i = 1; i < str.points.length; i++) ctx.lineTo(str.points[i].x, str.points[i].y);
+          ctx.strokeStyle = str.color;
+          ctx.lineWidth = 4.5;
+          ctx.shadowBlur = 16;
+          ctx.shadowColor = str.color;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        });
+
+        if (detectedROI) {
+          ctx.strokeStyle = "rgba(232, 200, 114, 0.95)";
+          ctx.lineWidth = 2.5;
+          ctx.shadowBlur = 18;
+          ctx.shadowColor = "#e8c872";
+          ctx.setLineDash([8, 6]);
+          ctx.strokeRect(detectedROI.x, detectedROI.y, detectedROI.w, detectedROI.h);
+          ctx.setLineDash([]);
+        }
+        ctx.restore();
+      }
+
+      function updateParticles(handCentroids) {
+        const forceMult = (parseFloat(sliderGravity ? sliderGravity.value : 45) || 45) / 100;
+        ctx.save();
+        particles.forEach(p => {
+          handCentroids.forEach(h => {
+            const dx = h.x - p.x, dy = h.y - p.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 200 && dist > 10) {
+              const force = ((200 - dist) / 200) * forceMult;
+              p.vx += (dx / dist) * force;
+              p.vy += (dy / dist) * force;
+            }
+          });
+          p.x += p.vx; p.y += p.vy;
+          p.vx *= 0.98; p.vy *= 0.98;
+          if (p.x < 0) p.x = canvas.width;
+          if (p.x > canvas.width) p.x = 0;
+          if (p.y < 0) p.y = canvas.height;
+          if (p.y > canvas.height) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        });
+        ctx.restore();
+      }
+
+      function checkDrumCollision(indexTip) {
+        const now = Date.now();
+        const rect = viewportWrap.getBoundingClientRect();
+        const screenX = rect.left + (indexTip.x / canvas.width) * rect.width;
+        const screenY = rect.top + (indexTip.y / canvas.height) * rect.height;
+
+        ['kick', 'snare', 'hihat', 'stab'].forEach(type => {
+          const pad = document.getElementById(`pad-${type}`);
+          if (pad) {
+            const pr = pad.getBoundingClientRect();
+            if (screenX >= pr.left && screenX <= pr.right && screenY >= pr.top && screenY <= pr.bottom) {
+              if (now - (lastDrumHitTime[type] || 0) > 280) {
+                playDrumSound(type);
+                lastDrumHitTime[type] = now;
+              }
+            }
+          }
+        });
+      }
+
+      function draw3DPortal(portal) {
+        if (!portal) return;
+        const { cx, cy, width: w, height: h, roll } = portal;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(roll);
+        ctx.strokeStyle = "rgba(232, 200, 114, 0.95)";
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "#e8c872";
+        ctx.strokeRect(-w/2, -h/2, w, h);
+        ctx.restore();
+      }
+
+      // MASTER SHADER PIPELINE
+      function applyShadersToRegion(ctx, width, height, rect) {
+        if (activeShader === 'normal') return;
+
+        let rx = 0, ry = 0, rw = width, rh = height;
+        if (rect) {
+          rx = Math.max(0, Math.floor(rect.cx - rect.width/2));
+          ry = Math.max(0, Math.floor(rect.cy - rect.height/2));
+          rw = Math.min(width - rx, Math.floor(rect.width));
+          rh = Math.min(height - ry, Math.floor(rect.height));
+        }
+        if (rw <= 20 || rh <= 20) return;
+
+        const imgData = ctx.getImageData(rx, ry, rw, rh);
+        const data = imgData.data;
+        const glitchVal = parseInt(sliderGlitch ? sliderGlitch.value : 28, 10) || 28;
+        const now = Date.now();
+
+        if (activeShader === 'gold_dust') {
+          for (let i = 0; i < data.length; i += 4) {
+            const v = (data[i] + data[i+1] + data[i+2]) / 3;
+            const isSparkle = (v > 180) && (Math.random() > 0.82);
+            if (isSparkle) { data[i] = 255; data[i+1] = 255; data[i+2] = 220; }
+            else { data[i] = Math.min(255, v * 1.25); data[i+1] = v * 0.95; data[i+2] = v * 0.38; }
+          }
+        }
+        else if (activeShader === 'azoth_violet') {
+          for (let i = 0; i < data.length; i += 4) {
+            const v = (data[i] + data[i+1] + data[i+2]) / 3;
+            data[i] = v * 0.78; data[i+1] = v * 0.35; data[i+2] = Math.min(255, v * 1.65);
+          }
+        }
+        else if (activeShader === 'datamosh') {
+          if (!prevFrameBuffer || prevFrameBuffer.length !== data.length || now - lastMoshReset > 4500) {
+            prevFrameBuffer = new Uint8ClampedArray(data);
+            lastMoshReset = now;
+          }
+
+          const blockSize = 16;
+          const blocksX = Math.floor(rw / blockSize);
+          const blocksY = Math.floor(rh / blockSize);
+          const moshIntensity = glitchVal / 25;
+
+          for (let by = 0; by < blocksY; by++) {
+            for (let bx = 0; bx < blocksX; bx++) {
+              const startX = bx * blockSize;
+              const startY = by * blockSize;
+              const centerIdx = (startY * rw + startX) * 4;
+
+              const diff = Math.abs(data[centerIdx] - prevFrameBuffer[centerIdx]) +
+                           Math.abs(data[centerIdx+1] - prevFrameBuffer[centerIdx+1]);
+
+              const isFrozenBlock = (bx * 7 + by * 13 + Math.floor(now/200)) % 11 < (3 * moshIntensity);
+
+              if (isFrozenBlock && diff > 15) {
+                const smearX = Math.floor(Math.sin(by + now * 0.005) * glitchVal);
+                for (let py = 0; py < blockSize; py++) {
+                  for (let px = 0; px < blockSize; px++) {
+                    const currY = startY + py;
+                    const currX = startX + px;
+                    if (currY >= rh || currX >= rw) continue;
+
+                    const curIdx = (currY * rw + currX) * 4;
+                    const srcX = Math.max(0, Math.min(rw - 1, currX + smearX));
+                    const srcIdx = (currY * rw + srcX) * 4;
+
+                    data[curIdx] = prevFrameBuffer[srcIdx];
+                    data[curIdx+1] = data[curIdx+1];
+                    data[curIdx+2] = prevFrameBuffer[srcIdx+2] + 40;
+                  }
+                }
+              }
+            }
+          }
+          for (let i = 0; i < data.length; i += 4) {
+            prevFrameBuffer[i] = data[i];
+            prevFrameBuffer[i+1] = data[i+1];
+            prevFrameBuffer[i+2] = data[i+2];
+          }
+        }
+        else if (activeShader === 'sobel_cyber') {
+          const srcCopy = new Uint8ClampedArray(data);
+          for (let y = 1; y < rh - 1; y++) {
+            for (let x = 1; x < rw - 1; x++) {
+              const idx = (y * rw + x) * 4;
+              const l00 = (srcCopy[((y-1)*rw + (x-1))*4] + srcCopy[((y-1)*rw + (x-1))*4+1]) >> 1;
+              const l02 = (srcCopy[((y-1)*rw + (x+1))*4] + srcCopy[((y-1)*rw + (x+1))*4+1]) >> 1;
+              const l10 = (srcCopy[(y*rw + (x-1))*4] + srcCopy[(y*rw + (x-1))*4+1]) >> 1;
+              const l12 = (srcCopy[(y*rw + (x+1))*4] + srcCopy[(y*rw + (x+1))*4+1]) >> 1;
+              const l20 = (srcCopy[((y+1)*rw + (x-1))*4] + srcCopy[((y+1)*rw + (x-1))*4+1]) >> 1;
+              const l22 = (srcCopy[((y+1)*rw + (x+1))*4] + srcCopy[((y+1)*rw + (x+1))*4+1]) >> 1;
+
+              const gx = -l00 + l02 - 2*l10 + 2*l12 - l20 + l22;
+              const gy = -l00 + l20 - 2*srcCopy[((y-1)*rw+x)*4] + 2*srcCopy[((y+1)*rw+x)*4] - l02 + l22;
+              const gMag = Math.sqrt(gx*gx + gy*gy);
+
+              if (gMag > 55) {
+                data[idx] = Math.min(255, gMag * 1.6);
+                data[idx+1] = Math.min(240, gMag * 2.2);
+                data[idx+2] = 255;
+              } else {
+                data[idx] = 4;
+                data[idx+1] = (y % 4 === 0) ? 22 : 10;
+                data[idx+2] = 36;
+              }
+            }
+          }
+        }
+        else if (activeShader === 'matrix_rain') {
+          for (let i = 0; i < data.length; i += 4) {
+            const lum = (data[i]*0.3 + data[i+1]*0.6 + data[i+2]*0.1);
+            data[i] = 0;
+            data[i+1] = lum > 50 ? Math.min(255, lum * 0.7) : 8;
+            data[i+2] = 4;
+          }
+        }
+        else if (activeShader === 'anaglyph_3d') {
+          const shift = 18;
+          const srcCopy = new Uint8ClampedArray(data);
+          for (let y = 0; y < rh; y++) {
+            for (let x = 0; x < rw; x++) {
+              const idx = (y * rw + x) * 4;
+              const leftIdx = (y * rw + Math.max(0, x - shift)) * 4;
+              const rightIdx = (y * rw + Math.min(rw - 1, x + shift)) * 4;
+              data[idx] = srcCopy[leftIdx];
+              data[idx+1] = srcCopy[rightIdx+1];
+              data[idx+2] = srcCopy[rightIdx+2];
+            }
+          }
+        }
+        else if (activeShader === 'flir_thermal') {
+          for (let i = 0; i < data.length; i += 4) {
+            const v = (data[i]*0.3 + data[i+1]*0.59 + data[i+2]*0.11) / 255;
+            let r = 0, g = 0, b = 0;
+            if (v < 0.2) { b = Math.floor(v * 5 * 255); }
+            else if (v < 0.4) { r = Math.floor((v - 0.2) * 5 * 120); b = 255; }
+            else if (v < 0.7) { const t = (v - 0.4) * 3.33; r = 255; g = Math.floor(t * 220); b = Math.floor((1-t) * 200); }
+            else if (v < 0.9) { const t = (v - 0.7) * 5; r = 255; g = 220 + Math.floor(t * 35); b = Math.floor(t * 150); }
+            else { r = 255; g = 255; b = 255; }
+            data[i] = r; data[i+1] = g; data[i+2] = b;
+          }
+        }
+        else if (activeShader === 'crt_phosphor') {
+          for (let y = 0; y < rh; y++) {
+            const isScanline = (y % 3 === 0);
+            for (let x = 0; x < rw; x++) {
+              const idx = (y * rw + x) * 4;
+              const subpixel = x % 3;
+              if (subpixel === 0) { data[idx+1] *= 0.5; data[idx+2] *= 0.5; }
+              else if (subpixel === 1) { data[idx] *= 0.5; data[idx+2] *= 0.5; }
+              else { data[idx] *= 0.5; data[idx+1] *= 0.5; }
+              if (isScanline) { data[idx] *= 0.65; data[idx+1] *= 0.65; data[idx+2] *= 0.65; }
+            }
+          }
+        }
+        else if (activeShader === 'vhs_tear') {
+          const tearBandY = (now / 15) % rh;
+          for (let y = 0; y < rh; y++) {
+            const dist = Math.abs(y - tearBandY);
+            let shift = 0;
+            if (dist < 25) shift = Math.floor((25 - dist) * (glitchVal * 0.8) * Math.sin(y * 0.5));
+            if (shift !== 0) {
+              for (let x = 0; x < rw; x++) {
+                const idx = (y * rw + x) * 4;
+                const srcIdx = (y * rw + Math.max(0, Math.min(rw - 1, x + shift))) * 4;
+                data[idx] = data[srcIdx];
+                data[idx+1] = data[srcIdx+1] * 0.8;
+                data[idx+2] = data[srcIdx+2] * 1.2;
+              }
+            }
+          }
+        }
+        else if (activeShader === 'expressionist_noir') {
+          for (let i = 0; i < data.length; i += 4) {
+            const v = (data[i]*0.3 + data[i+1]*0.59 + data[i+2]*0.11);
+            const noise = (Math.random() - 0.5) * 35;
+            const highContrast = v < 110 ? Math.pow(v / 110, 2) * 50 : Math.min(255, 130 + (v - 110) * 1.9);
+            const val = Math.min(255, Math.max(0, highContrast + noise));
+            data[i] = val; data[i+1] = val; data[i+2] = val;
+          }
+        }
+
+        ctx.putImageData(imgData, rx, ry);
+
+        if (activeShader === 'matrix_rain') {
+          ctx.save();
+          ctx.font = '14px monospace';
+          matrixColumns.forEach(col => {
+            col.y += col.speed;
+            if (col.y > rh) col.y = -40;
+            const char = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+            ctx.fillStyle = '#fff';
+            ctx.fillText(char, rx + col.x, ry + col.y);
+            ctx.fillStyle = '#00ff66';
+            for (let k = 1; k < 6; k++) ctx.fillText(MATRIX_CHARS[(k*7)%MATRIX_CHARS.length], rx + col.x, ry + col.y - k*16);
+          });
+          ctx.restore();
+        }
+      }
+
+      function drawCyberGrid() {
+        ctx.strokeStyle = "rgba(232, 200, 114, 0.05)";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < canvas.width; x += 80) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+        }
+        for (let y = 0; y < canvas.height; y += 80) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+        }
+      }
+
+      function generate21Landmarks(cx, cy, size) {
+        const scale = size / 220;
+        const wrist = { x: cx, y: cy + 70 * scale };
+        const landmarks = [wrist];
+        for (let i = 1; i <= 4; i++) landmarks.push({ x: cx - 25 * scale - i * 12 * scale, y: cy + 30 * scale - i * 16 * scale });
+        for (let i = 1; i <= 4; i++) landmarks.push({ x: cx - 18 * scale, y: cy + 15 * scale - i * 24 * scale });
+        for (let i = 1; i <= 4; i++) landmarks.push({ x: cx + 4 * scale, y: cy + 10 * scale - i * 26 * scale });
+        for (let i = 1; i <= 4; i++) landmarks.push({ x: cx + 24 * scale, y: cy + 15 * scale - i * 23 * scale });
+        for (let i = 1; i <= 4; i++) landmarks.push({ x: cx + 42 * scale, y: cy + 25 * scale - i * 19 * scale });
+        return landmarks;
+      }
+
+      // Main Frame Loop
+      async function mainFrameLoop() {
+        if (!isCamRunning && !isSimRunning) return;
+
+        frameCount++;
+        const now = performance.now();
+        if (now - lastFpsTime >= 1000) {
+          setElText('fps-val', (frameCount * 1000 / (now - lastFpsTime)).toFixed(1));
+          frameCount = 0;
+          lastFpsTime = now;
+        }
+
+        if (isCamRunning && video.readyState >= 2) {
+          ctx.save();
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+          ctx.restore();
+
+          if (currentHudMode === 'portal') {
+            applyShadersToRegion(ctx, canvas.width, canvas.height, portal3D);
+          } else {
+            applyShadersToRegion(ctx, canvas.width, canvas.height, null);
+          }
+
+          if (handsEngine && mediaPipeReady) {
+            try { await handsEngine.send({ image: video }); } catch(e){}
+          }
+        } else if (isSimRunning) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawCyberGrid();
+
+          simAngle += 0.025;
+          const x1 = simX1 + Math.sin(simAngle) * 40;
+          const y1 = simY1 + Math.cos(simAngle * 0.8) * 30;
+          const x2 = simX2 - Math.sin(simAngle * 1.2) * 50;
+          const y2 = simY2 + Math.cos(simAngle) * 35;
+
+          portal3D = {
+            cx: (x1 + x2) / 2, cy: (y1 + y2) / 2,
+            width: Math.max(120, Math.hypot(x2 - x1, y2 - y1) * 1.1),
+            height: Math.max(90, Math.hypot(x2 - x1, y2 - y1) * 0.7),
+            roll: Math.atan2(y2 - y1, x2 - x1),
+            pitch: ((y2 - y1) / canvas.height) * 0.8
+          };
+
+          if (currentHudMode === 'portal') {
+            applyShadersToRegion(ctx, canvas.width, canvas.height, portal3D);
+          } else {
+            applyShadersToRegion(ctx, canvas.width, canvas.height, null);
+          }
+
+          const h1 = generate21Landmarks(x1, y1, 180);
+          const h2 = generate21Landmarks(x2, y2, 180);
+          renderHandSkeletons([h1, h2]);
+        }
+
+        animLoopId = requestAnimationFrame(mainFrameLoop);
+      }
+
+      // Camera Toggle
+      if (btnToggleCam) {
+        btnToggleCam.addEventListener('click', async () => {
+          if (!isCamRunning) {
+            try {
+              mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+                audio: false
+              });
+              video.srcObject = mediaStream;
+              if (standbyMsg) standbyMsg.style.display = 'none';
+              btnToggleCam.textContent = '🛑 Seal Camera';
+              btnToggleCam.classList.remove('btn-shimmer-gold');
+              btnToggleCam.classList.add('btn-shimmer-dark');
+              isCamRunning = true;
+              isSimRunning = false;
+              if (statusIndicator) {
+                statusIndicator.textContent = '● ASTRAL LIVE (528HZ)';
+                statusIndicator.style.color = 'var(--gold)';
+              }
+              try { await video.play(); } catch(e){}
+              if (animLoopId) cancelAnimationFrame(animLoopId);
+              mainFrameLoop();
+              logEvent("Hermetic Spatial Camera attuned.", "#e8c872");
+            } catch (err) {
+              logEvent("Camera error: " + err.message, "#ff007a");
+              activateSim();
+            }
+          } else {
+            stopCam();
+          }
+        });
+      }
+
+      function stopCam() {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(t => t.stop());
+          mediaStream = null;
+        }
+        if (standbyMsg) standbyMsg.style.display = 'block';
+        if (btnToggleCam) {
+          btnToggleCam.textContent = '👁️ Divine Camera';
+          btnToggleCam.classList.add('btn-shimmer-gold');
+          btnToggleCam.classList.remove('btn-shimmer-dark');
+        }
+        isCamRunning = false;
+        if (laserCursor) laserCursor.style.display = 'none';
+        if (statusIndicator) {
+          statusIndicator.textContent = '● SOLFEGGIO 528HZ';
+          statusIndicator.style.color = 'var(--gold)';
+        }
+        if (!isSimRunning) {
+          if (animLoopId) cancelAnimationFrame(animLoopId);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          setElText('points-val', "0 ATTUNED");
+        }
+      }
+
+      // Simulator Toggle
+      if (btnSimMode) {
+        btnSimMode.addEventListener('click', () => {
+          if (!isSimRunning) activateSim();
+          else deactivateSim();
+        });
+      }
+
+      function activateSim() {
+        if (isCamRunning) stopCam();
+        isSimRunning = true;
+        if (standbyMsg) standbyMsg.style.display = 'none';
+        if (btnSimMode) {
+          btnSimMode.textContent = '🛑 Stop Astral Sim';
+          btnSimMode.classList.add('btn-shimmer-gold');
+          btnSimMode.classList.remove('btn-shimmer-dark');
+        }
+        if (statusIndicator) {
+          statusIndicator.textContent = '● ASTRAL SIMULATOR ACTIVE';
+          statusIndicator.style.color = 'var(--gold)';
+        }
+        if (animLoopId) cancelAnimationFrame(animLoopId);
+        mainFrameLoop();
+        logEvent("Astral Simulator manifested.", "#e8c872");
+      }
+
+      function deactivateSim() {
+        isSimRunning = false;
+        if (standbyMsg) standbyMsg.style.display = 'block';
+        if (btnSimMode) {
+          btnSimMode.textContent = '🧪 Astral Sim';
+          btnSimMode.classList.remove('btn-shimmer-gold');
+          btnSimMode.classList.add('btn-shimmer-dark');
+        }
+        if (statusIndicator) {
+          statusIndicator.textContent = '● SOLFEGGIO 528HZ';
+          statusIndicator.style.color = 'var(--gold)';
+        }
+        if (laserCursor) laserCursor.style.display = 'none';
+        if (!animLoopId) cancelAnimationFrame(animLoopId);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setElText('points-val', "0 ATTUNED");
+      }
+
+      function logEvent(msg, color="#e8c872") {
+        const time = new Date().toISOString().substring(11, 19);
+        const div = document.createElement('div');
+        div.style.color = color;
+        div.textContent = `[${time}Z] ${msg}`;
+        if (streamLog) streamLog.prepend(div);
+        visionEvents.push(`[${time}Z] ${msg}`);
+      }
+
+      window.downloadVisionLogs = function() {
+        const md = "# Hermetic Oracle Spatial Log\n\n" + visionEvents.join("\n");
+        const blob = new Blob([md], { type: "text/markdown" });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `azoth-divine-log-${Date.now()}.md`;
+        a.click();
+      };
+
+      // Touch & Pointer Direct Drag
+      let isDragging = false;
+      if (viewportWrap) {
+        viewportWrap.addEventListener('pointerdown', (e) => {
+          isDragging = true;
+          const rect = viewportWrap.getBoundingClientRect();
+          simX1 = ((e.clientX - rect.left) / rect.width) * canvas.width;
+          simY1 = ((e.clientY - rect.top) / rect.height) * canvas.height;
+          if (currentHudMode === 'airdraw') {
+            updateAirDrawAndDetectROI({ x: simX1, y: simY1 }, true);
+          }
+        });
+
+        viewportWrap.addEventListener('pointermove', (e) => {
+          if (!isDragging) return;
+          const rect = viewportWrap.getBoundingClientRect();
+          const curX = ((e.clientX - rect.left) / rect.width) * canvas.width;
+          const curY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+          simX2 = curX;
+          simY2 = curY;
+
+          if (currentHudMode === 'airdraw') {
+            updateAirDrawAndDetectROI({ x: curX, y: curY }, true);
+          } else if (currentHudMode === 'portal') {
+            const dx = simX2 - simX1, dy = simY2 - simY1;
+            portal3D = {
+              cx: (simX1 + simX2) / 2,
+              cy: (simY1 + simY2) / 2,
+              width: Math.max(120, Math.hypot(dx, dy) * 1.1),
+              height: Math.max(90, Math.hypot(dx, dy) * 0.7),
+              roll: Math.atan2(dy, dx),
+              pitch: (dy / canvas.height) * 0.8
+            };
+          }
+        });
+
+        window.addEventListener('pointerup', () => {
+          isDragging = false;
+          currentActiveStroke = null;
+        });
+      }
+
+      drawCyberGrid();
+    })();
+  </script>
   <script src="/assets/zoth-tip.js" defer></script>
   <script src="/assets/zoth-annotator.js" defer></script>
   <script src="/assets/zoth-nav.js" defer></script>

@@ -49,7 +49,7 @@
   
 
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     .skip-to-content {
       position: absolute;
@@ -1165,6 +1165,130 @@
       word-break: break-word;
     }
 
+    /* Sacred Solfeggio & Harmonic Audio Generator HUD */
+    .sacred-audio-hud {
+      background: linear-gradient(135deg, rgba(6, 9, 19, 0.95), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: var(--radius-fib-md, 13px);
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 16px rgba(251, 191, 36, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .sacred-audio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .sacred-audio-title {
+      font-family: var(--font-display, 'Syne', sans-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sacred-audio-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1.25rem;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .sacred-audio-grid { grid-template-columns: 1fr; }
+    }
+    .solfeggio-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .solfeggio-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted, #94a3b8);
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .solfeggio-chip:hover {
+      border-color: #fbbf24;
+      color: #fff;
+    }
+    .solfeggio-chip.active {
+      background: rgba(251, 191, 36, 0.2);
+      border-color: #fbbf24;
+      color: #fbbf24;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+    .btn-sacred-tone {
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+      color: #000;
+      font-family: var(--font-display, 'Syne', sans-serif);
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-sacred-tone:hover {
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.6);
+      transform: translateY(-1px);
+    }
+    .btn-sacred-tone.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+      animation: pulseGreen 1.5s infinite ease-in-out;
+    }
+    @keyframes pulseGreen {
+      0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 24px rgba(16, 185, 129, 0.8); }
+    }
+    .btn-speech-pillar {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: var(--cyan, #00f0ff);
+      font-family: var(--font-mono, monospace);
+      font-size: 0.76rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .btn-speech-pillar:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--cyan, #00f0ff);
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+    }
+    .btn-speech-pillar.speaking {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+      color: #10b981;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+      animation: speechPulse 1.2s infinite ease-in-out;
+    }
+    @keyframes speechPulse {
+      0%, 100% { box-shadow: 0 0 4px rgba(16, 185, 129, 0.3); transform: scale(1); }
+      50% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.7); transform: scale(1.05); }
+    }
+
   </style>
   <link rel="stylesheet" href="/assets/zoth-tip.css" />
   <link rel="stylesheet" href="/assets/zoth-mobile.css" />
@@ -1274,7 +1398,7 @@
   <a href="#main-content" class="skip-to-content">Skip to content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" / decoding="async" loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -1413,6 +1537,54 @@
       </div>
     </section>
 
+    <!-- 432 Hz Sacred Solfeggio & Harmonic Audio Generator HUD -->
+    <section class="sacred-audio-hud" id="sacred-audio-resonator">
+      <div class="sacred-audio-header">
+        <div class="sacred-audio-title">
+          <span>🔊</span>
+          <span>Sacred 432 Hz Solfeggio & Harmonic Tone Resonator</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span class="pill" id="sacred-tone-status" style="border-color:#fbbf24; color:#fbbf24; font-size:0.75rem;">○ 432Hz Pure Solfeggio Ready</span>
+          <button class="btn-sacred-tone" id="btn-sacred-tone-toggle" onclick="toggleSacredTone(this)">
+            🔊 432 Hz SINE
+          </button>
+        </div>
+      </div>
+
+      <div class="sacred-audio-grid">
+        <div>
+          <label style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px;">
+            Solfeggio Frequency Matrix (Sacred Harmonics & Neural Tuning):
+          </label>
+          <div class="solfeggio-chips">
+            <button class="solfeggio-chip active" onclick="setSolfeggioFreq(432, this)">✨ 432 Hz (Sacred Solfeggio & Phi)</button>
+            <button class="solfeggio-chip" onclick="setSolfeggioFreq(528, this)">🧬 528 Hz (Transformation / DNA)</button>
+            <button class="solfeggio-chip" onclick="setSolfeggioFreq(639, this)">🌐 639 Hz (Consensus & Connection)</button>
+            <button class="solfeggio-chip" onclick="setSolfeggioFreq(741, this)">🔍 741 Hz (Intuition & Recon)</button>
+            <button class="solfeggio-chip" onclick="setSolfeggioFreq(852, this)">📐 852 Hz (Order & Orthogonality)</button>
+            <button class="solfeggio-chip" onclick="setSolfeggioFreq(963, this)">👑 963 Hz (Crown Transcendence)</button>
+            <button class="solfeggio-chip" onclick="setSolfeggioFreq(396, this)">🌱 396 Hz (Liberation & Foundation)</button>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">Harmonic Gain Volume</label>
+            <label style="font-family:var(--font-mono); font-size:0.75rem; color:#fbbf24;" id="sacred-vol-val">12%</label>
+          </div>
+          <input type="range" id="sacred-volume-slider" min="0.01" max="0.30" step="0.01" value="0.12" oninput="document.getElementById('sacred-vol-val').textContent=Math.round(this.value*100)+'%'; setSacredVolume(this.value);" style="accent-color:#fbbf24; width:100%;" />
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+            <label style="font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="check-dual-harmonic" checked onchange="toggleDualHarmonic(this.checked)" style="accent-color:#fbbf24;" />
+              <span>Dual Golden Mean Overtone ($2f_0$ Octave Layer)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 3-Tier View Controller -->
     <section class="tier-controller-bar">
       <div class="tier-label-group">
@@ -1442,7 +1614,10 @@
       <div class="pillar-card p-linear">
         <div class="pillar-header">
           <span class="pillar-tag">Pillar I</span>
-          <span style="font-size: 1.2rem;">📐</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn-speech-pillar" onclick="speakPillar(1, this)" title="Speak Pillar Theory">🔊 Synthesize Audio</button>
+            <span style="font-size: 1.2rem;">📐</span>
+          </div>
         </div>
         <h3 class="pillar-title">Linear Algebra</h3>
         <p class="pillar-subtitle" id="p1-subtitle">Tensors, Projections, Geometry & Attention</p>
@@ -1469,7 +1644,10 @@
       <div class="pillar-card p-calc">
         <div class="pillar-header">
           <span class="pillar-tag">Pillar II</span>
-          <span style="font-size: 1.2rem;">∇</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn-speech-pillar" onclick="speakPillar(2, this)" title="Speak Pillar Theory">🔊 Synthesize Audio</button>
+            <span style="font-size: 1.2rem;">∇</span>
+          </div>
         </div>
         <h3 class="pillar-title">Multivariable Calculus</h3>
         <p class="pillar-subtitle" id="p2-subtitle">Gradients, Loss Optimization & Momentum</p>
@@ -1496,7 +1674,10 @@
       <div class="pillar-card p-prob">
         <div class="pillar-header">
           <span class="pillar-tag">Pillar III</span>
-          <span style="font-size: 1.2rem;">🎲</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn-speech-pillar" onclick="speakPillar(3, this)" title="Speak Pillar Theory">🔊 Synthesize Audio</button>
+            <span style="font-size: 1.2rem;">🎲</span>
+          </div>
         </div>
         <h3 class="pillar-title">Probability & Info Theory</h3>
         <p class="pillar-subtitle" id="p3-subtitle">Logit Distributions, Shannon Entropy & Sampling</p>
@@ -2304,10 +2485,12 @@
       const rand = Math.random();
       let cumulative = 0;
       let chosen = SAMPLE_CANDIDATES[0].word;
+      let chosenIdx = 0;
       for (let i = 0; i < currentProbs.length; i++) {
         cumulative += currentProbs[i];
         if (rand <= cumulative) {
           chosen = SAMPLE_CANDIDATES[i].word;
+          chosenIdx = i;
           break;
         }
       }
@@ -2315,6 +2498,7 @@
         <span>⚡ Sampled Token:</span> <strong style="color: var(--cyan); font-size: 0.95rem;">"${chosen}"</strong> 
         <span style="color: var(--text-dim);">(Stochastic Roll: ${(rand * 100).toFixed(1)}%)</span>
       `;
+      playGeometricChime(432 + chosenIdx * 72);
     };
 
     // Vector Sim
@@ -2424,58 +2608,73 @@
       const canvas = document.getElementById('canvas-hypercube');
       if (!canvas || typeof THREE === 'undefined') return;
 
+      const PHI = 1.618033988749895;
       const rect = canvas.parentElement.getBoundingClientRect();
       const width = rect.width || 600;
       const height = rect.height || 440;
 
       hyperScene = new THREE.Scene();
-      hyperScene.fog = new THREE.FogExp2(0x020307, 0.08);
+      hyperScene.fog = new THREE.FogExp2(0x050508, 0.07);
 
       hyperCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
       hyperCamera.position.set(0, 3.2, 5.8);
       hyperCamera.lookAt(0, 0, 0);
 
-      hyperRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      hyperRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
       hyperRenderer.setSize(width, height);
       hyperRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
       hyperGroup = new THREE.Group();
       hyperScene.add(hyperGroup);
 
-      const gridHelper = new THREE.GridHelper(6, 12, 0x00f0ff, 0x1f293d);
-      gridHelper.position.y = -1.2;
+      // Sacred Grid Helper in Aether Cyan
+      const gridHelper = new THREE.GridHelper(6, 12, 0x00f0ff, 0x0f1c2e);
+      gridHelper.position.y = -1.3;
       hyperGroup.add(gridHelper);
 
+      // Dual Nested Sacred Geometry (Cube + Octahedron Wireframes in Hermetic Gold & Cyan)
       const boxGeo = new THREE.BoxGeometry(2.8, 2.8, 2.8);
       const boxEdges = new THREE.EdgesGeometry(boxGeo);
-      const boxMat = new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.35 });
+      const boxMat = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.45 });
       const wireframeBox = new THREE.LineSegments(boxEdges, boxMat);
       hyperGroup.add(wireframeBox);
 
-      const count = 380;
+      const octaGeo = new THREE.OctahedronGeometry(1.6, 0);
+      const octaEdges = new THREE.EdgesGeometry(octaGeo);
+      const octaMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.35 });
+      const wireframeOcta = new THREE.LineSegments(octaEdges, octaMat);
+      hyperGroup.add(wireframeOcta);
+
+      // 610 Fibonacci Golden Spherical Spiral Manifold Points (F_15)
+      const count = 610;
       const pointGeo = new THREE.BufferGeometry();
       const positions = new Float32Array(count * 3);
       const colors = new Float32Array(count * 3);
+      const goldenAngle = Math.PI * (3 - Math.sqrt(5));
 
       for (let i = 0; i < count; i++) {
-        const u = (Math.random() - 0.5) * 2.6;
-        const v = (Math.random() - 0.5) * 2.6;
-        const w = (Math.random() - 0.5) * 2.6;
-        positions[i*3] = u;
-        positions[i*3+1] = v;
-        positions[i*3+2] = w;
+        const y = 1 - (i / (count - 1)) * 2; // -1 to 1
+        const radiusAtY = Math.sqrt(Math.max(0, 1 - y * y)) * 1.5;
+        const theta = goldenAngle * i;
+
+        positions[i * 3] = Math.cos(theta) * radiusAtY;
+        positions[i * 3 + 1] = y * 1.4;
+        positions[i * 3 + 2] = Math.sin(theta) * radiusAtY;
 
         if (i % 3 === 0) {
-          colors[i*3] = 0.0; colors[i*3+1] = 0.94; colors[i*3+2] = 1.0;
+          // Solar Gold #fbbf24
+          colors[i * 3] = 0.98; colors[i * 3 + 1] = 0.75; colors[i * 3 + 2] = 0.14;
         } else if (i % 3 === 1) {
-          colors[i*3] = 0.66; colors[i*3+1] = 0.33; colors[i*3+2] = 0.97;
+          // Aether Cyan #00f0ff
+          colors[i * 3] = 0.0; colors[i * 3 + 1] = 0.94; colors[i * 3 + 2] = 1.0;
         } else {
-          colors[i*3] = 0.06; colors[i*3+1] = 0.72; colors[i*3+2] = 0.5;
+          // Emerald Verde #34d399
+          colors[i * 3] = 0.20; colors[i * 3 + 1] = 0.83; colors[i * 3 + 2] = 0.60;
         }
       }
       pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       pointGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-      const pointMat = new THREE.PointsMaterial({ size: 0.06, vertexColors: true, transparent: true, opacity: 0.85 });
+      const pointMat = new THREE.PointsMaterial({ size: 0.065, vertexColors: true, transparent: true, opacity: 0.9 });
       manifoldPoints = new THREE.Points(pointGeo, pointMat);
       hyperGroup.add(manifoldPoints);
 
@@ -2485,9 +2684,9 @@
         new THREE.Vector3(0.3, -1.4, 0.6).normalize()
       );
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
       hyperScene.add(ambientLight);
-      const dirLight = new THREE.DirectionalLight(0x00f0ff, 1.2);
+      const dirLight = new THREE.DirectionalLight(0xfbbf24, 1.4);
       dirLight.position.set(5, 10, 7);
       hyperScene.add(dirLight);
 
@@ -2503,22 +2702,53 @@
         if (!isDragging) return;
         const deltaX = e.clientX - prevMousePos.x;
         const deltaY = e.clientY - prevMousePos.y;
-        hyperGroup.rotation.y += deltaX * 0.008;
-        hyperGroup.rotation.x += deltaY * 0.008;
+        hyperGroup.rotation.y += deltaX * 0.007;
+        hyperGroup.rotation.x += deltaY * 0.007;
         prevMousePos = { x: e.clientX, y: e.clientY };
       });
 
+      // Visibility & Viewport Observer Lifecycle (0% CPU when offscreen/tab hidden)
+      let isHyperRunning = true;
+      let hyperRafId = 0;
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !document.hidden) {
+            if (!isHyperRunning) {
+              isHyperRunning = true;
+              hyperRafId = requestAnimationFrame(animate);
+            }
+          } else {
+            isHyperRunning = false;
+            if (hyperRafId) cancelAnimationFrame(hyperRafId);
+          }
+        });
+      }, { threshold: 0.1 });
+      observer.observe(canvas);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          isHyperRunning = false;
+          if (hyperRafId) cancelAnimationFrame(hyperRafId);
+        } else {
+          isHyperRunning = true;
+          hyperRafId = requestAnimationFrame(animate);
+        }
+      });
+
       function animate() {
-        requestAnimationFrame(animate);
+        if (!isHyperRunning) return;
+        hyperRafId = requestAnimationFrame(animate);
         if (hyperAutoSpin && !isDragging) {
-          hyperGroup.rotation.y += 0.004;
+          hyperGroup.rotation.y += 0.0035;
         }
         if (manifoldPoints) {
-          manifoldPoints.rotation.y -= 0.001;
+          manifoldPoints.rotation.y -= 0.0015;
+          wireframeOcta.rotation.y += 0.002;
         }
         hyperRenderer.render(hyperScene, hyperCamera);
       }
-      animate();
+      hyperRafId = requestAnimationFrame(animate);
 
       window.addEventListener('resize', () => {
         const r = canvas.parentElement.getBoundingClientRect();
@@ -2527,7 +2757,7 @@
           hyperCamera.updateProjectionMatrix();
           hyperRenderer.setSize(r.width, r.height);
         }
-      });
+      }, { passive: true });
     }
 
     function updateHypercubeVectors(qDir, kDir, vDir) {
@@ -2581,6 +2811,249 @@
       const k = new THREE.Vector3(Math.cos(t + 0.25), Math.sin(t * 0.7 + 0.15), Math.sin(t * 0.4 + 0.1)).normalize();
       const v = new THREE.Vector3(Math.sin(t * 0.5), -Math.cos(t * 0.8), Math.cos(t * 0.3)).normalize();
       updateHypercubeVectors(q, k, v);
+      playGeometricChime(Math.round(432 * (1 + (q.dot(k) + 1) * 0.25)));
+    };
+
+    /* =========================================================================
+       Alchemical Web Audio 432 Hz Sacred Solfeggio Tone & Speech Synthesizer
+       ========================================================================= */
+    let mathAudioCtx = null;
+    let mathOsc = null;
+    let mathHarmOsc = null;
+    let mathMasterGain = null;
+    let mathHarmGain = null;
+    let currentSolfeggioFreq = 432;
+    let dualHarmonicEnabled = true;
+
+    function getMathAudioContext() {
+      if (!mathAudioCtx) {
+        mathAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (mathAudioCtx.state === 'suspended') {
+        mathAudioCtx.resume();
+      }
+      return mathAudioCtx;
+    }
+
+    window.toggleSacredTone = function(btn) {
+      const ctx = getMathAudioContext();
+      const now = ctx.currentTime;
+
+      if (mathOsc) {
+        // Smooth de-click release ramp
+        if (mathMasterGain) {
+          mathMasterGain.gain.setValueAtTime(mathMasterGain.gain.value, now);
+          mathMasterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+        }
+        const oldOsc = mathOsc;
+        const oldHarm = mathHarmOsc;
+        const oldGain = mathMasterGain;
+        const oldHarmGain = mathHarmGain;
+        mathOsc = null;
+        mathHarmOsc = null;
+        mathMasterGain = null;
+        mathHarmGain = null;
+
+        setTimeout(() => {
+          try {
+            if (oldOsc) { oldOsc.stop(); oldOsc.disconnect(); }
+            if (oldHarm) { oldHarm.stop(); oldHarm.disconnect(); }
+            if (oldHarmGain) oldHarmGain.disconnect();
+            if (oldGain) oldGain.disconnect();
+          } catch(e) {}
+        }, 90);
+
+        if (btn) {
+          btn.innerHTML = '🔊 ' + currentSolfeggioFreq + ' Hz SINE';
+          btn.classList.remove('active');
+        }
+        const statusEl = document.getElementById('sacred-tone-status');
+        if (statusEl) statusEl.textContent = '○ Audio Synthesis Idle';
+      } else {
+        mathMasterGain = ctx.createGain();
+        const volInput = document.getElementById('sacred-volume-slider');
+        const targetVol = volInput ? parseFloat(volInput.value) : 0.12;
+
+        mathMasterGain.gain.setValueAtTime(0.0001, now);
+        mathMasterGain.gain.exponentialRampToValueAtTime(targetVol, now + 0.06);
+
+        mathOsc = ctx.createOscillator();
+        mathOsc.type = 'sine';
+        mathOsc.frequency.setValueAtTime(currentSolfeggioFreq, now);
+        mathOsc.connect(mathMasterGain);
+
+        if (dualHarmonicEnabled) {
+          mathHarmOsc = ctx.createOscillator();
+          mathHarmGain = ctx.createGain();
+          mathHarmOsc.type = 'sine';
+          mathHarmOsc.frequency.setValueAtTime(currentSolfeggioFreq * 2, now); // Octave Golden Mean
+          mathHarmGain.gain.setValueAtTime(0.0001, now);
+          mathHarmGain.gain.linearRampToValueAtTime(targetVol * 0.25, now + 0.06);
+          mathHarmOsc.connect(mathHarmGain);
+          mathHarmGain.connect(mathMasterGain);
+          mathHarmOsc.start(now);
+        }
+
+        mathMasterGain.connect(ctx.destination);
+        mathOsc.start(now);
+
+        if (btn) {
+          btn.innerHTML = '⏹️ STOP TONE (' + currentSolfeggioFreq + 'Hz)';
+          btn.classList.add('active');
+        }
+        const statusEl = document.getElementById('sacred-tone-status');
+        if (statusEl) statusEl.textContent = '✨ Active: ' + currentSolfeggioFreq + ' Hz Sacred Harmonic Resonance';
+      }
+    };
+
+    window.setSolfeggioFreq = function(freq, chip) {
+      currentSolfeggioFreq = freq;
+      document.querySelectorAll('.solfeggio-chip').forEach(c => c.classList.remove('active'));
+      if (chip) chip.classList.add('active');
+
+      if (mathOsc && mathAudioCtx) {
+        const now = mathAudioCtx.currentTime;
+        mathOsc.frequency.setTargetAtTime(freq, now, 0.04);
+        if (mathHarmOsc) {
+          mathHarmOsc.frequency.setTargetAtTime(freq * 2, now, 0.04);
+        }
+        const mainBtn = document.getElementById('btn-sacred-tone-toggle');
+        if (mainBtn) mainBtn.innerHTML = '⏹️ STOP TONE (' + freq + 'Hz)';
+        const statusEl = document.getElementById('sacred-tone-status');
+        if (statusEl) statusEl.textContent = '✨ Active: ' + freq + ' Hz Sacred Harmonic Resonance';
+      } else {
+        const mainBtn = document.getElementById('btn-sacred-tone-toggle');
+        if (mainBtn) mainBtn.innerHTML = '🔊 ' + freq + ' Hz SINE';
+      }
+    };
+
+    window.toggleDualHarmonic = function(enabled) {
+      dualHarmonicEnabled = enabled;
+      if (mathOsc && mathAudioCtx) {
+        const now = mathAudioCtx.currentTime;
+        if (!enabled && mathHarmOsc) {
+          mathHarmGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+          setTimeout(() => {
+            try { mathHarmOsc.stop(); mathHarmOsc.disconnect(); mathHarmOsc = null; } catch(e) {}
+          }, 60);
+        } else if (enabled && !mathHarmOsc) {
+          mathHarmOsc = mathAudioCtx.createOscillator();
+          mathHarmGain = mathAudioCtx.createGain();
+          mathHarmOsc.type = 'sine';
+          mathHarmOsc.frequency.setValueAtTime(currentSolfeggioFreq * 2, now);
+          mathHarmGain.gain.setValueAtTime(0.0001, now);
+          const volInput = document.getElementById('sacred-volume-slider');
+          const targetVol = volInput ? parseFloat(volInput.value) : 0.12;
+          mathHarmGain.gain.linearRampToValueAtTime(targetVol * 0.25, now + 0.06);
+          mathHarmOsc.connect(mathHarmGain);
+          mathHarmGain.connect(mathMasterGain);
+          mathHarmOsc.start(now);
+        }
+      }
+    };
+
+    window.setSacredVolume = function(val) {
+      const vol = parseFloat(val) || 0.12;
+      if (mathMasterGain && mathAudioCtx) {
+        mathMasterGain.gain.setTargetAtTime(vol, mathAudioCtx.currentTime, 0.02);
+      }
+    };
+
+    window.playGeometricChime = function(freq = 432) {
+      try {
+        const ctx = getMathAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.14, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.45);
+        setTimeout(() => {
+          try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+        }, 500);
+      } catch(e) {}
+    };
+
+    /* =========================================================================
+       Web Speech TTS Synthesis for Math Pillars & Concepts
+       ========================================================================= */
+    let activePillarSpeechUtterance = null;
+    let activePillarBtn = null;
+
+    window.speakPillar = function(pillarNum, btn) {
+      if (!('speechSynthesis' in window)) {
+        alert('Web Speech API is not supported in this browser.');
+        return;
+      }
+
+      if (activePillarBtn === btn && window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        btn.innerHTML = '🔊 Synthesize Audio';
+        btn.classList.remove('speaking');
+        activePillarSpeechUtterance = null;
+        activePillarBtn = null;
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      if (activePillarBtn && activePillarBtn !== btn) {
+        activePillarBtn.innerHTML = '🔊 Synthesize Audio';
+        activePillarBtn.classList.remove('speaking');
+      }
+
+      const card = btn.closest('.pillar-card');
+      const title = card ? card.querySelector('.pillar-title')?.innerText : `Pillar ${pillarNum}`;
+      const subtitle = card ? card.querySelector('.pillar-subtitle')?.innerText : '';
+      const contentEl = card ? card.querySelector(`#p${pillarNum}-content`) : null;
+      const content = contentEl ? contentEl.innerText : '';
+
+      const fullText = `${title}. ${subtitle}. ${content}`;
+      const utter = new SpeechSynthesisUtterance(fullText);
+      utter.rate = 1.02;
+      utter.pitch = 0.98;
+
+      const voices = window.speechSynthesis.getVoices();
+      if (voices && voices.length > 0) {
+        const pref = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Daniel')));
+        if (pref) utter.voice = pref;
+      }
+
+      activePillarSpeechUtterance = utter;
+      activePillarBtn = btn;
+
+      btn.innerHTML = '⏹️ Stop Audio';
+      btn.classList.add('speaking');
+
+      utter.onend = function() {
+        if (activePillarBtn === btn) {
+          btn.innerHTML = '🔊 Synthesize Audio';
+          btn.classList.remove('speaking');
+          activePillarSpeechUtterance = null;
+          activePillarBtn = null;
+        }
+      };
+
+      utter.onerror = function() {
+        if (activePillarBtn === btn) {
+          btn.innerHTML = '🔊 Synthesize Audio';
+          btn.classList.remove('speaking');
+          activePillarSpeechUtterance = null;
+          activePillarBtn = null;
+        }
+      };
+
+      window.speechSynthesis.speak(utter);
+      playGeometricChime(pillarNum === 1 ? 432 : (pillarNum === 2 ? 528 : 639));
     };
 
     // Initialize on DOM Ready

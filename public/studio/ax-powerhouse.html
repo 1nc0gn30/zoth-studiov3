@@ -1194,7 +1194,7 @@
     <a class="skip-link" href="#main">Skip to main content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" / decoding="async" loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -1218,6 +1218,7 @@
         </button>
         <div class="nav-dropdown-menu">
           <a href="/studio/"><strong>🛠️ Studio Directory</strong><small>14+ Visual Workstations &amp; DAGs</small></a>
+          <a href="/studio/tool-bench.html"><strong>🧰 Tool Bench 2.0</strong><small>7-Module Harness &amp; Simulation Engine</small></a>
           <a href="/studio/site-generator.html"><strong>⚡ Website Generator</strong><small>Multi-Agent Web Foundry &amp; Exporters</small></a>
           <a href="/signal/"><strong>📡 Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></a>
           <a href="/pets/"><strong>💎 Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></a>
@@ -1263,6 +1264,7 @@
     <div class="drawer-section">
       <div class="drawer-heading">Studio &amp; Tools</div>
       <a href="/studio/">🛠️ Studio Workstations</a>
+      <a href="/studio/tool-bench.html">🧰 Tool Bench 2.0 Console</a>
       <a href="/studio/site-generator.html">⚡ Website Generator Foundry</a>
       <a href="/signal/">📡 Signal Swarm Bridge</a>
       <a href="/pets/">💎 Companion Pets 3D</a>
@@ -2015,7 +2017,7 @@ zoth-ax deploy --provider=netlify --prod --verify-live</code></pre>
             height="40"
             alt="Zoth Studio Hermetic Crest & Alchemical Seal"
             aria-hidden="true"
-          />
+          / decoding="async" loading="lazy">
           <div>
             <strong>Zoth Studio AX</strong>
             <span>© <span id="footerYear"></span> 757tech / Zoth Studio Team</span>
@@ -2024,6 +2026,7 @@ zoth-ax deploy --provider=netlify --prod --verify-live</code></pre>
         <div class="footer-links">
           <a href="/">Hub</a>
           <a href="/studio/">Studio Deck</a>
+          <a href="/studio/tool-bench.html">Tool Bench 2.0</a>
           <a href="/studio/models.html">Models</a>
           <a href="/studio/swarm.html">Swarm</a>
           <a href="/studio/connectors.html">Connectors</a>
@@ -2934,74 +2937,130 @@ Training-Policy: Allowed-With-Attribution`,
         }
 
         // -------------------------------------------------------------
-        // 60FPS Interactive Cyber Particle Matrix Canvas Backdrop
+        // Hermetic 60FPS Aether Particle Matrix & Golden Spiral Backdrop
         // -------------------------------------------------------------
         const bgCanvas = document.getElementById('ax-canvas-bg');
         if (bgCanvas) {
-          const bgCtx = bgCanvas.getContext('2d');
+          const bgCtx = bgCanvas.getContext('2d', { alpha: true });
+          const PHI = 1.618033988749895;
           let width = (bgCanvas.width = window.innerWidth);
           let height = (bgCanvas.height = window.innerHeight);
+          let bgRafId = 0;
+          let isBgRunning = true;
+          let lastBgTime = performance.now();
 
-          window.addEventListener('resize', () => {
+          const HERMETIC_PALETTE = [
+            { r: 251, g: 191, b: 36,  hex: '#fbbf24' }, // Solar Gold
+            { r: 0,   g: 240, b: 255, hex: '#00f0ff' }, // Aether Cyan
+            { r: 52,  g: 211, b: 153, hex: '#34d399' }  // Emerald Verde
+          ];
+
+          function onBgResize() {
             width = bgCanvas.width = window.innerWidth;
             height = bgCanvas.height = window.innerHeight;
-          });
+          }
+          window.addEventListener('resize', onBgResize, { passive: true });
 
           const particles = [];
-          const particleCount = Math.min(Math.floor(window.innerWidth / 24), 50);
+          const particleCount = Math.min(Math.floor(window.innerWidth / 22), 55);
 
           for (let i = 0; i < particleCount; i++) {
+            const col = HERMETIC_PALETTE[i % HERMETIC_PALETTE.length];
             particles.push({
               x: Math.random() * width,
               y: Math.random() * height,
-              vx: (Math.random() - 0.5) * 0.4,
-              vy: (Math.random() - 0.5) * 0.4,
-              radius: Math.random() * 1.5 + 0.8,
-              color: i % 3 === 0 ? 'rgba(0, 229, 255, 0.4)' : 'rgba(217, 70, 239, 0.3)',
+              vx: (Math.random() - 0.5) * 0.45,
+              vy: (Math.random() - 0.5) * 0.45,
+              radius: Math.random() * 1.8 + 1.0,
+              baseRadius: Math.random() * 1.8 + 1.0,
+              color: col,
+              pulsePhase: Math.random() * Math.PI * 2,
+              pulseSpeed: 0.02 + Math.random() * 0.03
             });
           }
 
           let mouseX = -1000;
           let mouseY = -1000;
+          let mouseActive = false;
+
           window.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
+            mouseActive = true;
+          }, { passive: true });
+
+          window.addEventListener('mouseleave', () => {
+            mouseActive = false;
+            mouseX = -1000;
+            mouseY = -1000;
+          }, { passive: true });
+
+          // Visibility lifecycle management for 0% CPU consumption when idle/backgrounded
+          document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+              isBgRunning = false;
+              if (bgRafId) cancelAnimationFrame(bgRafId);
+            } else {
+              isBgRunning = true;
+              lastBgTime = performance.now();
+              bgRafId = requestAnimationFrame(animateCanvas);
+            }
           });
 
-          function animateCanvas() {
+          function animateCanvas(now) {
+            if (!isBgRunning) return;
+            const dt = Math.min((now - lastBgTime) / 16.667, 2.5);
+            lastBgTime = now;
+
             bgCtx.clearRect(0, 0, width, height);
+
+            const timeSec = now * 0.001;
 
             for (let i = 0; i < particles.length; i++) {
               const p = particles[i];
-              p.x += p.vx;
-              p.y += p.vy;
+              p.pulsePhase += p.pulseSpeed * dt;
+              p.radius = p.baseRadius * (1 + 0.28 * Math.sin(p.pulsePhase * PHI));
 
-              if (p.x < 0) p.x = width;
-              if (p.x > width) p.x = 0;
-              if (p.y < 0) p.y = height;
-              if (p.y > height) p.y = 0;
+              // Golden Ratio Harmonic Drift
+              p.x += p.vx * dt;
+              p.y += p.vy * dt;
 
-              // Mouse repel
-              const dx = mouseX - p.x;
-              const dy = mouseY - p.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < 100) {
-                p.x -= (dx / dist) * 1.5;
-                p.y -= (dy / dist) * 1.5;
+              // Toroidal screen wrap
+              if (p.x < -10) p.x = width + 10;
+              if (p.x > width + 10) p.x = -10;
+              if (p.y < -10) p.y = height + 10;
+              if (p.y > height + 10) p.y = -10;
+
+              // Interactive Golden Spiral Precession around cursor
+              if (mouseActive) {
+                const dx = mouseX - p.x;
+                const dy = mouseY - p.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 140 && dist > 2) {
+                  const factor = (1 - dist / 140) * 0.45;
+                  // Tangential vortex torque + gentle radial push
+                  p.x += ((-dy / dist) * 1.2 - (dx / dist) * 0.4) * factor * dt;
+                  p.y += (((dx / dist) * 1.2 - (dy / dist) * 0.4) * factor * dt);
+                }
               }
 
+              // Draw Node with Aether Glow
               bgCtx.beginPath();
               bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-              bgCtx.fillStyle = p.color;
+              bgCtx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, 0.65)`;
               bgCtx.fill();
 
-              // Connect nearby nodes
+              // Connect nearby nodes with sacred ratio threshold (Fibonacci ~137.5px)
               for (let j = i + 1; j < particles.length; j++) {
                 const p2 = particles[j];
                 const d = Math.hypot(p.x - p2.x, p.y - p2.y);
-                if (d < 110) {
-                  bgCtx.strokeStyle = `rgba(0, 229, 255, ${0.15 * (1 - d / 110)})`;
-                  bgCtx.lineWidth = 0.6;
+                const maxDist = 137.5;
+                if (d < maxDist) {
+                  const alpha = (1 - d / maxDist) * 0.22;
+                  // Dynamic pulse packet along filament
+                  const pulseShift = Math.sin(timeSec * 3.0 + (i + j) * 0.5) * 0.5 + 0.5;
+                  bgCtx.strokeStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${alpha * (0.8 + 0.4 * pulseShift)})`;
+                  bgCtx.lineWidth = 0.75;
                   bgCtx.beginPath();
                   bgCtx.moveTo(p.x, p.y);
                   bgCtx.lineTo(p2.x, p2.y);
@@ -3009,9 +3068,11 @@ Training-Policy: Allowed-With-Attribution`,
                 }
               }
             }
-            requestAnimationFrame(animateCanvas);
+
+            bgRafId = requestAnimationFrame(animateCanvas);
           }
-          animateCanvas();
+
+          bgRafId = requestAnimationFrame(animateCanvas);
         }
 
         // -------------------------------------------------------------

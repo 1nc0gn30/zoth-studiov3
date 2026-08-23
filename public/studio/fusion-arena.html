@@ -58,15 +58,15 @@
     <link rel="stylesheet" href="/studio/studio.css?v=20260816s" />
     
     <!-- Three.js + Postprocessing + Controls -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
       <style>
     .skip-to-content {
@@ -674,7 +674,7 @@
     <a class="skip-link" href="#main">Skip to main content</a>
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" / decoding="async" loading="lazy">
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -1041,7 +1041,7 @@
           cards[idx].innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div style="display: flex; align-items: center; gap: 8px;">
-                <img src="${portraitUrl || '/assets/pets/kai-neon.jpg'}" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" / alt="Zoth Studio — ${Portraiturl || ">
+                <img src="${portraitUrl || '/assets/pets/kai-neon.jpg'}" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" alt="Zoth Studio — ${spec.name || id}" / decoding="async" loading="lazy">
                 <strong style="color: ${spec.vibeColor || 'var(--cyan)'};">@${spec.name || id}</strong>
               </div>
               <span class="hud-pill" style="font-size: 0.62rem; padding: 2px 6px; border-color: ${spec.vibeColor || 'var(--cyan)'}; color: ${spec.vibeColor || 'var(--cyan)'};">${(spec.domain || 'COMBATANT').toUpperCase()}</span>
@@ -1158,72 +1158,53 @@
         scene.add(grp);
       }
 
-        spawnSwarmParticleTornado();
-
-        window.addEventListener('resize', onResize);
-        animate();
-      }
-
-      function spawnCombatant(idx, color, name) {
-        const grp = new THREE.Group();
-        const angle = (idx / 4) * Math.PI * 2;
-        const radius = 5.0;
-
-        grp.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
-
-        const geo = new THREE.OctahedronGeometry(1.0, 1);
-        const mat = new THREE.MeshPhysicalMaterial({
-          color: color,
-          emissive: color,
-          emissiveIntensity: 0.8,
-          roughness: 0.1,
-          metalness: 0.8
-        });
-        const mesh = new THREE.Mesh(geo, mat);
-        grp.add(mesh);
-
-        // Orbit ring
-        const ringG = new THREE.TorusGeometry(1.6, 0.05, 16, 64);
-        const ringM = new THREE.MeshBasicMaterial({ color: color });
-        const r1 = new THREE.Mesh(ringG, ringM);
-        r1.rotation.x = Math.PI / 3;
-        grp.add(r1);
-
-        grp.userData = { initialAngle: angle, speed: 0.8 + idx * 0.2, radius: radius, name: name };
-        combatants.push(grp);
-        scene.add(grp);
-      }
+      let isArenaRunning = true;
+      let arenaRafId = 0;
+      const PHI = 1.618033988749895;
 
       function spawnSwarmParticleTornado() {
         if (vortexParticles) scene.remove(vortexParticles);
 
-        const count = 2500;
+        const count = 2584; // Fibonacci F_18
         const geo = new THREE.BufferGeometry();
         const pos = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
+        const velocities = new Float32Array(count);
+        const goldenAngle = 137.507764 * (Math.PI / 180);
 
         for (let i = 0; i < count; i++) {
-          const theta = Math.random() * Math.PI * 2;
-          const r = Math.random() * 8.5;
-          const y = (Math.random() - 0.5) * 8;
+          const theta = i * goldenAngle;
+          const norm = i / count;
+          const r = Math.pow(norm, 0.618) * 9.2 + 0.3;
+          const y = (norm - 0.5) * 9.5;
 
           pos[i * 3] = Math.cos(theta) * r;
           pos[i * 3 + 1] = y;
           pos[i * 3 + 2] = Math.sin(theta) * r;
+          velocities[i] = 0.02 + Math.random() * 0.03;
 
-          colors[i * 3] = Math.random() > 0.5 ? 0.0 : 0.85;
-          colors[i * 3 + 1] = 0.9;
-          colors[i * 3 + 2] = 1.0;
+          if (i % 3 === 0) {
+            // Solar Gold #fbbf24
+            colors[i * 3] = 0.98; colors[i * 3 + 1] = 0.75; colors[i * 3 + 2] = 0.14;
+          } else if (i % 3 === 1) {
+            // Aether Cyan #00f0ff
+            colors[i * 3] = 0.0; colors[i * 3 + 1] = 0.94; colors[i * 3 + 2] = 1.0;
+          } else {
+            // Emerald Verde #34d399
+            colors[i * 3] = 0.20; colors[i * 3 + 1] = 0.83; colors[i * 3 + 2] = 0.60;
+          }
         }
 
         geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
         geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.userData = { velocities, count };
 
         const mat = new THREE.PointsMaterial({
-          size: 0.08,
+          size: 0.085,
           vertexColors: true,
           transparent: true,
-          opacity: 0.8
+          opacity: 0.85,
+          blending: THREE.AdditiveBlending
         });
 
         vortexParticles = new THREE.Points(geo, mat);
@@ -1236,17 +1217,18 @@
         playSound('laser');
 
         // Draw dynamic laser beam between combatant 0 and combatant 1
-        if (beamMesh) scene.remove(beamMesh);
+        const fromPos = combatants[0].position.clone().add(new THREE.Vector3(0, 0.8, 0));
+        const toPos = combatants[1].position.clone().add(new THREE.Vector3(0, 0.8, 0));
+        const distance = fromPos.distanceTo(toPos);
 
-        const p1 = combatants[0].position;
-        const p2 = combatants[1].position;
+        const beamGeo = new THREE.CylinderGeometry(0.06, 0.06, distance, 16);
+        const beamMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.9 });
+        const beamMesh = new THREE.Mesh(beamGeo, beamMat);
 
-        const curve = new THREE.LineCurve3(p1, p2);
-        const geom = new THREE.TubeGeometry(curve, 20, 0.15, 8, false);
-        const mat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
-        beamMesh = new THREE.Mesh(geom, mat);
+        beamMesh.position.copy(fromPos).lerp(toPos, 0.5);
+        beamMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), toPos.clone().sub(fromPos).normalize());
+
         scene.add(beamMesh);
-
         bloomPass.strength = 3.2;
         setTimeout(() => {
           if (beamMesh) scene.remove(beamMesh);
@@ -1314,10 +1296,23 @@
         composer.setSize(host.clientWidth, host.clientHeight);
       }
 
+      // Visibility lifecycle management (0% CPU when tab hidden)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          isArenaRunning = false;
+          if (arenaRafId) cancelAnimationFrame(arenaRafId);
+        } else {
+          isArenaRunning = true;
+          clock.start();
+          arenaRafId = requestAnimationFrame(animate);
+        }
+      });
+
       function animate() {
-        requestAnimationFrame(animate);
+        if (!isArenaRunning) return;
+        arenaRafId = requestAnimationFrame(animate);
         const t = clock.getElapsedTime();
-        const dt = clock.getDelta();
+        const dt = Math.min(clock.getDelta(), 0.1);
 
         combatants.forEach((c, i) => {
           if (!c) return;
@@ -1331,8 +1326,18 @@
           }
         });
 
-        if (vortexParticles) {
-          vortexParticles.rotation.y += 0.01;
+        // Dynamic Updraft & Vortex Circulation for Golden Tornado
+        if (vortexParticles && vortexParticles.geometry) {
+          vortexParticles.rotation.y += 0.008;
+          const pos = vortexParticles.geometry.attributes.position.array;
+          const count = vortexParticles.geometry.userData.count || 2584;
+          for (let i = 0; i < count; i++) {
+            pos[i * 3 + 1] += 0.035;
+            if (pos[i * 3 + 1] > 5.0) {
+              pos[i * 3 + 1] = -4.5;
+            }
+          }
+          vortexParticles.geometry.attributes.position.needsUpdate = true;
         }
 
         controls.update();
