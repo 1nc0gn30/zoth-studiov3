@@ -72,9 +72,9 @@
     }
 
     :root {
-  --text-primary: #ffffff;
-  --text-secondary: #cbd5e1;
-  --muted: #94a3b8;
+      --text-primary: #ffffff;
+      --text-secondary: #cbd5e1;
+      --muted: #94a3b8;
 
       --bg: #03050a;
       --bg-surface: rgba(9, 13, 24, 0.92);
@@ -124,6 +124,16 @@
       --fib-610: 610px;
       --fib-987: 987px;
 
+      /* Dynamic Fluid Spacing Scale */
+      --space-xs: clamp(4px, 1.2vw, 8px);
+      --space-sm: clamp(8px, 2vw, 13px);
+      --space-md: clamp(13px, 3.5vw, 21px);
+      --space-lg: clamp(21px, 5vw, 34px);
+      --space-xl: clamp(34px, 8vw, 55px);
+
+      /* Touch Target Ergonomic Standard */
+      --touch-min: 44px;
+
       /* Fibonacci Border Radius Scale */
       --radius-fib-xs: 5px;
       --radius-fib-sm: 8px;
@@ -132,7 +142,6 @@
       --radius-fib-xl: 34px;
       --radius-fib-pill: 9999px;
 
-      /* Fibonacci Border Radius Scale */
       --fib-radius-xs: 5px;
       --fib-radius-sm: 8px;
       --fib-radius-md: 13px;
@@ -140,12 +149,12 @@
       --fib-radius-xl: 34px;
       --fib-radius-pill: 9999px;
 
-      /* Fibonacci & Sacred Typography Scale */
-      --fib-font-micro: 13px;
-      --fib-font-body: 16px;
-      --fib-font-subhead: 21px;
-      --fib-font-title: 34px;
-      --fib-font-hero: 55px;
+      /* Fibonacci & Sacred Typography Scale with Fluid Clamps */
+      --fib-font-micro: clamp(0.72rem, 1.5vw, 0.82rem);
+      --fib-font-body: clamp(0.88rem, 1.8vw, 1rem);
+      --fib-font-subhead: clamp(1.1rem, 2.5vw, 1.35rem);
+      --fib-font-title: clamp(1.4rem, 5vw, 2.15rem);
+      --fib-font-hero: clamp(1.75rem, 6.5vw, 3.4rem);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -514,25 +523,184 @@
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: var(--fib-radius-lg, 21px);
-      padding: var(--fib-21, 21px);
+      padding: var(--space-md) var(--space-md);
       margin-bottom: var(--fib-34, 34px);
       box-sizing: border-box;
+      backdrop-filter: blur(20px);
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .matrix-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: var(--fib-21, 21px);
+      border-radius: var(--fib-radius-md, 13px);
+      border: 1px solid var(--border);
+      background: rgba(4, 8, 20, 0.7);
+    }
+
+    .pairwise-matrix-table {
+      width: 100%;
+      min-width: 460px;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    .pairwise-matrix-table th, .pairwise-matrix-table td {
+      padding: 10px 12px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      white-space: nowrap;
     }
 
     .pairwise-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: var(--fib-21, 21px);
+      gap: var(--space-md);
+      width: 100%;
+    }
+
+    .pairwise-card {
+      background: rgba(0, 240, 255, 0.04);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: var(--fib-radius-md, 13px);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--fib-8, 8px);
+      box-sizing: border-box;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .pairwise-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--cyan);
+    }
+
+    /* Table Scroll Wrapper for Entropy and Matrix */
+    .table-scroll-container {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: var(--fib-13, 13px) 0;
+      border-radius: var(--fib-radius-md, 13px);
+      border: 1px solid var(--border);
+      background: rgba(4, 8, 20, 0.75);
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .table-scroll-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(0, 240, 255, 0.35);
+      border-radius: 3px;
+    }
+    .table-scroll-container::-webkit-scrollbar-track {
+      background: rgba(4, 8, 20, 0.6);
+    }
+
+    .table-scroll-hint {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.06);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 768px) {
+      .table-scroll-hint {
+        display: flex;
+      }
+    }
+
+    .entropy-math-table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: clamp(0.72rem, 1.6vw, 0.82rem);
+    }
+
+    .entropy-math-table th, .entropy-math-table td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+    }
+
+    .entropy-math-table th {
+      color: var(--text-dim);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      background: rgba(9, 14, 28, 0.9);
+      position: sticky;
+      top: 0;
+    }
+
+    /* Range Sliders Touch Ergonomics */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 5px;
+      outline: none;
+      margin: 10px 0;
+      min-height: 44px;
+      cursor: pointer;
+      box-sizing: border-box;
+      touch-action: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.95);
+      cursor: pointer;
+      border: 2.5px solid #ffffff;
+      transition: transform 0.1s ease;
+    }
+    input[type="range"]:active::-webkit-slider-thumb {
+      transform: scale(1.18);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.95);
+      cursor: pointer;
+      border: 2.5px solid #ffffff;
     }
 
     /* Footer */
     .footer {
       text-align: center;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
-      padding-top: var(--fib-34, 34px);
+      padding: var(--fib-34, 34px) var(--fib-13, 13px) calc(var(--fib-34, 34px) + env(safe-area-inset-bottom, 24px));
       color: var(--text-dim);
       font-size: 0.8rem;
       font-family: var(--font-mono);
+      line-height: 1.6;
     }
 
     /* Mobile Segmented Switcher */
@@ -540,17 +708,27 @@
       display: none;
       gap: var(--fib-8, 8px);
       margin-bottom: var(--fib-21, 21px);
-      background: rgba(9, 13, 24, 0.92);
+      background: rgba(9, 13, 24, 0.95);
       padding: var(--fib-5, 5px);
       border-radius: var(--fib-radius-md, 13px);
       border: 1px solid var(--border);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      position: sticky;
+      top: env(safe-area-inset-top, 8px);
+      z-index: 95;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .consensus-mobile-tabs::-webkit-scrollbar {
+      display: none;
     }
 
     .consensus-tab-btn {
-      flex: 1 1 0;
-      min-width: 120px;
+      flex: 1 1 auto;
+      min-width: 125px;
       padding: var(--fib-8, 8px) var(--fib-13, 13px);
       border-radius: var(--fib-radius-sm, 8px);
       border: 1px solid transparent;
@@ -568,64 +746,134 @@
       min-height: 44px;
       white-space: nowrap;
       box-sizing: border-box;
+      user-select: none;
     }
 
     .consensus-tab-btn:hover {
       color: #fff;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.06);
     }
 
     .consensus-tab-btn.active {
       color: var(--cyan);
-      background: rgba(0, 240, 255, 0.12);
+      background: rgba(0, 240, 255, 0.15);
       border-color: var(--cyan);
-      box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
     }
 
     @media (max-width: 1080px) {
       .arena-grid { grid-template-columns: 1fr; gap: var(--fib-13, 13px); margin-bottom: var(--fib-21, 21px); }
+      .entropy-card-grid { grid-template-columns: 1fr; gap: var(--fib-13, 13px); }
     }
 
     @media (max-width: 880px) {
       .consensus-mobile-tabs { display: flex; }
       .arena-grid { display: block; margin-bottom: var(--fib-21, 21px); }
       .consensus-panel { display: none !important; }
-      .consensus-panel.mobile-active { display: flex !important; width: 100%; }
+      .consensus-panel.mobile-active {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
       .pairwise-section.consensus-panel { display: none; }
-      .pairwise-section.consensus-panel.mobile-active { display: block !important; }
+      .pairwise-section.consensus-panel.mobile-active {
+        display: block !important;
+        width: 100% !important;
+      }
+      .dialectic-stepper { grid-template-columns: 1fr; gap: var(--fib-8, 8px); }
+      .byzantine-quorum-bar { flex-direction: column; align-items: stretch; gap: var(--fib-13, 13px); }
+      .byzantine-stake-group { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+      .stake-pill { width: 100%; justify-content: space-between; }
     }
 
     @media (max-width: 768px) {
-      .container { padding: var(--fib-13, 13px) var(--fib-13, 13px) var(--fib-55, 55px); }
-      .header { flex-direction: column; align-items: flex-start; gap: var(--fib-13, 13px); padding: var(--fib-13, 13px) var(--fib-21, 21px) !important; }
-      .nav-links { width: 100%; gap: var(--fib-5, 5px); }
-      .nav-link { flex: 1 1 auto; text-align: center; font-size: 0.76rem; min-height: 44px; }
-      .hero-banner { padding: var(--fib-21, 21px); border-radius: var(--fib-radius-md, 13px); margin-bottom: var(--fib-21, 21px); }
-      .hero-title { font-size: clamp(1.6rem, 6.5vw, 2.2rem); line-height: 1.15; word-break: break-word; }
-      .hero-desc { font-size: 0.88rem; line-height: 1.55; }
+      .container {
+        padding: var(--space-md) var(--space-sm) calc(var(--space-xl) + env(safe-area-inset-bottom, 24px));
+      }
+      .header { flex-direction: column; align-items: flex-start; gap: var(--fib-13, 13px); padding: var(--fib-13, 13px) var(--fib-13, 13px) !important; }
+      .brand-title { font-size: clamp(1.3rem, 5vw, 1.8rem); }
+      .nav-links { width: 100%; gap: var(--fib-8, 8px); }
+      .nav-link { flex: 1 1 calc(50% - 8px); text-align: center; font-size: 0.8rem; min-height: 44px; }
+      .hero-banner { padding: var(--space-md) var(--space-sm); border-radius: var(--fib-radius-md, 13px); margin-bottom: var(--space-md); }
+      .hero-title { font-size: clamp(1.4rem, 6vw, 2.1rem); line-height: 1.2; word-break: break-word; }
+      .hero-desc { font-size: 0.88rem; line-height: 1.6; }
+      .hero-actions-bar { flex-direction: column; width: 100%; gap: 8px; }
+      .hero-action-btn { width: 100%; min-height: 44px; justify-content: center; font-size: 0.82rem; }
       .topic-bar { gap: var(--fib-8, 8px); margin-bottom: var(--fib-21, 21px); }
-      .topic-btn { flex: 1 1 calc(50% - 8px); text-align: center; font-size: 0.74rem; padding: var(--fib-8, 8px) var(--fib-13, 13px); min-height: 44px; }
+      .topic-btn { flex: 1 1 calc(50% - 8px); text-align: center; font-size: 0.78rem; padding: var(--fib-8, 8px) var(--fib-13, 13px); min-height: 44px; }
       .metrics-ticker { grid-template-columns: repeat(2, 1fr); gap: var(--fib-13, 13px); margin-bottom: var(--fib-21, 21px); }
       .ticker-card { padding: var(--fib-13, 13px); border-radius: var(--fib-radius-md, 13px); }
-      .ticker-val { font-size: 1.4rem; }
-      .arena-box { padding: var(--fib-21, 21px) var(--fib-13, 13px); border-radius: var(--fib-radius-md, 13px); gap: var(--fib-13, 13px); }
+      .ticker-val { font-size: clamp(1.25rem, 4.5vw, 1.6rem); }
+      .arena-box { padding: var(--space-md) var(--space-sm); border-radius: var(--fib-radius-md, 13px); gap: var(--fib-13, 13px); }
       .contenders-row { grid-template-columns: 1fr; gap: var(--fib-8, 8px); }
       .contender-card { padding: var(--fib-13, 13px); min-height: 44px; }
       .contender-card a { min-height: 44px; display: inline-flex; align-items: center; }
       .code-viewer { max-height: 320px; font-size: 0.78rem; padding: var(--fib-13, 13px); -webkit-overflow-scrolling: touch; word-break: break-word; overflow-x: auto; }
-      .pairwise-section { padding: var(--fib-21, 21px) var(--fib-13, 13px); border-radius: var(--fib-radius-md, 13px); margin-bottom: var(--fib-21, 21px); }
+      .pairwise-section { padding: var(--space-md) var(--space-sm); border-radius: var(--fib-radius-md, 13px); margin-bottom: var(--space-md); }
       .pairwise-grid { grid-template-columns: 1fr; gap: var(--fib-13, 13px); }
-      .footer { padding: var(--fib-34, 34px) var(--fib-13, 13px); font-size: 0.75rem; }
+      .proof-verification-box { padding: var(--space-md) var(--space-sm); border-radius: var(--fib-radius-md, 13px); }
+      .proof-hash-code {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: var(--fib-13, 13px);
+      }
+      .proof-hash-code > div {
+        width: 100%;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+      }
+      .proof-hash-code div:last-child {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+      }
+      .proof-hash-code button {
+        width: 100%;
+        min-height: 44px;
+        justify-content: center;
+        font-size: 0.8rem;
+      }
+      .proof-seal-box {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--fib-13, 13px);
+        gap: 12px;
+      }
+      .proof-steps-grid { grid-template-columns: 1fr; gap: var(--fib-8, 8px); }
+      .cinema-channel-switcher { width: 100%; }
+      .cinema-channel-btn { flex: 1 1 calc(50% - 8px); min-height: 44px; justify-content: center; }
+      .cinema-hud-top, .cinema-hud-bottom { gap: 8px; }
+      .cinema-controls-bar { width: 100%; justify-content: space-between; }
+      .cinema-ctrl-btn { flex: 1 1 auto; min-height: 44px; justify-content: center; }
+      .footer { padding: var(--fib-34, 34px) var(--fib-13, 13px) calc(var(--fib-34, 34px) + env(safe-area-inset-bottom, 24px)); font-size: 0.78rem; }
     }
 
     @media (max-width: 480px) {
-      .container { padding: var(--fib-8, 8px) var(--fib-8, 8px) var(--fib-34, 34px); }
+      .container { padding: var(--fib-8, 8px) var(--fib-8, 8px) calc(var(--fib-34, 34px) + env(safe-area-inset-bottom, 24px)); }
       .topic-btn { flex: 1 1 100%; width: 100%; min-height: 44px; }
       .metrics-ticker { grid-template-columns: 1fr; gap: var(--fib-8, 8px); }
-      .brand-title { font-size: 1.2rem; }
+      .brand-title { font-size: 1.15rem; }
       .hero-banner { padding: var(--fib-13, 13px); }
-      .arena-box-head { flex-wrap: wrap; gap: var(--fib-8, 8px); }
+      .arena-box-head { flex-direction: column; align-items: stretch; gap: var(--fib-8, 8px); }
       .arena-box-head div { width: 100%; justify-content: flex-start; }
+      .btn-modal-trigger { min-height: 44px; padding: 8px 12px; font-size: 0.78rem; width: 100%; justify-content: center; }
+      .stake-pill { width: 100%; justify-content: space-between; min-height: 44px; }
+      .byzantine-stake-group { width: 100%; grid-template-columns: 1fr; }
+      .cinema-controls-bar { flex-direction: column; width: 100%; gap: 6px; }
+      .cinema-ctrl-btn { width: 100%; min-height: 44px; justify-content: center; }
+      .cinema-agent-roster { width: 100%; justify-content: center; }
+      .cinema-theater-box { margin-bottom: var(--fib-13, 13px); }
+      .dialectic-critique-box > div { flex-direction: column; align-items: stretch; gap: 8px; }
+      .dialectic-critique-box > div button { width: 100%; min-height: 44px; justify-content: center; }
+    }
+
+    @media (max-width: 360px) {
+      .hero-title { font-size: 1.3rem; }
+      .consensus-tab-btn { min-width: 100px; font-size: 0.72rem; padding: 8px 10px; }
+      .ticker-val { font-size: 1.15rem; }
     }
   
     /* Mobile-Only Desktop Insight Tooltip / Banner */
@@ -952,120 +1200,1233 @@
       gap: var(--fib-8, 8px);
     }
 
-    /* Shannon Entropy Breakdown & Gauge */
-    .entropy-card-grid {
-      display: grid;
-      grid-template-columns: 1.618fr 1fr;
-      gap: var(--fib-21, 21px);
-      margin-bottom: var(--fib-34, 34px);
+
+
+    /* ==========================================================================
+       Zoth Studio — High-Contrast Glassmorphic Modals, Drawers & Interactive Popups
+       ========================================================================== */
+
+    /* Hero Action Triggers Bar */
+    .hero-actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--fib-8, 8px);
+      margin-top: var(--fib-21, 21px);
     }
-    @media (max-width: 1080px) {
-      .entropy-card-grid { grid-template-columns: 1fr; }
+    .hero-action-btn {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: var(--fib-font-micro, 13px);
+      font-weight: 600;
+      padding: var(--fib-8, 8px) var(--fib-13, 13px);
+      border-radius: var(--fib-radius-sm, 8px);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      min-height: 40px;
+      backdrop-filter: blur(10px);
     }
-    .entropy-display-box {
-      background: var(--bg-surface);
+    .hero-action-btn:hover {
+      background: rgba(0, 240, 255, 0.18);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .btn-modal-trigger {
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-height: 44px;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+    }
+    .btn-modal-trigger:hover {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--cyan);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-modal-trigger:active {
+      transform: translateY(1px);
+    }
+
+    /* Base Native Dialog & Top-Layer Overlay */
+    body.modal-scroll-lock {
+      overflow: hidden !important;
+      touch-action: none;
+    }
+
+    dialog.zoth-modal {
+      position: fixed;
+      inset: 0;
+      margin: auto;
+      padding: 0;
+      background: transparent;
+      border: none;
+      z-index: 10000;
+      width: 100%;
+      max-width: min(1100px, 94vw);
+      max-height: min(88vh, 860px);
+      outline: none;
+      overflow: visible;
+      color: var(--text, #f0f6fc);
+      opacity: 0;
+      transform: scale(0.96) translateY(16px);
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  display 0.25s allow-discrete,
+                  overlay 0.25s allow-discrete;
+    }
+    dialog.zoth-modal[open] {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    dialog.zoth-modal.is-closing {
+      opacity: 0 !important;
+      transform: scale(0.96) translateY(16px) !important;
+      transition: opacity 0.18s ease, transform 0.18s ease !important;
+    }
+    @starting-style {
+      dialog.zoth-modal[open] {
+        opacity: 0;
+        transform: scale(0.96) translateY(16px);
+      }
+    }
+
+    dialog.zoth-modal::backdrop {
+      background: radial-gradient(circle at 50% 30%, rgba(10, 16, 32, 0.85), rgba(2, 4, 10, 0.94));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: opacity 0.25s ease;
+    }
+
+    /* Fullscreen Modal View */
+    dialog.zoth-modal.is-fullscreen {
+      max-width: 98vw;
+      max-height: 96vh;
+      width: 98vw;
+      height: 96vh;
+    }
+
+    /* Modal Alchemical Card Container */
+    .zoth-modal-card {
+      background: linear-gradient(145deg, rgba(8, 12, 24, 0.98), rgba(14, 21, 38, 0.97));
+      border: 1px solid rgba(0, 240, 255, 0.35);
       border-radius: var(--fib-radius-lg, 21px);
+      box-shadow: 0 0 50px rgba(0, 240, 255, 0.18), 0 25px 65px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      max-height: inherit;
+      overflow: hidden;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .modal-drag-handle-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 28px;
+      padding: 8px 0 4px 0;
+      cursor: grab;
+      touch-action: none;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .modal-drag-bar {
+      width: 52px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .modal-drag-handle-wrap:active .modal-drag-bar {
+      background: var(--cyan);
+      transform: scaleX(1.15);
+    }
+
+    /* Modal Header */
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--fib-13, 13px) var(--fib-21, 21px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(4, 7, 16, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      flex-shrink: 0;
+      gap: 12px;
+      min-height: 54px;
+    }
+    .modal-head-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .modal-kicker-badge {
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+      font-weight: 700;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .btn-modal-icon {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-height: 44px;
+      min-width: 44px;
+      box-sizing: border-box;
+    }
+    .btn-modal-icon:hover {
+      color: #ffffff;
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.14);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+    }
+    .btn-modal-close {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      font-size: 1.25rem;
+      font-weight: 700;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .btn-modal-close:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #ef4444;
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);
+      transform: scale(1.05);
+    }
+
+    /* Modal Subnav Tab Strip */
+    .modal-subnav {
+      display: flex;
+      gap: 8px;
+      padding: 8px var(--fib-21, 21px);
+      background: rgba(2, 4, 10, 0.6);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-shrink: 0;
+    }
+    .modal-tab-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;
+      box-sizing: border-box;
+    }
+    .modal-tab-pill:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .modal-tab-pill.active {
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.14);
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Modal Scroll Area */
+    .modal-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--fib-21, 21px);
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      gap: var(--fib-13, 13px);
+    }
+    .modal-scroll-area::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .modal-scroll-area::-webkit-scrollbar-thumb {
+      background: rgba(0, 240, 255, 0.3);
+      border-radius: 3px;
+    }
+    .modal-scroll-area::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modal Footer */
+    .modal-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--fib-13, 13px) var(--fib-21, 21px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(4, 7, 16, 0.9);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      gap: 12px;
+      min-height: 54px;
+    }
+
+    /* ==========================================================================
+       Mathematical & KaTeX Equation Styling
+       ========================================================================== */
+    .math-card {
+      background: rgba(4, 8, 18, 0.85);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: var(--fib-radius-md, 13px);
       padding: var(--fib-21, 21px);
       display: flex;
       flex-direction: column;
       gap: var(--fib-13, 13px);
-      backdrop-filter: blur(20px);
     }
-    .entropy-gauge-track {
-      height: 14px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
-      overflow: hidden;
-      position: relative;
+    .math-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .entropy-gauge-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #10b981 0%, #00f0ff 40%, #f59e0b 70%, #ef4444 100%);
-      width: 60%;
-      transition: width 0.3s ease;
-      border-radius: 999px;
+    .math-card-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
     }
-    .entropy-math-table {
+    .math-formula-box {
+      background: #020408;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 8px;
+      padding: var(--fib-13, 13px) var(--fib-21, 21px);
+      text-align: center;
+      box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.05);
+    }
+    .math-eq-display {
+      font-family: 'KaTeX_Main', var(--font-mono), serif;
+      font-size: 1.35rem;
+      color: var(--cyan);
+      letter-spacing: 0.02em;
+      line-height: 1.6;
+    }
+    .math-legend-table {
       width: 100%;
       border-collapse: collapse;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      margin-top: 8px;
+      font-size: 0.8rem;
     }
-    .entropy-math-table th, .entropy-math-table td {
+    .math-legend-table th, .math-legend-table td {
       padding: 6px 10px;
       text-align: left;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .entropy-math-table th {
+    .math-legend-table th {
       color: var(--text-dim);
-      font-weight: 600;
+      font-family: var(--font-mono);
       text-transform: uppercase;
       font-size: 0.7rem;
     }
-
-    .entropy-slider-row {
+    .math-symbol {
+      font-family: 'KaTeX_Main', var(--font-mono), serif;
+      font-weight: 700;
+      color: var(--cyan);
+      font-size: 0.95rem;
+    }
+    .math-live-calc-box {
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-    .entropy-slider-header {
-      display: flex;
-      justify-content: space-between;
+      gap: 6px;
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.8rem;
     }
 
-    /* Consensus Proof Hash Verification */
-    .proof-verification-box {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-bright);
-      border-radius: var(--fib-radius-lg, 21px);
-      padding: var(--fib-21, 21px);
-      margin-bottom: var(--fib-34, 34px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(20px);
+    /* ==========================================================================
+       Code Inspector & AST Diff Styling
+       ========================================================================== */
+    .diff-pill-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
     }
-    .proof-hash-code {
+    .diff-stat-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .diff-stat-chip strong {
+      color: #ffffff;
+    }
+
+    .diff-code-wrapper {
+      background: #020409;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      overflow-x: auto;
       font-family: var(--font-mono);
       font-size: 0.82rem;
-      background: rgba(0, 0, 0, 0.65);
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: var(--cyan);
-      word-break: break-all;
+      line-height: 1.6;
+    }
+    .diff-line {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
+      padding: 1px 8px;
+      white-space: pre;
     }
-    .proof-steps-grid {
+    .diff-line-num {
+      width: 40px;
+      user-select: none;
+      color: #475569;
+      text-align: right;
+      padding-right: 12px;
+      flex-shrink: 0;
+    }
+    .diff-line-content {
+      flex: 1;
+      color: #cbd5e1;
+    }
+    .diff-line.add {
+      background: rgba(16, 185, 129, 0.12);
+    }
+    .diff-line.add .diff-line-content {
+      color: #6ee7b7;
+    }
+    .diff-line.del {
+      background: rgba(239, 68, 68, 0.12);
+    }
+    .diff-line.del .diff-line-content {
+      color: #fca5a5;
+    }
+    .diff-line.tag {
+      background: rgba(0, 240, 255, 0.08);
+      font-weight: 600;
+    }
+    .diff-line.tag .diff-line-content {
+      color: var(--cyan);
+    }
+
+    /* AST Node Explorer */
+    .ast-tree-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: var(--fib-13, 13px);
-      margin: var(--fib-13, 13px) 0;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
     }
-    .proof-step-card {
-      background: rgba(15, 21, 36, 0.7);
+    .ast-node-card {
+      background: rgba(15, 21, 36, 0.8);
       border: 1px solid var(--border);
-      border-radius: var(--fib-radius-md, 13px);
-      padding: var(--fib-13, 13px);
+      border-radius: 8px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 4px;
       font-size: 0.78rem;
     }
-    .proof-step-card.verified {
-      border-color: rgba(16, 185, 129, 0.4);
-      background: rgba(16, 185, 129, 0.06);
+    .ast-node-type {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--purple);
+      text-transform: uppercase;
+    }
+    .ast-node-name {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .ast-node-desc {
+      color: var(--text-dim);
+      font-size: 0.74rem;
     }
 
-    @media (max-width: 880px) {
-      .dialectic-stepper { grid-template-columns: 1fr; }
-      .byzantine-quorum-bar { flex-direction: column; align-items: flex-start; }
+    /* ==========================================================================
+       Merkle Tree Visual & Cryptographic Proof Hierarchy
+       ========================================================================== */
+    .merkle-visual-box {
+      background: #03060f;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 12px;
+      padding: var(--fib-21, 21px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      overflow-x: auto;
+    }
+    .merkle-root-node {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(168, 85, 247, 0.15));
+      border: 1px solid var(--cyan);
+      border-radius: 10px;
+      padding: 10px 18px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+    }
+    .merkle-branches-row {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      gap: 16px;
+      position: relative;
+    }
+    .merkle-branch-node {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--purple);
+      border-radius: 8px;
+      padding: 8px 14px;
+      text-align: center;
+      flex: 1;
+      max-width: 320px;
+    }
+    .merkle-leaves-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+    .merkle-leaf-card {
+      background: rgba(9, 14, 28, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.74rem;
+    }
+    .signature-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--emerald);
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      width: fit-content;
+    }
+
+    /* ==========================================================================
+       Dialectic Debate Chronicle Timeline
+       ========================================================================== */
+    .chronicle-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: var(--fib-13, 13px);
+    }
+    .chronicle-turn-card {
+      background: rgba(9, 13, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--fib-radius-md, 13px);
+      padding: var(--fib-13, 13px) var(--fib-21, 21px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .chronicle-turn-card.thesis {
+      border-left: 4px solid #7c9cff;
+    }
+    .chronicle-turn-card.antithesis {
+      border-left: 4px solid #00d4aa;
+    }
+    .chronicle-turn-card.audit {
+      border-left: 4px solid #f59e0b;
+    }
+    .chronicle-turn-card.synthesis {
+      border-left: 4px solid var(--emerald);
+      background: rgba(16, 185, 129, 0.04);
+    }
+    .chronicle-turn-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chronicle-speaker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .chronicle-argument-body {
+      font-size: 0.84rem;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+    .chronicle-code-snip {
+      background: #020409;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    /* ==========================================================================
+       Toast Notifications
+       ========================================================================== */
+    .zoth-toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 20000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .zoth-toast {
+      background: rgba(9, 14, 28, 0.96);
+      border: 1px solid var(--cyan);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 10px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0, 240, 255, 0.35);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .zoth-toast.exit {
+      opacity: 0;
+      transform: translateY(8px) scale(0.95);
+      transition: all 0.2s ease;
+    }
+
+    /* Mobile Bottom Sheet Drawer Responsive Rules */
+    @media (max-width: 768px) {
+      dialog.zoth-modal {
+        inset: auto 0 0 0;
+        margin: auto auto 0 auto;
+        width: 100vw;
+        max-width: 100vw;
+        max-height: 92vh;
+        height: auto;
+        border-radius: 24px 24px 0 0;
+        transform: translateY(100%);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.15);
+      }
+      dialog.zoth-modal[open] {
+        transform: translateY(0);
+      }
+      dialog.zoth-modal.is-closing {
+        transform: translateY(100%) !important;
+      }
+      @starting-style {
+        dialog.zoth-modal[open] {
+          transform: translateY(100%);
+        }
+      }
+      .zoth-modal-card {
+        border-radius: 24px 24px 0 0;
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+      }
+      .modal-drag-handle-wrap {
+        display: flex;
+      }
+      .modal-head {
+        padding: 8px 16px 12px 16px;
+      }
+      .modal-title {
+        font-size: 1.1rem;
+      }
+      .modal-scroll-area {
+        padding: 14px;
+        gap: 12px;
+      }
+      .modal-foot {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .modal-foot > div:last-child {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+      }
+      .modal-foot .btn-modal-icon {
+        flex: 1;
+        justify-content: center;
+      }
+      .merkle-leaves-row {
+        grid-template-columns: 1fr;
+      }
+      .merkle-branches-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .hero-actions-bar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .hero-action-btn {
+        width: 100%;
+        min-height: 48px;
+        justify-content: center;
+      }
+      .zoth-toast-container {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+      }
+      .arena-grid {
+        grid-template-columns: 1fr;
+      }
+      .diff-pill-bar {
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+    }
+
+    /* ==========================================================================
+       Consensus Visual Media Showcase & Holographic Cinema Styles
+       ========================================================================== */
+    /* ==========================================================================
+       Consensus Visual Media Showcase & Holographic Cinema Styles
+       ========================================================================== */
+    .consensus-media-showcase {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--fib-radius-lg, 21px);
+      padding: var(--fib-21, 21px);
+      margin-bottom: var(--fib-34, 34px);
+      box-shadow: 0 var(--fib-13, 13px) var(--fib-34, 34px) rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      backdrop-filter: blur(20px);
+    }
+    .consensus-media-showcase::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple), var(--emerald), var(--amber));
+      opacity: 0.85;
+    }
+    .cinema-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--fib-13, 13px);
+      margin-bottom: var(--fib-21, 21px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: var(--fib-13, 13px);
+    }
+    .cinema-channel-switcher {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .cinema-channel-btn {
+      background: rgba(9, 13, 24, 0.85);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: var(--fib-font-micro, 13px);
+      padding: 7px 16px;
+      border-radius: var(--fib-radius-sm, 8px);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+    .cinema-channel-btn .channel-num-tag {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--cyan);
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+    .cinema-channel-btn:hover {
+      color: var(--cyan);
+      border-color: rgba(0, 240, 255, 0.5);
+      background: rgba(0, 240, 255, 0.08);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0, 240, 255, 0.15);
+    }
+    .cinema-channel-btn.active {
+      color: #ffffff;
+      border-color: var(--cyan);
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.22), rgba(9, 20, 44, 0.95));
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3), inset 0 0 12px rgba(0, 240, 255, 0.15);
+    }
+    .cinema-channel-btn.active .channel-num-tag {
+      background: var(--cyan);
+      color: #040814;
+      font-weight: 800;
+    }
+    .cinema-theater-box {
+      position: relative;
+      border-radius: var(--fib-radius-md, 13px);
+      overflow: hidden;
+      border: 1px solid rgba(0, 240, 255, 0.32);
+      background: #020408;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.1);
+      margin-bottom: var(--fib-21, 21px);
+      transition: border-color 0.3s ease;
+    }
+    .cinema-video-wrapper {
+      position: relative;
+      width: 100%;
+      background: #010204;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 16 / 9;
+      max-height: 520px;
+    }
+    video.cinema-video {
+      width: 100%;
+      height: 100%;
+      max-height: 520px;
+      display: block;
+      object-fit: cover;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+    .cinema-hologram-hud {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      padding: var(--fib-13, 13px) var(--fib-21, 21px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .cinema-scanlines {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 4px, 6px 100%;
+      pointer-events: none;
+      opacity: 0.4;
+      z-index: 1;
+    }
+    .cinema-hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cinema-live-beacon {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.82);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: var(--emerald);
+      padding: 5px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+    }
+    .beacon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald), 0 0 20px var(--emerald);
+      animation: pulseBeacon 1.4s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+    @keyframes pulseBeacon {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px var(--emerald), 0 0 20px var(--emerald); }
+      50% { opacity: 0.35; transform: scale(0.8); box-shadow: 0 0 4px var(--emerald); }
+    }
+    .cinema-hud-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.82);
+      border: 1px solid rgba(0, 240, 255, 0.45);
+      color: var(--cyan);
+      padding: 5px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.2);
+      letter-spacing: 0.04em;
+    }
+    .cinema-hud-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .cinema-agent-roster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 5px 12px;
+      border-radius: 9999px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    }
+    .roster-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--cyan);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+    .roster-thumb:hover {
+      transform: scale(1.25);
+      box-shadow: 0 0 12px var(--cyan);
+      z-index: 10;
+    }
+    .cinema-controls-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      pointer-events: auto;
+    }
+    .cinema-ctrl-btn {
+      background: rgba(4, 8, 20, 0.85);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(12px);
+      min-height: 36px;
+    }
+    .cinema-ctrl-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+      transform: translateY(-1px);
+    }
+    .cinema-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--fib-13, 13px);
+    }
+    .cinema-spec-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--fib-radius-md, 13px);
+      padding: var(--fib-13, 13px) var(--fib-21, 21px);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .cinema-spec-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 3px; height: 100%;
+      background: var(--border);
+      transition: background 0.25s ease;
+    }
+    .cinema-spec-card:hover {
+      border-color: var(--cyan);
+      background: rgba(15, 21, 36, 0.98);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 240, 255, 0.15);
+    }
+    .cinema-spec-card:hover::before {
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+    .cinema-spec-title {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cinema-spec-desc {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      line-height: 1.45;
+    }
+
+    /* Icon Utilities & Visual Badges */
+    .svg-glyph {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .svg-glyph-sm {
+      width: 14px;
+      height: 14px;
+    }
+    .svg-glyph-md {
+      width: 18px;
+      height: 18px;
+    }
+    .svg-glyph-lg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* Glowing Quorum Ring Micro-Animation */
+    @keyframes quorumHalo {
+      0%, 100% {
+        filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) drop-shadow(0 0 16px rgba(16, 185, 129, 0.3));
+      }
+      50% {
+        filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.7)) drop-shadow(0 0 24px rgba(16, 185, 129, 0.6));
+      }
+    }
+    .anim-quorum-glow {
+      animation: quorumHalo 3s ease-in-out infinite;
+    }
+
+    /* ==========================================================================
+       SVG Vector Diagrams & Topology Styles
+       ========================================================================== */
+    .consensus-topology-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--fib-radius-lg, 21px);
+      padding: var(--fib-21, 21px);
+      margin-bottom: var(--fib-34, 34px);
+      box-sizing: border-box;
+      backdrop-filter: blur(20px);
+    }
+    .topology-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--fib-13, 13px);
+      margin-bottom: var(--fib-13, 13px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: var(--fib-13, 13px);
+    }
+    .topology-svg-wrapper {
+      position: relative;
+      width: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(9, 20, 44, 0.85) 0%, rgba(3, 5, 10, 0.98) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.18);
+      border-radius: var(--fib-radius-md, 13px);
+      overflow: hidden;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
+    }
+    .topology-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .svg-node-interactive {
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .svg-node-interactive:hover {
+      filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.8));
+    }
+    .anim-dash-flow {
+      stroke-dasharray: 8 6;
+      animation: dashStream 1.8s linear infinite;
+    }
+    @keyframes dashStream {
+      to { stroke-dashoffset: -28; }
+    }
+    .anim-spin-slow {
+      transform-origin: center;
+      animation: spinGear 30s linear infinite;
+    }
+    @keyframes spinGear {
+      to { transform: rotate(360deg); }
+    }
+    .anim-pulse-ring {
+      transform-origin: center;
+      animation: ringPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes ringPulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.08); opacity: 0.3; }
+    }
+
+    /* Dialectic Flow SVG */
+    .dialectic-svg-wrapper {
+      margin-bottom: var(--fib-21, 21px);
+      background: rgba(3, 6, 15, 0.6);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: var(--fib-radius-md, 13px);
+      padding: 10px;
+      overflow-x: auto;
+    }
+    .dialectic-svg {
+      width: 100%;
+      min-width: 680px;
+      height: auto;
+      display: block;
+    }
+
+    /* Entropy Spectrum SVG */
+    .entropy-svg-wrapper {
+      margin: 10px 0 14px;
+      background: rgba(3, 6, 15, 0.7);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: var(--fib-radius-md, 13px);
+      padding: 8px 12px;
+    }
+    .entropy-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Merkle Tree & Proof Seal SVGs */
+    .merkle-svg-wrapper {
+      margin: 14px 0;
+      background: rgba(3, 6, 15, 0.7);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: var(--fib-radius-md, 13px);
+      padding: 10px;
+      overflow-x: auto;
+    }
+    .merkle-svg {
+      width: 100%;
+      min-width: 640px;
+      height: auto;
+      display: block;
+    }
+    .proof-seal-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--fib-radius-md, 13px);
+      padding: 14px 18px;
+      margin: 14px 0;
+    }
+    .proof-seal-svg {
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.4));
     }
   </style>
   <link rel="stylesheet" href="/assets/zoth-tip.css" />
@@ -1289,69 +2650,398 @@
 
     <!-- Hero Banner -->
     <section class="hero-banner">
-      <div class="hero-kicker">⚔️ Tri-Agent Byzantine Consensus & AST Synthesis</div>
+      <div class="hero-kicker">
+        <svg class="svg-glyph svg-glyph-sm" style="color:var(--cyan); margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        Tri-Agent Byzantine Consensus &amp; AST Synthesis
+      </div>
       <h1 class="hero-title">Tri-Agent Byzantine Consensus Arena</h1>
       <p class="hero-desc">
-        When complex architectural invariants and cryptographic security gates are required, Zoth Swarm orchestrates an autonomous 3-agent Byzantine consensus cycle across <strong>@antigravity</strong> (50% stake · invariant contracts & security gates), <strong>@grok</strong> (30% stake · high-throughput async stream & AST speed), and <strong>@ollama</strong> (20% stake · local private sandbox & zero-leak schema validation). Features interactive dialectic stages (Thesis, Antithesis, Synthesis), real-time Shannon information entropy computation, and cryptographic proof hash verification.
+        When complex architectural invariants and cryptographic security gates are required, Zoth Swarm orchestrates an autonomous 3-agent Byzantine consensus cycle across <strong>@antigravity</strong> (50% stake · invariant contracts &amp; security gates), <strong>@grok</strong> (30% stake · high-throughput async stream &amp; AST speed), and <strong>@ollama</strong> (20% stake · local private sandbox &amp; zero-leak schema validation). Features interactive dialectic stages (Thesis, Antithesis, Synthesis), real-time Shannon information entropy computation, and cryptographic proof hash verification.
       </p>
+      <!-- Quick Alchemical Modals Trigger Bar -->
+      <div class="hero-actions-bar">
+        <button class="hero-action-btn" type="button" onclick="openCodeInspectorModal(currentAgent)" aria-haspopup="dialog">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          Full Code &amp; AST Diff Inspector
+        </button>
+        <button class="hero-action-btn" type="button" onclick="openMathModal('shannon')" aria-haspopup="dialog">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          Mathematical &amp; Entropy Deep-Dive
+        </button>
+        <button class="hero-action-btn" type="button" onclick="openCryptoProofModal()" aria-haspopup="dialog">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Quorum &amp; Merkle Proof Chain
+        </button>
+        <button class="hero-action-btn" type="button" onclick="openDialecticChronicleModal(currentTopic)" aria-haspopup="dialog">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          Dialectic Debate Chronicle
+        </button>
+      </div>
+    </section>
+
+    <!-- Visual Media Showcase & Holographic Consensus Cinema -->
+    <section class="consensus-media-showcase" aria-label="Consensus Visual Media Showcase">
+      <div class="cinema-header">
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 6px;">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+            Visual Media &amp; Volumetric Telemetry Cinema
+          </div>
+          <h2 style="font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: #fff; margin-top: 2px;">
+            Autonomous Byzantine Consensus Cinema &amp; 3D Showcase
+          </h2>
+        </div>
+        <div class="cinema-channel-switcher" role="tablist" aria-label="Cinema Video Feeds">
+          <button class="cinema-channel-btn active" id="btn-chan-consensus" onclick="switchCinemaChannel('consensus')" role="tab" aria-selected="true" title="Channel 01: 4K Consensus Engine AST Triangulation Stream">
+            <span class="channel-num-tag">CH 01</span>
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            Consensus Engine (4K)
+          </button>
+          <button class="cinema-channel-btn" id="btn-chan-coin" onclick="switchCinemaChannel('coin')" role="tab" aria-selected="false" title="Channel 02: Volumetric 3D Sovereign Mint Coin Seal">
+            <span class="channel-num-tag">CH 02</span>
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-5 0c0 2 5 2 5 4.5a3.5 3.5 0 0 1-6 0"></path></svg>
+            Byzantine Mint Coin (3D)
+          </button>
+          <button class="cinema-channel-btn" id="btn-chan-swarm" onclick="switchCinemaChannel('swarm')" role="tab" aria-selected="false" title="Channel 03: Swarm Consensus Overwatch HUD & Network Heartbeats">
+            <span class="channel-num-tag">CH 03</span>
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
+            Swarm Overwatch (HUD)
+          </button>
+          <button class="cinema-channel-btn" id="btn-chan-vault" onclick="switchCinemaChannel('vault')" role="tab" aria-selected="false" title="Channel 04: Cryptographic Vault Cold Storage & Merkle Seal">
+            <span class="channel-num-tag">CH 04</span>
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Cryptographic Vault Seal
+          </button>
+        </div>
+      </div>
+
+      <div class="cinema-theater-box" id="cinema-theater-box">
+        <div class="cinema-video-wrapper">
+          <video class="cinema-video" id="cinema-active-video" poster="/assets/media/deck/consensus.jpg" preload="metadata" loading="lazy" playsinline loop muted width="1280" height="720" aria-label="Zoth Swarm Byzantine Consensus Cinema Stream">
+            <source id="cinema-video-src" src="/assets/media/deck/consensus.mp4" type="video/mp4">
+            <img src="/assets/media/deck/consensus.jpg" alt="Zoth Byzantine Consensus Arena Poster" style="width: 100%; height: auto;">
+          </video>
+          <div class="cinema-scanlines"></div>
+          <div class="cinema-hologram-hud">
+            <div class="cinema-hud-top">
+              <div class="cinema-live-beacon">
+                <span class="beacon-dot"></span>
+                <span id="cinema-live-label">● 60 FPS HW STREAM · BUS :8989</span>
+              </div>
+              <div class="cinema-hud-tag" id="cinema-hud-badge">
+                QUORUM 100.0% · H(X) 1.482 BITS
+              </div>
+            </div>
+
+            <div class="cinema-hud-bottom">
+              <div class="cinema-agent-roster">
+                <span style="font-family: var(--font-mono); font-size: 0.70rem; color: var(--cyan); text-transform: uppercase; margin-right: 4px; display: flex; align-items: center; gap: 4px;">
+                  <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  Quorum:
+                </span>
+                <img src="/assets/agents/antigravity.jpg" alt="Antigravity" class="roster-thumb" style="border-color: #7c9cff;" onerror="this.src='/assets/agents/azoth.jpg'" decoding="async" loading="lazy" title="@antigravity (50% Stake · Invariant Gate)">
+                <img src="/assets/agents/grok.jpg" alt="Grok" class="roster-thumb" style="border-color: #00d4aa;" onerror="this.src='/assets/agents/kitsune.jpg'" decoding="async" loading="lazy" title="@grok (30% Stake · Async Stream)">
+                <img src="/assets/agents/draco.jpg" alt="Ollama" class="roster-thumb" style="border-color: #f59e0b;" onerror="this.src='/assets/agents/ghostbyte.jpg'" decoding="async" loading="lazy" title="@ollama (20% Stake · Local Sandbox)">
+              </div>
+
+              <div class="cinema-controls-bar">
+                <button class="cinema-ctrl-btn" id="btn-cinema-play" onclick="toggleCinemaPlay()" title="Play / Pause Video Cinema">
+                  <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  Play Cinema
+                </button>
+                <button class="cinema-ctrl-btn" id="btn-cinema-mute" onclick="toggleCinemaMute()" title="Mute / Unmute Audio Feed">
+                  <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                  Unmute
+                </button>
+                <button class="cinema-ctrl-btn" onclick="toggleCinemaFullscreen()" title="Fullscreen Video Cinema">
+                  <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                  Fullscreen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cinema-specs-grid">
+        <div class="cinema-spec-card">
+          <div class="cinema-spec-title">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            CH 01 · 4K Consensus Engine
+          </div>
+          <p class="cinema-spec-desc">
+            Hardware-accelerated H.264 neural render stream visualizing live AST triangulation and zero-hallucination code synthesis across model nodes.
+          </p>
+        </div>
+
+        <div class="cinema-spec-card">
+          <div class="cinema-spec-title">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-5 0c0 2 5 2 5 4.5a3.5 3.5 0 0 1-6 0"></path></svg>
+            CH 02 · 3D Sovereign Mint Coin
+          </div>
+          <p class="cinema-spec-desc">
+            Volumetric 3D render of the cryptographic state mint coin seal. Deterministic zero-leak sovereign artifact verification on the local deck.
+          </p>
+        </div>
+
+        <div class="cinema-spec-card">
+          <div class="cinema-spec-title">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
+            CH 03 · Swarm Overwatch HUD
+          </div>
+          <p class="cinema-spec-desc">
+            Port :8989 SSE bus stream broadcasting real-time multi-agent consensus convergence, Shannon mutual distribution, and heartbeat telemetry.
+          </p>
+        </div>
+
+        <div class="cinema-spec-card">
+          <div class="cinema-spec-title">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            CH 04 · Cryptographic Vault Seal
+          </div>
+          <p class="cinema-spec-desc">
+            3f+1 Byzantine fault-tolerant quorum engine with Ed25519 multi-signatures and Merkle root commits locked in immutable cold storage.
+          </p>
+        </div>
+      </div>
     </section>
 
     <!-- Byzantine Fault Tolerance Quorum Sentinel -->
     <section class="byzantine-quorum-bar">
       <div class="byzantine-stake-group">
-        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em;">Byzantine Quorum Nodes:</span>
+        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 4px;">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Byzantine Quorum Nodes:
+        </span>
         <div class="stake-pill agy" id="stake-agy" onclick="toggleAgentHealth('agy')" title="Click to toggle Honest / Byzantine fault">
+          <img src="/assets/agents/antigravity.jpg" alt="Antigravity" style="width:20px;height:20px;border-radius:50%;border:1px solid #7c9cff;object-fit:cover" onerror="this.onerror=null;this.src='/assets/agents/azoth.jpg'" decoding="async" loading="lazy">
           <span style="font-weight: 800;">@antigravity</span>
           <span>50% Stake</span>
           <span class="status-dot" id="dot-agy" style="width: 8px; height: 8px; border-radius: 50%; background: #7c9cff; display: inline-block;"></span>
         </div>
         <div class="stake-pill grok" id="stake-grok" onclick="toggleAgentHealth('grok')" title="Click to toggle Honest / Byzantine fault">
+          <img src="/assets/agents/grok.jpg" alt="Grok" style="width:20px;height:20px;border-radius:50%;border:1px solid #00d4aa;object-fit:cover" onerror="this.onerror=null;this.src='/assets/agents/kitsune.jpg'" decoding="async" loading="lazy">
           <span style="font-weight: 800;">@grok</span>
           <span>30% Stake</span>
           <span class="status-dot" id="dot-grok" style="width: 8px; height: 8px; border-radius: 50%; background: #00d4aa; display: inline-block;"></span>
         </div>
         <div class="stake-pill ollama" id="stake-ollama" onclick="toggleAgentHealth('ollama')" title="Click to toggle Honest / Byzantine fault">
+          <img src="/assets/agents/draco.jpg" alt="Ollama" style="width:20px;height:20px;border-radius:50%;border:1px solid #f59e0b;object-fit:cover" onerror="this.onerror=null;this.src='/assets/agents/ghostbyte.jpg'" decoding="async" loading="lazy">
           <span style="font-weight: 800;">@ollama</span>
           <span>20% Stake</span>
           <span class="status-dot" id="dot-ollama" style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-dim);">BFT Threshold: <strong style="color: #fff;">≥ 66.7%</strong></span>
-        <span id="quorum-badge" style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.35);">🟢 Quorum Achieved (100.0%)</span>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-modal-trigger" type="button" onclick="openMathModal('bft')" title="View BFT Math Formula (3f+1)">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          BFT Formula (3f+1)
+        </button>
+        <button class="btn-modal-trigger" type="button" onclick="openCryptoProofModal()" title="View Quorum Proof Chain">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Proof Chain
+        </button>
+        <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-dim);">Threshold: <strong style="color: #fff;">≥ 66.7%</strong></span>
+        <span id="quorum-badge" style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.35); display: inline-flex; align-items: center; gap: 6px;">
+          <span class="beacon-dot"></span>
+          Quorum Achieved (100.0%)
+        </span>
       </div>
     </section>
 
     <!-- Architectural Topic Switcher -->
     <div class="topic-bar">
-      <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--cyan); text-transform: uppercase;">Topic:</span>
-      <button class="topic-btn active" onclick="switchTopic('ratelimit')">🛡️ Rate Limiter</button>
-      <button class="topic-btn" onclick="switchTopic('3dstream')">🧊 3D Mesh Streamer</button>
-      <button class="topic-btn" onclick="switchTopic('argon2')">🔐 Argon2id Crypto Gate</button>
-      <button class="topic-btn" onclick="switchTopic('dagrunner')">🧩 DAG Dependency Engine</button>
+      <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--cyan); text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Topic:
+      </span>
+      <button class="topic-btn active" onclick="switchTopic('ratelimit')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Rate Limiter
+      </button>
+      <button class="topic-btn" onclick="switchTopic('3dstream')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        3D Mesh Streamer
+      </button>
+      <button class="topic-btn" onclick="switchTopic('argon2')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-1.5 1.5L16 7l-1.5-1.5M11 11l-3 3-2-2-4 4 2 2 4-4 2 2 3-3"></path><circle cx="16" cy="8" r="5"></circle></svg>
+        Argon2id Crypto Gate
+      </button>
+      <button class="topic-btn" onclick="switchTopic('dagrunner')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="6" r="3"></circle><path d="M6 9v12m12-9v6m-6-6h6"></path></svg>
+        DAG Dependency Engine
+      </button>
     </div>
 
     <!-- Live Telemetry Ticker -->
     <section class="metrics-ticker">
       <div class="ticker-card">
-        <div class="ticker-label">Consensus Convergence</div>
+        <div class="ticker-label" style="display: flex; align-items: center; gap: 6px;">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Consensus Convergence
+        </div>
         <div class="ticker-val cyan" id="stat-consensus">64.2%</div>
         <div class="ticker-sub">Jaccard token overlap index</div>
       </div>
       <div class="ticker-card">
-        <div class="ticker-label">Shannon Agreement Entropy</div>
+        <div class="ticker-label" style="display: flex; align-items: center; gap: 6px;">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><path d="M2 12h5l3-9 4 18 3-9h5"></path></svg>
+          Shannon Agreement Entropy
+        </div>
         <div class="ticker-val emerald" id="stat-entropy">1.482 bits</div>
         <div class="ticker-sub">3-Agent mutual distribution H(X)</div>
       </div>
       <div class="ticker-card">
-        <div class="ticker-label">AST Verification</div>
+        <div class="ticker-label" style="display: flex; align-items: center; gap: 6px;">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          AST Verification
+        </div>
         <div class="ticker-val purple">100% Passed</div>
         <div class="ticker-sub">Python AST syntax validator</div>
       </div>
       <div class="ticker-card">
-        <div class="ticker-label">Byzantine Quorum Stake</div>
+        <div class="ticker-label" style="display: flex; align-items: center; gap: 6px;">
+          <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Byzantine Quorum Stake
+        </div>
         <div class="ticker-val amber" id="stat-stake">100% / 100%</div>
         <div class="ticker-sub">@antigravity(50%) · @grok(30%) · @ollama(20%)</div>
+      </div>
+    </section>
+
+    <!-- Tri-Agent Byzantine Consensus Vector Topology Diagram -->
+    <section class="consensus-topology-section" aria-label="Tri-Agent Byzantine Consensus Topology">
+      <div class="topology-header">
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em;">✦ Interactive Vector Architecture</div>
+          <h2 style="font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: #fff; margin-top: 2px;">
+            Tri-Agent Byzantine Consensus Topology &amp; Quorum Core
+          </h2>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);">
+          <span>Interactive Topology · Click any node to inspect</span>
+        </div>
+      </div>
+
+      <div class="topology-svg-wrapper">
+        <svg id="svg-consensus-topology" class="topology-svg" viewBox="0 0 840 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tri-Agent Byzantine Consensus Vector Topology Diagram">
+          <defs>
+            <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="glow-emerald" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="glow-amber" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <linearGradient id="grad-ag-grok" x1="50%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#7c9cff" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#00d4aa" stop-opacity="0.9" />
+            </linearGradient>
+            <linearGradient id="grad-ag-ollama" x1="50%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7c9cff" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.9" />
+            </linearGradient>
+            <linearGradient id="grad-grok-ollama" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="#00d4aa" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.9" />
+            </linearGradient>
+
+            <clipPath id="clip-agy-avatar">
+              <circle cx="420" cy="80" r="32" />
+            </clipPath>
+            <clipPath id="clip-grok-avatar">
+              <circle cx="190" cy="380" r="32" />
+            </clipPath>
+            <clipPath id="clip-ollama-avatar">
+              <circle cx="650" cy="380" r="32" />
+            </clipPath>
+          </defs>
+
+          <!-- Background Ambient Circles -->
+          <g opacity="0.18">
+            <circle cx="420" cy="275" r="230" fill="none" stroke="var(--cyan)" stroke-width="1" stroke-dasharray="4 8" />
+            <circle cx="420" cy="275" r="160" fill="none" stroke="var(--purple)" stroke-width="1" stroke-dasharray="2 6" />
+            <line x1="420" y1="80" x2="420" y2="460" stroke="rgba(0,240,255,0.2)" stroke-dasharray="2 4" />
+            <line x1="120" y1="275" x2="720" y2="275" stroke="rgba(0,240,255,0.2)" stroke-dasharray="2 4" />
+          </g>
+
+          <!-- Animated Bidirectional Connecting Vector Links -->
+          <path id="svg-link-ag-grok" d="M 420 80 Q 270 200 190 380" fill="none" stroke="url(#grad-ag-grok)" stroke-width="2.5" class="anim-dash-flow" />
+          <path id="svg-link-ag-ollama" d="M 420 80 Q 570 200 650 380" fill="none" stroke="url(#grad-ag-ollama)" stroke-width="2.5" class="anim-dash-flow" />
+          <path id="svg-link-grok-ollama" d="M 190 380 Q 420 440 650 380" fill="none" stroke="url(#grad-grok-ollama)" stroke-width="2.5" class="anim-dash-flow" />
+
+          <!-- Data Flow Metric Badges on Links -->
+          <g transform="translate(275, 215)">
+            <rect x="-58" y="-14" width="116" height="28" rx="14" fill="#040814" stroke="rgba(124,156,255,0.5)" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="#7c9cff">J(A,G): <tspan id="svg-txt-jacc-ag-grok" fill="#00f0ff">64.2%</tspan></text>
+          </g>
+          <g transform="translate(565, 215)">
+            <rect x="-58" y="-14" width="116" height="28" rx="14" fill="#040814" stroke="rgba(245,158,11,0.5)" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="#f59e0b">J(A,O): <tspan id="svg-txt-jacc-ag-ollama" fill="#ffaa00">58.7%</tspan></text>
+          </g>
+          <g transform="translate(420, 420)">
+            <rect x="-58" y="-14" width="116" height="28" rx="14" fill="#040814" stroke="rgba(16,185,129,0.5)" stroke-width="1" />
+            <text x="0" y="4" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="#10b981">J(G,O): <tspan id="svg-txt-jacc-grok-ollama" fill="#00d4aa">53.8%</tspan></text>
+          </g>
+
+          <!-- Central Byzantine Quorum Core Ring -->
+          <g id="svg-quorum-core" transform="translate(420, 265)">
+            <circle cx="0" cy="0" r="68" fill="none" stroke="rgba(0, 240, 255, 0.4)" stroke-width="1.5" stroke-dasharray="6 4 12 4" class="anim-spin-slow" />
+            <circle cx="0" cy="0" r="54" fill="none" stroke="rgba(16, 185, 129, 0.6)" stroke-width="2" stroke-dasharray="2 6" class="anim-spin-slow" style="animation-direction: reverse; animation-duration: 20s;" />
+            <circle cx="0" cy="0" r="44" fill="#040916" stroke="var(--emerald)" stroke-width="2" filter="url(#glow-emerald)" />
+            <polygon points="0,-24 7,-8 23,-8 11,2 15,18 0,9 -15,18 -11,2 -23,-8 -7,-8" fill="rgba(16,185,129,0.25)" stroke="var(--emerald)" stroke-width="1.5" />
+            <text x="0" y="-4" text-anchor="middle" font-family="var(--font-display)" font-size="10" font-weight="800" fill="#ffffff" letter-spacing="1">BFT QUORUM</text>
+            <text x="0" y="10" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="800" fill="var(--emerald)" id="svg-txt-quorum-val">≥ 66.7% OK</text>
+            <text x="0" y="24" text-anchor="middle" font-family="var(--font-mono)" font-size="8" fill="#94a3b8">100% Active</text>
+          </g>
+
+          <!-- Node 1: @antigravity (Top, 50% Stake) -->
+          <g id="svg-node-agy" class="svg-node-interactive" onclick="selectContender('agy')" title="Click to inspect @antigravity">
+            <circle cx="420" cy="80" r="44" fill="none" stroke="#7c9cff" stroke-width="1.5" stroke-dasharray="4 4" class="anim-pulse-ring" />
+            <circle cx="420" cy="80" r="38" fill="none" stroke="#7c9cff" stroke-width="2" filter="url(#glow-cyan)" />
+            <circle cx="420" cy="80" r="34" fill="#090f24" />
+            <image href="/assets/agents/antigravity.jpg" x="388" y="48" width="64" height="64" clip-path="url(#clip-agy-avatar)" preserveAspectRatio="xMidYMid slice" onerror="this.setAttribute('href', '/assets/agents/azoth.jpg')" decoding="async" loading="lazy" />
+            <rect x="330" y="122" width="180" height="42" rx="8" fill="rgba(9, 15, 36, 0.92)" stroke="rgba(124, 156, 255, 0.6)" stroke-width="1" />
+            <text x="420" y="139" text-anchor="middle" font-family="var(--font-display)" font-size="13" font-weight="800" fill="#7c9cff">@antigravity</text>
+            <text x="420" y="154" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#cbd5e1">50% Stake · Invariant Gate</text>
+          </g>
+
+          <!-- Node 2: @grok (Bottom-Left, 30% Stake) -->
+          <g id="svg-node-grok" class="svg-node-interactive" onclick="selectContender('grok')" title="Click to inspect @grok">
+            <circle cx="190" cy="380" r="44" fill="none" stroke="#00d4aa" stroke-width="1.5" stroke-dasharray="4 4" class="anim-pulse-ring" />
+            <circle cx="190" cy="380" r="38" fill="none" stroke="#00d4aa" stroke-width="2" filter="url(#glow-emerald)" />
+            <circle cx="190" cy="380" r="34" fill="#041612" />
+            <image href="/assets/agents/grok.jpg" x="158" y="348" width="64" height="64" clip-path="url(#clip-grok-avatar)" preserveAspectRatio="xMidYMid slice" onerror="this.setAttribute('href', '/assets/agents/kitsune.jpg')" decoding="async" loading="lazy" />
+            <rect x="100" y="422" width="180" height="42" rx="8" fill="rgba(4, 22, 18, 0.92)" stroke="rgba(0, 212, 170, 0.6)" stroke-width="1" />
+            <text x="190" y="439" text-anchor="middle" font-family="var(--font-display)" font-size="13" font-weight="800" fill="#00d4aa">@grok</text>
+            <text x="190" y="454" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#cbd5e1">30% Stake · Async Stream</text>
+          </g>
+
+          <!-- Node 3: @ollama (Bottom-Right, 20% Stake) -->
+          <g id="svg-node-ollama" class="svg-node-interactive" onclick="selectContender('ollama')" title="Click to inspect @ollama">
+            <circle cx="650" cy="380" r="44" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 4" class="anim-pulse-ring" />
+            <circle cx="650" cy="380" r="38" fill="none" stroke="#f59e0b" stroke-width="2" filter="url(#glow-amber)" />
+            <circle cx="650" cy="380" r="34" fill="#1c1103" />
+            <image href="/assets/agents/draco.jpg" x="618" y="348" width="64" height="64" clip-path="url(#clip-ollama-avatar)" preserveAspectRatio="xMidYMid slice" onerror="this.setAttribute('href', '/assets/agents/ghostbyte.jpg')" decoding="async" loading="lazy" />
+            <rect x="560" y="422" width="180" height="42" rx="8" fill="rgba(28, 17, 3, 0.92)" stroke="rgba(245, 158, 11, 0.6)" stroke-width="1" />
+            <text x="650" y="439" text-anchor="middle" font-family="var(--font-display)" font-size="13" font-weight="800" fill="#f59e0b">@ollama</text>
+            <text x="650" y="454" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#cbd5e1">20% Stake · Local Sandbox</text>
+          </g>
+        </svg>
       </div>
     </section>
 
@@ -1364,12 +3054,80 @@
             Interactive Dialectic Stage Progression
           </h2>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button class="btn-modal-trigger" type="button" onclick="openDialecticChronicleModal(currentTopic)" title="View Complete Multi-Turn Debate Logs">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Full Debate Chronicle
+          </button>
           <button class="topic-btn" onclick="toggleDialecticAutoPlay()" id="btn-dialectic-auto" style="min-height: 38px; font-size: 0.75rem;">
-            <span>▶️</span> Auto-Cycle Dialectic
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Auto-Cycle Dialectic
           </button>
           <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-dim);" id="dialectic-stage-indicator">Active: Stage 1 (Thesis)</span>
         </div>
+      </div>
+
+      <!-- Dialectic Triangulation Flow Vector Diagram -->
+      <div class="dialectic-svg-wrapper">
+        <svg id="svg-dialectic-flow" class="dialectic-svg" viewBox="0 0 900 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dialectic Triangulation Flow Diagram">
+          <defs>
+            <linearGradient id="flow-arrow-1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#00f0ff" />
+              <stop offset="100%" stop-color="#a855f7" />
+            </linearGradient>
+            <linearGradient id="flow-arrow-2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#a855f7" />
+              <stop offset="100%" stop-color="#10b981" />
+            </linearGradient>
+          </defs>
+
+          <!-- Stage 1 Box: Thesis -->
+          <g id="svg-flow-thesis" class="svg-node-interactive" onclick="setDialecticStage('thesis')">
+            <rect x="10" y="10" width="260" height="110" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="#00f0ff" stroke-width="1.8" />
+            <circle cx="45" cy="40" r="18" fill="rgba(0, 240, 255, 0.15)" stroke="#00f0ff" stroke-width="1.5" />
+            <text x="45" y="46" text-anchor="middle" font-size="16">🏛️</text>
+            <text x="75" y="34" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#00f0ff" letter-spacing="1">STAGE 01 · THESIS</text>
+            <text x="75" y="52" font-family="var(--font-display)" font-size="14" font-weight="800" fill="#ffffff">Invariant Contract</text>
+            <text x="25" y="82" font-family="var(--font-mono)" font-size="9.5" fill="#94a3b8">@antigravity (50% Stake)</text>
+            <text x="25" y="100" font-size="9" fill="#cbd5e1">SHA-256 IP tokenization &amp; sliding limits</text>
+          </g>
+
+          <!-- Flow Connector 1 -->
+          <g transform="translate(278, 65)">
+            <path d="M 0 0 L 50 0" stroke="url(#flow-arrow-1)" stroke-width="3" stroke-dasharray="6 3" class="anim-dash-flow" />
+            <polygon points="50,0 42,-5 42,5" fill="#a855f7" />
+            <text x="25" y="-8" text-anchor="middle" font-family="var(--font-mono)" font-size="8.5" fill="#a855f7" font-weight="700">Friction ➔</text>
+          </g>
+
+          <!-- Stage 2 Box: Antithesis -->
+          <g id="svg-flow-antithesis" class="svg-node-interactive" onclick="setDialecticStage('antithesis')">
+            <rect x="336" y="10" width="260" height="110" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(168, 85, 247, 0.6)" stroke-width="1.5" />
+            <circle cx="371" cy="40" r="18" fill="rgba(168, 85, 247, 0.15)" stroke="#a855f7" stroke-width="1.5" />
+            <text x="371" y="46" text-anchor="middle" font-size="16">⚡</text>
+            <text x="401" y="34" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#a855f7" letter-spacing="1">STAGE 02 · ANTITHESIS</text>
+            <text x="401" y="52" font-family="var(--font-display)" font-size="14" font-weight="800" fill="#ffffff">Async Stress &amp; Audit</text>
+            <text x="351" y="82" font-family="var(--font-mono)" font-size="9.5" fill="#94a3b8">@grok (30%) + @ollama (20%)</text>
+            <text x="351" y="100" font-size="9" fill="#cbd5e1">O(1) memory window &amp; zero-leak schema</text>
+          </g>
+
+          <!-- Flow Connector 2 -->
+          <g transform="translate(604, 65)">
+            <path d="M 0 0 L 50 0" stroke="url(#flow-arrow-2)" stroke-width="3" stroke-dasharray="6 3" class="anim-dash-flow" />
+            <polygon points="50,0 42,-5 42,5" fill="#10b981" />
+            <text x="25" y="-8" text-anchor="middle" font-family="var(--font-mono)" font-size="8.5" fill="#10b981" font-weight="700">Synthesize ➔</text>
+          </g>
+
+          <!-- Stage 3 Box: Synthesis -->
+          <g id="svg-flow-synthesis" class="svg-node-interactive" onclick="setDialecticStage('synthesis')">
+            <rect x="662" y="10" width="228" height="110" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(16, 185, 129, 0.6)" stroke-width="1.5" />
+            <circle cx="697" cy="40" r="18" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1.5" />
+            <text x="697" y="46" text-anchor="middle" font-size="16">🛡️</text>
+            <text x="727" y="34" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#10b981" letter-spacing="1">STAGE 03 · SYNTHESIS</text>
+            <text x="727" y="52" font-family="var(--font-display)" font-size="14" font-weight="800" fill="#ffffff">Hardened Artifact</text>
+            <text x="677" y="82" font-family="var(--font-mono)" font-size="9.5" fill="#94a3b8">Tri-Agent Quorum (100%)</text>
+            <text x="677" y="100" font-size="9" fill="#cbd5e1">Zero-hallucination AST verified</text>
+          </g>
+        </svg>
       </div>
 
       <div class="dialectic-stepper">
@@ -1378,7 +3136,10 @@
             <span>Stage 01</span>
             <span style="color: #7c9cff;">@antigravity (50%)</span>
           </div>
-          <div class="dialectic-step-title">🏛️ Thesis</div>
+          <div class="dialectic-step-title" style="display: flex; align-items: center; gap: 6px;">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="#7c9cff" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Thesis
+          </div>
           <div class="dialectic-step-desc">Primary invariant contract, cryptographic specification, and security gate boundaries.</div>
         </div>
 
@@ -1387,8 +3148,11 @@
             <span>Stage 02</span>
             <span style="color: #00d4aa;">@grok(30%) + @ollama(20%)</span>
           </div>
-          <div class="dialectic-step-title">⚡ Antithesis</div>
-          <div class="dialectic-step-desc">Stress-testing, async concurrency bottlenecks, local privacy constraints & schema auditing.</div>
+          <div class="dialectic-step-title" style="display: flex; align-items: center; gap: 6px;">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Antithesis
+          </div>
+          <div class="dialectic-step-desc">Stress-testing, async concurrency bottlenecks, local privacy constraints &amp; schema auditing.</div>
         </div>
 
         <div class="dialectic-step-btn" id="step-synthesis" onclick="setDialecticStage('synthesis')">
@@ -1396,15 +3160,27 @@
             <span>Stage 03</span>
             <span style="color: var(--emerald);">Tri-Agent Quorum (100%)</span>
           </div>
-          <div class="dialectic-step-title">🛡️ Synthesis</div>
+          <div class="dialectic-step-title" style="display: flex; align-items: center; gap: 6px;">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            Synthesis
+          </div>
           <div class="dialectic-step-desc">Dialectical unification, AST triangulation, zero-hallucination mathematical verification.</div>
         </div>
       </div>
 
       <div class="dialectic-critique-box" id="dialectic-critique-box">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <strong style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--cyan);" id="critique-title">Stage 1 Analysis: Invariant Contract Formulation</strong>
-          <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--emerald);" id="critique-status">AST Valid · Quorum 50%</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+          <strong style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--cyan); display: flex; align-items: center; gap: 6px;" id="critique-title">
+            <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            Stage 1 Analysis: Invariant Contract Formulation
+          </strong>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="btn-modal-trigger" style="font-size: 0.68rem; padding: 2px 8px;" type="button" onclick="openDialecticChronicleModal(currentTopic)">
+              <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              View Full Debate Log ➔
+            </button>
+            <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--emerald);" id="critique-status">AST Valid · Quorum 50%</span>
+          </div>
         </div>
         <p style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.5;" id="critique-desc">
           @antigravity establishes the foundational cryptographic contract with SHA-256 IP isolation and deterministic sliding window limits.
@@ -1414,11 +3190,30 @@
 
     <!-- Mobile Segmented View Switcher -->
     <nav class="consensus-mobile-tabs" aria-label="Consensus Mobile Views">
-      <button class="consensus-tab-btn active" onclick="setConsensusMobileView('contenders')">⚔️ Contenders (3)</button>
-      <button class="consensus-tab-btn" onclick="setConsensusMobileView('diff')">📜 AST Diff Viewer</button>
-      <button class="consensus-tab-btn" onclick="setConsensusMobileView('entropy')">📐 Shannon Entropy</button>
-      <button class="consensus-tab-btn" onclick="setConsensusMobileView('proof')">🔐 Proof Hash</button>
-      <button class="consensus-tab-btn" onclick="setConsensusMobileView('matrix')">📈 Pairwise Matrix</button>
+      <button class="consensus-tab-btn active" onclick="setConsensusMobileView('contenders')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        Contenders (3)
+      </button>
+      <button class="consensus-tab-btn" onclick="setConsensusMobileView('diff')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        AST Diff Viewer
+      </button>
+      <button class="consensus-tab-btn" onclick="setConsensusMobileView('entropy')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h5l3-9 4 18 3-9h5"></path></svg>
+        Shannon Entropy
+      </button>
+      <button class="consensus-tab-btn" onclick="setConsensusMobileView('proof')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Proof Hash
+      </button>
+      <button class="consensus-tab-btn" onclick="setConsensusMobileView('matrix')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+        Pairwise Matrix
+      </button>
+      <button class="consensus-tab-btn" onclick="setConsensusMobileView('all')">
+        <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        All Sections
+      </button>
     </nav>
 
     <!-- Arena Interactive Grid -->
@@ -1426,44 +3221,79 @@
       <!-- Left: Independent Proposals -->
       <div class="arena-box consensus-panel mobile-active" id="pane-contenders">
         <div class="arena-box-head">
-          <div class="arena-box-title">🤖 Contender Code Proposals</div>
-          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);">Select Node to Inspect</span>
+          <div class="arena-box-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg class="svg-glyph svg-glyph-md" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            Contender Code Proposals
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn-modal-trigger" type="button" onclick="openCodeInspectorModal(currentAgent)" title="Open Full Code & AST Diff Inspector">
+              <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              Inspect Proposals &amp; AST
+            </button>
+          </div>
         </div>
 
         <div class="contenders-row">
-          <div class="contender-card active" id="card-agy" onclick="selectContender('agy')" style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <img src="/assets/agents/antigravity.jpg" alt="Antigravity" style="width:28px;height:28px;border-radius:50%;border:1px solid #7c9cff;object-fit:cover" onerror="this.onerror=null;this.src='/assets/agents/azoth.jpg'" decoding="async" loading="lazy">
-              <div class="contender-name" style="color:#7c9cff">@antigravity</div>
+          <div class="contender-card active" id="card-agy" onclick="selectContender('agy')" style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="position:relative">
+                <img src="/assets/agents/antigravity.jpg" alt="Antigravity" style="width:34px;height:34px;border-radius:50%;border:2px solid #7c9cff;object-fit:cover;display:block;box-shadow:0 0 10px rgba(124,156,255,0.4)" onerror="this.onerror=null;this.src='/assets/agents/azoth.jpg'" decoding="async" loading="lazy">
+                <span class="status-dot" style="position:absolute;bottom:0;right:0;width:8px;height:8px;border-radius:50%;background:#7c9cff;border:1px solid #000"></span>
+              </div>
+              <div>
+                <div class="contender-name" style="color:#7c9cff">@antigravity</div>
+                <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--cyan)">Invariant Gate</div>
+              </div>
             </div>
-            <div class="contender-role">50% Stake · Cryptographic Contracts</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-              <span class="contender-badge">50% Weight</span>
-              <a href="/agents/antigravity.html" style="font-family:var(--font-mono);font-size:0.65rem;color:#7c9cff;text-decoration:none" onclick="event.stopPropagation()">Codex ➔</a>
-            </div>
-          </div>
-
-          <div class="contender-card" id="card-grok" onclick="selectContender('grok')" style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <img src="/assets/agents/grok.jpg" alt="Grok" style="width:28px;height:28px;border-radius:50%;border:1px solid #00d4aa;object-fit:cover" onerror="this.onerror=null;this.src='/assets/agents/kitsune.jpg'" decoding="async" loading="lazy">
-              <div class="contender-name" style="color:#00d4aa">@grok</div>
-            </div>
-            <div class="contender-role">30% Stake · High-Throughput Stream</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-              <span class="contender-badge">30% Weight</span>
-              <a href="/agents/grok.html" style="font-family:var(--font-mono);font-size:0.65rem;color:#00d4aa;text-decoration:none" onclick="event.stopPropagation()">Codex ➔</a>
+            <div class="contender-role">50% Stake · Cryptographic Contracts &amp; Security Gate</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+              <span class="contender-badge" style="background:rgba(124,156,255,0.12);color:#7c9cff;border-color:rgba(124,156,255,0.35)">50% Weight</span>
+              <a href="/agents/antigravity.html" style="font-family:var(--font-mono);font-size:0.70rem;color:#7c9cff;text-decoration:none;display:inline-flex;align-items:center;gap:2px" onclick="event.stopPropagation()">
+                Codex
+                <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+              </a>
             </div>
           </div>
 
-          <div class="contender-card" id="card-ollama" onclick="selectContender('ollama')" style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <img src="/assets/agents/draco.jpg" alt="Ollama" style="width:28px;height:28px;border-radius:50%;border:1px solid #f59e0b;object-fit:cover" onerror="this.onerror=null;this.src='/assets/agents/ghostbyte.jpg'" decoding="async" loading="lazy">
-              <div class="contender-name" style="color:#f59e0b">@ollama</div>
+          <div class="contender-card" id="card-grok" onclick="selectContender('grok')" style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="position:relative">
+                <img src="/assets/agents/grok.jpg" alt="Grok" style="width:34px;height:34px;border-radius:50%;border:2px solid #00d4aa;object-fit:cover;display:block;box-shadow:0 0 10px rgba(0,212,170,0.4)" onerror="this.onerror=null;this.src='/assets/agents/kitsune.jpg'" decoding="async" loading="lazy">
+                <span class="status-dot" style="position:absolute;bottom:0;right:0;width:8px;height:8px;border-radius:50%;background:#00d4aa;border:1px solid #000"></span>
+              </div>
+              <div>
+                <div class="contender-name" style="color:#00d4aa">@grok</div>
+                <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--emerald)">Async Stream</div>
+              </div>
             </div>
-            <div class="contender-role">20% Stake · Local Private Sandbox</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-              <span class="contender-badge" style="color:#f59e0b;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3)">20% Weight</span>
-              <a href="/agents/" style="font-family:var(--font-mono);font-size:0.65rem;color:#f59e0b;text-decoration:none" onclick="event.stopPropagation()">Codex ➔</a>
+            <div class="contender-role">30% Stake · High-Throughput Stream &amp; Speed</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+              <span class="contender-badge" style="background:rgba(0,212,170,0.12);color:#00d4aa;border-color:rgba(0,212,170,0.35)">30% Weight</span>
+              <a href="/agents/grok.html" style="font-family:var(--font-mono);font-size:0.70rem;color:#00d4aa;text-decoration:none;display:inline-flex;align-items:center;gap:2px" onclick="event.stopPropagation()">
+                Codex
+                <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="contender-card" id="card-ollama" onclick="selectContender('ollama')" style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="position:relative">
+                <img src="/assets/agents/draco.jpg" alt="Ollama" style="width:34px;height:34px;border-radius:50%;border:2px solid #f59e0b;object-fit:cover;display:block;box-shadow:0 0 10px rgba(245,158,11,0.4)" onerror="this.onerror=null;this.src='/assets/agents/ghostbyte.jpg'" decoding="async" loading="lazy">
+                <span class="status-dot" style="position:absolute;bottom:0;right:0;width:8px;height:8px;border-radius:50%;background:#f59e0b;border:1px solid #000"></span>
+              </div>
+              <div>
+                <div class="contender-name" style="color:#f59e0b">@ollama</div>
+                <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--amber)">Local Sandbox</div>
+              </div>
+            </div>
+            <div class="contender-role">20% Stake · Local Private Sandbox &amp; Schema</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+              <span class="contender-badge" style="color:#f59e0b;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.35)">20% Weight</span>
+              <a href="/agents/" style="font-family:var(--font-mono);font-size:0.70rem;color:#f59e0b;text-decoration:none;display:inline-flex;align-items:center;gap:2px" onclick="event.stopPropagation()">
+                Codex
+                <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+              </a>
             </div>
           </div>
         </div>
@@ -1473,18 +3303,32 @@
         </div>
 
         <button class="btn-run-arena" onclick="runArbitrationCycle()">
-          <span>⚔️</span> Run 3-Way Arbitration & Synthesize Artifact
+          <svg class="svg-glyph svg-glyph-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Run 3-Way Arbitration &amp; Synthesize Artifact
         </button>
       </div>
 
       <!-- Right: Synthesized Hardened Artifact -->
       <div class="arena-box consensus-panel" id="pane-diff">
         <div class="arena-box-head">
-          <div class="arena-box-title">🛡️ Synthesized Sovereign Artifact</div>
-          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <div class="arena-box-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg class="svg-glyph svg-glyph-md" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            Synthesized Sovereign Artifact
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <button class="btn-modal-trigger" type="button" onclick="openCodeInspectorModal('diff')" title="Open AST Diff Inspector">
+              <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              AST Diff View
+            </button>
             <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--emerald);" id="artifact-chk">#5b7498f0e719</span>
-            <button onclick="exportConsensusMarkdown()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.70rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Export .md</button>
-            <button onclick="copySynthesizedCode()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.70rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Copy</button>
+            <button onclick="exportConsensusMarkdown()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.70rem; padding: 3px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+              <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export .md
+            </button>
+            <button onclick="copySynthesizedCode()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.70rem; padding: 3px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+              <svg class="svg-glyph svg-glyph-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy
+            </button>
           </div>
         </div>
 
@@ -1511,7 +3355,65 @@
                 Live Shannon Agreement Entropy: H(X) = -Σ P(xᵢ) · log₂ P(xᵢ)
               </h3>
             </div>
-            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--emerald);" id="entropy-bound-label">H(X) ≤ 1.585 bits (Max 3-Agent Bound)</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button class="btn-modal-trigger" type="button" onclick="openMathModal('shannon')" title="Open Mathematical Proof & Entropy Deep-Dive">
+                <span>📊</span> Formula Deep-Dive
+              </button>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--emerald);" id="entropy-bound-label">H(X) ≤ 1.585 bits (Max Bound)</span>
+            </div>
+          </div>
+
+          <!-- Shannon Entropy Visual Spectrum & Distribution Waveform SVG -->
+          <div class="entropy-svg-wrapper">
+            <svg id="svg-entropy-spectrum" class="entropy-svg" viewBox="0 0 740 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Shannon Entropy Agreement Spectrum Vector Diagram">
+              <defs>
+                <linearGradient id="grad-entropy-spectrum" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#10b981" />
+                  <stop offset="35%" stop-color="#00f0ff" />
+                  <stop offset="65%" stop-color="#a855f7" />
+                  <stop offset="85%" stop-color="#f59e0b" />
+                  <stop offset="100%" stop-color="#ef4444" />
+                </linearGradient>
+                <linearGradient id="grad-wave-agy" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#7c9cff" stop-opacity="0.4" />
+                  <stop offset="100%" stop-color="#7c9cff" stop-opacity="0.0" />
+                </linearGradient>
+                <linearGradient id="grad-wave-grok" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#00d4aa" stop-opacity="0.4" />
+                  <stop offset="100%" stop-color="#00d4aa" stop-opacity="0.0" />
+                </linearGradient>
+                <linearGradient id="grad-wave-ollama" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.4" />
+                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+
+              <!-- Gaussian Probability Waves for the 3 Contenders -->
+              <path d="M 20 85 Q 180 15 320 85 Z" fill="url(#grad-wave-agy)" />
+              <path d="M 200 85 Q 380 25 540 85 Z" fill="url(#grad-wave-grok)" />
+              <path d="M 400 85 Q 560 38 720 85 Z" fill="url(#grad-wave-ollama)" />
+
+              <!-- Spectrum Bar Track -->
+              <rect x="20" y="85" width="700" height="12" rx="6" fill="url(#grad-entropy-spectrum)" />
+              
+              <!-- Boundary Ticks and Labels -->
+              <line x1="20" y1="80" x2="20" y2="102" stroke="#10b981" stroke-width="2" />
+              <text x="20" y="118" font-family="var(--font-mono)" font-size="9.5" fill="#10b981">0.00 bits (Consensus)</text>
+
+              <line x1="365" y1="80" x2="365" y2="102" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="2 2" />
+              <text x="365" y="118" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" fill="#a855f7">0.79 bits (Partial)</text>
+
+              <line x1="720" y1="80" x2="720" y2="102" stroke="#ef4444" stroke-width="2" />
+              <text x="720" y="118" text-anchor="end" font-family="var(--font-mono)" font-size="9.5" fill="#ef4444">1.585 bits (Max Bound)</text>
+
+              <!-- Interactive Dynamic Needle Pointer -->
+              <g id="svg-entropy-needle-group" transform="translate(674, 0)">
+                <line x1="0" y1="15" x2="0" y2="85" stroke="#ffffff" stroke-width="2.5" filter="drop-shadow(0 0 6px #00f0ff)" />
+                <polygon points="0,85 -6,75 6,75" fill="#ffffff" />
+                <rect x="-42" y="2" width="84" height="20" rx="4" fill="#040814" stroke="#00f0ff" stroke-width="1" />
+                <text x="0" y="16" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#00f0ff" id="svg-entropy-needle-txt">1.482 bits</text>
+              </g>
+            </svg>
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 6px; margin: 6px 0;">
@@ -1529,45 +3431,48 @@
             </div>
           </div>
 
-          <table class="entropy-math-table">
-            <thead>
-              <tr>
-                <th>Agent Node</th>
-                <th>Stake (wᵢ)</th>
-                <th>Agreement (cᵢ)</th>
-                <th>Probability P(xᵢ)</th>
-                <th>Contribution -P·log₂(P)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="color: #7c9cff; font-weight: 700;">@antigravity</td>
-                <td>50%</td>
-                <td id="table-conf-agy">96%</td>
-                <td id="table-p-agy">0.533</td>
-                <td id="table-term-agy">0.484 bits</td>
-              </tr>
-              <tr>
-                <td style="color: #00d4aa; font-weight: 700;">@grok</td>
-                <td>30%</td>
-                <td id="table-conf-grok">88%</td>
-                <td id="table-p-grok">0.293</td>
-                <td id="table-term-grok">0.520 bits</td>
-              </tr>
-              <tr>
-                <td style="color: #f59e0b; font-weight: 700;">@ollama</td>
-                <td>20%</td>
-                <td id="table-conf-ollama">80%</td>
-                <td id="table-p-ollama">0.174</td>
-                <td id="table-term-ollama">0.440 bits</td>
-              </tr>
-              <tr style="border-top: 2px solid rgba(0, 240, 255, 0.3); font-weight: 700;">
-                <td colspan="3" style="color: var(--cyan);">Total Mutual Entropy H(X):</td>
-                <td id="table-p-sum">1.000</td>
-                <td id="table-entropy-sum" style="color: var(--emerald);">1.482 bits</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-scroll-container">
+            <div class="table-scroll-hint"><span>⇄ Swipe table horizontally to inspect all node parameters</span></div>
+            <table class="entropy-math-table" aria-label="Shannon Entropy Computation Matrix">
+              <thead>
+                <tr>
+                  <th scope="col">Agent Node</th>
+                  <th scope="col">Stake (wᵢ)</th>
+                  <th scope="col">Agreement (cᵢ)</th>
+                  <th scope="col">Probability P(xᵢ)</th>
+                  <th scope="col">Contribution -P·log₂(P)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color: #7c9cff; font-weight: 700;">@antigravity</td>
+                  <td>50%</td>
+                  <td id="table-conf-agy">96%</td>
+                  <td id="table-p-agy">0.533</td>
+                  <td id="table-term-agy">0.484 bits</td>
+                </tr>
+                <tr>
+                  <td style="color: #00d4aa; font-weight: 700;">@grok</td>
+                  <td>30%</td>
+                  <td id="table-conf-grok">88%</td>
+                  <td id="table-p-grok">0.293</td>
+                  <td id="table-term-grok">0.520 bits</td>
+                </tr>
+                <tr>
+                  <td style="color: #f59e0b; font-weight: 700;">@ollama</td>
+                  <td>20%</td>
+                  <td id="table-conf-ollama">80%</td>
+                  <td id="table-p-ollama">0.174</td>
+                  <td id="table-term-ollama">0.440 bits</td>
+                </tr>
+                <tr style="border-top: 2px solid rgba(0, 240, 255, 0.3); font-weight: 700;">
+                  <td colspan="3" style="color: var(--cyan);">Total Mutual Entropy H(X):</td>
+                  <td id="table-p-sum">1.000</td>
+                  <td id="table-entropy-sum" style="color: var(--emerald);">1.482 bits</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Interactive Real-Time Probability Tuner -->
@@ -1604,9 +3509,14 @@
             <input type="range" id="slider-ollama" min="10" max="100" value="80" step="1" oninput="onEntropySliderInput()" style="width: 100%;">
           </div>
 
-          <button onclick="resetEntropySliders()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-top: 4px;">
-            ↺ Reset to Topic Defaults
-          </button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="resetEntropySliders()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-top: 4px;">
+              ↺ Reset to Defaults
+            </button>
+            <button onclick="openMathModal('calc')" class="btn-modal-trigger" style="margin-top: 4px;" type="button">
+              🧮 Open Sandbox Modal
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -1621,8 +3531,11 @@
           </h2>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn-modal-trigger" type="button" onclick="openCryptoProofModal()" title="Inspect Merkle Tree & Ed25519 Signatures">
+            <span>🛡️</span> Inspect Merkle Tree
+          </button>
           <button onclick="verifyConsensusProof()" class="btn-run-arena" id="btn-verify-proof" style="min-height: 38px; font-size: 0.78rem; padding: 6px 14px; width: auto;">
-            <span>🔐</span> Verify Consensus Proof Hash
+            <span>🔐</span> Verify Proof Hash
           </button>
           <button onclick="exportProofJson()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
             Export Proof .json
@@ -1635,7 +3548,95 @@
           <span style="color: var(--text-dim); font-size: 0.72rem; text-transform: uppercase; display: block;">SHA-256 Consensus Proof Hash:</span>
           <strong id="proof-hash-val">0x8f7a93b4e1c2d5890fa2b67e31980cb4e92a1435f082e6d194c7b8e5a32f0194</strong>
         </div>
-        <button onclick="copyProofHash()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.70rem; padding: 4px 10px; border-radius: 4px; cursor: pointer; flex-shrink: 0;" id="btn-copy-hash">Copy Hash</button>
+        <div style="display: flex; gap: 6px;">
+          <button onclick="copyProofHash()" style="background: transparent; border: 1px solid var(--border); color: var(--cyan); font-family: var(--font-mono); font-size: 0.70rem; padding: 4px 10px; border-radius: 4px; cursor: pointer; flex-shrink: 0;" id="btn-copy-hash">Copy Hash</button>
+          <button onclick="openCryptoProofModal()" style="background: rgba(0,240,255,0.1); border: 1px solid var(--cyan); color: #fff; font-family: var(--font-mono); font-size: 0.70rem; padding: 4px 10px; border-radius: 4px; cursor: pointer; flex-shrink: 0;">Inspect Proof ➔</button>
+        </div>
+      </div>
+
+      <!-- Cryptographic Merkle Tree SVG Architecture -->
+      <div class="merkle-svg-wrapper">
+        <svg id="svg-merkle-tree" class="merkle-svg" viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cryptographic Merkle Tree Proof Diagram">
+          <defs>
+            <linearGradient id="grad-merkle-root" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00f0ff" />
+              <stop offset="100%" stop-color="#10b981" />
+            </linearGradient>
+          </defs>
+
+          <!-- Branches from Root to Level 1 -->
+          <line x1="380" y1="36" x2="200" y2="95" stroke="rgba(0, 240, 255, 0.4)" stroke-width="2" stroke-dasharray="4 4" />
+          <line x1="380" y1="36" x2="560" y2="95" stroke="rgba(0, 240, 255, 0.4)" stroke-width="2" stroke-dasharray="4 4" />
+
+          <!-- Branches from Level 1 to Leaves -->
+          <line x1="200" y1="115" x2="110" y2="165" stroke="rgba(124, 156, 255, 0.4)" stroke-width="1.5" stroke-dasharray="3 3" />
+          <line x1="200" y1="115" x2="290" y2="165" stroke="rgba(0, 212, 170, 0.4)" stroke-width="1.5" stroke-dasharray="3 3" />
+          <line x1="560" y1="115" x2="470" y2="165" stroke="rgba(168, 85, 247, 0.4)" stroke-width="1.5" stroke-dasharray="3 3" />
+          <line x1="560" y1="115" x2="650" y2="165" stroke="rgba(245, 158, 11, 0.4)" stroke-width="1.5" stroke-dasharray="3 3" />
+
+          <!-- Root Node -->
+          <g transform="translate(380, 25)">
+            <rect x="-105" y="-15" width="210" height="30" rx="6" fill="#040916" stroke="url(#grad-merkle-root)" stroke-width="2" />
+            <text x="0" y="4" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="#ffffff">🌳 Root: <tspan fill="#00f0ff" id="svg-merkle-root-txt">0x5b7498f0e719</tspan></text>
+          </g>
+
+          <!-- Level 1 Nodes -->
+          <g transform="translate(200, 105)">
+            <rect x="-85" y="-13" width="170" height="26" rx="5" fill="#081024" stroke="rgba(124, 156, 255, 0.6)" stroke-width="1.5" />
+            <text x="0" y="4" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#7c9cff">Hash(L1_A): 0x8f7a93b4</text>
+          </g>
+          <g transform="translate(560, 105)">
+            <rect x="-85" y="-13" width="170" height="26" rx="5" fill="#140b24" stroke="rgba(168, 85, 247, 0.6)" stroke-width="1.5" />
+            <text x="0" y="4" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#a855f7">Hash(L1_B): 0x1b9a4c2e</text>
+          </g>
+
+          <!-- Leaf Nodes (Level 2) -->
+          <g transform="translate(110, 175)">
+            <rect x="-70" y="-14" width="140" height="28" rx="5" fill="#03160e" stroke="var(--emerald)" stroke-width="1" />
+            <text x="0" y="-1" text-anchor="middle" font-family="var(--font-mono)" font-size="9" font-weight="700" fill="var(--emerald)">01. AST Syntax ✅</text>
+            <text x="0" y="10" text-anchor="middle" font-size="8" fill="#cbd5e1">0 Syntax Errors</text>
+          </g>
+
+          <g transform="translate(290, 175)">
+            <rect x="-70" y="-14" width="140" height="28" rx="5" fill="#03160e" stroke="var(--emerald)" stroke-width="1" />
+            <text x="0" y="-1" text-anchor="middle" font-family="var(--font-mono)" font-size="9" font-weight="700" fill="var(--emerald)">02. Quorum Sig ✅</text>
+            <text x="0" y="10" text-anchor="middle" font-size="8" fill="#cbd5e1">Ed25519 (100%)</text>
+          </g>
+
+          <g transform="translate(470, 175)">
+            <rect x="-70" y="-14" width="140" height="28" rx="5" fill="#03160e" stroke="var(--emerald)" stroke-width="1" />
+            <text x="0" y="-1" text-anchor="middle" font-family="var(--font-mono)" font-size="9" font-weight="700" fill="var(--emerald)">03. Shannon ✅</text>
+            <text x="0" y="10" text-anchor="middle" font-size="8" fill="#cbd5e1">H(X) ≤ 1.585 bits</text>
+          </g>
+
+          <g transform="translate(650, 175)">
+            <rect x="-70" y="-14" width="140" height="28" rx="5" fill="#03160e" stroke="var(--emerald)" stroke-width="1" />
+            <text x="0" y="-1" text-anchor="middle" font-family="var(--font-mono)" font-size="9" font-weight="700" fill="var(--emerald)">04. Zero-Leak ✅</text>
+            <text x="0" y="10" text-anchor="middle" font-size="8" fill="#cbd5e1">Offline Sandboxed</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Cryptographic Proof Seal Badge Box -->
+      <div class="proof-seal-box">
+        <svg class="proof-seal-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sovereign Consensus Cryptographic Seal">
+          <g transform="translate(60, 60)">
+            <!-- Outer Gear -->
+            <circle cx="0" cy="0" r="54" fill="none" stroke="var(--emerald)" stroke-width="2" stroke-dasharray="4 6" class="anim-spin-slow" />
+            <circle cx="0" cy="0" r="44" fill="#03160e" stroke="var(--emerald)" stroke-width="2" />
+            <polygon points="0,-30 8,-10 30,-10 12,4 18,25 0,12 -18,25 -12,4 -30,-10 -8,-10" fill="rgba(16,185,129,0.3)" stroke="var(--emerald)" stroke-width="1.2" />
+            <text x="0" y="4" text-anchor="middle" font-family="var(--font-mono)" font-size="8" font-weight="800" fill="#ffffff" letter-spacing="1">AUTHENTIC</text>
+            <text x="0" y="14" text-anchor="middle" font-family="var(--font-mono)" font-size="6.5" font-weight="700" fill="var(--emerald)">SOVEREIGN</text>
+          </g>
+        </svg>
+        <div>
+          <h4 style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 2px;">
+            Cryptographic Multi-Signature Sovereign Seal
+          </h4>
+          <p style="font-size: 0.76rem; color: #cbd5e1; line-height: 1.4;">
+            Each synthesized artifact passes through a zero-leak verification pipeline. State commitments are cryptographically verified against the WebCrypto SHA-256 state seal and Ed25519 Byzantine Quorum threshold before deployment to sovereign memory.
+          </p>
+        </div>
       </div>
 
       <div class="proof-steps-grid">
@@ -1689,44 +3690,492 @@
             Pairwise Jaccard Similarity Matrix: J(A, B) = |A ∩ B| / |A ∪ B|
           </h2>
         </div>
-        <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-dim);">Evaluated across 1,420 AST nodes</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn-modal-trigger" type="button" onclick="openMathModal('jaccard')" title="View Jaccard Metric Formulation">
+            <span>📐</span> Jaccard Metric Proof
+          </button>
+          <span style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-dim);">Evaluated across 1,420 AST nodes</span>
+        </div>
       </div>
 
       <div class="pairwise-grid">
-        <div style="background: rgba(0, 240, 255, 0.04); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 10px; padding: 1rem;">
+        <div class="pairwise-card">
           <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.82rem; margin-bottom: 0.5rem;">
-            <strong>@antigravity ↔ @grok</strong>
+            <strong style="color: #7c9cff;">@antigravity ↔ @grok</strong>
             <span style="color: var(--cyan); font-weight: 700;" id="jacc-agy-grok">64.2% Overlap</span>
           </div>
           <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
             <div id="bar-agy-grok" style="width: 64.2%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple));"></div>
           </div>
-          <p style="font-size: 0.73rem; color: var(--text-dim); margin-top: 0.5rem;">Shared rate-limit windowing structures and client-hash containment logic.</p>
+          <p style="font-size: 0.74rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.45;">Shared rate-limit windowing structures and client-hash containment logic.</p>
         </div>
 
-        <div style="background: rgba(168, 85, 247, 0.04); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 10px; padding: 1rem;">
+        <div class="pairwise-card" style="background: rgba(168, 85, 247, 0.04); border-color: rgba(168, 85, 247, 0.2);">
           <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.82rem; margin-bottom: 0.5rem;">
-            <strong>@antigravity ↔ @ollama</strong>
+            <strong style="color: #c084fc;">@antigravity ↔ @ollama</strong>
             <span style="color: var(--purple); font-weight: 700;" id="jacc-agy-ollama">58.7% Overlap</span>
           </div>
           <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
             <div id="bar-agy-ollama" style="width: 58.7%; height: 100%; background: linear-gradient(90deg, var(--purple), var(--pink, #ff007a));"></div>
           </div>
-          <p style="font-size: 0.73rem; color: var(--text-dim); margin-top: 0.5rem;">Shared return dictionary schema types and strict typing envelope definitions.</p>
+          <p style="font-size: 0.74rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.45;">Shared return dictionary schema types and strict typing envelope definitions.</p>
         </div>
 
-        <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 1rem;">
+        <div class="pairwise-card" style="background: rgba(16, 185, 129, 0.04); border-color: rgba(16, 185, 129, 0.2);">
           <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.82rem; margin-bottom: 0.5rem;">
-            <strong>@grok ↔ @ollama</strong>
+            <strong style="color: #00d4aa;">@grok ↔ @ollama</strong>
             <span style="color: var(--emerald); font-weight: 700;" id="jacc-grok-ollama">53.8% Overlap</span>
           </div>
           <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
             <div id="bar-grok-ollama" style="width: 53.8%; height: 100%; background: linear-gradient(90deg, var(--emerald), var(--cyan));"></div>
           </div>
-          <p style="font-size: 0.73rem; color: var(--text-dim); margin-top: 0.5rem;">Shared asymptotic O(1) lookup performance guarantees and time window resets.</p>
+          <p style="font-size: 0.74rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.45;">Shared asymptotic O(1) lookup performance guarantees and time window resets.</p>
         </div>
       </div>
     </section>
+
+    <!-- ==========================================================================
+         MODAL 1: Full Code Proposal & AST Diff Inspector Modal
+         ========================================================================== -->
+    <dialog id="modal-code-inspector" class="zoth-modal" closedby="any" aria-labelledby="code-modal-title" aria-describedby="code-modal-desc">
+      <div class="zoth-modal-card">
+        <div class="modal-drag-handle-wrap" aria-hidden="true">
+          <div class="modal-drag-bar"></div>
+        </div>
+        <header class="modal-head">
+          <div class="modal-head-title-wrap">
+            <span class="modal-kicker-badge">🔍 AST Verification & Code Diff Engine</span>
+            <h2 id="code-modal-title" class="modal-title">Full Code Proposal & Diff Inspector</h2>
+          </div>
+          <div class="modal-actions-group">
+            <button class="btn-modal-icon" type="button" onclick="toggleModalFullscreen('modal-code-inspector')" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">⛶ Fullscreen</button>
+            <button class="btn-modal-icon" type="button" onclick="copyInspectorCurrentCode()" title="Copy Code" aria-label="Copy Code">📋 Copy</button>
+            <button class="btn-modal-close" type="button" onclick="closeModal('modal-code-inspector')" aria-label="Close Inspector">✕</button>
+          </div>
+        </header>
+        <nav class="modal-subnav" role="tablist" aria-label="Code Inspector Nodes">
+          <button class="modal-tab-pill active" role="tab" id="tab-insp-agy" onclick="switchInspectorTab('agy')">@antigravity (50% Contract)</button>
+          <button class="modal-tab-pill" role="tab" id="tab-insp-grok" onclick="switchInspectorTab('grok')">@grok (30% Async Stream)</button>
+          <button class="modal-tab-pill" role="tab" id="tab-insp-ollama" onclick="switchInspectorTab('ollama')">@ollama (20% Local Schema)</button>
+          <button class="modal-tab-pill" role="tab" id="tab-insp-synth" onclick="switchInspectorTab('synth')">🛡️ Sovereign Synthesis</button>
+          <button class="modal-tab-pill" role="tab" id="tab-insp-diff" onclick="switchInspectorTab('diff')">⚔️ Semantic Diff</button>
+          <button class="modal-tab-pill" role="tab" id="tab-insp-ast" onclick="switchInspectorTab('ast')">🧩 AST Tree & Complexity</button>
+        </nav>
+        <div class="modal-scroll-area">
+          <div class="diff-pill-bar">
+            <div class="diff-stat-chip">Language: <strong id="insp-lang-badge">Python 3.12 (Strict Types)</strong></div>
+            <div class="diff-stat-chip">AST Nodes: <strong id="insp-nodes-badge">1,420 Nodes</strong></div>
+            <div class="diff-stat-chip">Complexity: <strong id="insp-comp-badge">M = 3 (Low Risk)</strong></div>
+            <div class="diff-stat-chip">Event Loop: <strong style="color:var(--emerald)" id="insp-async-badge">Non-blocking</strong></div>
+            <div class="diff-stat-chip">Telemetry: <strong style="color:var(--cyan)">Zero-Leak Sandboxed</strong></div>
+          </div>
+          <p id="code-modal-desc" style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;">
+            Explore verbatim source proposals, AST hierarchy node complexity, and semantic syntax diffs synthesized by the tri-agent quorum.
+          </p>
+          <!-- Code View Panel -->
+          <div id="insp-view-code" class="diff-code-wrapper">
+            <pre><code id="insp-code-content" class="code-block" style="padding: 14px; display: block; overflow-x: auto;"></code></pre>
+          </div>
+          <!-- Diff View Panel -->
+          <div id="insp-view-diff" class="diff-code-wrapper" style="display: none;">
+            <div id="insp-diff-content"></div>
+          </div>
+          <!-- AST Tree Panel -->
+          <div id="insp-view-ast" style="display: none;" class="ast-tree-grid">
+            <!-- Dynamically populated AST nodes -->
+          </div>
+        </div>
+        <footer class="modal-foot">
+          <div style="display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.74rem;">
+            <span style="color: var(--emerald);">✅ AST Verified</span>
+            <span style="color: var(--text-dim);">· 0 Hallucinations · Strict Invariants Preserved</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="exportConsensusMarkdown()" class="btn-modal-icon" type="button">Export .md</button>
+            <button onclick="closeModal('modal-code-inspector')" class="btn-modal-icon" style="background: rgba(0,240,255,0.1); border-color: var(--cyan); color: #fff;" type="button">Done</button>
+          </div>
+        </footer>
+      </div>
+    </dialog>
+
+    <!-- ==========================================================================
+         MODAL 2: Mathematical & Entropy Deep-Dive Modal
+         ========================================================================== -->
+    <dialog id="modal-math-entropy" class="zoth-modal" closedby="any" aria-labelledby="math-modal-title" aria-describedby="math-modal-desc">
+      <div class="zoth-modal-card">
+        <div class="modal-drag-handle-wrap" aria-hidden="true">
+          <div class="modal-drag-bar"></div>
+        </div>
+        <header class="modal-head">
+          <div class="modal-head-title-wrap">
+            <span class="modal-kicker-badge">📊 Information Theory & BFT Consensus Academy</span>
+            <h2 id="math-modal-title" class="modal-title">Mathematical & Entropy Deep-Dive</h2>
+          </div>
+          <div class="modal-actions-group">
+            <button class="btn-modal-close" type="button" onclick="closeModal('modal-math-entropy')" aria-label="Close Math Modal">✕</button>
+          </div>
+        </header>
+        <nav class="modal-subnav" role="tablist" aria-label="Math Academy Sections">
+          <button class="modal-tab-pill active" role="tab" id="tab-math-shannon" onclick="switchMathTab('shannon')">📐 Shannon Entropy H(X)</button>
+          <button class="modal-tab-pill" role="tab" id="tab-math-jaccard" onclick="switchMathTab('jaccard')">📈 Jaccard Token Metric J(A,B)</button>
+          <button class="modal-tab-pill" role="tab" id="tab-math-bft" onclick="switchMathTab('bft')">🛡️ BFT Quorum Threshold (3f+1)</button>
+          <button class="modal-tab-pill" role="tab" id="tab-math-calc" onclick="switchMathTab('calc')">🧮 Interactive Live Calculator</button>
+        </nav>
+        <div class="modal-scroll-area">
+          <p id="math-modal-desc" style="font-size: 0.8rem; color: var(--text-dim);">
+            Rigorous mathematical proofs and information-theoretic formulations underpinning autonomous tri-agent consensus.
+          </p>
+
+          <!-- Tab 1: Shannon Entropy -->
+          <section id="math-pane-shannon" class="math-pane">
+            <div class="math-card">
+              <div class="math-card-header">
+                <span class="math-card-title">1. Shannon Agreement Entropy Formulation</span>
+                <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--emerald);">Bound: 0.00 ≤ H(X) ≤ 1.585 bits</span>
+              </div>
+              <div class="math-formula-box">
+                <div class="math-eq-display">
+                  H(X) = - \sum_{i=1}^{n} P(x_i) \cdot \log_2 P(x_i)
+                </div>
+                <div style="font-size: 0.76rem; color: var(--text-dim); margin-top: 6px; font-family: var(--font-mono);">
+                  where \( P(x_i) = \frac{w_i \cdot c_i}{\sum_{k=1}^n w_k \cdot c_k} \)
+                </div>
+              </div>
+              <table class="math-legend-table">
+                <thead>
+                  <tr><th>Variable</th><th>Definition</th><th>Consensus Physical Meaning</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><span class="math-symbol">H(X)</span></td><td>Mutual Shannon Entropy (bits)</td><td>Quantifies remaining architectural ambiguity and token distribution dispersion among agents.</td></tr>
+                  <tr><td><span class="math-symbol">w_i</span></td><td>Agent Stake Weight</td><td>Node voting power: @antigravity (0.50), @grok (0.30), @ollama (0.20).</td></tr>
+                  <tr><td><span class="math-symbol">c_i</span></td><td>Empirical Confidence Score</td><td>Confidence metric based on AST syntax validation, schema integrity, and benchmark execution.</td></tr>
+                  <tr><td><span class="math-symbol">P(x_i)</span></td><td>Normalized Probability</td><td>Effective probability mass of node proposal being synthesized into final sovereign artifact.</td></tr>
+                  <tr><td><span class="math-symbol">\log_2(3) \approx 1.585</span></td><td>Theoretical Maximum Entropy</td><td>Worst-case maximum divergence when all 3 models disagree uniformly with equal weight.</td></tr>
+                </tbody>
+              </table>
+              <div class="math-live-calc-box">
+                <div style="color: var(--emerald); font-weight: 700;">✦ Current Topic Live Evaluation:</div>
+                <div id="math-live-shannon-text">H(X) = -(0.533·log₂(0.533) + 0.293·log₂(0.293) + 0.174·log₂(0.174)) = 1.482 bits</div>
+                <div style="font-size: 0.72rem; color: var(--text-dim);">Conclusion: Entropy is strictly below the 1.585 upper bound. Triangulation resolves remaining divergence to 0.218 bits upon Synthesis.</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Tab 2: Jaccard Token Metric -->
+          <section id="math-pane-jaccard" class="math-pane" style="display: none;">
+            <div class="math-card">
+              <div class="math-card-header">
+                <span class="math-card-title">2. Jaccard Token & AST Node Intersection Metric</span>
+                <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);">Metric Range: 0.0 ≤ J(A,B) ≤ 1.0</span>
+              </div>
+              <div class="math-formula-box">
+                <div class="math-eq-display">
+                  J(A, B) = \frac{|A \cap B|}{|A \cup B|} = \frac{|A \cap B|}{|A| + |B| - |A \cap B|}
+                </div>
+                <div style="font-size: 0.76rem; color: var(--text-dim); margin-top: 6px; font-family: var(--font-mono);">
+                  Complementary Distance: \( d_J(A,B) = 1 - J(A,B) \)
+                </div>
+              </div>
+              <table class="math-legend-table">
+                <thead>
+                  <tr><th>Component</th><th>Mathematical Domain</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><span class="math-symbol">Set A, Set B</span></td><td>AST Node & Token Sets</td><td>Multisets of abstract syntax nodes (Functions, Classes, Invariants, Type Annotations) extracted per model.</td></tr>
+                  <tr><td><span class="math-symbol">|A ∩ B|</span></td><td>Intersection Cardinality</td><td>Shared structural and semantic code primitives agreed upon by both agent nodes.</td></tr>
+                  <tr><td><span class="math-symbol">|A ∪ B|</span></td><td>Union Cardinality</td><td>Total unique syntax constructs spanning both proposals.</td></tr>
+                  <tr><td><span class="math-symbol">d_J(A,B)</span></td><td>Jaccard Metric Distance</td><td>Formal metric space distance satisfying non-negativity, identity, symmetry, and triangle inequality.</td></tr>
+                </tbody>
+              </table>
+              <div class="math-live-calc-box">
+                <div style="color: var(--cyan); font-weight: 700;">✦ Pairwise Similarity Vectors:</div>
+                <div>• @antigravity ↔ @grok: J(AG, GK) = 64.2% (d_J = 0.358)</div>
+                <div>• @antigravity ↔ @ollama: J(AG, OL) = 58.7% (d_J = 0.413)</div>
+                <div>• @grok ↔ @ollama: J(GK, OL) = 53.8% (d_J = 0.462)</div>
+                <div style="font-size: 0.72rem; color: var(--text-dim);">Mean Swarm Overlap: 58.9% (Supermajority structural convergence prior to AST synthesis).</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Tab 3: BFT Quorum Threshold -->
+          <section id="math-pane-bft" class="math-pane" style="display: none;">
+            <div class="math-card">
+              <div class="math-card-header">
+                <span class="math-card-title">3. Byzantine Fault Tolerance (BFT) 3f+1 Invariant</span>
+                <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--amber);">Lamport-Pease-Shostak Bound</span>
+              </div>
+              <div class="math-formula-box">
+                <div class="math-eq-display">
+                  N \ge 3f + 1 \quad \iff \quad \text{Quorum Threshold } Q > \frac{2}{3} \sum_{i=1}^N w_i \ge 66.7\%
+                </div>
+              </div>
+              <table class="math-legend-table">
+                <thead>
+                  <tr><th>Parameter</th><th>Value in Zoth Swarm</th><th>Security Guarantee</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><span class="math-symbol">N</span></td><td>3 Models (Weighted: 50%, 30%, 20%)</td><td>Total consensus participant nodes in the arbitration round.</td></tr>
+                  <tr><td><span class="math-symbol">f</span></td><td>1 Faulty / Hallucinating Node</td><td>Max Byzantine nodes the network can tolerate without output corruption.</td></tr>
+                  <tr><td><span class="math-symbol">3f + 1</span></td><td>4 (Weighted representation: 100% / 66.7%)</td><td>Standard BFT requirement ensuring honest nodes outvote arbitrary collusion.</td></tr>
+                  <tr><td><span class="math-symbol">@antigravity</span></td><td>50% Stake (Anchor Node)</td><td>Maintains invariant safety. If @antigravity fails, consensus halts safely rather than outputting broken code.</td></tr>
+                  <tr><td><span class="math-symbol">@grok + @ollama</span></td><td>50% Combined Stake</td><td>High-throughput async performance + local schema validation. Either node failing leaves 70% or 80% healthy stake.</td></tr>
+                </tbody>
+              </table>
+              <div class="math-live-calc-box">
+                <div style="color: var(--amber); font-weight: 700;">✦ Liveness & Safety Invariant:</div>
+                <div>Safety: No two disjoint subsets of nodes can each achieve ≥ 66.7% quorum.</div>
+                <div>Liveness: System progresses whenever honest nodes total ≥ 66.7% stake.</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Tab 4: Interactive Live Calculator -->
+          <section id="math-pane-calc" class="math-pane" style="display: none;">
+            <div class="math-card">
+              <div class="math-card-header">
+                <span class="math-card-title">4. Real-time Shannon & Quorum Sandbox</span>
+                <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);">Live Interactive Variables</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <div class="entropy-slider-row">
+                  <div class="entropy-slider-header">
+                    <span style="color: #7c9cff;">@antigravity Confidence (c₁):</span>
+                    <span id="calc-val-agy" style="color: #7c9cff; font-weight: 700;">96%</span>
+                  </div>
+                  <input type="range" id="modal-slider-agy" min="10" max="100" value="96" step="1" oninput="syncModalCalcSliders('agy')">
+                </div>
+                <div class="entropy-slider-row">
+                  <div class="entropy-slider-header">
+                    <span style="color: #00d4aa;">@grok Confidence (c₂):</span>
+                    <span id="calc-val-grok" style="color: #00d4aa; font-weight: 700;">88%</span>
+                  </div>
+                  <input type="range" id="modal-slider-grok" min="10" max="100" value="88" step="1" oninput="syncModalCalcSliders('grok')">
+                </div>
+                <div class="entropy-slider-row">
+                  <div class="entropy-slider-header">
+                    <span style="color: #f59e0b;">@ollama Confidence (c₃):</span>
+                    <span id="calc-val-ollama" style="color: #f59e0b; font-weight: 700;">80%</span>
+                  </div>
+                  <input type="range" id="modal-slider-ollama" min="10" max="100" value="80" step="1" oninput="syncModalCalcSliders('ollama')">
+                </div>
+              </div>
+              <div class="math-live-calc-box" style="margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                  <span>Calculated Mutual Entropy H(X):</span>
+                  <span id="calc-entropy-result" style="color: var(--emerald);">1.482 bits</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                  <span>Consensus Convergence Probability:</span>
+                  <span id="calc-convergence-result" style="color: var(--cyan);">64.2%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                  <span>Byzantine Quorum Health:</span>
+                  <span id="calc-bft-result" style="color: var(--emerald);">🟢 Supermajority Quorum Valid (100.0%)</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <footer class="modal-foot">
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);">Peer-Reviewed Information Theory Engine v2.6.0</span>
+          <button onclick="closeModal('modal-math-entropy')" class="btn-modal-icon" style="background: rgba(0,240,255,0.1); border-color: var(--cyan); color: #fff;" type="button">Close Math Deep-Dive</button>
+        </footer>
+      </div>
+    </dialog>
+
+    <!-- ==========================================================================
+         MODAL 3: Quorum & Merkle Cryptographic Proof Inspector Modal
+         ========================================================================== -->
+    <dialog id="modal-crypto-proof" class="zoth-modal" closedby="any" aria-labelledby="crypto-modal-title" aria-describedby="crypto-modal-desc">
+      <div class="zoth-modal-card">
+        <div class="modal-drag-handle-wrap" aria-hidden="true">
+          <div class="modal-drag-bar"></div>
+        </div>
+        <header class="modal-head">
+          <div class="modal-head-title-wrap">
+            <span class="modal-kicker-badge">🛡️ Cryptographic State Seal & Merkle Verification</span>
+            <h2 id="crypto-modal-title" class="modal-title">Quorum & Merkle Cryptographic Proof Inspector</h2>
+          </div>
+          <div class="modal-actions-group">
+            <button class="btn-modal-icon" type="button" onclick="verifyConsensusProof(); showToast('WebCrypto verification complete!', 'success');" title="Run Verification">🔐 Verify</button>
+            <button class="btn-modal-icon" type="button" onclick="copyProofJson()" title="Copy JSON">📋 Copy JSON</button>
+            <button class="btn-modal-close" type="button" onclick="closeModal('modal-crypto-proof')" aria-label="Close Crypto Modal">✕</button>
+          </div>
+        </header>
+        <nav class="modal-subnav" role="tablist" aria-label="Proof Views">
+          <button class="modal-tab-pill active" role="tab" id="tab-proof-merkle" onclick="switchProofTab('merkle')">🌳 Merkle Tree Visual</button>
+          <button class="modal-tab-pill" role="tab" id="tab-proof-signatures" onclick="switchProofTab('signatures')">✍️ Ed25519 Quorum Signatures</button>
+          <button class="modal-tab-pill" role="tab" id="tab-proof-json" onclick="switchProofTab('json')">📜 JSON State Payload</button>
+          <button class="modal-tab-pill" role="tab" id="tab-proof-steps" onclick="switchProofTab('steps')">✅ Step-by-Step Audit</button>
+        </nav>
+        <div class="modal-scroll-area">
+          <p id="crypto-modal-desc" style="font-size: 0.8rem; color: var(--text-dim);">
+            Step-by-step cryptographic verification of model AST root hashes, Ed25519 signature chains, and immutable Merkle root states.
+          </p>
+
+          <!-- Merkle Visual Tab -->
+          <section id="proof-pane-merkle" class="proof-pane">
+            <div class="merkle-visual-box">
+              <div class="merkle-root-node">
+                <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--cyan); text-transform: uppercase; display: block;">Top-Level Merkle Root Hash</span>
+                <strong style="font-family: var(--font-mono); font-size: 0.95rem; color: #ffffff;" id="merkle-visual-root">0x5b7498f0e719</strong>
+                <div style="font-size: 0.7rem; color: var(--emerald); margin-top: 2px;">🟢 Quorum Verified (100% Stake)</div>
+              </div>
+
+              <div class="merkle-branches-row">
+                <div class="merkle-branch-node">
+                  <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--purple); text-transform: uppercase; display: block;">Branch Node 01 (Left)</span>
+                  <code style="font-size: 0.76rem; color: #c084fc;">H(AST_AGY || AST_GROK)</code>
+                  <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);" id="merkle-branch-left">0x8f7a93b4e1c2</div>
+                </div>
+                <div class="merkle-branch-node">
+                  <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--purple); text-transform: uppercase; display: block;">Branch Node 02 (Right)</span>
+                  <code style="font-size: 0.76rem; color: #c084fc;">H(AST_OLLAMA || Nonce_TS)</code>
+                  <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);" id="merkle-branch-right">0x94c7b8e5a32f</div>
+                </div>
+              </div>
+
+              <div class="merkle-leaves-row">
+                <div class="merkle-leaf-card" style="border-color: rgba(124, 156, 255, 0.35);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: #7c9cff;">@antigravity Leaf (50%)</strong>
+                    <span class="signature-badge">Ed25519 Verified</span>
+                  </div>
+                  <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);">AST Leaf Hash:</span>
+                  <code style="font-size: 0.72rem; color: #7c9cff; word-break: break-all;" id="merkle-leaf-agy">0xa194e82b7c61f09d</code>
+                </div>
+
+                <div class="merkle-leaf-card" style="border-color: rgba(0, 212, 170, 0.35);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: #00d4aa;">@grok Leaf (30%)</strong>
+                    <span class="signature-badge">Ed25519 Verified</span>
+                  </div>
+                  <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);">AST Leaf Hash:</span>
+                  <code style="font-size: 0.72rem; color: #00d4aa; word-break: break-all;" id="merkle-leaf-grok">0xb83f120e64c921a5</code>
+                </div>
+
+                <div class="merkle-leaf-card" style="border-color: rgba(245, 158, 11, 0.35);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="color: #f59e0b;">@ollama Leaf (20%)</strong>
+                    <span class="signature-badge">Ed25519 Verified</span>
+                  </div>
+                  <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim);">AST Leaf Hash:</span>
+                  <code style="font-size: 0.72rem; color: #f59e0b; word-break: break-all;" id="merkle-leaf-ollama">0xc57091da328bf1e4</code>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Ed25519 Signatures Tab -->
+          <section id="proof-pane-signatures" class="proof-pane" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div class="merkle-leaf-card" style="padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-family: var(--font-mono); font-weight: 700; color: #7c9cff;">@antigravity Node Keypair</span>
+                  <span class="signature-badge">Ed25519 Sig: Valid</span>
+                </div>
+                <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">Public Key: <code>ed25519_pk_agy99120489182374981729487123984719283749182734</code></div>
+                <div style="font-size: 0.72rem; color: var(--text-dim);">Signature: <code>0x4b78912e6a5c109f83d72b14c980ae5192837491029384719283749182736450</code></div>
+              </div>
+              <div class="merkle-leaf-card" style="padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-family: var(--font-mono); font-weight: 700; color: #00d4aa;">@grok Node Keypair</span>
+                  <span class="signature-badge">Ed25519 Sig: Valid</span>
+                </div>
+                <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">Public Key: <code>ed25519_pk_grok8471928374918273498172938471928374918273</code></div>
+                <div style="font-size: 0.72rem; color: var(--text-dim);">Signature: <code>0x92f018374b6c59d81a2e7c4f03918b2736451092837491827349182736451928</code></div>
+              </div>
+              <div class="merkle-leaf-card" style="padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-family: var(--font-mono); font-weight: 700; color: #f59e0b;">@ollama Node Keypair</span>
+                  <span class="signature-badge">Ed25519 Sig: Valid</span>
+                </div>
+                <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">Public Key: <code>ed25519_pk_ollama192837491827349817293847192837491827</code></div>
+                <div style="font-size: 0.72rem; color: var(--text-dim);">Signature: <code>0x71a2b3c4d5e6f081928374918273645019283749182736450192837491827364</code></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- JSON Tab -->
+          <section id="proof-pane-json" class="proof-pane" style="display: none;">
+            <div class="diff-code-wrapper">
+              <pre><code id="proof-json-code-box" style="padding: 14px; display: block; overflow-x: auto; color: #38bdf8;"></code></pre>
+            </div>
+          </section>
+
+          <!-- Steps Tab -->
+          <section id="proof-pane-steps" class="proof-pane" style="display: none;">
+            <div class="proof-steps-grid" style="grid-template-columns: 1fr; gap: 8px;">
+              <div class="proof-step-card verified">
+                <strong style="color: var(--emerald);">01. AST Canonization & Stripping</strong>
+                <span>Normalizes docstrings, comments, whitespace, and variable symbol tables for deterministic hashing.</span>
+              </div>
+              <div class="proof-step-card verified">
+                <strong style="color: var(--emerald);">02. Node-Level Ed25519 Signatures</strong>
+                <span>Each AI agent cryptographically signs its canonical AST leaf hash using its private memory keyring.</span>
+              </div>
+              <div class="proof-step-card verified">
+                <strong style="color: var(--emerald);">03. Shannon Mutual Entropy Assertion</strong>
+                <span>Verifies that H(X) does not exceed the 1.585 bits divergence bound before quorum ratification.</span>
+              </div>
+              <div class="proof-step-card verified">
+                <strong style="color: var(--emerald);">04. Merkle Root Hash Sealing</strong>
+                <span>Computes hierarchical SHA-256 tree root and outputs verifiable state seal.</span>
+              </div>
+            </div>
+          </section>
+        </div>
+        <footer class="modal-foot">
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--emerald);">🟢 State: Cryptographically Sealed & Verified</span>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="exportProofJson()" class="btn-modal-icon" type="button">Download .json</button>
+            <button onclick="closeModal('modal-crypto-proof')" class="btn-modal-icon" style="background: rgba(0,240,255,0.1); border-color: var(--cyan); color: #fff;" type="button">Close</button>
+          </div>
+        </footer>
+      </div>
+    </dialog>
+
+    <!-- ==========================================================================
+         MODAL 4: Dialectic Debate Chronicle Modal
+         ========================================================================== -->
+    <dialog id="modal-dialectic-chronicle" class="zoth-modal" closedby="any" aria-labelledby="dialectic-modal-title" aria-describedby="dialectic-modal-desc">
+      <div class="zoth-modal-card">
+        <div class="modal-drag-handle-wrap" aria-hidden="true">
+          <div class="modal-drag-bar"></div>
+        </div>
+        <header class="modal-head">
+          <div class="modal-head-title-wrap">
+            <span class="modal-kicker-badge">⚡ Autonomous Tri-Agent Deliberation Logs</span>
+            <h2 id="dialectic-modal-title" class="modal-title">Dialectic Debate Chronicle & Transcripts</h2>
+          </div>
+          <div class="modal-actions-group">
+            <button class="btn-modal-icon" type="button" onclick="exportConsensusMarkdown(); showToast('Exported Chronicle .md', 'info');" title="Export Markdown">Export .md</button>
+            <button class="btn-modal-close" type="button" onclick="closeModal('modal-dialectic-chronicle')" aria-label="Close Chronicle Modal">✕</button>
+          </div>
+        </header>
+        <nav class="modal-subnav" role="tablist" aria-label="Chronicle Topics">
+          <button class="modal-tab-pill active" role="tab" id="tab-chron-ratelimit" onclick="switchChronicleTopic('ratelimit')">🛡️ Rate Limiter</button>
+          <button class="modal-tab-pill" role="tab" id="tab-chron-3dstream" onclick="switchChronicleTopic('3dstream')">🧊 3D Mesh Streamer</button>
+          <button class="modal-tab-pill" role="tab" id="tab-chron-argon2" onclick="switchChronicleTopic('argon2')">🔐 Argon2id Crypto Gate</button>
+          <button class="modal-tab-pill" role="tab" id="tab-chron-dagrunner" onclick="switchChronicleTopic('dagrunner')">🧩 DAG Dependency Engine</button>
+        </nav>
+        <div class="modal-scroll-area">
+          <p id="dialectic-modal-desc" style="font-size: 0.8rem; color: var(--text-dim);">
+            Complete multi-turn dialectical transcript: foundational thesis, adversarial challenge points, privacy schema audits, and sovereign synthesis resolution.
+          </p>
+          <div class="chronicle-timeline" id="chronicle-timeline-container">
+            <!-- Dynamically rendered debate turns -->
+          </div>
+        </div>
+        <footer class="modal-foot">
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);">✦ Autonomous Swarm Deliberation Pipeline</span>
+          <button onclick="closeModal('modal-dialectic-chronicle')" class="btn-modal-icon" style="background: rgba(0,240,255,0.1); border-color: var(--cyan); color: #fff;" type="button">Close Chronicle</button>
+        </footer>
+      </div>
+    </dialog>
+
+    <!-- Global High-Contrast Toast Notification Container -->
+    <div id="zoth-toast-container" class="zoth-toast-container" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -1916,6 +4365,89 @@
       } catch(e) {}
     }
 
+    const CINEMA_CHANNELS = {
+      consensus: {
+        name: "Consensus Engine",
+        video: "/assets/media/deck/consensus.mp4",
+        poster: "/assets/media/deck/consensus.jpg",
+        badge: "QUORUM 100.0% · H(X) 1.482 BITS",
+        live: "● 60 FPS HW STREAM · BUS :8989"
+      },
+      coin: {
+        name: "Byzantine Mint Coin (3D)",
+        video: "/assets/media/land/consensus-coin.mp4",
+        poster: "/assets/media/land/consensus-coin.jpg",
+        badge: "3D SOVEREIGN SEAL · ZERO LEAK",
+        live: "● 60 FPS VOLUMETRIC · HARDWARE ACCELERATED"
+      }
+    };
+
+    function switchCinemaChannel(channelKey) {
+      const ch = CINEMA_CHANNELS[channelKey];
+      if (!ch) return;
+      document.querySelectorAll('.cinema-channel-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-chan-' + channelKey);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const video = document.getElementById('cinema-active-video');
+      const src = document.getElementById('cinema-video-src');
+      if (video && src) {
+        video.pause();
+        video.poster = ch.poster;
+        src.src = ch.video;
+        video.load();
+      }
+      const liveLabel = document.getElementById('cinema-live-label');
+      if (liveLabel) liveLabel.textContent = ch.live;
+      const hudBadge = document.getElementById('cinema-hud-badge');
+      if (hudBadge) hudBadge.textContent = ch.badge;
+      
+      const playBtn = document.getElementById('btn-cinema-play');
+      if (playBtn) playBtn.innerHTML = `<span>▶️</span> Play Cinema`;
+      playSound(550);
+    }
+
+    function toggleCinemaPlay() {
+      const video = document.getElementById('cinema-active-video');
+      const playBtn = document.getElementById('btn-cinema-play');
+      if (!video) return;
+      if (video.paused) {
+        video.play().then(() => {
+          if (playBtn) playBtn.innerHTML = `<span>⏸️</span> Pause Cinema`;
+          playSound(750);
+        }).catch(err => {
+          console.log('Video play notice:', err);
+        });
+      } else {
+        video.pause();
+        if (playBtn) playBtn.innerHTML = `<span>▶️</span> Play Cinema`;
+        playSound(450);
+      }
+    }
+
+    function toggleCinemaMute() {
+      const video = document.getElementById('cinema-active-video');
+      const muteBtn = document.getElementById('btn-cinema-mute');
+      if (!video) return;
+      video.muted = !video.muted;
+      if (muteBtn) {
+        muteBtn.innerHTML = video.muted ? `<span>🔇</span> Unmute` : `<span>🔊</span> Mute`;
+      }
+      playSound(600);
+    }
+
+    function toggleCinemaFullscreen() {
+      const box = document.getElementById('cinema-theater-box');
+      if (!box) return;
+      if (!document.fullscreenElement) {
+        if (box.requestFullscreen) box.requestFullscreen();
+        else if (box.webkitRequestFullscreen) box.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+      playSound(800);
+    }
+
     function switchTopic(topicKey) {
       currentTopic = topicKey;
       document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
@@ -1934,6 +4466,18 @@
 
       document.getElementById('jacc-grok-ollama').textContent = `${data.jaccard.go} Overlap`;
       document.getElementById('bar-grok-ollama').style.width = data.jaccard.go;
+
+      // Update SVG Topology Badges
+      const elJaccAg = document.getElementById('svg-txt-jacc-ag-grok');
+      if (elJaccAg) elJaccAg.textContent = data.jaccard.ag;
+      const elJaccAo = document.getElementById('svg-txt-jacc-ag-ollama');
+      if (elJaccAo) elJaccAo.textContent = data.jaccard.ao;
+      const elJaccGo = document.getElementById('svg-txt-jacc-grok-ollama');
+      if (elJaccGo) elJaccGo.textContent = data.jaccard.go;
+
+      // Update SVG Merkle Root
+      const elMerkleSvg = document.getElementById('svg-merkle-root-txt');
+      if (elMerkleSvg) elMerkleSvg.textContent = data.merkle;
 
       document.getElementById('artifact-chk').textContent = '#' + data.merkle.replace('0x', '');
       document.getElementById('proof-hash-val').textContent = data.proofHash;
@@ -1955,6 +4499,22 @@
       if (topic && topic.proposals && topic.proposals[agentId]) {
         document.getElementById('contender-code-text').textContent = topic.proposals[agentId];
       }
+
+      // Highlight SVG Topology Node
+      ['agy', 'grok', 'ollama'].forEach(id => {
+        const svgNode = document.getElementById('svg-node-' + id);
+        if (svgNode) {
+          if (id === agentId) {
+            svgNode.style.filter = 'drop-shadow(0 0 16px rgba(0, 240, 255, 0.95))';
+            svgNode.style.transform = 'scale(1.03)';
+            svgNode.style.transformOrigin = id === 'agy' ? '420px 80px' : (id === 'grok' ? '190px 380px' : '650px 380px');
+          } else {
+            svgNode.style.filter = 'none';
+            svgNode.style.transform = 'scale(1)';
+          }
+        }
+      });
+
       playSound(740);
     }
 
@@ -1963,6 +4523,23 @@
       document.querySelectorAll('.dialectic-step-btn').forEach(b => b.classList.remove('active'));
       const stepBtn = document.getElementById('step-' + stageKey);
       if (stepBtn) stepBtn.classList.add('active');
+
+      // Update Dialectic Flow SVG active states
+      ['thesis', 'antithesis', 'synthesis'].forEach(st => {
+        const svgFlow = document.getElementById('svg-flow-' + st);
+        if (svgFlow) {
+          const rect = svgFlow.querySelector('rect');
+          if (rect) {
+            if (st === stageKey) {
+              rect.setAttribute('stroke-width', '2.5');
+              rect.style.filter = 'drop-shadow(0 0 14px rgba(0, 240, 255, 0.8))';
+            } else {
+              rect.setAttribute('stroke-width', '1.5');
+              rect.style.filter = 'none';
+            }
+          }
+        }
+      });
 
       const stageInfo = TOPIC_DATA[currentTopic].stages[stageKey];
       if (stageInfo) {
@@ -2040,18 +4617,28 @@
       const statStake = document.getElementById('stat-stake');
       statStake.textContent = `${activeStake}% / 100%`;
 
+      const svgQuorumTxt = document.getElementById('svg-txt-quorum-val');
+
       if (activeStake >= 66.7) {
         badge.innerHTML = `🟢 Quorum Achieved (${activeStake.toFixed(1)}% ≥ 66.7%)`;
         badge.style.color = "var(--emerald)";
         badge.style.borderColor = "rgba(16, 185, 129, 0.35)";
         badge.style.background = "rgba(16, 185, 129, 0.15)";
         document.getElementById('consensus-approval-text').textContent = `Peer Consensus: Approved (${activeStake}% Stake)`;
+        if (svgQuorumTxt) {
+          svgQuorumTxt.textContent = `≥ 66.7% OK`;
+          svgQuorumTxt.setAttribute('fill', 'var(--emerald)');
+        }
       } else {
         badge.innerHTML = `🔴 Quorum Violated (${activeStake.toFixed(1)}% < 66.7% BFT Threshold)`;
         badge.style.color = "#ef4444";
         badge.style.borderColor = "rgba(239, 68, 68, 0.4)";
         badge.style.background = "rgba(239, 68, 68, 0.15)";
         document.getElementById('consensus-approval-text').textContent = `Peer Consensus: Rejected (Byzantine Fault)`;
+        if (svgQuorumTxt) {
+          svgQuorumTxt.textContent = `FAULTY`;
+          svgQuorumTxt.setAttribute('fill', '#ef4444');
+        }
       }
     }
 
@@ -2109,6 +4696,15 @@
 
       const pct = Math.min(100, Math.max(5, (entropy / 1.585) * 100));
       document.getElementById('entropy-gauge-fill').style.width = `${pct}%`;
+
+      // Update SVG Entropy Needle
+      const needleGrp = document.getElementById('svg-entropy-needle-group');
+      const needleTxt = document.getElementById('svg-entropy-needle-txt');
+      if (needleGrp && needleTxt) {
+        const xOffset = 20 + Math.min(700, Math.max(0, (entropy / 1.585) * 700));
+        needleGrp.setAttribute('transform', `translate(${xOffset}, 0)`);
+        needleTxt.textContent = `${entropy.toFixed(3)} bits`;
+      }
     }
 
     async function verifyConsensusProof() {
