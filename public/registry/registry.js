@@ -172,22 +172,24 @@ function closeInspect() {
   uniforms.uSelectId.value = -1;
 }
 
-$("inspect-close").addEventListener("click", closeInspect);
+if ($("inspect-close")) $("inspect-close").addEventListener("click", closeInspect);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeInspect();
-  if (e.key === "/" && document.activeElement !== $("q")) {
+  if (e.key === "/" && $("q") && document.activeElement !== $("q")) {
     e.preventDefault();
     $("q").focus();
   }
-  if (document.activeElement === $("q")) return;
+  if ($("q") && document.activeElement === $("q")) return;
   if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Enter") {
     stepSelect(e.key);
   }
 });
-$("q").addEventListener("input", (e) => {
-  query = e.target.value;
-  layoutWall();
-});
+if ($("q")) {
+  $("q").addEventListener("input", (e) => {
+    query = e.target.value;
+    layoutWall();
+  });
+}
 
 function stepSelect(key) {
   if (!slots.length) return;

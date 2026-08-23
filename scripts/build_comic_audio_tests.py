@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-import os
-
 target_test = "/media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/zoth-studio/core-app/public/assets/comic/comic-audio-player.test.js"
 
 test_content = """/**
- * AZOTH Comic Audio Player Unit Tests & Verification Suite
+ * AZOTH Comic Audio Player Comprehensive Unit Test Suite
  * Run with: node public/assets/comic/comic-audio-player.test.js
  */
 
@@ -41,7 +39,6 @@ test('EPISODES_DB contains all Season 1 episodes with 7 panels each', () => {
   assert.strictEqual(db['s01e02'].tracks.length, 7, 'Episode 2 has 7 tracks');
   assert.strictEqual(db['s01e03'].tracks.length, 7, 'Episode 3 has 7 tracks');
 
-  // Verify track properties
   db['s01e01'].tracks.forEach((t, i) => {
     assert.strictEqual(t.index, i);
     assert.ok(t.title && t.title.length > 0, 'track has title');
@@ -57,6 +54,7 @@ test('formatTime helper converts seconds to MM:SS correctly', () => {
   assert.strictEqual(ComicAudioPlayer.formatTime(9), '00:09');
   assert.strictEqual(ComicAudioPlayer.formatTime(45), '00:45');
   assert.strictEqual(ComicAudioPlayer.formatTime(65), '01:05');
+  assert.strictEqual(ComicAudioPlayer.formatTime(125), '02:05');
   assert.strictEqual(ComicAudioPlayer.formatTime(3600), '60:00');
   assert.strictEqual(ComicAudioPlayer.formatTime(NaN), '00:00');
   assert.strictEqual(ComicAudioPlayer.formatTime(-10), '00:00');
@@ -143,7 +141,43 @@ test('Panel navigation methods update track index and handle boundary wrapping',
   assert.strictEqual(player.currentTrackIndex, 6);
 });
 
-// 7. Volume, Mute, and Speed Management
+// 7. Seeking and Time Progression
+test('seek, seekBy, and seekPercent calculate target timestamps properly', () => {
+  const player = new ComicAudioPlayer({ autoInit: false });
+  player.duration = 60; // Mock duration 60s
+  player.currentTime = 10;
+
+  player.seek(25);
+  assert.strictEqual(player.currentTime, 25);
+
+  player.seekBy(10);
+  assert.strictEqual(player.currentTime, 35);
+
+  player.seekBy(-15);
+  assert.strictEqual(player.currentTime, 20);
+
+  player.seekPercent(0.5); // 50% of 60s = 30s
+  assert.strictEqual(player.currentTime, 30);
+});
+
+// 8. Auto-advance and Track Ended Handler
+test('handleTrackEnded advances or loops according to loopMode & autoAdvance', () => {
+  // Test autoAdvance true with loopMode 'all'
+  const player = new ComicAudioPlayer({ autoInit: false, autoAdvance: true, loopMode: 'all' });
+  player.jumpToPanel(2);
+  player.handleTrackEnded();
+  assert.strictEqual(player.currentTrackIndex, 3, 'Advances to next track');
+
+  // Test loopMode 'one'
+  const playerLoopOne = new ComicAudioPlayer({ autoInit: false, autoAdvance: true, loopMode: 'one' });
+  playerLoopOne.jumpToPanel(2);
+  playerLoopOne.currentTime = 20;
+  playerLoopOne.handleTrackEnded();
+  assert.strictEqual(playerLoopOne.currentTrackIndex, 2, 'Stays on same track for loop one');
+  assert.strictEqual(playerLoopOne.currentTime, 0, 'Resets time to 0');
+});
+
+// 9. Volume, Mute, and Speed Management
 test('Volume, mute toggle, and speed setters work properly', () => {
   const player = new ComicAudioPlayer({ autoInit: false });
 
@@ -165,7 +199,7 @@ test('Volume, mute toggle, and speed setters work properly', () => {
   assert.strictEqual(player.speed, 1.5);
 });
 
-// 8. Event Emitter System
+// 10. Event Emitter System
 test('Event emitter handles on/off/emit callbacks with payload', () => {
   const player = new ComicAudioPlayer({ autoInit: false });
 
@@ -191,7 +225,7 @@ test('Event emitter handles on/off/emit callbacks with payload', () => {
   assert.strictEqual(eventFired, false, 'Callback should not fire after removal');
 });
 
-// 9. Minimize / Expand Toggle
+// 11. Minimize / Expand Toggle
 test('toggleMinimize updates state properly', () => {
   const player = new ComicAudioPlayer({ autoInit: false });
 
@@ -203,9 +237,8 @@ test('toggleMinimize updates state properly', () => {
   assert.strictEqual(player.isMinimized, false);
 });
 
-// 10. Mock DOM Rendering Verification
+// 12. Mock DOM Rendering Verification
 test('DOM Rendering creates Floating Audio HUD with all required controls', () => {
-  // Setup minimal browser DOM environment in Node
   const createdElements = [];
   const bodyChildren = [];
 
@@ -349,4 +382,4 @@ process.exit(fail ? 1 : 0);
 with open(target_test, "w", encoding="utf-8") as f:
     f.write(test_content)
 
-print(f"Successfully wrote {target_test} ({len(test_content)} bytes)")
+print(f"Updated {target_test}")

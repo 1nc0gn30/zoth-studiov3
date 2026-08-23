@@ -639,7 +639,7 @@
 
       this.audio.addEventListener('timeupdate', () => {
         if (!this.isScrubbing) {
-          this.currentTime = this.audio.currentTime;
+          this.currentTime = this.audio.currentTime || 0;
           this.duration = this.audio.duration || 0;
           this.updateProgressUI();
         }
@@ -1293,8 +1293,8 @@
      * Seek audio by relative seconds (+5, -5)
      */
     seekBy(seconds) {
-      if (!this.audio) return;
-      const target = Math.max(0, Math.min(this.duration || 0, (this.audio.currentTime || 0) + seconds));
+      const cur = this.currentTime || 0;
+      const target = Math.max(0, Math.min(this.duration || 0, cur + seconds));
       this.seek(target);
     }
 
@@ -1302,9 +1302,10 @@
      * Seek to absolute timestamp
      */
     seek(seconds) {
-      if (!this.audio) return;
-      this.audio.currentTime = seconds;
       this.currentTime = seconds;
+      if (this.audio) {
+        try { this.audio.currentTime = seconds; } catch (e) {}
+      }
       this.updateProgressUI();
       this.drawWaveform();
     }
