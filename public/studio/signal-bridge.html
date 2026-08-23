@@ -944,8 +944,8 @@
         </div>
       </nav>
 
-      <main>
-    <h1 style="display:none;">Zoth Signal Bridge Workstation</h1> role="main" id="main-content" class="sig-grid">
+      <main role="main" id="main-content" class="sig-grid">
+        <h1 style="display:none;">Zoth Signal Bridge Workstation</h1>
         <!-- Left: 16 Mascot Spirit Roster -->
         <aside class="sig-card sig-pane" id="sig-pane-mascots">
           <div class="card-title">
@@ -1114,7 +1114,7 @@
 
       function appendMessage(msg) {
         messageCount++;
-        msgCountLabel.innerText = `${messageCount} Messages`;
+        if (msgCountLabel) msgCountLabel.innerText = `${messageCount} Messages`;
 
         const bubble = document.createElement("div");
         bubble.className = "msg-bubble";
@@ -1134,8 +1134,10 @@
           <div class="msg-text">${escapeHtml(msg.text || "")}</div>
         `;
 
-        streamConsole.appendChild(bubble);
-        streamConsole.scrollTop = streamConsole.scrollHeight;
+        if (streamConsole) {
+          streamConsole.appendChild(bubble);
+          streamConsole.scrollTop = streamConsole.scrollHeight;
+        }
       }
 
       function escapeHtml(text) {
@@ -1145,6 +1147,7 @@
       }
 
       async function sendPrompt() {
+        if (!promptInput) return;
         const txt = promptInput.value.trim();
         if (!txt) return;
 
@@ -1170,26 +1173,30 @@
 
       // Initialize SSE Stream
       function initSSE() {
-        const evtSource = new EventSource("http://127.0.0.1:8765/api/events");
+        try {
+          const evtSource = new EventSource("http://127.0.0.1:8765/api/events");
 
-        evtSource.onopen = function() {
-          statusText.innerText = "LINKED & STREAMING";
-          statusPill.style.borderColor = "rgba(16, 185, 129, 0.5)";
-        };
+          evtSource.onopen = function() {
+            if (statusText) statusText.innerText = "LINKED & STREAMING";
+            if (statusPill) statusPill.style.borderColor = "rgba(16, 185, 129, 0.5)";
+          };
 
-        evtSource.onmessage = function(e) {
-          try {
-            const data = JSON.parse(e.data);
-            appendMessage(data);
-          } catch (err) {
-            console.error("SSE parse error:", err);
-          }
-        };
+          evtSource.onmessage = function(e) {
+            try {
+              const data = JSON.parse(e.data);
+              appendMessage(data);
+            } catch (err) {
+              console.error("SSE parse error:", err);
+            }
+          };
 
-        evtSource.onerror = function() {
-          statusText.innerText = "STANDBY (POLLING)";
-          statusPill.style.borderColor = "rgba(232, 200, 114, 0.5)";
-        };
+          evtSource.onerror = function() {
+            if (statusText) statusText.innerText = "STANDBY (POLLING)";
+            if (statusPill) statusPill.style.borderColor = "rgba(232, 200, 114, 0.5)";
+          };
+        } catch (e) {
+          if (statusText) statusText.innerText = "STANDBY (OFFLINE)";
+        }
       }
 
       // Fetch recent history
