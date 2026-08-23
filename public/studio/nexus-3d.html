@@ -1098,17 +1098,17 @@
                 <span class="title">🤖 Expressive Bot</span>
                 <span class="sub">Rigged & Animated</span>
               </div>
-              <div class="catalog-card" onclick="loadModelPreset('/assets/models/cyberpunk/cyber_turret.glb', 'Cyber Turret')">
-                <span class="title">⚡ Cyber Turret</span>
+              <div class="catalog-card" onclick="loadModelPreset('/assets/models/scifi/Astronaut.glb', 'Astronaut')">
+                <span class="title">👨‍🚀 Astronaut</span>
                 <span class="sub">Hard Surface PBR</span>
               </div>
-              <div class="catalog-card" onclick="loadModelPreset('/assets/models/animated/Fox.glb', 'Cyber Fox')">
+              <div class="catalog-card" onclick="loadModelPreset('/assets/models/characters/Fox.glb', 'Cyber Fox')">
                 <span class="title">🦊 Cyber Fox</span>
                 <span class="sub">Skeletal Rig</span>
               </div>
-              <div class="catalog-card" onclick="loadModelPreset('/assets/models/weapons/plasma_rifle.glb', 'Plasma Rifle')">
+              <div class="catalog-card" onclick="loadModelPreset('/assets/models/weapons/plasma_rifle.obj', 'Plasma Rifle')">
                 <span class="title">🔫 Plasma Rifle</span>
-                <span class="sub">Sci-Fi Weapon</span>
+                <span class="sub">Wavefront OBJ</span>
               </div>
             </div>
           </div>
@@ -1878,6 +1878,22 @@
       }
 
       function loadModelPreset(url, name) {
+        if (url.endsWith('.obj')) {
+          const loader = new THREE.OBJLoader();
+          loader.load(url, (obj) => {
+            obj.position.set(0, 0, 0);
+            obj.name = name;
+            scene.add(obj);
+            meshList.push(obj);
+            selectObject(obj);
+            updateOutliner();
+            updateStats();
+          }, undefined, (err) => {
+            console.warn('OBJ load fallback:', err);
+            spawnPrimitive('crystal');
+          });
+          return;
+        }
         const loader = new THREE.GLTFLoader();
         loader.load(url, (gltf) => {
           const model = gltf.scene;
@@ -1919,6 +1935,18 @@
               updateOutliner();
               updateStats();
             });
+          };
+        } else if (file.name.endsWith('.obj')) {
+          reader.readAsText(file);
+          reader.onload = (evt) => {
+            const loader = new THREE.OBJLoader();
+            const obj = loader.parse(evt.target.result);
+            obj.name = file.name;
+            scene.add(obj);
+            meshList.push(obj);
+            selectObject(obj);
+            updateOutliner();
+            updateStats();
           };
         }
       }

@@ -1,15 +1,25 @@
-# ⚡ Zoth Studio (v2.6.0) — Master Operator Manual & User Guide
+<div align="center">
 
-> **Sovereign Local-First Multi-Agent Architecture, 3D CAD Omniverse & ESP32-S3 Physical Companion on Parrot OS**
+# <img src="/assets/mascot/azoth-mask.jpg" width="40" height="40" style="border-radius: 50%; vertical-align: middle; border: 2px solid #e8c872; box-shadow: 0 0 15px rgba(232,200,114,0.6);" /> ⚡ ZOTH STUDIO OPERATOR MANUAL & USER GUIDE
 
-Zoth Studio is an autonomous AI agent orchestration framework, CAD-grade 3D creative suite, cryptographic hardware key vault, and physical hardware companion hub. This manual covers operational directives, tools, API endpoints, hardware pinouts, and keyboard ergonomics.
+### *Sovereign Local-First Multi-Agent Architecture, 3D CAD Omniverse & ESP32-S3 Companion*
+
+[![Version](https://img.shields.io/badge/manual-v2.6.0-00f0ff?style=for-the-badge&logo=target&logoColor=white)](http://127.0.0.1:8088/docs/)
+[![Local-First](https://img.shields.io/badge/architecture-100%25%20Local--First-34d399?style=for-the-badge&logo=safari&logoColor=white)](http://127.0.0.1:8088/)
+[![Security](https://img.shields.io/badge/vault-Argon2id%20%2B%20XChaCha20-f472b6?style=for-the-badge&logo=rust&logoColor=white)](http://127.0.0.1:8088/vault/)
+
+<br>
+
+</div>
+
+<p align="center"><img src="/assets/brand/azoth-watermark-seal.svg" width="120" height="120" /></p>
 
 ---
 
 ## 🔌 1. System Topology & Network Ports
 
 | Surface | Port / URL | Function | Security & Isolation Doctrine |
-|---|---|---|---|
+| :--- | :--- | :--- | :--- |
 | **Public Hub** | `http://127.0.0.1:8088/` | Static brochures, 23+ creative suites, 3D showcases, AEO graph | Public / Tunnel Safe |
 | **Operator Deck** | `http://127.0.0.1:8484/` | Multi-model chat harness, terminal dock, swarm arbitration engine | **Loopback Only** (`127.0.0.1`) |
 | **ESP32-S3 Serial Bridge** | `http://127.0.0.1:8585/` | Hardware Web HUD, serial monitor & TTS audio server | Private Loopback |
@@ -43,9 +53,9 @@ Zoth Studio is an autonomous AI agent orchestration framework, CAD-grade 3D crea
 
 ## 🤖 3. ESP32-S3 Physical Hardware Companion
 
-<p align="center">
-  <img src="/assets/pets/azoth-neon.jpg" width="280" style="border-radius: 12px; border: 2px solid #00f0ff;" />
-</p>
+<div align="center">
+  <img src="/assets/media/cyber-esp32-companion-photoreal.jpg" width="480" style="border-radius: 12px; border: 2px solid #34d399;" />
+</div>
 
 ### Hardware Specifications & Pinouts
 * **MCU**: ESP32-S3 N16R8 (Dual Core Xtensa LX7 @ 240MHz, 16MB Flash, 8MB PSRAM)
@@ -67,10 +77,10 @@ Zoth Studio is an autonomous AI agent orchestration framework, CAD-grade 3D crea
 
 ### Compact Serial JSON Protocol
 ```json
-// Host -> ESP32-S3
+// Host -> ESP32-S3 (State & Emotion Broadcast)
 {"type":"state_update","companion":"azoth","mood":"focused","cpu_load":38.2,"status_text":"Refactoring Shader"}
 
-// ESP32-S3 -> Host
+// ESP32-S3 -> Host (Hardware Event)
 {"type":"button_press","button":"UP","hold_ms":350,"trigger":"TRIGGER_SWARM_CYCLE"}
 ```
 
@@ -82,7 +92,6 @@ Zoth Studio is an autonomous AI agent orchestration framework, CAD-grade 3D crea
 * **Zero-Leak Memory Policy**: Sensitive buffers are wrapped in Rust `Zeroize` traits and zeroed upon drop.
 * **In-Browser Web Crypto Fallback**: Uses PBKDF2 (100,000 iterations) + AES-GCM 256-bit for client-side storage.
 
-### Vault API Operations
 ```bash
 # Store Secret
 curl -X POST http://127.0.0.1:8686/api/vault/store \
@@ -97,46 +106,25 @@ curl -X POST http://127.0.0.1:8686/api/vault/retrieve \
 
 ---
 
-## 🎨 5. Creative & Diagnostic Web Suites Roster
+## 🏛️ 5. Creative & Diagnostic Web Studios (`/studio/`)
 
-1. **Nexus 3D Omniverse (`/studio/nexus-3d.html`)**: CAD-grade Three.js viewport with GLTF/OBJ asset loaders, procedural wireframe/PBR/point shaders, and 3D pet model animators.
-2. **Swarm Command Arena (`/studio/swarm.html`)**: Craig Reynolds Boids 3D flocking algorithm simulating multi-agent interaction dynamics, split-screen conversation telemetry, and agent bus events.
-3. **Consensus Arena v2 (`/studio/consensus.html`)**: Autonomous 3-agent arbitration engine with live Shannon entropy calculation, Jaccard token overlap metrics, and unified contract synthesizers.
-4. **OmniPost 2.0 Video Engine (`/studio/omnipost.html`)**: 60 FPS HTML5 Canvas video generator, 16:9 thumbnail forge, subtitle syncer, and Web Speech API vocal narration.
-5. **Vision Link Spatial HUD (`/studio/vision-link.html`)**: Webcam-based computer vision hand gesture tracking, 3D overlays, air typing keyboard, and touchless window pinch-zooming.
-6. **AI Math Observability (`/studio/math-pillars.html`)**: Real-time cross-entropy loss descent, cosine learning rate schedulers, and neural weight convergence visualizer.
-7. **Visual DAG Agent Composer (`/studio/agent-composer.html`)**: Interactive node graph editor with bezier connecting wires, conditional logic branches, and JSON playbook exporter.
-8. **Edge Function Forge (`/studio/edge-forge.html`)**: Serverless V8 isolate code editor with built-in rate limiters, Solana RPC connectors, and waterfall latency telemetry.
-9. **SubSweep Reconnaissance (`/studio/subsweep.html`)**: OSINT attack surface scanner, Certificate Transparency log probe, and TLS 1.3 cryptographic security auditor.
-
----
-
-## 🐾 6. 24 Cyber Pet Companions & Doctrines
-
-| Companion | Species | Specialization & Role | Key Directive |
-|:---|:---|:---|:---|
-| **Azoth** | Sovereign AI Phoenix | Lead Pair Programmer & System Architect | Holistic system coherence, zero regression. |
-| **Kai** | Holographic Cat | Workspace Inspector & Diff Auditor | Smallest proof, rank findings by blast radius. |
-| **Draco** | Cyber Dragon | Multi-Agent Fusion Compiler | Agreement is evidence, conflict is a ticket. |
-| **Luna** | Lunar Fox | Creative Media & Canvas Synthesizer | Fluid 60 FPS canvas animation, radiant design. |
-| **Zephyr** | Wind Falcon | High-Velocity Code Refactorer | Eliminate dead abstractions, maximize throughput. |
-| **Nyx** | Shadow Panther | Cryptographic & Threat Sentinel | Zero trust, encrypt at rest, verify contracts. |
-| **Sol** | Solar Lion | AEO & Discoverability Architect | Machine-readable schemas, llms.txt optimization. |
-| **Ignis** | Neon Phoenix | Dead-Code Eliminator & Optimizer | Turn red to green with smallest clean change. |
-| **Lycan** | Mecha Wolf | OWASP Sentinel & CSP Enforcer | Defensive sanitization, CSP strictness. |
-| **Athena** | Cyber Owl | Graph Coherence & Obsidian Sync | Bi-directional linking, structured indexing. |
-| **Kitsune** | 16-Bit Cyber Fox | UI/UX Glassmorphism & Token Stylist | Cyberpunk polish, micro-interactions. |
-| **Pixel-Neko** | Retro 8-Bit Cat | Drive Tool Indexer & Registry Sentinel| Scan tools, audit endpoints. |
-| **Pixel-Shiba** | Mecha Doge | BYOK Vault Hardware Guardian | Protect root secrets, loopback verification. |
-| **Radical Minion**| Hermes Bot | Nous Research Autonomous Tool Caller | Multi-step chained CLI automation. |
+| Studio Suite | Endpoint Path | Role & Capabilities |
+| :--- | :--- | :--- |
+| **Master Azoth Portal** | `/zoth/` | Sacred Fibonacci token visualizer, AST code synthesis, and alchemical core. |
+| **Nexus 3D CAD Omniverse** | `/studio/nexus-3d.html` | Three.js 3D viewport with GLTF asset loader, Wireframe/PBR modes, and HDRI skyboxes. |
+| **Consensus Arena v2** | `/studio/consensus.html` | 3-agent triangulation with Shannon entropy and Jaccard token overlap metrics. |
+| **Swarm Command Arena** | `/studio/swarm.html` | Craig Reynolds Boids 3D kinetic flocking simulation tracking agent communication vectors. |
+| **OmniPost 2.0 Video Engine**| `/studio/omnipost.html` | 60 FPS HTML5 Canvas video synthesizer, thumbnail forge, subtitle & speech narration syncer. |
+| **Vision Link Spatial HUD** | `/studio/vision-link.html` | Webcam hand gesture recognition, 3D holographic overlays, and air typing keyboard. |
+| **AI Math Observability** | `/studio/math-pillars.html` | Real-time cross-entropy loss descent, cosine learning rate scheduler, and weight convergence visualizer. |
+| **Visual DAG Agent Composer**| `/studio/agent-composer.html` | Interactive node graph editor with bezier connecting wires and JSON playbook exporter. |
+| **Edge Function Forge** | `/studio/edge-forge.html` | Serverless V8 isolate sandbox with Solana RPC connectors and waterfall telemetry. |
+| **SubSweep Recon** | `/studio/subsweep.html` | OSINT attack surface scanner, Certificate Transparency log probe, and TLS security auditor. |
 
 ---
 
-## 📦 7. Standalone Precompiled Executables
-
-Universal standalone binaries reside in `releases-and-binaries/`:
-* **Linux (x86_64)**: `Zoth_Studio-v2.6.0-x86_64.AppImage`, `zoth-studio_2.6.0_all.deb`, `zoth-studio-v2.6.0-linux-x86_64.tar.gz`, `zoth-linux-x86_64.run`
-* **Windows (x86_64)**: `zoth-studio-v2.6.0-windows-x86_64.zip`, `zoth-windows-x86_64.exe`
-
----
-*Manual Version: v2.6.0 · Zoth Studio Autonomous Architecture · Parrot OS / Linux*
+<div align="center">
+  <img src="/assets/mascot/azoth-mask.jpg" width="30" height="30" style="border-radius:50%; vertical-align:middle; border:1px solid #e8c872;" />
+  <br>
+  <strong>Zoth Studio Documentation Group</strong> · Licensed under Apache License 2.0
+</div>
