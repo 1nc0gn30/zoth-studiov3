@@ -12,11 +12,10 @@ Commands:
   dashboard  CLI dashboard view
   run        Run a tool command
   install    Install tool dependencies
-  session    Interactive agent session
-  chain      List or run tool chains
-  env        Show environment info
-  assess     Assess tool readiness
   serve      HTTP API server (for web dashboard)
+
+Note: session/chain/env/assess are advertised in older docs but are NOT
+registered as CLI subcommands in this version.
 """
 
 from __future__ import annotations
