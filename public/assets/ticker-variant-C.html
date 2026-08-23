@@ -1,0 +1,370 @@
+<!--
+  TICKER VARIANT C — "SOVEREIGN SCANNER" (ops-console readout)
+  ============================================================
+  USAGE
+    Replace the entire `.sovereign-stack` block in zoth/index.html
+    (the <div class="sovereign-stack" ...> ... </div> element, ~line 1157)
+    with the markup in the SNIPPET below, then include this file:
+
+      <link rel="stylesheet" href="/assets/ticker-variant-C.html" />   <-- NO — this is a standalone demo/preview file.
+      Standalone: open this file directly in a browser to preview.
+      Integration: copy the <style id="tkc-style"> block into the page <head>
+      (or link it as ticker-variant-C.css), copy the SNIPPET markup over
+      .sovereign-stack, and copy the <script id="tkc-script"> block before
+      </body>. All classes are prefixed tkc- and will not collide.
+
+    This single file is self-contained and previewable as-is.
+
+  NOTES
+    - Logos: /assets/logos/*.svg (verified present: anthropic-claude,
+      google-gemini, xai-grok, deepseek, cerebras-wafer, nous-research).
+    - Motion: transform/opacity/clip-path only (no layout thrash).
+    - Hover/touch freezes the scanline and highlights the node panel.
+    - prefers-reduced-motion: static wrapped grid, statuses visible, no scan.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sovereign Scanner — Ticker Variant C preview</title>
+<style id="tkc-style">
+  /* ============ tkc tokens ============ */
+  .tkc-stack {
+    --tkc-cyan: #00f0ff;
+    --tkc-gold: #d4af37;
+    --tkc-amber: #ffb000;
+    --tkc-green: #34ff7a;
+    --tkc-mute: #8b90a5;
+    --tkc-line: rgba(255, 255, 255, 0.10);
+    --tkc-gap: 20px;
+    --tkc-node-w: 190px;
+    margin-top: 34px;
+    padding-top: 20px;
+    border-top: 1px solid var(--tkc-line);
+    font-family: ui-monospace, "SF Mono", "IBM Plex Mono", Menlo, Consolas, monospace;
+  }
+  .tkc-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .tkc-label {
+    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--tkc-mute); white-space: nowrap;
+  }
+  .tkc-label .tkc-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--tkc-green); margin-right: 8px; vertical-align: 1px;
+    box-shadow: 0 0 6px var(--tkc-green);
+    animation: tkc-blink 2.2s steps(2, start) infinite;
+  }
+  @keyframes tkc-blink { 50% { opacity: 0.35; } }
+  .tkc-rule { flex: 1; height: 1px; background: var(--tkc-line); }
+  .tkc-readout {
+    font-size: 0.62rem; letter-spacing: 0.14em; color: var(--tkc-amber);
+    text-transform: uppercase; white-space: nowrap;
+  }
+
+  /* ============ scanner viewport ============ */
+  .tkc-marquee {
+    position: relative;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .tkc-track {
+    display: flex; align-items: stretch; gap: var(--tkc-gap);
+    width: max-content;
+    padding: 14px 0 6px;
+    animation: tkc-scroll 55s linear infinite;
+    will-change: transform;
+    transform: translate3d(0,0,0);
+  }
+  @keyframes tkc-scroll {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+  }
+  /* hover/touch freeze */
+  .tkc-marquee.tkc-paused .tkc-track { animation-play-state: paused; }
+
+  /* horizontal scanline sweeping the viewport */
+  .tkc-scanline {
+    position: absolute; top: 0; bottom: 0; left: 0;
+    width: 90px; pointer-events: none; z-index: 2;
+    background: linear-gradient(90deg, transparent, rgba(0,240,255,0.10) 40%, rgba(52,255,122,0.22) 82%, rgba(52,255,122,0.55) 98%, transparent);
+    border-right: 1px solid rgba(52,255,122,0.65);
+    box-shadow: 1px 0 14px rgba(52,255,122,0.25);
+    animation: tkc-sweep 7s linear infinite;
+    will-change: transform;
+  }
+  @keyframes tkc-sweep {
+    from { transform: translate3d(-100px, 0, 0); }
+    to   { transform: translate3d(110vw, 0, 0); }
+  }
+  .tkc-marquee.tkc-paused .tkc-scanline { animation-play-state: paused; }
+
+  /* ============ node panels ============ */
+  .tkc-node {
+    position: relative;
+    flex: 0 0 var(--tkc-node-w);
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 14px 14px 12px;
+    border: 1px solid var(--tkc-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+    cursor: default;
+    transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  }
+  .tkc-node::before { /* corner brackets */
+    content: ""; position: absolute; inset: 4px; pointer-events: none;
+    border-radius: 6px;
+    background:
+      linear-gradient(var(--tkc-cyan), var(--tkc-cyan)) top left / 10px 1px,
+      linear-gradient(var(--tkc-cyan), var(--tkc-cyan)) top left / 1px 10px,
+      linear-gradient(var(--tkc-cyan), var(--tkc-cyan)) bottom right / 10px 1px,
+      linear-gradient(var(--tkc-cyan), var(--tkc-cyan)) bottom right / 1px 10px;
+    background-repeat: no-repeat;
+    opacity: 0.35; transition: opacity 0.3s ease;
+  }
+  .tkc-node:hover,
+  .tkc-marquee.tkc-paused .tkc-node:hover {
+    border-color: rgba(212, 175, 55, 0.55);
+    background: rgba(212, 175, 55, 0.05);
+    box-shadow: 0 0 22px rgba(212, 175, 55, 0.12), inset 0 0 18px rgba(0, 240, 255, 0.05);
+  }
+  .tkc-node:hover::before { opacity: 0.9; }
+
+  /* logo row */
+  .tkc-logo-row {
+    display: flex; align-items: center; gap: 10px;
+    height: 30px;
+  }
+  .tkc-node img {
+    height: 26px; width: auto; display: block;
+    filter: grayscale(1) brightness(1.7); opacity: 0.55;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+  }
+  .tkc-node:hover img { filter: none; opacity: 1; }
+  .tkc-sig { /* signal bars */
+    margin-left: auto; display: flex; gap: 2px; align-items: flex-end;
+  }
+  .tkc-sig i {
+    width: 3px; background: var(--tkc-green); opacity: 0.85; border-radius: 1px;
+  }
+  .tkc-sig i:nth-child(1) { height: 4px; }
+  .tkc-sig i:nth-child(2) { height: 7px; }
+  .tkc-sig i:nth-child(3) { height: 10px; }
+  .tkc-sig i:nth-child(4) { height: 13px; background: var(--tkc-amber); }
+
+  /* mono status readout under each node */
+  .tkc-status {
+    font-size: 0.58rem; line-height: 1.5; letter-spacing: 0.08em;
+    color: var(--tkc-mute); text-transform: uppercase;
+    white-space: nowrap; overflow: hidden;
+  }
+  .tkc-status .tkc-id { color: var(--tkc-cyan); font-weight: 700; }
+  .tkc-status .tkc-ok { color: var(--tkc-green); }
+  .tkc-status .tkc-lat { color: var(--tkc-amber); }
+
+  /* ============ materialize (decode-in) effect ============
+     Beam passes -> node glitches in via clip-path slices + opacity steps.
+     Real brand text is never scrambled; only clip/opacity flicker. */
+  .tkc-node {
+    opacity: 0.12;
+    clip-path: inset(0 100% 0 0);
+    animation: tkc-decode 0.9s steps(6, end) forwards;
+  }
+  .tkc-node:nth-of-type(odd) { animation-duration: 1.05s; }
+  @keyframes tkc-decode {
+    0%   { opacity: 0.12; clip-path: inset(0 100% 0 0); }
+    20%  { opacity: 0.55; clip-path: inset(12% 62% 30% 0); }
+    40%  { opacity: 0.35; clip-path: inset(0 38% 8% 4%); }
+    60%  { opacity: 0.8;  clip-path: inset(22% 14% 0 0); }
+    80%  { opacity: 0.5;  clip-path: inset(0 4% 14% 2%); }
+    100% { opacity: 1;    clip-path: inset(0 0 0 0); }
+  }
+  /* subtle phosphor flicker after materializing */
+  .tkc-node img { animation: tkc-flicker 6s steps(1) infinite; }
+  @keyframes tkc-flicker {
+    0%, 93%, 100% { opacity: inherit; }
+    94% { opacity: 0.35; }
+    96% { opacity: 0.8; }
+  }
+  .tkc-node:hover img, .tkc-marquee.tkc-paused .tkc-node img { animation: none; }
+
+  /* ============ reduced motion: static grid ============ */
+  @media (prefers-reduced-motion: reduce) {
+    .tkc-track {
+      animation: none;
+      width: auto; max-width: 100%;
+      flex-wrap: wrap; justify-content: center;
+      transform: none;
+    }
+    .tkc-marquee { overflow: visible; mask-image: none; -webkit-mask-image: none; }
+    .tkc-scanline, .tkc-label .tkc-dot { display: none; }
+    .tkc-node { opacity: 1; clip-path: none; animation: none; }
+    .tkc-node img { animation: none; }
+    .tkc-readout { display: none; }
+  }
+
+  /* ============ mobile ============ */
+  @media (max-width: 720px) {
+    .tkc-stack { --tkc-node-w: 170px; }
+    .tkc-track { animation-duration: 75s; }
+    .tkc-node { flex-basis: 170px; }
+    .tkc-readout { display: none; }
+  }
+  @media (max-width: 480px) {
+    .tkc-track { animation: none; flex-wrap: wrap; width: auto; justify-content: center; }
+    .tkc-marquee { overflow: visible; mask-image: none; -webkit-mask-image: none; }
+    .tkc-scanline { display: none; }
+    .tkc-node { opacity: 1; clip-path: none; animation: none; flex-basis: calc(50% - 10px); }
+  }
+</style>
+</head>
+<body style="background:#07080d;color:#d4d8e8;padding:40px;font-family:sans-serif">
+
+  <!-- ======================= SNIPPET (paste over .sovereign-stack) ======================= -->
+  <div class="tkc-stack" id="tkc-ticker" aria-label="Supported model providers">
+    <div class="tkc-head">
+      <span class="tkc-label"><span class="tkc-dot" aria-hidden="true"></span>SOVEREIGN SCANNER // NODE REGISTRY</span>
+      <span class="tkc-rule" aria-hidden="true"></span>
+      <span class="tkc-readout" id="tkc-readout" aria-hidden="true">SCAN ACTIVE</span>
+    </div>
+    <div class="tkc-marquee" id="tkc-marquee">
+      <div class="tkc-scanline" aria-hidden="true"></div>
+      <div class="tkc-track">
+        <!-- set A (visible) -->
+        <div class="tkc-node" style="--i:0">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/anthropic-claude.svg" alt="Anthropic Claude" loading="lazy" />
+            <span class="tkc-sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 01 // CLAUDE</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">12ms</span></div>
+        </div>
+        <div class="tkc-node" style="--i:1">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/google-gemini.svg" alt="Google Gemini" loading="lazy" />
+            <span class="tkc-sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 02 // GEMINI</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">18ms</span></div>
+        </div>
+        <div class="tkc-node" style="--i:2">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/xai-grok.svg" alt="xAI Grok" loading="lazy" />
+            <span class="tkc-sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 03 // GROK</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">21ms</span></div>
+        </div>
+        <div class="tkc-node" style="--i:3">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/deepseek.svg" alt="DeepSeek" loading="lazy" />
+            <span class="tkc-sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 04 // DEEPSEEK</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">33ms</span></div>
+        </div>
+        <div class="tkc-node" style="--i:4">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/cerebras-wafer.svg" alt="Cerebras" loading="lazy" />
+            <span class="tkc-sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 05 // CEREBRAS</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">09ms</span></div>
+        </div>
+        <div class="tkc-node" style="--i:5">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/nous-research.svg" alt="Nous Research" loading="lazy" />
+            <span class="tkc-sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 06 // NOUS</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">07ms</span></div>
+        </div>
+        <!-- set B (aria-hidden duplicate for seamless loop) -->
+        <div class="tkc-node" aria-hidden="true">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/anthropic-claude.svg" alt="" loading="lazy" />
+            <span class="tkc-sig"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 01 // CLAUDE</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">12ms</span></div>
+        </div>
+        <div class="tkc-node" aria-hidden="true">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/google-gemini.svg" alt="" loading="lazy" />
+            <span class="tkc-sig"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 02 // GEMINI</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">18ms</span></div>
+        </div>
+        <div class="tkc-node" aria-hidden="true">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/xai-grok.svg" alt="" loading="lazy" />
+            <span class="tkc-sig"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 03 // GROK</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">21ms</span></div>
+        </div>
+        <div class="tkc-node" aria-hidden="true">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/deepseek.svg" alt="" loading="lazy" />
+            <span class="tkc-sig"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 04 // DEEPSEEK</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">33ms</span></div>
+        </div>
+        <div class="tkc-node" aria-hidden="true">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/cerebras-wafer.svg" alt="" loading="lazy" />
+            <span class="tkc-sig"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 05 // CEREBRAS</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">09ms</span></div>
+        </div>
+        <div class="tkc-node" aria-hidden="true">
+          <div class="tkc-logo-row">
+            <img src="/assets/logos/nous-research.svg" alt="" loading="lazy" />
+            <span class="tkc-sig"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="tkc-status"><span class="tkc-id">NODE 06 // NOUS</span><br /><span class="tkc-ok">LINK ESTABLISHED</span> · <span class="tkc-lat">07ms</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ======================= /SNIPPET ======================= -->
+
+<script id="tkc-script">
+(function () {
+  "use strict";
+  var stack = document.getElementById("tkc-ticker");
+  if (!stack) return;
+  var marquee = document.getElementById("tkc-marquee");
+  var readout = document.getElementById("tkc-readout");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) {
+    if (readout) readout.textContent = "SCAN COMPLETE";
+    return; // static grid; CSS handles the fallback
+  }
+
+  // Hover freeze + highlight
+  marquee.addEventListener("mouseenter", function () {
+    marquee.classList.add("tkc-paused");
+    if (readout) readout.textContent = "SCAN HELD // NODE INSPECT";
+  });
+  marquee.addEventListener("mouseleave", function () {
+    marquee.classList.remove("tkc-paused");
+    if (readout) readout.textContent = "SCAN ACTIVE";
+  });
+
+  // Touch tap-to-freeze
+  var tapped = false;
+  marquee.addEventListener("touchstart", function () {
+    tapped = !tapped;
+    marquee.classList.toggle("tkc-paused", tapped);
+    if (readout) readout.textContent = tapped ? "SCAN HELD" : "SCAN ACTIVE";
+  }, { passive: true });
+
+  // Cycle readout ticker (cheap, 1.5s interval, textContent only)
+  var phases = ["SCAN ACTIVE", "SWEEP 0x2F // PASSIVE", "SIGNAL LOCK 06/06", "SWEEP 0x30 // PASSIVE"];
+  var pi = 0;
+  setInterval(function () {
+    if (marquee.classList.contains("tkc-paused")) return;
+    pi = (pi + 1) % phases.length;
+    if (readout) readout.textContent = phases[pi];
+  }, 1600);
+})();
+</script>
+</body>
+</html>

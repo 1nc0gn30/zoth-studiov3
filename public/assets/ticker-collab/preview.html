@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<!-- "Constellation Ledger" standalone preview — real-render verification rig.
+     Serve from the public root so the /assets/ paths resolve, e.g.:
+       cd core-app/public && python3 -m http.server 8088
+     then open http://127.0.0.1:8088/assets/ticker-collab/preview.html
+     Loads ticker.css + ticker.js + the exact snippet.html markup.
+     Nothing here touches zoth/index.html. -->
+<!-- Pass 15: real site tokens imported verbatim from zoth/index.html :root
+     (plus its Google Fonts load) so this rig renders exactly like production. -->
+<!-- Pass 24: integration rehearsal — the snippet now sits inside a faithful
+     replica of its real production context: section.fib-section#alchemical-
+     doctrine (padding var(--fib-89) var(--pad), max-width 1400px, margin auto)
+     > .alchemical-deck (golden-split grid, fib-34 padding/gap, bordered card)
+     > left grid column (min-width:0) — exactly where .sovereign-stack lives
+     today. This catches width/padding/min-width interactions the old 960px
+     frame could not: the ticker's real desktop home is a ~55% grid column
+     inside a card, roughly 600px wide, not a full-width strip. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Constellation Ledger — ticker preview</title>
+  <!-- production fonts (same css2 request as zoth/index.html) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" />
+  <style>
+    /* === verbatim :root from /public/zoth/index.html (production values) === */
+    :root {
+      --fib-1: 1px;
+      --fib-2: 2px;
+      --fib-3: 3px;
+      --fib-5: 5px;
+      --fib-8: 8px;
+      --fib-13: 13px;
+      --fib-21: 21px;
+      --fib-34: 34px;
+      --fib-55: 55px;
+      --fib-89: 89px;
+      --fib-144: 144px;
+      --fib-233: 233px;
+      --fib-377: 377px;
+      --fib-610: 610px;
+
+      --phi: 1.6180339887;
+      --golden-split: 1.618fr 1fr;
+
+      --bg: #050508;
+      --card-bg: rgba(6, 9, 18, 0.88);
+      --card-border: rgba(232, 200, 114, 0.22);
+      --gold: #e8c872;
+      --gold-glow: rgba(232, 200, 114, 0.4);
+      --cyan: #00f0ff;
+      --purple: #c084fc;
+      --text: #f7f4ee;
+      --mute: #a8a4c2;
+      --line: rgba(247, 244, 238, 0.1);
+
+      --font-display: "Syne", system-ui, sans-serif;
+      --font-sans: "Figtree", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+      --pad: clamp(var(--fib-21), 5.5vw, var(--fib-89));
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+    }
+
+    /* === Pass 24: verbatim production containers from zoth/index.html === */
+    .fib-section {
+      position: relative;
+      padding: var(--fib-89) var(--pad);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    @media (max-width: 900px) {
+      .fib-section { padding: var(--fib-55) var(--fib-21); }
+    }
+    .alchemical-deck {
+      display: grid;
+      grid-template-columns: var(--golden-split);
+      gap: var(--fib-34);
+      background: rgba(6, 9, 18, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: var(--fib-21);
+      padding: var(--fib-34);
+      margin-top: var(--fib-34);
+    }
+    .alchemical-deck > div { min-width: 0; }
+    /* stand-in for the deck's right column (terminal) — same footprint class */
+    .terminal-box {
+      background: #020305;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--fib-13);
+      padding: var(--fib-21);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--mute);
+      min-height: 180px;
+    }
+    /* minimal deck-copy stand-in so the left column has realistic content
+       mass above the ticker (heading + paragraph, production-like sizing) */
+    .deck-standin h3 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      margin: 0 0 var(--fib-8);
+    }
+    .deck-standin p {
+      color: var(--mute);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin: 0 0 var(--fib-21);
+    }
+
+    /* ---------- Pass 16: hover micro-feel A/B ----------
+       ?hover=b applies variant B (slightly springier overshoot ease).
+       Default / no param = variant A = production curve untouched.
+       Variant B overrides ONLY the token inside this rig; ticker.css
+       still owns the contract. To promote a winner permanently, edit
+       --tk-ease in ticker.css §1 (see README "Hover A/B"). */
+    html[data-hover-b] .tk-stack,
+    html[data-hover-b] .tk-name,
+    html[data-hover-b] .tk-logo::after {
+      --tk-ease: cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+  </style>
+  <link rel="stylesheet" href="/assets/ticker-collab/ticker.css" />
+  <script src="/assets/ticker-collab/ticker.js" defer></script>
+</head>
+<body>
+<script>
+  // Pass 16: hover A/B — ?hover=b flips to variant B (springier ease).
+  if (new URLSearchParams(location.search).get("hover") === "b") {
+    document.documentElement.setAttribute("data-hover-b", "");
+  }
+</script>
+<!-- Pass 25: DEV-ONLY performance instrumentation (preview rig only —
+     ticker.js / ticker.css / snippet.html untouched). Runs before the
+     deferred ticker.js executes. Measures:
+       1. init time — console.time('tk:init') from parse-time t0 to the
+          first class mutation on #tk-ticker (tk-armed landing). Must be < 5ms.
+       2. observer discipline — tk-inview must be added exactly ONCE
+          (observer.disconnect() contract); any second addition logs FAIL.
+     Open DevTools console to see the PASS/FAIL lines. -->
+<script>
+(function () {
+  "use strict";
+  console.time("tk:init");
+  var t0 = performance.now();
+  var root = document.getElementById("tk-ticker");
+  if (!root) { console.warn("[tk-dev] #tk-ticker not found"); return; }
+  var inviewCount = 0, armed = false;
+  new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      if (m.attributeName !== "class") return;
+      var cl = root.classList;
+      if (!armed && cl.contains("tk-armed")) {
+        armed = true;
+        var dt = performance.now() - t0;
+        console.timeEnd("tk:init");
+        console.log("[tk-dev] init (arm) " + dt.toFixed(2) + "ms — " +
+          (dt < 5 ? "PASS (<5ms)" : "FAIL (>=5ms)"));
+      }
+      if (cl.contains("tk-inview")) {
+        inviewCount++;
+        console.log("[tk-dev] tk-inview applied (" + inviewCount + ") — " +
+          (inviewCount === 1 ? "OK" : "FAIL: observer fired more than once"));
+      }
+    });
+  }).observe(root, { attributes: true, attributeFilter: ["class"] });
+})();
+</script>
+  <!-- ===== Pass 24: production context replica ===== -->
+  <section class="fib-section" id="alchemical-doctrine" style="border-top:1px solid var(--line)">
+    <div class="alchemical-deck">
+      <div class="deck-standin">
+        <div style="font-family:var(--font-mono);font-size:0.70rem;color:var(--gold);font-weight:700;margin-bottom:var(--fib-8)">
+          LIVE SOVEREIGN COGNITIVE DECK
+        </div>
+        <h3>Query Master Azoth on Loopback</h3>
+        <p>Stand-in deck copy — same mass and measure as production, so the
+           ticker enters below real content inside the real column width.</p>
+<!-- BEGIN snippet.html (verbatim) -->
+<section id="tk-ticker" class="tk-stack" aria-label="Supported model providers">
+  <div class="tk-head">
+    <span class="tk-label">RUNS WITH THE SOVEREIGN STACK</span>
+    <span class="tk-rule"></span>
+  </div>
+  <div class="tk-marquee">
+    <div class="tk-track">
+      <a href="#tk-ticker" class="tk-logo" aria-label="Claude — supported model provider" style="--i:0"><img src="/assets/logos/anthropic-claude.svg" alt="" loading="lazy" /><span class="tk-name">Claude</span></a>
+      <a href="#tk-ticker" class="tk-logo" aria-label="Gemini — supported model provider" style="--i:1"><img src="/assets/logos/google-gemini.svg" alt="" loading="lazy" /><span class="tk-name">Gemini</span></a>
+      <a href="#tk-ticker" class="tk-logo tk-logo--grok" aria-label="Grok — supported model provider" style="--i:2"><img src="/assets/logos/xai-grok.svg" alt="" loading="lazy" /><span class="tk-name">Grok</span></a>
+      <a href="#tk-ticker" class="tk-logo tk-logo--deepseek" aria-label="DeepSeek — supported model provider" style="--i:3"><img src="/assets/logos/deepseek.svg" alt="" loading="lazy" /><span class="tk-name">DeepSeek</span></a>
+      <a href="#tk-ticker" class="tk-logo tk-logo--cerebras" aria-label="Cerebras — supported model provider" style="--i:4"><img src="/assets/logos/cerebras-wafer.svg" alt="" loading="lazy" /><span class="tk-name">Cerebras</span></a>
+      <a href="#tk-ticker" class="tk-logo" aria-label="Nous Research — supported model provider" style="--i:5"><img src="/assets/logos/nous-research.svg" alt="" loading="lazy" /><span class="tk-name">Nous Research</span></a>
+
+      <!-- duplicate set for seamless loop; hidden from AT, display-hidden under reduced motion -->
+      <span class="tk-logo tk-logo--dup" aria-hidden="true" style="--i:0"><img src="/assets/logos/anthropic-claude.svg" alt="" loading="lazy" /><span class="tk-name">Claude</span></span>
+      <span class="tk-logo tk-logo--dup" aria-hidden="true" style="--i:1"><img src="/assets/logos/google-gemini.svg" alt="" loading="lazy" /><span class="tk-name">Gemini</span></span>
+      <span class="tk-logo tk-logo--dup tk-logo--grok" aria-hidden="true" style="--i:2"><img src="/assets/logos/xai-grok.svg" alt="" loading="lazy" /><span class="tk-name">Grok</span></span>
+      <span class="tk-logo tk-logo--dup tk-logo--deepseek" aria-hidden="true" style="--i:3"><img src="/assets/logos/deepseek.svg" alt="" loading="lazy" /><span class="tk-name">DeepSeek</span></span>
+      <span class="tk-logo tk-logo--dup tk-logo--cerebras" aria-hidden="true" style="--i:4"><img src="/assets/logos/cerebras-wafer.svg" alt="" loading="lazy" /><span class="tk-name">Cerebras</span></span>
+      <span class="tk-logo tk-logo--dup" aria-hidden="true" style="--i:5"><img src="/assets/logos/nous-research.svg" alt="" loading="lazy" /><span class="tk-name">Nous Research</span></span>
+    </div>
+  </div>
+</section>
+<!-- END snippet.html -->
+      </div>
+      <div class="terminal-box">terminal stand-in column</div>
+    </div>
+  </section>
+</body>
+</html>
