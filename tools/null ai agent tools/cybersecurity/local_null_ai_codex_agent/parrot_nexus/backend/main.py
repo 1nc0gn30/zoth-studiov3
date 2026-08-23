@@ -11,6 +11,15 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from shared_constants import (
+    DEFAULT_MODEL,
+    OLLAMA_GENERATE_URL,
+    OLLAMA_TAGS_URL,
+    PRESETS_FILENAME,
+    TOOL_OVERRIDES_FILENAME,
+    TOOLS_SNAPSHOT_FILENAME,
+)
+
 import fcntl
 import requests
 import termios
@@ -28,11 +37,11 @@ if HAS_FLASK_CORS:
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 BASE_DIR = Path(__file__).resolve().parent
-PRESETS_PATH = BASE_DIR / "config" / "presets.json"
-TOOL_OVERRIDES_PATH = BASE_DIR / "config" / "tool_overrides.json"
+PRESETS_PATH = BASE_DIR / "config" / PRESETS_FILENAME
+TOOL_OVERRIDES_PATH = BASE_DIR / "config" / TOOL_OVERRIDES_FILENAME
 TOOLS_DIR = BASE_DIR / "tools"
 PLAYBOOKS_DIR = BASE_DIR / "playbooks"
-TOOLS_SNAPSHOT_PATH = TOOLS_DIR / "loaded_tools.json"
+TOOLS_SNAPSHOT_PATH = TOOLS_DIR / TOOLS_SNAPSHOT_FILENAME
 
 sessions = {}
 sessions_lock = threading.Lock()
@@ -42,7 +51,7 @@ heartbeat_stop_event = threading.Event()
 heartbeat_thread = None
 heartbeat_state = {
     "enabled": False,
-    "model": "gemma4:31b-cloud",
+    "model": DEFAULT_MODEL,
     "prompt": "Reply with exactly: HEARTBEAT_OK",
     "interval_seconds": 60,
     "last_ok": None,
@@ -56,7 +65,7 @@ agent_stop_event = threading.Event()
 agent_state = {
     "enabled": False,
     "name": "codex-ollama-agent",
-    "model": "gemma4:31b-cloud",
+    "model": DEFAULT_MODEL,
     "command": [],
     "cwd": "",
     "auto_restart": True,
@@ -937,7 +946,7 @@ def start_managed_agent(payload):
         if agent_state["running"]:
             return
 
-        model = payload.get("model", "gemma4:31b-cloud")
+        model = payload.get("model", DEFAULT_MODEL)
         cmd = payload.get("command", ["ollama", "serve"])
         cwd = payload.get("cwd", str(BASE_DIR))
 
@@ -1047,7 +1056,7 @@ def stop_heartbeat():
         pass
 
 def ollama_generate(model="llama3", prompt="Hello", timeout=30):
-    url = "http://localhost:11434/api/generate"
+    url = OLLAMA_GENERATE_URL
     payload = {
         "model": model,
         "prompt": prompt,
@@ -1153,7 +1162,7 @@ def agent_stop():
 @app.route("/api/ai/models", methods=["GET"])
 def list_ai_models():
     try:
-        response = requests.get("http://localhost:11434/api/tags", timeout=10)
+        response = requests.get(OLLAMA_TAGS_URL, timeout=10)
         response.raise_for_status()
         payload = response.json()
         models = [item.get("name") for item in payload.get("models", []) if item.get("name")]

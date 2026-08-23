@@ -41,3 +41,12 @@ Autonomous Codex agent orchestration for running multi-step security and dev wor
 
 - Start with the smallest safe validation available for this tool.
 - If validation is blocked by missing dependencies, document the exact missing command or package.
+
+## Install / Dependencies
+
+Python backend deps are pinned in `parrot_nexus/backend/requirements.txt`
+(Flask 3.1.1, flask-cors, flask-socketio 5.5.1, requests). Install with:
+
+```bash
+python3 -m pip install -r parrot_nexus/backend/requirements.txt
+```

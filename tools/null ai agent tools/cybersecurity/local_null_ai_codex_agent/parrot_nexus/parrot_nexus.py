@@ -42,6 +42,12 @@ try:
 except ImportError:
     requests = None
 
+from shared_constants import (
+    DEFAULT_MODEL,
+    OLLAMA_GENERATE_URL,
+    OLLAMA_TAGS_URL,
+)
+
 # ── Paths ──────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 PRESETS_PATH = BASE_DIR / "backend" / "config" / "presets.json"
@@ -432,7 +438,7 @@ def ollama_list_models():
     if not requests:
         return []
     try:
-        r = requests.get("http://localhost:11434/api/tags", timeout=10)
+        r = requests.get(OLLAMA_TAGS_URL, timeout=10)
         r.raise_for_status()
         return [m.get("name") for m in r.json().get("models", []) if m.get("name")]
     except Exception:
@@ -443,7 +449,7 @@ def ollama_chat(model, prompt, timeout=60):
     if not requests:
         raise RuntimeError("requests library not installed. Run: pip install requests")
     r = requests.post(
-        "http://localhost:11434/api/generate",
+        OLLAMA_GENERATE_URL,
         json={"model": model, "prompt": prompt, "stream": False},
         timeout=timeout,
     )
@@ -758,7 +764,7 @@ def cmd_ai(args):
     
     if args.list or args.prompt is None:
         # Interactive chat mode
-        model = args.model or "gemma4:31b-cloud"
+        model = args.model or DEFAULT_MODEL
         print(f"{C.BD}PARRoT NEXUS — AI Chat ({model}){C.RS}")
         print(f"  {C.D}Type 'exit' to quit. Use --model to change model.{C.RS}")
         print()
@@ -789,7 +795,7 @@ def cmd_ai(args):
         return
     
     if args.prompt:
-        model = args.model or "gemma4:31b-cloud"
+        model = args.model or DEFAULT_MODEL
         print(f"{C.Y}Querying {model}...{C.RS}")
         try:
             resp = ollama_chat(model, args.prompt)
@@ -947,6 +953,14 @@ def cmd_doctor_parser(sub):
     p.set_defaults(func=cmd_doctor)
 
 
+APP_VERSION = "1.0.0"
+
+
+def cmd_version(args):
+    print(f"{C.C2}PARRoT NEXUS{C.RS} v{APP_VERSION} — Unified Security & Intelligence Hub (CLI)")
+    print(f"Python {sys.version.split()[0]}")
+
+
 # ══════════════════════════════════════════════════════════════
 # MAIN
 # ══════════════════════════════════════════════════════════════
@@ -997,7 +1011,12 @@ def main():
     
     # doctor
     cmd_doctor_parser(sub)
-    
+
+    # version
+    p = sub.add_parser("version", help="Show CLI version")
+    p.set_defaults(func=cmd_version)
+
+
     args = parser.parse_args()
     args.func(args)
 

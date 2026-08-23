@@ -6,8 +6,8 @@
   "use strict";
   if (typeof document === "undefined") return;
 
-  var FACE = "/assets/mascot/azoth-master-architect.jpg";
-  var BUST = "/assets/mascot/azoth-quantum-orb.jpg";
+  var FACE = "/assets/mascot/azoth-mask.jpg";
+  var BUST = "/assets/mascot/azoth-mask.jpg";
   var SEAL = "/assets/brand/azoth-seal-masterpiece.jpg";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
