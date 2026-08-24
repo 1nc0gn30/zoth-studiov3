@@ -280,6 +280,20 @@
     return peaks;
   }
 
+  // --- CURATED HIGH-FIDELITY BGM SOUNDSCAPES (IVOXYGEN · Lucidbeatz · Willow Kayne) ---
+  const BGM_SOUNDSCAPES = [
+    { id: 'off', title: 'BGM: Off', src: '' },
+    { id: 'ivoxygen-casino143', title: '🎵 IVOXYGEN · Casino 143', src: '/assets/audio/music/ivoxygen-casino143.mp3' },
+    { id: 'ivoxygen-ghost', title: '🎵 IVOXYGEN · Ghost', src: '/assets/audio/music/ivoxygen-ghost.mp3' },
+    { id: 'ivoxygen-skate', title: '🎵 IVOXYGEN · Skate', src: '/assets/audio/music/ivoxygen-skate.mp3' },
+    { id: 'lucidbeatz-shadows', title: '🎵 Lucidbeatz · Shadows', src: '/assets/audio/music/lucidbeatz-shadows.mp3' },
+    { id: 'lucidbeatz-drift', title: '🎵 Lucidbeatz · Night Drive', src: '/assets/audio/music/lucidbeatz-drift.mp3' },
+    { id: 'lucidbeatz-memory', title: '🎵 Lucidbeatz · Memories', src: '/assets/audio/music/lucidbeatz-memory.mp3' },
+    { id: 'willow-kayne-two-seater', title: '🎵 Willow Kayne · Two Seater', src: '/assets/audio/music/willow-kayne-two-seater.mp3' },
+    { id: 'willow-kayne-opinion', title: '🎵 Willow Kayne · Opinion', src: '/assets/audio/music/willow-kayne-opinion.mp3' },
+    { id: 'willow-kayne-white-city', title: '🎵 Willow Kayne · White City', src: '/assets/audio/music/willow-kayne-white-city.mp3' }
+  ];
+
   /**
    * Main ComicAudioPlayer Class
    */
@@ -317,6 +331,10 @@
 
       // Audio & Visualization
       this.audio = null;
+      this.bgmAudio = null;
+      this.bgmVolume = 0.6;
+      this.selectedBgmId = 'off';
+      this.isBgmDucked = false;
       this.audioContext = null;
       this.analyser = null;
       this.sourceNode = null;
@@ -444,6 +462,10 @@
       if (this.tracks.length > 0) {
         this.audio.src = this.tracks[this.currentTrackIndex].src;
       }
+      this.bgmAudio = new Audio();
+      this.bgmAudio.preload = 'metadata';
+      this.bgmAudio.loop = true;
+      this.bgmAudio.volume = this.bgmVolume;
     }
 
     /**
@@ -458,6 +480,10 @@
       root.className = this.isMinimized ? 'cap-minimized' : '';
       root.setAttribute('aria-label', 'AZOTH Comic Audio Player HUD');
       root.setAttribute('role', 'region');
+
+      const bgmOptions = BGM_SOUNDSCAPES.map(b => 
+        `<option value="${b.id}" ${this.selectedBgmId === b.id ? 'selected' : ''}>${b.title}</option>`
+      ).join('');
 
       root.innerHTML = `
         <div class="cap-inner">
@@ -480,7 +506,7 @@
                   <span class="cap-pulse-dot"></span> 432Hz
                 </span>
               </div>
-              <div class="cap-track-title" id="capTrackTitle">${this.tracks[0].title}</div>
+              <div class="cap-track-title" id="capTrackTitle" title="${this.tracks[0].title}">${this.tracks[0].title}</div>
               <div class="cap-track-subtitle" id="capTrackSubtitle">${this.tracks[0].subtitle}</div>
             </div>
           </div>
@@ -544,6 +570,10 @@
             <button type="button" class="cap-btn cap-btn-speed" id="capBtnSpeed" title="Cycle Playback Speed" aria-label="Playback Speed">
               ${this.speed}x
             </button>
+
+            <select class="cap-episode-select cap-bgm-select" id="capBgmSelect" title="Select Ambient Cyberpunk BGM Soundscape" aria-label="BGM Selector">
+              ${bgmOptions}
+            </select>
 
             <select class="cap-episode-select" id="capEpisodeSelect" title="Select Episode Soundtrack" aria-label="Episode Selector">
               <option value="s01e01" ${this.episodeId === 's01e01' ? 'selected' : ''}>S01E01 · Genesis</option>
@@ -743,6 +773,13 @@
       if (selectEpisode) {
         selectEpisode.addEventListener('change', (e) => {
           this.loadEpisode(e.target.value);
+        });
+      }
+
+      const selectBgm = document.getElementById('capBgmSelect');
+      if (selectBgm) {
+        selectBgm.addEventListener('change', (e) => {
+          this.setBgmTrack(e.target.value);
         });
       }
 
@@ -1189,6 +1226,11 @@
         this.audioContext.resume();
       }
 
+      this.duckBgm();
+      if (this.bgmAudio && this.selectedBgmId !== 'off' && this.bgmAudio.paused) {
+        this.bgmAudio.play().catch(() => {});
+      }
+
       if (this.audio && typeof this.audio.play === 'function') {
         const playPromise = this.audio.play();
         if (playPromise !== undefined && playPromise && typeof playPromise.catch === 'function') {
@@ -1204,9 +1246,45 @@
      * Pause Audio
      */
     pause() {
+      this.unduckBgm();
       if (this.audio && typeof this.audio.pause === 'function' && !this.audio.paused) {
         this.audio.pause();
       }
+    }
+
+    /**
+     * Set / Switch Background Music Soundscape
+     */
+    setBgmTrack(bgmId) {
+      this.selectedBgmId = bgmId;
+      const found = BGM_SOUNDSCAPES.find(b => b.id === bgmId);
+      if (!this.bgmAudio) return;
+      if (!found || !found.src) {
+        this.bgmAudio.pause();
+        this.bgmAudio.src = '';
+      } else {
+        this.bgmAudio.src = found.src;
+        this.bgmAudio.volume = this.isPlaying ? Math.max(0.08, this.bgmVolume * 0.25) : this.bgmVolume;
+        this.bgmAudio.play().catch(() => {});
+      }
+    }
+
+    /**
+     * Audio Ducking: Smoothly reduce BGM volume when narration is speaking
+     */
+    duckBgm() {
+      if (!this.bgmAudio || this.selectedBgmId === 'off') return;
+      this.isBgmDucked = true;
+      this.bgmAudio.volume = Math.max(0.08, this.bgmVolume * 0.25);
+    }
+
+    /**
+     * Audio Unducking: Restore BGM volume when narration finishes or pauses
+     */
+    unduckBgm() {
+      if (!this.bgmAudio || this.selectedBgmId === 'off') return;
+      this.isBgmDucked = false;
+      this.bgmAudio.volume = this.bgmVolume;
     }
 
     /**
