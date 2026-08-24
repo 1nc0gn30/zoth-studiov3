@@ -4,6 +4,13 @@
  * Keyboard Accessibility, Active Route Highlighting, and Deck Port Discovery.
  */
 (function () {
+  // Ensure Universal Theme Engine is loaded
+  if (!window.setZothTheme && !document.querySelector('script[src*="zoth-theme.js"]')) {
+    var themeScript = document.createElement("script");
+    themeScript.src = "/assets/zoth-theme.js";
+    document.head.appendChild(themeScript);
+  }
+
   function initNav() {
     var burger = document.getElementById("burger") || document.querySelector(".burger");
     var drawer = document.getElementById("drawer") || document.querySelector(".drawer");
