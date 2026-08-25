@@ -5,7 +5,7 @@ public_dir = Path("/media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/zoth-studio/c
 
 MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
-        <img src="/assets/mascot/azoth-mask.jpg" alt="Master Azoth Alchemical Persona Mask" width="36" height="36" />
+        <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="36" height="36" style="border-radius:8px;box-shadow:0 0 12px rgba(251,191,36,0.35);" />
         <span><strong>Zoth</strong><small>by NullAI</small></span>
       </a>
       <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Toggle navigation menu">Menu</button>

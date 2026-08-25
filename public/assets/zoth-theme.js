@@ -23,9 +23,7 @@
       if (saved && THEMES.some(function(t) { return t.id === saved; })) {
         return saved;
       }
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
-        return "light";
-      }
+      /* Brand default is gold/void. Light is opt-in via the switcher. */
     } catch (e) {}
     return "dark";
   }
@@ -77,8 +75,28 @@
       topbarCycle.setAttribute("aria-label", "Switch color theme. Current theme: " + themeObj.label);
     }
 
-    // Dispatch broadcast event for charts, WebGL, 3D canvases
+    // Dispatch broadcast event for charts, WebGL, 3D canvases, atmosphere overlays
     window.dispatchEvent(new CustomEvent("zoth-theme-change", { detail: { theme: themeId } }));
+    if (window.ZothThemeFx && typeof window.ZothThemeFx.set === "function") {
+      window.ZothThemeFx.set(themeId);
+    }
+  }
+
+  function loadThemeFx() {
+    if (!document.getElementById("zoth-theme-fx-css") && !document.querySelector('link[href*="zoth-theme-fx.css"]')) {
+      var link = document.createElement("link");
+      link.id = "zoth-theme-fx-css";
+      link.rel = "stylesheet";
+      link.href = "/assets/zoth-theme-fx.css?v=4";
+      document.head.appendChild(link);
+    }
+    if (window.ZothThemeFx) return;
+    var existing = document.querySelector('script[src*="zoth-theme-fx.js"]');
+    if (existing) return;
+    var script = document.createElement("script");
+    script.src = "/assets/zoth-theme-fx.js?v=4";
+    script.async = true;
+    document.head.appendChild(script);
   }
 
   // Execute immediately to prevent FOUC
@@ -136,7 +154,7 @@
     // If page doesn't have topbar cycle button, inject it
     var topbar = document.querySelector("header.bar, header#topbar, .site-header");
     var burger = document.getElementById("burger") || document.querySelector(".burger");
-    if (topbar && !topbar.querySelector(".zoth-topbar-theme-cycle")) {
+    if (topbar && !topbar.querySelector(".zoth-topbar-theme-cycle") && !topbar.querySelector(".zoth-nav-theme-switcher")) {
       var cycleBtn = document.createElement("button");
       cycleBtn.type = "button";
       cycleBtn.className = "zoth-topbar-theme-cycle";
@@ -153,8 +171,12 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", mountThemeUI);
+    document.addEventListener("DOMContentLoaded", function () {
+      loadThemeFx();
+      mountThemeUI();
+    });
   } else {
+    loadThemeFx();
     mountThemeUI();
   }
 })();

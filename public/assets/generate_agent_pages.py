@@ -1912,7 +1912,7 @@ def generate_agent_html(agent):
   <!-- Master Top Navigation Bar -->
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Zoth Golden Z Emblem" height="36" src="/assets/brand/zoth-golden-z-192.png" width="36" style="border-radius:8px;box-shadow:0 0 12px rgba(251,191,36,0.35);" />
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
@@ -2805,7 +2805,7 @@ def generate_index_html():
   <!-- Standard Master Top Navigation Bar -->
   <header class="bar" id="topbar" role="banner">
     <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
-      <img alt="Master Azoth Alchemical Mask" height="36" src="/assets/mascot/azoth-mask.jpg" width="36" />
+      <img alt="Zoth Golden Z Emblem" height="36" src="/assets/brand/zoth-golden-z-192.png" width="36" style="border-radius:8px;box-shadow:0 0 12px rgba(251,191,36,0.35);" />
       <span><strong>Zoth</strong><small>by NullAI</small></span>
     </a>
     <nav aria-label="Primary navigation" class="menu" role="navigation">
