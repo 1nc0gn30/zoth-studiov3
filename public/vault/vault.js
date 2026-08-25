@@ -1106,6 +1106,8 @@ function applyPreset(id, opts = {}) {
 }
 
 function unlockUI() {
+  document.documentElement.classList.add("vault-open");
+  document.body.classList.add("vault-open");
   gate.hidden = true;
   panel.hidden = false;
   hud.hidden = false;
@@ -1173,6 +1175,8 @@ function lockUI() {
   if ($("btn-lock")) $("btn-lock").hidden = true;
   $("btn-expand").hidden = true;
   gate.hidden = false;
+  document.documentElement.classList.remove("vault-open");
+  document.body.classList.remove("vault-open");
   $("master-pass").value = "";
   clearForm();
   sceneCtl.syncKeyMeshes();

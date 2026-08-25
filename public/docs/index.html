@@ -28,556 +28,22 @@
 <meta content="Zoth Studio" name="application-name"/>
 <link href="/favicon.png" rel="icon" type="image/png"/>
 <link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link as="image" fetchpriority="high" href="/assets/mascot/azoth-portrait.jpg" rel="preload"/>
 <link href="https://fonts.googleapis.com" rel="preconnect">
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&amp;family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Syne:wght@600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="/assets/zoth-tip.css" rel="stylesheet"/>
 <link href="/styles.css?v=20260818a" rel="stylesheet"/>
+<link href="/assets/zoth-theme.css?v=5" rel="stylesheet"/>
+<link href="/assets/zoth-theme-light.css?v=5" id="zoth-theme-light-css" rel="stylesheet"/>
 <link href="/assets/zoth-mobile.css" rel="stylesheet"/>
 <link href="/assets/zoth-preview.css" rel="stylesheet"/>
 <link href="/assets/zoth-annotator.css" rel="stylesheet"/>
+<script src="/assets/zoth-theme.js"></script>
 <style>
-    .skip-to-content {
-      position: absolute;
-      top: -100px;
-      left: 16px;
-      background: var(--gold, #fbbf24);
-      color: #050508;
-      padding: 10px 18px;
-      font-family: var(--font-mono, monospace);
-      font-size: 0.82rem;
-      font-weight: 700;
-      border-radius: 8px;
-      z-index: 10000;
-      text-decoration: none;
-      transition: top 0.2s ease;
-    }
-    .skip-to-content:focus {
-      top: 16px;
-      outline: 2px solid #ffffff;
-      outline-offset: 2px;
-    }
-
-      :root {
-        --docs-bg: #050508;
-        --docs-card: #0b0b10;
-        --docs-card-hover: #12121a;
-        --docs-cyan: #e8c872;
-        --docs-magenta: #e8c872;
-        --docs-purple: #e8c872;
-        --docs-emerald: #e8c872;
-        --docs-amber: #e8c872;
-        --docs-line: rgba(232, 200, 114, 0.18);
-        --docs-text: #ffffff;
-        --docs-primary: #ffffff;
-        --docs-body: #f1f5f9;
-        --docs-muted: #cbd5e1;
-        --docs-subtle: #94a3b8;
-        --font-mono: "IBM Plex Mono", monospace;
-        --font-display: "Syne", sans-serif;
-        --font-serif: Fraunces, "Iowan Old Style", Palatino, serif;
-
-        /* Fibonacci Sequence Spacing Tokens */
-        --fib-1: 1px;
-        --fib-2: 2px;
-        --fib-3: 3px;
-        --fib-5: 5px;
-        --fib-8: 8px;
-        --fib-13: 13px;
-        --fib-21: 21px;
-        --fib-34: 34px;
-        --fib-55: 55px;
-        --fib-89: 89px;
-        --fib-144: 144px;
-        --fib-233: 233px;
-        --fib-377: 377px;
-        --fib-610: 610px;
-        --fib-987: 987px;
-
-        /* Golden Ratio */
-        --phi: 1.6180339887;
-        --phi-inv: 0.6180339887;
-
-        /* Border Radius Tokens */
-        --radius-fib-xs: 5px;
-        --radius-fib-sm: 8px;
-        --radius-fib-md: 13px;
-        --radius-fib-lg: 21px;
-        --radius-fib-xl: 34px;
-        --radius-fib-pill: 9999px;
-
-        /* Typography Scale */
-        --font-fib-micro: 13px;
-        --font-fib-base: 16px;
-        --font-fib-h5: 21px;
-        --font-fib-h4: 26px;
-        --font-fib-h3: 34px;
-        --font-fib-h2: 55px;
-        --font-fib-h1: 89px;
-      }
       * { box-sizing: border-box; }
-      body.docs-page {
-        background: var(--docs-bg);
-        color: var(--docs-text);
-        font-family: 'Figtree', sans-serif;
-        min-height: 100vh;
-        line-height: 1.65;
-        overflow-x: hidden;
-      }
-
-      .docs-layout {
-        max-width: 1540px;
-        margin: 0 auto;
-        padding: 24px 24px 100px;
-        display: grid;
-        grid-template-columns: 310px 1fr;
-        gap: 36px;
-        min-width: 0;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .docs-layout > * {
-        min-width: 0;
-      }
-
-      /* Mobile Collapsible TOC Drawer & Responsive Polish */
-      .docs-toc-toggle {
-        display: none;
-        width: 100%;
-        min-height: 48px;
-        padding: 12px 18px;
-        background: #0b0b10;
-        border: 1px solid var(--docs-line);
-        border-radius: 12px;
-        color: var(--docs-cyan);
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        font-weight: 700;
-        cursor: pointer;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 14px;
-        touch-action: manipulation;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-      }
-
-      @media (max-width: 1080px) {
-        .docs-layout { grid-template-columns: 1fr; padding: 18px 14px 64px; gap: 16px; }
-        .docs-toc-toggle { display: flex; }
-        .docs-nav {
-          display: none;
-          position: static !important;
-          width: 100% !important;
-          max-height: 70vh !important;
-          margin-bottom: 16px;
-          border-radius: 12px;
-          padding: 16px;
-        }
-        .docs-nav.is-open {
-          display: flex !important;
-          animation: tocDrawerSlide 0.22s ease-out;
-        }
-        @keyframes tocDrawerSlide {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .docs-header-banner { padding: 22px 16px; }
-        .docs-header-banner h1 { font-size: 1.55rem; }
-        .doc-section { padding: 20px 16px !important; }
-      }
-
-      @media (max-width: 640px) {
-        .docs-search-input {
-          font-size: 16px !important;
-          min-height: 48px;
-        }
-      }
-
-      /* Sidebar Navigation */
-      .docs-nav {
-        position: sticky;
-        top: 24px;
-        height: fit-content;
-        max-height: calc(100vh - 48px);
-        overflow-y: auto;
-        background: var(--docs-card);
-        border: 1px solid var(--docs-line);
-        border-radius: 16px;
-        padding: 22px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        box-shadow: 0 16px 40px rgba(0,0,0,0.4);
-      }
-      .docs-nav::-webkit-scrollbar { width: 4px; }
-      .docs-nav::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.2); border-radius: 4px; }
-
-      .docs-search-box {
-        position: relative;
-        margin-bottom: 12px;
-      }
-      .docs-search-input {
-        width: 100%;
-        padding: 10px 14px 10px 34px;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid var(--docs-line);
-        border-radius: 10px;
-        color: #fff;
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        transition: all 0.2s ease;
-      }
-      .docs-search-input:focus {
-        outline: none;
-        border-color: var(--docs-cyan);
-        box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
-      }
-      .docs-search-icon {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 0.85rem;
-        color: var(--docs-cyan);
-        pointer-events: none;
-      }
-
-      .docs-nav-group-title {
-        font-family: var(--font-mono);
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: var(--docs-cyan);
-        margin: 12px 0 4px 6px;
-        font-weight: 700;
-      }
-      .docs-nav a {
-        color: var(--docs-muted);
-        text-decoration: none;
-        font-size: 0.84rem;
-        padding: 6px 12px;
-        border-radius: 8px;
-        transition: all 0.15s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .docs-nav a:hover, .docs-nav a.active {
-        color: #fff;
-        background: rgba(0, 240, 255, 0.1);
-        border-left: 3px solid var(--docs-cyan);
-        padding-left: 15px;
-      }
-
-      /* Main Content Area */
-      .docs-content {
-        display: flex;
-        flex-direction: column;
-        gap: 40px;
-      }
-
-      /* Hero Header Banner */
-      .docs-header-banner {
-        background: #0b0b10;
-        border: 1px solid var(--docs-line);
-        border-radius: 0;
-        padding: 28px 32px;
-        position: relative;
-        overflow: hidden;
-      }
-      .docs-header-banner::before {
-        content: "";
-        position: absolute;
-        top: 18px; left: 32px;
-        width: 42px;
-        height: 1px;
-        background: #e8c872;
-      }
-      .docs-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 4px 12px;
-        border-radius: 999px;
-        background: rgba(0, 240, 255, 0.1);
-        border: 1px solid rgba(0, 240, 255, 0.3);
-        color: var(--docs-cyan);
-        font-family: var(--font-mono);
-        font-size: 0.74rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        margin-bottom: 12px;
-      }
-      .docs-header-banner h1 {
-        font-family: var(--font-display);
-        font-size: 2.4rem;
-        font-weight: 900;
-        margin: 0 0 12px;
-        color: #fff;
-        letter-spacing: -0.02em;
-      }
-      .docs-header-banner p {
-        color: #cbd5e1;
-        font-size: 1.05rem;
-        margin: 0;
-        max-width: 860px;
-      }
-
-      /* Chapter Section */
-      .doc-section {
-        background: var(--docs-card);
-        border: 1px solid var(--docs-line);
-        border-radius: 18px;
-        padding: 34px;
-        transition: all 0.2s ease;
-        position: relative;
-      }
-      .doc-section:hover {
-        border-color: rgba(0, 240, 255, 0.35);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-      }
-
-      .doc-section h2 {
-        font-family: var(--font-display);
-        font-size: 1.65rem;
-        font-weight: 800;
-        margin: 0 0 14px;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border-bottom: 1px solid var(--docs-line-subtle);
-        padding-bottom: 14px;
-      }
-      .doc-section h3 {
-        font-family: var(--font-display);
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin: 26px 0 10px;
-        color: var(--docs-cyan);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .doc-section h4 {
-        font-family: var(--font-mono);
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin: 18px 0 8px;
-        color: var(--docs-purple);
-      }
-      .doc-section p {
-        color: #cbd5e1;
-        margin: 0 0 14px;
-        font-size: 0.96rem;
-      }
-
-      /* Responsive API Tables */
-      .doc-table-wrap {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        display: block;
-        border-radius: 10px;
-        margin: 18px 0;
-      }
-      .doc-table {
-        width: 100%;
-        max-width: 100%;
-        border-collapse: collapse;
-        font-size: 0.88rem;
-        border: 1px solid var(--docs-line-subtle);
-        border-radius: 10px;
-        overflow-x: auto;
-        display: block;
-        -webkit-overflow-scrolling: touch;
-      }
-      .doc-table th, .doc-table td {
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--docs-line-subtle);
-        text-align: left;
-      }
-      .doc-table th {
-        background: #080c1a;
-        color: var(--docs-cyan);
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-      }
-      .doc-table tr:hover {
-        background: rgba(255, 255, 255, 0.02);
-      }
-
-      /* Interactive Code Snippets & Touchable 44px Copy Blocks */
-      .doc-code-wrap {
-        position: relative;
-        background: #060812;
-        border: 1px solid var(--docs-line-subtle);
-        border-radius: 12px;
-        margin: 16px 0;
-        overflow: hidden;
-      }
-      .doc-code-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #090d1c;
-        padding: 8px 14px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        font-family: var(--font-mono);
-        font-size: 0.76rem;
-        color: var(--docs-muted);
-      }
-      .doc-code-copy {
-        background: transparent;
-        border: 1px solid var(--docs-line);
-        color: var(--docs-cyan);
-        font-family: var(--font-mono);
-        font-size: 0.78rem;
-        font-weight: 600;
-        min-height: 44px;
-        min-width: 44px;
-        padding: 6px 14px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        touch-action: manipulation;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-      }
-      .doc-code-copy:hover {
-        background: var(--docs-cyan);
-        color: #000;
-      }
-      .doc-code-pre {
-        margin: 0;
-        padding: 16px;
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        color: #e2e8f0;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        line-height: 1.55;
-      }
-
-      /* Callout Boxes */
-      .doc-callout {
-        padding: 16px 20px;
-        border-radius: 12px;
-        margin: 18px 0;
-        font-size: 0.9rem;
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-      }
-      .doc-callout.cyan {
-        background: rgba(0, 240, 255, 0.08);
-        border: 1px solid rgba(0, 240, 255, 0.25);
-        color: #d1f8ff;
-      }
-      .doc-callout.purple {
-        background: rgba(168, 85, 247, 0.08);
-        border: 1px solid rgba(168, 85, 247, 0.25);
-        color: #f1e4ff;
-      }
-      .doc-callout.amber {
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid rgba(245, 158, 11, 0.25);
-        color: #fef3c7;
-      }
-      .doc-callout-icon {
-        font-size: 1.25rem;
-        line-height: 1;
-      }
-
-      /* Category Filter Pills */
-      .filter-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin: 16px 0;
-      }
-      .filter-pill {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        color: #cbd5e1;
-        font-family: var(--font-mono);
-        font-size: 0.75rem;
-        padding: 5px 12px;
-        border-radius: 999px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
-      .filter-pill:hover, .filter-pill.active {
-        background: rgba(0, 240, 255, 0.15);
-        border-color: var(--docs-cyan);
-        color: #fff;
-      }
-
-      /* Tool Cards Grid */
-      .tool-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-        gap: 16px;
-        margin-top: 16px;
-        min-width: 0;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .tool-grid > * {
-        min-width: 0;
-      }
-      @media (max-width: 768px) {
-        .tool-grid { grid-template-columns: 1fr; }
-      }
-      .tool-item-card {
-        background: #080c1a;
-        border: 1px solid var(--docs-line-subtle);
-        border-radius: 12px;
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        transition: all 0.2s ease;
-        min-width: 0;
-        max-width: 100%;
-        box-sizing: border-box;
-      }
-      .tool-item-card:hover {
-        border-color: rgba(0, 240, 255, 0.35);
-        transform: translateY(-2px);
-      }
-      .tool-item-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .tool-item-title {
-        font-family: var(--font-mono);
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #fff;
-      }
-      .tool-item-desc {
-        font-size: 0.86rem;
-        color: #cbd5e1;
-        line-height: 1.5;
-        flex: 1;
-      }
-      .tool-item-meta {
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        color: var(--docs-muted);
-        background: rgba(0, 0, 0, 0.3);
-        padding: 6px 10px;
-        border-radius: 6px;
-      }
     </style>
+
 <!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
 <!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
 <!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
@@ -662,6 +128,7 @@
 }
   </script>
 <link href="/assets/zoth-nav.css" rel="stylesheet"/>
+<link href="/assets/zoth-docs-poster.css?v=3" rel="stylesheet"/>
 </link><meta content="1200" property="og:image:width"/><meta content="630" property="og:image:height"/><meta content="Zoth Studio Sovereign Architecture Documentation" property="og:image:alt"/><meta content="Zoth Studio Sovereign Architecture Documentation" name="twitter:image:alt"/><meta content="US-VA" name="geo.region"/><meta content="Virginia Beach, Virginia" name="geo.placename"/><meta content="36.8529;-75.9780" name="geo.position"/><meta content="36.8529, -75.9780" name="ICBM"/><script type="application/ld+json">{
   "@context": "https://schema.org",
   "@graph": [
@@ -739,7 +206,7 @@
   ]
 }</script></head>
 <body class="deck-page docs-page" data-kicker="Docs · preview" data-lede="Install, ports, and how the deck binds. Full tools stay local." data-title="Operator notes for this box">
-<a class="skip-link" href="#main">Skip to main content</a>
+<a class="skip-link skip-to-content" href="#main">Skip to main content</a>
 <header class="bar" id="topbar" role="banner">
 <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
 <img alt="Zoth Golden Z Emblem" decoding="async" height="36" loading="lazy" src="/assets/brand/zoth-golden-z-192.png" width="36" style="border-radius:8px;box-shadow:0 0 12px rgba(251,191,36,0.35);"/>
@@ -850,7 +317,24 @@
 </div>
 </nav>
 <div aria-hidden="true" class="fx-grain"></div>
-<main class="docs-layout" id="main" role="main">
+<main id="main" role="main">
+<section aria-label="Operator manual" class="docs-hero">
+<div class="docs-hero-inner">
+<div class="docs-hero-copy">
+<p class="docs-hero-kicker">Docs · ports · tools · vault</p>
+<h1>Operator notes for this box.</h1>
+<p class="docs-hero-lede">Install, ports, 47 tools, and how the swarm binds. Full tools stay local.</p>
+<div class="docs-hero-actions">
+<a class="docs-cta" href="#topology">Read topology</a>
+<a class="docs-cta-ghost js-deck" href="http://127.0.0.1:8484/">Open the deck</a>
+</div>
+</div>
+<div class="docs-hero-azoth">
+<img alt="Master Azoth, operator of Zoth Studio — white and gold mask, purple eyes, pinstripe suit" decoding="async" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
+</div>
+</div>
+</section>
+<div class="docs-layout">
 <!-- Mobile Collapsible TOC Drawer Trigger -->
 <button aria-controls="docsNav" aria-expanded="false" class="docs-toc-toggle" id="docsTocToggle" type="button">
 <span>📑 Table of Contents (12 Topics)</span>
@@ -891,14 +375,6 @@
 </nav>
 <!-- Main Docs Content -->
 <div class="docs-content">
-<!-- Banner Header -->
-<header class="docs-hero-header" style="margin-bottom:28px;">
-<div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:999px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:var(--docs-gold);font-family:var(--font-mono);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;">
-            📚 MASTER OPERATOR MANUAL · 47 TOOLS &amp; TOPOLOGY
-          </div>
-<h1 style="font-family:var(--font-display);font-size:clamp(28px, 4vw, 44px);font-weight:800;letter-spacing:-0.03em;color:#ffffff;margin:0 0 8px;line-height:1.15;">System Architecture &amp; Tool Documentation</h1>
-<p style="color:var(--docs-mute);font-size:0.98rem;max-width:760px;margin:0 0 20px;line-height:1.6;">Comprehensive developer guide covering port topology, 47-tool directory, Argon2id vault daemon, multi-agent swarm bus, and hardware companion bridges.</p>
-</header>
 <!-- Mobile-Only Desktop Insight Tooltip / Banner -->
 <div class="mobile-desktop-insight" role="note">
 <span class="insight-icon">💡</span>
@@ -910,47 +386,58 @@
 </div>
 <!-- Chapter 1: System Topology -->
 <section class="doc-section" id="methodology">
-<h2><span>⚡</span> Methodology: The 4 Transmutation Rites</h2>
+<h2>Methodology: The 4 Transmutation Rites</h2>
 <p>
         Zoth transforms software development from confusing complexity into an alchemical purification process: dissolving errors, cross-checking truth with multiple AI models, and synthesizing hardened deterministic output directly on your machine.
     </p>
-<div style="margin-top:20px; display:flex; flex-direction:column; gap:16px;">
-<div style="background:var(--surface-highlight); padding:20px; border-radius:12px; border:1px solid var(--border-card);">
-<h3 style="color:var(--docs-gold); margin-top:0; margin-bottom:8px;">1. Solve (Calcinatio)</h3>
-<p style="margin:0;">Break down ambiguity. The engine dissolves messy plain-English requests into exact, step-by-step AST blueprints with zero guesswork.</p>
-</div>
-<div style="background:var(--surface-highlight); padding:20px; border-radius:12px; border:1px solid var(--border-card);">
-<h3 style="color:var(--cyan); margin-top:0; margin-bottom:8px;">2. Separate (Sublimatio)</h3>
-<p style="margin:0;">Multi-Model Consensus. Three top AI models cross-check each other simultaneously to catch hallucinations before any code runs.</p>
-</div>
-<div style="background:var(--surface-highlight); padding:20px; border-radius:12px; border:1px solid var(--border-card);">
-<h3 style="color:#c084fc; margin-top:0; margin-bottom:8px;">3. Purify (Purificatio)</h3>
-<p style="margin:0;">Total Private Lockbox. Your files, passwords, and API keys stay 100% on your PC inside the Argon2id vault.</p>
-</div>
-<div style="background:var(--surface-highlight); padding:20px; border-radius:12px; border:1px solid var(--border-card);">
-<h3 style="color:#34d399; margin-top:0; margin-bottom:8px;">4. Coagulate (Coagulatio)</h3>
-<p style="margin:0;">Instant Synthesis. Output cleanly synthesized, ready-to-run apps verified with automated tests.</p>
-</div>
+<div class="rite-strip">
+<article>
+<p class="rite-num">01</p>
+<h3>Solve</h3>
+<p class="rite-latin">Calcinatio</p>
+<p>Break down ambiguity. The engine dissolves messy plain-English requests into exact, step-by-step AST blueprints with zero guesswork.</p>
+</article>
+<article>
+<p class="rite-num">02</p>
+<h3>Separate</h3>
+<p class="rite-latin">Sublimatio</p>
+<p>Multi-model consensus. Three top AI models cross-check each other simultaneously to catch hallucinations before any code runs.</p>
+</article>
+<article>
+<p class="rite-num">03</p>
+<h3>Purify</h3>
+<p class="rite-latin">Purificatio</p>
+<p>Total private lockbox. Your files, passwords, and API keys stay on this PC inside the Argon2id vault.</p>
+</article>
+<article>
+<p class="rite-num">04</p>
+<h3>Coagulate</h3>
+<p class="rite-latin">Coagulatio</p>
+<p>Instant synthesis. Output cleanly synthesized, ready-to-run apps verified with automated tests.</p>
+</article>
 </div>
 </section>
 <section class="doc-section" id="companion-spirits">
-<h2><span>🐾</span> Companion Spirits &amp; Hardware Telemetry</h2>
+<h2>Companion Spirits &amp; Hardware Telemetry</h2>
 <p>
         The 24 specialized autonomous AI companions are engineered for local-first pairing and multi-agent arbitration.
     </p>
-<div style="margin-top:20px; display:flex; flex-direction:column; gap:16px;">
-<div style="background:var(--surface-highlight); padding:20px; border-radius:12px; border:1px solid var(--border-card);">
-<h3 style="color:var(--docs-gold); margin-top:0; margin-bottom:8px;">Frontier &amp; Sovereign Harnesses</h3>
-<p style="margin:0;">Each mascot binds to specialized CLI tools — Google Antigravity (agy), Nous Hermes, xAI Grok, and local Ollama :11434 weights.</p>
-</div>
-<div style="background:var(--surface-highlight); padding:20px; border-radius:12px; border:1px solid var(--border-card);">
-<h3 style="color:var(--cyan); margin-top:0; margin-bottom:8px;">3D Volumetric Figurines</h3>
-<p style="margin:0;">Interactive volumetric relief figurines with kinetic task vibes, obsidian crystal chassis, celestial lighting, and touch-safe gestures.</p>
-</div>
-<div style="background:var(--surface-highlight); padding:20px; border-radius:12px; border:1px solid var(--border-card);">
-<h3 style="color:#c084fc; margin-top:0; margin-bottom:8px;">Neural Voice &amp; Hardware</h3>
-<p style="margin:0;">Integrated Edge-TTS neural voice personas, synthesized Web Audio DSP chirps, and live serial telemetry.</p>
-</div>
+<div class="spirit-strip">
+<article>
+<p class="rite-num">Harness</p>
+<h3>Frontier &amp; Sovereign</h3>
+<p>Each mascot binds to specialized CLI tools — Google Antigravity (agy), Nous Hermes, xAI Grok, and local Ollama :11434 weights.</p>
+</article>
+<article>
+<p class="rite-num">Form</p>
+<h3>3D Volumetric Figurines</h3>
+<p>Interactive volumetric relief figurines with kinetic task vibes, obsidian crystal chassis, celestial lighting, and touch-safe gestures.</p>
+</article>
+<article>
+<p class="rite-num">Voice</p>
+<h3>Neural Voice &amp; Hardware</h3>
+<p>Integrated Edge-TTS neural voice personas, synthesized Web Audio DSP chirps, and live serial telemetry.</p>
+</article>
 </div>
 </section>
 
@@ -1656,11 +1143,9 @@ chmod +x dist-linux/Zoth_Studio-v2.6.0-x86_64.AppImage
 </section>
 <!-- Chapter 7: AI Math Observability & Tensor Theory -->
 <section class="doc-section" id="math-pillars">
-<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-<h2><span>📐</span> 7. AI Math Observability, Tensor Manifolds &amp; Calculus Foundations</h2>
-<a class="doc-code-copy" href="/studio/math-pillars.html" style="text-decoration:none; background:rgba(0,240,255,0.12); border-color:var(--docs-cyan); color:#fff;">
-              ← Launch Live Math Pillars Interactive Studio ↗
-            </a>
+<div class="doc-section-head">
+<h2>7. AI Math Observability, Tensor Manifolds &amp; Calculus Foundations</h2>
+<a class="doc-jump" href="/studio/math-pillars.html">Open Math Pillars ↗</a>
 </div>
 <p>
             The mathematical foundation of all neural execution in Zoth Studio is split across three rigorous mathematical pillars: <strong>Linear Algebra</strong>, <strong>Multivariable Calculus</strong>, and <strong>Information Theory</strong>. Below are the complete formal equations, operational levers, and proof derivations.
@@ -1742,11 +1227,9 @@ Behavioral Regimes:
 </section>
 <!-- Chapter 8: OmniPost Video Engine -->
 <section class="doc-section" id="omnipost">
-<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-<h2><span>🚀</span> 8. OmniPost 60 FPS Video Studio &amp; Media Pipeline</h2>
-<a class="doc-code-copy" href="/studio/omnipost.html" style="text-decoration:none; background:rgba(0,240,255,0.12); border-color:var(--docs-cyan); color:#fff;">
-              ← Launch Live OmniPost Studio ↗
-            </a>
+<div class="doc-section-head">
+<h2>8. OmniPost 60 FPS Video Studio &amp; Media Pipeline</h2>
+<a class="doc-jump" href="/studio/omnipost.html">Open OmniPost ↗</a>
 </div>
 <p>
             OmniPost is Zoth Studio's hardware-accelerated video synthesis workstation. It renders 60 FPS animated shorts, generative procedural synth soundtracks, dynamic typography overlays, and automated social distribution formats entirely in the local browser canvas.
@@ -1802,11 +1285,9 @@ Behavioral Regimes:
 </section>
 <!-- Chapter 9: SubSweep Passive OSINT Reconnaissance -->
 <section class="doc-section" id="subsweep">
-<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-<h2><span>🔍</span> 9. SubSweep Passive OSINT Reconnaissance Protocols</h2>
-<a class="doc-code-copy" href="/studio/subsweep.html" style="text-decoration:none; background:rgba(0,240,255,0.12); border-color:var(--docs-cyan); color:#fff;">
-              ← Launch Live SubSweep Recon ↗
-            </a>
+<div class="doc-section-head">
+<h2>9. SubSweep Passive OSINT Reconnaissance Protocols</h2>
+<a class="doc-jump" href="/studio/subsweep.html">Open SubSweep ↗</a>
 </div>
 <p>
             SubSweep executes non-intrusive attack surface mapping, subdomain enumeration, and DNS footprinting against authorized target domains. It aggregates passive intelligence sources without transmitting probing packets directly to target firewall perimeters.
@@ -1864,11 +1345,9 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
 </section>
 <!-- Chapter 10: Website Generator Service API -->
 <section class="doc-section" id="site-generator">
-<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-<h2><span>⚡</span> 10. Autonomous Website Generator API Contract</h2>
-<a class="doc-code-copy" href="/studio/site-generator.html" style="text-decoration:none; background:rgba(0,240,255,0.12); border-color:var(--docs-cyan); color:#fff;">
-              ← Launch Live Website Generator ↗
-            </a>
+<div class="doc-section-head">
+<h2>10. Autonomous Website Generator API Contract</h2>
+<a class="doc-jump" href="/studio/site-generator.html">Open Website Generator ↗</a>
 </div>
 <p>
             The Website Generator is exposed as a dedicated, programmatically accessible service boundary in the Zoth Orchestrator via <code>POST /api/website/generate</code>. It takes high-level business goals and synthesizes clean, WCAG 2.1 AA accessible static web applications with interactive Sandboxes, responsive navigation, and AEO metadata.
@@ -1916,11 +1395,9 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
 </section>
 <!-- Chapter 11: Master Azoth Core Architecture -->
 <section class="doc-section" id="azoth-core">
-<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-<h2><span>🔮</span> 11. Master Azoth Core &amp; Alchemical Architecture</h2>
-<a class="doc-code-copy" href="/zoth/" style="text-decoration:none; background:rgba(0,240,255,0.12); border-color:var(--docs-cyan); color:#fff;">
-              ← Launch Master Azoth Core ↗
-            </a>
+<div class="doc-section-head">
+<h2>11. Master Azoth Core &amp; Alchemical Architecture</h2>
+<a class="doc-jump" href="/zoth/">Launch Master Azoth ↗</a>
 </div>
 <p>
             Master Azoth represents the sovereign apex meta-harness of the Zoth architecture. Rooted in the alchemical principle of the Universal Solvent and First Matter (<em>Prima Materia</em>), Azoth synthesizes input intent across 21 specialized autonomous agent harnesses into deterministic machine execution.
@@ -1951,11 +1428,9 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
 </section>
 <!-- Chapter 12: 21-Agent Pantheon Dossiers -->
 <section class="doc-section" id="agents">
-<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-<h2><span>⚡</span> 12. 21-Agent Sovereign Pantheon Dossiers</h2>
-<a class="doc-code-copy" href="/agents/" style="text-decoration:none; background:rgba(0,240,255,0.12); border-color:var(--docs-cyan); color:#fff;">
-              ← Launch Agent Pantheon ↗
-            </a>
+<div class="doc-section-head">
+<h2>12. 21-Agent Sovereign Pantheon Dossiers</h2>
+<a class="doc-jump" href="/agents/">Open the pantheon ↗</a>
 </div>
 <p>
             The Zoth Pantheon organizes 21 distinct autonomous agent personalities, each equipped with dedicated system prompts, tool capability grants, and safety invariants.
@@ -2022,10 +1497,43 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
 </table>
 </section>
 </div>
+</div>
 </main>
-<footer class="site-footer" style="padding: 28px 0; border-top: 1px solid var(--docs-line-subtle); text-align: center; font-size: 0.85rem; color: var(--docs-muted);">
-      © 2026 Zoth Studio · 757tech / NullAI · Master Operator Documentation
-    </footer>
+<footer class="site">
+<div class="site-foot-band">
+<div class="site-foot-inner">
+<div class="site-foot-brand">
+<img alt="Zoth Golden Z Emblem" decoding="async" height="48" loading="lazy" src="/assets/brand/zoth-golden-z-192.png" width="48"/>
+<strong>Zoth Studio</strong>
+<small>Operator manual for the local-first stack.</small>
+</div>
+<div class="site-foot-grid">
+<div>
+<h3>Studio</h3>
+<a class="mega-footer-link js-deck" href="http://127.0.0.1:8484/">Operator Deck</a>
+<a class="mega-footer-link" href="/studio/">Environment</a>
+<a class="mega-footer-link" href="/vault/">Sovereign Vault</a>
+</div>
+<div>
+<h3>Manual</h3>
+<a class="mega-footer-link" href="#topology">Topology</a>
+<a class="mega-footer-link" href="#tools-arsenal">47-Tool Directory</a>
+<a class="mega-footer-link" href="#install-linux">Install</a>
+</div>
+<div>
+<h3>Open Source</h3>
+<a class="mega-footer-link" href="https://github.com/NullAITech/zoth-studio">GitHub Repository</a>
+<a class="mega-footer-link" href="/faq.html">FAQ</a>
+<a class="mega-footer-link" href="/zoth/">Master Azoth</a>
+</div>
+</div>
+<div class="site-foot-rule">
+<p>Loopback only. Engineered for strict privacy.</p>
+<p>© 2026 NullAI Tech · Master Operator Documentation</p>
+</div>
+</div>
+</div>
+</footer>
 <!-- Interactive Search, Category Filter, and Copy Scripts -->
 <script>
       function copyCode(btn) {
@@ -2119,7 +1627,6 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
         });
       }
     </script>
-<script src="/assets/zoth-theme.js"></script>
 <script src="/site.js"></script>
 <script src="/assets/zoth-preview.js"></script>
 <script src="/assets/zoth-gate.js"></script>

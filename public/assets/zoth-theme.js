@@ -43,6 +43,8 @@
     document.documentElement.className = document.documentElement.className
       .replace(/\btheme-[a-z]+\b/g, "")
       .trim() + " theme-" + themeId;
+    document.documentElement.classList.toggle("dark", themeId !== "light");
+    document.documentElement.classList.toggle("light", themeId === "light");
 
     document.documentElement.style.colorScheme = (themeId === "light" ? "light" : "dark");
 
@@ -82,24 +84,32 @@
     }
   }
 
-  function loadThemeFx() {
-    if (!document.getElementById("zoth-theme-fx-css") && !document.querySelector('link[href*="zoth-theme-fx.css"]')) {
-      var link = document.createElement("link");
-      link.id = "zoth-theme-fx-css";
-      link.rel = "stylesheet";
-      link.href = "/assets/zoth-theme-fx.css?v=4";
-      document.head.appendChild(link);
+  function ensureStylesheet(id, href) {
+    if (document.getElementById(id) || document.querySelector('link[href*="' + href.split("?")[0].split("/").pop() + '"]')) {
+      return;
     }
+    var link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  function loadThemeFx() {
+    ensureStylesheet("zoth-theme-core-css", "/assets/zoth-theme.css?v=5");
+    ensureStylesheet("zoth-theme-fx-css", "/assets/zoth-theme-fx.css?v=5");
+    ensureStylesheet("zoth-theme-light-css", "/assets/zoth-theme-light.css?v=5");
     if (window.ZothThemeFx) return;
     var existing = document.querySelector('script[src*="zoth-theme-fx.js"]');
     if (existing) return;
     var script = document.createElement("script");
-    script.src = "/assets/zoth-theme-fx.js?v=4";
+    script.src = "/assets/zoth-theme-fx.js?v=5";
     script.async = true;
     document.head.appendChild(script);
   }
 
   // Execute immediately to prevent FOUC
+  loadThemeFx();
   var initialTheme = getStoredTheme();
   applyTheme(initialTheme);
 
