@@ -1,129 +1,119 @@
 /* =============================================================================
-   ZOTH STUDIO — 3D SPATIAL SCROLL TRAVEL & PINNED PARALLAX ENGINE (v5.2)
+   ✨ ZOTH STUDIO — Seamless Fluid Scroll & Frosted Glass Section Architecture (v7.0)
+   =============================================================================
+   Features:
+     - 100% Unbroken, natural vertical scrolling across all screen sizes and zoom levels.
+     - Zero disappearing text or clipped viewport boxes.
+     - Smooth frosted glass container cards with multi-layered specular highlights.
+     - Radiant gradient divider bridges between sections with glowing alchemical gems.
+     - Hardware-accelerated IntersectionObserver scroll reveals.
+     - Dynamic theme-adaptive styling (Dark, Light, Matrix, Gold).
    ============================================================================= */
 
 :root {
-  --travel-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --stage-pad: clamp(16px, 4vw, 48px);
+  --stage-max-w: 1440px;
+  --stage-gap: clamp(48px, 8vh, 96px);
+  --glass-panel-bg: rgba(9, 13, 26, 0.78);
+  --glass-panel-border: rgba(0, 240, 255, 0.18);
+  --glass-panel-glow: rgba(0, 240, 255, 0.12);
+  --divider-gradient: linear-gradient(90deg, transparent 0%, rgba(0, 240, 255, 0.35) 35%, rgba(251, 191, 36, 0.6) 50%, rgba(168, 85, 247, 0.35) 65%, transparent 100%);
 }
 
-/* Master Scroll Track Container */
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. Master Track & Viewport Setup (Natural, Unconstrained Document Flow)
+   ───────────────────────────────────────────────────────────────────────────── */
+
 .scroll-travel-track {
-  position: relative;
   width: 100%;
-  height: 650vh; /* 3D Spatial Travel Height for Desktop */
-  background: #04060c;
-  overflow: visible;
+  max-width: 100vw;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding: clamp(24px, 4vh, 48px) 0;
+  box-sizing: border-box;
 }
 
-/* Pinned Viewport Camera Stage */
 .scroll-travel-viewport {
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  perspective: 1400px;
-  perspective-origin: 50% 50%;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
   display: flex;
+  flex-direction: column;
+  gap: var(--stage-gap);
   align-items: center;
-  justify-content: center;
-  z-index: 10;
-  contain: layout size;
+  box-sizing: border-box;
 }
 
-/* 3D Deep Space Cyber Backdrop */
+/* Atmospheric Space Fog & Video Backdrop */
 .travel-space-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  opacity: 0.65;
 }
 
-.travel-space-backdrop video,
-.travel-space-backdrop canvas {
+.travel-space-backdrop video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.25;
-  filter: saturate(1.2) contrast(1.15);
-  transition: transform 0.6s var(--travel-ease), opacity 0.6s ease;
-  will-change: transform;
+  opacity: 0.18;
+  filter: saturate(1.2) contrast(1.1);
+  transition: opacity 0.6s ease;
 }
 
-/* Atmospheric Space Fog & Wireframe Ground Grid */
 .travel-grid-mesh {
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
-  background-size: 64px 64px;
-  transform: perspective(600px) rotateX(65deg) translateY(120px) scale(2.2);
+    linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(600px) rotateX(60deg) translateY(60px) scale(1.8);
   transform-origin: 50% 100%;
   pointer-events: none;
-  opacity: 0.45;
-  transition: transform 0.8s var(--travel-ease);
+  opacity: 0.4;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   3D SCENE STAGES (Desktop 3D Chambers)
+   2. Natural Flow Section Stages (Always Visible, Never Clipped)
    ───────────────────────────────────────────────────────────────────────────── */
 
 .travel-scene-stage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
+  width: min(var(--stage-max-w), 94vw);
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(56px, 7vh, 80px) var(--stage-pad);
+  position: relative;
+  display: block;
   box-sizing: border-box;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: perspective(1400px) translate3d(0, 50px, -600px) scale(0.88);
-  filter: blur(12px);
-  transition: opacity 0.45s var(--travel-ease),
-              transform 0.55s var(--travel-ease),
-              filter 0.45s ease,
-              visibility 0.45s ease;
-  will-change: transform, opacity, filter;
-  z-index: 2;
-}
-
-/* Active Scene in Center Focus */
-.travel-scene-stage.active {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: perspective(1400px) translate3d(0, 0, 0) scale(1);
-  filter: blur(0px);
-  z-index: 5;
+  scroll-margin-top: clamp(70px, 9vh, 96px);
+  z-index: 2;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
 }
 
-/* Exited Scene (Pushed Past Camera) */
-.travel-scene-stage.pushed-out {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: perspective(1400px) translate3d(0, -50px, 400px) scale(1.16);
-  filter: blur(14px);
-  z-index: 1;
+/* Scroll-Driven Reveal Animation */
+.travel-scene-stage.reveal-pending {
+  opacity: 0.85;
+  transform: translateY(20px);
 }
 
-/* Universal Centered Stage Scroll Panel */
+.travel-scene-stage.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. Sculpted Frosted Glass Stage Panels
+   ───────────────────────────────────────────────────────────────────────────── */
+
 .stage-scroll-panel,
 .hero-stage .hero-parallax-stage,
 .creators-stage .showcase-inner,
@@ -131,33 +121,208 @@
 .agents-stage .stage-container,
 .pets-stage .pets-inner,
 .install-stage .install-inner {
-  width: min(1480px, 92vw) !important;
-  max-width: min(1480px, 92vw) !important;
-  max-height: none !important;
-  overflow-y: visible !important;
-  overflow-x: hidden !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(251, 191, 36, 0.4) transparent;
-  padding: clamp(22px, 3.5vh, 40px) clamp(20px, 3.5vw, 44px) !important;
-  background: rgba(6, 10, 22, 0.9) !important;
-  backdrop-filter: blur(32px) !important;
-  -webkit-backdrop-filter: blur(32px) !important;
-  border: 1px solid rgba(0, 240, 255, 0.22) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.92), 0 0 40px rgba(0, 240, 255, 0.1) !important;
+  width: 100% !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
+  padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 52px) !important;
+  background: var(--glass-panel-bg) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1px solid var(--glass-panel-border) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 35px var(--glass-panel-glow), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
   position: relative !important;
+  overflow: visible !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Subtle Ambient Radial Lighting Bloom Behind Card */
+.stage-scroll-panel::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 160px;
+  background: radial-gradient(ellipse at center, rgba(0, 240, 255, 0.12), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+  border-radius: 50%;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   CYBERNETIC WAYPOINT HUD & FAST WARP SCRUBBER
+   4. Radiant Glass Gradient Section Dividers
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.section-transition-divider {
+  width: min(var(--stage-max-w), 94vw);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 10px 0;
+  position: relative;
+  z-index: 3;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--divider-gradient);
+  opacity: 0.85;
+}
+
+.divider-gem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(14, 20, 38, 0.9);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: var(--gold, #fbbf24);
+  font-size: 0.85rem;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+  animation: gem-glow-pulse 3s infinite ease-in-out;
+}
+
+@keyframes gem-glow-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 14px rgba(251, 191, 36, 0.3); }
+  50% { transform: scale(1.12); box-shadow: 0 0 24px rgba(251, 191, 36, 0.6), 0 0 35px rgba(0, 240, 255, 0.3); color: #fff; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5. Hero Command Deck & 2x2 Value Cards Polish
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.hero-parallax-stage {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(24px, 3.5vw, 48px);
+  align-items: center;
+}
+
+.hero-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+
+.hero-value-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.hero-value-card {
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  border-radius: 16px;
+  background: rgba(14, 20, 38, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.hero-value-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--cyan, #00f0ff);
+  box-shadow: 0 12px 30px rgba(0, 240, 255, 0.2);
+}
+
+.hero-value-card .card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero-value-card .card-icon {
+  font-size: 1.3rem;
+}
+
+.hero-value-card .card-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.06em;
+}
+
+.badge-cyan { background: rgba(0, 240, 255, 0.14); color: var(--cyan, #00f0ff); border: 1px solid rgba(0, 240, 255, 0.3); }
+.badge-gold { background: rgba(251, 191, 36, 0.14); color: var(--gold, #fbbf24); border: 1px solid rgba(251, 191, 36, 0.3); }
+.badge-green { background: rgba(52, 211, 153, 0.14); color: var(--green, #34d399); border: 1px solid rgba(52, 211, 153, 0.3); }
+.badge-purple { background: rgba(168, 85, 247, 0.14); color: var(--violet, #a855f7); border: 1px solid rgba(168, 85, 247, 0.3); }
+
+.hero-value-card .card-title {
+  color: #ffffff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 2px 0 0;
+}
+
+.hero-value-card .card-desc {
+  font-size: 0.78rem;
+  color: var(--text-subhead, #cbd5e1);
+  line-height: 1.45;
+  margin: 0;
+  flex: 1;
+}
+
+.hero-value-card .card-action {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-cyan { color: var(--cyan, #00f0ff); }
+.action-gold { color: var(--gold, #fbbf24); }
+.action-green { color: var(--green, #34d399); }
+.action-purple { color: var(--violet, #a855f7); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   6. Stage 2: Phone / Communicator Handset Chassis
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.phone-stage-panel {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: clamp(24px, 3.5vw, 48px);
+  align-items: center;
+}
+
+.phone-handset-card {
+  background: radial-gradient(ellipse at top, rgba(0, 240, 255, 0.12), transparent 70%), rgba(7, 11, 20, 0.96);
+  border: 2px solid rgba(0, 240, 255, 0.35);
+  border-radius: 28px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.15);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7. Cybernetic Floating Waypoint Nav HUD (Smooth Desktop Anchor Sync)
    ───────────────────────────────────────────────────────────────────────────── */
 
 .travel-hud-nav {
   position: fixed;
-  right: clamp(14px, 2.5vw, 32px);
+  right: clamp(16px, 2.5vw, 32px);
   top: 50%;
   transform: translateY(-50%);
   z-index: 100;
@@ -225,7 +390,6 @@
   background: rgba(255, 255, 255, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.4);
   transition: all 0.25s ease;
-  position: relative;
 }
 
 .hud-waypoint-btn:hover .hud-waypoint-dot {
@@ -243,89 +407,23 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   MOBILE & TABLET OVERRIDE: 100% UNCONSTRAINED NATURAL VERTICAL SCROLLING
-   (<= 1024px & Touch Devices)
+   8. Responsive Layout Breakpoints
    ───────────────────────────────────────────────────────────────────────────── */
 
-@media (max-width: 1024px), (pointer: coarse), (hover: none) {
+@media (max-width: 1080px) {
+  .hero-parallax-stage,
+  .phone-stage-panel {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
   .travel-hud-nav {
     display: none !important;
   }
-  .scroll-travel-track {
-    height: auto !important;
-    min-height: auto !important;
-    position: static !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    overflow-x: hidden !important;
-    overflow-y: visible !important;
-  }
-  .scroll-travel-viewport {
-    position: static !important;
-    height: auto !important;
-    min-height: auto !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    overflow: visible !important;
-    display: block !important;
-    perspective: none !important;
-    contain: none !important;
-  }
-  .travel-space-backdrop {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    pointer-events: none !important;
-    z-index: 0 !important;
-    overflow: hidden !important;
-    opacity: 0.65 !important;
-    display: block !important;
-  }
-  .travel-space-backdrop video {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    opacity: 0.16 !important;
-    filter: saturate(1.15) contrast(1.1) !important;
-  }
-  .travel-grid-mesh {
-    position: absolute !important;
-    inset: 0 !important;
-    background-image: 
-      linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px) !important;
-    background-size: 40px 40px !important;
-    transform: perspective(400px) rotateX(60deg) translateY(60px) scale(1.6) !important;
-    opacity: 0.35 !important;
-    pointer-events: none !important;
-  }
-  .travel-scene-stage,
-  .travel-scene-stage.active,
-  .travel-scene-stage.pushed-out {
-    position: relative !important;
-    inset: auto !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    height: auto !important;
-    min-height: auto !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    transform: none !important;
-    filter: none !important;
-    display: block !important;
-    padding: clamp(24px, 5vh, 48px) var(--fib-21, 21px) !important;
-    box-sizing: border-box !important;
-    scroll-margin-top: clamp(60px, 8vh, 84px) !important;
-    clear: both !important;
-    z-index: 2 !important;
+}
+
+@media (max-width: 640px) {
+  .hero-value-cards {
+    grid-template-columns: 1fr !important;
   }
   .stage-scroll-panel,
   .hero-stage .hero-parallax-stage,
@@ -334,244 +432,7 @@
   .agents-stage .stage-container,
   .pets-stage .pets-inner,
   .install-stage .install-inner {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: none !important;
-    height: auto !important;
-    overflow: visible !important;
-    overflow-y: visible !important;
-    overflow-x: hidden !important;
-    overscroll-behavior: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    padding: var(--fib-21, 21px) var(--fib-13, 13px) !important;
-    border-radius: var(--radius-fib-lg, 21px) !important;
-    background: rgba(6, 10, 22, 0.92) !important;
-    backdrop-filter: blur(21px) !important;
-    -webkit-backdrop-filter: blur(21px) !important;
-    border: 1px solid rgba(0, 240, 255, 0.22) !important;
-    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 240, 255, 0.08) !important;
-    box-sizing: border-box !important;
-    position: relative !important;
-    margin: 0 auto !important;
-  }
-  .hero-parallax-stage {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: var(--fib-21, 21px) !important;
-    padding: var(--fib-21, 21px) var(--fib-13, 13px) !important;
-  }
-  .hero-value-cards {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: var(--fib-13, 13px) !important;
-    width: 100% !important;
-  }
-  .about-stage .note-copy {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: var(--fib-21, 21px) !important;
-    padding: var(--fib-21, 21px) var(--fib-13, 13px) !important;
-  }
-  .about-stage .steps {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: var(--fib-13, 13px) !important;
-  }
-  .pets-stage .pets-inner > div {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: var(--fib-21, 21px) !important;
-  }
-  .pantheon-grand-card {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    text-align: center !important;
-    justify-items: center !important;
-    gap: var(--fib-13, 13px) !important;
-    padding: var(--fib-21, 21px) var(--fib-13, 13px) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .hero-value-cards {
-    grid-template-columns: 1fr !important;
-    gap: var(--fib-13, 13px) !important;
-  }
-  .about-stage .steps {
-    grid-template-columns: 1fr !important;
-    gap: var(--fib-8, 8px) !important;
-  }
-  .showcase-grid {
-    grid-template-columns: 1fr !important;
-    gap: var(--fib-13, 13px) !important;
-  }
-  .direct-binary-grid {
-    grid-template-columns: 1fr !important;
-    gap: var(--fib-8, 8px) !important;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   AZOTH SOVEREIGN ALCHEMICAL WATERMARKS (Transparent Vector Overlays)
-   ───────────────────────────────────────────────────────────────────────────── */
-
-.stage-scroll-panel {
-  position: relative !important;
-}
-
-.stage-scroll-panel > *:not(.azoth-watermark):not(.hero-alchemical-canvas) {
-  position: relative;
-  z-index: 2;
-}
-
-.hero-alchemical-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  border-radius: inherit;
-  z-index: 0;
-  contain: strict;
-  overflow: hidden;
-  display: block;
-}
-
-.azoth-watermark {
-  position: absolute;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-select: none;
-  z-index: 0;
-  contain: layout paint;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s ease;
-  will-change: transform, opacity;
-}
-
-.azoth-watermark img,
-.azoth-watermark svg {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 0 24px rgba(251, 191, 36, 0.18));
-}
-
-/* Stage-specific watermark positioning */
-.azoth-watermark-hero {
-  right: -5%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: clamp(360px, 46vw, 680px);
-  height: clamp(360px, 46vw, 680px);
-  opacity: 0.075;
-  animation: azothSlowRotate 240s linear infinite;
-}
-
-.azoth-watermark-creators {
-  left: -3%;
-  top: 18%;
-  width: clamp(300px, 38vw, 540px);
-  height: clamp(300px, 38vw, 540px);
-  opacity: 0.06;
-  animation: azothSlowRotateReverse 300s linear infinite;
-}
-
-.azoth-watermark-about {
-  right: 2%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: clamp(340px, 42vw, 600px);
-  height: clamp(340px, 42vw, 600px);
-  opacity: 0.08;
-  animation: azothSlowRotate 280s linear infinite;
-}
-
-.azoth-watermark-pantheon {
-  right: 2%;
-  top: 45%;
-  transform: translateY(-50%);
-  width: clamp(320px, 40vw, 580px);
-  height: clamp(320px, 40vw, 580px);
-  opacity: 0.065;
-  animation: azothSlowRotateReverse 260s linear infinite;
-}
-
-.azoth-watermark-pets {
-  left: 50%;
-  bottom: -4%;
-  transform: translateX(-50%);
-  width: clamp(380px, 55vw, 760px);
-  height: clamp(180px, 26vw, 360px);
-  opacity: 0.055;
-}
-
-.azoth-watermark-install {
-  right: 2%;
-  bottom: -2%;
-  width: clamp(300px, 36vw, 520px);
-  height: clamp(300px, 36vw, 520px);
-  opacity: 0.07;
-  animation: azothSlowRotate 320s linear infinite;
-}
-
-/* Card corner watermark accents */
-.card-corner-watermark {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 56px;
-  height: 56px;
-  opacity: 0.09;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-  transition: opacity 0.3s ease, transform 0.4s ease;
-}
-
-.hero-value-card:hover .card-corner-watermark,
-.pantheon-grand-card:hover .card-corner-watermark {
-  opacity: 0.18;
-  transform: scale(1.08) rotate(12deg);
-}
-
-@keyframes azothSlowRotate {
-  0% { transform: translateY(-50%) rotate(0deg); }
-  100% { transform: translateY(-50%) rotate(360deg); }
-}
-
-@keyframes azothSlowRotateReverse {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(-360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .azoth-watermark {
-    animation: none !important;
-  }
-}
-
-@media (max-width: 1024px), (pointer: coarse), (hover: none) {
-  .azoth-watermark {
-    opacity: 0.038 !important;
-    max-width: 80vw !important;
-    max-height: 80vw !important;
-    right: 50% !important;
-    left: auto !important;
-    transform: translate(50%, -50%) !important;
-  }
-  .azoth-watermark-hero,
-  .azoth-watermark-creators,
-  .azoth-watermark-about,
-  .azoth-watermark-pantheon,
-  .azoth-watermark-pets,
-  .azoth-watermark-install {
-    right: 50% !important;
-    left: auto !important;
-    transform: translate(50%, -50%) !important;
+    padding: 20px 16px !important;
+    border-radius: 20px !important;
   }
 }

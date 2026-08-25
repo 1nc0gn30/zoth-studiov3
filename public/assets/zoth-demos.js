@@ -371,6 +371,10 @@ window.selectUserGoal = function(goalKey, btnElement) {
   renderDemo(goalKey);
 };
 
-document.addEventListener("DOMContentLoaded", function() {
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", function() {
+    renderDemo("website");
+  });
+} else {
   renderDemo("website");
-});
+}
