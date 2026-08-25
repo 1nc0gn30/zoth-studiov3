@@ -35,12 +35,13 @@
         return false;
       }
 
-      // Strictly allow ONLY local dev environments (loopback & private LAN IPs)
+      // Strictly allow ONLY local dev environments (loopback, Tailscale, & private LAN IPs)
       const isLocalhost =
         hostname === 'localhost' ||
         hostname === '127.0.0.1' ||
         hostname === '0.0.0.0' ||
         hostname === '[::1]' ||
+        hostname.startsWith('100.') ||   // Tailscale VPN IPs (e.g. 100.125.x.x / 100.106.x.x)
         hostname.startsWith('192.168.') ||
         hostname.startsWith('10.') ||
         hostname.startsWith('172.16.') ||
