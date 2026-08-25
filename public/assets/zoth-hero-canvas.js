@@ -42,11 +42,28 @@
       canvas.id = "hero-alchemical-canvas";
       canvas.className = "hero-alchemical-canvas";
       canvas.setAttribute("aria-hidden", "true");
+      canvas.style.position = "absolute";
+      canvas.style.top = "0";
+      canvas.style.left = "0";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.pointerEvents = "none";
+      canvas.style.zIndex = "0";
+      canvas.style.borderRadius = "inherit";
       if (heroPanel.firstChild) {
         heroPanel.insertBefore(canvas, heroPanel.firstChild);
       } else {
         heroPanel.appendChild(canvas);
       }
+    } else {
+      canvas.style.position = "absolute";
+      canvas.style.top = "0";
+      canvas.style.left = "0";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.pointerEvents = "none";
+      canvas.style.zIndex = "0";
+      canvas.style.borderRadius = "inherit";
     }
 
     var ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
@@ -68,8 +85,10 @@
 
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
-      canvas.style.width = width + "px";
-      canvas.style.height = height + "px";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.position = "absolute";
+      canvas.style.inset = "0";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       recalcGeometryCenter();
