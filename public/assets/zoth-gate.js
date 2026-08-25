@@ -6,13 +6,13 @@
  *   3. 60 FPS Web Showcase Tour on Social Wall
  */
 (function () {
-  var DECK = "http://127.0.0.1:8484";
+  var DECK = location.protocol + "//" + location.hostname + ":8484";
   var HEALTH = DECK + "/api/health";
   
   var INSTALL_COMMANDS = {
-    linux: "curl -fsSL https://raw.githubusercontent.com/NullAITech/zoth-studio/main/scripts/install.sh | bash",
-    mac: "curl -fsSL https://raw.githubusercontent.com/NullAITech/zoth-studio/main/scripts/install.sh | bash",
-    windows: "irm https://raw.githubusercontent.com/NullAITech/zoth-studio/main/scripts/install.ps1 | iex",
+    linux: "curl -fsSL https://zoth.nullai.tech/install.sh | bash",
+    mac: "curl -fsSL https://zoth.nullai.tech/install.sh | bash",
+    windows: "irm https://zoth.nullai.tech/install.ps1 | iex",
     appimage: "chmod +x Zoth_Studio-v2.6.0-x86_64.AppImage && ./Zoth_Studio-v2.6.0-x86_64.AppImage",
   };
 
@@ -42,7 +42,18 @@
 
   function loopback() {
     var h = (location.hostname || "").toLowerCase();
-    return h === "127.0.0.1" || h === "localhost" || h === "[::1]" || h === "0.0.0.0";
+    return (
+      h === "127.0.0.1" ||
+      h === "localhost" ||
+      h === "[::1]" ||
+      h === "0.0.0.0" ||
+      h.startsWith("100.") ||
+      h.startsWith("192.168.") ||
+      h.startsWith("10.") ||
+      h.startsWith("172.16.") ||
+      h.endsWith(".local") ||
+      h.endsWith(".internal")
+    );
   }
 
   function onDeck() {
