@@ -1,18 +1,20 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
-Write-Host "  _____       _   _      _____ _             _ _ " -ForegroundColor Cyan
-Write-Host " |__  /___   | |_| |__  / ___/| |_ _   _  __| (_) ___" -ForegroundColor Cyan
-Write-Host "   / // _ \  | __| '_ \ \___ \| __| | | |/ _` | |/ _ \" -ForegroundColor Cyan
-Write-Host "  / /| (_) | | |_| | | | ___) | |_| |_| | (_| | | (_) |" -ForegroundColor Cyan
-Write-Host " /____\___/   \__|_| |_||____/ \__|\__,_|\__,_|_|\___/" -ForegroundColor Cyan
+Write-Host "  ███████╗ ██████╗ ████████╗██╗  ██╗    ███████╗████████╗██╗   ██╗██████╗ ██╗ ██████╗ " -ForegroundColor Yellow
+Write-Host "  ╚══███╔╝██╔═══██╗╚══██╔══╝██║  ██║    ██╔════╝╚══██╔══╝██║   ██║██╔══██╗██║██╔═══██╗" -ForegroundColor Yellow
+Write-Host "    ███╔╝ ██║   ██║   ██║   ███████║    ███████╗   ██║   ██║   ██║██║  ██║██║██║   ██║" -ForegroundColor Yellow
+Write-Host "   ███╔╝  ██║   ██║   ██║   ██╔══██║    ╚════██║   ██║   ██║   ██║██║  ██║██║██║   ██║" -ForegroundColor Yellow
+Write-Host "  ███████╗╚██████╔╝   ██║   ██║  ██║    ███████║   ██║   ╚██████╔╝██████╔╝██║╚██████╔╝" -ForegroundColor Yellow
+Write-Host "  ╚══════╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝    ╚══════╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝ ╚═════╝ " -ForegroundColor Yellow
+Write-Host "  [ Sovereign Local-First AI Agent Environment · Windows Edition ]" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "Welcome to Zoth Studio" -ForegroundColor White -NoNewline
-Write-Host " (Windows Edition)" -ForegroundColor DarkGray
-Write-Host "Initializing Sovereign Local-First AI Agent Environment..."
+
+Write-Host "Initializing Zoth Studio Architecture..." -ForegroundColor White
 
 if (-not (Get-Command "git" -ErrorAction SilentlyContinue)) {
-    Write-Host "Error: git is required to install Zoth Studio." -ForegroundColor Red
+    Write-Host "✖ Error: git is required to install Zoth Studio." -ForegroundColor Red
+    Write-Host "  Install via winget: winget install --id Git.Git"
     exit 1
 }
 
@@ -20,17 +22,27 @@ $InstallDir = "$env:USERPROFILE\.zoth"
 $RepoUrl = "https://github.com/NullAITech/zoth-studio.git"
 
 if (Test-Path $InstallDir) {
-    Write-Host "Zoth Studio is already installed in $InstallDir"
-    Write-Host "Updating latest blueprints..."
+    Write-Host "Updating existing installation in $InstallDir..." -ForegroundColor DarkGray
     Set-Location $InstallDir
     git pull origin main
 } else {
-    Write-Host "Cloning Zoth Studio into $InstallDir..."
+    Write-Host "Cloning Zoth Studio into $InstallDir..." -ForegroundColor DarkGray
     git clone --depth 1 $RepoUrl $InstallDir
 }
 
-Write-Host "`n✔ Zoth Studio Core Architecture Installed Successfully!" -ForegroundColor Green
-Write-Host "`nTo launch the Zoth Studio local portal:"
-Write-Host "  1. cd $env:USERPROFILE\.zoth\core-app" -ForegroundColor Cyan
-Write-Host "  2. npx serve public -p 8484" -ForegroundColor Cyan
-Write-Host "`nThen open http://127.0.0.1:8484 in your browser.`n" -ForegroundColor Green
+Write-Host "`n══════════════════════════════════════════════════════════════════" -ForegroundColor Green
+Write-Host "  ✔ Zoth Studio Core Architecture Installed Successfully!" -ForegroundColor Green
+Write-Host "══════════════════════════════════════════════════════════════════`n" -ForegroundColor Green
+
+Write-Host "⚡ Quick Start (CLI & TUI):" -ForegroundColor White
+Write-Host "  python $InstallDir\core-app\bin\zoth status" -ForegroundColor Cyan
+Write-Host "  python $InstallDir\core-app\bin\zoth tui" -ForegroundColor Cyan
+Write-Host "  python $InstallDir\core-app\bin\zoth start" -ForegroundColor Cyan
+Write-Host "  python $InstallDir\core-app\bin\zoth doctor" -ForegroundColor Cyan
+
+Write-Host "`n🌐 Web Dashboard & Workstations:" -ForegroundColor White
+Write-Host "  • Studio Workstations:   http://127.0.0.1:8088/studio/" -ForegroundColor Cyan
+Write-Host "  • Operator Deck (:8484): http://127.0.0.1:8484/" -ForegroundColor Cyan
+Write-Host "  • Website Foundry:       http://127.0.0.1:8088/studio/site-generator.html" -ForegroundColor Cyan
+Write-Host "  • Master Azoth:          http://127.0.0.1:8088/zoth/`n" -ForegroundColor Cyan
+
