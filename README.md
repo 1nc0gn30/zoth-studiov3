@@ -12,17 +12,17 @@
 <br>
 
 <p align="center">
-  <img src="../docs-and-architecture/assets/zoth_studio_banner_1785757680832.png" alt="Zoth Studio Banner" width="100%" style="border-radius: 16px; border: 1px solid rgba(0,240,255,0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,240,255,0.2);" />
+  <img src="docs-and-architecture/assets/zoth_studio_banner_1785757680832.png" alt="Zoth Studio Banner" width="100%" style="border-radius: 16px; border: 1px solid rgba(0,240,255,0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,240,255,0.2);" />
 </p>
 
 <!-- Live Animated Telemetry HUD -->
 <p align="center">
-  <img src="../docs-and-architecture/assets/zoth-telemetry-banner.svg" alt="Live Telemetry HUD" width="100%" />
+  <img src="docs-and-architecture/assets/zoth-telemetry-banner.svg" alt="Live Telemetry HUD" width="100%" />
 </p>
 
 </div>
 
-<p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
+<p align="center"><img src="docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
 
 ## 🌟 Core Application Architecture
 
@@ -42,7 +42,7 @@ graph TD
     style MODEL fill:#350d24,stroke:#f472b6,stroke-width:2px,color:#fff
 ```
 
-<p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
+<p align="center"><img src="docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
 
 ## 🏛️ Public Web Suites (`public/`)
 
@@ -56,7 +56,7 @@ graph TD
 | **`public/vault/`** | `http://127.0.0.1:8088/vault/` | Argon2id BYOK key store interface with zero-leak memory wipe. |
 | **`public/tools/`** | `http://127.0.0.1:8088/tools/` | 47+ client-side tool scripts, framework exporters, and sanitizers. |
 
-<p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
+<p align="center"><img src="docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
 
 ## 🚀 Quickstart & Server Execution
 
