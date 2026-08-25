@@ -467,16 +467,35 @@ def make_meter_bar(pct: float, width: int = 10) -> str:
     pct = max(0.0, min(100.0, pct))
     filled = int(round((pct / 100.0) * width))
     bar = "█" * filled + "░" * (width - filled)
-    return f"[{bar}] {pct:4.1f}%"
-
-def load_all_tools() -> list[dict[str, Any]]:
-    """Load tools from local registry cache or fallback sample."""
+def load_all_tools(filter_studio_tools_only: bool = True) -> list[dict[str, Any]]:
+    """Load tools from local registry cache, prioritizing genuine Zoth Studio tools & utilities."""
     if REGISTRY_CACHE_PATH.exists():
         try:
             data = json.loads(REGISTRY_CACHE_PATH.read_text(encoding="utf-8"))
-            tools = data.get("tools", [])
-            if tools:
-                return tools
+            all_entries = data.get("tools", [])
+            if all_entries:
+                if not filter_studio_tools_only:
+                    return all_entries
+                
+                # Filter specifically for sovereign studio utility tools & engines
+                STUDIO_TOOL_CATS = {
+                    "Security Operations & OSINT", "Python Tools", "Automation & Tools",
+                    "AI Agents & LLM", "Crypto & Web3", "Rust Projects", "DevOps & Automation"
+                }
+                
+                studio_tools = []
+                for t in all_entries:
+                    cat = t.get("category", "")
+                    t_id = t.get("id", "").lower()
+                    t_name = t.get("name", "").lower()
+                    if (cat in STUDIO_TOOL_CATS or 
+                        t_id.startswith("local_null_ai_") or 
+                        any(kw in t_name for kw in ["tool", "scanner", "recon", "generator", "orchestrator", "converter", "cipher", "fuzzer", "validator", "vault", "bridge", "omnipost", "subsweep"])):
+                        studio_tools.append(t)
+                
+                if studio_tools:
+                    return studio_tools
+                return all_entries
         except Exception:
             pass
     # Fallback default tools if registry not yet generated
@@ -566,17 +585,23 @@ def run_tui(stdscr):
     selected_menu = 0
     menu_items = [
         "Dashboard & Status",
-        "Registered Tools",
+        "Sovereign Tools",
+        "Website Templates",
         "Live Bus Events",
         "Restart Servers",
         "Toggle Theme",
         "Quit (q)"
     ]
 
-    # Tool runner state
-    tools_list = load_all_tools()
+    # Load tool and template catalogs
+    tools_list = load_all_tools(filter_studio_tools_only=True)
+    all_raw = load_all_tools(filter_studio_tools_only=False)
+    templates_list = [t for t in all_raw if t not in tools_list]
+    
     tool_cursor = 0
     tool_scroll_offset = 0
+    template_cursor = 0
+    template_scroll_offset = 0
     tool_filter = ""
     tool_view_mode = "list" # "list" or "inspect"
     inspect_tool_data = None
@@ -738,6 +763,76 @@ def run_tui(stdscr):
                         safe_addstr(stdscr, h - 3, content_x, f"Status: {runner_status_msg[:content_w-10]}", curses.color_pair(3) | curses.A_BOLD)
 
             elif selected_menu == 2:
+                # Website Templates (In-House Apps & Blueprints)
+                if tool_view_mode == "inspect" and inspect_tool_data:
+                    # Template details view
+                    t = inspect_tool_data
+                    tname = t.get("name", t.get("id", "?"))
+                    tcat = t.get("category", "General")
+                    tdesc = t.get("description", "In-house website application template.")
+                    truns = ", ".join(t.get("runtimes", [])) or "web, vite, react"
+                    tpath = t.get("path", t.get("relative_path", "?"))
+                    tentry = ", ".join(t.get("entrypoints", [])) or "index.html"
+
+                    safe_addstr(stdscr, 4, content_x, f"🎨 TEMPLATE BLUEPRINT: {tname[:content_w-30]}", curses.color_pair(2) | curses.A_BOLD)
+                    safe_addstr(stdscr, 5, content_x, "─" * content_w, curses.color_pair(1) | curses.A_DIM)
+
+                    y_row = 6
+                    safe_addstr(stdscr, y_row, content_x, f"Template ID:    {t.get('id')}", curses.color_pair(6) | curses.A_BOLD)
+                    y_row += 1
+                    safe_addstr(stdscr, y_row, content_x, f"Category:       {tcat}", curses.color_pair(4))
+                    y_row += 1
+                    safe_addstr(stdscr, y_row, content_x, f"Tech Stack:     {truns}", curses.color_pair(1))
+                    y_row += 1
+                    safe_addstr(stdscr, y_row, content_x, f"Filesystem:     {tpath}", curses.color_pair(6) | curses.A_DIM)
+                    y_row += 1
+                    safe_addstr(stdscr, y_row, content_x, f"Entrypoints:    {tentry}", curses.color_pair(6))
+                    y_row += 2
+                    safe_addstr(stdscr, y_row, content_x, "Description:", curses.color_pair(2) | curses.A_BOLD)
+                    y_row += 1
+                    safe_addstr(stdscr, y_row, content_x, f"  {tdesc[:content_w-4]}", curses.color_pair(6))
+                    y_row += 2
+                    safe_addstr(stdscr, y_row, content_x, " [o] Open in Web Generator Foundry  |  [p] Open Preview in Browser", curses.color_pair(1) | curses.A_BOLD)
+                    y_row += 1
+                    safe_addstr(stdscr, y_row, content_x, " [ESC/b] Back to Templates List", curses.color_pair(6))
+
+                    if runner_status_msg and y_row + 2 < h - 2:
+                        safe_addstr(stdscr, y_row + 2, content_x, f"Status: {runner_status_msg[:content_w-10]}", curses.color_pair(3) | curses.A_BOLD)
+                else:
+                    # Template List View
+                    safe_addstr(stdscr, 4, content_x, f"IN-HOUSE WEBSITE TEMPLATES & BLUEPRINTS ({len(templates_list)} total)", curses.color_pair(1) | curses.A_BOLD)
+                    safe_addstr(stdscr, 5, content_x, " [▲/▼] Scroll Template  |  [ENTER/i] Inspect Blueprint  |  [o] Foundry Rebrand", curses.color_pair(6) | curses.A_DIM)
+
+                    visible_rows = max(1, h - 9)
+                    if template_cursor < template_scroll_offset:
+                        template_scroll_offset = template_cursor
+                    elif template_cursor >= template_scroll_offset + visible_rows:
+                        template_scroll_offset = template_cursor - visible_rows + 1
+
+                    for idx in range(visible_rows):
+                        t_idx = template_scroll_offset + idx
+                        if t_idx >= len(templates_list):
+                            break
+                        tpl = templates_list[t_idx]
+                        t_name = tpl.get("name", tpl.get("id", "?"))
+                        t_cat = tpl.get("category", "Templates")
+                        t_desc = tpl.get("description", "")
+                        y_pos = 7 + idx
+
+                        is_cur = (t_idx == template_cursor)
+                        if is_cur:
+                            safe_addstr(stdscr, y_pos, content_x, f" ▶ 🎨 {t_name:22s}", curses.color_pair(2) | curses.A_REVERSE | curses.A_BOLD)
+                            cat_badge = f"[{t_cat[:16]}]"
+                            safe_addstr(stdscr, y_pos, content_x + 28, f"{cat_badge:18s} {t_desc[:content_w-50]}", curses.color_pair(6) | curses.A_BOLD)
+                        else:
+                            safe_addstr(stdscr, y_pos, content_x, f"   🎨 {t_name:22s}", curses.color_pair(2))
+                            cat_badge = f"[{t_cat[:16]}]"
+                            safe_addstr(stdscr, y_pos, content_x + 28, f"{cat_badge:18s} {t_desc[:content_w-50]}", curses.color_pair(6) | curses.A_DIM)
+
+                    if runner_status_msg:
+                        safe_addstr(stdscr, h - 3, content_x, f"Status: {runner_status_msg[:content_w-10]}", curses.color_pair(3) | curses.A_BOLD)
+
+            elif selected_menu == 3:
                 # Live Bus Events
                 safe_addstr(stdscr, 4, content_x, "LIVE SWARM BUS STREAM (IPC / LOCALHOST:8484)", curses.color_pair(1) | curses.A_BOLD)
 
@@ -757,7 +852,7 @@ def run_tui(stdscr):
                         safe_addstr(stdscr, y_pos, content_x + 12, f"[{t_src}]", curses.color_pair(4) | curses.A_BOLD)
                         safe_addstr(stdscr, y_pos + 1, content_x + 14, f"↳ {t_msg}", curses.color_pair(6) | curses.A_DIM)
 
-            elif selected_menu == 3:
+            elif selected_menu == 4:
                 # Restart Servers
                 safe_addstr(stdscr, 4, content_x, "SERVER CLUSTER RESTART CONTROL", curses.color_pair(1) | curses.A_BOLD)
                 safe_addstr(stdscr, 6, content_x, "Press [ENTER] or [SPACE] to execute server restart cycle.", curses.color_pair(2) | curses.A_BOLD)
@@ -765,7 +860,7 @@ def run_tui(stdscr):
                 if runner_status_msg:
                     safe_addstr(stdscr, 10, content_x, runner_status_msg, curses.color_pair(3) | curses.A_BOLD)
 
-            elif selected_menu == 4:
+            elif selected_menu == 5:
                 # Toggle Theme
                 safe_addstr(stdscr, 4, content_x, "COLOR THEME & DISPLAY PREFERENCES", curses.color_pair(1) | curses.A_BOLD)
                 safe_addstr(stdscr, 6, content_x, f"Active Theme: {theme_name}", curses.color_pair(2) | curses.A_BOLD)
@@ -775,7 +870,7 @@ def run_tui(stdscr):
                     attr = (curses.color_pair(2) | curses.A_BOLD) if i_t == current_theme_idx else curses.color_pair(6)
                     safe_addstr(stdscr, 10 + i_t, content_x + 2, f"{bullet} {t_name}", attr)
 
-            elif selected_menu == 5:
+            elif selected_menu == 6:
                 break
 
             # ── 4. Footer ──────────────────────────────────────────────────
@@ -866,30 +961,86 @@ def run_tui(stdscr):
                         stdscr.clear()
                         stdscr.refresh()
                         runner_status_msg = f"Runner exited for {inspect_tool_data.get('id')}"
+
+            elif selected_menu == 2:
+                # Website Templates browser controls
+                if tool_view_mode == "list":
+                    if ch in [curses.KEY_UP, ord('k'), ord('K')]:
+                        template_cursor = max(0, template_cursor - 1)
+                    elif ch in [curses.KEY_DOWN, ord('j'), ord('J')]:
+                        template_cursor = min(len(templates_list) - 1, template_cursor + 1)
+                    elif ch in [10, 13, ord(' '), ord('i'), ord('I')]: # Enter / Space / i
+                        if templates_list:
+                            inspect_tool_data = templates_list[template_cursor]
+                            tool_view_mode = "inspect"
+                            runner_status_msg = ""
+                    elif ch in [curses.KEY_LEFT, ord('h'), ord('H')]:
+                        selected_menu = 0
+                    elif ch in [ord('o'), ord('O')]: # Rebrand in Site Generator
+                        if templates_list:
+                            sel = templates_list[template_cursor]
+                            curses.endwin()
+                            print(f"\n{BOLD}Opening template '{sel.get('name')}' in Zoth Website Generator...{RESET}\n")
+                            url = f"http://127.0.0.1:8088/studio/site-generator.html?template={sel.get('id')}"
+                            print(f"URL: {CYAN}{url}{RESET}")
+                            subprocess.run(["xdg-open", url], stderr=subprocess.DEVNULL)
+                            input(f"\n{GRAY}Press Enter to return to TUI...{RESET}")
+                            stdscr.clear()
+                            stdscr.refresh()
+                elif tool_view_mode == "inspect":
+                    if ch in [ord('b'), ord('B')]:
+                        tool_view_mode = "list"
+                        runner_status_msg = ""
+                    elif ch in [ord('o'), ord('O')]:
+                        # Open in site generator
+                        curses.endwin()
+                        url = f"http://127.0.0.1:8088/studio/site-generator.html?template={inspect_tool_data.get('id')}"
+                        print(f"\n{BOLD}Launching Web Foundry with blueprint '{inspect_tool_data.get('name')}'...{RESET}\n")
+                        print(f"URL: {CYAN}{url}{RESET}")
+                        subprocess.run(["xdg-open", url], stderr=subprocess.DEVNULL)
+                        input(f"\n{GRAY}Press Enter to return to TUI...{RESET}")
+                        stdscr.clear()
+                        stdscr.refresh()
+                        runner_status_msg = f"Opened {inspect_tool_data.get('id')} in Foundry"
+                    elif ch in [ord('p'), ord('P')]:
+                        # Open preview
+                        curses.endwin()
+                        rel_path = inspect_tool_data.get("relative_path", "")
+                        url = f"http://127.0.0.1:8088/templates-source/{rel_path}/index.html"
+                        print(f"\n{BOLD}Opening browser preview for '{inspect_tool_data.get('name')}'...{RESET}\n")
+                        print(f"URL: {CYAN}{url}{RESET}")
+                        subprocess.run(["xdg-open", url], stderr=subprocess.DEVNULL)
+                        input(f"\n{GRAY}Press Enter to return to TUI...{RESET}")
+                        stdscr.clear()
+                        stdscr.refresh()
+                        runner_status_msg = f"Preview launched for {inspect_tool_data.get('id')}"
+
             else:
                 # Main menu navigation
                 if ch in [curses.KEY_UP, ord('k'), ord('K')]:
                     selected_menu = (selected_menu - 1) % len(menu_items)
+                    tool_view_mode = "list"
                     runner_status_msg = ""
                 elif ch in [curses.KEY_DOWN, ord('j'), ord('J')]:
                     selected_menu = (selected_menu + 1) % len(menu_items)
+                    tool_view_mode = "list"
                     runner_status_msg = ""
                 elif ch in [curses.KEY_RIGHT, ord('l'), ord('L')]:
-                    if selected_menu == 1:
+                    if selected_menu in [1, 2]:
                         tool_view_mode = "list"
                 elif ch in [10, 13, ord(' ')]: # Enter or space
-                    if selected_menu == 3: # Restart
+                    if selected_menu == 4: # Restart
                         safe_addstr(stdscr, 10, content_x, "Restarting servers...", curses.color_pair(2) | curses.A_BOLD)
                         stdscr.refresh()
                         cmd_stop(None)
                         cmd_start(None)
                         runner_status_msg = "Servers restarted successfully on :8484, :8088, :8787."
                         time.sleep(1)
-                    elif selected_menu == 4: # Toggle theme
+                    elif selected_menu == 5: # Toggle theme
                         if has_color:
                             current_theme_idx = (current_theme_idx + 1) % len(theme_keys)
                             apply_theme(theme_keys[current_theme_idx])
-                    elif selected_menu == 5:
+                    elif selected_menu == 6:
                         break
         except curses.error:
             pass
