@@ -523,6 +523,24 @@ async def api_swarm(request: Request) -> Response:
         return _json_response({"error": str(e)}, 500)
 
 
+async def api_swarm_messages(request: Request) -> Response:
+    try:
+        from runtime import swarm_bus
+        snap = swarm_bus.snapshot()
+        return _json_response({"messages": snap.get("messages", [])})
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_claims(request: Request) -> Response:
+    try:
+        from runtime import swarm_bus
+        snap = swarm_bus.snapshot()
+        return _json_response(snap.get("claims", []))
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
 def _generate_agent_reply_for_asgi(to_agent: str, prompt: str, from_user: str = "operator") -> tuple[str, str]:
     aid = to_agent.lower().lstrip("@").strip()
     p_lower = prompt.lower()
@@ -1837,13 +1855,32 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/api/hermes/status", api_hermes_status),
         Route("/api/zoth/swarm", api_zoth_swarm, methods=["POST"]),
         Route("/api/swarm", api_swarm),
+        Route("/api/swarm/status", api_swarm),
+        Route("/api/v1/swarm/state", api_swarm),
+        Route("/api/v1/swarm", api_swarm),
+        Route("/api/v1/state", api_swarm),
+        Route("/api/swarm/messages", api_swarm_messages),
+        Route("/api/bus/messages", api_swarm_messages),
+        Route("/api/v1/bus/messages", api_swarm_messages),
+        Route("/api/v1/messages", api_swarm_messages),
+        Route("/api/messages", api_swarm_messages),
+        Route("/archive", api_swarm_messages),
+        Route("/api/claims", api_claims),
+        Route("/claims", api_claims),
         Route("/api/swarm/write/message", api_swarm_write_message, methods=["POST"]),
         Route("/api/swarm/message", api_swarm_write_message, methods=["POST"]),
         Route("/api/swarm/write", api_swarm_write_message, methods=["POST"]),
+        Route("/api/v1/bus/post", api_swarm_write_message, methods=["POST"]),
+        Route("/api/v1/bus/messages", api_swarm_write_message, methods=["POST"]),
+        Route("/api/v1/messages", api_swarm_write_message, methods=["POST"]),
+        Route("/api/messages", api_swarm_write_message, methods=["POST"]),
+        Route("/api/bus/post", api_swarm_write_message, methods=["POST"]),
         Route("/api/swarm/{action}", api_swarm_write, methods=["POST"]),
         Route("/api/bus/stream", api_bus_stream, methods=["GET"]),
         Route("/api/swarm/events", api_bus_stream, methods=["GET"]),
         Route("/api/events", api_bus_stream, methods=["GET"]),
+        Route("/api/v1/bus/events", api_bus_stream, methods=["GET"]),
+        Route("/api/v1/events", api_bus_stream, methods=["GET"]),
         Route("/stream", api_bus_stream, methods=["GET"]),
         Route("/api/pets", api_pets),
         Route("/api/pets/{pet_id}", api_pet_one),

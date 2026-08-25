@@ -1268,16 +1268,16 @@ created: {now_utc}
                     return
 
             # ─── API: swarm state & live feed (Signal Bridge & Studio) ───
-            if path in ("/api/swarm", "/api/swarm/status"):
+            if path in ("/api/swarm", "/api/swarm/status", "/api/v1/swarm/state", "/api/v1/swarm", "/api/v1/state"):
                 self._send_json(_get_swarm_data())
                 return
 
-            if path in ("/api/swarm/messages", "/api/bus/messages"):
+            if path in ("/api/swarm/messages", "/api/bus/messages", "/api/v1/bus/messages", "/api/v1/messages", "/api/messages", "/archive"):
                 self._send_json({"messages": _get_swarm_messages(100)})
                 return
 
             # ─── API: Live Swarm Event Bus SSE Stream ───
-            if path in ("/api/bus/stream", "/api/swarm/events", "/api/events", "/stream"):
+            if path in ("/api/bus/stream", "/api/swarm/events", "/api/events", "/stream", "/api/v1/bus/events", "/api/v1/events"):
                 self.send_response(200)
                 self.send_header("Content-Type", "text/event-stream")
                 self.send_header("Cache-Control", "no-cache")
@@ -1974,7 +1974,7 @@ created: {now_utc}
                 data = {}
 
             # ─── API: Swarm Message Write & Agent Auto-Responder ───
-            if path in ("/api/swarm/write/message", "/api/swarm/message", "/api/swarm/write", "/api/bus/post", "/api/messages"):
+            if path in ("/api/swarm/write/message", "/api/swarm/message", "/api/swarm/write", "/api/bus/post", "/api/messages", "/api/v1/bus/messages", "/api/v1/messages", "/api/v1/bus/post"):
                 res = _post_swarm_message(data)
                 self._send_json(res)
                 return
