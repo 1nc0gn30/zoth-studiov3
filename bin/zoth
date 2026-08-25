@@ -129,6 +129,20 @@ def cmd_list(args):
     
     subprocess.run(cmd)
 
+def cmd_run(args):
+    print_banner()
+    if not ORCHESTRATOR_PY.exists():
+        print(f"{RED}Error: orchestrator.py not found at {ORCHESTRATOR_PY}{RESET}")
+        return 1
+
+    cmd = [sys.executable, str(ORCHESTRATOR_PY), "run", args.tool_id]
+    if getattr(args, "confirm", False):
+        cmd.append("--confirm")
+    if getattr(args, "tool_args", []):
+        cmd.extend(args.tool_args)
+
+    subprocess.run(cmd)
+
 def cmd_doctor(args):
     print_banner()
     print(f"{BOLD}Executing Zoth Studio System Diagnostics...{RESET}\n")
@@ -730,6 +744,13 @@ def main():
     p_doctor = sub.add_parser("doctor", help="Run system diagnostics, environment probes, and runtime audits")
     p_doctor.set_defaults(func=cmd_doctor)
 
+    # zoth run
+    p_run = sub.add_parser("run", help="Run a sovereign tool command or pipeline")
+    p_run.add_argument("tool_id", help="Tool ID or name (e.g. local_null_ai_subsweep)")
+    p_run.add_argument("--confirm", action="store_true", help="Execute tool directly (skips dry-run)")
+    p_run.add_argument("tool_args", nargs=argparse.REMAINDER, help="Additional arguments to pass to the tool")
+    p_run.set_defaults(func=cmd_run)
+
     # zoth update
     p_update = sub.add_parser("update", help="Update Zoth Studio to the latest release from GitHub")
     p_update.set_defaults(func=cmd_update)
@@ -744,6 +765,7 @@ def main():
         print(f"  {CYAN}zoth stop{RESET}    Stop all running servers")
         print(f"  {CYAN}zoth status{RESET}  Check active server ports and tool registry")
         print(f"  {CYAN}zoth list{RESET}    List all 298+ registered tools")
+        print(f"  {CYAN}zoth run{RESET}     Run a sovereign tool command or pipeline")
         print(f"  {CYAN}zoth doctor{RESET}  Run full diagnostics")
         print(f"  {CYAN}zoth update{RESET}  Update to latest repository release\n")
         return 0
