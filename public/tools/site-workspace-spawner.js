@@ -13,8 +13,11 @@
     module.exports = factory();
   } else {
     root.ZothWorkspaceSpawner = factory();
+    if (typeof window !== 'undefined') {
+      window.ZothWorkspaceSpawner = root.ZothWorkspaceSpawner;
+    }
   }
-}(typeof self !== 'undefined' ? self : this, function () {
+}(typeof self !== 'undefined' ? self : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
   var VERSION = '4.5.0';

@@ -14,8 +14,11 @@
     module.exports = factory();
   } else {
     root.ZothAeoSeoEngine = factory();
+    if (typeof window !== 'undefined') {
+      window.ZothAeoSeoEngine = root.ZothAeoSeoEngine;
+    }
   }
-}(typeof self !== 'undefined' ? self : this, function () {
+}(typeof self !== 'undefined' ? self : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
   var VERSION = '4.0.0';

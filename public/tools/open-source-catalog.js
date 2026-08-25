@@ -11,8 +11,11 @@
     module.exports = factory();
   } else {
     root.ZothOpenSourceCatalog = factory();
+    if (typeof window !== 'undefined') {
+      window.ZothOpenSourceCatalog = root.ZothOpenSourceCatalog;
+    }
   }
-}(typeof self !== 'undefined' ? self : this, function() {
+}(typeof self !== 'undefined' ? self : (typeof window !== 'undefined' ? window : this), function() {
   'use strict';
 
   var VERSION = '2.0.0';

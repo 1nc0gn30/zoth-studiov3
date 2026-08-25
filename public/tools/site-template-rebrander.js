@@ -19,12 +19,15 @@
     );
   } else {
     root.ZothTemplateRebrander = factory(
-      root.ZothTemplatesCatalog,
-      root.ZothDomainSynthesizer,
-      root.ZothSwarmOrchestrator
+      root.ZothTemplatesCatalog || (typeof window !== 'undefined' ? window.ZothTemplatesCatalog : null),
+      root.ZothDomainSynthesizer || (typeof window !== 'undefined' ? window.ZothDomainSynthesizer : null),
+      root.ZothSwarmOrchestrator || (typeof window !== 'undefined' ? window.ZothSwarmOrchestrator : null)
     );
+    if (typeof window !== 'undefined') {
+      window.ZothTemplateRebrander = root.ZothTemplateRebrander;
+    }
   }
-}(typeof self !== 'undefined' ? self : this, function (TemplatesCatalog, DomainSynthesizer, SwarmOrchestrator) {
+}(typeof self !== 'undefined' ? self : (typeof window !== 'undefined' ? window : this), function (TemplatesCatalog, DomainSynthesizer, SwarmOrchestrator) {
 
   var PALETTES = {
     emerald: { bg: '#040d08', surface: '#0a1a11', border: 'rgba(52, 211, 153, 0.25)', accent: '#34d399', textMuted: '#94a3b8', name: 'Emerald Grounds' },

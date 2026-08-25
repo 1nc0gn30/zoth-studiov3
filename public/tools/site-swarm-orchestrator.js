@@ -10,8 +10,11 @@
     module.exports = factory();
   } else {
     root.ZothSwarmOrchestrator = factory();
+    if (typeof window !== 'undefined') {
+      window.ZothSwarmOrchestrator = root.ZothSwarmOrchestrator;
+    }
   }
-}(typeof self !== 'undefined' ? self : this, function () {
+}(typeof self !== 'undefined' ? self : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
   var VERSION = '4.2.0';

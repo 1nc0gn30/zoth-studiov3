@@ -1843,9 +1843,9 @@
   function copyCodeSnippet() {
     var content = multiPageCache[activePage] || generatePageHtml(activePage);
     navigator.clipboard.writeText(content).then(function() {
-      alert('Copied ' + activePage + ' source code to clipboard!');
+      showStudioToast('📋 Copied ' + activePage + ' source code to clipboard!');
     }).catch(function() {
-      alert('Unable to copy to clipboard.');
+      showStudioToast('⚠️ Unable to copy to clipboard automatically.');
     });
   }
 
@@ -2119,8 +2119,10 @@
     }
   }
 
-  function downloadSelectedZip() {
-    // Ensure all 6 pages are in multiPageCache
+  function downloadSelectedZip(explicitFw) {
+    var fw = explicitFw || studioConfig.framework || 'all';
+
+    // Ensure all 6 pages are populated in multiPageCache
     ['index.html', 'features.html', 'pricing.html', 'docs.html', 'about.html', 'contact.html'].forEach(function(pg) {
       if (!multiPageCache[pg]) {
         multiPageCache[pg] = generatePageHtml(pg);
@@ -2130,36 +2132,74 @@
     if (typeof JSZip !== 'undefined') {
       var zip = new JSZip();
       var siteTitle = currentSite ? currentSite.name : 'Zoth-Project';
-      var cleanSlug = siteTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      var cleanSlug = siteTitle.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/^-+|-+$/g, '') || 'zoth-project';
       
-      // Use ZothAdvancedConfigurator to get the complete repository files package
+      // 1. Synthesize Spec for Framework Exporter
+      var exportSpec = {
+        name: siteTitle,
+        slug: cleanSlug,
+        tagline: currentSite ? (currentSite.tagline || currentSite.hero?.sub) : 'Autonomous High-Velocity Web Application',
+        description: currentSite ? (currentSite.hero?.sub || currentSite.tagline) : 'Sovereign web platform generated with Zoth Rapid Website Foundry.',
+        niche: (typeof ZothSwarmOrchestrator !== 'undefined') ? ZothSwarmOrchestrator.detectArchetype(currentSite) : 'saas',
+        theme: 'obsidian-gold',
+        year: 2026
+      };
+
+      // 2. Generate Universal Framework Repositories if exporter is present
+      if (typeof ZothFrameworkExporter !== 'undefined') {
+        try {
+          var exportedFw = ZothFrameworkExporter.exportProjectFiles(exportSpec, fw);
+          Object.keys(exportedFw).forEach(function(fwKey) {
+            var targetFolder = (fw === 'all' || Object.keys(exportedFw).length > 1) ? zip.folder(cleanSlug + '-' + fwKey) : zip;
+            var fileTree = exportedFw[fwKey];
+            Object.keys(fileTree).forEach(function(filePath) {
+              targetFolder.file(filePath, fileTree[filePath]);
+            });
+          });
+        } catch (e) {
+          console.warn('[Zoth Studio] Exporter fallback:', e);
+        }
+      }
+
+      // 3. Generate Advanced Configurator Bundle (Hosting manifests, .env.example, connectors)
       var repoFiles = {};
       if (typeof ZothAdvancedConfigurator !== 'undefined') {
         repoFiles = ZothAdvancedConfigurator.bundleCompleteRepository(currentSite || { name: siteTitle }, studioConfig);
+        Object.keys(repoFiles).forEach(function(filePath) {
+          if (!zip.file(filePath)) {
+            zip.file(filePath, repoFiles[filePath]);
+          }
+        });
       }
 
-      // Add all bundled repository files to zip
-      Object.keys(repoFiles).forEach(function(filePath) {
-        zip.file(filePath, repoFiles[filePath]);
-      });
+      // 4. Generate Machine-Readable AEO/AX Manifests (/llms.txt, /robots.txt, Schema.org)
+      if (typeof ZothAeoSeoEngine !== 'undefined') {
+        zip.file('public/llms.txt', ZothAeoSeoEngine.generateLlmsTxt(currentSite));
+        zip.file('llms.txt', ZothAeoSeoEngine.generateLlmsTxt(currentSite));
+      }
 
-      // Add all generated static pages to public folder
+      // 5. Add all 6 synthesized static pages to public folder & root index.html
       var pagesFolder = zip.folder('public');
       Object.keys(multiPageCache).forEach(function(pg) {
         pagesFolder.file(pg, multiPageCache[pg]);
-        if (pg === 'index.html') {
+        if (pg === 'index.html' && !zip.file('index.html')) {
           zip.file('index.html', multiPageCache[pg]);
         }
       });
 
+      // 6. Generate Archive and trigger browser download
+      showStudioToast('📦 Packaging ' + siteTitle + ' (' + fw.toUpperCase() + ')...');
       zip.generateAsync({ type: 'blob' }).then(function(blob) {
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = cleanSlug + '-' + studioConfig.framework + '-' + studioConfig.hosting + '-bundle.zip';
+        var filename = cleanSlug + '-' + fw + '-' + studioConfig.hosting + '-bundle.zip';
+        a.download = filename;
         a.click();
+        setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+        showStudioToast('✅ Download started: ' + filename);
       });
     } else {
-      alert('Generating project archive...');
+      showStudioToast('⚠️ JSZip library loading, please retry in 1s...');
     }
   }
 

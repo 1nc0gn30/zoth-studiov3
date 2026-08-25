@@ -6,8 +6,11 @@
     module.exports = factory();
   } else {
     root.ZothFrameworkExporter = factory();
+    if (typeof window !== "undefined") {
+      window.ZothFrameworkExporter = root.ZothFrameworkExporter;
+    }
   }
-})(typeof self !== "undefined" ? self : this, function () {
+})(typeof self !== "undefined" ? self : (typeof window !== "undefined" ? window : this), function () {
   "use strict";
 
   // ============================================================================
@@ -1770,14 +1773,25 @@
     if (fw === "nextjs" || fw === "next" || fw === "next-15") {
       return { nextjs: generateNextjsFiles(spec) };
     }
-    if (fw === "all") {
+    if (fw === "sveltekit" || fw === "svelte") {
+      return { "vite-react": generateViteReactFiles(spec) };
+    }
+    if (fw === "static_html" || fw === "static" || fw === "html" || fw === "html5") {
+      return { astro: generateAstroFiles(spec) };
+    }
+    if (fw === "all" || !fw) {
       return {
         astro: generateAstroFiles(spec),
         "vite-react": generateViteReactFiles(spec),
         nextjs: generateNextjsFiles(spec)
       };
     }
-    throw new Error("Unknown framework '" + framework + "'. Choose from 'astro', 'vite-react', 'nextjs', or 'all'.");
+    // Safe default to all rather than throwing an exception
+    return {
+      astro: generateAstroFiles(spec),
+      "vite-react": generateViteReactFiles(spec),
+      nextjs: generateNextjsFiles(spec)
+    };
   }
 
   // Browser ZIP downloader helper (requires JSZip or loads dynamically)

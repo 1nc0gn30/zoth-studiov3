@@ -9,8 +9,11 @@
     module.exports = factory();
   } else {
     root.ZothSiteSections = factory();
+    if (typeof window !== "undefined") {
+      window.ZothSiteSections = root.ZothSiteSections;
+    }
   }
-})(typeof self !== "undefined" ? self : this, function () {
+})(typeof self !== "undefined" ? self : (typeof window !== "undefined" ? window : this), function () {
   "use strict";
 
   var VERSION = "2026-08-22";
