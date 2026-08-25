@@ -150,6 +150,32 @@ def cmd_doctor(args):
     if ORCHESTRATOR_PY.exists():
         subprocess.run([sys.executable, str(ORCHESTRATOR_PY), "doctor"])
 
+def cmd_update(args):
+    print_banner()
+    print(f"{BOLD}Checking for Zoth Studio updates from GitHub...{RESET}\n")
+    try:
+        git_dir = BASE_DIR.parent
+        res = subprocess.run(["git", "pull", "origin", "main"], cwd=str(git_dir), capture_output=True, text=True)
+        print(res.stdout)
+        if res.returncode == 0:
+            # Re-symlink bin/zoth
+            bin_dir = Path.home() / ".local" / "bin"
+            bin_dir.mkdir(parents=True, exist_ok=True)
+            target = bin_dir / "zoth"
+            source = CORE_APP_DIR / "bin" / "zoth"
+            if source.exists():
+                try:
+                    if target.is_symlink() or target.exists():
+                        target.unlink()
+                    target.symlink_to(source)
+                except Exception:
+                    pass
+            print(f"{GREEN}✔ Zoth Studio updated and binaries synchronized!{RESET}\n")
+        else:
+            print(f"{RED}Update error:{RESET} {res.stderr}")
+    except Exception as e:
+        print(f"{RED}Failed to update:{RESET} {e}")
+
 def cmd_start(args):
     print_banner()
     print(f"{BOLD}Starting Zoth Studio Sovereign Workstation Suite...{RESET}\n")
@@ -704,6 +730,10 @@ def main():
     p_doctor = sub.add_parser("doctor", help="Run system diagnostics, environment probes, and runtime audits")
     p_doctor.set_defaults(func=cmd_doctor)
 
+    # zoth update
+    p_update = sub.add_parser("update", help="Update Zoth Studio to the latest release from GitHub")
+    p_update.set_defaults(func=cmd_update)
+
     args = parser.parse_args()
     if not args.command:
         # Default to banner and status if no command provided
@@ -714,7 +744,8 @@ def main():
         print(f"  {CYAN}zoth stop{RESET}    Stop all running servers")
         print(f"  {CYAN}zoth status{RESET}  Check active server ports and tool registry")
         print(f"  {CYAN}zoth list{RESET}    List all 298+ registered tools")
-        print(f"  {CYAN}zoth doctor{RESET}  Run full diagnostics\n")
+        print(f"  {CYAN}zoth doctor{RESET}  Run full diagnostics")
+        print(f"  {CYAN}zoth update{RESET}  Update to latest repository release\n")
         return 0
 
     return args.func(args)
