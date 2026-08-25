@@ -346,7 +346,13 @@
 <span>🛡️</span> Run Zero-Leak Audit
             </button>
 <button class="btn-ghost-recon" onclick="exportReconJson()">
-<span>📥</span> Export Dossier JSON
+<span>📥</span> JSON Export
+            </button>
+<button class="btn-ghost-recon" onclick="exportReconCsv()">
+<span>📊</span> CSV Export
+            </button>
+<button class="btn-ghost-recon" id="btn-live-simulation" onclick="toggleLiveSimulation(this)">
+<span id="sim-indicator-icon">▶</span> Live Simulation: <span id="sim-status-label" style="color:var(--recon-emerald); font-weight:700;">ON</span>
             </button>
 <button class="btn-ghost-recon" onclick="copyReconSummary()">
 <span>📋</span> Copy Telemetry
@@ -391,7 +397,7 @@
 <span>Discovered Endpoints</span>
 <span style="color:var(--recon-cyan);">● crt.sh SOA</span>
 </div>
-<div class="val" id="count-subdomains">8 Verified</div>
+<div class="val" id="count-subdomains">8 Verified Endpoints</div>
 <div class="subtext">100% In-Memory Cache Indexed</div>
 </div>
 <div class="tel-card">
@@ -896,15 +902,31 @@
 <div class="recon-card-header">
 <div>
 <h3><span>🌐</span> Verified Surface Endpoints &amp; Target Nodes</h3>
-<p style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Discovered subdomains and active hosts with live telemetry, port badges, and radar lock actions.</p>
+<p style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Discovered subdomains, newsletters, lead endpoints, and active hosts with live telemetry and filter presets.</p>
 </div>
-<div>
+<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
 <span id="scan-status-pill" style="font-family:var(--font-mono); font-size:0.78rem; color:var(--recon-emerald);">● Scan Live &amp; Verified</span>
+<button class="btn-ghost-recon btn-sm" onclick="exportReconCsv()">📊 Export CSV</button>
+<button class="btn-ghost-recon btn-sm" onclick="exportReconJson()">📥 Export JSON</button>
+</div>
+</div>
+<!-- Filter Presets Bar -->
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px; padding:8px 12px; background:rgba(4,6,14,0.6); border:1px solid var(--recon-line, rgba(255,255,255,0.06)); border-radius:8px;">
+<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+<span style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Filter Presets:</span>
+<button class="chip-scope active node-filter-btn" onclick="filterDiscoveredNodes('all', this)">All Nodes (8)</button>
+<button class="chip-scope node-filter-btn" onclick="filterDiscoveredNodes('newsletters', this)">📰 Newsletters &amp; Leads (3)</button>
+<button class="chip-scope node-filter-btn" onclick="filterDiscoveredNodes('production', this)">⚡ Production Edge (4)</button>
+<button class="chip-scope node-filter-btn" onclick="filterDiscoveredNodes('sovereign', this)">🔒 Loopback &amp; Vault (2)</button>
+<button class="chip-scope node-filter-btn" onclick="filterDiscoveredNodes('waf', this)">🛡️ WAF Shielded (1)</button>
+</div>
+<div style="display:flex; align-items:center; gap:6px;">
+<span id="filtered-node-count" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--recon-cyan);">Showing 8 of 8 endpoints</span>
 </div>
 </div>
 <div class="nodes-grid" id="recon-nodes-grid">
 <!-- Node 1 -->
-<div class="recon-node-card">
+<div class="recon-node-card" data-node-category="production">
 <div class="node-header">
 <span class="node-domain">zoth.nullai.tech</span>
 <span class="node-status status-ok">200 OK</span>
@@ -919,7 +941,7 @@
 </div>
 </div>
 <!-- Node 2 -->
-<div class="recon-node-card">
+<div class="recon-node-card" data-node-category="production">
 <div class="node-header">
 <span class="node-domain">nexus-3d.nealfrazier.tech</span>
 <span class="node-status status-ok">200 OK</span>
@@ -934,7 +956,7 @@
 </div>
 </div>
 <!-- Node 3 -->
-<div class="recon-node-card">
+<div class="recon-node-card" data-node-category="production newsletters">
 <div class="node-header">
 <span class="node-domain">omnipost.nealfrazier.tech</span>
 <span class="node-status status-ok">200 OK</span>
@@ -949,7 +971,7 @@
 </div>
 </div>
 <!-- Node 4 -->
-<div class="recon-node-card">
+<div class="recon-node-card" data-node-category="production">
 <div class="node-header">
 <span class="node-domain">vision-link.nealfrazier.tech</span>
 <span class="node-status status-ok">200 OK</span>
@@ -964,7 +986,7 @@
 </div>
 </div>
 <!-- Node 5 -->
-<div class="recon-node-card">
+<div class="recon-node-card" data-node-category="waf">
 <div class="node-header">
 <span class="node-domain">api.zoth.nullai.tech</span>
 <span class="node-status status-waf">WAF Shielded</span>
@@ -979,7 +1001,7 @@
 </div>
 </div>
 <!-- Node 6 -->
-<div class="recon-node-card">
+<div class="recon-node-card" data-node-category="sovereign">
 <div class="node-header">
 <span class="node-domain">vault.zoth.nullai.tech</span>
 <span class="node-status status-local">Parrot Airgap Isolated</span>
@@ -991,6 +1013,36 @@
 <div class="node-card-actions">
 <button class="btn-ghost-recon" onclick="lockTargetOnRadar('vault.zoth.nullai.tech', 0.8, 180.0, '127.0.0.1:8787', 'Argon2id+XChaCha20')">🎯 Lock Radar</button>
 <a class="btn-ghost-recon" href="/vault/" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">🔐 Open Vault</a>
+</div>
+</div>
+<!-- Node 7: Newsletter & Dispatch Ingress -->
+<div class="recon-node-card" data-node-category="newsletters">
+<div class="node-header">
+<span class="node-domain">news.zoth.nullai.tech</span>
+<span class="node-status status-ok">200 OK · Ingest</span>
+</div>
+<div class="node-meta-row"><span>Ingress Type</span><span style="color:var(--recon-cyan);">Substack / Beehiiv RSS Feed</span></div>
+<div class="node-meta-row"><span>Subscribers / Leads</span><span style="color:var(--recon-emerald); font-weight:700;">14,820 Verified</span></div>
+<div class="node-meta-row"><span>Lead Velocity</span><span style="color:var(--recon-gold);">+142 / day (Organic)</span></div>
+<div class="node-meta-row"><span>Security Filter</span><span style="color:var(--recon-purple);">Zero-Third-Party Pixel Sanitizer</span></div>
+<div class="node-card-actions">
+<button class="btn-ghost-recon" onclick="lockTargetOnRadar('news.zoth.nullai.tech', 32.1, 160.0, '104.21.49.12', 'TLS 1.3 / RSS Lead')">🎯 Lock Radar</button>
+<button class="btn-ghost-recon" onclick="inspectNodeStream('news.zoth.nullai.tech')">🔬 Dissect Ingress</button>
+</div>
+</div>
+<!-- Node 8: Creator Playbooks & Growth Radar -->
+<div class="recon-node-card" data-node-category="newsletters">
+<div class="node-header">
+<span class="node-domain">playbooks.zoth.nullai.tech</span>
+<span class="node-status status-ok">200 OK · Leads</span>
+</div>
+<div class="node-meta-row"><span>Scanner Target</span><span style="color:var(--recon-cyan);">Creator Lead Pipeline &amp; Omnipost</span></div>
+<div class="node-meta-row"><span>Tracked Creators</span><span style="color:var(--recon-emerald); font-weight:700;">524 Active Profiles</span></div>
+<div class="node-meta-row"><span>Conversion Rate</span><span style="color:var(--recon-gold);">18.4% (Direct Bookings)</span></div>
+<div class="node-meta-row"><span>Telemetry Bus</span><span style="color:var(--recon-purple);">Port 8484 Loopback Sync</span></div>
+<div class="node-card-actions">
+<button class="btn-ghost-recon" onclick="lockTargetOnRadar('playbooks.zoth.nullai.tech', 24.5, 290.0, '75.2.70.75', 'TLS 1.3 / Creator Playbooks')">🎯 Lock Radar</button>
+<button class="btn-ghost-recon" onclick="inspectNodeStream('playbooks.zoth.nullai.tech')">🔬 Dissect Stream</button>
 </div>
 </div>
 </div>
@@ -1483,6 +1535,105 @@ Timestamp: ${new Date().toISOString()}
           document.getElementById('val-avg-latency').textContent = (Math.random() * 0.3 + 0.6).toFixed(2) + ' ms';
         }, 400);
       }
+
+      
+      /* Discovered Nodes Category Filter */
+      function filterDiscoveredNodes(cat, btn) {
+        document.querySelectorAll('.node-filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const cards = document.querySelectorAll('#recon-nodes-grid .recon-node-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          const itemCat = card.dataset.nodeCategory || 'production';
+          if (cat === 'all' || itemCat.includes(cat)) {
+            card.style.display = '';
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        const label = document.getElementById('filtered-node-count');
+        if (label) {
+          label.textContent = 'Showing ' + visibleCount + ' of ' + cards.length + ' endpoints';
+        }
+      }
+
+      /* CSV Export Engine */
+      function exportReconCsv() {
+        const domain = document.getElementById('target-domain-input').value.trim() || 'zoth.nullai.tech';
+        const cards = document.querySelectorAll('#recon-nodes-grid .recon-node-card');
+        let csv = 'Target_Perimeter,Endpoint_Domain,Status,Category,IP_Address,Cipher_KDF,Discovered_At\n';
+
+        cards.forEach(card => {
+          const d = card.querySelector('.node-domain')?.textContent.trim() || '';
+          const st = card.querySelector('.node-status')?.textContent.trim() || '';
+          const cat = card.dataset.nodeCategory || 'production';
+          const metaRows = card.querySelectorAll('.node-meta-row');
+          let ip = '';
+          let cipher = '';
+          metaRows.forEach(r => {
+            const spans = r.querySelectorAll('span');
+            if (spans.length >= 2) {
+              const k = spans[0].textContent.trim();
+              const v = spans[1].textContent.trim();
+              if (k.includes('IP') || k.includes('Ingress') || k.includes('Scanner')) ip = v;
+              if (k.includes('Cipher') || k.includes('AEAD') || k.includes('Lead') || k.includes('Velocity')) cipher = v;
+            }
+          });
+          csv += '"' + domain + '","' + d.replace(/"/g, '""') + '","' + st.replace(/"/g, '""') + '","' + cat + '","' + ip.replace(/"/g, '""') + '","' + cipher.replace(/"/g, '""') + '","' + new Date().toISOString() + '"\n';
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'subsweep_telemetry_' + Date.now() + '.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      /* Live Simulation Mode Controller */
+      let isLiveSimActive = true;
+      let liveSimTimer = null;
+
+      function toggleLiveSimulation(btn) {
+        isLiveSimActive = !isLiveSimActive;
+        const icon = document.getElementById('sim-indicator-icon');
+        const label = document.getElementById('sim-status-label');
+
+        if (isLiveSimActive) {
+          if (icon) icon.textContent = '▶';
+          if (label) { label.textContent = 'ON'; label.style.color = 'var(--recon-emerald)'; }
+          startLiveSimInterval();
+        } else {
+          if (icon) icon.textContent = '⏸';
+          if (label) { label.textContent = 'PAUSED'; label.style.color = 'var(--recon-gold)'; }
+          if (liveSimTimer) clearInterval(liveSimTimer);
+        }
+      }
+
+      function startLiveSimInterval() {
+        if (liveSimTimer) clearInterval(liveSimTimer);
+        liveSimTimer = setInterval(() => {
+          if (!isLiveSimActive) return;
+          // Randomly fluctuate loopback latency between 0.60ms and 1.10ms
+          const lat = (Math.random() * 0.5 + 0.6).toFixed(2);
+          const latEl = document.getElementById('val-avg-latency');
+          if (latEl) latEl.textContent = lat + ' ms';
+
+          // Simulate live background packet frame injection every 4 ticks
+          if (Math.random() < 0.25) {
+            injectSnifferPacket();
+          }
+        }, 3000);
+      }
+
+      startLiveSimInterval();
 
       function exportReconJson() {
         const nodes = Array.from(document.querySelectorAll('.recon-node-card')).map(card => ({
