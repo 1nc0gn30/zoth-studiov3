@@ -60,9 +60,14 @@
 <script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="/studio/nexus-3d-generator.js?v=20260824"></script>
 <script src="/studio/nexus-3d-csg.js?v=20260824"></script>
+<script src="/studio/nexus-3d-subdivision.js?v=20260824"></script>
 <script src="/studio/nexus-3d-typography.js?v=20260824"></script>
 <script src="/studio/nexus-3d-animator.js?v=20260824"></script>
 <script src="/studio/nexus-omnipost-bridge.js?v=20260824"></script>
+<script src="/studio/nexus-3d-inspector.js?v=20260824"></script>
+<script src="/studio/nexus-3d-sky.js?v=20260824"></script>
+<script src="/studio/nexus-3d-knowledge.js?v=20260824"></script>
+<script src="/studio/nexus-3d-worker.js?v=20260824"></script>
 <style>
     .skip-to-content {
       position: absolute;
@@ -1120,8 +1125,52 @@
 </div>
 </div>
 <div>
-<span class="tag-pill" style="border-color: rgba(232, 200, 114, 0.4); color: var(--gold-cad);">🔯 SACRED GEOMETRY FORGE</span>
+<span class="tag-pill" style="border-color: rgba(0, 240, 255, 0.4); color: var(--cyan);">🌌 PROCEDURAL PHYSICAL SKY &amp; IBL DOME</span>
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 8px;">
+  <button id="btn-sky-sunset-cyberpunk" class="btn-cad active" onclick="setSkyPreset('sunset_cyberpunk')" style="color:#ff6622; border-color:rgba(255,102,34,0.4); font-weight:600;">🌇 Sunset Cyber</button>
+  <button id="btn-sky-deep-space-nebula" class="btn-cad" onclick="setSkyPreset('deep_space_nebula')" style="color:#c084fc; border-color:rgba(192,132,252,0.4); font-weight:600;">🌌 Deep Space</button>
+  <button id="btn-sky-golden-dawn-sanctum" class="btn-cad" onclick="setSkyPreset('golden_dawn_sanctum')" style="color:#fbbf24; border-color:rgba(251,191,36,0.4); font-weight:600;">🌅 Golden Dawn</button>
+  <button id="btn-sky-toxic-acid-matrix" class="btn-cad" onclick="setSkyPreset('toxic_acid_matrix')" style="color:#34d399; border-color:rgba(52,211,153,0.4); font-weight:600;">🧪 Toxic Matrix</button>
+  <button id="btn-sky-midnight-aurora" class="btn-cad" onclick="setSkyPreset('midnight_aurora')" style="color:#38bdf8; border-color:rgba(56,189,248,0.4); font-weight:600; grid-column: span 2;">❄️ Midnight Aurora</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px; background: rgba(0,0,0,0.45); padding: 8px; border-radius: 8px; border: 1px solid rgba(0,229,255,0.15);">
+  <div class="slider-row">
+    <span style="font-size:0.68rem;">Sun Elevation</span>
+    <input id="sky-sun-elevation" max="90" min="-10" oninput="updateSkyParameters()" step="1" type="range" value="4"/>
+    <span id="sky-sun-elevation-val" style="font-family:var(--font-mono); font-size:0.65rem; color:var(--cyan); min-width:32px; text-align:right;">4°</span>
+  </div>
+  <div class="slider-row">
+    <span style="font-size:0.68rem;">Sun Azimuth</span>
+    <input id="sky-sun-azimuth" max="360" min="0" oninput="updateSkyParameters()" step="5" type="range" value="195"/>
+    <span id="sky-sun-azimuth-val" style="font-family:var(--font-mono); font-size:0.65rem; color:var(--cyan); min-width:32px; text-align:right;">195°</span>
+  </div>
+  <div class="slider-row">
+    <span style="font-size:0.68rem;">Turbidity / Haze</span>
+    <input id="sky-turbidity" max="15" min="1" oninput="updateSkyParameters()" step="0.5" type="range" value="8.5"/>
+    <span id="sky-turbidity-val" style="font-family:var(--font-mono); font-size:0.65rem; color:var(--cyan); min-width:32px; text-align:right;">8.5</span>
+  </div>
+  <div class="slider-row">
+    <span style="font-size:0.68rem;">Nebula Intensity</span>
+    <input id="sky-nebula-intensity" max="2.5" min="0" oninput="updateSkyParameters()" step="0.1" type="range" value="1.0"/>
+    <span id="sky-nebula-intensity-val" style="font-family:var(--font-mono); font-size:0.65rem; color:var(--cyan); min-width:32px; text-align:right;">1.0</span>
+  </div>
+  <div class="slider-row">
+    <span style="font-size:0.68rem;">Star Density</span>
+    <input id="sky-star-density" max="4000" min="0" oninput="updateSkyParameters()" step="200" type="range" value="2000"/>
+    <span id="sky-star-density-val" style="font-family:var(--font-mono); font-size:0.65rem; color:var(--cyan); min-width:32px; text-align:right;">2k</span>
+  </div>
+  <div style="display: flex; gap: 6px; margin-top: 4px;">
+    <button class="btn-cad" onclick="spawnIBLTestRig()" style="flex:1; color:#fbbf24; border-color:rgba(251,191,36,0.4); font-size:0.68rem; font-weight:700;">💎 Spawn IBL Reflection Rig (Chrome, Gold, Titanium, Obsidian)</button>
+  </div>
+</div>
+</div>
+<div>
+<span class="tag-pill" style="border-color: rgba(232, 200, 114, 0.4); color: var(--gold-cad);">🔯 SACRED GEOMETRY FORGE</span>
+<button class="btn-cad" onclick="openMathInspectorModal()" style="width: 100%; background: linear-gradient(135deg, rgba(0, 229, 255, 0.22), rgba(232, 200, 114, 0.28)); border: 1px solid var(--gold-cad); color: #fff; font-weight: 700; font-size: 0.76rem; padding: 8px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 0 16px rgba(232, 200, 114, 0.3); cursor: pointer; margin-top: 8px; margin-bottom: 8px;">
+  <span>📐 Math CAD Inspector &amp; Live Formulas</span>
+  <span class="tag-pill" style="font-size: 0.60rem; color: var(--gold-cad); border-color: rgba(232, 200, 114, 0.4); padding: 1px 5px;">LIVE</span>
+</button>
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
 <button class="btn-cad" onclick="spawnPrimitive('metatron')" style="color:var(--gold-cad); border-color:rgba(232, 200, 114, 0.35);">🌟 Metatron Cube</button>
 <button class="btn-cad" onclick="spawnPrimitive('golden_icosahedron')" style="color:var(--gold-cad); border-color:rgba(232, 200, 114, 0.35);">💎 Golden Icosa</button>
 <button class="btn-cad" onclick="spawnPrimitive('platonic_solids')" style="color:var(--gold-cad); border-color:rgba(232, 200, 114, 0.35);">🔯 Merkaba Star</button>
@@ -1237,6 +1286,81 @@
       <input id="meta-noise" onchange="onMetaballParamChange()" style="accent-color: #e879f9;" type="checkbox"/>
     </div>
     <button class="btn-cad" onclick="onMetaballParamChange()" style="color:#e879f9; font-weight:700; width:100%; margin-top:2px;">✨ Re-Sculpt Active Field</button>
+  </div>
+</div>
+</div>
+<div>
+<span class="tag-pill" style="border-color: rgba(52, 211, 153, 0.4); color: #34d399;">✨ MESH SUBDIVISION &amp; NORMAL FORGE</span>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px; background: rgba(0,0,0,0.45); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+  <!-- Subdivision Controls -->
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+      <div>
+        <label style="display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-bottom: 2px;">Algorithm</label>
+        <select id="subdiv-algorithm" style="background: rgba(10, 14, 26, 0.9); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 6px; color: #fff; font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 6px; width: 100%; outline: none;">
+          <option value="catmull-clark" selected>Catmull-Clark (Quads)</option>
+          <option value="loop">Loop (Triangles)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-bottom: 2px;">Subdiv Level</label>
+        <select id="subdiv-level" style="background: rgba(10, 14, 26, 0.9); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 6px; color: #fff; font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 6px; width: 100%; outline: none;">
+          <option value="1" selected>Level 1 (Smooth)</option>
+          <option value="2">Level 2 (High-Res)</option>
+        </select>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <label style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-secondary); cursor: pointer;">
+        <input type="checkbox" id="subdiv-preserve-boundaries" checked style="accent-color: #34d399;" />
+        <span>Preserve Boundary Silhouettes</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-secondary); cursor: pointer;">
+        <input type="checkbox" id="subdiv-preserve-creases" checked style="accent-color: #34d399;" />
+        <span>Preserve CAD Creases (&gt;45°)</span>
+      </label>
+    </div>
+    <button class="btn-cad" onclick="executeSmoothSubdivide()" style="color:#34d399; font-weight:700; width:100%; border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.12);">✨ Smooth Subdivide</button>
+  </div>
+
+  <!-- High-Fidelity Normal Map Controls -->
+  <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px; margin-top: 2px; display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+      <div>
+        <label style="display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-bottom: 2px;">3x3 Normal Filter</label>
+        <select id="normal-filter-type" style="background: rgba(10, 14, 26, 0.9); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 6px; color: #fff; font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 6px; width: 100%; outline: none;">
+          <option value="scharr" selected>⚡ Scharr (CAD Sharp)</option>
+          <option value="sobel">🌐 Sobel (Standard)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-bottom: 2px;">Heightmap Preset</label>
+        <select id="normal-preset-select" style="background: rgba(10, 14, 26, 0.9); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 6px; color: #fff; font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 6px; width: 100%; outline: none;">
+          <option value="cad-chamfer-bevel" selected>📐 CAD Chamfer Bevel</option>
+          <option value="hex-armor-plate">🛡️ Hex Armor Plate</option>
+          <option value="brushed-carbon">🏁 Brushed Carbon</option>
+          <option value="organic-bio-ripple">🧬 Bio-Organic Ripple</option>
+          <option value="damascus-ripple">⚔️ Damascus Steel</option>
+          <option value="circuit-traces">⚡ Circuit Traces</option>
+          <option value="perlin-terrain">⛰️ Perlin Terrain</option>
+        </select>
+      </div>
+    </div>
+    <div class="slider-row">
+      <span>Bump Scale: <b id="normal-bump-scale-val" style="color:var(--cyan);">2.5</b></span>
+      <input id="normal-bump-scale" max="8.0" min="0.2" oninput="document.getElementById('normal-bump-scale-val').textContent=this.value" step="0.1" type="range" value="2.5"/>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <label style="display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); cursor: pointer;">
+        <input type="checkbox" id="normal-invert-g" style="accent-color: var(--cyan);" />
+        <span>DirectX (-Y)</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); cursor: pointer;">
+        <input type="checkbox" id="normal-preserve-creases" checked style="accent-color: var(--cyan);" />
+        <span>CAD Crease Guard</span>
+      </label>
+    </div>
+    <button class="btn-cad" onclick="executeApplyNormalMap()" style="color:var(--cyan); font-weight:700; width:100%; border-color: rgba(0, 229, 255, 0.4); background: rgba(0, 229, 255, 0.12);">⚡ Generate &amp; Apply Normal Map</button>
   </div>
 </div>
 </div>
@@ -1449,6 +1573,7 @@
   </div>
 <div class="viewport-bottom-hud">
 <div class="hud-group">
+<button class="btn-cad" id="btn-math-inspector-hud" onclick="openMathInspectorModal()" style="background: rgba(232, 200, 114, 0.18); border-color: var(--gold-cad); color: var(--gold-cad); font-weight: 700;">📐 Math Inspector</button>
 <button class="btn-cad" onclick="cloneSelectedMesh()">📋 Clone</button>
 <button class="btn-cad" onclick="deleteSelectedMesh()">🗑️ Delete</button>
 <button class="btn-cad" id="btn-wireframe-toggle" onclick="toggleWireframeSolid()">📐 Wire / Solid</button>
@@ -1475,6 +1600,32 @@
 <small style="color: var(--muted);">Zero-VRAM procedural synthesis via Three.js &amp; Simplex noise</small>
 </div>
 <textarea class="prompt-box" id="ai-3d-prompt" placeholder="Describe 3D geometry (e.g. 'Synthesize a high-tech glowing plasma shield generator with neon coils')..." rows="3">Synthesize a glowing quantum reactor core with magnetic accelerator rings and iridescent refraction</textarea>
+
+<!-- Live Semantic Archetype Decomposition HUD -->
+<div id="semantic-archetype-hud" style="margin-top: 4px; margin-bottom: 6px; padding: 6px 8px; border-radius: 6px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.2); font-family: var(--font-mono); font-size: 0.68rem; display: flex; flex-direction: column; gap: 4px;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <span id="hud-archetype-title" style="color: var(--cyan-cad); font-weight: 700; display: flex; align-items: center; gap: 4px;">⚡ Gadgets: Quantum Reactor Core</span>
+    <span id="hud-match-confidence" class="tag-pill" style="font-size: 0.62rem; color: #34d399; border-color: rgba(52, 211, 153, 0.4); padding: 1px 5px;">95% Match</span>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;" id="hud-archetype-badges">
+    <span class="tag-pill" id="hud-pbr-badge" style="font-size: 0.60rem; color: #c084fc; border-color: rgba(192, 132, 252, 0.3);">🎨 cyber-circuit</span>
+    <span class="tag-pill" id="hud-components-badge" style="font-size: 0.60rem; color: #94a3b8; border-color: rgba(148, 163, 184, 0.3);">🧩 5 Components</span>
+    <span class="tag-pill" id="hud-sacred-badge" style="font-size: 0.60rem; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);">👑 Φ Golden Ratio</span>
+  </div>
+</div>
+
+<!-- Dynamic Autocomplete Suggestions Track -->
+<div id="prompt-autocomplete-container" style="margin-bottom: 6px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+    <span style="font-family: var(--font-mono); font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">✨ Smart Suggestions &amp; Enhancements</span>
+    <span style="font-family: var(--font-mono); font-size: 0.60rem; color: var(--cyan-cad); cursor: pointer;" onclick="openKnowledgeVaultModal('catalog')">📚 Vault Catalog ➔</span>
+  </div>
+  <div id="prompt-autocomplete-chips" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
+    <!-- Populated dynamically by updatePromptAutocomplete() -->
+  </div>
+</div>
+
+<!-- Preset Quick Filters -->
 <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
 <button class="tag-pill" onclick="setPresetPrompt('Synthesize a glowing quantum reactor core with magnetic accelerator rings and iridescent refraction')" style="cursor: pointer; background: rgba(0,240,255,0.12); border: 1px solid rgba(0,240,255,0.3); font-size: 0.68rem;">⚡ Quantum Reactor</button>
 <button class="tag-pill" onclick="setPresetPrompt('Ancient alchemical warp portal gate with outer gold glyphs and event horizon disc')" style="cursor: pointer; background: rgba(232,200,114,0.12); border: 1px solid rgba(232,200,114,0.3); font-size: 0.68rem;">🌀 Warp Gate</button>
@@ -1483,7 +1634,12 @@
 <button class="tag-pill" onclick="setPresetPrompt('Topological torus knot DNA double helix with cellular voronoi mesh and inner wireframe')" style="cursor: pointer; background: rgba(255,51,102,0.12); border: 1px solid rgba(255,51,102,0.3); font-size: 0.68rem;">🧬 Torus DNA</button>
 <button class="tag-pill" onclick="setPresetPrompt('Sacred Metatron cube with golden ratio phyllotaxis spiral constellation')" style="cursor: pointer; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); font-size: 0.68rem;">👑 Metatron Cube</button>
 </div>
-<button class="btn-ai-gen" id="btn-ai-synthesize" onclick="generateAI3DGeometry()">✨ Synthesize 3D Geometry</button>
+
+<div style="display: grid; grid-template-columns: 1fr auto auto; gap: 4px; margin-bottom: 8px;">
+  <button class="btn-ai-gen" id="btn-ai-synthesize" onclick="generateAI3DGeometry()" style="margin-bottom: 0;">✨ Synthesize 3D</button>
+  <button class="btn-cad" onclick="openSaveRecipeModal()" title="Save Prompt to CAD Recipe Vault" style="padding: 0 10px; color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); font-size: 0.72rem; display: flex; align-items: center; gap: 4px;">💾 Save</button>
+  <button class="btn-cad" onclick="openKnowledgeVaultModal('recipes')" title="Open Prompt & CAD Knowledge Vault" style="padding: 0 10px; color: var(--cyan-cad); border-color: rgba(0, 229, 255, 0.4); font-size: 0.72rem; display: flex; align-items: center; gap: 4px;">📚 Vault</button>
+</div>
           <!-- Cinematic Postprocessing & Volumetric Lighting Controls -->
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1614,6 +1770,14 @@
                 <span id="stat-vert-count" style="color: var(--cyan);">1,248</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Draw Calls (Instancing):</span>
+                <span id="stat-draw-calls" style="color: #34d399;">1 Call (Optimized)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Geometry Compute:</span>
+                <span id="stat-worker-status" style="color: #38bdf8;">Web Worker (0-Copy)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
                 <span style="color: var(--muted);">Render Performance:</span>
                 <span id="stat-fps-val" style="color: #34d399;">60.0 FPS (16.2ms)</span>
               </div>
@@ -1736,6 +1900,578 @@
     </div>
   </div>
 </div>
+
+<!-- 📐 Mathematical CAD Inspector & Live Equation Editor Modal -->
+<div id="math-inspector-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(2, 4, 10, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #080c18; border: 1px solid var(--gold-cad); border-radius: 16px; max-width: 880px; width: 100%; padding: 22px; box-shadow: 0 0 50px rgba(232, 200, 114, 0.35); max-height: 92vh; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+    
+    <!-- Modal Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.6rem;">📐</span>
+        <div>
+          <h3 style="margin: 0; font-family: var(--font-display); color: #fff; font-size: 1.22rem; display: flex; align-items: center; gap: 8px;">
+            <span>Mathematical CAD Inspector &amp; Live Equation Editor</span>
+            <span class="tag-pill" style="font-size: 0.65rem; color: var(--gold-cad); border-color: rgba(232, 200, 114, 0.4); padding: 1px 6px;">CAD v3.2</span>
+          </h3>
+          <small style="color: var(--cyan); font-family: var(--font-mono); font-size: 0.72rem;">Parametric Equations · Involute Profiles · 6D Manifolds · Sacred Geometry Physics · Custom Function Compiler</small>
+        </div>
+      </div>
+      <button onclick="closeMathInspectorModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; line-height: 1;" title="Close Inspector">✕</button>
+    </div>
+
+    <!-- Inspector Tab Navigation Bar -->
+    <div style="display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+      <button class="btn-cad math-tab-btn active" id="btn-math-tab-sq" onclick="switchMathInspectorTab('sq')">📐 Superquadrics</button>
+      <button class="btn-cad math-tab-btn" id="btn-math-tab-gear" onclick="switchMathInspectorTab('gear')">⚙️ Involute Gear</button>
+      <button class="btn-cad math-tab-btn" id="btn-math-tab-cy" onclick="switchMathInspectorTab('cy')">🌌 Calabi-Yau 6D</button>
+      <button class="btn-cad math-tab-btn" id="btn-math-tab-tk" onclick="switchMathInspectorTab('tk')">🌀 Torus Knot</button>
+      <button class="btn-cad math-tab-btn" id="btn-math-tab-sacred" onclick="switchMathInspectorTab('sacred')">🔯 Sacred Telemetry</button>
+      <button class="btn-cad math-tab-btn" id="btn-math-tab-custom" onclick="switchMathInspectorTab('custom')" style="color: var(--cyan); border-color: rgba(0, 229, 255, 0.4);">🧪 Live Formula Editor</button>
+    </div>
+
+    <!-- TAB 1: SUPERQUADRICS -->
+    <div id="math-tab-pane-sq" class="math-tab-pane" style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 8px; padding: 10px 12px; font-family: var(--font-mono); font-size: 0.72rem; color: #cbd5e1;">
+        <div style="color: var(--cyan); font-weight: 700; margin-bottom: 4px;">📐 PARAMETRIC SUPERQUADRIC EQUATION:</div>
+        <div style="line-height: 1.4;">
+          x(u,v) = r_x · sgn(cos u)|cos u|<sup>s1</sup> · sgn(cos v)|cos v|<sup>s2</sup> · (1 + k_taper·y/r_y) · (1 - k_pinch·(1-(y/r_y)²))<br/>
+          y(u,v) = r_y · sgn(sin u)|sin u|<sup>s1</sup> &nbsp;|&nbsp; z(u,v) = r_z · sgn(cos u)|cos u|<sup>s1</sup> · sgn(sin v)|sin v|<sup>s2</sup>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold-cad); font-weight: 700;">SHAPE EXPONENTS (s1, s2)</div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Latitude Exponent s1: <b id="sq-s1-val" style="color:var(--cyan);">0.30</b></span>
+            <input type="range" id="sq-s1" min="0.05" max="3.0" step="0.05" value="0.30" oninput="onSuperquadricParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Longitude Exponent s2: <b id="sq-s2-val" style="color:var(--cyan);">0.30</b></span>
+            <input type="range" id="sq-s2" min="0.05" max="3.0" step="0.05" value="0.30" oninput="onSuperquadricParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Mesh Resolution: <b id="sq-seg-val" style="color:var(--cyan);">32</b></span>
+            <input type="range" id="sq-seg" min="12" max="64" step="4" value="32" oninput="onSuperquadricParamChange()" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold-cad); font-weight: 700;">RADII &amp; BOUNDING EXTENTS</div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Radius X (r_x): <b id="sq-rx-val" style="color:var(--cyan);">1.20</b></span>
+            <input type="range" id="sq-rx" min="0.2" max="4.0" step="0.1" value="1.20" oninput="onSuperquadricParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Radius Y (r_y): <b id="sq-ry-val" style="color:var(--cyan);">1.80</b></span>
+            <input type="range" id="sq-ry" min="0.2" max="4.0" step="0.1" value="1.80" oninput="onSuperquadricParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Radius Z (r_z): <b id="sq-rz-val" style="color:var(--cyan);">1.20</b></span>
+            <input type="range" id="sq-rz" min="0.2" max="4.0" step="0.1" value="1.20" oninput="onSuperquadricParamChange()" />
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <div style="font-family: var(--font-mono); font-size: 0.72rem; color: #f472b6; font-weight: 700;">GEOMETRIC DEFORMATION MODIFIERS (Taper, Pinch, Bend)</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <div class="slider-row" style="display:flex; flex-direction:column; align-items:flex-start;">
+            <span style="font-size: 0.68rem;">Axial Taper (k_taper): <b id="sq-taper-val" style="color:#f472b6;">0.00</b></span>
+            <input type="range" id="sq-taper" min="-1.0" max="1.0" step="0.05" value="0.00" oninput="onSuperquadricParamChange()" style="width:100%;" />
+          </div>
+          <div class="slider-row" style="display:flex; flex-direction:column; align-items:flex-start;">
+            <span style="font-size: 0.68rem;">Waist Pinch (k_pinch): <b id="sq-pinch-val" style="color:#f472b6;">0.00</b></span>
+            <input type="range" id="sq-pinch" min="-1.0" max="1.0" step="0.05" value="0.00" oninput="onSuperquadricParamChange()" style="width:100%;" />
+          </div>
+          <div class="slider-row" style="display:flex; flex-direction:column; align-items:flex-start;">
+            <span style="font-size: 0.68rem;">Curvature Bend (k_bend): <b id="sq-bend-val" style="color:#f472b6;">0.00</b></span>
+            <input type="range" id="sq-bend" min="-0.6" max="0.6" step="0.05" value="0.00" oninput="onSuperquadricParamChange()" style="width:100%;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Badge -->
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.45); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); font-size: 0.74rem;">
+        <div>Classification: <strong id="sq-classification" style="color: var(--cyan);">Hyper-Chamfered Boxoid / Monolith</strong></div>
+        <div>Estimated Volume: <strong id="sq-volume-approx" style="color: var(--gold-cad);">14.28 units³</strong></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+        <button class="btn-cad" onclick="applyOrSpawnSuperquadric(false)">✨ Apply to Selected Mesh</button>
+        <button class="btn-ai-gen" onclick="applyOrSpawnSuperquadric(true)" style="background: linear-gradient(135deg, #00e5ff, #38bdf8); color: #020306; font-weight: 700; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">🌟 Spawn Superquadric Monolith</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: INVOLUTE GEAR CAD -->
+    <div id="math-tab-pane-gear" class="math-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <div style="background: rgba(251, 191, 36, 0.06); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 8px; padding: 10px 12px; font-family: var(--font-mono); font-size: 0.72rem; color: #cbd5e1;">
+        <div style="color: var(--gold-cad); font-weight: 700; margin-bottom: 4px;">⚙️ INVOLUTE GEAR TOOTH PARAMETRICS:</div>
+        <div>Pitch: d = m · N &nbsp;|&nbsp; Base: d_b = d · cos(α) &nbsp;|&nbsp; Addendum: h_a = 1.0·m &nbsp;|&nbsp; Dedendum: h_d = 1.25·m &nbsp;|&nbsp; Involute: inv(α) = tan(α) - α</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Module (m): <b id="gear-m-val" style="color:var(--gold-cad);">0.25</b></span>
+            <input type="range" id="gear-m" min="0.10" max="1.0" step="0.05" value="0.25" oninput="onGearParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Number of Teeth (N): <b id="gear-teeth-val" style="color:var(--gold-cad);">16</b></span>
+            <input type="range" id="gear-teeth" min="6" max="48" step="1" value="16" oninput="onGearParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Pressure Angle (α): <b id="gear-alpha-val" style="color:var(--gold-cad);">20.0°</b></span>
+            <input type="range" id="gear-alpha" min="14.5" max="30.0" step="0.5" value="20.0" oninput="onGearParamChange()" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Face Thickness: <b id="gear-thickness-val" style="color:var(--gold-cad);">0.50</b></span>
+            <input type="range" id="gear-thickness" min="0.10" max="2.0" step="0.05" value="0.50" oninput="onGearParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Axle Bore Radius: <b id="gear-bore-val" style="color:var(--gold-cad);">0.50</b></span>
+            <input type="range" id="gear-bore" min="0.10" max="1.50" step="0.05" value="0.50" oninput="onGearParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Tooth Backlash: <b id="gear-backlash-val" style="color:var(--gold-cad);">0.02</b></span>
+            <input type="range" id="gear-backlash" min="0.0" max="0.08" step="0.005" value="0.02" oninput="onGearParamChange()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Gear Telemetry Grid -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-family: var(--font-mono); font-size: 0.70rem; background: rgba(0,0,0,0.45); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <div>Pitch Diameter: <strong id="gear-metric-pitch" style="color:var(--cyan);">4.00</strong></div>
+        <div>Base Diameter: <strong id="gear-metric-base" style="color:var(--cyan);">3.76</strong></div>
+        <div>Tip Diameter: <strong id="gear-metric-tip" style="color:var(--cyan);">4.50</strong></div>
+        <div>Root Diameter: <strong id="gear-metric-root" style="color:var(--cyan);">3.38</strong></div>
+        <div>Circular Pitch: <strong id="gear-metric-cp" style="color:var(--gold-cad);">0.785</strong></div>
+        <div>inv(α) Radians: <strong id="gear-metric-inv" style="color:var(--gold-cad);">0.0149</strong></div>
+        <div>Tooth Thickness: <strong id="gear-metric-tt" style="color:var(--gold-cad);">0.383</strong></div>
+        <div>Contact Ratio: <strong id="gear-metric-cr" style="color:#34d399;">1.62</strong></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+        <button class="btn-cad" onclick="applyOrSpawnGear(false)">✨ Apply to Selected Mesh</button>
+        <button class="btn-ai-gen" onclick="applyOrSpawnGear(true)" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #020306; font-weight: 700; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">⚙️ Spawn Precision Involute Gear</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: CALABI-YAU 6D MANIFOLD -->
+    <div id="math-tab-pane-cy" class="math-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <div style="background: rgba(192, 132, 252, 0.06); border: 1px solid rgba(192, 132, 252, 0.25); border-radius: 8px; padding: 10px 12px; font-family: var(--font-mono); font-size: 0.72rem; color: #cbd5e1;">
+        <div style="color: #c084fc; font-weight: 700; margin-bottom: 4px;">🌌 CALABI-YAU 6D FERMAT HYPERSURFACE PROJECTION:</div>
+        <div>z1 = cos(v)^(2/n)·e^(i·u) &nbsp;|&nbsp; z2 = sin(v)^(2/n)·e^(i·(u + 2πk/n)) &nbsp;|&nbsp; SU(3) Holonomy &nbsp;|&nbsp; c_1(M)=0 (Ricci-Flat)</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Complex Exponent (n): <b id="cy-n-val" style="color:#c084fc;">5</b></span>
+            <input type="range" id="cy-n" min="2" max="8" step="1" value="5" oninput="onCalabiYauParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Sheet Count (k_max): <b id="cy-kmax-val" style="color:#c084fc;">3</b></span>
+            <input type="range" id="cy-kmax" min="1" max="8" step="1" value="3" oninput="onCalabiYauParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Manifold Radius: <b id="cy-radius-val" style="color:#c084fc;">2.00</b></span>
+            <input type="range" id="cy-radius" min="0.5" max="4.0" step="0.1" value="2.00" oninput="onCalabiYauParamChange()" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-family: var(--font-mono); font-size: 0.70rem; color: #c084fc; font-weight: 700;">4D-TO-3D ROTATION ANGLES</div>
+          <div class="slider-row">
+            <span style="font-size: 0.68rem;">Projection Alpha (α): <b id="cy-alpha-val" style="color:#c084fc;">0.45</b></span>
+            <input type="range" id="cy-alpha" min="0.0" max="6.28" step="0.05" value="0.45" oninput="onCalabiYauParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.68rem;">Projection Beta (β): <b id="cy-beta-val" style="color:#c084fc;">0.35</b></span>
+            <input type="range" id="cy-beta" min="0.0" max="6.28" step="0.05" value="0.35" oninput="onCalabiYauParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.68rem;">Projection Gamma (γ): <b id="cy-gamma-val" style="color:#c084fc;">0.60</b></span>
+            <input type="range" id="cy-gamma" min="0.0" max="6.28" step="0.05" value="0.60" oninput="onCalabiYauParamChange()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Topological Invariants Badge -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-family: var(--font-mono); font-size: 0.70rem; background: rgba(0,0,0,0.45); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <div>Euler Char χ: <strong id="cy-euler" style="color:#e879f9;">-200</strong></div>
+        <div>Hodge h¹'¹: <strong id="cy-h11" style="color:#e879f9;">1</strong></div>
+        <div>Hodge h²'¹: <strong id="cy-h21" style="color:#e879f9;">101</strong></div>
+        <div>Holonomy: <strong id="cy-holonomy" style="color:#34d399;">SU(3)</strong></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+        <button class="btn-cad" onclick="applyOrSpawnCalabiYau(false)">✨ Apply to Selected Mesh</button>
+        <button class="btn-ai-gen" onclick="applyOrSpawnCalabiYau(true)" style="background: linear-gradient(135deg, #c084fc, #e879f9); color: #020306; font-weight: 700; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">🌌 Spawn Calabi-Yau Cross-Section</button>
+      </div>
+    </div>
+
+    <!-- TAB 4: TORUS KNOT PARAMETRIC -->
+    <div id="math-tab-pane-tk" class="math-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <div style="background: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 8px; padding: 10px 12px; font-family: var(--font-mono); font-size: 0.72rem; color: #cbd5e1;">
+        <div style="color: #f43f5e; font-weight: 700; margin-bottom: 4px;">🌀 TORUS KNOT PARAMETRIC WINDINGS:</div>
+        <div>r(t) = R(1 + p_mod·cos(q_mod·t)) &nbsp;|&nbsp; x(t) = r(t)cos(pt) &nbsp;|&nbsp; y(t) = r(t)sin(pt) &nbsp;|&nbsp; z(t) = -h·sin(qt)</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Meridional Windings (p): <b id="tk-p-val" style="color:#f43f5e;">2</b></span>
+            <input type="range" id="tk-p" min="1" max="12" step="1" value="2" oninput="onTorusKnotParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Longitudinal Windings (q): <b id="tk-q-val" style="color:#f43f5e;">3</b></span>
+            <input type="range" id="tk-q" min="1" max="12" step="1" value="3" oninput="onTorusKnotParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Major Radius (R): <b id="tk-radius-val" style="color:#f43f5e;">2.00</b></span>
+            <input type="range" id="tk-radius" min="0.5" max="4.0" step="0.1" value="2.00" oninput="onTorusKnotParamChange()" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Tube Radius (r): <b id="tk-tube-val" style="color:#f43f5e;">0.35</b></span>
+            <input type="range" id="tk-tube" min="0.05" max="0.8" step="0.02" value="0.35" oninput="onTorusKnotParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Modulation Amplitude: <b id="tk-pmod-val" style="color:#f43f5e;">0.00</b></span>
+            <input type="range" id="tk-pmod" min="0.0" max="0.5" step="0.02" value="0.00" oninput="onTorusKnotParamChange()" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Modulation Frequency: <b id="tk-qmod-val" style="color:#f43f5e;">1</b></span>
+            <input type="range" id="tk-qmod" min="1" max="8" step="1" value="1" oninput="onTorusKnotParamChange()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Knot Telemetry -->
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.45); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); font-size: 0.74rem;">
+        <div>Knot Type: <strong id="tk-knot-name" style="color: #f43f5e;">Trefoil Knot (3_1)</strong></div>
+        <div>Crossings: <strong id="tk-crossing" style="color: var(--cyan);">3</strong></div>
+        <div>Arc Length: <strong id="tk-arclength" style="color: var(--gold-cad);">16.8 units</strong></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+        <button class="btn-cad" onclick="applyOrSpawnTorusKnot(false)">✨ Apply to Selected Mesh</button>
+        <button class="btn-ai-gen" onclick="applyOrSpawnTorusKnot(true)" style="background: linear-gradient(135deg, #f43f5e, #fb7185); color: #020306; font-weight: 700; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">🌀 Spawn Parametric Torus Knot</button>
+      </div>
+    </div>
+
+    <!-- TAB 5: SACRED GEOMETRY & PHYSICAL MASS TELEMETRY -->
+    <div id="math-tab-pane-sacred" class="math-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(232, 200, 114, 0.08); border: 1px solid rgba(232, 200, 114, 0.3); border-radius: 8px; padding: 10px 14px;">
+        <div>
+          <div style="color: var(--gold-cad); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;">SACRED GEOMETRIC &amp; PHYSICAL TELEMETRY</div>
+          <div style="font-size: 0.78rem; color: #fff;">Signed Tetrahedral Mesh Integration (Divergence Theorem) &amp; Phi Proportions</div>
+        </div>
+        <button class="btn-cad" onclick="refreshMathTelemetry()" style="color: var(--gold-cad); border-color: rgba(232, 200, 114, 0.4);">🔄 Re-Analyze Active Mesh</button>
+      </div>
+
+      <!-- Geometry Telemetry Grid -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+        <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); font-size: 0.72rem;">
+          <div style="color: var(--muted); margin-bottom: 2px;">SIGNED VOLUME:</div>
+          <div id="telemetry-vol" style="color: var(--cyan); font-size: 1.1rem; font-weight: 700;">8.000 cm³</div>
+        </div>
+        <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); font-size: 0.72rem;">
+          <div style="color: var(--muted); margin-bottom: 2px;">SURFACE AREA:</div>
+          <div id="telemetry-area" style="color: var(--cyan); font-size: 1.1rem; font-weight: 700;">24.00 cm²</div>
+        </div>
+        <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); font-size: 0.72rem;">
+          <div style="color: var(--muted); margin-bottom: 2px;">GOLDEN RATIO Φ FIT:</div>
+          <div id="telemetry-phi-score" style="color: var(--gold-cad); font-size: 1.1rem; font-weight: 700;">98.4% Match</div>
+        </div>
+      </div>
+
+      <!-- Material Density & Mass Calculator -->
+      <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-family: var(--font-mono); font-size: 0.74rem; color: #fff; font-weight: 700;">Material Substance &amp; Bounding Mass (ρ = Density):</label>
+          <select id="telemetry-density-select" onchange="onTelemetryDensityChange()" style="background: rgba(10, 14, 26, 0.95); border: 1px solid var(--gold-cad); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem; padding: 4px 8px; outline: none; cursor: pointer;">
+            <option value="titanium" selected>Grade 5 Titanium (4.506 g/cm³)</option>
+            <option value="gold">24K Sacred Gold (19.320 g/cm³)</option>
+            <option value="carbon_fiber">Toray Carbon Fiber (1.600 g/cm³)</option>
+            <option value="glass">Borosilicate Optical Glass (2.500 g/cm³)</option>
+            <option value="steel">Damascus Tool Steel (7.850 g/cm³)</option>
+            <option value="aluminum">Aerospace 7075-T6 (2.700 g/cm³)</option>
+            <option value="silver">Pure Sterling Silver (10.490 g/cm³)</option>
+            <option value="obsidian">Volcanic Obsidian (2.450 g/cm³)</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-family: var(--font-mono); font-size: 0.76rem;">
+          <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">Mass (Grams): <strong id="telemetry-mass-g" style="color:var(--gold-cad);">36.05 g</strong></div>
+          <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">Mass (Kilograms): <strong id="telemetry-mass-kg" style="color:var(--gold-cad);">0.036 kg</strong></div>
+          <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">Mass (Pounds): <strong id="telemetry-mass-lbs" style="color:var(--gold-cad);">0.079 lbs</strong></div>
+        </div>
+      </div>
+
+      <!-- Sacred Resonance Matches -->
+      <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); font-size: 0.72rem;">
+        <div style="color: #34d399; font-weight: 700; margin-bottom: 2px;">SACRED HARMONIC RESONANCE FREQUENCIES (Cavity Eigenmodes):</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+          <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2); padding: 6px 8px; border-radius: 6px;">
+            <div style="color:#34d399; font-weight:700;">432 Hz Verdi</div>
+            <div id="telemetry-freq-432" style="color:#cbd5e1; font-size:0.68rem;">Cavity Mode: Resonant</div>
+          </div>
+          <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2); padding: 6px 8px; border-radius: 6px;">
+            <div style="color:#34d399; font-weight:700;">528 Hz Solfeggio MI</div>
+            <div id="telemetry-freq-528" style="color:#cbd5e1; font-size:0.68rem;">DNA Wave: Harmonic</div>
+          </div>
+          <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2); padding: 6px 8px; border-radius: 6px;">
+            <div style="color:#34d399; font-weight:700;">888 Hz Cosmic Christ</div>
+            <div id="telemetry-freq-888" style="color:#cbd5e1; font-size:0.68rem;">Higher Octave: Synced</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: LIVE FORMULA EDITOR & CUSTOM PARAMETRIC EVALUATOR -->
+    <div id="math-tab-pane-custom" class="math-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 8px; padding: 10px 14px;">
+        <div>
+          <div style="color: var(--cyan); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;">LIVE PARAMETRIC EQUATION FORGE (x(u,v,t), y(u,v,t), z(u,v,t))</div>
+          <div style="font-size: 0.76rem; color: #cbd5e1;">Enter any mathematical expression. Supports sin, cos, tan, exp, log, sqrt, abs, noise, phi, pi, tau, time (t).</div>
+        </div>
+        <select id="custom-preset-select" onchange="loadParametricPreset(this.value)" style="background: rgba(10, 14, 26, 0.95); border: 1px solid var(--cyan); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem; padding: 6px 10px; outline: none; cursor: pointer;">
+          <option value="" disabled selected>📐 Load Equation Preset...</option>
+          <option value="enneper">Enneper's Minimal Surface</option>
+          <option value="dini">Dini's Pseudosphere (K = -1)</option>
+          <option value="bohemian_dome">Bohemian Dome Quartic</option>
+          <option value="roman_steiner">Roman Steiner Surface (RP²)</option>
+          <option value="apple_surface">Apple Soliton Toroid</option>
+          <option value="clifford_torus">Clifford Torus 4D Projection</option>
+          <option value="seashell">Conchoid Fibonacci Seashell</option>
+          <option value="trefoil_ribbon">Harmonic Trefoil Ribbon</option>
+        </select>
+      </div>
+
+      <!-- Formula Inputs -->
+      <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="font-family: var(--font-mono); font-size: 0.80rem; color: var(--cyan); width: 110px; font-weight: 700;">x(u, v, t) =</label>
+          <input type="text" id="custom-fx" value="u - (u^3)/3 + u * v^2" oninput="onCustomEquationChange()" style="flex: 1; background: rgba(5, 8, 16, 0.95); border: 1px solid rgba(0,229,255,0.3); color: #fff; font-family: var(--font-mono); font-size: 0.82rem; padding: 6px 10px; border-radius: 6px; outline: none;" />
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="font-family: var(--font-mono); font-size: 0.80rem; color: var(--cyan); width: 110px; font-weight: 700;">y(u, v, t) =</label>
+          <input type="text" id="custom-fy" value="-v + (v^3)/3 - u^2 * v" oninput="onCustomEquationChange()" style="flex: 1; background: rgba(5, 8, 16, 0.95); border: 1px solid rgba(0,229,255,0.3); color: #fff; font-family: var(--font-mono); font-size: 0.82rem; padding: 6px 10px; border-radius: 6px; outline: none;" />
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="font-family: var(--font-mono); font-size: 0.80rem; color: var(--cyan); width: 110px; font-weight: 700;">z(u, v, t) =</label>
+          <input type="text" id="custom-fz" value="u^2 - v^2" oninput="onCustomEquationChange()" style="flex: 1; background: rgba(5, 8, 16, 0.95); border: 1px solid rgba(0,229,255,0.3); color: #fff; font-family: var(--font-mono); font-size: 0.82rem; padding: 6px 10px; border-radius: 6px; outline: none;" />
+        </div>
+      </div>
+
+      <!-- Domain Bounds & Time Scrubber -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-family: var(--font-mono); font-size: 0.70rem; color: var(--muted);">U DOMAIN INTERVAL</div>
+          <div style="display: flex; gap: 6px;">
+            <input type="number" id="custom-umin" value="-1.8" step="0.1" oninput="onCustomEquationChange()" style="width: 50%; background: #03060f; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: var(--font-mono); font-size: 0.74rem; padding: 4px 6px; border-radius: 4px;" placeholder="uMin" />
+            <input type="number" id="custom-umax" value="1.8" step="0.1" oninput="onCustomEquationChange()" style="width: 50%; background: #03060f; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: var(--font-mono); font-size: 0.74rem; padding: 4px 6px; border-radius: 4px;" placeholder="uMax" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-family: var(--font-mono); font-size: 0.70rem; color: var(--muted);">V DOMAIN INTERVAL</div>
+          <div style="display: flex; gap: 6px;">
+            <input type="number" id="custom-vmin" value="-1.8" step="0.1" oninput="onCustomEquationChange()" style="width: 50%; background: #03060f; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: var(--font-mono); font-size: 0.74rem; padding: 4px 6px; border-radius: 4px;" placeholder="vMin" />
+            <input type="number" id="custom-vmax" value="1.8" step="0.1" oninput="onCustomEquationChange()" style="width: 50%; background: #03060f; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: var(--font-mono); font-size: 0.74rem; padding: 4px 6px; border-radius: 4px;" placeholder="vMax" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Time t: <b id="custom-time-val" style="color:var(--cyan);">0.0</b></span>
+            <input type="range" id="custom-time" min="0" max="10" step="0.1" value="0" oninput="document.getElementById('custom-time-val').textContent=this.value; onCustomEquationChange();" />
+          </div>
+          <div class="slider-row">
+            <span style="font-size: 0.70rem;">Scale: <b id="custom-scale-val" style="color:var(--cyan);">0.65</b></span>
+            <input type="range" id="custom-scale" min="0.1" max="4.0" step="0.05" value="0.65" oninput="document.getElementById('custom-scale-val').textContent=this.value; onCustomEquationChange();" />
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+        <button class="btn-cad" onclick="copyCustomEquations()">📋 Copy Formulas</button>
+        <button class="btn-cad" onclick="applyOrSpawnCustomParametric(false)">✨ Apply to Selected Mesh</button>
+        <button class="btn-ai-gen" onclick="applyOrSpawnCustomParametric(true)" style="background: linear-gradient(135deg, #00e5ff 0%, #d946ef 100%); color: #020306; font-weight: 800; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; box-shadow: 0 0 16px rgba(0,229,255,0.35);">⚡ Synthesize Custom Parametric Mesh</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 📚 Semantic Prompt & CAD Retrieval Vault Modal -->
+<div id="nexus-knowledge-vault-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(2, 4, 10, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #080c18; border: 1px solid var(--cyan-cad); border-radius: 16px; max-width: 960px; width: 100%; padding: 22px; box-shadow: 0 0 50px rgba(0, 229, 255, 0.35); max-height: 92vh; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+    
+    <!-- Modal Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.6rem;">📚</span>
+        <div>
+          <h3 style="margin: 0; font-family: var(--font-display); color: #fff; font-size: 1.22rem; display: flex; align-items: center; gap: 8px;">
+            <span>Semantic Prompt Knowledge &amp; CAD Retrieval Vault</span>
+            <span class="tag-pill" style="font-size: 0.65rem; color: var(--cyan-cad); border-color: rgba(0, 229, 255, 0.4); padding: 1px 6px;">Zero-Cloud Engine</span>
+          </h3>
+          <small style="color: var(--cyan); font-family: var(--font-mono); font-size: 0.72rem;">Natural Language Intent · 8 Archetype Taxonomies · PBR Shader Recipes · Continuous Prompt Learning &amp; Recipe Bookmarks</small>
+        </div>
+      </div>
+      <button onclick="closeKnowledgeVaultModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer; padding: 4px 8px; line-height: 1;" title="Close Knowledge Vault">✕</button>
+    </div>
+
+    <!-- Vault Tab Navigation Bar -->
+    <div style="display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+      <button class="btn-cad vault-tab-btn active" id="btn-vault-tab-catalog" onclick="switchKnowledgeVaultTab('catalog')">🏛️ Archetype Taxonomy (<span id="vault-count-tax">20+</span>)</button>
+      <button class="btn-cad vault-tab-btn" id="btn-vault-tab-recipes" onclick="switchKnowledgeVaultTab('recipes')">💾 Saved CAD Recipes (<span id="vault-count-recipes">0</span>)</button>
+      <button class="btn-cad vault-tab-btn" id="btn-vault-tab-history" onclick="switchKnowledgeVaultTab('history')">🕒 Prompt Learning History (<span id="vault-count-hist">0</span>)</button>
+      <button class="btn-cad vault-tab-btn" id="btn-vault-tab-sync" onclick="switchKnowledgeVaultTab('sync')" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.4);">📦 JSON Vault Sync</button>
+    </div>
+
+    <!-- TAB 1: ARCHETYPE TAXONOMY BROWSER -->
+    <div id="vault-tab-pane-catalog" class="vault-tab-pane" style="display: flex; flex-direction: column; gap: 12px;">
+      <!-- Category Filter Pills -->
+      <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
+        <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); margin-right: 4px;">DOMAINS:</span>
+        <button class="tag-pill active" id="tax-filter-all" onclick="filterArchetypeCatalog('all')" style="cursor: pointer; background: rgba(0,229,255,0.2); border-color: var(--cyan-cad); color: #fff;">All (20+)</button>
+        <button class="tag-pill" id="tax-filter-weapons" onclick="filterArchetypeCatalog('Weapons')" style="cursor: pointer;">⚔️ Weapons</button>
+        <button class="tag-pill" id="tax-filter-vehicles" onclick="filterArchetypeCatalog('Vehicles')" style="cursor: pointer;">🚀 Vehicles</button>
+        <button class="tag-pill" id="tax-filter-mechs" onclick="filterArchetypeCatalog('Mechs')" style="cursor: pointer;">🤖 Mechs</button>
+        <button class="tag-pill" id="tax-filter-gadgets" onclick="filterArchetypeCatalog('Gadgets')" style="cursor: pointer;">⚡ Gadgets</button>
+        <button class="tag-pill" id="tax-filter-architecture" onclick="filterArchetypeCatalog('Architecture')" style="cursor: pointer;">🏛️ Architecture</button>
+        <button class="tag-pill" id="tax-filter-creatures" onclick="filterArchetypeCatalog('Creatures')" style="cursor: pointer;">🐉 Creatures</button>
+        <button class="tag-pill" id="tax-filter-sacred" onclick="filterArchetypeCatalog('Sacred Math')" style="cursor: pointer;">🔯 Sacred Math</button>
+        <button class="tag-pill" id="tax-filter-scenes" onclick="filterArchetypeCatalog('Scenes')" style="cursor: pointer;">🏙️ Scenes</button>
+      </div>
+
+      <!-- Archetype Cards Grid Container -->
+      <div id="vault-archetypes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px;">
+        <!-- Populated dynamically by renderArchetypeCatalog() -->
+      </div>
+    </div>
+
+    <!-- TAB 2: SAVED CAD RECIPES -->
+    <div id="vault-tab-pane-recipes" class="vault-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <!-- Search & Filters -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <input type="text" id="vault-recipe-search" placeholder="🔍 Search saved recipes by name, prompt, or tags..." oninput="renderSavedRecipesList()" style="flex: 1; min-width: 200px; padding: 6px 12px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(0, 229, 255, 0.3); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.76rem; outline: none;" />
+        <select id="vault-recipe-cat-filter" onchange="renderSavedRecipesList()" style="padding: 6px 10px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(0, 229, 255, 0.3); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem;">
+          <option value="">All Categories</option>
+          <option value="Weapons">Weapons</option>
+          <option value="Vehicles">Vehicles</option>
+          <option value="Mechs">Mechs</option>
+          <option value="Gadgets">Gadgets</option>
+          <option value="Architecture">Architecture</option>
+          <option value="Creatures">Creatures</option>
+          <option value="Sacred Math">Sacred Math</option>
+          <option value="Scenes">Scenes</option>
+        </select>
+        <label style="display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 0.72rem; color: #fbbf24; cursor: pointer;">
+          <input type="checkbox" id="vault-recipe-fav-only" onchange="renderSavedRecipesList()" style="accent-color: #fbbf24;" />
+          <span>⭐ Favorites Only</span>
+        </label>
+        <button class="btn-cad" onclick="openSaveRecipeModal()" style="padding: 6px 10px; color: #34d399; border-color: rgba(52, 211, 153, 0.4); font-size: 0.74rem;">+ Save Current Prompt</button>
+      </div>
+
+      <!-- Saved Recipes List Container -->
+      <div id="vault-recipes-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; padding-right: 4px;">
+        <!-- Populated dynamically by renderSavedRecipesList() -->
+      </div>
+    </div>
+
+    <!-- TAB 3: PROMPT LEARNING HISTORY -->
+    <div id="vault-tab-pane-history" class="vault-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Recorded Generation Timeline (Zero-Cloud Local Storage):</span>
+        <button class="btn-cad" onclick="clearVaultHistory()" style="padding: 4px 8px; font-size: 0.68rem; color: #f43f5e;">🗑️ Clear History</button>
+      </div>
+      <div id="vault-history-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 55vh; overflow-y: auto; padding-right: 4px;">
+        <!-- Populated dynamically by renderGenerationHistory() -->
+      </div>
+    </div>
+
+    <!-- TAB 4: JSON VAULT SYNC (EXPORT/IMPORT) -->
+    <div id="vault-tab-pane-sync" class="vault-tab-pane" style="display: none; flex-direction: column; gap: 12px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-family: var(--font-mono); font-size: 0.76rem; color: var(--cyan); font-weight: 700;">💾 EXPORT RECIPES JSON</div>
+          <p style="font-size: 0.72rem; color: var(--muted); margin: 0;">Export all custom and bookmarked CAD recipes to a portable zero-cloud JSON backup.</p>
+          <textarea id="vault-export-textarea" readonly rows="8" style="width: 100%; padding: 8px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(0, 229, 255, 0.2); color: #38bdf8; border-radius: 6px; font-family: var(--font-mono); font-size: 0.70rem; resize: none; box-sizing: border-box;"></textarea>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-cad" onclick="copyVaultExportJSON()" style="flex: 1;">📋 Copy to Clipboard</button>
+            <button class="btn-ai-gen" onclick="downloadVaultExportJSON()" style="flex: 1; margin: 0; padding: 6px 12px; font-size: 0.75rem;">📥 Download JSON</button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-family: var(--font-mono); font-size: 0.76rem; color: #fbbf24; font-weight: 700;">📦 IMPORT RECIPES JSON</div>
+          <p style="font-size: 0.72rem; color: var(--muted); margin: 0;">Paste JSON recipe payload to import custom prompt blueprints into your local vault.</p>
+          <textarea id="vault-import-textarea" placeholder="Paste exported recipe JSON here..." rows="8" style="width: 100%; padding: 8px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(251, 191, 36, 0.3); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.70rem; resize: none; box-sizing: border-box;"></textarea>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-cad" onclick="resetVaultToDefaults()" style="color: #f43f5e;">🔄 Reset Defaults</button>
+            <button class="btn-ai-gen" onclick="importVaultRecipesJSON()" style="flex: 1; margin: 0; padding: 6px 12px; font-size: 0.75rem; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #020306;">⚡ Merge &amp; Import</button>
+          </div>
+        </div>
+      </div>
+      <div id="vault-sync-feedback" style="display: none; padding: 8px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.72rem;"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 💾 Bookmark / Save Custom Recipe Modal -->
+<div id="save-recipe-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(2, 4, 10, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 10001; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #080c18; border: 1px solid #fbbf24; border-radius: 14px; max-width: 520px; width: 100%; padding: 20px; box-shadow: 0 0 40px rgba(251, 191, 36, 0.3); box-sizing: border-box; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 10px;">
+      <h3 style="margin: 0; font-family: var(--font-display); color: #fff; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+        <span>💾 Bookmark Prompt to CAD Recipe Vault</span>
+      </h3>
+      <button onclick="closeSaveRecipeModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+    </div>
+
+    <div>
+      <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 4px;">Recipe Title</label>
+      <input type="text" id="save-recipe-name" placeholder="e.g. Overclocked Quantum Plasma Rifle" style="width: 100%; padding: 8px 10px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(251, 191, 36, 0.4); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.78rem; box-sizing: border-box;" />
+    </div>
+
+    <div>
+      <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 4px;">Synthesis Prompt</label>
+      <textarea id="save-recipe-prompt" rows="3" style="width: 100%; padding: 8px 10px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(255, 255, 255, 0.15); color: #38bdf8; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem; box-sizing: border-box;"></textarea>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 4px;">Tags (comma-separated)</label>
+        <input type="text" id="save-recipe-tags" placeholder="plasma, weapon, carbon" style="width: 100%; padding: 6px 10px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem; box-sizing: border-box;" />
+      </div>
+      <div>
+        <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 4px;">Notes / Custom Config</label>
+        <input type="text" id="save-recipe-notes" placeholder="e.g. Optimized for 60 FPS" style="width: 100%; padding: 6px 10px; background: rgba(3, 6, 15, 0.95); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem; box-sizing: border-box;" />
+      </div>
+    </div>
+
+    <label style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.74rem; color: #fbbf24; cursor: pointer; margin-top: 4px;">
+      <input type="checkbox" id="save-recipe-favorite" checked style="accent-color: #fbbf24;" />
+      <span>⭐ Add to Favorites</span>
+    </label>
+
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+      <button class="btn-cad" onclick="closeSaveRecipeModal()">Cancel</button>
+      <button class="btn-ai-gen" onclick="confirmSaveRecipe()" style="margin: 0; padding: 8px 16px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #020306; font-weight: 700;">💾 Save Recipe</button>
+    </div>
+  </div>
+</div>
+
 </main>
 <!-- Nexus 3D Studio Engine Script -->
 <script>
@@ -2320,6 +3056,11 @@
           spawnPrimitive('crystal');
         }
 
+        // Initialize Procedural Physical Sky & IBL Environment
+        if (typeof window.Nexus3DSky !== 'undefined') {
+          setSkyPreset('sunset_cyberpunk', false);
+        }
+
         // Initialize 3D Animation Timeline & Exploded CAD Sequencer
         initNexusTimeline();
 
@@ -2345,6 +3086,11 @@
               generateAI3DGeometry();
             }
           });
+        }
+
+        // Initialize Semantic Prompt Knowledge Vault & Live Autocomplete HUD
+        if (window.Nexus3DKnowledge) {
+          initSemanticKnowledgeHUD();
         }
 
         window.addEventListener('resize', onResize, { passive: true });
@@ -2912,6 +3658,12 @@
           nexusTimeline.setTarget(obj);
         }
         updateOutliner();
+        if (typeof refreshMathTelemetry === 'function') {
+          const modal = document.getElementById('math-inspector-modal');
+          if (modal && modal.style.display === 'flex') {
+            refreshMathTelemetry();
+          }
+        }
       }
 
       function updateOutliner() {
@@ -3220,6 +3972,121 @@
       function onMetaballAnimChange(mode) {
         if (selectedObject && selectedObject.userData && selectedObject.userData.isMetaballField) {
           selectedObject.userData.animationMode = mode;
+        }
+      }
+
+      // =========================================================================
+      // SUBDIVISION & NORMAL MAP HANDLERS
+      // =========================================================================
+
+      function executeSmoothSubdivide() {
+        if (!selectedObject) {
+          alert("Select a 3D mesh in the viewport or outliner to subdivide!");
+          return;
+        }
+
+        const targetMeshes = [];
+        if (selectedObject.isMesh) {
+          targetMeshes.push(selectedObject);
+        } else {
+          selectedObject.traverse(child => {
+            if (child.isMesh && child.geometry) {
+              targetMeshes.push(child);
+            }
+          });
+        }
+
+        if (targetMeshes.length === 0) {
+          alert("Selected object has no mesh geometry to subdivide.");
+          return;
+        }
+
+        const algo = document.getElementById('subdiv-algorithm') ? document.getElementById('subdiv-algorithm').value : 'catmull-clark';
+        const lvl = document.getElementById('subdiv-level') ? parseInt(document.getElementById('subdiv-level').value, 10) : 1;
+        const preserveBoundaries = document.getElementById('subdiv-preserve-boundaries') ? document.getElementById('subdiv-preserve-boundaries').checked : true;
+        const preserveCreases = document.getElementById('subdiv-preserve-creases') ? document.getElementById('subdiv-preserve-creases').checked : true;
+
+        try {
+          const t0 = performance.now();
+          let totalOrigVerts = 0;
+          let totalNewVerts = 0;
+
+          targetMeshes.forEach(mesh => {
+            totalOrigVerts += mesh.geometry.attributes.position ? mesh.geometry.attributes.position.count : 0;
+            Nexus3DSubdivision.subdivideMesh(mesh, {
+              type: algo,
+              level: lvl,
+              preserveBoundaries: preserveBoundaries,
+              preserveCreases: preserveCreases
+            });
+            totalNewVerts += mesh.geometry.attributes.position ? mesh.geometry.attributes.position.count : 0;
+          });
+
+          const elapsed = (performance.now() - t0).toFixed(1);
+          updateStats();
+          burstParticles();
+
+          const tag = document.getElementById('viewport-status-tag');
+          if (tag) {
+            tag.textContent = `✨ ${algo === 'catmull-clark' ? 'Catmull-Clark' : 'Loop'} Subdivided L${lvl}: ${totalOrigVerts.toLocaleString()} ➔ ${totalNewVerts.toLocaleString()} vertices (${elapsed}ms)`;
+          }
+        } catch (err) {
+          console.error("Subdivision error:", err);
+          alert("Subdivision error: " + err.message);
+        }
+      }
+
+      function executeApplyNormalMap() {
+        if (!selectedObject) {
+          alert("Select a 3D mesh first to apply normal map filter!");
+          return;
+        }
+
+        const targetMeshes = [];
+        if (selectedObject.isMesh) {
+          targetMeshes.push(selectedObject);
+        } else {
+          selectedObject.traverse(child => {
+            if (child.isMesh && child.material) {
+              targetMeshes.push(child);
+            }
+          });
+        }
+
+        if (targetMeshes.length === 0) {
+          alert("Selected object has no mesh material to receive normal map.");
+          return;
+        }
+
+        const filter = document.getElementById('normal-filter-type') ? document.getElementById('normal-filter-type').value : 'scharr';
+        const preset = document.getElementById('normal-preset-select') ? document.getElementById('normal-preset-select').value : 'cad-chamfer-bevel';
+        const bumpScale = document.getElementById('normal-bump-scale') ? parseFloat(document.getElementById('normal-bump-scale').value) : 2.5;
+        const invertG = document.getElementById('normal-invert-g') ? document.getElementById('normal-invert-g').checked : false;
+        const preserveCreases = document.getElementById('normal-preserve-creases') ? document.getElementById('normal-preserve-creases').checked : true;
+
+        try {
+          const t0 = performance.now();
+          targetMeshes.forEach(mesh => {
+            Nexus3DSubdivision.applyNormalMapToMesh(mesh, preset, {
+              filter: filter,
+              bumpScale: bumpScale,
+              invertG: invertG,
+              preserveCreases: preserveCreases,
+              width: 512,
+              height: 512
+            });
+          });
+
+          const elapsed = (performance.now() - t0).toFixed(1);
+          burstParticles();
+
+          const tag = document.getElementById('viewport-status-tag');
+          if (tag) {
+            tag.textContent = `⚡ Applied ${filter.toUpperCase()} Normal Map (${preset}, bump: ${bumpScale}) in ${elapsed}ms`;
+          }
+        } catch (err) {
+          console.error("Normal map error:", err);
+          alert("Normal map error: " + err.message);
         }
       }
 
@@ -3632,7 +4499,483 @@
             setTimeout(() => { bloomPass.strength = 1.25; }, 600);
           }
           if (btn) btn.textContent = '✨ Synthesize 3D Geometry';
+
+          // Record prompt learning telemetry & update live HUD
+          if (window.Nexus3DKnowledge) {
+            window.Nexus3DKnowledge.recordGeneration(prompt);
+            updateSemanticArchetypeHUD(prompt);
+            updateVaultCountsBadge();
+          }
         }, 100);
+      }
+
+      // =======================================================================
+      // SEMANTIC PROMPT KNOWLEDGE VAULT & CONTINUOUS LEARNING ENGINE
+      // =======================================================================
+
+      let activeCatalogCategory = 'all';
+
+      function initSemanticKnowledgeHUD() {
+        const promptInput = document.getElementById('ai-3d-prompt');
+        if (!promptInput || !window.Nexus3DKnowledge) return;
+
+        const handlePromptChange = () => {
+          const val = promptInput.value.trim();
+          updateSemanticArchetypeHUD(val);
+          updatePromptAutocomplete(val);
+        };
+
+        promptInput.addEventListener('input', handlePromptChange);
+        promptInput.addEventListener('focus', handlePromptChange);
+
+        // Run initial decomposition & suggestion populate
+        handlePromptChange();
+        updateVaultCountsBadge();
+      }
+
+      function updateSemanticArchetypeHUD(promptText) {
+        if (!window.Nexus3DKnowledge) return;
+        const decomp = window.Nexus3DKnowledge.decompose(promptText || '');
+
+        const titleEl = document.getElementById('hud-archetype-title');
+        const confEl = document.getElementById('hud-match-confidence');
+        const pbrEl = document.getElementById('hud-pbr-badge');
+        const compEl = document.getElementById('hud-components-badge');
+        const sacredEl = document.getElementById('hud-sacred-badge');
+
+        if (titleEl) {
+          const catIcon = decomp.primaryArchetype === 'Weapons' ? '⚔️' :
+                          decomp.primaryArchetype === 'Vehicles' ? '🚀' :
+                          decomp.primaryArchetype === 'Mechs' ? '🤖' :
+                          decomp.primaryArchetype === 'Gadgets' ? '⚡' :
+                          decomp.primaryArchetype === 'Architecture' ? '🏛️' :
+                          decomp.primaryArchetype === 'Creatures' ? '🐉' :
+                          decomp.primaryArchetype === 'Sacred Math' ? '🔯' : '🏙️';
+          titleEl.innerHTML = `${catIcon} ${decomp.primaryArchetype}: <span style="color:#fff;">${decomp.templateName}</span>`;
+        }
+
+        if (confEl) {
+          confEl.textContent = `${decomp.matchConfidence} Match`;
+          const score = decomp.matchScore || 0.5;
+          confEl.style.color = score >= 0.7 ? '#34d399' : score >= 0.4 ? '#fbbf24' : '#94a3b8';
+          confEl.style.borderColor = score >= 0.7 ? 'rgba(52, 211, 153, 0.4)' : score >= 0.4 ? 'rgba(251, 191, 36, 0.4)' : 'rgba(148, 163, 184, 0.3)';
+        }
+
+        if (pbrEl) {
+          pbrEl.textContent = `🎨 ${decomp.materials.pbrStyle}`;
+          pbrEl.style.color = decomp.materials.themeColor || '#c084fc';
+        }
+
+        if (compEl) {
+          compEl.textContent = `🧩 ${decomp.components.length} Components`;
+        }
+
+        if (sacredEl) {
+          if (decomp.sacredMath && decomp.sacredMath.isGoldenRatioAligned) {
+            sacredEl.style.display = 'inline-flex';
+            sacredEl.textContent = '👑 Φ Golden Ratio';
+          } else if (decomp.dimensions && decomp.dimensions.wireframe) {
+            sacredEl.style.display = 'inline-flex';
+            sacredEl.textContent = '📐 Wireframe Mesh';
+          } else {
+            sacredEl.style.display = 'inline-flex';
+            sacredEl.textContent = `📏 Scale: ${(decomp.dimensions.scale || 1.0).toFixed(1)}x`;
+          }
+        }
+      }
+
+      function updatePromptAutocomplete(promptText) {
+        const container = document.getElementById('prompt-autocomplete-chips');
+        if (!container || !window.Nexus3DKnowledge) return;
+
+        const suggestions = window.Nexus3DKnowledge.getSuggestions(promptText || '', 8);
+        container.innerHTML = '';
+
+        suggestions.forEach(s => {
+          const chip = document.createElement('button');
+          chip.className = 'tag-pill';
+          chip.style.cssText = 'cursor: pointer; white-space: nowrap; font-size: 0.65rem; background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.25); color: #cbd5e1; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; flex-shrink: 0; transition: all 0.2s ease;';
+          chip.innerHTML = `<span style="color:var(--cyan); font-weight:700;">${s.badge}</span> <span>${escapeHTML(s.text.length > 45 ? s.text.slice(0, 45) + '…' : s.text)}</span>`;
+          chip.title = s.text;
+          chip.onclick = () => applyAutocompleteSuggestion(s.text);
+          container.appendChild(chip);
+        });
+      }
+
+      function applyAutocompleteSuggestion(text) {
+        const promptInput = document.getElementById('ai-3d-prompt');
+        if (!promptInput) return;
+        promptInput.value = text;
+        updateSemanticArchetypeHUD(text);
+        updatePromptAutocomplete(text);
+        generateAI3DGeometry();
+      }
+
+      function updateVaultCountsBadge() {
+        if (!window.Nexus3DKnowledge) return;
+        const vault = window.Nexus3DKnowledge.RecipeVault;
+        const recipes = vault.getAll();
+        const history = vault.getHistory(100);
+        const countRecEl = document.getElementById('vault-count-recipes');
+        const countHistEl = document.getElementById('vault-count-hist');
+        if (countRecEl) countRecEl.textContent = recipes.length;
+        if (countHistEl) countHistEl.textContent = history.length;
+      }
+
+      // =======================================================================
+      // KNOWLEDGE VAULT MODAL & TAB CONTROLLER
+      // =======================================================================
+
+      function openKnowledgeVaultModal(initialTab) {
+        const modal = document.getElementById('nexus-knowledge-vault-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        switchKnowledgeVaultTab(initialTab || 'catalog');
+        updateVaultCountsBadge();
+      }
+
+      function closeKnowledgeVaultModal() {
+        const modal = document.getElementById('nexus-knowledge-vault-modal');
+        if (modal) modal.style.display = 'none';
+      }
+
+      function switchKnowledgeVaultTab(tab) {
+        document.querySelectorAll('.vault-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.vault-tab-pane').forEach(pane => pane.style.display = 'none');
+
+        const btn = document.getElementById(`btn-vault-tab-${tab}`);
+        const pane = document.getElementById(`vault-tab-pane-${tab}`);
+        if (btn) btn.classList.add('active');
+        if (pane) pane.style.display = 'flex';
+
+        if (tab === 'catalog') {
+          renderArchetypeCatalog(activeCatalogCategory);
+        } else if (tab === 'recipes') {
+          renderSavedRecipesList();
+        } else if (tab === 'history') {
+          renderGenerationHistory();
+        } else if (tab === 'sync') {
+          renderVaultSyncData();
+        }
+      }
+
+      function filterArchetypeCatalog(category) {
+        activeCatalogCategory = category;
+        document.querySelectorAll('#vault-tab-pane-catalog .tag-pill').forEach(btn => {
+          btn.style.background = 'transparent';
+          btn.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+          btn.style.color = '#94a3b8';
+        });
+        const activeBtn = document.getElementById(`tax-filter-${category.toLowerCase().replace(/\s+/g, '')}`);
+        if (activeBtn) {
+          activeBtn.style.background = 'rgba(0, 229, 255, 0.2)';
+          activeBtn.style.borderColor = 'var(--cyan-cad)';
+          activeBtn.style.color = '#fff';
+        }
+        renderArchetypeCatalog(category);
+      }
+
+      function renderArchetypeCatalog(category) {
+        const grid = document.getElementById('vault-archetypes-grid');
+        if (!grid || !window.Nexus3DKnowledge) return;
+
+        let templates = window.Nexus3DKnowledge.TEMPLATES;
+        if (category && category !== 'all') {
+          templates = templates.filter(t => t.category === category);
+        }
+
+        grid.innerHTML = '';
+
+        templates.forEach(tpl => {
+          const card = document.createElement('div');
+          card.style.cssText = 'background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.2s ease;';
+          
+          const catColor = tpl.category === 'Weapons' ? '#ff3366' :
+                           tpl.category === 'Vehicles' ? '#38bdf8' :
+                           tpl.category === 'Mechs' ? '#fbbf24' :
+                           tpl.category === 'Gadgets' ? '#00f0ff' :
+                           tpl.category === 'Architecture' ? '#e8c872' :
+                           tpl.category === 'Creatures' ? '#34d399' :
+                           tpl.category === 'Sacred Math' ? '#c084fc' : '#38bdf8';
+
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span class="tag-pill" style="font-size: 0.60rem; color: ${catColor}; border-color: ${catColor}66; margin-bottom: 2px;">${tpl.category}</span>
+                <div style="font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; color: #fff;">${escapeHTML(tpl.name)}</div>
+              </div>
+              <span class="tag-pill" style="font-size: 0.60rem; color: #c084fc; border-color: rgba(192, 132, 252, 0.4);">🎨 ${tpl.defaultPBRStyle}</span>
+            </div>
+            <p style="font-size: 0.70rem; color: var(--muted); margin: 0; line-height: 1.35;">${escapeHTML(tpl.description)}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+              ${tpl.components.slice(0, 4).map(c => `<span class="tag-pill" style="font-size: 0.58rem; color: #94a3b8;">🧩 ${c.replace(/_/g, ' ')}</span>`).join('')}
+            </div>
+            <div style="margin-top: auto; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; gap: 6px;">
+              <button class="btn-ai-gen" style="margin: 0; flex: 1; padding: 6px 10px; font-size: 0.72rem;" onclick="loadArchetypeToPrompt('${tpl.id}')">⚡ Synthesize</button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      function loadArchetypeToPrompt(templateId) {
+        if (!window.Nexus3DKnowledge) return;
+        const tpl = window.Nexus3DKnowledge.TEMPLATE_MAP[templateId];
+        if (!tpl) return;
+        const promptText = tpl.samplePrompts[0] || tpl.name;
+        const promptInput = document.getElementById('ai-3d-prompt');
+        if (promptInput) promptInput.value = promptText;
+        closeKnowledgeVaultModal();
+        updateSemanticArchetypeHUD(promptText);
+        updatePromptAutocomplete(promptText);
+        generateAI3DGeometry();
+      }
+
+      // =======================================================================
+      // SAVED RECIPES & BOOKMARKING CONTROLLER
+      // =======================================================================
+
+      function openSaveRecipeModal() {
+        const modal = document.getElementById('save-recipe-modal');
+        if (!modal || !window.Nexus3DKnowledge) return;
+
+        const promptInput = document.getElementById('ai-3d-prompt');
+        const prompt = promptInput ? promptInput.value.trim() : '';
+        const decomp = window.Nexus3DKnowledge.decompose(prompt);
+
+        const nameInput = document.getElementById('save-recipe-name');
+        const promptArea = document.getElementById('save-recipe-prompt');
+        const tagsInput = document.getElementById('save-recipe-tags');
+
+        if (nameInput) nameInput.value = decomp.templateName || 'Custom CAD Geometry';
+        if (promptArea) promptArea.value = prompt;
+        if (tagsInput) tagsInput.value = `${decomp.primaryArchetype.toLowerCase()}, custom, ${decomp.materials.pbrStyle}`;
+
+        modal.style.display = 'flex';
+      }
+
+      function closeSaveRecipeModal() {
+        const modal = document.getElementById('save-recipe-modal');
+        if (modal) modal.style.display = 'none';
+      }
+
+      function confirmSaveRecipe() {
+        if (!window.Nexus3DKnowledge) return;
+        const nameInput = document.getElementById('save-recipe-name');
+        const promptArea = document.getElementById('save-recipe-prompt');
+        const tagsInput = document.getElementById('save-recipe-tags');
+        const notesInput = document.getElementById('save-recipe-notes');
+        const favCheckbox = document.getElementById('save-recipe-favorite');
+
+        const prompt = promptArea ? promptArea.value.trim() : '';
+        if (!prompt) {
+          alert('Prompt cannot be empty');
+          return;
+        }
+
+        const tags = tagsInput ? tagsInput.value.split(',').map(t => t.trim()).filter(Boolean) : [];
+        const saved = window.Nexus3DKnowledge.RecipeVault.save({
+          name: nameInput ? nameInput.value.trim() : 'Custom Blueprint',
+          prompt: prompt,
+          tags: tags,
+          notes: notesInput ? notesInput.value.trim() : '',
+          favorite: favCheckbox ? favCheckbox.checked : true
+        });
+
+        closeSaveRecipeModal();
+        updateVaultCountsBadge();
+
+        const statusTag = document.getElementById('viewport-status-tag');
+        if (statusTag) statusTag.textContent = `💾 Saved recipe "${saved.name}" to local CAD vault!`;
+      }
+
+      function renderSavedRecipesList() {
+        const container = document.getElementById('vault-recipes-list');
+        if (!container || !window.Nexus3DKnowledge) return;
+
+        const q = (document.getElementById('vault-recipe-search')?.value || '').trim();
+        const cat = document.getElementById('vault-recipe-cat-filter')?.value || '';
+        const favOnly = !!document.getElementById('vault-recipe-fav-only')?.checked;
+
+        const recipes = window.Nexus3DKnowledge.RecipeVault.search(q, {
+          category: cat || undefined,
+          onlyFavorites: favOnly
+        });
+
+        container.innerHTML = '';
+
+        if (!recipes.length) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: var(--muted); font-family: var(--font-mono); font-size: 0.80rem;">
+              <div>📂 No matching saved recipes found.</div>
+              <small>Bookmark recipes using the "💾 Save" button on the generator panel.</small>
+            </div>
+          `;
+          return;
+        }
+
+        recipes.forEach(r => {
+          const item = document.createElement('div');
+          item.style.cssText = 'background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;';
+          item.innerHTML = `
+            <div style="flex: 1; min-width: 220px;">
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                <span onclick="toggleVaultFavorite('${r.id}')" style="cursor: pointer; font-size: 1rem; color: ${r.favorite ? '#fbbf24' : '#64748b'};" title="Toggle Favorite">★</span>
+                <strong style="color: #fff; font-family: var(--font-display); font-size: 0.88rem;">${escapeHTML(r.name)}</strong>
+                <span class="tag-pill" style="font-size: 0.58rem; color: var(--cyan); border-color: rgba(0, 229, 255, 0.3);">${r.category}</span>
+                <span class="tag-pill" style="font-size: 0.58rem; color: #c084fc;">🎨 ${r.materials ? r.materials.pbrStyle : 'cyber-circuit'}</span>
+              </div>
+              <div style="font-family: var(--font-mono); font-size: 0.70rem; color: #94a3b8; line-height: 1.3;">${escapeHTML(r.prompt)}</div>
+              ${r.tags && r.tags.length ? `<div style="display: flex; gap: 4px; margin-top: 4px;">${r.tags.map(t => `<span class="tag-pill" style="font-size: 0.55rem; color: #64748b;">#${escapeHTML(t)}</span>`).join('')}</div>` : ''}
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button class="btn-ai-gen" style="margin: 0; padding: 6px 12px; font-size: 0.72rem;" onclick="loadVaultRecipe('${r.id}')">⚡ Load &amp; Synthesize</button>
+              <button class="btn-cad" style="padding: 6px 8px; color: #f43f5e; font-size: 0.72rem;" onclick="deleteVaultRecipe('${r.id}')" title="Delete Recipe">🗑️</button>
+            </div>
+          `;
+          container.appendChild(item);
+        });
+      }
+
+      function loadVaultRecipe(id) {
+        if (!window.Nexus3DKnowledge) return;
+        const recipe = window.Nexus3DKnowledge.RecipeVault.getById(id);
+        if (!recipe) return;
+        const promptInput = document.getElementById('ai-3d-prompt');
+        if (promptInput) promptInput.value = recipe.prompt;
+        closeKnowledgeVaultModal();
+        updateSemanticArchetypeHUD(recipe.prompt);
+        updatePromptAutocomplete(recipe.prompt);
+        generateAI3DGeometry();
+      }
+
+      function toggleVaultFavorite(id) {
+        if (!window.Nexus3DKnowledge) return;
+        window.Nexus3DKnowledge.RecipeVault.toggleFavorite(id);
+        renderSavedRecipesList();
+      }
+
+      function deleteVaultRecipe(id) {
+        if (!window.Nexus3DKnowledge) return;
+        if (confirm('Delete this recipe from your CAD vault?')) {
+          window.Nexus3DKnowledge.RecipeVault.delete(id);
+          renderSavedRecipesList();
+          updateVaultCountsBadge();
+        }
+      }
+
+      // =======================================================================
+      // PROMPT LEARNING GENERATION HISTORY CONTROLLER
+      // =======================================================================
+
+      function renderGenerationHistory() {
+        const container = document.getElementById('vault-history-list');
+        if (!container || !window.Nexus3DKnowledge) return;
+
+        const history = window.Nexus3DKnowledge.RecipeVault.getHistory(50);
+        container.innerHTML = '';
+
+        if (!history.length) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: var(--muted); font-family: var(--font-mono); font-size: 0.80rem;">
+              <div>🕒 No generation history recorded yet.</div>
+              <small>Every 3D geometry synthesis automatically logs continuous prompt telemetry here.</small>
+            </div>
+          `;
+          return;
+        }
+
+        history.forEach(item => {
+          const row = document.createElement('div');
+          row.style.cssText = 'background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 0.72rem;';
+          const timeFormatted = new Date(item.timestamp).toLocaleTimeString();
+          row.innerHTML = `
+            <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <span style="color: var(--cyan); font-weight: 700;">[${timeFormatted}]</span>
+              <span class="tag-pill" style="font-size: 0.58rem; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);">${item.category}</span>
+              <span style="color: #cbd5e1;">${escapeHTML(item.prompt)}</span>
+            </div>
+            <button class="btn-cad" style="padding: 4px 8px; font-size: 0.65rem;" onclick="applyAutocompleteSuggestion('${escapeHTML(item.prompt).replace(/'/g, "\\'")}')">⚡ Re-run</button>
+          `;
+          container.appendChild(row);
+        });
+      }
+
+      function clearVaultHistory() {
+        if (!window.Nexus3DKnowledge) return;
+        if (confirm('Clear all prompt generation history?')) {
+          window.Nexus3DKnowledge.RecipeVault.clearHistory();
+          renderGenerationHistory();
+          updateVaultCountsBadge();
+        }
+      }
+
+      // =======================================================================
+      // JSON EXPORT / IMPORT CONTROLLER
+      // =======================================================================
+
+      function renderVaultSyncData() {
+        if (!window.Nexus3DKnowledge) return;
+        const textarea = document.getElementById('vault-export-textarea');
+        if (textarea) {
+          textarea.value = window.Nexus3DKnowledge.RecipeVault.exportJSON();
+        }
+      }
+
+      function copyVaultExportJSON() {
+        const textarea = document.getElementById('vault-export-textarea');
+        if (!textarea) return;
+        navigator.clipboard.writeText(textarea.value).then(() => {
+          showVaultFeedback('📋 Copied JSON to clipboard!', '#34d399');
+        });
+      }
+
+      function downloadVaultExportJSON() {
+        if (!window.Nexus3DKnowledge) return;
+        const json = window.Nexus3DKnowledge.RecipeVault.exportJSON();
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nexus3d_cad_recipes_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showVaultFeedback('📥 Downloaded JSON recipes payload!', '#34d399');
+      }
+
+      function importVaultRecipesJSON() {
+        const textarea = document.getElementById('vault-import-textarea');
+        if (!textarea || !textarea.value.trim() || !window.Nexus3DKnowledge) return;
+        const res = window.Nexus3DKnowledge.RecipeVault.importJSON(textarea.value.trim());
+        if (res.success) {
+          showVaultFeedback(`✅ Successfully imported ${res.count} recipes! (Total: ${res.total})`, '#34d399');
+          textarea.value = '';
+          renderVaultSyncData();
+          updateVaultCountsBadge();
+        } else {
+          showVaultFeedback(`❌ Import failed: ${res.error}`, '#f43f5e');
+        }
+      }
+
+      function resetVaultToDefaults() {
+        if (!window.Nexus3DKnowledge) return;
+        if (confirm('Reset your CAD Recipe Vault to factory default templates?')) {
+          window.Nexus3DKnowledge.RecipeVault.seedDefaults();
+          renderVaultSyncData();
+          updateVaultCountsBadge();
+          showVaultFeedback('🔄 Reset Recipe Vault to curated default blueprints', '#fbbf24');
+        }
+      }
+
+      function showVaultFeedback(msg, color) {
+        const el = document.getElementById('vault-sync-feedback');
+        if (!el) return;
+        el.textContent = msg;
+        el.style.color = color || '#34d399';
+        el.style.background = `${color || '#34d399'}15`;
+        el.style.border = `1px solid ${color || '#34d399'}`;
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 4000);
       }
 
       function toggleAutoRotate() {
@@ -3761,16 +5104,42 @@
       function updateStats() {
         const meshCountEl = document.getElementById('stat-mesh-count');
         const vertCountEl = document.getElementById('stat-vert-count');
+        const drawCallsEl = document.getElementById('stat-draw-calls');
+        const workerStatusEl = document.getElementById('stat-worker-status');
+
         if (meshCountEl) meshCountEl.textContent = meshList.length;
         let totalVerts = 0;
+        let drawCalls = 0;
+        let instancedCount = 0;
+
         meshList.forEach(m => {
           m.traverse(child => {
             if (child.isMesh && child.geometry) {
-              totalVerts += child.geometry.attributes && child.geometry.attributes.position ? child.geometry.attributes.position.count : 0;
+              const posCount = child.geometry.attributes && child.geometry.attributes.position ? child.geometry.attributes.position.count : 0;
+              if (child.isInstancedMesh) {
+                totalVerts += posCount * (child.count || 1);
+                drawCalls += 1;
+                instancedCount += (child.count || 1);
+              } else {
+                totalVerts += posCount;
+                drawCalls += 1;
+              }
             }
           });
         });
+
         if (vertCountEl) vertCountEl.textContent = totalVerts.toLocaleString() || '1,248';
+        if (drawCallsEl) {
+          drawCallsEl.textContent = instancedCount > 0
+            ? `${drawCalls} Call${drawCalls > 1 ? 's' : ''} (${instancedCount} inst)`
+            : `${drawCalls} Call${drawCalls > 1 ? 's' : ''}`;
+        }
+        if (workerStatusEl && window.Nexus3DWorkerBridge) {
+          const stats = window.Nexus3DWorkerBridge.getStats();
+          workerStatusEl.textContent = stats.mode === 'multi-threaded-worker'
+            ? `Worker (${stats.activeWorkers} threads)`
+            : 'Bridge (0-Copy Fallback)';
+        }
       }
 
       /* Mobile Segmented Switcher Navigation */
@@ -3804,6 +5173,129 @@
         }
         if (chromaticPass && chromaticPass.uniforms && chromaticPass.uniforms.resolution && chromaticPass.uniforms.resolution.value.set) {
           chromaticPass.uniforms.resolution.value.set(w, h);
+        }
+      // =====================================================================
+      // PROCEDURAL PHYSICAL SKY & IBL ENVIRONMENT ENGINE CONTROLLERS
+      // =====================================================================
+      let currentSkyPresetKey = 'sunset_cyberpunk';
+
+      function setSkyPreset(presetKey, notify) {
+        currentSkyPresetKey = presetKey || 'sunset_cyberpunk';
+        const pKeyNorm = currentSkyPresetKey.replace(/_/g, '-');
+        const pKeyUnder = currentSkyPresetKey.replace(/-/g, '_');
+
+        // Update button active states
+        const presetButtons = document.querySelectorAll('[id^="btn-sky-"]');
+        presetButtons.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.id === `btn-sky-${pKeyNorm}` || btn.id === `btn-sky-${pKeyUnder}`) {
+            btn.classList.add('active');
+            btn.style.boxShadow = '0 0 12px rgba(0, 229, 255, 0.45)';
+          } else {
+            btn.style.boxShadow = 'none';
+          }
+        });
+
+        if (!window.Nexus3DSky) return;
+        const presetData = window.Nexus3DSky.SKY_PRESETS[currentSkyPresetKey];
+        if (!presetData) return;
+
+        // Sync slider values with preset
+        const elSunEl = document.getElementById('sky-sun-elevation');
+        const elSunElVal = document.getElementById('sky-sun-elevation-val');
+        const elSunAz = document.getElementById('sky-sun-azimuth');
+        const elSunAzVal = document.getElementById('sky-sun-azimuth-val');
+        const elTurb = document.getElementById('sky-turbidity');
+        const elTurbVal = document.getElementById('sky-turbidity-val');
+        const elNeb = document.getElementById('sky-nebula-intensity');
+        const elNebVal = document.getElementById('sky-nebula-intensity-val');
+        const elStars = document.getElementById('sky-star-density');
+        const elStarsVal = document.getElementById('sky-star-density-val');
+
+        if (elSunEl && presetData.sunElevation !== undefined) {
+          elSunEl.value = presetData.sunElevation;
+          if (elSunElVal) elSunElVal.textContent = `${presetData.sunElevation}°`;
+        }
+        if (elSunAz && presetData.sunAzimuth !== undefined) {
+          elSunAz.value = presetData.sunAzimuth;
+          if (elSunAzVal) elSunAzVal.textContent = `${presetData.sunAzimuth}°`;
+        }
+        if (elTurb && presetData.turbidity !== undefined) {
+          elTurb.value = presetData.turbidity;
+          if (elTurbVal) elTurbVal.textContent = presetData.turbidity;
+        }
+        if (elNeb && presetData.nebulaIntensity !== undefined) {
+          elNeb.value = presetData.nebulaIntensity;
+          if (elNebVal) elNebVal.textContent = presetData.nebulaIntensity;
+        }
+        if (elStars && presetData.starDensity !== undefined) {
+          elStars.value = presetData.starDensity;
+          if (elStarsVal) elStarsVal.textContent = `${Math.round(presetData.starDensity / 1000)}k`;
+        }
+
+        // Apply environment map to Scene
+        if (scene && typeof THREE !== 'undefined') {
+          window.Nexus3DSky.applyEnvironmentToScene(scene, renderer, currentSkyPresetKey, THREE);
+        }
+
+        if (notify !== false) {
+          const tag = document.getElementById('viewport-status-tag');
+          if (tag) tag.textContent = `🌌 Sky Environment: ${presetData.name || currentSkyPresetKey}`;
+        }
+      }
+
+      function updateSkyParameters() {
+        if (!window.Nexus3DSky || !scene || typeof THREE === 'undefined') return;
+
+        const sunEl = parseFloat(document.getElementById('sky-sun-elevation')?.value || 8.0);
+        const sunAz = parseFloat(document.getElementById('sky-sun-azimuth')?.value || 195.0);
+        const turbidity = parseFloat(document.getElementById('sky-turbidity')?.value || 3.0);
+        const nebulaIntensity = parseFloat(document.getElementById('sky-nebula-intensity')?.value || 1.0);
+        const starDensity = parseFloat(document.getElementById('sky-star-density')?.value || 2000);
+
+        const elSunElVal = document.getElementById('sky-sun-elevation-val');
+        const elSunAzVal = document.getElementById('sky-sun-azimuth-val');
+        const elTurbVal = document.getElementById('sky-turbidity-val');
+        const elNebVal = document.getElementById('sky-nebula-intensity-val');
+        const elStarsVal = document.getElementById('sky-star-density-val');
+
+        if (elSunElVal) elSunElVal.textContent = `${sunEl}°`;
+        if (elSunAzVal) elSunAzVal.textContent = `${sunAz}°`;
+        if (elTurbVal) elTurbVal.textContent = turbidity;
+        if (elNebVal) elNebVal.textContent = nebulaIntensity;
+        if (elStarsVal) elStarsVal.textContent = `${Math.round(starDensity / 1000)}k`;
+
+        const customParams = {
+          preset: currentSkyPresetKey,
+          sunElevation: sunEl,
+          sunAzimuth: sunAz,
+          turbidity: turbidity,
+          nebulaIntensity: nebulaIntensity,
+          starDensity: starDensity
+        };
+
+        window.Nexus3DSky.applyEnvironmentToScene(scene, renderer, customParams, THREE);
+      }
+
+      function spawnIBLTestRig() {
+        if (!window.Nexus3DSky || !scene || typeof THREE === 'undefined') return;
+
+        // Remove any previous IBL test rig
+        const existingRig = scene.getObjectByName('IBL_Material_Reflection_Rig');
+        if (existingRig) {
+          scene.remove(existingRig);
+          meshList = meshList.filter(m => m !== existingRig);
+        }
+
+        const rig = window.Nexus3DSky.createIBLMaterialTestRig(THREE, { spacing: 2.8, radius: 0.85, height: 1.2 });
+        if (rig) {
+          scene.add(rig);
+          meshList.push(rig);
+          selectObject(rig);
+          updateOutliner();
+          updateStats();
+          const tag = document.getElementById('viewport-status-tag');
+          if (tag) tag.textContent = '💎 Spawned PBR Metallic Reflection Test Rig (Chrome, Gold, Titanium, Obsidian)';
         }
       }
 
@@ -3911,6 +5403,437 @@
           composer.render();
         } else if (renderer && scene && camera) {
           renderer.render(scene, camera);
+        }
+      }
+
+      // =========================================================================
+      // MATHEMATICAL CAD INSPECTOR & LIVE PARAMETER NODE CONTROLLERS
+      // =========================================================================
+
+      function openMathInspectorModal() {
+        const modal = document.getElementById('math-inspector-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        onSuperquadricParamChange();
+        onGearParamChange();
+        onCalabiYauParamChange();
+        onTorusKnotParamChange();
+        refreshMathTelemetry();
+      }
+
+      function closeMathInspectorModal() {
+        const modal = document.getElementById('math-inspector-modal');
+        if (modal) modal.style.display = 'none';
+      }
+
+      function switchMathInspectorTab(tabKey) {
+        document.querySelectorAll('.math-tab-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.id === `btn-math-tab-${tabKey}`);
+        });
+        document.querySelectorAll('.math-tab-pane').forEach(pane => {
+          pane.style.display = pane.id === `math-tab-pane-${tabKey}` ? 'flex' : 'none';
+        });
+        if (tabKey === 'sacred') refreshMathTelemetry();
+      }
+
+      function onSuperquadricParamChange() {
+        if (!window.Nexus3DInspector) return;
+        const s1 = parseFloat(document.getElementById('sq-s1')?.value || 0.3);
+        const s2 = parseFloat(document.getElementById('sq-s2')?.value || 0.3);
+        const rx = parseFloat(document.getElementById('sq-rx')?.value || 1.2);
+        const ry = parseFloat(document.getElementById('sq-ry')?.value || 1.8);
+        const rz = parseFloat(document.getElementById('sq-rz')?.value || 1.2);
+        const taper = parseFloat(document.getElementById('sq-taper')?.value || 0.0);
+        const pinch = parseFloat(document.getElementById('sq-pinch')?.value || 0.0);
+        const bend = parseFloat(document.getElementById('sq-bend')?.value || 0.0);
+        const seg = parseInt(document.getElementById('sq-seg')?.value || 32, 10);
+
+        const s1El = document.getElementById('sq-s1-val'); if (s1El) s1El.textContent = s1.toFixed(2);
+        const s2El = document.getElementById('sq-s2-val'); if (s2El) s2El.textContent = s2.toFixed(2);
+        const rxEl = document.getElementById('sq-rx-val'); if (rxEl) rxEl.textContent = rx.toFixed(2);
+        const ryEl = document.getElementById('sq-ry-val'); if (ryEl) ryEl.textContent = ry.toFixed(2);
+        const rzEl = document.getElementById('sq-rz-val'); if (rzEl) rzEl.textContent = rz.toFixed(2);
+        const tapEl = document.getElementById('sq-taper-val'); if (tapEl) tapEl.textContent = taper.toFixed(2);
+        const pinEl = document.getElementById('sq-pinch-val'); if (pinEl) pinEl.textContent = pinch.toFixed(2);
+        const bndEl = document.getElementById('sq-bend-val'); if (bndEl) bndEl.textContent = bend.toFixed(2);
+        const segEl = document.getElementById('sq-seg-val'); if (segEl) segEl.textContent = seg;
+
+        const report = window.Nexus3DInspector.inspectSuperquadric({ s1, s2, radiusX: rx, radiusY: ry, radiusZ: rz, taper, pinch, bend });
+        const classEl = document.getElementById('sq-classification');
+        if (classEl) classEl.textContent = report.classification;
+        const volEl = document.getElementById('sq-volume-approx');
+        if (volEl) volEl.textContent = `${report.approxVolume.toFixed(2)} units³`;
+      }
+
+      function applyOrSpawnSuperquadric(asNew) {
+        if (!window.Nexus3DInspector) return;
+        const s1 = parseFloat(document.getElementById('sq-s1')?.value || 0.3);
+        const s2 = parseFloat(document.getElementById('sq-s2')?.value || 0.3);
+        const rx = parseFloat(document.getElementById('sq-rx')?.value || 1.2);
+        const ry = parseFloat(document.getElementById('sq-ry')?.value || 1.8);
+        const rz = parseFloat(document.getElementById('sq-rz')?.value || 1.2);
+        const taper = parseFloat(document.getElementById('sq-taper')?.value || 0.0);
+        const pinch = parseFloat(document.getElementById('sq-pinch')?.value || 0.0);
+        const bend = parseFloat(document.getElementById('sq-bend')?.value || 0.0);
+        const seg = parseInt(document.getElementById('sq-seg')?.value || 32, 10);
+
+        const geo = window.Nexus3DInspector.createSuperquadricGeometry({
+          s1, s2, radiusX: rx, radiusY: ry, radiusZ: rz, taper, pinch, bend,
+          segmentsU: seg, segmentsV: seg
+        });
+
+        if (!asNew && selectedObject && selectedObject.isMesh && selectedObject.geometry) {
+          selectedObject.geometry.dispose();
+          selectedObject.geometry = geo;
+          selectedObject.name = `Superquadric (${s1.toFixed(1)}x${s2.toFixed(1)})`;
+        } else {
+          const mat = new THREE.MeshPhysicalMaterial({
+            color: 0x00e5ff,
+            emissive: 0x005577,
+            emissiveIntensity: 0.3,
+            roughness: 0.12,
+            metalness: 0.88,
+            transmission: 0.4,
+            transparent: true,
+            opacity: 0.9,
+            side: THREE.DoubleSide
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(0, 1.8, 0);
+          mesh.name = `Superquadric Monolith #${meshList.length + 1}`;
+          scene.add(mesh);
+          meshList.push(mesh);
+          selectObject(mesh);
+        }
+        updateOutliner();
+        updateStats();
+        refreshMathTelemetry();
+        burstParticles();
+      }
+
+      function onGearParamChange() {
+        if (!window.Nexus3DInspector) return;
+        const m = parseFloat(document.getElementById('gear-m')?.value || 0.25);
+        const teeth = parseInt(document.getElementById('gear-teeth')?.value || 16, 10);
+        const alpha = parseFloat(document.getElementById('gear-alpha')?.value || 20.0);
+        const thickness = parseFloat(document.getElementById('gear-thickness')?.value || 0.5);
+        const bore = parseFloat(document.getElementById('gear-bore')?.value || 0.5);
+        const backlash = parseFloat(document.getElementById('gear-backlash')?.value || 0.02);
+
+        const mEl = document.getElementById('gear-m-val'); if (mEl) mEl.textContent = m.toFixed(2);
+        const tEl = document.getElementById('gear-teeth-val'); if (tEl) tEl.textContent = teeth;
+        const aEl = document.getElementById('gear-alpha-val'); if (aEl) aEl.textContent = `${alpha.toFixed(1)}°`;
+        const thEl = document.getElementById('gear-thickness-val'); if (thEl) thEl.textContent = thickness.toFixed(2);
+        const bEl = document.getElementById('gear-bore-val'); if (bEl) bEl.textContent = bore.toFixed(2);
+        const blEl = document.getElementById('gear-backlash-val'); if (blEl) blEl.textContent = backlash.toFixed(3);
+
+        const report = window.Nexus3DInspector.inspectInvoluteGear({ m, numTeeth: teeth, pressureAngle: alpha, backlash });
+        const pEl = document.getElementById('gear-metric-pitch'); if (pEl) pEl.textContent = report.pitchDiameter.toFixed(2);
+        const baseEl = document.getElementById('gear-metric-base'); if (baseEl) baseEl.textContent = report.baseDiameter.toFixed(2);
+        const tipEl = document.getElementById('gear-metric-tip'); if (tipEl) tipEl.textContent = report.tipDiameter.toFixed(2);
+        const rootEl = document.getElementById('gear-metric-root'); if (rootEl) rootEl.textContent = report.rootDiameter.toFixed(2);
+        const cpEl = document.getElementById('gear-metric-cp'); if (cpEl) cpEl.textContent = report.circularPitch.toFixed(3);
+        const invEl = document.getElementById('gear-metric-inv'); if (invEl) invEl.textContent = report.involuteRad.toFixed(4);
+        const ttEl = document.getElementById('gear-metric-tt'); if (ttEl) ttEl.textContent = report.toothThickness.toFixed(3);
+        const crEl = document.getElementById('gear-metric-cr'); if (crEl) crEl.textContent = report.contactRatioStandard.toFixed(2);
+      }
+
+      function applyOrSpawnGear(asNew) {
+        if (!window.Nexus3DInspector) return;
+        const m = parseFloat(document.getElementById('gear-m')?.value || 0.25);
+        const teeth = parseInt(document.getElementById('gear-teeth')?.value || 16, 10);
+        const alpha = parseFloat(document.getElementById('gear-alpha')?.value || 20.0);
+        const thickness = parseFloat(document.getElementById('gear-thickness')?.value || 0.5);
+        const bore = parseFloat(document.getElementById('gear-bore')?.value || 0.5);
+        const backlash = parseFloat(document.getElementById('gear-backlash')?.value || 0.02);
+
+        const geo = window.Nexus3DInspector.createInvoluteGearGeometry({
+          m, numTeeth: teeth, pressureAngle: alpha, thickness, boreRadius: bore, backlash, keyway: true
+        });
+
+        if (!asNew && selectedObject && selectedObject.isMesh && selectedObject.geometry) {
+          selectedObject.geometry.dispose();
+          selectedObject.geometry = geo;
+          selectedObject.name = `Involute Gear (${teeth}T, m=${m.toFixed(2)})`;
+        } else {
+          const mat = new THREE.MeshPhysicalMaterial({
+            color: 0xfbbf24,
+            emissive: 0x92400e,
+            emissiveIntensity: 0.35,
+            roughness: 0.15,
+            metalness: 0.92,
+            side: THREE.DoubleSide
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(0, 1.5, 0);
+          mesh.name = `Involute Gear (${teeth}T, m=${m.toFixed(2)}) #${meshList.length + 1}`;
+          scene.add(mesh);
+          meshList.push(mesh);
+          selectObject(mesh);
+        }
+        updateOutliner();
+        updateStats();
+        refreshMathTelemetry();
+        burstParticles();
+      }
+
+      function onCalabiYauParamChange() {
+        if (!window.Nexus3DInspector) return;
+        const n = parseInt(document.getElementById('cy-n')?.value || 5, 10);
+        const kMax = parseInt(document.getElementById('cy-kmax')?.value || 3, 10);
+        const radius = parseFloat(document.getElementById('cy-radius')?.value || 2.0);
+        const alpha = parseFloat(document.getElementById('cy-alpha')?.value || 0.45);
+        const beta = parseFloat(document.getElementById('cy-beta')?.value || 0.35);
+        const gamma = parseFloat(document.getElementById('cy-gamma')?.value || 0.60);
+
+        const nEl = document.getElementById('cy-n-val'); if (nEl) nEl.textContent = n;
+        const kEl = document.getElementById('cy-kmax-val'); if (kEl) kEl.textContent = kMax;
+        const rEl = document.getElementById('cy-radius-val'); if (rEl) rEl.textContent = radius.toFixed(2);
+        const aEl = document.getElementById('cy-alpha-val'); if (aEl) aEl.textContent = alpha.toFixed(2);
+        const bEl = document.getElementById('cy-beta-val'); if (bEl) bEl.textContent = beta.toFixed(2);
+        const gEl = document.getElementById('cy-gamma-val'); if (gEl) gEl.textContent = gamma.toFixed(2);
+
+        const report = window.Nexus3DInspector.inspectCalabiYau({ n, kMax, radius, alpha, beta, gamma });
+        const euEl = document.getElementById('cy-euler'); if (euEl) euEl.textContent = report.eulerCharacteristic;
+        const h11El = document.getElementById('cy-h11'); if (h11El) h11El.textContent = report.hodgeNumbers.h11;
+        const h21El = document.getElementById('cy-h21'); if (h21El) h21El.textContent = report.hodgeNumbers.h21;
+        const holEl = document.getElementById('cy-holonomy'); if (holEl) holEl.textContent = report.holonomyGroup;
+      }
+
+      function applyOrSpawnCalabiYau(asNew) {
+        if (!window.Nexus3DInspector) return;
+        const n = parseInt(document.getElementById('cy-n')?.value || 5, 10);
+        const kMax = parseInt(document.getElementById('cy-kmax')?.value || 3, 10);
+        const radius = parseFloat(document.getElementById('cy-radius')?.value || 2.0);
+        const alpha = parseFloat(document.getElementById('cy-alpha')?.value || 0.45);
+        const beta = parseFloat(document.getElementById('cy-beta')?.value || 0.35);
+        const gamma = parseFloat(document.getElementById('cy-gamma')?.value || 0.60);
+
+        const geo = window.Nexus3DInspector.createCalabiYauGeometry({ n, kMax, radius, alpha, beta, gamma });
+
+        if (!asNew && selectedObject && selectedObject.isMesh && selectedObject.geometry) {
+          selectedObject.geometry.dispose();
+          selectedObject.geometry = geo;
+          selectedObject.name = `Calabi-Yau (n=${n}, k=${kMax})`;
+        } else {
+          const mat = new THREE.MeshPhysicalMaterial({
+            color: 0xc084fc,
+            emissive: 0x7c3aed,
+            emissiveIntensity: 0.4,
+            roughness: 0.1,
+            metalness: 0.8,
+            transmission: 0.5,
+            transparent: true,
+            opacity: 0.85,
+            side: THREE.DoubleSide
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(0, 1.6, 0);
+          mesh.name = `Calabi-Yau 6D Manifold #${meshList.length + 1}`;
+          scene.add(mesh);
+          meshList.push(mesh);
+          selectObject(mesh);
+        }
+        updateOutliner();
+        updateStats();
+        refreshMathTelemetry();
+        burstParticles();
+      }
+
+      function onTorusKnotParamChange() {
+        if (!window.Nexus3DInspector) return;
+        const p = parseInt(document.getElementById('tk-p')?.value || 2, 10);
+        const q = parseInt(document.getElementById('tk-q')?.value || 3, 10);
+        const radius = parseFloat(document.getElementById('tk-radius')?.value || 2.0);
+        const tube = parseFloat(document.getElementById('tk-tube')?.value || 0.35);
+        const pMod = parseFloat(document.getElementById('tk-pmod')?.value || 0.0);
+        const qMod = parseFloat(document.getElementById('tk-qmod')?.value || 1.0);
+
+        const pEl = document.getElementById('tk-p-val'); if (pEl) pEl.textContent = p;
+        const qEl = document.getElementById('tk-q-val'); if (qEl) qEl.textContent = q;
+        const rEl = document.getElementById('tk-radius-val'); if (rEl) rEl.textContent = radius.toFixed(2);
+        const tEl = document.getElementById('tk-tube-val'); if (tEl) tEl.textContent = tube.toFixed(2);
+        const pmEl = document.getElementById('tk-pmod-val'); if (pmEl) pmEl.textContent = pMod.toFixed(2);
+        const qmEl = document.getElementById('tk-qmod-val'); if (qmEl) qmEl.textContent = qMod.toFixed(1);
+
+        const report = window.Nexus3DInspector.inspectTorusKnot({ p, q, radius, tube });
+        const nameEl = document.getElementById('tk-knot-name'); if (nameEl) nameEl.textContent = report.classification;
+        const crEl = document.getElementById('tk-crossing'); if (crEl) crEl.textContent = report.crossingNumber;
+        const arcEl = document.getElementById('tk-arclength'); if (arcEl) arcEl.textContent = `${report.approxArcLength.toFixed(1)} units`;
+      }
+
+      function applyOrSpawnTorusKnot(asNew) {
+        if (!window.Nexus3DInspector) return;
+        const p = parseInt(document.getElementById('tk-p')?.value || 2, 10);
+        const q = parseInt(document.getElementById('tk-q')?.value || 3, 10);
+        const radius = parseFloat(document.getElementById('tk-radius')?.value || 2.0);
+        const tube = parseFloat(document.getElementById('tk-tube')?.value || 0.35);
+        const pMod = parseFloat(document.getElementById('tk-pmod')?.value || 0.0);
+        const qMod = parseFloat(document.getElementById('tk-qmod')?.value || 1.0);
+
+        const geo = window.Nexus3DInspector.createTorusKnotGeometry({ p, q, radius, tube, pMod, qMod });
+
+        if (!asNew && selectedObject && selectedObject.isMesh && selectedObject.geometry) {
+          selectedObject.geometry.dispose();
+          selectedObject.geometry = geo;
+          selectedObject.name = `Torus Knot (${p},${q})`;
+        } else {
+          const mat = new THREE.MeshPhysicalMaterial({
+            color: 0xf43f5e,
+            emissive: 0x9f1239,
+            emissiveIntensity: 0.35,
+            roughness: 0.1,
+            metalness: 0.9,
+            transmission: 0.4,
+            transparent: true,
+            opacity: 0.9,
+            side: THREE.DoubleSide
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(0, 1.5, 0);
+          mesh.name = `Torus Knot (${p},${q}) #${meshList.length + 1}`;
+          scene.add(mesh);
+          meshList.push(mesh);
+          selectObject(mesh);
+        }
+        updateOutliner();
+        updateStats();
+        refreshMathTelemetry();
+        burstParticles();
+      }
+
+      function refreshMathTelemetry() {
+        if (!window.Nexus3DInspector) return;
+        const target = selectedObject || (meshList.length > 0 ? meshList[0] : null);
+        let geo = null;
+        if (target) {
+          target.traverse(c => {
+            if (!geo && c.isMesh && c.geometry) geo = c.geometry;
+          });
+        }
+        if (!geo) geo = new THREE.BoxGeometry(2, 2, 2);
+
+        const telemetry = window.Nexus3DInspector.computeMeshTelemetry(geo, { unitScale: 1.0 });
+
+        const volEl = document.getElementById('telemetry-vol');
+        if (volEl) volEl.textContent = `${telemetry.volume.toFixed(3)} cm³`;
+        const areaEl = document.getElementById('telemetry-area');
+        if (areaEl) areaEl.textContent = `${telemetry.surfaceArea.toFixed(2)} cm²`;
+        const phiEl = document.getElementById('telemetry-phi-score');
+        if (phiEl) phiEl.textContent = `${telemetry.goldenRatioMetrics.phiFitScore.toFixed(1)}% Match`;
+
+        onTelemetryDensityChange(telemetry);
+      }
+
+      function onTelemetryDensityChange(telemetryCache) {
+        if (!window.Nexus3DInspector) return;
+        const target = selectedObject || (meshList.length > 0 ? meshList[0] : null);
+        let geo = null;
+        if (target) {
+          target.traverse(c => {
+            if (!geo && c.isMesh && c.geometry) geo = c.geometry;
+          });
+        }
+        if (!geo) geo = new THREE.BoxGeometry(2, 2, 2);
+
+        const telemetry = telemetryCache || window.Nexus3DInspector.computeMeshTelemetry(geo, { unitScale: 1.0 });
+        const densitySelect = document.getElementById('telemetry-density-select');
+        const densityKey = densitySelect ? densitySelect.value : 'titanium';
+        const massData = telemetry.massBreakdown[densityKey] || { mass_grams: 0, mass_kg: 0, mass_lbs: 0 };
+
+        const gEl = document.getElementById('telemetry-mass-g');
+        if (gEl) gEl.textContent = `${massData.mass_grams.toFixed(2)} g`;
+        const kgEl = document.getElementById('telemetry-mass-kg');
+        if (kgEl) kgEl.textContent = `${massData.mass_kg.toFixed(3)} kg`;
+        const lbsEl = document.getElementById('telemetry-mass-lbs');
+        if (lbsEl) lbsEl.textContent = `${massData.mass_lbs.toFixed(3)} lbs`;
+      }
+
+      function loadParametricPreset(presetKey) {
+        if (!window.Nexus3DInspector || !window.Nexus3DInspector.PARAMETRIC_PRESETS) return;
+        const preset = window.Nexus3DInspector.PARAMETRIC_PRESETS[presetKey];
+        if (!preset) return;
+
+        const fxInput = document.getElementById('custom-fx'); if (fxInput) fxInput.value = preset.fx;
+        const fyInput = document.getElementById('custom-fy'); if (fyInput) fyInput.value = preset.fy;
+        const fzInput = document.getElementById('custom-fz'); if (fzInput) fzInput.value = preset.fz;
+        const uMinInput = document.getElementById('custom-umin'); if (uMinInput) uMinInput.value = preset.uMin.toFixed(2);
+        const uMaxInput = document.getElementById('custom-umax'); if (uMaxInput) uMaxInput.value = preset.uMax.toFixed(2);
+        const vMinInput = document.getElementById('custom-vmin'); if (vMinInput) vMinInput.value = preset.vMin.toFixed(2);
+        const vMaxInput = document.getElementById('custom-vmax'); if (vMaxInput) vMaxInput.value = preset.vMax.toFixed(2);
+        const scaleInput = document.getElementById('custom-scale'); if (scaleInput) { scaleInput.value = preset.scale || 1.0; const scEl = document.getElementById('custom-scale-val'); if (scEl) scEl.textContent = (preset.scale || 1.0).toFixed(2); }
+
+        onCustomEquationChange();
+      }
+
+      function onCustomEquationChange() {
+        if (!window.Nexus3DInspector) return;
+        const fx = document.getElementById('custom-fx')?.value || 'u';
+        const fy = document.getElementById('custom-fy')?.value || 'v';
+        const fz = document.getElementById('custom-fz')?.value || '0';
+        window.Nexus3DInspector.parseParametricEquation(fx);
+        window.Nexus3DInspector.parseParametricEquation(fy);
+        window.Nexus3DInspector.parseParametricEquation(fz);
+      }
+
+      function applyOrSpawnCustomParametric(asNew) {
+        if (!window.Nexus3DInspector) return;
+        const fx = document.getElementById('custom-fx')?.value || 'u';
+        const fy = document.getElementById('custom-fy')?.value || 'v';
+        const fz = document.getElementById('custom-fz')?.value || '0';
+        const uMin = parseFloat(document.getElementById('custom-umin')?.value || -Math.PI);
+        const uMax = parseFloat(document.getElementById('custom-umax')?.value || Math.PI);
+        const vMin = parseFloat(document.getElementById('custom-vmin')?.value || -Math.PI);
+        const vMax = parseFloat(document.getElementById('custom-vmax')?.value || Math.PI);
+        const t = parseFloat(document.getElementById('custom-time')?.value || 0.0);
+        const scale = parseFloat(document.getElementById('custom-scale')?.value || 1.0);
+
+        const geo = window.Nexus3DInspector.createCustomParametricGeometry({
+          fx, fy, fz, uMin, uMax, vMin, vMax, t, scale, segmentsU: 48, segmentsV: 48
+        });
+
+        if (!asNew && selectedObject && selectedObject.isMesh && selectedObject.geometry) {
+          selectedObject.geometry.dispose();
+          selectedObject.geometry = geo;
+          selectedObject.name = 'Custom Parametric Surface';
+        } else {
+          const mat = new THREE.MeshPhysicalMaterial({
+            color: 0x00e5ff,
+            emissive: 0xd946ef,
+            emissiveIntensity: 0.3,
+            roughness: 0.1,
+            metalness: 0.85,
+            transmission: 0.45,
+            transparent: true,
+            opacity: 0.9,
+            side: THREE.DoubleSide
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(0, 1.5, 0);
+          mesh.name = `Parametric Formula #${meshList.length + 1}`;
+          scene.add(mesh);
+          meshList.push(mesh);
+          selectObject(mesh);
+        }
+        updateOutliner();
+        updateStats();
+        refreshMathTelemetry();
+        burstParticles();
+      }
+
+      function copyCustomEquations() {
+        const fx = document.getElementById('custom-fx')?.value || '';
+        const fy = document.getElementById('custom-fy')?.value || '';
+        const fz = document.getElementById('custom-fz')?.value || '';
+        const text = `x(u,v) = ${fx}\ny(u,v) = ${fy}\nz(u,v) = ${fz}`;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            alert('Parametric equations copied to clipboard!');
+          }).catch(() => {
+            alert(`Formulas:\n${text}`);
+          });
+        } else {
+          alert(`Formulas:\n${text}`);
         }
       }
 
