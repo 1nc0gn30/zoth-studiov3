@@ -363,7 +363,13 @@ function maskSecret(s) {
   return `${s.slice(0, 4)}••••${s.slice(-4)}`;
 }
 function uuid() {
-  return crypto.randomUUID();
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 function escapeHtml(s) {
   return String(s)
@@ -1433,8 +1439,13 @@ function initWebGL() {
       powerPreference: "high-performance",
       failIfMajorPerformanceCaveat: false,
     });
+    
+    function getSafeSize(val) {
+      return Math.max(1, Math.min(val || 1, 4096));
+    }
+    
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-    renderer.setSize(innerWidth, innerHeight);
+    renderer.setSize(getSafeSize(innerWidth), getSafeSize(innerHeight));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
@@ -1444,9 +1455,11 @@ function initWebGL() {
     scene.fog = new THREE.FogExp2(0x03040a, 0.055);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.08).texture;
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-    const camera = new THREE.PerspectiveCamera(36, innerWidth / innerHeight, 0.1, 80);
+    const safeW = getSafeSize(innerWidth);
+    const safeH = getSafeSize(innerHeight);
+    const camera = new THREE.PerspectiveCamera(36, safeW / safeH, 0.1, 80);
     camera.position.set(4.2, 2.6, 4.8);
 
     const controls = new OrbitControls(camera, canvas);
@@ -1979,14 +1992,18 @@ function initWebGL() {
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
     // Tighter bloom — glow without mud
-    const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.72, 0.55, 0.72);
+    const safeW2 = getSafeSize(innerWidth);
+    const safeH2 = getSafeSize(innerHeight);
+    const bloom = new UnrealBloomPass(new THREE.Vector2(safeW2, safeH2), 0.72, 0.55, 0.72);
     composer.addPass(bloom);
 
     function onResize() {
-      camera.aspect = innerWidth / innerHeight;
+      const w = getSafeSize(innerWidth);
+      const h = getSafeSize(innerHeight);
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-      composer.setSize(innerWidth, innerHeight);
+      renderer.setSize(w, h);
+      composer.setSize(w, h);
     }
     window.addEventListener("resize", onResize);
 
