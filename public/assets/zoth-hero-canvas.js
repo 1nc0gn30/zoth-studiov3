@@ -129,7 +129,7 @@
     heroPanel.addEventListener("pointerdown", onPointerDown, { passive: true });
 
     // ── STARFIELD SYSTEM (Multi-layer 3D Depth) ────────────────────────────
-    var STAR_COUNT = isFinePointer ? 130 : 65;
+    var STAR_COUNT = isFinePointer ? 80 : 45; // OPTIMIZED: Reduced star count for performance
     var stars = [];
 
     function initStars() {
@@ -173,10 +173,40 @@
         geoCenterY = height * 0.48;
         geoRadius = Math.min(Math.max(width * 0.38, 130), 220);
       }
+      precalcFibonacci(); // OPTIMIZED: Pre-calculate spiral points on resize
+    }
+
+    var cachedSpiralPoints = [];
+    var cachedSpiralNodes = []; // for the key step spark nodes
+
+    function precalcFibonacci() {
+      cachedSpiralPoints = [];
+      cachedSpiralNodes = [];
+      var a = geoRadius * 0.045;
+      var maxTheta = 3.6 * Math.PI;
+      var step = 0.05;
+
+      for (var th = 0.2; th <= maxTheta; th += step) {
+        var r = a * Math.exp(FIB_SPIRAL_B * th);
+        if (r > geoRadius * 1.15) break;
+        cachedSpiralPoints.push({ x: Math.cos(th) * r, y: Math.sin(th) * r });
+      }
+
+      for (var fn = 1; fn <= 6; fn++) {
+        var nodeTheta = fn * (Math.PI / 2);
+        var nodeR = a * Math.exp(FIB_SPIRAL_B * nodeTheta);
+        if (nodeR > geoRadius * 1.15) break;
+        cachedSpiralNodes.push({
+          th: nodeTheta,
+          x: Math.cos(nodeTheta) * nodeR,
+          y: Math.sin(nodeTheta) * nodeR,
+          fn: fn
+        });
+      }
     }
 
     // ── FLOATING PARTICLE DUST & BURST SPARK POOL ──────────────────────────
-    var DUST_COUNT = isFinePointer ? 80 : 36;
+    var DUST_COUNT = isFinePointer ? 45 : 24; // OPTIMIZED: Reduced dust particle count
     var dustParticles = [];
 
     function initDust() {
@@ -358,10 +388,7 @@
 
       ctx.strokeStyle = "rgba(251, 191, 36, 0.24)";
       ctx.lineWidth = 0.9;
-      if (isFinePointer) {
-        ctx.shadowColor = PALETTE.gold.hex;
-        ctx.shadowBlur = 6;
-      }
+      // OPTIMIZED: Removed shadowBlur
 
       // Equilateral Triangle 1 (Pointing Up)
       ctx.beginPath();
@@ -387,7 +414,6 @@
       }
       ctx.closePath();
       ctx.stroke();
-      ctx.shadowBlur = 0;
       ctx.restore();
 
       // ── Middle Ring 2: Golden Ratio Octagram Sanctuary ──
@@ -429,14 +455,10 @@
 
       ctx.strokeStyle = "rgba(251, 191, 36, 0.4)";
       ctx.lineWidth = 1.2;
-      if (isFinePointer) {
-        ctx.shadowColor = PALETTE.gold.hex;
-        ctx.shadowBlur = 8;
-      }
+      // OPTIMIZED: Removed shadowBlur
       ctx.beginPath();
       ctx.arc(0, 0, rPulse, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.shadowBlur = 0;
 
       // Micro Inscribed Square & Center Aether Node
       var sqR = rPulse * 0.707;
@@ -476,9 +498,6 @@
         ctx.transform(1, tiltY * 0.5, tiltX * 0.5, 1, 0, 0);
       }
 
-      var a = R * 0.045; // Initial spiral scale
-      var maxTheta = 3.6 * Math.PI;
-      var step = 0.05;
       var baseRot = timeSec * 0.05;
 
       // Dual Opposing Spirals (Arm 0 and Arm 1 offset by π)
@@ -488,21 +507,11 @@
         ctx.save();
         ctx.rotate(armAngleOffset);
 
-        // Compute points along logarithmic spiral r = a * e^(b*theta)
         ctx.beginPath();
-        var first = true;
-        for (var th = 0.2; th <= maxTheta; th += step) {
-          var r = a * Math.exp(FIB_SPIRAL_B * th);
-          if (r > R * 1.15) break;
-
-          var sx = Math.cos(th) * r;
-          var sy = Math.sin(th) * r;
-
-          if (first) {
-            ctx.moveTo(sx, sy);
-            first = false;
-          } else {
-            ctx.lineTo(sx, sy);
+        if (cachedSpiralPoints.length > 0) {
+          ctx.moveTo(cachedSpiralPoints[0].x, cachedSpiralPoints[0].y);
+          for (var idx = 1; idx < cachedSpiralPoints.length; idx++) {
+            ctx.lineTo(cachedSpiralPoints[idx].x, cachedSpiralPoints[idx].y);
           }
         }
 
@@ -520,26 +529,16 @@
 
         ctx.strokeStyle = spiralGrad;
         ctx.lineWidth = arm === 0 ? 1.2 : 0.9;
-        if (isFinePointer) {
-          ctx.shadowColor = arm === 0 ? PALETTE.gold.hex : PALETTE.cyan.hex;
-          ctx.shadowBlur = 5;
-        }
         ctx.stroke();
-        ctx.shadowBlur = 0;
 
-        // Fibonacci Key Step Spark Nodes (at theta = π/2, π, 3π/2, 2π, 5π/2, 3π)
-        for (var fn = 1; fn <= 6; fn++) {
-          var nodeTheta = fn * (Math.PI / 2);
-          var nodeR = a * Math.exp(FIB_SPIRAL_B * nodeTheta);
-          if (nodeR > R * 1.15) break;
-
-          var nx = Math.cos(nodeTheta) * nodeR;
-          var ny = Math.sin(nodeTheta) * nodeR;
-          var nodePulse = Math.sin(timeSec * 2.5 + fn) * 0.5 + 0.5;
+        // Fibonacci Key Step Spark Nodes
+        for (var n = 0; n < cachedSpiralNodes.length; n++) {
+          var node = cachedSpiralNodes[n];
+          var nodePulse = Math.sin(timeSec * 2.5 + node.fn) * 0.5 + 0.5;
 
           ctx.fillStyle = arm === 0 ? "rgba(253, 230, 138, " + (0.4 + nodePulse * 0.5) + ")" : "rgba(165, 243, 252, " + (0.4 + nodePulse * 0.5) + ")";
           ctx.beginPath();
-          ctx.arc(nx, ny, 1.4 + nodePulse * 0.8, 0, Math.PI * 2);
+          ctx.arc(node.x, node.y, 1.4 + nodePulse * 0.8, 0, Math.PI * 2);
           ctx.fill();
         }
 

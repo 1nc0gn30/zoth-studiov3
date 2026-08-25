@@ -82,7 +82,7 @@
 
           if (spaceMesh) {
             var translateY = 60 - (progress * 80);
-            spaceMesh.style.transform = "perspective(600px) rotateX(60deg) translateY(" + translateY + "px) scale(1.8)";
+            spaceMesh.style.transform = "perspective(600px) rotateX(60deg) translate3d(0, " + translateY + "px, 0) scale(1.8)";
           }
 
           ticking = false;
