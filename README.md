@@ -1,8 +1,8 @@
 <div align="center">
 
-# <img src="public/assets/mascot/azoth-mask.jpg" width="40" height="40" style="border-radius: 50%; vertical-align: middle; border: 2px solid #e8c872; box-shadow: 0 0 15px rgba(232,200,114,0.6);" /> ⚡ ZOTH STUDIO `core-app`
+# <img src="public/assets/brand/zoth-golden-z-192.png" width="48" height="48" style="border-radius: 8px; vertical-align: middle; border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.35);" /> ZOTH STUDIO `core-app`
 
-### *Web Suites, 3D CAD Omniverse, Autonomous Agents & Tool Runtime*
+**Web Suites, 3D CAD Omniverse, Autonomous Agents & Tool Runtime**
 
 [![Core Version](https://img.shields.io/badge/core--app-v2.6.0-00f0ff?style=for-the-badge&logo=target&logoColor=white)](https://github.com/NullAITech/zoth-studio)
 [![Local-First](https://img.shields.io/badge/runtime-100%25%20Local--First-34d399?style=for-the-badge&logo=safari&logoColor=white)](http://127.0.0.1:8088/)
@@ -12,7 +12,7 @@
 <br>
 
 <p align="center">
-  <img src="../docs-and-architecture/assets/zoth_studio_banner_1785757680832.png" alt="Zoth Studio Banner" width="100%" style="border-radius: 14px; border: 1px solid rgba(0,240,255,0.4);" />
+  <img src="../docs-and-architecture/assets/zoth_studio_banner_1785757680832.png" alt="Zoth Studio Banner" width="100%" style="border-radius: 16px; border: 1px solid rgba(0,240,255,0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,240,255,0.2);" />
 </p>
 
 <!-- Live Animated Telemetry HUD -->
@@ -24,7 +24,7 @@
 
 <p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
 
-## <img src="public/assets/mascot/azoth-mask.jpg" width="24" height="24" style="border-radius:50%; vertical-align:middle; border:1px solid #e8c872;" /> 🌟 Core Application Architecture
+## 🌟 Core Application Architecture
 
 `core-app/` houses the primary web application suites, the Python FastAPI/Starlette multi-agent orchestrator, Three.js 3D CAD engines, and client-side cryptographic harnesses.
 
@@ -44,7 +44,7 @@ graph TD
 
 <p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
 
-## <img src="public/assets/mascot/azoth-mask.jpg" width="24" height="24" style="border-radius:50%; vertical-align:middle; border:1px solid #e8c872;" /> 🏛️ Public Web Suites (`public/`)
+## 🏛️ Public Web Suites (`public/`)
 
 | Directory / File | Port URL | Description & Purpose |
 | :--- | :--- | :--- |
@@ -58,7 +58,9 @@ graph TD
 
 <p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
 
-## <img src="public/assets/mascot/azoth-mask.jpg" width="24" height="24" style="border-radius:50%; vertical-align:middle; border:1px solid #e8c872;" /> 🚀 Quickstart & Server Execution
+## 🚀 Quickstart & Server Execution
+
+The `core-app/` component is designed to run purely locally on your loopback interface.
 
 ```bash
 # 1. Start public static web hub (:8088)
@@ -72,7 +74,7 @@ python3 orchestrator.py serve --host 127.0.0.1 --port 8484
 ---
 
 <div align="center">
-  <img src="public/assets/mascot/azoth-mask.jpg" width="30" height="30" style="border-radius:50%; vertical-align:middle; border:1px solid #e8c872;" />
-  <br>
+  <img src="public/assets/brand/zoth-golden-z-192.png" width="30" height="30" style="border-radius: 8px; vertical-align: middle; border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.35);" />
+  <br><br>
   <strong>Zoth Studio Core Team</strong> · Licensed under the Apache License 2.0
 </div>

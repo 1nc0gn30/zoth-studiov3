@@ -1,7 +1,7 @@
 # 🌐 Zoth Studio — Public Showcase, Creative Suites & Documentation Hub (v2.6.0)
 
 <p align="center">
-  <img src="assets/brand/zoth-seal-hermetic-dark.jpg" alt="Zoth Studio Hermetic Seal" width="160" style="border-radius: 50%; box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);" />
+  <img src="assets/brand/zoth-golden-z-192.png" alt="Zoth Studio Hermetic Seal" width="128" style="border-radius:12px; box-shadow:0 0 20px rgba(251,191,36,0.4);" style="border-radius: 50%; box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);" />
 </p>
 
 <p align="center">
