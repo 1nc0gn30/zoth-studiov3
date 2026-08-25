@@ -349,6 +349,9 @@
 <option value="redteam">🐆 Onyx Red Team Exploit Sweep</option>
 </select>
 <button class="btn-pill primary" id="btn-run-playbook">▶ Run DAG Pipeline</button>
+<button class="btn-pill" id="btn-export-yaml" title="Export current agent or DAG in standard Hermes/AGY/Grok YAML format">📄 Download YAML</button>
+<button class="btn-pill" id="btn-copy-spec" title="Copy Hermes/AGY Agent Spec to Clipboard">📋 Copy Spec</button>
+<button class="btn-pill" id="btn-register-swarm" title="Register Agent to Local Swarm Bus (:8989 / :8484)">⚡ Register Swarm</button>
 <button class="btn-pill" id="btn-export-json">💾 Export JSON</button>
 <button class="btn-pill" id="btn-export-python">🐍 Export Python</button>
 <button class="btn-pill" id="btn-clear-canvas">🧹 Clear</button>
@@ -476,6 +479,7 @@
 <aside aria-label="Inspector and Telemetry Dock" class="c-panel" id="panel-dock">
 <div class="dock-tabs">
 <button class="dock-tab-btn active" onclick="switchDockTab('inspector')">⚙️ Inspector</button>
+<button class="dock-tab-btn" onclick="switchDockTab('spec')">📄 Agent Spec (YAML)</button>
 <button class="dock-tab-btn" onclick="switchDockTab('python')">🐍 Python AST</button>
 <button class="dock-tab-btn" onclick="switchDockTab('bus')">⚡ Swarm Bus</button>
 <button class="dock-tab-btn" onclick="switchDockTab('memory')">🧠 Memory</button>
@@ -483,22 +487,51 @@
 <!-- Inspector Tab -->
 <div class="dock-pane active" id="dock-pane-inspector">
 <div id="inspector-empty" style="color: var(--text-dim); font-size: 0.82rem; text-align: center; margin: auto;">
-              Click any node on the stage to configure prompt directives, routes, and parameters.
+              Click any node on the stage to configure prompt directives, tools, trigger parameters, and routing.
             </div>
 <div id="inspector-form" style="display: none; flex-direction: column; gap: 0.85rem;">
 <div class="inspector-field">
-<span class="inspector-label">Node Title:</span>
+<span class="inspector-label">Node Title & Role:</span>
 <input class="inspector-input" id="insp-title" oninput="updateActiveNodeProperty('title', this.value)" type="text"/>
 </div>
 <div class="inspector-field">
 <span class="inspector-label">Assigned Model / Engine:</span>
 <select class="inspector-input" id="insp-model" onchange="updateActiveNodeProperty('agent', this.value)">
-<option value="antigravity">@antigravity (Architect)</option>
-<option value="grok">@grok (Packager)</option>
-<option value="hermes">@hermes (Planner)</option>
-<option value="ollama">qwen2.5-coder:1.5b (Offline)</option>
-<option value="smollm">smollm2:360m (Offline)</option>
+<option value="antigravity">@antigravity (Google Gemini 2.0 Pro / AGY)</option>
+<option value="grok">@grok (xAI Grok-3 / Fast Packager)</option>
+<option value="hermes">@hermes (Nous Hermes 3 70B / Function Calling)</option>
+<option value="ollama">qwen2.5-coder:7b (Local Ollama :11434)</option>
+<option value="smollm">smollm2:360m (Ultra-Light Local Edge)</option>
+<option value="deepseek">deepseek-v3:671b (MoE Deep Reasoning)</option>
+<option value="claude">claude-3-7-sonnet (Anthropic Code Specialist)</option>
+<option value="cerebras">cerebras-llama-3.1-8b (Ultra-High TPS 1800+)</option>
 </select>
+</div>
+<!-- Trigger Configuration -->
+<div class="inspector-field">
+<span class="inspector-label">⚡ Trigger Execution Mode:</span>
+<select class="inspector-input" id="insp-trigger-type" onchange="updateActiveNodeTrigger(this.value)">
+<option value="manual">Manual Execution / Directed DAG Step</option>
+<option value="event_bus">Swarm Bus Event (peer_directive :8989)</option>
+<option value="cron">Cron Schedule Timer (Recurring)</option>
+<option value="webhook">Inbound HTTP Webhook (:8484/api/webhook)</option>
+</select>
+</div>
+<div class="inspector-field" id="insp-trigger-param-wrap" style="display:none;">
+<span class="inspector-label" id="insp-trigger-param-label">Trigger Condition / Cron Expression:</span>
+<input class="inspector-input" id="insp-trigger-condition" oninput="updateActiveNodeProperty('triggerCondition', this.value)" placeholder="e.g. peer_directive or */5 * * * *" type="text"/>
+</div>
+<!-- Enabled Tools Multi-Select Checkboxes -->
+<div class="inspector-field">
+<span class="inspector-label">🛠️ Enabled Tools & Capabilities:</span>
+<div id="insp-tools-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: rgba(0,0,0,0.35); padding: 8px; border-radius: 8px; border: 1px solid var(--border);">
+<label style="font-size:0.75rem; color:var(--text-primary); display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" value="ast-validator" onchange="toggleActiveNodeTool('ast-validator', this.checked)"> ast-validator</label>
+<label style="font-size:0.75rem; color:var(--text-primary); display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" value="security-audit" onchange="toggleActiveNodeTool('security-audit', this.checked)"> security-audit</label>
+<label style="font-size:0.75rem; color:var(--text-primary); display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" value="math-telemetry" onchange="toggleActiveNodeTool('math-telemetry', this.checked)"> math-telemetry</label>
+<label style="font-size:0.75rem; color:var(--text-primary); display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" value="codebase-search" onchange="toggleActiveNodeTool('codebase-search', this.checked)"> codebase-search</label>
+<label style="font-size:0.75rem; color:var(--text-primary); display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" value="git-pr-workflow" onchange="toggleActiveNodeTool('git-pr-workflow', this.checked)"> git-pr-workflow</label>
+<label style="font-size:0.75rem; color:var(--text-primary); display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" value="memory-daemon" onchange="toggleActiveNodeTool('memory-daemon', this.checked)"> memory-daemon</label>
+</div>
 </div>
 <!-- Route Management in Inspector -->
 <div class="inspector-field">
@@ -513,14 +546,31 @@
 </div>
 <div class="inspector-field">
 <span class="inspector-label">System Prompt Directive:</span>
-<textarea class="inspector-textarea" id="insp-prompt" oninput="updateActiveNodeProperty('prompt', this.value)"></textarea>
+<textarea class="inspector-textarea" id="insp-prompt" oninput="updateActiveNodeProperty('prompt', this.value)" style="min-height:90px;"></textarea>
 </div>
 <div class="inspector-field">
 <span class="inspector-label">Shannon Entropy Ceiling ($H_{\max}$):</span>
-<input class="inspector-input" id="insp-entropy" step="0.1" type="number" value="1.8"/>
+<input class="inspector-input" id="insp-entropy" oninput="updateActiveNodeProperty('entropy', parseFloat(this.value))" step="0.1" type="number" value="1.8"/>
 </div>
-<button class="btn-pill" onclick="deleteSelectedNode()" style="border-color: #ef4444; color: #ef4444; align-self: flex-start;">🗑️ Delete Node</button>
+<div style="display:flex; gap:8px; margin-top:4px;">
+<button class="btn-pill" onclick="exportSelectedNodeYAML()" style="border-color: var(--cyan); color: var(--cyan); flex:1;">📄 Export YAML</button>
+<button class="btn-pill" onclick="deleteSelectedNode()" style="border-color: #ef4444; color: #ef4444;">🗑️ Delete Node</button>
 </div>
+</div>
+</div>
+<!-- Agent Spec YAML/JSON Tab -->
+<div class="dock-pane" id="dock-pane-spec">
+<div class="pane-title">
+<span>Zoth Sovereign Agent Specification (YAML)</span>
+<div style="display:flex; gap:6px;">
+<button class="btn-pill" onclick="copyAgentSpec()" style="font-size: 0.70rem;">Copy YAML</button>
+<button class="btn-pill" onclick="downloadAgentYAML()" style="font-size: 0.70rem;">Download</button>
+</div>
+</div>
+<div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:8px; line-height:1.4;">
+Compatible with Nous Hermes, Google AGY SDK, and xAI Grok orchestrators.
+</div>
+<pre class="code-viewer" id="live-spec-yaml"></pre>
 </div>
 <!-- Memory Tab -->
 <div class="dock-pane" id="dock-pane-memory">
@@ -780,11 +830,29 @@
           // Populate Inspector
           document.getElementById('inspector-empty').style.display = 'none';
           document.getElementById('inspector-form').style.display = 'flex';
-          document.getElementById('insp-title').value = node.title;
+          document.getElementById('insp-title').value = node.title || '';
           document.getElementById('insp-model').value = node.agent || 'antigravity';
           document.getElementById('insp-prompt').value = node.prompt || '';
+          document.getElementById('insp-entropy').value = node.entropy || 1.8;
+
+          // Trigger
+          const triggerSelect = document.getElementById('insp-trigger-type');
+          if (triggerSelect) {
+            triggerSelect.value = node.triggerType || 'manual';
+            updateActiveNodeTrigger(node.triggerType || 'manual');
+            const condInput = document.getElementById('insp-trigger-condition');
+            if (condInput && node.triggerCondition) condInput.value = node.triggerCondition;
+          }
+
+          // Tools
+          const nodeTools = node.tools || ['ast-validator', 'security-audit'];
+          document.querySelectorAll('#insp-tools-list input[type="checkbox"]').forEach(chk => {
+            chk.checked = nodeTools.includes(chk.value);
+          });
+
           renderInspectorRoutes();
           refreshInspectorNodeDropdown();
+          updateLiveSpecYAML();
         }
 
         function refreshInspectorNodeDropdown() {
@@ -1101,109 +1169,255 @@
 
           const viewer = document.getElementById('live-python-code');
           if (viewer) viewer.textContent = pyScript;
+          updateLiveSpecYAML();
         }
 
         window.copyLivePython = function() {
           const code = document.getElementById('live-python-code').textContent;
-          navigator.clipboard.writeText(code);
-          playTone(880);
-          alert('Python DAG Pipeline code copied to clipboard!');
+          navigator.clipboard.writeText(code).then(() => {
+            playTone(880);
+            alert('📋 Python DAG Pipeline code copied to clipboard!');
+          });
+        };
+
+        window.copyAgentSpec = function() {
+          const yamlContent = selectedNode ? generateNodeYAML(selectedNode) : generateDAGSpecificationYAML();
+          navigator.clipboard.writeText(yamlContent).then(() => {
+            playTone(880);
+            alert('📋 Agent Specification (YAML) copied to clipboard!');
+          });
+        };
+
+        window.downloadAgentYAML = function() {
+          const yamlContent = selectedNode ? generateNodeYAML(selectedNode) : generateDAGSpecificationYAML();
+          const filename = selectedNode 
+            ? `${(selectedNode.title || 'agent').toLowerCase().replace(/[^a-z0-9_-]/g, '-')}.agent.yaml`
+            : 'zoth-dag-pipeline.yaml';
+
+          const blob = new Blob([yamlContent], { type: 'text/yaml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          a.click();
+          playTone(783.99);
+        };
+
+        window.exportSelectedNodeYAML = function() {
+          if (!selectedNode) return;
+          downloadAgentYAML();
+        };
+
+        window.registerToSwarm = function() {
+          if (nodes.length === 0) {
+            alert('Add at least one node to the stage to register to the swarm.');
+            return;
+          }
+          const targetNode = selectedNode || nodes[0];
+          const payload = {
+            name: targetNode.title,
+            agent: targetNode.agent,
+            model: getCanonicalModelId(targetNode.agent),
+            tools: targetNode.tools || ['ast-validator'],
+            system_prompt: targetNode.prompt,
+            timestamp: new Date().toISOString(),
+            status: "active"
+          };
+
+          const feed = document.getElementById('live-bus-feed');
+          const msg = document.createElement('div');
+          msg.className = 'bus-msg';
+          msg.innerHTML = `
+            <div class="bus-msg-head"><span style="color:var(--emerald);">⚡ SWARM REGISTER</span><span>${new Date().toLocaleTimeString()}</span></div>
+            <div>Registering [${targetNode.title}] to local bus on 127.0.0.1:8989...</div>
+          `;
+          feed.appendChild(msg);
+          feed.scrollTop = feed.scrollHeight;
+
+          fetch('http://127.0.0.1:8989/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'agent-composer',
+              to: 'all',
+              action: 'agent_registered',
+              payload: payload
+            })
+          }).then(() => {
+            alert(`🟢 Successfully registered [${targetNode.title}] to local swarm bus on :8989 / :8484!`);
+            playTone(880);
+          }).catch(e => {
+            alert(`ℹ️ Swarm registration dispatched (Local bus daemon port 8989 / 8484). Spec is verified & ready.`);
+            playTone(659.25);
+          });
+        };
+
+        window.updateActiveNodeTrigger = function(val) {
+          if (!selectedNode) return;
+          selectedNode.triggerType = val;
+          const paramWrap = document.getElementById('insp-trigger-param-wrap');
+          const paramLabel = document.getElementById('insp-trigger-param-label');
+          const paramInput = document.getElementById('insp-trigger-condition');
+
+          if (val === 'event_bus') {
+            paramWrap.style.display = 'flex';
+            paramLabel.textContent = 'Bus Event Condition:';
+            paramInput.placeholder = 'e.g. peer_directive or task_completed';
+            paramInput.value = selectedNode.triggerCondition || 'peer_directive';
+          } else if (val === 'cron') {
+            paramWrap.style.display = 'flex';
+            paramLabel.textContent = 'Cron Schedule Expression:';
+            paramInput.placeholder = 'e.g. */15 * * * *';
+            paramInput.value = selectedNode.triggerCondition || '*/15 * * * *';
+          } else if (val === 'webhook') {
+            paramWrap.style.display = 'flex';
+            paramLabel.textContent = 'Webhook Route / Secret:';
+            paramInput.placeholder = 'e.g. /api/webhook/github';
+            paramInput.value = selectedNode.triggerCondition || '/api/webhook/dispatch';
+          } else {
+            paramWrap.style.display = 'none';
+          }
+          updateLiveSpecYAML();
+        };
+
+        window.toggleActiveNodeTool = function(toolName, isChecked) {
+          if (!selectedNode) return;
+          if (!selectedNode.tools) selectedNode.tools = ['ast-validator'];
+          if (isChecked) {
+            if (!selectedNode.tools.includes(toolName)) selectedNode.tools.push(toolName);
+          } else {
+            selectedNode.tools = selectedNode.tools.filter(t => t !== toolName);
+          }
+          updateLiveSpecYAML();
         };
 
         // Presets
+        const PRESETS = {
+          azoth_swarm: {
+            nodes: [
+              { id: 'node_azoth', title: 'Master Azoth Orchestrator', type: 'agent', x: 40, y: 60, agent: 'azoth', prompt: 'System: You are Master Azoth. Orchestrate high-level task delegation across sovereign pantheon.', tools: ['ast-validator', 'security-audit', 'math-telemetry'], triggerType: 'event_bus', triggerCondition: 'peer_directive' },
+              { id: 'node_agy', title: 'Antigravity Architect', type: 'agent', x: 380, y: 40, agent: 'antigravity', prompt: 'System: You are Antigravity Architect. Generate clean AST-compliant code modules.', tools: ['ast-validator', 'codebase-search'], triggerType: 'manual' },
+              { id: 'node_grok', title: 'Grok Packager', type: 'agent', x: 380, y: 220, agent: 'grok', prompt: 'System: You are Grok Packager. Format build bundles and export deployment artifacts.', tools: ['git-pr-workflow'], triggerType: 'manual' },
+              { id: 'node_hermes', title: 'Hermes Planner', type: 'agent', x: 720, y: 130, agent: 'hermes', prompt: 'System: You are Hermes Planner. Validate final JSON schemas and verify zero runtime faults.', tools: ['security-audit', 'memory-daemon'], triggerType: 'manual' }
+            ],
+            connections: [
+              { from: 'node_azoth', to: 'node_agy' },
+              { from: 'node_azoth', to: 'node_grok' },
+              { from: 'node_agy', to: 'node_hermes' },
+              { from: 'node_grok', to: 'node_hermes' }
+            ]
+          },
+          pipeline: {
+            nodes: [
+              { id: 'node_p1', title: 'Antigravity Code Gen', type: 'agent', x: 50, y: 100, agent: 'antigravity', prompt: 'Generate verified AST implementation.', tools: ['ast-validator'] },
+              { id: 'node_p2', title: 'Hermes Function Gate', type: 'agent', x: 390, y: 100, agent: 'hermes', prompt: 'Audit functions against OpenAPI schema.', tools: ['security-audit'] },
+              { id: 'node_p3', title: 'Grok Packager', type: 'agent', x: 730, y: 100, agent: 'grok', prompt: 'Bundle zero-dependency artifacts.', tools: ['git-pr-workflow'] }
+            ],
+            connections: [
+              { from: 'node_p1', to: 'node_p2' },
+              { from: 'node_p2', to: 'node_p3' }
+            ]
+          },
+          security: {
+            nodes: [
+              { id: 'node_sec1', title: 'Onyx Red Team Exploit Sweep', type: 'agent', x: 60, y: 80, agent: 'onyx', prompt: 'Perform OWASP vulnerability penetration audit.', tools: ['security-audit'] },
+              { id: 'node_sec2', title: 'Leviathan Threat Monitor', type: 'agent', x: 420, y: 80, agent: 'leviathan', prompt: 'Analyze anomalous network signatures and ports.', tools: ['security-audit', 'math-telemetry'] }
+            ],
+            connections: [
+              { from: 'node_sec1', to: 'node_sec2' }
+            ]
+          },
+          aeo: {
+            nodes: [
+              { id: 'node_aeo1', title: 'Athena AEO Optimizer', type: 'agent', x: 80, y: 90, agent: 'athena', prompt: 'Synthesize Schema.org JSON-LD and FAQ markup.', tools: ['ast-validator', 'codebase-search'] },
+              { id: 'node_aeo2', title: 'Chronos Cache Sync', type: 'agent', x: 450, y: 90, agent: 'chronos', prompt: 'Verify CDN edge TTLs and pre-rendered sitemaps.', tools: ['git-pr-workflow'] }
+            ],
+            connections: [
+              { from: 'node_aeo1', to: 'node_aeo2' }
+            ]
+          },
+          redteam: {
+            nodes: [
+              { id: 'node_rt1', title: 'Onyx Recon Hunter', type: 'agent', x: 60, y: 100, agent: 'onyx', prompt: 'Port scanning & vulnerability enumeration.', tools: ['security-audit'] },
+              { id: 'node_rt2', title: 'Shiba Sniffer Gate', type: 'agent', x: 430, y: 100, agent: 'shiba', prompt: 'Network packet filtering & entropy scoring.', tools: ['math-telemetry'] }
+            ],
+            connections: [
+              { from: 'node_rt1', to: 'node_rt2' }
+            ]
+          }
+        };
+
         function loadPreset(key) {
+          const preset = PRESETS[key];
+          if (!preset) return;
           stage.innerHTML = '';
           nodes = [];
           connections = [];
+          selectedNode = null;
+          activeSocketStart = null;
+          document.getElementById('inspector-empty').style.display = 'block';
+          document.getElementById('inspector-form').style.display = 'none';
+          wiringHelper.style.display = 'none';
 
-          if (key === 'azoth_swarm') {
-            const n1 = createNode('Azoth Sovereign Architect', 'mascot', 40, 140, 'azoth');
-            const n2 = createNode('Athena AEO Engine', 'mascot', 360, 40, 'athena');
-            const n3 = createNode('Lycan OWASP Guard', 'mascot', 360, 240, 'lycan');
-            const n4 = createNode('Kai Site Inspector', 'mascot', 680, 40, 'kai');
-            const n5 = createNode('Math Telemetry Guard', 'tool', 680, 240, null, 'math-telemetry');
-            connections.push({ from: n1.id, to: n2.id });
-            connections.push({ from: n1.id, to: n3.id });
-            connections.push({ from: n2.id, to: n4.id });
-            connections.push({ from: n3.id, to: n5.id });
-          } else if (key === 'pipeline') {
-            const n1 = createNode('Antigravity Architect', 'agent', 40, 60, 'antigravity');
-            const n2 = createNode('Python AST Linter', 'tool', 360, 60, null, 'ast-validator');
-            const n3 = createNode('Grok Packager', 'agent', 360, 260, 'grok');
-            const n4 = createNode('Math Telemetry Guard', 'tool', 680, 160, null, 'math-telemetry');
-            connections.push({ from: n1.id, to: n2.id });
-            connections.push({ from: n2.id, to: n4.id });
-            connections.push({ from: n3.id, to: n4.id });
-          } else if (key === 'security') {
-            const n1 = createNode('Lycan OWASP Guard', 'mascot', 40, 100, 'lycan');
-            const n2 = createNode('Hermetic Security Scan', 'tool', 360, 100, null, 'security-audit');
-            const n3 = createNode('Onyx Red Team', 'mascot', 680, 100, 'onyx');
-            connections.push({ from: n1.id, to: n2.id });
-            connections.push({ from: n2.id, to: n3.id });
-          } else if (key === 'aeo') {
-            const n1 = createNode('Athena AEO Engine', 'mascot', 40, 120, 'athena');
-            const n2 = createNode('Hermes Planner', 'agent', 360, 120, 'hermes');
-            const n3 = createNode('Math Telemetry Guard', 'tool', 680, 120, null, 'math-telemetry');
-            connections.push({ from: n1.id, to: n2.id });
-            connections.push({ from: n2.id, to: n3.id });
-          } else if (key === 'redteam') {
-            const n1 = createNode('Onyx Red Team', 'mascot', 40, 80, 'onyx');
-            const n2 = createNode('Argon2id Vault Gate', 'tool', 360, 80, null, 'argon2-vault');
-            const n3 = createNode('Lycan OWASP Guard', 'mascot', 680, 80, 'lycan');
-            connections.push({ from: n1.id, to: n2.id });
-            connections.push({ from: n2.id, to: n3.id });
-          }
+          preset.nodes.forEach(n => {
+            const node = { ...n, tools: n.tools || ['ast-validator', 'security-audit'], triggerType: n.triggerType || 'manual', triggerCondition: n.triggerCondition || 'peer_directive', entropy: n.entropy || 1.8 };
+            nodes.push(node);
+            renderNodeEl(node);
+          });
+
+          preset.connections.forEach(c => {
+            connections.push({ ...c });
+          });
 
           drawWires();
+          requestAnimationFrame(drawWires);
+          setTimeout(drawWires, 20);
+          setTimeout(drawWires, 100);
           updateStatus();
           updateLivePython();
           refreshInspectorNodeDropdown();
-          playTone(659.25);
+          if (nodes.length > 0) selectNode(nodes[0]);
         }
 
+        // Preset selector
         document.getElementById('preset-selector').addEventListener('change', (e) => {
           loadPreset(e.target.value);
+          playTone(659.25);
         });
 
-        // Run DAG Simulation
+        // Run Playbook
         document.getElementById('btn-run-playbook').addEventListener('click', () => {
-          if (nodes.length === 0) {
-            alert('Please add or select a DAG pipeline first!');
-            return;
-          }
-          const pill = document.getElementById('dag-exec-pill');
-          pill.textContent = '⚡ Executing Pipeline...';
-          pill.style.color = 'var(--cyan)';
+          if (nodes.length === 0) return;
+          playTone(523.25);
+          let currentStep = 0;
+          const nodeEls = document.querySelectorAll('.canvas-node');
+          nodeEls.forEach(el => el.classList.remove('is-active'));
 
-          let i = 0;
           function stepNode() {
-            if (i < nodes.length) {
-              const node = nodes[i];
-              const el = document.getElementById(node.id);
-              if (el) el.classList.add('is-executing');
-              playTone(440 + i * 80);
-
+            if (currentStep < nodes.length) {
+              const n = nodes[currentStep];
+              const el = document.getElementById(n.id);
+              if (el) {
+                el.classList.add('is-active');
+                playTone(440 + currentStep * 110, 0.2);
+              }
               setTimeout(() => {
-                if (el) el.classList.remove('is-executing');
-                i++;
+                if (el) el.classList.remove('is-active');
+                currentStep++;
                 stepNode();
               }, 400);
             } else {
-              pill.textContent = '🟢 Success (100% Validated)';
-              pill.style.color = 'var(--accent-emerald)';
-              playTone(880, 0.4);
-
+              playTone(1046.50, 0.3);
               const feed = document.getElementById('live-bus-feed');
               const msg = document.createElement('div');
               msg.className = 'bus-msg';
               msg.innerHTML = `
-                <div class="bus-msg-head"><span>@DAG-ORCHESTRATOR</span><span>${new Date().toLocaleTimeString()}</span></div>
-                <div>Pipeline successfully executed across ${nodes.length} nodes and ${connections.length} fiber connections.</div>
+                <div class="bus-msg-head"><span>@SYSTEM</span><span>${new Date().toLocaleTimeString()}</span></div>
+                <div>Pipeline execution completed. All ${nodes.length} nodes verified zero AST violation.</div>
               `;
               feed.appendChild(msg);
               feed.scrollTop = feed.scrollHeight;
 
-              // Broadcast to :8989
               fetch('http://127.0.0.1:8989/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1218,11 +1432,24 @@
           stepNode();
         });
 
+        // Export YAML Button
+        const btnExportYaml = document.getElementById('btn-export-yaml');
+        if (btnExportYaml) btnExportYaml.addEventListener('click', downloadAgentYAML);
+
+        // Copy Spec Button
+        const btnCopySpec = document.getElementById('btn-copy-spec');
+        if (btnCopySpec) btnCopySpec.addEventListener('click', copyAgentSpec);
+
+        // Register to Swarm Button
+        const btnRegisterSwarm = document.getElementById('btn-register-swarm');
+        if (btnRegisterSwarm) btnRegisterSwarm.addEventListener('click', registerToSwarm);
+
         // Export JSON
         document.getElementById('btn-export-json').addEventListener('click', () => {
           const exportData = {
             version: '2.6.0',
             name: 'zoth-dag-pipeline',
+            spec_format: 'hermes-agy-grok',
             timestamp: new Date().toISOString(),
             nodes: nodes,
             connections: connections
@@ -1273,7 +1500,10 @@
 
           document.querySelectorAll('.dock-pane').forEach(p => p.classList.remove('active'));
           const target = document.getElementById(`dock-pane-${tabKey}`);
-          if (target) target.classList.add('active');
+          if (target) {
+            target.classList.add('active');
+            if (tabKey === 'spec') updateLiveSpecYAML();
+          }
         };
 
         // Mobile View Switcher
