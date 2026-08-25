@@ -269,92 +269,33 @@ function renderDemo(key) {
   var container = document.getElementById("demoViewerContainer");
   if (!container) return;
 
-  var html = "";
-  
-  // Header bar showing goal & status
-  html += `
-    <div style="background:var(--panel-solid);border:1px solid var(--border-card);border-radius:16px;overflow:hidden;box-shadow:0 12px 40px var(--shadow-color);">
-      <div style="background:var(--surface-elevated);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:1.4rem;">${data.icon}</span>
-          <div>
-            <strong style="color:var(--text-primary);font-size:0.95rem;display:block;">${data.title}</strong>
-            <span style="color:var(--muted);font-size:0.75rem;">${data.tagline}</span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);"></span>
-          <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--green);font-weight:700;">FINISHED</span>
+  var agentsHtml = data.recommendedAgents.map(function(ag) {
+    return \`
+      <div class="md3-chip" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface-elevated);border:1px solid var(--line);padding:6px 12px;border-radius:99px;font-size:0.85rem;">
+        <span>\${ag.icon}</span>
+        <strong style="color:var(--text-primary);">\${ag.name}</strong>
+      </div>
+    \`;
+  }).join('');
+
+  var html = \`
+    <div class="magic-border-beam-card" style="background:var(--surface-card);border:1px solid var(--border-card);border-radius:16px;padding:40px 32px;text-align:center;box-shadow:0 12px 40px var(--shadow-color);">
+      <div style="font-size:2.5rem;margin-bottom:16px;">\${data.icon}</div>
+      <h3 style="color:var(--text-primary);font-size:1.5rem;margin-bottom:24px;margin-top:0;">\${data.title}</h3>
+      
+      <div style="margin-bottom:32px;">
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--muted);text-transform:uppercase;margin-bottom:16px;font-weight:700;">Recommended Team</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          \${agentsHtml}
         </div>
       </div>
-
-      <!-- Recommended Team Pills -->
-      <div style="background:var(--surface-card);padding:10px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);flex-wrap:wrap;">
-        <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--muted);text-transform:uppercase;font-weight:700;">Recommended Team:</span>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-  `;
-
-  data.recommendedAgents.forEach(function(ag) {
-    html += `
-      <div style="display:inline-flex;align-items:center;gap:5px;background:var(--surface-elevated);border:1px solid var(--border-card);padding:3px 10px;border-radius:99px;font-size:0.75rem;">
-        <span>${ag.icon}</span>
-        <strong style="color:var(--text-primary);">${ag.name}</strong>
-        <span style="color:var(--muted);font-size:0.68rem;">(${ag.codex})</span>
-      </div>
-    `;
-  });
-
-  html += `
-        </div>
-      </div>
-
-      <!-- Live Chat Simulation -->
-      <div style="padding:18px;display:flex;flex-direction:column;gap:14px;background:var(--panel);">
-  `;
-
-  data.chatSteps.forEach(function(step) {
-    if (step.sender === "user") {
-      html += `
-        <div style="align-self:flex-end;max-width:85%;background:var(--accent);color:#05060a;padding:12px 16px;border-radius:14px 14px 2px 14px;font-size:0.88rem;box-shadow:0 4px 14px var(--accent-glow);">
-          <div style="font-weight:600;line-height:1.45;">${step.text}</div>
-          ${step.fileBadge ? `<div style="margin-top:6px;background:rgba(0,0,0,0.15);padding:4px 8px;border-radius:6px;font-size:0.75rem;font-family:var(--font-mono);font-weight:700;">${step.fileBadge}</div>` : ""}
-          <div style="font-size:0.65rem;text-align:right;opacity:0.8;margin-top:4px;">${step.time}</div>
-        </div>
-      `;
-    } else {
-      html += `
-        <div style="align-self:flex-start;max-width:90%;display:flex;gap:10px;">
-          <img src="${step.avatar}" alt="${step.agentName}" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--accent);object-fit:cover;flex-shrink:0;margin-top:2px;background:#000;" onerror="this.src='/assets/mascot/azoth-mask.jpg'"/>
-          <div style="background:var(--surface-card);border:1px solid var(--border-card);padding:12px 16px;border-radius:14px 14px 14px 2px;font-size:0.88rem;color:var(--text-body);">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-              <strong style="color:var(--text-primary);font-size:0.82rem;">${step.agentName}</strong>
-              <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--accent);background:var(--surface-elevated);padding:1px 6px;border-radius:4px;">${step.agentRole}</span>
-              <span style="color:var(--muted);font-size:0.68rem;margin-left:auto;">${step.time}</span>
-            </div>
-            ${step.toolCall ? `<div style="background:var(--code-bg);color:var(--code-text);font-family:var(--font-mono);font-size:0.72rem;padding:6px 10px;border-radius:6px;margin-bottom:8px;border:1px solid var(--line);word-break:break-all;">⚡ ${step.toolCall}</div>` : ""}
-            <div style="line-height:1.45;">${step.text}</div>
-            ${step.isOutcome ? `<div style="margin-top:12px;">${data.previewHtml}</div>` : ""}
-          </div>
-        </div>
-      `;
-    }
-  });
-
-  html += `
-      </div>
-
-      <!-- Action Footer -->
-      <div style="background:var(--surface-elevated);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);flex-wrap:wrap;gap:10px;">
-        <div style="font-size:0.78rem;color:var(--muted);">
-          Want to run this workflow on your computer?
-        </div>
-        <div style="display:flex;gap:10px;">
-          <a href="http://127.0.0.1:8484/" class="btn btn-on js-deck" style="font-size:0.78rem;padding:6px 14px;">Open in Local Deck (:8484) ➔</a>
-          <a href="#install" class="btn btn-off" style="font-size:0.78rem;padding:6px 14px;">Install Zoth Studio ↓</a>
-        </div>
-      </div>
+      
+      <a href="http://127.0.0.1:8484/" class="magic-shimmer-btn md3-btn-filled" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:99px;font-weight:600;text-decoration:none;color:var(--bg);background:var(--text-primary);">
+        Try in Operator Deck
+        <span style="font-size:1.1em;">➔</span>
+      </a>
     </div>
-  `;
+  \`;
 
   container.innerHTML = html;
 }
