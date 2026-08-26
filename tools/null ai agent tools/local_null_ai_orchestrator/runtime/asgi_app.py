@@ -26,6 +26,28 @@ from starlette.responses import RedirectResponse, Response
 from starlette.routing import Route
 
 
+def _load_env_file():
+    """Load local gitignored .env into process environment."""
+    for cand in [
+        Path.cwd() / ".env",
+        Path(__file__).resolve().parent.parent.parent.parent / ".env",
+        Path(__file__).resolve().parent.parent.parent.parent.parent / ".env"
+    ]:
+        if cand.exists():
+            try:
+                for line in cand.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k, v = k.strip(), v.strip().strip("'\"")
+                        if k and not os.environ.get(k):
+                            os.environ[k] = v
+            except Exception:
+                pass
+
+_load_env_file()
+
+
 # ── Helpers ──
 
 def _json_response(data: Any, status: int = 200) -> Response:
