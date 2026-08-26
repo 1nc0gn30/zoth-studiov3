@@ -1042,8 +1042,20 @@ created: {now_utc}
                 return "grok", f"📐 [@grok] {local_ans}"
             return "grok", f"📐 [@grok] Ingested prompt into first-principles pipeline. Truth invariants 100% verified."
 
-        # 4. Kitsune (Visuals, Art, 3D, Design)
+        # 4. Kitsune (Visuals, Art, 3D, Design & Pollinations Image Synth)
         elif agent_id == "kitsune":
+            # If user wants an image, generate a real Pollinations.ai URL
+            if any(w in p_lower for w in ("image", "picture", "photo", "art", "draw", "render", "illustration", "wallpaper", "matrix", "threejs")):
+                import urllib.parse
+                clean_p = prompt.replace("make me an image of", "").replace("generate an image of", "").replace("make an image of", "").strip()
+                if not clean_p:
+                    clean_p = "futuristic cybernetic matrix neon aesthetic 8k"
+                enhanced_prompt = f"{clean_p} cinematic neon cyber aesthetic 8k high contrast hyperrealistic"
+                encoded_url = urllib.parse.quote(enhanced_prompt)
+                img_url = f"https://image.pollinations.ai/prompt/{encoded_url}?width=1024&height=1024&nologo=true&seed={int(time.time())}"
+                
+                return "kitsune", f"🦊 [@kitsune Visual Synthesizer] Generated image for <em>\"{clean_p}\"</em>:<br/><div style=\"margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid rgba(0,240,255,0.3);box-shadow:0 8px 30px rgba(0,240,255,0.2);max-width:512px;\"><img src=\"{img_url}\" alt=\"{clean_p}\" style=\"width:100%;height:auto;display:block;\" loading=\"lazy\"/><div style=\"padding:8px 12px;background:rgba(10,15,28,0.85);font-size:0.75rem;font-family:var(--cockpit-font-mono);display:flex;align-items:center;justify-content:space-between;\"><span style=\"color:#00f0ff;\">⚡ Pollinations Neural Flux · 1024x1024</span><a href=\"{img_url}\" target=\"_blank\" style=\"color:#fbbf24;text-decoration:none;\">Full 8K ↗</a></div></div>"
+
             local_ans = _call_ollama("zoth-ai-micro:latest", "You are Kitsune, visual aesthetic and 3D shader master. Describe the visual layout, color palette, and procedural shader generation for the user's specific request in 2 sentences.", prompt)
             if local_ans:
                 return "kitsune", f"🦊 [@kitsune] {local_ans}"

@@ -502,10 +502,16 @@ if __name__ == "__main__":
       } else if (agent.id === 'ignis') {
         return `Synthesized procedural color palette and geometry matrices for: <em>"${escapeHtml(prompt)}"</em>.`;
       } else if (agent.id === 'kitsune') {
-        return `Rendered visual aesthetic: Neo-cybernetic procedural artwork with chromatic bloom:
-<div style="background:linear-gradient(135deg, #090e1f, #131d3b);border:1px solid rgba(0,240,255,0.3);border-radius:8px;padding:12px;margin:6px 0;text-align:center;">
-  <div style="font-size:2rem;margin-bottom:4px;">✨ 🎨 🌌</div>
-  <div style="font-size:0.8rem;color:#00f0ff;font-family:var(--cockpit-font-mono);">[Procedural Art Generated for "${escapeHtml(prompt)}"]</div>
+        const cleanPrompt = prompt.replace(/make me an image of/gi, '').replace(/generate an image of/gi, '').replace(/make an image of/gi, '').trim() || 'futuristic cybernetic neon aesthetic';
+        const enhanced = encodeURIComponent(`${cleanPrompt} cinematic neon cyber aesthetic 8k high contrast hyperrealistic`);
+        const imgUrl = `https://image.pollinations.ai/prompt/${enhanced}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+        return `Rendered visual neural synthesis for: <em>"${escapeHtml(cleanPrompt)}"</em>:
+<div style="margin-top:10px;border-radius:12px;overflow:hidden;border:1px solid rgba(0,240,255,0.35);box-shadow:0 8px 30px rgba(0,240,255,0.2);max-width:500px;background:#05070f;">
+  <img src="${imgUrl}" alt="${escapeHtml(cleanPrompt)}" style="width:100%;height:auto;display:block;min-height:200px;background:#090e1f;" loading="lazy" />
+  <div style="padding:8px 12px;background:rgba(10,15,28,0.9);font-size:0.75rem;font-family:var(--cockpit-font-mono);display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.06);">
+    <span style="color:#00f0ff;">⚡ Pollinations AI Flux · 1024x1024</span>
+    <a href="${imgUrl}" target="_blank" style="color:#fbbf24;text-decoration:none;font-weight:700;">Full 8K ↗</a>
+  </div>
 </div>`;
       }
     }
