@@ -1052,7 +1052,8 @@ created: {now_utc}
                     clean_p = "futuristic cybernetic matrix neon aesthetic 8k"
                 enhanced_prompt = f"{clean_p} cinematic neon cyber aesthetic 8k high contrast hyperrealistic"
                 encoded_url = urllib.parse.quote(enhanced_prompt)
-                img_url = f"https://image.pollinations.ai/prompt/{encoded_url}?width=1024&height=1024&nologo=true&seed={int(time.time())}"
+                safe_seed = int(time.time()) % 2000000000
+                img_url = f"https://image.pollinations.ai/prompt/{encoded_url}?width=1024&height=1024&nologo=true&seed={safe_seed}&model=flux"
                 
                 return "kitsune", f"🦊 [@kitsune Visual Synthesizer] Generated image for <em>\"{clean_p}\"</em>:<br/><div style=\"margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid rgba(0,240,255,0.3);box-shadow:0 8px 30px rgba(0,240,255,0.2);max-width:512px;\"><img src=\"{img_url}\" alt=\"{clean_p}\" style=\"width:100%;height:auto;display:block;\" loading=\"lazy\"/><div style=\"padding:8px 12px;background:rgba(10,15,28,0.85);font-size:0.75rem;font-family:var(--cockpit-font-mono);display:flex;align-items:center;justify-content:space-between;\"><span style=\"color:#00f0ff;\">⚡ Pollinations Neural Flux · 1024x1024</span><a href=\"{img_url}\" target=\"_blank\" style=\"color:#fbbf24;text-decoration:none;\">Full 8K ↗</a></div></div>"
 
