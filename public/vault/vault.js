@@ -2040,21 +2040,42 @@ function initWebGL() {
       showToast(`Selected ${k.label}`);
     });
 
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    // Tighter bloom — glow without mud
-    const safeW2 = getSafeSize(innerWidth);
-    const safeH2 = getSafeSize(innerHeight);
-    const bloom = new UnrealBloomPass(new THREE.Vector2(safeW2, safeH2), 0.72, 0.55, 0.72);
-    composer.addPass(bloom);
+    const gl = renderer.getContext();
+    const maxRenderBufferSize = gl ? gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 2048 : 2048;
+    const maxTextureSize = gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) || 2048 : 2048;
+    const maxSafeDim = Math.min(maxRenderBufferSize, maxTextureSize, 2048);
+
+    function getSafeSize(val) {
+      return Math.max(64, Math.min(val || 64, maxSafeDim));
+    }
+
+    let composer = null;
+    try {
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      const safeW2 = getSafeSize(innerWidth);
+      const safeH2 = getSafeSize(innerHeight);
+      const bloom = new UnrealBloomPass(new THREE.Vector2(safeW2, safeH2), 0.72, 0.55, 0.72);
+      composer.addPass(bloom);
+    } catch (compErr) {
+      console.warn("[Vault WebGL] Postprocessing pass bypassed:", compErr);
+      composer = null;
+    }
 
     function onResize() {
       const w = getSafeSize(innerWidth);
       const h = getSafeSize(innerHeight);
+      if (w <= 0 || h <= 0) return;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-      composer.setSize(w, h);
+      renderer.setSize(w, h, false);
+      if (composer) {
+        try {
+          composer.setSize(w, h);
+        } catch {
+          composer = null;
+        }
+      }
     }
     window.addEventListener("resize", onResize);
 
@@ -2143,7 +2164,15 @@ function initWebGL() {
         }
       }
 
-      composer.render();
+      if (composer) {
+        try {
+          composer.render();
+        } catch {
+          renderer.render(scene, camera);
+        }
+      } else {
+        renderer.render(scene, camera);
+      }
       requestAnimationFrame(tick);
     }
 
