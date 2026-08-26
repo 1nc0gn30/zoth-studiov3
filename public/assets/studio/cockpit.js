@@ -397,13 +397,31 @@ if __name__ == "__main__":
 
     logTerminalLine(`[ORCHESTRATOR] Dispatched ${activeSquads.length} AGY Squads (${activeSquads.length * 3} Agents) for: "${prompt.slice(0, 32)}..."`, 'cyan');
 
+    // Query local orchestrator on :8484 for real model backend response
+    let backendResponses = {};
+    try {
+      const resp = await fetch('http://127.0.0.1:8484/api/zoth/swarm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, agentId: targetAgentId === 'all' ? 'antigravity' : targetAgentId })
+      });
+      if (resp.ok) {
+        const jData = await resp.json();
+        if (jData && jData.response) {
+          backendResponses[jData.agent || 'antigravity'] = jData.response;
+        }
+      }
+    } catch (e) {
+      // Offline fallback
+    }
+
     // Execute each squad
     for (let i = 0; i < activeSquads.length; i++) {
       const squad = activeSquads[i];
       
       // 1. Lead AGY responds
-      await sleep(400);
-      const leadReply = generateAgentTaskOutput(squad.lead, prompt, true);
+      await sleep(350);
+      let leadReply = backendResponses[squad.lead.id] || generateAgentTaskOutput(squad.lead, prompt, true);
       appendCockpitMessage({
         isUser: false,
         author: squad.lead.name,
@@ -415,7 +433,7 @@ if __name__ == "__main__":
       logTerminalLine(`↳ [AGY Lead #${i + 1}] @${squad.lead.id} decomposed subtasks.`, 'green');
 
       // 2. Subagent 1 responds
-      await sleep(350);
+      await sleep(300);
       const sub1 = squad.subagents[0];
       const sub1Reply = generateAgentTaskOutput(sub1, prompt, false);
       appendCockpitMessage({
@@ -429,7 +447,7 @@ if __name__ == "__main__":
 
       // 3. Subagent 2 responds (if not Master Azoth yet)
       if (squad.subagents[1].id !== 'master-azoth') {
-        await sleep(350);
+        await sleep(300);
         const sub2 = squad.subagents[1];
         const sub2Reply = generateAgentTaskOutput(sub2, prompt, false);
         appendCockpitMessage({
@@ -444,7 +462,7 @@ if __name__ == "__main__":
     }
 
     // 4. MASTER AZOTH ALWAYS DELIVERS THE GRAND SYNTHESIS AT THE END
-    await sleep(600);
+    await sleep(500);
     const azothSynthesis = generateAzothGrandSynthesis(prompt, activeSquads);
     appendCockpitMessage({
       isUser: false,
