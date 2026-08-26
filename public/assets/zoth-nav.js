@@ -219,6 +219,15 @@
             }
           });
         }
+
+        // Global Annotator Shortcut: Shift+A or Ctrl+Alt+A
+        if ((e.shiftKey && e.key === "A" && !["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) ||
+            (e.ctrlKey && e.altKey && e.code === "KeyA")) {
+          if (window.ZothAnnotator && typeof window.ZothAnnotator.toggle === "function") {
+            e.preventDefault();
+            window.ZothAnnotator.toggle();
+          }
+        }
       });
     }
 

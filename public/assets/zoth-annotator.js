@@ -15,33 +15,30 @@
 (function () {
   'use strict';
 
-  // Strict Dev Server Guard: NEVER show annotation UI on public production website
-  // Strictly disabled on zoth.nullai.tech and all public domains to protect private conversations and notes.
+  // Dev Server Guard & Manual Activation
   function isDevEnvironment() {
     try {
       const hostname = (window.location.hostname || '').toLowerCase();
+      const search = (window.location.search || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
 
-      // Absolute Production Domain Blocklist: NEVER mount or reveal notes on public hosts
-      if (
-        hostname === 'zoth.nullai.tech' ||
-        hostname.includes('nullai.tech') ||
-        hostname.includes('zoth.io') ||
-        hostname.includes('zoth.studio') ||
-        hostname.includes('netlify.app') ||
-        hostname.includes('vercel.app') ||
-        hostname.includes('github.io') ||
-        hostname.includes('pages.dev')
-      ) {
-        return false;
+      // Manual opt-in override: ?annotate=1, ?debug=1, or #annotate allows testing anywhere
+      if (search.includes('annotate=1') || search.includes('debug=1') || hash.includes('annotate')) {
+        return true;
       }
 
-      // Strictly allow ONLY local dev environments (loopback, Tailscale, & private LAN IPs)
+      // Check stored preference if previously toggled on
+      if (localStorage.getItem('zoth_annotator_enabled') === 'true') {
+        return true;
+      }
+
+      // Default allowed for local dev environments (loopback, Tailscale, & private LAN IPs)
       const isLocalhost =
         hostname === 'localhost' ||
         hostname === '127.0.0.1' ||
         hostname === '0.0.0.0' ||
         hostname === '[::1]' ||
-        hostname.startsWith('100.') ||   // Tailscale VPN IPs (e.g. 100.125.x.x / 100.106.x.x)
+        hostname.startsWith('100.') ||   // Tailscale VPN IPs
         hostname.startsWith('192.168.') ||
         hostname.startsWith('10.') ||
         hostname.startsWith('172.16.') ||
