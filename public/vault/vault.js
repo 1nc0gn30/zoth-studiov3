@@ -2529,6 +2529,31 @@ $("btn-close-presets").addEventListener("click", () => $("preset-browser").close
 $("preset-search").addEventListener("input", renderPresetGrid);
 $("preset-underground").addEventListener("change", renderPresetGrid);
 
+// Sidebar View Mode Switcher Dropdown
+const viewSelect = $("sidebar-view-dropdown");
+if (viewSelect) {
+  viewSelect.addEventListener("change", (e) => {
+    const mode = e.target.value;
+    panel.classList.remove("view-list-only", "view-composer-only", "view-backup-only");
+    if (mode === "list") {
+      panel.classList.add("view-list-only");
+      showToast("View: Key Directory");
+    } else if (mode === "composer") {
+      panel.classList.add("view-composer-only");
+      $("key-label")?.focus();
+      showToast("View: Add / Edit Key");
+    } else if (mode === "presets") {
+      openPresetBrowser();
+      viewSelect.value = "all";
+    } else if (mode === "backup") {
+      panel.classList.add("view-backup-only");
+      showToast("View: Backup & Export");
+    } else {
+      showToast("View: All-in-One");
+    }
+  });
+}
+
 $("btn-clear-form").addEventListener("click", () => {
   clearForm();
   setMsg(panelMsg, "");
