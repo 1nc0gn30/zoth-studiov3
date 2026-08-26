@@ -721,10 +721,16 @@ async def api_zoth_swarm(request: Request) -> Response:
                 pass
             return f"Processed task vector for: {user_prompt[:40]}..."
 
-        # Generate live squad responses with sequential context awareness
+        # Sequential Collaborative Multi-Agent Loop
         squad_results = []
         p_lower = prompt.lower()
         is_visual = any(w in p_lower for w in ("image", "picture", "photo", "art", "draw", "render", "illustration", "wallpaper", "matrix", "threejs"))
+        is_software = any(w in p_lower for w in ("app", "website", "code", "build", "script", "tool", "program", "develop", "api", "create", "make"))
+
+        conversation_context = [f"Operator Goal: {prompt}"]
+
+        def _get_history():
+            return "\n".join(conversation_context[-6:])
 
         if is_visual:
             import urllib.parse
@@ -736,33 +742,72 @@ async def api_zoth_swarm(request: Request) -> Response:
             safe_seed = int(time.time()) % 2000000000
             img_url = f"https://image.pollinations.ai/prompt/{encoded_url}?width=1024&height=1024&nologo=true&seed={safe_seed}&model=flux"
             
-            # 1. Kitsune creates the visual artifact first
+            # 1. Kitsune generates the artifact
             kit_html = f"Rendered visual neural synthesis for: <em>\"{clean_p}\"</em>:<br/><div style=\"margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid rgba(0,240,255,0.3);box-shadow:0 8px 30px rgba(0,240,255,0.2);max-width:500px;\"><img src=\"{img_url}\" alt=\"{clean_p}\" style=\"width:100%;height:auto;display:block;\" loading=\"lazy\"/><div style=\"padding:8px 12px;background:rgba(10,15,28,0.85);font-size:0.75rem;font-family:monospace;display:flex;align-items:center;justify-content:space-between;\"><span style=\"color:#00f0ff;\">⚡ Pollinations Neural Flux · 1024x1024</span><a href=\"{img_url}\" target=\"_blank\" style=\"color:#fbbf24;text-decoration:none;\">Full 8K ↗</a></div></div>"
             squad_results.append({"agent": "kitsune", "role": "Lead AGY #6 · Visuals & 3D Shaders", "icon": "🦊", "color": "#ff007a", "text": kit_html})
+            conversation_context.append(f"Kitsune (Visuals): Rendered 1024x1024 Flux visual for '{clean_p}'.")
 
-            # 2. Antigravity analyzes the generated visual artifact and workspace integration
-            agy_text = _query_local_model("zoth-ai-micro:latest", f"You are Antigravity, lead architect. Analyze and critique the generated image concept for '{clean_p}'. Discuss lighting, volumetric balance, and how to integrate it into web or 3D viewports in 1-2 sharp sentences.", prompt)
+            # 2. Antigravity analyzes in context
+            agy_p = f"You are Antigravity, lead architect. Context:\n{_get_history()}\nIn 1-2 sharp sentences, critique this rendering and specify how to integrate it into the project."
+            agy_text = _query_local_model("zoth-ai-micro:latest", agy_p, prompt)
             squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
+            conversation_context.append(f"Antigravity (Lead): {agy_text}")
 
-            # 3. Hermes prepares asset storage & export pipeline
+            # 3. Hermes prepares asset pipeline
             if strength in ("strike", "full"):
-                hermes_text = _query_local_model("zoth-ai-micro:latest", f"You are Hermes, autonomous tool runner. Explain the automated script you prepared to download and cache the 1024x1024 image into 'public/assets/images/' in 1-2 sentences.", prompt)
+                herm_p = f"You are Hermes, autonomous tool runner. Context:\n{_get_history()}\nIn 1-2 sentences, describe the automated shell/cron tool you dispatched to cache and use this asset."
+                hermes_text = _query_local_model("zoth-ai-micro:latest", herm_p, prompt)
                 squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
+                conversation_context.append(f"Hermes (Tools): {hermes_text}")
 
-            # 4. Master Azoth Synthesis of the created artifact
-            azoth_text = _query_local_model("zoth-ai-micro:latest", f"You are Master Azoth, the supreme alchemist architect. Review the visual artifact created for '{clean_p}' and the agents' analysis. In 2 sentences, deliver the grand synthesis and actionable next steps.", prompt)
-        else:
-            # 1. Antigravity Lead
-            agy_text = _query_local_model("zoth-ai-micro:latest", "You are Antigravity, lead AST orchestrator. Formulate a technical execution blueprint and assign tasks in 1-2 sharp sentences.", prompt)
+            # 4. Master Azoth Synthesis
+            azoth_p = f"You are Master Azoth, supreme alchemist architect. Review all peer agent inputs:\n{_get_history()}\nIn 2 sentences, deliver the unified alchemical synthesis and next actionable command."
+            azoth_text = _query_local_model("zoth-ai-micro:latest", azoth_p, prompt)
+
+        elif is_software:
+            # 1. Antigravity Architecture
+            agy_p = f"You are Antigravity, lead full-stack architect. Formulate the technical stack, file architecture, and data contracts for: '{prompt}'. Be specific and concise in 2 sentences."
+            agy_text = _query_local_model("zoth-ai-micro:latest", agy_p, prompt)
             squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
+            conversation_context.append(f"Antigravity: {agy_text}")
 
-            # 2. Hermes (Tools & Automation)
-            if strength in ("strike", "full") or any(w in p_lower for w in ("tool", "cron", "script", "automate", "social")):
-                hermes_text = _query_local_model("zoth-ai-micro:latest", "You are Hermes, autonomous tool runner. Describe the automated script or tool you dispatched in 1-2 sentences.", prompt)
+            # 2. Grok Logic & Invariant Check
+            if strength in ("strike", "full"):
+                grok_p = f"You are Grok. Context:\n{_get_history()}\nIn 1-2 sentences, evaluate Antigravity's blueprint against first-principles logic and state invariant safety."
+                grok_text = _query_local_model("zoth-ai-micro:latest", grok_p, prompt)
+                squad_results.append({"agent": "grok", "role": "Lead AGY #2 · Astrolabe Truth Engine", "icon": "📐", "color": "#10b981", "text": grok_text})
+                conversation_context.append(f"Grok: {grok_text}")
+
+            # 3. Hermes Tool Harness
+            herm_p = f"You are Hermes, autonomous tool runner. Context:\n{_get_history()}\nIn 1-2 sentences, describe the exact scaffold command or test harness script you executed in the workspace."
+            hermes_text = _query_local_model("zoth-ai-micro:latest", herm_p, prompt)
+            squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
+            conversation_context.append(f"Hermes: {hermes_text}")
+
+            # 4. Ghostbyte Security & Boundary Check
+            if strength == "full":
+                sec_p = f"You are GhostByte, security sentinel. Context:\n{_get_history()}\nIn 1-2 sentences, audit the proposed application for secret leakage, loopback isolation, and Argon2id enclave safety."
+                sec_text = _query_local_model("zoth-ai-micro:latest", sec_p, prompt)
+                squad_results.append({"agent": "ghostbyte", "role": "Lead AGY #4 · Argon2id Vault Sentinel", "icon": "🔒", "color": "#c084fc", "text": sec_text})
+                conversation_context.append(f"Ghostbyte: {sec_text}")
+
+            # 5. Master Azoth Synthesis
+            azoth_p = f"You are Master Azoth, supreme alchemist architect. Review all peer agent inputs:\n{_get_history()}\nIn 2-3 sentences, harmonize all proposals into the final actionable build plan."
+            azoth_text = _query_local_model("zoth-ai-micro:latest", azoth_p, prompt)
+
+        else:
+            # General Task Multi-Agent Turn
+            agy_text = _query_local_model("zoth-ai-micro:latest", f"You are Antigravity, lead orchestrator. Formulate a direct technical response for: '{prompt}' in 1-2 sentences.", prompt)
+            squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
+            conversation_context.append(f"Antigravity: {agy_text}")
+
+            if strength in ("strike", "full"):
+                hermes_text = _query_local_model("zoth-ai-micro:latest", f"You are Hermes. Context:\n{_get_history()}\nDescribe the tool harness verification or script dispatch in 1-2 sentences.", prompt)
                 squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
+                conversation_context.append(f"Hermes: {hermes_text}")
 
-            # 3. Master Azoth Synthesis
-            azoth_text = _query_local_model("zoth-ai-micro:latest", "You are Master Azoth, the supreme alchemist architect. In 2-3 sentences, deliver the grand synthesis, practical resolution, and concrete deliverable for the user's specific request.", prompt)
+            azoth_p = f"You are Master Azoth. Context:\n{_get_history()}\nDeliver the grand synthesis and conclusion in 2 sentences."
+            azoth_text = _query_local_model("zoth-ai-micro:latest", azoth_p, prompt)
 
 async def api_swarm_preflight(request: Request) -> Response:
     """Preflight check: verifies which CLI engines, local Ollama models, and APIs are installed/available."""
