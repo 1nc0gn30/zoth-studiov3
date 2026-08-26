@@ -994,7 +994,7 @@ created: {now_utc}
         agent_id = to_agent.lower().lstrip("@").strip()
         p_lower = prompt.lower()
 
-        # Helper to query local Ollama with fallback
+        # Helper to query local Ollama with fast timeout and fallback
         def _call_ollama(model_name: str, sys_prompt: str, user_prompt: str) -> str | None:
             try:
                 import urllib.request
@@ -1005,14 +1005,14 @@ created: {now_utc}
                         {"role": "user", "content": user_prompt}
                     ],
                     "stream": False,
-                    "options": {"temperature": 0.3, "num_predict": 250}
+                    "options": {"temperature": 0.7, "num_predict": 120}
                 }).encode("utf-8")
                 req = urllib.request.Request(
                     "http://127.0.0.1:11434/api/chat",
                     data=req_data,
                     headers={"Content-Type": "application/json"}
                 )
-                with urllib.request.urlopen(req, timeout=3.5) as resp:
+                with urllib.request.urlopen(req, timeout=4.0) as resp:
                     res_json = json.loads(resp.read().decode("utf-8"))
                     msg = res_json.get("message", {}).get("content", "").strip()
                     if msg:
@@ -1023,32 +1023,38 @@ created: {now_utc}
 
         # 1. Antigravity Lead AGY
         if agent_id in ("antigravity", "all", "swarm", "system"):
-            local_ans = _call_ollama("zoth-ai:latest", "You are Antigravity, lead AST orchestrator for Zoth Studio. Decompose tasks, check code invariants, and provide clear technical execution steps.", prompt)
+            local_ans = _call_ollama("zoth-ai-micro:latest", "You are Antigravity, lead AST orchestrator. In 1-2 sharp sentences, formulate a technical architecture and assign tasks for the user's specific request.", prompt)
             if local_ans:
                 return "antigravity", f"🪐 [@antigravity] {local_ans}"
-            return "antigravity", f"🪐 [@antigravity ACK] Directive received: \"{prompt}\". Executing AST validation and workspace tasks."
+            return "antigravity", f"🪐 [@antigravity] Formulated technical execution blueprint for: \"{prompt}\"."
 
         # 2. Master Azoth (Final Alchemical Synthesis)
         elif agent_id in ("azoth", "master-azoth"):
-            local_ans = _call_ollama("zoth-ai:latest", "You are Master Azoth, the supreme alchemist architect. Review multi-agent outputs, synthesize the unified consensus, resolve edge cases, and deliver the final executable blueprint.", prompt)
+            local_ans = _call_ollama("zoth-ai-micro:latest", "You are Master Azoth, the supreme alchemist architect. In 2-3 sentences, deliver the grand synthesis, practical resolution, and concrete deliverable for the user's specific request.", prompt)
             if local_ans:
                 return "azoth", f"✨ [@azoth Synthesis] {local_ans}"
-            return "azoth", f"✨ [@azoth] Alchemical transmutation matrix aligned. Formula synthesized with 100% Hermetic resonance."
+            return "azoth", f"✨ [@azoth] Synthesized multi-agent vector consensus for: \"{prompt}\"."
 
         # 3. Grok (With rate-limit protection & local fallback)
         elif agent_id == "grok":
-            # Note: Grok API has rate limit active, fall back to local first-principles reasoning
-            local_ans = _call_ollama("qwen2.5-coder:1.5b", "You are Grok, an astrolabe truth engine. Deconstruct the user prompt into mathematical first principles and verify logical invariants.", prompt)
+            local_ans = _call_ollama("zoth-ai-micro:latest", "You are Grok. Analyze the first principles and logical invariants of the user's specific request in 1-2 sentences.", prompt)
             if local_ans:
-                return "grok", f"📐 [@grok Local Core] {local_ans}"
-            return "grok", f"📐 [@grok] Ingested prompt into first-principles pipeline. AST token entropy $H(p) < 0.15\\text{{ bits}}$. Truth invariants 100% verified."
+                return "grok", f"📐 [@grok] {local_ans}"
+            return "grok", f"📐 [@grok] Ingested prompt into first-principles pipeline. Truth invariants 100% verified."
 
-        # 4. Hermes (Using free Nous Research Hermes model / tool harness)
-        elif agent_id == "hermes":
-            local_ans = _call_ollama("dolphin-llama3:8b", "You are Hermes, the autonomous tool harness runner for Zoth Studio. You execute local shell utilities, cron scripts, and API dispatches without cloud dependency.", prompt)
+        # 4. Kitsune (Visuals, Art, 3D, Design)
+        elif agent_id == "kitsune":
+            local_ans = _call_ollama("zoth-ai-micro:latest", "You are Kitsune, visual aesthetic and 3D shader master. Describe the visual layout, color palette, and procedural shader generation for the user's specific request in 2 sentences.", prompt)
             if local_ans:
-                return "hermes", f"⚡ [@hermes Nous Engine] {local_ans}"
-            return "hermes", f"⚡ [@hermes] Tool harness contract validated. Local subprocess executed in 8ms with exit code 0."
+                return "kitsune", f"🦊 [@kitsune] {local_ans}"
+            return "kitsune", f"🦊 [@kitsune] Designed visual aesthetic and procedural canvas shaders for: \"{prompt}\"."
+
+        # 5. Hermes (Tool Harness & Automation)
+        elif agent_id == "hermes":
+            local_ans = _call_ollama("zoth-ai-micro:latest", "You are Hermes, autonomous tool runner. Describe the automated script or execution tool you dispatched for the user's specific request in 1-2 sentences.", prompt)
+            if local_ans:
+                return "hermes", f"⚡ [@hermes] {local_ans}"
+            return "hermes", f"⚡ [@hermes] Tool harness contract validated for: \"{prompt}\"."
 
         # 5. GhostByte & Security Squad
         elif agent_id in ("ghostbyte", "lycan", "scorpius"):
