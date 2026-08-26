@@ -694,8 +694,8 @@ async def api_zoth_swarm(request: Request) -> Response:
         strength = body.get("strength", "strike")
         pet_val = body.get("agentId") or body.get("pet_id") or body.get("pet") or "antigravity"
         
-        # Real Ollama inference helper
-        def _query_local_model(model_name: str, sys_prompt: str, user_prompt: str, fallback_text: str = "") -> str:
+        # Real Ollama inference helper (non-blocking async thread)
+        def _sync_query(model_name: str, sys_prompt: str, user_prompt: str, fallback_text: str = "") -> str:
             try:
                 import urllib.request
                 req_data = json.dumps({
@@ -705,14 +705,14 @@ async def api_zoth_swarm(request: Request) -> Response:
                         {"role": "user", "content": user_prompt}
                     ],
                     "stream": False,
-                    "options": {"temperature": 0.7, "num_predict": 140}
+                    "options": {"temperature": 0.7, "num_predict": 100}
                 }).encode("utf-8")
                 req = urllib.request.Request(
                     "http://127.0.0.1:11434/api/chat",
                     data=req_data,
                     headers={"Content-Type": "application/json"}
                 )
-                with urllib.request.urlopen(req, timeout=5.0) as resp:
+                with urllib.request.urlopen(req, timeout=1.8) as resp:
                     res_json = json.loads(resp.read().decode("utf-8"))
                     msg = res_json.get("message", {}).get("content", "").strip()
                     if msg:
@@ -720,6 +720,9 @@ async def api_zoth_swarm(request: Request) -> Response:
             except Exception:
                 pass
             return fallback_text or f"Architected execution plan for: {user_prompt[:50]}."
+
+        async def _query_local_model(model_name: str, sys_prompt: str, user_prompt: str, fallback_text: str = "") -> str:
+            return await asyncio.to_thread(_sync_query, model_name, sys_prompt, user_prompt, fallback_text)
 
         # Sequential Collaborative Multi-Agent Loop
         squad_results = []
@@ -755,54 +758,55 @@ async def api_zoth_swarm(request: Request) -> Response:
 
             # 2. Antigravity analyzes in context
             agy_p = f"You are Antigravity, lead architect. Context:\n{_get_history()}\nIn 1-2 sharp sentences, critique this rendering and specify how to integrate it into web viewports."
-            agy_text = _query_local_model("zoth-ai-micro:latest", agy_p, prompt, "Analyzed visual composition and mapped WebGL2 viewport container.")
+            agy_text = await _query_local_model("zoth-ai-micro:latest", agy_p, prompt, "Analyzed visual composition and mapped WebGL2 viewport container.")
             squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
             conversation_context.append(f"Antigravity: {agy_text}")
 
             # 3. Hermes prepares asset pipeline
             if strength in ("strike", "full"):
                 herm_p = f"You are Hermes, autonomous tool runner. Context:\n{_get_history()}\nIn 1-2 sentences, describe the automated script you dispatched to save and use this asset in the workspace."
-                hermes_text = _query_local_model("zoth-ai-micro:latest", herm_p, prompt, "Automated asset caching script dispatched to public/assets/images/.")
+                hermes_text = await _query_local_model("zoth-ai-micro:latest", herm_p, prompt, "Automated asset caching script dispatched to public/assets/images/.")
                 squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
                 conversation_context.append(f"Hermes: {hermes_text}")
 
             # 4. Master Azoth Synthesis
             azoth_p = f"You are Master Azoth, supreme alchemist architect. Review all peer agent inputs:\n{_get_history()}\nIn 2 sentences, deliver the final synthesis and concrete deliverable summary."
-            azoth_text = _query_local_model("zoth-ai-micro:latest", azoth_p, prompt, f"Synthesized visual asset for '{clean_p}'. Asset ready for deployment in Nexus 3D or local canvas.")
+            azoth_text = await _query_local_model("zoth-ai-micro:latest", azoth_p, prompt, f"Synthesized visual asset for '{clean_p}'. Asset ready for deployment in Nexus 3D or local canvas.")
 
         elif is_software:
             # 1. Antigravity Lead (Architect & Stack)
             agy_p = f"You are Antigravity, lead full-stack architect. Propose the exact technology stack, core architecture, and primary data loop for: '{prompt}'. Be concrete and actionable in 2 sentences."
-            agy_text = _query_local_model("zoth-ai-micro:latest", agy_p, prompt, f"Architected high-yield software system: Fast backend API with lightweight React/Tailwind frontend and SQLite persistence.")
+            agy_text = await _query_local_model("zoth-ai-micro:latest", agy_p, prompt, f"Architected high-yield software system: Fast backend API with lightweight React/Tailwind frontend and SQLite persistence.")
             squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
             conversation_context.append(f"Antigravity: {agy_text}")
 
             # 1a. Kai (Subagent - AST & Symbol Analysis)
             kai_p = f"You are Kai, AST static inspector under @antigravity. Context:\n{_get_history()}\nDescribe symbol boundaries, AST validity, and zero-collision module design in 1 sentence."
-            kai_text = _query_local_model("zoth-ai-micro:latest", kai_p, prompt, "Workspace AST inspected: Module boundaries validated with zero circular symbol dependencies.")
+            kai_text = await _query_local_model("zoth-ai-micro:latest", kai_p, prompt, "Workspace AST inspected: Module boundaries validated with zero circular symbol dependencies.")
             squad_results.append({"agent": "kai", "role": "Subagent of @antigravity · Workspace AST Inspector", "icon": "🔍", "color": "#38bdf8", "text": kai_text})
 
             # 1b. Ignis (Subagent - Loop Optimization)
             ignis_p = f"You are Ignis, pipeline optimizer under @antigravity. Context:\n{_get_history()}\nDescribe your loop optimization, caching layers, and latency profile in 1 sentence."
-            ignis_text = _query_local_model("zoth-ai-micro:latest", ignis_p, prompt, "Streamlined data pipeline with in-memory caching for sub-5ms request throughput.")
+            ignis_text = await _query_local_model("zoth-ai-micro:latest", ignis_p, prompt, "Streamlined data pipeline with in-memory caching for sub-5ms request throughput.")
             squad_results.append({"agent": "ignis", "role": "Subagent of @antigravity · Pipeline Optimizer", "icon": "🔥", "color": "#fb923c", "text": ignis_text})
 
             # 2. Grok (Truth Engine & Monetization Invariants)
             if strength in ("strike", "full"):
                 grok_p = f"You are Grok, astrolabe truth engine. Context:\n{_get_history()}\nEvaluate the monetization mechanics and market viability from first principles in 1-2 sharp sentences."
-                grok_text = _query_local_model("zoth-ai-micro:latest", grok_p, prompt, "First-principles evaluation: Positive unit economics confirmed with automated low-latency spread capture.")
+                grok_text = await _query_local_model("zoth-ai-micro:latest", grok_p, prompt, "First-principles evaluation: Positive unit economics confirmed with automated low-latency spread capture.")
                 squad_results.append({"agent": "grok", "role": "Lead AGY #2 · Astrolabe Truth Engine", "icon": "📐", "color": "#10b981", "text": grok_text})
                 conversation_context.append(f"Grok: {grok_text}")
 
                 # 2a. Athena (Knowledge & Schema)
                 athena_p = f"You are Athena, semantic knowledge curator under @grok. Context:\n{_get_history()}\nMap the JSON-LD schema entity graph in 1 sentence."
-                athena_text = _query_local_model("zoth-ai-micro:latest", athena_p, prompt, "Formatted Schema.org SoftwareApplication entity graph with structured financial triples.")
+                athena_text = await _query_local_model("zoth-ai-micro:latest", athena_p, prompt, "Formatted Schema.org SoftwareApplication entity graph with structured financial triples.")
                 squad_results.append({"agent": "athena", "role": "Subagent of @grok · Knowledge Context", "icon": "🦉", "color": "#34d399", "text": athena_text})
 
             # 3. Hermes (Autonomous Tool Runner & Scaffold)
             # Actually scaffold the project files on disk and ensure a dev server is reachable
+            import re
             app_slug = re.sub(r'[^a-z0-9_]+', '_', prompt.lower())[:24].strip('_') or 'lucrative_app'
-            app_dir = Path(WORKSPACE_ROOT) / "public" / "apps" / app_slug
+            app_dir = _public_dir() / "apps" / app_slug
             app_dir.mkdir(parents=True, exist_ok=True)
 
             # Write a functional, interactive standalone app file
@@ -876,27 +880,27 @@ async def api_zoth_swarm(request: Request) -> Response:
             # 4. Ghostbyte (Security & Crypto Sentinel)
             if strength == "full":
                 sec_p = f"You are GhostByte, security sentinel. Context:\n{_get_history()}\nConfirm Argon2id encryption, local socket isolation (127.0.0.1), and zero API key leakage in 1-2 sentences."
-                sec_text = _query_local_model("zoth-ai-micro:latest", sec_p, prompt, f"Enforced Argon2id encryption and strictly bound /apps/{app_slug}/ to local loopback with zero cloud egress.")
+                sec_text = await _query_local_model("zoth-ai-micro:latest", sec_p, prompt, f"Enforced Argon2id encryption and strictly bound /apps/{app_slug}/ to local loopback with zero cloud egress.")
                 squad_results.append({"agent": "ghostbyte", "role": "Lead AGY #4 · Argon2id Vault Sentinel", "icon": "🔒", "color": "#c084fc", "text": sec_text})
                 conversation_context.append(f"Ghostbyte: {sec_text}")
 
             # 5. Master Azoth Synthesis
             azoth_p = f"You are Master Azoth, supreme alchemist architect. Review all peer agent proposals:\n{_get_history()}\nIn 2 sentences, deliver the final synthesis with the direct dev server URL."
-            azoth_text = _query_local_model("zoth-ai-micro:latest", azoth_p, prompt, f"Application successfully built and verified across all agent domain invariants. Dev server running live at {live_app_url}.")
+            azoth_text = await _query_local_model("zoth-ai-micro:latest", azoth_p, prompt, f"Application successfully built and verified across all agent domain invariants. Dev server running live at {live_app_url}.")
 
         else:
             # General Task Multi-Agent Turn
-            agy_text = _query_local_model("zoth-ai-micro:latest", f"You are Antigravity, lead orchestrator. Formulate a direct technical response for: '{prompt}' in 1-2 sentences.", prompt)
+            agy_text = await _query_local_model("zoth-ai-micro:latest", f"You are Antigravity, lead orchestrator. Formulate a direct technical response for: '{prompt}' in 1-2 sentences.", prompt)
             squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
             conversation_context.append(f"Antigravity: {agy_text}")
 
             if strength in ("strike", "full"):
-                hermes_text = _query_local_model("zoth-ai-micro:latest", f"You are Hermes. Context:\n{_get_history()}\nDescribe the tool harness verification or script dispatch in 1-2 sentences.", prompt)
+                hermes_text = await _query_local_model("zoth-ai-micro:latest", f"You are Hermes. Context:\n{_get_history()}\nDescribe the tool harness verification or script dispatch in 1-2 sentences.", prompt)
                 squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
                 conversation_context.append(f"Hermes: {hermes_text}")
 
             azoth_p = f"You are Master Azoth. Context:\n{_get_history()}\nDeliver the grand synthesis and conclusion in 2 sentences."
-            azoth_text = _query_local_model("zoth-ai-micro:latest", azoth_p, prompt)
+            azoth_text = await _query_local_model("zoth-ai-micro:latest", azoth_p, prompt)
 
         return _json_response({
             "status": "ok",
