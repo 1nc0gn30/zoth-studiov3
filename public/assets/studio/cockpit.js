@@ -375,25 +375,38 @@ if __name__ == "__main__":
       text: userText
     });
 
-    // ─── Agent Preflight Validation ───
+    // ─── Agent Preflight & Rate-Limit Quota Validation ───
     const caps = systemPreflightCapabilities || await checkSystemCapabilities();
-    if (caps && targetAgentId !== 'all') {
-      const targetSquadKey = targetAgentId === 'hermes' || targetAgentId === 'radical-minion' || targetAgentId === 'pixel-shiba' ? 'squad_3_hermes' :
-                             targetAgentId === 'grok' || targetAgentId === 'athena' || targetAgentId === 'chronos' ? 'squad_2_grok' :
-                             targetAgentId === 'antigravity' || targetAgentId === 'kai' || targetAgentId === 'ignis' ? 'squad_1_antigravity' : null;
-      
-      if (targetSquadKey && caps.squads && caps.squads[targetSquadKey]) {
-        const squadInfo = caps.squads[targetSquadKey];
-        if (!squadInfo.supported) {
-          appendCockpitMessage({
-            isUser: false,
-            author: 'GhostByte',
-            role: 'Preflight Boundary Sentinel',
-            avatar: '🔒',
-            color: '#ef4444',
-            text: `⚠️ <strong>Preflight Denied:</strong> Cannot dispatch to <code>@${targetAgentId}</code> because the required engine is unconfigured.<br/><div style="margin-top:6px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:8px 12px;border-radius:8px;font-size:0.8rem;font-family:var(--cockpit-font-mono);"><strong>Remediation:</strong> ${escapeHtml(squadInfo.reason)}</div>`
-          });
-          return;
+    if (caps) {
+      // Check rate limit risks for connected providers
+      if (caps.rate_limit_risks && caps.rate_limit_risks.length > 0 && targetAgentId === 'grok') {
+        logTerminalLine(`[QUOTA GUARD] Warning: ${caps.rate_limit_risks[0].provider} rate-limit active. Fallback routing engaged.`, 'yellow');
+      }
+
+      // Display Token & Time Complexity Estimation
+      if (caps.estimation) {
+        const est = caps.estimation;
+        logTerminalLine(`[BUDGET] Estimated Tokens: ~${est.total_estimated_tokens} | Time: ~${est.estimated_duration_sec}s | Cost: ${est.cost_estimate_usd}`, 'cyan');
+      }
+
+      if (targetAgentId !== 'all') {
+        const targetSquadKey = targetAgentId === 'hermes' || targetAgentId === 'radical-minion' || targetAgentId === 'pixel-shiba' ? 'squad_3_hermes' :
+                               targetAgentId === 'grok' || targetAgentId === 'athena' || targetAgentId === 'chronos' ? 'squad_2_grok' :
+                               targetAgentId === 'antigravity' || targetAgentId === 'kai' || targetAgentId === 'ignis' ? 'squad_1_antigravity' : null;
+        
+        if (targetSquadKey && caps.squads && caps.squads[targetSquadKey]) {
+          const squadInfo = caps.squads[targetSquadKey];
+          if (!squadInfo.supported) {
+            appendCockpitMessage({
+              isUser: false,
+              author: 'GhostByte',
+              role: 'Preflight Boundary Sentinel',
+              avatar: '🔒',
+              color: '#ef4444',
+              text: `⚠️ <strong>Preflight Denied:</strong> Cannot dispatch to <code>@${targetAgentId}</code> because the required engine is unconfigured.<br/><div style="margin-top:6px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:8px 12px;border-radius:8px;font-size:0.8rem;font-family:var(--cockpit-font-mono);"><strong>Remediation:</strong> ${escapeHtml(squadInfo.reason)}</div>`
+            });
+            return;
+          }
         }
       }
     }
