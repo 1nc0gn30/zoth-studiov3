@@ -217,6 +217,150 @@ AI_TOOL_CATALOG = [
             "macos": "brew install radare2",
             "windows": "winget install radareorg.radare2"
         }
+    },
+    {
+        "id": "cursor",
+        "name": "Cursor AI Editor",
+        "binary": "cursor",
+        "aliases": ["cursor", "cursor-cli"],
+        "category": "AI Code Workstation",
+        "desc": "Next-generation AI code editor built on VS Code with codebase indexing and multi-file edits.",
+        "icon": "⚡",
+        "doc_route": "/docs/index.html",
+        "github": "https://www.cursor.com",
+        "install": {
+            "linux": "curl -fsSL https://downloader.cursor.sh/linux/appImage/x64 -o cursor.AppImage && chmod +x cursor.AppImage",
+            "macos": "brew install --cask cursor",
+            "windows": "winget install Anysphere.Cursor"
+        }
+    },
+    {
+        "id": "fabric",
+        "name": "Fabric AI Framework",
+        "binary": "fabric",
+        "aliases": ["fabric", "fabric-cli"],
+        "category": "Prompt & Human Augmentation",
+        "desc": "Open-source framework for augmenting humans using AI with reusable prompt patterns.",
+        "icon": "🧵",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/danielmiessler/fabric",
+        "install": {
+            "linux": "go install github.com/danielmiessler/fabric@latest",
+            "macos": "brew install fabric || go install github.com/danielmiessler/fabric@latest",
+            "windows": "go install github.com/danielmiessler/fabric@latest"
+        }
+    },
+    {
+        "id": "vllm",
+        "name": "vLLM Inference Server",
+        "binary": "vllm",
+        "aliases": ["vllm", "vllm_server"],
+        "category": "High-Throughput Serving",
+        "desc": "High-throughput, memory-efficient LLM serving engine with PagedAttention and OpenAI-compatible API.",
+        "icon": "🚀",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/vllm-project/vllm",
+        "install": {
+            "linux": "pip install vllm",
+            "macos": "pip install vllm",
+            "windows": "pip install vllm"
+        }
+    },
+    {
+        "id": "llama-server",
+        "name": "llama.cpp GGUF Engine",
+        "binary": "llama-server",
+        "aliases": ["llama-server", "llama-cli", "main"],
+        "category": "Low-Level C/C++ Inference",
+        "desc": "Lightweight pure C/C++ LLM inference engine supporting 4-bit and 8-bit GGUF quantization.",
+        "icon": "🦙",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/ggerganov/llama.cpp",
+        "install": {
+            "linux": "sudo apt install llama.cpp || brew install llama.cpp",
+            "macos": "brew install llama.cpp",
+            "windows": "winget install ggerganov.llama.cpp"
+        }
+    },
+    {
+        "id": "sgpt",
+        "name": "Shell-GPT (SGPT)",
+        "binary": "sgpt",
+        "aliases": ["sgpt", "shell-gpt"],
+        "category": "Terminal Command Synthesizer",
+        "desc": "Command-line AI assistant for shell commands, code snippets, git commits, and inline terminal queries.",
+        "icon": "🐚",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/TheR1D/shell_gpt",
+        "install": {
+            "linux": "pip install shell-gpt",
+            "macos": "brew install shell-gpt || pip install shell-gpt",
+            "windows": "pip install shell-gpt"
+        }
+    },
+    {
+        "id": "aichat",
+        "name": "AIChat Terminal",
+        "binary": "aichat",
+        "aliases": ["aichat"],
+        "category": "Multi-Provider Terminal Client",
+        "desc": "Rust-powered All-in-One AI CLI tool supporting 20+ LLM providers, local models, and RAG search.",
+        "icon": "💬",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/sigoden/aichat",
+        "install": {
+            "linux": "cargo install aichat || brew install aichat",
+            "macos": "brew install aichat",
+            "windows": "winget install sigoden.aichat"
+        }
+    },
+    {
+        "id": "llm",
+        "name": "LLM CLI (Simon Willison)",
+        "binary": "llm",
+        "aliases": ["llm"],
+        "category": "Modular Python AI Hub",
+        "desc": "CLI utility and Python library for accessing and embedding local and cloud LLMs with plugins.",
+        "icon": "📦",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/simonw/llm",
+        "install": {
+            "linux": "pip install llm",
+            "macos": "brew install llm || pip install llm",
+            "windows": "pip install llm"
+        }
+    },
+    {
+        "id": "huggingface",
+        "name": "Hugging Face Hub CLI",
+        "binary": "huggingface-cli",
+        "aliases": ["huggingface-cli", "hf"],
+        "category": "Weights & Datasets Vault",
+        "desc": "Official CLI for discovering, downloading, and managing transformer models, GGUF weights, and datasets.",
+        "icon": "🤗",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/huggingface/huggingface_hub",
+        "install": {
+            "linux": "pip install --upgrade huggingface_hub",
+            "macos": "pip3 install --upgrade huggingface_hub",
+            "windows": "pip install --upgrade huggingface_hub"
+        }
+    },
+    {
+        "id": "litellm",
+        "name": "LiteLLM Proxy & Gateway",
+        "binary": "litellm",
+        "aliases": ["litellm"],
+        "category": "Universal API Proxy & Router",
+        "desc": "Call 100+ LLMs using OpenAI format, load balancing, rate limiting, and fallback routing.",
+        "icon": "🔀",
+        "doc_route": "/docs/index.html",
+        "github": "https://github.com/BerriAI/litellm",
+        "install": {
+            "linux": "pip install litellm[proxy]",
+            "macos": "pip3 install litellm[proxy]",
+            "windows": "pip install litellm[proxy]"
+        }
     }
 ]
 
