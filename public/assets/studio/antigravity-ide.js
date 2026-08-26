@@ -1,95 +1,205 @@
 /**
- * ⚡ ZOTH STUDIO — ANTIGRAVITY MULTI-AGENT IDE COCKPIT ENGINE (v1.0)
- * Orchestrates 21 sovereign agents, chat streaming, code editor simulation, 
- * live preview iframe sync, and embedded terminal runner.
+ * ⚡ ZOTH STUDIO — SOVEREIGN MULTI-AGENT SWARM COCKPIT (v2.0)
+ * All-Around Agent Workspace: Software Engineering, Data Analysis, 
+ * Social & Content Automation, Pentesting & Security, Deep Research & Reasoning.
+ * With Dynamic Swarm Intensity Selector (Solo, Triangulated Strike Team, Full 21 Swarm).
  */
 (function () {
   'use strict';
 
-  // 21 Full Sovereign Agents Roster
+  // 21 Full Sovereign Agents with Specialty Domains
   const SWARM_AGENTS = [
-    { id: 'azoth', name: 'Master Azoth', role: 'Prime Alchemist & Architect', icon: '✨', color: '#e8c872' },
-    { id: 'antigravity', name: 'Antigravity', role: 'Lead AST Orchestrator', icon: '🪐', color: '#7c9cff' },
-    { id: 'grok', name: 'Grok', role: 'Astrolabe Truth Oracle', icon: '📐', color: '#34d399' },
-    { id: 'hermes', name: 'Hermes', role: 'Tool & Action Dispatcher', icon: '⚡', color: '#f59e0b' },
-    { id: 'ghostbyte', name: 'GhostByte', role: 'Argon2id Vault Sentinel', icon: '🔒', color: '#c084fc' },
-    { id: 'athena', name: 'Athena', role: 'AEO Knowledge Architect', icon: '🦉', color: '#c084fc' },
-    { id: 'chronos', name: 'Chronos', role: 'Temporal DAG Navigator', icon: '⏳', color: '#a855f7' },
-    { id: 'draco', name: 'Draco', role: 'Fusion Compiler & Arbiter', icon: '🐉', color: '#e8c872' },
-    { id: 'ignis', name: 'Ignis', role: 'Refactor Engine & Ship', icon: '🔥', color: '#ff5500' },
-    { id: 'kai', name: 'Kai', role: 'Workspace Inspector & AST', icon: '🔍', color: '#00f0ff' },
-    { id: 'kitsune', name: 'Kitsune', role: 'Taste & AX Motion Restraint', icon: '🦊', color: '#ff007a' },
-    { id: 'kraken', name: 'Kraken', role: 'Deep Memory Daemon & Cache', icon: '🐙', color: '#00f0ff' },
-    { id: 'leviathan', name: 'Leviathan', role: 'Abyssal Load & Concurrency', icon: '🐋', color: '#38bdf8' },
-    { id: 'lycan', name: 'Lycan', role: 'SecOps & Boundary Auditor', icon: '🐺', color: '#f43f5e' },
-    { id: 'onyx', name: 'Onyx', role: 'Zero-Leak Terminal Core', icon: '🖤', color: '#cbd5e1' },
-    { id: 'scorpius', name: 'Scorpius', role: 'Penetration & Red Team', icon: '🦂', color: '#ef4444' },
-    { id: 'aquila', name: 'Aquila', role: 'High-Altitude Vision & Eagle', icon: '🦅', color: '#fbbf24' },
-    { id: 'aether', name: 'Aether', role: 'Universal Ambient Mesh', icon: '🌌', color: '#e2e8f0' },
-    { id: 'pixel-neko', name: 'Pixel Neko', role: '8-Bit Retro Sprite Vibe', icon: '🐱', color: '#ec4899' },
-    { id: 'pixel-shiba', name: 'Pixel Shiba', role: 'High-Energy Playbook Runner', icon: '🐕', color: '#eab308' },
-    { id: 'radical-minion', name: 'Radical Minion', role: 'Autonomous Fast Tasker', icon: '⚡', color: '#f97316' }
+    { id: 'azoth', name: 'Master Azoth', role: 'Prime Architect & Synthesis', icon: '✨', color: '#e8c872', domain: 'System Synthesis' },
+    { id: 'antigravity', name: 'Antigravity', role: 'Lead Orchestrator & AST', icon: '🪐', color: '#7c9cff', domain: 'Code & Architecture' },
+    { id: 'grok', name: 'Grok', role: 'Astrolabe Truth & First Principles', icon: '📐', color: '#34d399', domain: 'Math & Reasoning' },
+    { id: 'hermes', name: 'Hermes', role: 'Action Dispatcher & Tooling', icon: '⚡', color: '#f59e0b', domain: 'Execution & Automation' },
+    { id: 'ghostbyte', name: 'GhostByte', role: 'Argon2id Vault Sentinel', icon: '🔒', color: '#c084fc', domain: 'Security & Keys' },
+    { id: 'athena', name: 'Athena', role: 'AEO & Semantic Knowledge', icon: '🦉', color: '#c084fc', domain: 'Research & Knowledge' },
+    { id: 'chronos', name: 'Chronos', role: 'Temporal DAG Navigator', icon: '⏳', color: '#a855f7', domain: 'Workflows & Git' },
+    { id: 'draco', name: 'Draco', role: 'Fusion Compiler & Arbiter', icon: '🐉', color: '#e8c872', domain: 'Consensus & Merging' },
+    { id: 'ignis', name: 'Ignis', role: 'Refactor Engine & Pipelines', icon: '🔥', color: '#ff5500', domain: 'Refactoring & CI' },
+    { id: 'kai', name: 'Kai', role: 'Workspace Inspector & AST', icon: '🔍', color: '#00f0ff', domain: 'Static Analysis' },
+    { id: 'kitsune', name: 'Kitsune', role: 'Taste & AX Motion Restraint', icon: '🦊', color: '#ff007a', domain: 'Visuals & Polish' },
+    { id: 'kraken', name: 'Kraken', role: 'Deep Memory Daemon & Cache', icon: '🐙', color: '#00f0ff', domain: 'Memory & Persistence' },
+    { id: 'leviathan', name: 'Leviathan', role: 'Abyssal Load & Concurrency', icon: '🐋', color: '#38bdf8', domain: 'Scale & Performance' },
+    { id: 'lycan', name: 'Lycan', role: 'SecOps & Boundary Auditor', icon: '🐺', color: '#f43f5e', domain: 'Threats & Ports' },
+    { id: 'onyx', name: 'Onyx', role: 'Zero-Leak Terminal Core', icon: '🖤', color: '#cbd5e1', domain: 'CLI & Low-Level' },
+    { id: 'scorpius', name: 'Scorpius', role: 'Penetration & Red Team', icon: '🦂', color: '#ef4444', domain: 'Red Teaming' },
+    { id: 'aquila', name: 'Aquila', role: 'High-Altitude Vision & Eagle', icon: '🦅', color: '#fbbf24', domain: 'Vision & Strategy' },
+    { id: 'aether', name: 'Aether', role: 'Universal Ambient Mesh', icon: '🌌', color: '#e2e8f0', domain: 'Bus Networking' },
+    { id: 'pixel-neko', name: 'Pixel Neko', role: '8-Bit Retro Sprite Vibe', icon: '🐱', color: '#ec4899', domain: 'Creative & Gaming' },
+    { id: 'pixel-shiba', name: 'Pixel Shiba', role: 'Playbook Automation Runner', icon: '🐕', color: '#eab308', domain: 'Social Automation' },
+    { id: 'radical-minion', name: 'Radical Minion', role: 'Autonomous Fast Tasker', icon: '⚡', color: '#f97316', domain: 'Quick Scripting' }
   ];
 
-  // Mock File System for Embedded Code Editor
+  // Swarm Goal Categories (Build, Automate, Research, Secure, Create)
+  const SWARM_PRESETS = [
+    {
+      id: 'software',
+      title: '💻 Software & Apps',
+      desc: 'Full-stack engineering, microservices, bug hunting, and AST refactors.',
+      strikeTeam: ['antigravity', 'grok', 'hermes', 'ignis', 'kai'],
+      samples: [
+        'Build a multi-threaded Python CLI for automated dataset scraping with SQLite cache',
+        'Refactor our auth middleware to strict zero-trust session tokens',
+        'Audit code AST and generate comprehensive unit test suites'
+      ]
+    },
+    {
+      id: 'automation',
+      title: '⚡ Workflow Automation',
+      desc: 'Cron jobs, batch data pipelines, multi-platform publishing, and webhooks.',
+      strikeTeam: ['hermes', 'chronos', 'pixel-shiba', 'radical-minion'],
+      samples: [
+        'Automate multi-platform dispatches (X/Twitter, LinkedIn, Discord) with thread chunking',
+        'Build a scheduled lead enrichment scraper with CSV and JSON exports',
+        'Create a local cron watcher that triggers backups on file modification'
+      ]
+    },
+    {
+      id: 'research',
+      title: '🧠 Research & Knowledge',
+      desc: 'Deep document synthesis, competitor intelligence, AEO/SEO indexing, and math proofs.',
+      strikeTeam: ['grok', 'athena', 'aquila', 'azoth'],
+      samples: [
+        'Synthesize competitive analysis report across AI agent frameworks with matrix tables',
+        'Generate llms.txt context layer, JSON-LD Schema triples, and semantic taxonomy',
+        'Perform first-principles mathematical verification of token budget heuristics'
+      ]
+    },
+    {
+      id: 'security',
+      title: '🔒 Security & Cryptography',
+      desc: 'Argon2id key vaulting, penetration testing, port audits, and memory isolation.',
+      strikeTeam: ['ghostbyte', 'lycan', 'scorpius', 'onyx'],
+      samples: [
+        'Run penetration audit on all active local listening ports (:8088, :8484, :8788)',
+        'Derive Argon2id encrypted key enclave with hardware-bound tokens',
+        'Sanitize temporary process buffers to guarantee zero plaintext memory leaks'
+      ]
+    },
+    {
+      id: 'creative',
+      title: '🎨 Creative & Media',
+      desc: '3D WebGL scenes, interactive storyboards, soundscapes, and anime episodes.',
+      strikeTeam: ['kitsune', 'pixel-neko', 'azoth', 'aether'],
+      samples: [
+        'Generate a 60fps WebGL particle galaxy with audio-reactive Solfeggio frequencies',
+        'Compose a 4-panel cyberpunk anime manga episode script with character dialogue',
+        'Design a high-contrast futuristic dark-mode HUD theme with fluid animations'
+      ]
+    }
+  ];
+
+  // Mock File System
   const FILE_SYSTEM = {
+    'tasks/project_plan.md': `# Sovereign Swarm Execution Plan
+## Objective: Autonomous Task Execution Across 21 Agents
+- **Target Goal**: End-to-end task breakdown & multi-agent execution
+- **Swarm Intensity**: Triangulated Strike Team (3 to 5 specialists)
+- **Status**: Ready on Loopback :8484`,
+    'scripts/automate_pipeline.py': `#!/usr/bin/env python3
+"""Autonomous Swarm Task Automation Script"""
+import time
+
+def execute_swarm_task(goal_name):
+    print(f"⚡ [SWARM] Dispatched goal: {goal_name}")
+    time.sleep(0.5)
+    print("✔ [SWARM] All invariants verified. Exit 0.")
+
+if __name__ == "__main__":
+    execute_swarm_task("General Automation Pipeline")`,
     'public/index.html': `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
-  <title>Zoth Studio — Sovereign AI Multi-Agent Workstation</title>
-  <link rel="stylesheet" href="/assets/zoth-theme.css" />
-  <link rel="stylesheet" href="/assets/zoth-nav.css" />
+  <title>Zoth Studio — Sovereign Multi-Agent Workspace</title>
 </head>
 <body>
-  <!-- Master Sovereign Hero & 21-Agent Swarm Section -->
-  <main id="main-content">
-    <section class="hero">
-      <h1 class="hero-h1">21 AI AGENTS. ZERO CLOUD LEAKAGE.</h1>
-      <p class="hero-subhead">Run autonomous AI swarms directly on your machine.</p>
-    </section>
-  </main>
+  <h1>21 Autonomous Agents Ready</h1>
 </body>
-</html>`,
-    'public/assets/zoth-theme.css': `/* Zoth 4-Theme Sacred Geometric Tokens */
-:root, html[data-theme="dark"] {
-  --bg: #05060a;
-  --panel: rgba(14, 19, 34, 0.88);
-  --cyan: #00f0ff;
-  --gold: #fbbf24;
-  --magenta: #d946ef;
-  --line: rgba(255, 255, 255, 0.12);
-}`,
-    'bin/zoth': `#!/usr/bin/env python3
-"""Zoth Studio Sovereign CLI & Orchestrator Runner"""
-import sys, os
-
-def main():
-    print("⚡ Zoth Studio CLI online on :8484 and :8088")
-
-if __name__ == "__main__":
-    main()`
+</html>`
   };
 
-  let activeFile = 'public/index.html';
+  let activeFile = 'tasks/project_plan.md';
   let targetAgentId = 'all';
+  let swarmIntensity = 'strike'; // 'solo' | 'strike' | 'full'
   let chatMode = 'swarm'; // 'swarm' | 'direct'
   let splitLayout = 'split'; // 'split' | 'chat-full' | 'editor-full'
 
-  // Initialize IDE
+  // Initialize Cockpit
   function initIde() {
     renderSwarmRoster();
     renderDirectAgentDropdown();
+    renderGoalPresets();
     renderFileTree();
     renderEditorLineNumbers();
     loadEditorFile(activeFile);
     setupKeyboardShortcuts();
     
-    // Set mobile initial view
     if (window.innerWidth <= 880) {
       setMobileIdeView('chat');
     }
   }
+
+  // Render Swarm Goal Preset Cards
+  function renderGoalPresets() {
+    const wrap = document.getElementById('goalPresetsGrid');
+    if (!wrap) return;
+
+    wrap.innerHTML = SWARM_PRESETS.map(preset => `
+      <div class="goal-preset-card" onclick="selectGoalPreset('${preset.id}')">
+        <div class="preset-card-head">
+          <strong>${preset.title}</strong>
+          <span class="preset-team-pill">${preset.strikeTeam.length} Agents</span>
+        </div>
+        <p class="preset-card-desc">${preset.desc}</p>
+        <div class="preset-samples">
+          ${preset.samples.map(s => `<button class="sample-chip" onclick="event.stopPropagation(); quickSendPrompt('${s.replace(/'/g, "\\'")}')">⚡ ${s.slice(0, 48)}...</button>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.selectGoalPreset = function (presetId) {
+    const preset = SWARM_PRESETS.find(p => p.id === presetId);
+    if (!preset) return;
+
+    // Log to chat
+    appendChatMessage({
+      isUser: false,
+      author: 'Master Azoth',
+      role: 'Swarm Conductor',
+      avatar: '✨',
+      color: '#e8c872',
+      text: `Swarm Mode aligned to <strong>${preset.title}</strong>. Primary strike team deployed: ${preset.strikeTeam.map(a => `<span class="tag-pill-inline">@${a}</span>`).join(' ')}. How may we assist?`
+    });
+
+    logTerminalLine(`[SWARM] Assembled Strike Team for ${preset.title}: [${preset.strikeTeam.join(', ')}]`, 'green');
+  };
+
+  // Set Swarm Strength / Intensity (Solo vs Strike Team vs Full Swarm)
+  window.setSwarmIntensity = function (intensity) {
+    swarmIntensity = intensity;
+    document.querySelectorAll('.swarm-intensity-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-intensity') === intensity);
+    });
+
+    const label = intensity === 'solo' ? 'Solo Specialist (1 Agent)' :
+                  intensity === 'strike' ? 'Triangulated Strike Team (3–5 Agents)' :
+                  'Full Pantheon Swarm (All 21 Agents)';
+
+    appendChatMessage({
+      isUser: false,
+      author: 'Antigravity',
+      role: 'Lead Orchestrator',
+      avatar: '🪐',
+      color: '#7c9cff',
+      text: `Swarm Execution Strength adjusted to <strong>${label}</strong>. Tasks will now be distributed with ${intensity === 'solo' ? 'minimal resource overhead' : intensity === 'strike' ? 'balanced multi-agent verification' : 'maximum multi-model consensus depth'}.`
+    });
+
+    logTerminalLine(`[CONFIG] Swarm Strength updated to: ${intensity.toUpperCase()} (${label})`, 'cyan');
+  };
 
   // Render 21 Agents in the Sidebar Swarm Roster
   function renderSwarmRoster() {
@@ -102,10 +212,10 @@ if __name__ == "__main__":
           <span class="roster-icon">${agent.icon}</span>
           <div>
             <div class="roster-name" style="color:${agent.color}">${agent.name}</div>
-            <div class="roster-role">${agent.role}</div>
+            <div class="roster-role">${agent.domain} · ${agent.role}</div>
           </div>
         </div>
-        <button type="button" class="roster-chat-btn" onclick="event.stopPropagation(); openDirectAgentChat('${agent.id}')">Chat</button>
+        <button type="button" class="roster-chat-btn" onclick="event.stopPropagation(); openDirectAgentChat('${agent.id}')">Assign</button>
       </div>
     `).join('');
   }
@@ -116,7 +226,7 @@ if __name__ == "__main__":
     if (!dd) return;
 
     dd.innerHTML = SWARM_AGENTS.map(agent => `
-      <option value="${agent.id}">${agent.icon} ${agent.name} (${agent.role})</option>
+      <option value="${agent.id}">${agent.icon} ${agent.name} — ${agent.domain}</option>
     `).join('');
   }
 
@@ -162,7 +272,7 @@ if __name__ == "__main__":
   // Switch Active Tab
   window.switchEditorTab = function (filename) {
     if (!FILE_SYSTEM[filename]) {
-      FILE_SYSTEM[filename] = `// New file: ${filename}\n`;
+      FILE_SYSTEM[filename] = `# File: ${filename}\n`;
     }
     loadEditorFile(filename);
 
@@ -236,27 +346,25 @@ if __name__ == "__main__":
   window.setTargetAgent = function (agentId) {
     targetAgentId = agentId;
     
-    // Update mention pill UI
     document.querySelectorAll('.mention-pill').forEach(pill => {
       const isMatch = (agentId === 'all' && pill.textContent.includes('All')) ||
                       (pill.textContent.includes(agentId));
       pill.classList.toggle('active', isMatch);
     });
 
-    // Update Chat Column Header
     const titleEl = document.getElementById('chatHeaderTitle');
     const subEl = document.getElementById('chatHeaderSub');
     const avatarEl = document.getElementById('chatHeaderAvatar');
 
     if (agentId === 'all') {
-      if (titleEl) titleEl.textContent = 'Swarm Consensus Room';
-      if (subEl) subEl.textContent = '21 sovereign agents triangulating proposals';
+      if (titleEl) titleEl.textContent = 'Swarm Task Matrix';
+      if (subEl) subEl.textContent = `Strength: ${swarmIntensity.toUpperCase()} · 21 agents standing by`;
       if (avatarEl) avatarEl.textContent = '🌐';
     } else {
       const agent = SWARM_AGENTS.find(a => a.id === agentId);
       if (agent) {
         if (titleEl) titleEl.textContent = agent.name;
-        if (subEl) subEl.textContent = agent.role;
+        if (subEl) subEl.textContent = `${agent.domain} · ${agent.role}`;
         if (avatarEl) avatarEl.textContent = agent.icon;
       }
     }
@@ -286,22 +394,20 @@ if __name__ == "__main__":
     const userText = input.value.trim();
     input.value = '';
 
-    // Append User Message to Stream
     appendChatMessage({
       isUser: true,
       author: 'Operator',
-      role: 'Human Lead',
+      role: 'Human Sovereign Lead',
       avatar: '👤',
       text: userText
     });
 
-    // Generate Agent / Swarm Response
     setTimeout(() => {
       handleAgentResponse(userText);
-    }, 600);
+    }, 550);
   };
 
-  // Handle Agent Response Dispatch
+  // Handle Agent Response Dispatch according to Swarm Strength & Topic
   function handleAgentResponse(prompt) {
     const stream = document.getElementById('chatStreamScroll');
     if (!stream) return;
@@ -310,14 +416,31 @@ if __name__ == "__main__":
     const lower = prompt.toLowerCase();
 
     if (targetAgentId === 'all') {
-      if (lower.includes('@grok') || lower.includes('math') || lower.includes('verify') || lower.includes('truth')) {
-        respondingAgents = ['grok', 'antigravity'];
-      } else if (lower.includes('@hermes') || lower.includes('tool') || lower.includes('run') || lower.includes('command')) {
-        respondingAgents = ['hermes', 'azoth'];
-      } else if (lower.includes('security') || lower.includes('vault') || lower.includes('key')) {
-        respondingAgents = ['ghostbyte', 'azoth'];
+      if (swarmIntensity === 'solo') {
+        // Pick best single specialist
+        if (lower.includes('scrape') || lower.includes('automate') || lower.includes('cron')) {
+          respondingAgents = ['hermes'];
+        } else if (lower.includes('security') || lower.includes('vault') || lower.includes('port')) {
+          respondingAgents = ['ghostbyte'];
+        } else if (lower.includes('research') || lower.includes('report') || lower.includes('math')) {
+          respondingAgents = ['grok'];
+        } else {
+          respondingAgents = ['antigravity'];
+        }
+      } else if (swarmIntensity === 'strike') {
+        // Strike team of 3 specialists
+        if (lower.includes('automate') || lower.includes('task')) {
+          respondingAgents = ['hermes', 'pixel-shiba', 'antigravity'];
+        } else if (lower.includes('security') || lower.includes('audit')) {
+          respondingAgents = ['ghostbyte', 'lycan', 'azoth'];
+        } else if (lower.includes('research') || lower.includes('data')) {
+          respondingAgents = ['athena', 'grok', 'aquila'];
+        } else {
+          respondingAgents = ['antigravity', 'grok', 'azoth'];
+        }
       } else {
-        respondingAgents = ['antigravity', 'azoth', 'grok'];
+        // Full Swarm mode
+        respondingAgents = ['antigravity', 'grok', 'hermes', 'azoth', 'ghostbyte'];
       }
     } else {
       respondingAgents = [targetAgentId];
@@ -330,35 +453,37 @@ if __name__ == "__main__":
         appendChatMessage({
           isUser: false,
           author: agent.name,
-          role: agent.role,
+          role: `${agent.domain} · ${agent.role}`,
           avatar: agent.icon,
           color: agent.color,
           text: replyText
         });
         
-        // Log to embedded terminal
-        logTerminalLine(`[SWARM] Agent @${agent.id} dispatched response: "${prompt.slice(0, 32)}..."`, 'cyan');
-      }, (idx + 1) * 750);
+        logTerminalLine(`[SWARM] Agent @${agent.id} (${agent.domain}) completed task step: "${prompt.slice(0, 28)}..."`, 'cyan');
+      }, (idx + 1) * 650);
     });
   }
 
   function generateContextualReply(agent, prompt) {
     const p = prompt.toLowerCase();
     if (agent.id === 'antigravity') {
-      return `Parsed AST structure for <code>${activeFile}</code>. Verified dependency bindings across our modules. Generating subagent orchestration DAG to execute your request cleanly.`;
+      return `Deconstructed your goal into parallel subtasks across our strike team. Topology graph verified under <code>${activeFile}</code>. Ready to write code, synthesize configs, or orchestrate tools.`;
     } else if (agent.id === 'grok') {
-      return `Astrolabe invariant confirmed. Zero mathematical contradictions detected in the current scope. All semantic nodes and TypeScript signatures are valid.`;
+      return `First-principles analysis: Analyzed requirements against mathematical logic. Invariants confirmed 100% valid with zero contradiction in execution steps.`;
     } else if (agent.id === 'hermes') {
-      return `Tool harness initialized. Sub-process test ran in 8ms with exit code 0. Terminal logs synced below.`;
+      return `Tool execution dispatched. Invoked local subprocess harness in 8ms with exit code 0. Generated output synced to workspace.`;
     } else if (agent.id === 'azoth') {
-      return `The Great Synthesis holds true. Triangulated code proposals harmonized under local loopback :8484 with zero telemetry leakage.`;
+      return `Universal synthesis achieved. Harmonized multi-agent proposals into a single executable solution on loopback :8484.`;
     } else if (agent.id === 'ghostbyte') {
-      return `Argon2id cryptographic isolation active. Local memory buffer verified free of credential leakage.`;
+      return `Security review: Verified zero plaintext leaks, isolated memory buffer, and enforced Argon2id boundary rules.`;
+    } else if (agent.id === 'athena') {
+      return `Knowledge indexed. Formatted schema, semantic triples, and documentation manifests for instant retrieval.`;
+    } else if (agent.id === 'pixel-shiba') {
+      return `Social & task automation playbook active! Batch jobs queued and ready for scheduled dispatch.`;
     }
-    return `Specialist ${agent.name} (${agent.role}) has processed your input against our local codebase invariants.`;
+    return `Specialist ${agent.name} (${agent.domain}) has processed your goal against local invariants with zero cloud dependencies.`;
   }
 
-  // Append Message to Stream UI
   function appendChatMessage(msg) {
     const stream = document.getElementById('chatStreamScroll');
     if (!stream) return;
@@ -381,7 +506,6 @@ if __name__ == "__main__":
     stream.scrollTop = stream.scrollHeight;
   }
 
-  // Clear Chat History
   window.clearActiveChatMessages = function () {
     const stream = document.getElementById('chatStreamScroll');
     if (stream) {
@@ -389,15 +513,14 @@ if __name__ == "__main__":
         <div class="chat-system-banner">
           <div class="sys-banner-icon">🪐</div>
           <div>
-            <strong>Chat History Cleared</strong>
-            <p>Ready for a fresh multi-agent session. Mention any of the 21 agents to begin.</p>
+            <strong>Swarm Workspace Reset</strong>
+            <p>Ready for a fresh goal. Select a swarm preset, adjust swarm strength, or prompt directly.</p>
           </div>
         </div>
       `;
     }
   };
 
-  // Toggle Layout Split Mode
   window.toggleLayoutSplit = function () {
     const deck = document.getElementById('ideSplitDeck');
     if (!deck) return;
@@ -414,7 +537,6 @@ if __name__ == "__main__":
     }
   };
 
-  // Editor vs Live Preview Pane Switcher
   window.setEditorPaneMode = function (mode) {
     const btnEditor = document.getElementById('btnModeEditor');
     const btnPrev = document.getElementById('btnModePreview');
@@ -433,15 +555,13 @@ if __name__ == "__main__":
     if (frame) frame.src = frame.src;
   };
 
-  // Run File Diagnostics Action
   window.runActiveFileDiagnostics = function () {
-    logTerminalLine(`[DIAGNOSTICS] Running AST AST checker on ${activeFile}...`, 'gold');
+    logTerminalLine(`[DIAGNOSTICS] Checking invariants on ${activeFile}...`, 'gold');
     setTimeout(() => {
-      logTerminalLine(`✔ Syntax valid: 0 errors, 0 unused imports. Shannon entropy H=1.04 bits.`, 'green');
-    }, 400);
+      logTerminalLine(`✔ Invariant check passed: 0 syntax collisions, 0 memory leaks. Ready to ship.`, 'green');
+    }, 350);
   };
 
-  // Terminal Controls
   window.switchTerminalTab = function (tabKey) {
     document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
     const activeTab = document.getElementById('tab' + tabKey.charAt(0).toUpperCase() + tabKey.slice(1));
@@ -450,9 +570,9 @@ if __name__ == "__main__":
     if (tabKey === 'term') {
       logTerminalLine(`Switched to Live Subprocess Terminal (:8088 / :8484)`, 'cyan');
     } else if (tabKey === 'diag') {
-      logTerminalLine(`[AST TELEMETRY] All 83 pages passing syntax invariants with 0 broken tags.`, 'green');
+      logTerminalLine(`[SWARM TELEMETRY] All active tasks verified with 0 invariant violations.`, 'green');
     } else if (tabKey === 'bus') {
-      logTerminalLine(`[EVENT BUS] 21/21 Agents connected on WebSocket loopback :8484`, 'green');
+      logTerminalLine(`[EVENT BUS] 21/21 Agents listening on WebSocket loopback :8484`, 'green');
     }
   };
 
@@ -485,7 +605,6 @@ if __name__ == "__main__":
     termBody.scrollTop = termBody.scrollHeight;
   }
 
-  // Mobile View Switcher
   window.setMobileIdeView = function (view) {
     document.querySelectorAll('.m-view-btn').forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-view') === view);
@@ -504,7 +623,6 @@ if __name__ == "__main__":
     }
   };
 
-  // Keyboard Shortcuts
   function setupKeyboardShortcuts() {
     const input = document.getElementById('ideChatInput');
     if (input) {
@@ -515,22 +633,8 @@ if __name__ == "__main__":
         }
       });
     }
-
-    window.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
-        e.preventDefault();
-        switchSidebarPanel('chat');
-      } else if (e.ctrlKey && e.shiftKey && e.code === 'KeyE') {
-        e.preventDefault();
-        switchSidebarPanel('explorer');
-      } else if (e.ctrlKey && e.shiftKey && e.code === 'KeyS') {
-        e.preventDefault();
-        switchSidebarPanel('swarm');
-      }
-    });
   }
 
-  // Self Boot on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initIde);
   } else {
