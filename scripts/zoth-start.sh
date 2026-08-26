@@ -36,6 +36,15 @@ if [[ "$HUB" -eq 1 && -d "$ROOT/public" ]]; then
   echo "🌐 Public Studio Hub: http://127.0.0.1:8088/"
 fi
 
+# Background Memory Daemon & 3D Maze (:8788)
+MEM_DAEMON="$(cd "$ROOT/.." && pwd)/memory-daemon/memory-ui-server.py"
+if [[ -f "$MEM_DAEMON" ]]; then
+  if ! nc -z 127.0.0.1 8788 2>/dev/null; then
+    python3 "$MEM_DAEMON" 8788 >/dev/null 2>&1 &
+    echo "🧠 Memory Daemon & 3D Maze: http://127.0.0.1:8788/ui/"
+  fi
+fi
+
 echo "🚀 Operator Deck:     http://127.0.0.1:8484/"
 echo "============================================================"
 
