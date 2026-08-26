@@ -401,13 +401,18 @@ if __name__ == "__main__":
         }
       } else if (swarmStrength === 'strike') {
         if (isImageTask) {
-          // Antigravity (Lead #1) + Hermes (Lead #3) + Kitsune (Lead #6)
-          activeSquads = [SWARM_HIERARCHY[0], SWARM_HIERARCHY[2], SWARM_HIERARCHY[5]];
+          // Kitsune (Lead #6) creates image FIRST -> Antigravity (Lead #1) analyzes -> Hermes (Lead #3) manages export
+          activeSquads = [SWARM_HIERARCHY[5], SWARM_HIERARCHY[0], SWARM_HIERARCHY[2]];
         } else {
           activeSquads = [SWARM_HIERARCHY[0], SWARM_HIERARCHY[1], SWARM_HIERARCHY[2]];
         }
       } else {
-        activeSquads = SWARM_HIERARCHY; // All 7 squads (21 agents)
+        if (isImageTask) {
+          // Put Kitsune squad first in full swarm
+          activeSquads = [SWARM_HIERARCHY[5], SWARM_HIERARCHY[0], SWARM_HIERARCHY[1], SWARM_HIERARCHY[2], SWARM_HIERARCHY[3], SWARM_HIERARCHY[4], SWARM_HIERARCHY[6]];
+        } else {
+          activeSquads = SWARM_HIERARCHY;
+        }
       }
     }
 

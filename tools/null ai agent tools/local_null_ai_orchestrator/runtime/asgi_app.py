@@ -721,16 +721,12 @@ async def api_zoth_swarm(request: Request) -> Response:
                 pass
             return f"Processed task vector for: {user_prompt[:40]}..."
 
-        # Generate live squad responses
+        # Generate live squad responses with sequential context awareness
         squad_results = []
         p_lower = prompt.lower()
+        is_visual = any(w in p_lower for w in ("image", "picture", "photo", "art", "draw", "render", "illustration", "wallpaper", "matrix", "threejs"))
 
-        # 1. Antigravity Lead
-        agy_text = _query_local_model("zoth-ai-micro:latest", "You are Antigravity, lead AST orchestrator. Formulate a technical execution blueprint and assign tasks in 1-2 sharp sentences.", prompt)
-        squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
-
-        # 2. Visual / Image Agent (Kitsune with Pollinations)
-        if any(w in p_lower for w in ("image", "picture", "photo", "art", "draw", "render", "illustration", "wallpaper", "matrix", "threejs")):
+        if is_visual:
             import urllib.parse
             clean_p = prompt.replace("make me an image of", "").replace("generate an image of", "").replace("make an image of", "").strip()
             if not clean_p:
@@ -739,16 +735,34 @@ async def api_zoth_swarm(request: Request) -> Response:
             encoded_url = urllib.parse.quote(enhanced_prompt)
             safe_seed = int(time.time()) % 2000000000
             img_url = f"https://image.pollinations.ai/prompt/{encoded_url}?width=1024&height=1024&nologo=true&seed={safe_seed}&model=flux"
+            
+            # 1. Kitsune creates the visual artifact first
             kit_html = f"Rendered visual neural synthesis for: <em>\"{clean_p}\"</em>:<br/><div style=\"margin-top:8px;border-radius:12px;overflow:hidden;border:1px solid rgba(0,240,255,0.3);box-shadow:0 8px 30px rgba(0,240,255,0.2);max-width:500px;\"><img src=\"{img_url}\" alt=\"{clean_p}\" style=\"width:100%;height:auto;display:block;\" loading=\"lazy\"/><div style=\"padding:8px 12px;background:rgba(10,15,28,0.85);font-size:0.75rem;font-family:monospace;display:flex;align-items:center;justify-content:space-between;\"><span style=\"color:#00f0ff;\">⚡ Pollinations Neural Flux · 1024x1024</span><a href=\"{img_url}\" target=\"_blank\" style=\"color:#fbbf24;text-decoration:none;\">Full 8K ↗</a></div></div>"
             squad_results.append({"agent": "kitsune", "role": "Lead AGY #6 · Visuals & 3D Shaders", "icon": "🦊", "color": "#ff007a", "text": kit_html})
 
-        # 3. Hermes (Tools & Automation)
-        if strength in ("strike", "full") or any(w in p_lower for w in ("tool", "cron", "script", "automate", "social")):
-            hermes_text = _query_local_model("zoth-ai-micro:latest", "You are Hermes, autonomous tool runner. Describe the automated script or tool you dispatched in 1-2 sentences.", prompt)
-            squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
+            # 2. Antigravity analyzes the generated visual artifact and workspace integration
+            agy_text = _query_local_model("zoth-ai-micro:latest", f"You are Antigravity, lead architect. Analyze and critique the generated image concept for '{clean_p}'. Discuss lighting, volumetric balance, and how to integrate it into web or 3D viewports in 1-2 sharp sentences.", prompt)
+            squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
 
-        # 4. Master Azoth Synthesis
-        azoth_text = _query_local_model("zoth-ai-micro:latest", "You are Master Azoth, the supreme alchemist architect. In 2-3 sentences, deliver the grand synthesis, practical resolution, and concrete deliverable for the user's specific request.", prompt)
+            # 3. Hermes prepares asset storage & export pipeline
+            if strength in ("strike", "full"):
+                hermes_text = _query_local_model("zoth-ai-micro:latest", f"You are Hermes, autonomous tool runner. Explain the automated script you prepared to download and cache the 1024x1024 image into 'public/assets/images/' in 1-2 sentences.", prompt)
+                squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
+
+            # 4. Master Azoth Synthesis of the created artifact
+            azoth_text = _query_local_model("zoth-ai-micro:latest", f"You are Master Azoth, the supreme alchemist architect. Review the visual artifact created for '{clean_p}' and the agents' analysis. In 2 sentences, deliver the grand synthesis and actionable next steps.", prompt)
+        else:
+            # 1. Antigravity Lead
+            agy_text = _query_local_model("zoth-ai-micro:latest", "You are Antigravity, lead AST orchestrator. Formulate a technical execution blueprint and assign tasks in 1-2 sharp sentences.", prompt)
+            squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
+
+            # 2. Hermes (Tools & Automation)
+            if strength in ("strike", "full") or any(w in p_lower for w in ("tool", "cron", "script", "automate", "social")):
+                hermes_text = _query_local_model("zoth-ai-micro:latest", "You are Hermes, autonomous tool runner. Describe the automated script or tool you dispatched in 1-2 sentences.", prompt)
+                squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
+
+            # 3. Master Azoth Synthesis
+            azoth_text = _query_local_model("zoth-ai-micro:latest", "You are Master Azoth, the supreme alchemist architect. In 2-3 sentences, deliver the grand synthesis, practical resolution, and concrete deliverable for the user's specific request.", prompt)
 
         return _json_response({
             "status": "ok",
