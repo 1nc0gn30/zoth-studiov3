@@ -342,10 +342,8 @@
   }
 
   function ribbon(on) {
-    ensureUi();
-    var r = document.getElementById("zoth-ribbon");
-    if (r) r.classList.toggle("on", !!on);
-    document.documentElement.classList.toggle("zoth-preview", !!on);
+    // Disabled permanently per user specification
+    return;
   }
 
   function intercept(e) {
@@ -378,11 +376,6 @@
     rewriteHubLinks();
     ensureUi();
     document.addEventListener("click", intercept, true);
-    deckAlive().then(function (ok) {
-      if (!ok) {
-        ribbon(true);
-      }
-    });
   }
 
   window.ZothGate = {
