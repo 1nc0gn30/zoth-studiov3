@@ -416,7 +416,7 @@ if __name__ == "__main__":
     // Query local orchestrator on :8484 for real model backend response
     let backendData = null;
     try {
-      const resp = await fetch('http://127.0.0.1:8484/api/zoth/swarm/squad', {
+      const resp = await fetch('http://127.0.0.1:8484/api/zoth/swarm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: prompt, strength: swarmStrength })
