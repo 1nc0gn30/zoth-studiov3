@@ -852,11 +852,38 @@ function renderList() {
       const tags = (k.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("");
       const catLabel = CATEGORIES[p.cat]?.label?.split("·")[0]?.trim() || p.cat;
       const showing = revealId === k.id && Date.now() < revealUntil;
+
+      // Real Authentic SVG Logos mapping
+      const LOGO_MAP = {
+        openai: "/assets/logos/openai.svg",
+        anthropic: "/assets/logos/anthropic.svg",
+        google: "/assets/logos/google-gemini.svg",
+        google_cloud: "/assets/logos/google-gemini.svg",
+        xai: "/assets/logos/xai-grok.svg",
+        mistral: "/assets/logos/mistral.svg",
+        meta: "/assets/logos/meta-llama.svg",
+        llama: "/assets/logos/meta-llama.svg",
+        huggingface: "/assets/logos/huggingface.svg",
+        hf: "/assets/logos/huggingface.svg",
+        github: "/assets/logos/github.svg",
+        rust: "/assets/logos/rust.svg",
+        cursor: "/assets/logos/cursor.svg",
+        deepseek: "/assets/logos/deepseek.svg",
+        nous: "/assets/logos/nous-research.svg",
+        ollama: "/assets/logos/ollama.svg",
+        docker: "/assets/logos/docker.svg"
+      };
+
+      const logoSrc = LOGO_MAP[k.provider] || LOGO_MAP[p.id] || null;
+      const logoHtml = logoSrc 
+        ? `<img src="${logoSrc}" alt="${escapeHtml(p.label)}" style="width:16px;height:16px;border-radius:4px;vertical-align:middle;flex-shrink:0;" />`
+        : `<i class="dot" style="background:${hex}"></i>`;
+
       li.innerHTML = `
         <div class="meta">
           <div class="label">
             <input type="checkbox" class="multi-cb" data-act="multi" ${multiSelected.has(k.id) ? "checked" : ""} title="Multi-select" />
-            <i class="dot" style="background:${hex}"></i>
+            ${logoHtml}
             ${k.favorite ? '<span class="star">★</span>' : ""}
             ${escapeHtml(k.label)}
             <span class="health ${healthCls}" title="format health"></span>
@@ -1285,8 +1312,32 @@ function renderPresetGrid() {
     grid.innerHTML = list
       .map((p) => {
         const hex = colorHex(p.id);
+        const LOGO_MAP = {
+          openai: "/assets/logos/openai.svg",
+          anthropic: "/assets/logos/anthropic.svg",
+          google: "/assets/logos/google-gemini.svg",
+          google_cloud: "/assets/logos/google-gemini.svg",
+          xai: "/assets/logos/xai-grok.svg",
+          mistral: "/assets/logos/mistral.svg",
+          meta: "/assets/logos/meta-llama.svg",
+          llama: "/assets/logos/meta-llama.svg",
+          huggingface: "/assets/logos/huggingface.svg",
+          hf: "/assets/logos/huggingface.svg",
+          github: "/assets/logos/github.svg",
+          rust: "/assets/logos/rust.svg",
+          cursor: "/assets/logos/cursor.svg",
+          deepseek: "/assets/logos/deepseek.svg",
+          nous: "/assets/logos/nous-research.svg",
+          ollama: "/assets/logos/ollama.svg",
+          docker: "/assets/logos/docker.svg"
+        };
+        const logoSrc = LOGO_MAP[p.id] || null;
+        const iconHtml = logoSrc
+          ? `<img src="${logoSrc}" alt="${escapeHtml(p.label)}" style="width:20px;height:20px;border-radius:4px;vertical-align:middle;margin-bottom:4px;display:block;" />`
+          : `<i class="swatch"></i>`;
+
         return `<button type="button" class="preset-card" data-preset="${p.id}" style="--pc:${hex}" role="option">
-          <i class="swatch"></i>
+          ${iconHtml}
           <strong>${escapeHtml(p.label)}</strong>
           <span class="pcat">${escapeHtml(CATEGORIES[p.cat]?.label || p.cat)}</span>
           <code>${escapeHtml(p.env || "CUSTOM_API_KEY")}</code>
