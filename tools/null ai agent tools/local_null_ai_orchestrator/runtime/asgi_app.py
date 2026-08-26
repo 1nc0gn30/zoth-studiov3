@@ -2032,11 +2032,12 @@ async def api_social_post(request: Request) -> Response:
     if not text:
         return _json_response({"error": "text required"}, 400)
 
-    # In production, dispatch through local vault bearer token
-    bearer = os.environ.get("X_BEARER_TOKEN") or os.environ.get("TWITTER_BEARER_TOKEN", "")
+    # In production, dispatch through local user access token (required for POST /2/tweets)
+    user_token = os.environ.get("X_ACCESS_TOKEN") or os.environ.get("TWITTER_ACCESS_TOKEN")
+    auth_token = user_token or os.environ.get("X_BEARER_TOKEN") or os.environ.get("TWITTER_BEARER_TOKEN", "")
     
     # Check if we should dispatch to X API v2
-    if bearer and platform in ("x", "x_twitter", "twitter"):
+    if auth_token and platform in ("x", "x_twitter", "twitter"):
         try:
             import urllib.request
             req_data = json.dumps({"text": text}).encode("utf-8")
@@ -2044,7 +2045,7 @@ async def api_social_post(request: Request) -> Response:
                 "https://api.twitter.com/2/tweets",
                 data=req_data,
                 headers={
-                    "Authorization": f"Bearer {bearer}",
+                    "Authorization": f"Bearer {auth_token}",
                     "Content-Type": "application/json"
                 }
             )
