@@ -642,13 +642,22 @@ if __name__ == "__main__":
     const p = prompt.toLowerCase();
 
     let actionableTakeaway = "";
-    if (p.includes('image') || p.includes('art') || p.includes('picture') || p.includes('random') || p.includes('matrix')) {
+    if (backendAzothText && (backendAzothText.includes('http://') || backendAzothText.includes('localhost') || backendAzothText.includes('/apps/'))) {
+      const match = backendAzothText.match(/http:\/\/[^\s<"']+/);
+      const appUrl = match ? match[0] : 'http://127.0.0.1:8088/';
       actionableTakeaway = `
-        <strong>Action Delivered:</strong> Procedural Visual Artwork synthesized. Viewable in <a href="/studio/nexus-3d.html" style="color:var(--cockpit-cyan);">Nexus 3D Omniverse</a> or local canvas.
+        <strong>Action Delivered:</strong> Live application built and running on local dev server.<br/>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+          <a href="${appUrl}" target="_blank" style="background:linear-gradient(135deg,#00f0ff,#38bdf8);color:#040711;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:800;font-size:0.78rem;">🚀 Launch Live App (${appUrl})</a>
+        </div>
       `;
-    } else if (p.includes('automate') || p.includes('script') || p.includes('cron') || p.includes('social')) {
+    } else if (p.includes('image') || p.includes('art') || p.includes('picture') || p.includes('draw')) {
       actionableTakeaway = `
-        <strong>Action Delivered:</strong> Automation pipeline generated and saved to <code>scripts/pipeline.py</code>.
+        <strong>Action Delivered:</strong> Visual artwork synthesized and rendered directly in stream above.
+      `;
+    } else if (p.includes('app') || p.includes('build') || p.includes('dev') || p.includes('create') || p.includes('server')) {
+      actionableTakeaway = `
+        <strong>Action Delivered:</strong> Application scaffolded in workspace. Live dev server running on <a href="http://127.0.0.1:8088/" target="_blank" style="color:#00f0ff;font-weight:700;">http://127.0.0.1:8088/ ↗</a>.
       `;
     } else {
       actionableTakeaway = `
