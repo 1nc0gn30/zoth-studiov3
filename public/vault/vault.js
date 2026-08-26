@@ -1491,8 +1491,13 @@ function initWebGL() {
       failIfMajorPerformanceCaveat: false,
     });
     
+    const gl = renderer.getContext();
+    const maxRenderBufferSize = gl ? gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 2048 : 2048;
+    const maxTextureSize = gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) || 2048 : 2048;
+    const maxSafeDim = Math.min(maxRenderBufferSize, maxTextureSize, 2048);
+
     function getSafeSize(val) {
-      return Math.max(1, Math.min(val || 1, 4096));
+      return Math.max(64, Math.min(val || 64, maxSafeDim));
     }
     
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
@@ -2039,15 +2044,6 @@ function initWebGL() {
       selectKey(k.id, false);
       showToast(`Selected ${k.label}`);
     });
-
-    const gl = renderer.getContext();
-    const maxRenderBufferSize = gl ? gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 2048 : 2048;
-    const maxTextureSize = gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) || 2048 : 2048;
-    const maxSafeDim = Math.min(maxRenderBufferSize, maxTextureSize, 2048);
-
-    function getSafeSize(val) {
-      return Math.max(64, Math.min(val || 64, maxSafeDim));
-    }
 
     let composer = null;
     try {
