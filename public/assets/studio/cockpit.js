@@ -343,7 +343,22 @@ if __name__ == "__main__":
     submitCockpitPrompt();
   };
 
-  window.submitCockpitPrompt = function () {
+  let systemPreflightCapabilities = null;
+
+  async function checkSystemCapabilities() {
+    try {
+      const resp = await fetch('http://127.0.0.1:8484/api/swarm/preflight');
+      if (resp.ok) {
+        systemPreflightCapabilities = await resp.json();
+        return systemPreflightCapabilities;
+      }
+    } catch (e) {
+      // Offline fallback
+    }
+    return null;
+  }
+
+  window.submitCockpitPrompt = async function () {
     if (isSwarmExecuting) return;
 
     const input = document.getElementById('cockpitInput');
@@ -359,6 +374,29 @@ if __name__ == "__main__":
       avatar: '👤',
       text: userText
     });
+
+    // ─── Agent Preflight Validation ───
+    const caps = systemPreflightCapabilities || await checkSystemCapabilities();
+    if (caps && targetAgentId !== 'all') {
+      const targetSquadKey = targetAgentId === 'hermes' || targetAgentId === 'radical-minion' || targetAgentId === 'pixel-shiba' ? 'squad_3_hermes' :
+                             targetAgentId === 'grok' || targetAgentId === 'athena' || targetAgentId === 'chronos' ? 'squad_2_grok' :
+                             targetAgentId === 'antigravity' || targetAgentId === 'kai' || targetAgentId === 'ignis' ? 'squad_1_antigravity' : null;
+      
+      if (targetSquadKey && caps.squads && caps.squads[targetSquadKey]) {
+        const squadInfo = caps.squads[targetSquadKey];
+        if (!squadInfo.supported) {
+          appendCockpitMessage({
+            isUser: false,
+            author: 'GhostByte',
+            role: 'Preflight Boundary Sentinel',
+            avatar: '🔒',
+            color: '#ef4444',
+            text: `⚠️ <strong>Preflight Denied:</strong> Cannot dispatch to <code>@${targetAgentId}</code> because the required engine is unconfigured.<br/><div style="margin-top:6px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:8px 12px;border-radius:8px;font-size:0.8rem;font-family:var(--cockpit-font-mono);"><strong>Remediation:</strong> ${escapeHtml(squadInfo.reason)}</div>`
+          });
+          return;
+        }
+      }
+    }
 
     dispatchHierarchicalSwarmRun(userText);
   };

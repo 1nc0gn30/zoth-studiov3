@@ -764,14 +764,78 @@ async def api_zoth_swarm(request: Request) -> Response:
             # 3. Master Azoth Synthesis
             azoth_text = _query_local_model("zoth-ai-micro:latest", "You are Master Azoth, the supreme alchemist architect. In 2-3 sentences, deliver the grand synthesis, practical resolution, and concrete deliverable for the user's specific request.", prompt)
 
-        return _json_response({
-            "status": "ok",
-            "squad_results": squad_results,
-            "azoth_synthesis": azoth_text,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
-    except Exception as e:
-        return _json_response({"error": str(e)}, 500)
+async def api_swarm_preflight(request: Request) -> Response:
+    """Preflight check: verifies which CLI engines, local Ollama models, and APIs are installed/available."""
+    import shutil
+    import urllib.request
+
+    tools_status = {
+        "antigravity": bool(shutil.which("antigravity") or shutil.which("agy") or Path.home().joinpath(".gemini/antigravity-cli").exists()),
+        "hermes": bool(shutil.which("hermes") or shutil.which("nous-hermes")),
+        "codex": bool(shutil.which("codex")),
+        "ollama": bool(shutil.which("ollama")),
+        "grok": bool(os.environ.get("XAI_API_KEY") or os.environ.get("GROK_API_KEY")),
+        "pollinations": True, # Always online
+        "argon2id": True # Python hashlib / local crypto
+    }
+
+    # Fetch available Ollama models
+    installed_models = []
+    try:
+        req = urllib.request.Request("http://127.0.0.1:11434/api/tags")
+        with urllib.request.urlopen(req, timeout=1.2) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            installed_models = [m.get("name", "") for m in data.get("models", [])]
+    except Exception:
+        pass
+
+    # Evaluate capability matrix for the 7 AGY Squads
+    squad_capabilities = {
+        "squad_1_antigravity": {
+            "supported": tools_status["antigravity"] or any("zoth-ai" in m or "qwen" in m for m in installed_models),
+            "engine": "Antigravity CLI / zoth-ai-micro",
+            "reason": "Ready" if (tools_status["antigravity"] or installed_models) else "Install Antigravity CLI or run 'ollama pull zoth-ai-micro'"
+        },
+        "squad_2_grok": {
+            "supported": tools_status["grok"] or any("qwen" in m or "zoth-ai" in m for m in installed_models),
+            "engine": "xAI Grok API / Qwen Math Fallback",
+            "reason": "Ready (Local Truth Fallback Active)" if not tools_status["grok"] else "Ready (xAI Key)"
+        },
+        "squad_3_hermes": {
+            "supported": tools_status["hermes"] or any("dolphin" in m or "hermes" in m or "zoth-ai" in m for m in installed_models),
+            "engine": "Hermes Tool Runner / dolphin-llama3",
+            "reason": "Ready" if (tools_status["hermes"] or installed_models) else "Install Hermes CLI or pull dolphin-llama3"
+        },
+        "squad_4_ghostbyte": {
+            "supported": True,
+            "engine": "Local Argon2id Cryptographic Enclave",
+            "reason": "Ready"
+        },
+        "squad_5_draco": {
+            "supported": len(installed_models) > 0,
+            "engine": "Multi-Model Consensus Arbiter",
+            "reason": "Ready" if len(installed_models) > 0 else "Start Ollama on loopback"
+        },
+        "squad_6_kitsune": {
+            "supported": True,
+            "engine": "Pollinations.ai Neural Flux (Online)",
+            "reason": "Ready (1024x1024 Flux)"
+        },
+        "squad_7_onyx": {
+            "supported": True,
+            "engine": "Local Hardware & Telemetry Bridge",
+            "reason": "Ready"
+        }
+    }
+
+    return _json_response({
+        "status": "ok",
+        "tools": tools_status,
+        "models": installed_models,
+        "squads": squad_capabilities,
+        "ready": all(s["supported"] for s in squad_capabilities.values()),
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
 
 
 
@@ -1886,9 +1950,11 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/styles/{path:path}", public_page),
         Route("/site.js", public_page),
 
-        # Health & Status
+        # Health & Status & Preflight
         Route("/api/health", api_health),
         Route("/api/status", api_health),
+        Route("/api/swarm/preflight", api_swarm_preflight),
+        Route("/api/v1/swarm/preflight", api_swarm_preflight),
 
         # Annotations (Visual Feedback)
         Route("/api/annotations", api_annotations_get, methods=["GET"]),
