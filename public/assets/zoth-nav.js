@@ -59,6 +59,32 @@
           burger.textContent = "Menu";
         });
       });
+
+      // Inject Mobile Annotator Trigger into Drawer if not already present
+      if (!drawer.querySelector(".drawer-annotator-btn")) {
+        var annotatorSection = document.createElement("div");
+        annotatorSection.className = "drawer-section drawer-annotator-section";
+        annotatorSection.innerHTML = [
+          '<div class="drawer-heading">🛠️ Studio Developer Tools</div>',
+          '<button type="button" class="drawer-annotator-btn" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.35);color:#00f0ff;font-weight:700;font-size:0.85rem;cursor:pointer;margin-top:4px;">',
+          '  <span style="display:flex;align-items:center;gap:8px;"><span>⚡</span> Visual Annotator & Notes</span>',
+          '  <span style="font-size:0.7rem;background:rgba(0,240,255,0.25);padding:2px 8px;border-radius:999px;color:#fff;">Active</span>',
+          '</button>'
+        ].join('');
+        drawer.appendChild(annotatorSection);
+
+        annotatorSection.querySelector(".drawer-annotator-btn").addEventListener("click", function () {
+          document.body.classList.remove("menu-open");
+          burger.setAttribute("aria-expanded", "false");
+          burger.textContent = "Menu";
+          if (window.ZothAnnotator && typeof window.ZothAnnotator.toggle === "function") {
+            window.ZothAnnotator.toggle();
+          } else {
+            window.location.hash = "annotate";
+            window.location.reload();
+          }
+        });
+      }
     }
 
     // Desktop Glassmorphic Dropdowns
