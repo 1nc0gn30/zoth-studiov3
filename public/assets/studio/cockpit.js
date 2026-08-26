@@ -433,8 +433,9 @@ if __name__ == "__main__":
     }
 
     let activeSquads = [];
-    const pLower = prompt.toLowerCase();
-    const isImageTask = pLower.includes('image') || pLower.includes('picture') || pLower.includes('art') || pLower.includes('draw') || pLower.includes('photo') || pLower.includes('render') || pLower.includes('wallpaper');
+    const pLower = prompt.toLowerCase().trim();
+    const isImageTask = (pLower.includes('make me an image') || pLower.includes('generate an image') || pLower.includes('create an image') || pLower.includes('draw a ') || pLower.includes('picture of') || pLower.includes('photo of') || pLower.includes('wallpaper of')) ||
+                        ((pLower.includes('image') || pLower.includes('artwork')) && !pLower.includes('app') && !pLower.includes('server') && !pLower.includes('code') && !pLower.includes('dev') && !pLower.includes('build'));
 
     if (targetAgentId !== 'all') {
       const foundSquad = SWARM_HIERARCHY.find(s => s.lead.id === targetAgentId || s.subagents.some(sub => sub.id === targetAgentId));
