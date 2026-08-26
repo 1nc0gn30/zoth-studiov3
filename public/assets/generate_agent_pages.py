@@ -1839,9 +1839,8 @@ def generate_agent_html(agent):
   }}
   </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/zoth-theme.css">
+  <script src="/assets/zoth-theme.js"></script>
   <link rel="stylesheet" href="/assets/agents.css">
   <link rel="stylesheet" href="/assets/zoth-tip.css">
   <link rel="stylesheet" href="/assets/zoth-annotator.css">
@@ -2736,12 +2735,12 @@ def generate_index_html():
   }}
   </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/zoth-theme.css">
+  <script src="/assets/zoth-theme.js"></script>
   <link rel="stylesheet" href="/assets/agents.css">
   <link rel="stylesheet" href="/assets/zoth-tip.css">
   <link rel="stylesheet" href="/assets/zoth-mobile.css">
+  <link rel="stylesheet" href="/assets/zoth-nav.css">
   <link rel="stylesheet" href="/assets/zoth-annotator.css">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg">
   <style>
@@ -3233,6 +3232,7 @@ def generate_index_html():
   </script>
   <script src="/assets/zoth-tip.js" defer></script>
   <script src="/assets/zoth-annotator.js" defer></script>
+  <script src="/assets/zoth-nav.js" defer></script>
 </body>
 </html>
 """
