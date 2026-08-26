@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>The Cockpit — Autonomous Multi-Agent Swarm Command</title>
+  <meta name="description" content="The Cockpit: Clean, focused, conversational multi-agent workspace. Assign any task across 21 sovereign agents, choose your swarm strength, and toggle telemetry HUDs on demand." />
+  
+  <link rel="icon" type="image/png" href="/assets/brand/zoth-golden-z-192.png" />
+  <link rel="stylesheet" href="/assets/zoth-theme.css" />
+  <link rel="stylesheet" href="/assets/zoth-nav.css" />
+  <link rel="stylesheet" href="/assets/zoth-workbench.css" />
+  <link rel="stylesheet" href="/assets/studio/cockpit.css" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="cockpit-body">
+  <a class="skip-to-content" href="#cockpit-main">Skip to Cockpit</a>
+
+  <!-- TOP HEADER / NAV BAR -->
+  <header class="bar" id="topbar" role="banner">
+    <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
+      <img alt="Zoth Golden Z Emblem" decoding="async" height="36" src="/assets/brand/zoth-golden-z-192.png" width="36" />
+      <span><strong>The Cockpit</strong><small>21-Agent Swarm</small></span>
+    </a>
+    
+    <!-- Swarm Intensity Selector in Topbar -->
+    <div class="cockpit-topbar-controls">
+      <div class="swarm-strength-pill" title="Choose Swarm Execution Strength">
+        <span class="strength-lbl"><i class="ph-bold ph-lightning"></i> STRENGTH:</span>
+        <button class="strength-opt" data-strength="solo" onclick="setSwarmStrength('solo')">Solo</button>
+        <button class="strength-opt active" data-strength="strike" onclick="setSwarmStrength('strike')">Strike Team</button>
+        <button class="strength-opt" data-strength="full" onclick="setSwarmStrength('full')">Full 21 Swarm</button>
+      </div>
+
+      <!-- Quick HUD Toggle Buttons -->
+      <div class="cockpit-hud-toggles">
+        <button class="hud-toggle-btn" id="btnToggleRoster" onclick="toggleHudDrawer('roster')" title="Toggle 21-Agent Swarm Roster">
+          <i class="ph-bold ph-users-three"></i> <span>Swarm (21)</span>
+        </button>
+        <button class="hud-toggle-btn" id="btnToggleWorkspace" onclick="toggleHudDrawer('workspace')" title="Toggle Workspace Editor & Scripts">
+          <i class="ph-bold ph-code-block"></i> <span>Workspace</span>
+        </button>
+        <button class="hud-toggle-btn" id="btnToggleTerminal" onclick="toggleHudDrawer('terminal')" title="Toggle Terminal & Event Bus">
+          <i class="ph-bold ph-terminal-window"></i> <span>Terminal</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Theme & Menu -->
+    <nav aria-label="Primary navigation" class="menu" role="navigation">
+      <div aria-label="Visual theme selector" class="zoth-nav-theme-switcher" role="group">
+        <button aria-label="Switch to Dark theme" class="zoth-theme-btn active" data-theme-id="dark" onclick="window.setZothTheme('dark')" type="button"><span class="theme-emoji">🌙</span> <span class="theme-name">Dark</span></button>
+        <button aria-label="Switch to Light theme" class="zoth-theme-btn" data-theme-id="light" onclick="window.setZothTheme('light')" type="button"><span class="theme-emoji">☀️</span> <span class="theme-name">Light</span></button>
+        <button aria-label="Switch to Matrix theme" class="zoth-theme-btn" data-theme-id="matrix" onclick="window.setZothTheme('matrix')" type="button"><span class="theme-emoji">📟</span> <span class="theme-name">Matrix</span></button>
+        <button aria-label="Switch to Gold theme" class="zoth-theme-btn" data-theme-id="gold" onclick="window.setZothTheme('gold')" type="button"><span class="theme-emoji">⚗️</span> <span class="theme-name">Gold</span></button>
+      </div>
+    </nav>
+    <button aria-controls="drawer" aria-expanded="false" aria-label="Toggle navigation menu" class="burger" id="burger" type="button">Menu</button>
+  </header>
+
+  <!-- MOBILE NAVIGATION DRAWER -->
+  <nav aria-label="Mobile navigation" class="drawer" id="drawer" role="navigation">
+    <div class="drawer-section drawer-theme-section">
+      <div class="drawer-heading">🎨 Visual Theme</div>
+      <div class="drawer-theme-grid">
+        <button class="drawer-theme-btn active" data-theme-id="dark" onclick="window.setZothTheme('dark')" type="button"><span class="d-emoji">🌙</span><span class="d-label">Dark</span></button>
+        <button class="drawer-theme-btn" data-theme-id="light" onclick="window.setZothTheme('light')" type="button"><span class="d-emoji">☀️</span><span class="d-label">Light</span></button>
+        <button class="drawer-theme-btn" data-theme-id="matrix" onclick="window.setZothTheme('matrix')" type="button"><span class="d-emoji">📟</span><span class="d-label">Matrix</span></button>
+        <button class="drawer-theme-btn" data-theme-id="gold" onclick="window.setZothTheme('gold')" type="button"><span class="d-emoji">⚗️</span><span class="d-label">Gold</span></button>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">Cockpit HUD Drawers</div>
+      <a href="javascript:void(0)" onclick="toggleHudDrawer('roster'); closeMobileMenu();">👥 21-Agent Swarm Roster</a>
+      <a href="javascript:void(0)" onclick="toggleHudDrawer('workspace'); closeMobileMenu();">📝 Workspace Notes & Scripts</a>
+      <a href="javascript:void(0)" onclick="toggleHudDrawer('terminal'); closeMobileMenu();">💻 Terminal & Diagnostics</a>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">Studio Workstations</div>
+      <a href="/studio/site-generator.html">⚡ Website Generator</a>
+      <a href="/studio/nexus-3d.html">📐 Nexus 3D Omniverse</a>
+      <a href="/studio/swarm.html">🌐 3D Swarm Arena</a>
+      <a href="/studio/consensus.html">⚔️ Consensus Battle Arena</a>
+      <a href="/studio/">🛠️ All Workstations</a>
+    </div>
+  </nav>
+
+  <!-- MAIN COCKPIT CONTAINER (Clean, Ultra-Focused Conversational Core) -->
+  <main id="cockpit-main" class="cockpit-layout-root">
+    
+    <!-- CENTER CHAT STAGE (Primary Focus) -->
+    <section class="cockpit-chat-stage">
+      
+      <!-- Chat Conversation Stream -->
+      <div class="cockpit-messages-stream" id="cockpitMessagesStream">
+        
+        <!-- Hero Welcome Header -->
+        <div class="cockpit-welcome-hero">
+          <div class="welcome-badge-glow">
+            <span class="pulse-dot"></span>
+            <span>21 Autonomous Agents Standing By</span>
+          </div>
+          <h1 class="welcome-h1">The Cockpit</h1>
+          <p class="welcome-sub">What would you like the swarm to <strong>build, automate, research, or execute</strong> today?</p>
+          
+          <!-- Category Quick Launch Cards -->
+          <div class="cockpit-quick-goals-grid">
+            <button class="quick-goal-card" onclick="quickSendPrompt('Automate a scheduled multi-platform social dispatch script with thread formatting')">
+              <span class="goal-icon">⚡</span>
+              <div>
+                <strong>Workflow Automation</strong>
+                <small>Crons, batch pipelines, scrapers</small>
+              </div>
+            </button>
+            <button class="quick-goal-card" onclick="quickSendPrompt('Build a modular Python CLI utility with local SQLite persistence and unit tests')">
+              <span class="goal-icon">💻</span>
+              <div>
+                <strong>Software & Tools</strong>
+                <small>Full-stack, microservices, refactors</small>
+              </div>
+            </button>
+            <button class="quick-goal-card" onclick="quickSendPrompt('Run a penetration audit on local ports and inspect memory security boundaries')">
+              <span class="goal-icon">🔒</span>
+              <div>
+                <strong>Security & Vault</strong>
+                <small>Argon2id keys, pentest, ports</small>
+              </div>
+            </button>
+            <button class="quick-goal-card" onclick="quickSendPrompt('Synthesize a competitor research report with comparison tables and AEO indexing')">
+              <span class="goal-icon">🧠</span>
+              <div>
+                <strong>Deep Research & Math</strong>
+                <small>First principles, logic invariants</small>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Initial Stream Dialogue -->
+        <div class="cockpit-msg agent-msg" data-agent="azoth">
+          <div class="c-avatar">✨</div>
+          <div class="c-msg-content">
+            <div class="c-msg-head">
+              <span class="c-author" style="color:#e8c872;">Master Azoth</span>
+              <span class="c-role">Prime Architect</span>
+              <span class="c-time">Just now</span>
+            </div>
+            <div class="c-text">
+              The Cockpit is calibrated. Your commands are orchestrated locally with zero cloud leakage. Type any goal below, or mention specific specialists with <code>@antigravity</code>, <code>@hermes</code>, <code>@grok</code>, or <code>@ghostbyte</code>.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM COMPOSER DECK (Floating Glassmorphism Input) -->
+      <div class="cockpit-compose-wrapper">
+        <div class="cockpit-composer-glass">
+          
+          <!-- Mention & Quick Action Pills -->
+          <div class="composer-mention-bar" id="composerMentionBar">
+            <span class="mention-prefix">Target:</span>
+            <button class="mention-chip active" onclick="setTargetAgent('all')">🌐 All Swarm</button>
+            <button class="mention-chip" onclick="setTargetAgent('antigravity')">🪐 @antigravity</button>
+            <button class="mention-chip" onclick="setTargetAgent('hermes')">⚡ @hermes</button>
+            <button class="mention-chip" onclick="setTargetAgent('grok')">📐 @grok</button>
+            <button class="mention-chip" onclick="setTargetAgent('ghostbyte')">🔒 @ghostbyte</button>
+            <button class="mention-chip" onclick="setTargetAgent('athena')">🦉 @athena</button>
+            <button class="mention-chip" onclick="setTargetAgent('kitsune')">🦊 @kitsune</button>
+          </div>
+
+          <!-- Main Input Field -->
+          <div class="composer-input-row">
+            <textarea id="cockpitInput" class="cockpit-textarea" placeholder="Instruct the swarm: What should we build, automate, or solve? (Enter to dispatch)" rows="1"></textarea>
+            <button id="btnCockpitSend" class="cockpit-send-btn" onclick="submitCockpitPrompt()" title="Dispatch Swarm">
+              <span>Dispatch</span>
+              <i class="ph-bold ph-paper-plane-tilt"></i>
+            </button>
+          </div>
+
+          <!-- Composer Footer Status -->
+          <div class="composer-foot-telemetry">
+            <span><i class="ph-bold ph-lock-key" style="color:#34d399"></i> 100% Local Sovereign Execution</span>
+            <span class="sep">•</span>
+            <span id="activeStrengthIndicator">Strike Team (3–5 Agents)</span>
+            <span class="sep">•</span>
+            <span>Loopback :8484</span>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SLIDE-OVER HUD 1: 21-AGENT SWARM ROSTER -->
+    <aside class="cockpit-hud-drawer" id="hudRosterDrawer">
+      <div class="hud-drawer-header">
+        <div class="hud-drawer-title">
+          <i class="ph-bold ph-users-three" style="color:var(--magenta)"></i>
+          <span>21 Sovereign Agents</span>
+        </div>
+        <button class="hud-close-btn" onclick="toggleHudDrawer('roster')">✕</button>
+      </div>
+      <div class="hud-drawer-body" id="hudSwarmRosterList">
+        <!-- Rendered dynamically -->
+      </div>
+    </aside>
+
+    <!-- SLIDE-OVER HUD 2: WORKSPACE SCRIPTS & CODE EDITOR -->
+    <aside class="cockpit-hud-drawer" id="hudWorkspaceDrawer">
+      <div class="hud-drawer-header">
+        <div class="hud-drawer-title">
+          <i class="ph-bold ph-code-block" style="color:var(--cyan)"></i>
+          <span>Workspace Artifacts & Editor</span>
+        </div>
+        <button class="hud-close-btn" onclick="toggleHudDrawer('workspace')">✕</button>
+      </div>
+      
+      <div class="hud-tabs-bar">
+        <button class="hud-tab-item active" data-file="tasks/project_plan.md" onclick="switchEditorFile('tasks/project_plan.md')">tasks/project_plan.md</button>
+        <button class="hud-tab-item" data-file="scripts/pipeline.py" onclick="switchEditorFile('scripts/pipeline.py')">scripts/pipeline.py</button>
+      </div>
+
+      <div class="hud-editor-area">
+        <textarea id="hudCodeEditor" class="hud-textarea" spellcheck="false"></textarea>
+      </div>
+      <div class="hud-drawer-footer">
+        <button class="hud-action-btn primary" onclick="runWorkspaceCheck()">Run Invariant Check ✓</button>
+      </div>
+    </aside>
+
+    <!-- SLIDE-OVER HUD 3: TERMINAL & TELEMETRY -->
+    <aside class="cockpit-hud-drawer" id="hudTerminalDrawer">
+      <div class="hud-drawer-header">
+        <div class="hud-drawer-title">
+          <i class="ph-bold ph-terminal-window" style="color:#34d399"></i>
+          <span>Swarm Terminal (:8484)</span>
+        </div>
+        <button class="hud-close-btn" onclick="toggleHudDrawer('terminal')">✕</button>
+      </div>
+      <div class="hud-terminal-body" id="hudTerminalStream">
+        <div class="term-row"><span class="term-p">zoth-swarm $</span> <span class="term-c">zoth status --telemetry</span></div>
+        <div class="term-row green">✔ 21 Sovereign AI Agents listening on loopback bus (:8484)</div>
+        <div class="term-row cyan">● All Invariants verified · Zero plaintext leakage</div>
+        <div class="term-row"><span class="term-p">zoth-swarm $</span> <span class="term-cursor">_</span></div>
+      </div>
+      <div class="hud-drawer-footer">
+        <button class="hud-action-btn" onclick="clearTerminalOutput()">Clear Terminal</button>
+      </div>
+    </aside>
+
+  </main>
+
+  <script src="/assets/studio/cockpit.js"></script>
+  <script src="/assets/zoth-workbench.js"></script>
+  <script src="/assets/zoth-nav.js"></script>
+  <script src="/assets/zoth-gate.js"></script>
+  <script src="/assets/zoth-annotator.js"></script>
+</body>
+</html>
