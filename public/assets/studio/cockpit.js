@@ -382,14 +382,30 @@ if __name__ == "__main__":
     }
 
     let activeSquads = [];
+    const pLower = prompt.toLowerCase();
+    const isImageTask = pLower.includes('image') || pLower.includes('picture') || pLower.includes('art') || pLower.includes('draw') || pLower.includes('photo') || pLower.includes('render') || pLower.includes('wallpaper');
+
     if (targetAgentId !== 'all') {
       const foundSquad = SWARM_HIERARCHY.find(s => s.lead.id === targetAgentId || s.subagents.some(sub => sub.id === targetAgentId));
       activeSquads = foundSquad ? [foundSquad] : [SWARM_HIERARCHY[0]];
     } else {
       if (swarmStrength === 'solo') {
-        activeSquads = [SWARM_HIERARCHY[0]]; // 1 squad (3 agents)
+        if (isImageTask) {
+          activeSquads = [SWARM_HIERARCHY[5]]; // Squad 6: Kitsune Visual Squad
+        } else if (pLower.includes('tool') || pLower.includes('script') || pLower.includes('cron')) {
+          activeSquads = [SWARM_HIERARCHY[2]]; // Squad 3: Hermes Tool Squad
+        } else if (pLower.includes('security') || pLower.includes('vault') || pLower.includes('port')) {
+          activeSquads = [SWARM_HIERARCHY[3]]; // Squad 4: Ghostbyte Security Squad
+        } else {
+          activeSquads = [SWARM_HIERARCHY[0]]; // Squad 1: Antigravity Code Squad
+        }
       } else if (swarmStrength === 'strike') {
-        activeSquads = [SWARM_HIERARCHY[0], SWARM_HIERARCHY[1], SWARM_HIERARCHY[2]]; // 3 squads (9 agents)
+        if (isImageTask) {
+          // Antigravity (Lead #1) + Hermes (Lead #3) + Kitsune (Lead #6)
+          activeSquads = [SWARM_HIERARCHY[0], SWARM_HIERARCHY[2], SWARM_HIERARCHY[5]];
+        } else {
+          activeSquads = [SWARM_HIERARCHY[0], SWARM_HIERARCHY[1], SWARM_HIERARCHY[2]];
+        }
       } else {
         activeSquads = SWARM_HIERARCHY; // All 7 squads (21 agents)
       }
