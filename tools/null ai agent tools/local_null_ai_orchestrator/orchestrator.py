@@ -2011,12 +2011,48 @@ created: {now_utc}
                 return
 
             # ─── API: Direct Agent / Companion Prompt Routing ───
-            if path in ("/api/zoth/swarm", "/api/zoth/chat", "/api/agent/chat", "/api/swarm/prompt"):
+            if path in ("/api/zoth/swarm", "/api/zoth/chat", "/api/agent/chat", "/api/swarm/prompt", "/api/zoth/swarm/squad"):
                 prompt = data.get("prompt", data.get("message", data.get("text", "")))
                 target_agent = data.get("petId", data.get("agentId", data.get("to", "antigravity")))
+                strength = data.get("strength", "strike")
+                
                 if not prompt:
                     self._send_json({"error": "prompt required"}, 400)
                     return
+
+                # If calling squad run, generate multi-agent outputs
+                if path == "/api/zoth/swarm/squad":
+                    squad_results = []
+                    # 1. Antigravity Lead
+                    _, agy_out = _generate_agent_reply("antigravity", prompt, "operator")
+                    squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_out})
+
+                    if strength in ("strike", "full") or "image" in prompt.lower() or "design" in prompt.lower() or "threejs" in prompt.lower() or "matrix" in prompt.lower():
+                        # Kitsune (Visuals & Shaders)
+                        _, kit_out = _generate_agent_reply("kitsune", prompt, "operator")
+                        squad_results.append({"agent": "kitsune", "role": "Lead AGY #6 · Visuals & 3D Shaders", "icon": "🦊", "color": "#ff007a", "text": kit_out})
+
+                    if strength in ("strike", "full") or "tool" in prompt.lower() or "cron" in prompt.lower() or "script" in prompt.lower():
+                        # Hermes
+                        _, hermes_out = _generate_agent_reply("hermes", prompt, "operator")
+                        squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_out})
+
+                    if strength == "full" or "security" in prompt.lower() or "vault" in prompt.lower():
+                        # Ghostbyte
+                        _, sec_out = _generate_agent_reply("ghostbyte", prompt, "operator")
+                        squad_results.append({"agent": "ghostbyte", "role": "Lead AGY #4 · Argon2id Vault Sentinel", "icon": "🔒", "color": "#c084fc", "text": sec_out})
+
+                    # Azoth Grand Synthesis based specifically on this prompt
+                    _, azoth_out = _generate_agent_reply("azoth", prompt, "operator")
+                    
+                    self._send_json({
+                        "status": "ok",
+                        "squad_results": squad_results,
+                        "azoth_synthesis": azoth_out,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    })
+                    return
+
                 responder, reply = _generate_agent_reply(target_agent, prompt, "operator")
                 res = {
                     "status": "ok",
@@ -2024,7 +2060,6 @@ created: {now_utc}
                     "response": reply,
                     "timestamp": datetime.now(timezone.utc).isoformat()
                 }
-                # Also log as a swarm message so it appears in live feed
                 _post_swarm_message({"from": "operator", "to": responder, "message": prompt})
                 self._send_json(res)
                 return
