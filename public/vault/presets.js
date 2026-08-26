@@ -443,6 +443,17 @@ export const PROVIDERS = {
     hint: "web research API", underground: true,
   },
 
+  twitter: {
+    id: "twitter", label: "X (Twitter) API v2", env: "X_ACCESS_TOKEN", color: 0x00f0ff, cat: "agent",
+    hint: "OAuth 2.0 Access Token or Bearer", url: "https://developer.x.com/",
+    prefix: /^(AAAA|Z0Mx)/i, aliases: ["x", "xcorp", "xurl", "tweet"],
+  },
+  x_oauth: {
+    id: "x_oauth", label: "X (Twitter) Client Secret", env: "X_CLIENT_SECRET", color: 0x1d9bf0, cat: "agent",
+    hint: "OAuth 2.0 Client Secret", url: "https://developer.x.com/",
+    aliases: ["x_client", "twitter_oauth"],
+  },
+
   /* ─── Cloud / Infra / Hosting ─── */
   vercel: {
     id: "vercel", label: "Vercel", env: "VERCEL_TOKEN", color: 0x000000, cat: "cloud",
