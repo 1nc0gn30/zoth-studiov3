@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Zoth Studio — Antigravity Multi-Agent IDE & Swarm Cockpit</title>
+  <meta name="description" content="Google Antigravity-inspired autonomous multi-agent engineering IDE. Orchestrate 21 sovereign AI agents, inspect code ASTs, dispatch parallel tool runners, and synthesize software with zero cloud leakage." />
+  
+  <link rel="icon" type="image/png" href="/assets/brand/zoth-golden-z-192.png" />
+  <link rel="stylesheet" href="/assets/zoth-theme.css" />
+  <link rel="stylesheet" href="/assets/zoth-nav.css" />
+  <link rel="stylesheet" href="/assets/zoth-workbench.css" />
+  <link rel="stylesheet" href="/assets/studio/antigravity-ide.css" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="zoth-ide-body">
+  <a class="skip-to-content" href="#ide-main-view">Skip to IDE cockpit</a>
+
+  <!-- TOP HEADER / NAV BAR -->
+  <header class="bar" id="topbar" role="banner">
+    <a aria-label="Zoth Studio Home" class="brand js-hub" href="/">
+      <img alt="Zoth Golden Z Emblem" decoding="async" height="36" src="/assets/brand/zoth-golden-z-192.png" width="36" />
+      <span><strong>Zoth</strong><small>IDE Cockpit</small></span>
+    </a>
+    
+    <!-- IDE Top Breadcrumb & Status Telemetry -->
+    <div class="ide-top-telemetry">
+      <div class="ide-project-badge">
+        <i class="ph-bold ph-folder-notch-open" style="color:var(--cyan)"></i>
+        <span>zoth-studio/core-app</span>
+      </div>
+      <span class="ide-telemetry-sep">/</span>
+      <div class="ide-branch-badge">
+        <i class="ph-bold ph-git-branch" style="color:#34d399"></i>
+        <span>main (clean)</span>
+      </div>
+      <span class="ide-telemetry-sep">/</span>
+      <div class="ide-active-swarm-badge">
+        <span class="pulse-dot"></span>
+        <span id="activeSwarmCount">21/21 Agents Online</span>
+      </div>
+    </div>
+
+    <!-- Quick Tool Switcher & Views -->
+    <nav aria-label="Primary navigation" class="menu" role="navigation">
+      <div class="nav-dropdown">
+        <button aria-expanded="false" aria-haspopup="true" class="nav-dropdown-btn" type="button">
+          <span>🛠️ Workstations</span>
+          <svg class="dropdown-chevron" fill="none" height="6" viewbox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="/studio/site-generator.html"><strong>⚡ Website Generator</strong><small>Multi-Agent Web Foundry</small></a>
+          <a href="/studio/nexus-3d.html"><strong>📐 Nexus 3D Omniverse</strong><small>CAD Modeling & 3D Shaders</small></a>
+          <a href="/studio/swarm.html"><strong>🌐 3D Swarm Arena</strong><small>Real-time Kinetic Swarm</small></a>
+          <a href="/studio/consensus.html"><strong>⚔️ Consensus Battle</strong><small>Multi-Model AST Synthesis</small></a>
+          <a href="/studio/agent-composer.html"><strong>🪐 DAG Composer</strong><small>Topology & Pipeline Editor</small></a>
+        </div>
+      </div>
+      
+      <div aria-label="Visual theme selector" class="zoth-nav-theme-switcher" role="group">
+        <button aria-label="Switch to Dark theme" class="zoth-theme-btn active" data-theme-id="dark" onclick="window.setZothTheme('dark')" type="button"><span class="theme-emoji">🌙</span> <span class="theme-name">Dark</span></button>
+        <button aria-label="Switch to Light theme" class="zoth-theme-btn" data-theme-id="light" onclick="window.setZothTheme('light')" type="button"><span class="theme-emoji">☀️</span> <span class="theme-name">Light</span></button>
+        <button aria-label="Switch to Matrix theme" class="zoth-theme-btn" data-theme-id="matrix" onclick="window.setZothTheme('matrix')" type="button"><span class="theme-emoji">📟</span> <span class="theme-name">Matrix</span></button>
+        <button aria-label="Switch to Gold theme" class="zoth-theme-btn" data-theme-id="gold" onclick="window.setZothTheme('gold')" type="button"><span class="theme-emoji">⚗️</span> <span class="theme-name">Gold</span></button>
+      </div>
+    </nav>
+    <button aria-controls="drawer" aria-expanded="false" aria-label="Toggle navigation menu" class="burger" id="burger" type="button">Menu</button>
+  </header>
+
+  <!-- MOBILE NAVIGATION DRAWER -->
+  <nav aria-label="Mobile navigation" class="drawer" id="drawer" role="navigation">
+    <div class="drawer-section drawer-theme-section">
+      <div class="drawer-heading">🎨 Visual Theme</div>
+      <div class="drawer-theme-grid">
+        <button class="drawer-theme-btn active" data-theme-id="dark" onclick="window.setZothTheme('dark')" type="button"><span class="d-emoji">🌙</span><span class="d-label">Dark</span></button>
+        <button class="drawer-theme-btn" data-theme-id="light" onclick="window.setZothTheme('light')" type="button"><span class="d-emoji">☀️</span><span class="d-label">Light</span></button>
+        <button class="drawer-theme-btn" data-theme-id="matrix" onclick="window.setZothTheme('matrix')" type="button"><span class="d-emoji">📟</span><span class="d-label">Matrix</span></button>
+        <button class="drawer-theme-btn" data-theme-id="gold" onclick="window.setZothTheme('gold')" type="button"><span class="d-emoji">⚗️</span><span class="d-label">Gold</span></button>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">IDE Views</div>
+      <a href="javascript:void(0)" onclick="setMobileIdeView('chat')">💬 Agent Chat & Swarm</a>
+      <a href="javascript:void(0)" onclick="setMobileIdeView('editor')">📝 Code Editor & Workspace</a>
+      <a href="javascript:void(0)" onclick="setMobileIdeView('preview')">👁️ Live App Preview</a>
+      <a href="javascript:void(0)" onclick="setMobileIdeView('terminal')">💻 Terminal & Diagnostics</a>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-heading">Studio Workstations</div>
+      <a href="/studio/site-generator.html">⚡ Website Generator</a>
+      <a href="/studio/nexus-3d.html">📐 Nexus 3D Omniverse</a>
+      <a href="/studio/swarm.html">🌐 3D Swarm Arena</a>
+      <a href="/studio/consensus.html">⚔️ Consensus Battle Arena</a>
+      <a href="/studio/">🛠️ All Workstations</a>
+    </div>
+  </nav>
+
+  <!-- MAIN IDE WORKSPACE ROOT -->
+  <main id="ide-main-view" class="ide-workspace-container">
+    
+    <!-- 1. LEFT ACTIVITY BAR (Antigravity Style) -->
+    <aside class="ide-activity-bar" aria-label="Activity Bar">
+      <div class="activity-top">
+        <button class="activity-btn active" id="actBtnChat" onclick="switchSidebarPanel('chat')" title="Multi-Agent Chat (Ctrl+Shift+C)">
+          <i class="ph-fill ph-chat-circle-dots"></i>
+          <span class="act-label">Chat</span>
+        </button>
+        <button class="activity-btn" id="actBtnExplorer" onclick="switchSidebarPanel('explorer')" title="Project File Explorer (Ctrl+Shift+E)">
+          <i class="ph-bold ph-files"></i>
+          <span class="act-label">Files</span>
+        </button>
+        <button class="activity-btn" id="actBtnSwarm" onclick="switchSidebarPanel('swarm')" title="21-Agent Swarm Pantheon (Ctrl+Shift+S)">
+          <i class="ph-bold ph-users-three"></i>
+          <span class="act-label">Swarm</span>
+        </button>
+        <button class="activity-btn" id="actBtnTools" onclick="switchSidebarPanel('tools')" title="Registered Tool Harnesses (Ctrl+Shift+T)">
+          <i class="ph-bold ph-wrench"></i>
+          <span class="act-label">Tools</span>
+        </button>
+        <button class="activity-btn" id="actBtnAst" onclick="switchSidebarPanel('ast')" title="AST & Consensus Graph">
+          <i class="ph-bold ph-tree-structure"></i>
+          <span class="act-label">AST</span>
+        </button>
+      </div>
+
+      <div class="activity-bottom">
+        <button class="activity-btn" onclick="ZothWorkbench.openConfig('⚙️ IDE Environment Settings', 'Configure model provider endpoints (Antigravity, Hermes, Grok, Ollama), AST heuristics, and loopback keys.', '<div style=\'display:flex;flex-direction:column;gap:10px;\'><label class=\'form-label\'>Primary Orchestrator</label><select class=\'prompt-box\'><option>Antigravity AST Core (Local)</option><option>Grok Astrolabe 4.5</option><option>Hermes 3 Function Engine</option><option>Master Azoth Synthesis</option></select><label class=\'form-label\'>Loopback Endpoint</label><input type=\'text\' class=\'prompt-box\' value=\'http://127.0.0.1:8484\'/></div>')" title="IDE Settings">
+          <i class="ph-bold ph-gear-six"></i>
+        </button>
+        <button class="activity-btn" onclick="if(window.ZothAnnotator)window.ZothAnnotator.toggle()" title="Visual Annotator (Shift+A)">
+          <i class="ph-bold ph-pencil-simple-line"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 2. PRIMARY SIDEBAR (Chat Sessions, File Tree, Swarm Roster, Tool Registry) -->
+    <section class="ide-sidebar" id="ideSidebar">
+      <!-- SIDEBAR PANEL: CHAT / CONVERSATIONS -->
+      <div class="sidebar-panel active" id="panelChat">
+        <div class="sidebar-head">
+          <div class="sidebar-title">
+            <i class="ph-bold ph-chat-teardrop-text" style="color:var(--cyan)"></i>
+            <span>AGENT CHATS</span>
+          </div>
+          <button class="sidebar-head-btn" onclick="startNewAgentThread()" title="New Agent Conversation">
+            <i class="ph-bold ph-plus"></i> New
+          </button>
+        </div>
+
+        <div class="chat-mode-tabs">
+          <button class="chat-tab-btn active" id="tabSwarmRoom" onclick="switchChatMode('swarm')">
+            <i class="ph-bold ph-users"></i> 21 Swarm
+          </button>
+          <button class="chat-tab-btn" id="tabDirectAgent" onclick="switchChatMode('direct')">
+            <i class="ph-bold ph-user"></i> 1-on-1 Direct
+          </button>
+        </div>
+
+        <!-- Direct Agent Selector -->
+        <div class="direct-agent-select-box" id="directAgentSelectWrap" style="display:none;">
+          <label class="form-label" style="font-size:0.7rem;">Target Specialist:</label>
+          <select class="ide-select" id="directAgentDropdown" onchange="onDirectAgentSelected(this.value)">
+            <!-- Populated dynamically with 21 agents -->
+          </select>
+        </div>
+
+        <!-- Conversation Thread List -->
+        <div class="thread-list-scroll">
+          <div class="thread-item active" onclick="loadThread('swarm-main')">
+            <div class="thread-item-icon">🌐</div>
+            <div class="thread-item-info">
+              <div class="thread-title">Full Swarm Consensus Room</div>
+              <div class="thread-sub">21 agents triangulating proposals</div>
+            </div>
+            <span class="thread-badge">Active</span>
+          </div>
+          <div class="thread-item" onclick="loadThread('antigravity-ast')">
+            <div class="thread-item-icon">🪐</div>
+            <div class="thread-item-info">
+              <div class="thread-title">Antigravity · AST Engine</div>
+              <div class="thread-sub">Architecture & subagent delegation</div>
+            </div>
+          </div>
+          <div class="thread-item" onclick="loadThread('grok-oracle')">
+            <div class="thread-item-icon">📐</div>
+            <div class="thread-item-info">
+              <div class="thread-title">Grok · Astrolabe Truth</div>
+              <div class="thread-sub">Invariant math & AEO structure</div>
+            </div>
+          </div>
+          <div class="thread-item" onclick="loadThread('hermes-tools')">
+            <div class="thread-item-icon">⚡</div>
+            <div class="thread-item-info">
+              <div class="thread-title">Hermes · Tool Runner</div>
+              <div class="thread-sub">47+ local functions & actions</div>
+            </div>
+          </div>
+          <div class="thread-item" onclick="loadThread('azoth-sanctum')">
+            <div class="thread-item-icon">✨</div>
+            <div class="thread-item-info">
+              <div class="thread-title">Master Azoth · Sovereign</div>
+              <div class="thread-sub">Alchemical synthesis & code harmony</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR PANEL: FILE EXPLORER -->
+      <div class="sidebar-panel" id="panelExplorer" style="display:none;">
+        <div class="sidebar-head">
+          <div class="sidebar-title">
+            <i class="ph-bold ph-folder-open" style="color:var(--gold)"></i>
+            <span>EXPLORER</span>
+          </div>
+          <button class="sidebar-head-btn" onclick="refreshFileTree()" title="Refresh Tree">
+            <i class="ph-bold ph-arrows-clockwise"></i>
+          </button>
+        </div>
+        <div class="file-tree-container" id="ideFileTree">
+          <!-- Populated dynamically with project structure -->
+        </div>
+      </div>
+
+      <!-- SIDEBAR PANEL: 21-AGENT SWARM PANTHEON -->
+      <div class="sidebar-panel" id="panelSwarm" style="display:none;">
+        <div class="sidebar-head">
+          <div class="sidebar-title">
+            <i class="ph-bold ph-globe-hemisphere-west" style="color:var(--magenta)"></i>
+            <span>21 SOVEREIGN AGENTS</span>
+          </div>
+          <span class="badge-count" id="pantheonCount">21</span>
+        </div>
+        <div class="swarm-roster-scroll" id="ideSwarmRoster">
+          <!-- Populated dynamically from 21 agents -->
+        </div>
+      </div>
+
+      <!-- SIDEBAR PANEL: TOOLS REGISTRY -->
+      <div class="sidebar-panel" id="panelTools" style="display:none;">
+        <div class="sidebar-head">
+          <div class="sidebar-title">
+            <i class="ph-bold ph-wrench" style="color:#34d399"></i>
+            <span>ZOTH TOOLS (14+)</span>
+          </div>
+        </div>
+        <div class="tools-registry-scroll" id="ideToolsRegistry">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- SIDEBAR PANEL: AST TREE -->
+      <div class="sidebar-panel" id="panelAst" style="display:none;">
+        <div class="sidebar-head">
+          <div class="sidebar-title">
+            <i class="ph-bold ph-tree-structure" style="color:var(--violet)"></i>
+            <span>AST TOPOLOGY</span>
+          </div>
+        </div>
+        <div class="ast-visual-scroll">
+          <div class="ast-node-card root">
+            <strong>ProjectRoot (core-app)</strong>
+            <span>AST Depth: 4 · Validated Invariant</span>
+          </div>
+          <div class="ast-branch">
+            <div class="ast-node-card">├── <strong>public/studio/ide.html</strong> (Antigravity IDE Cockpit)</div>
+            <div class="ast-node-card">├── <strong>public/assets/zoth-theme.css</strong> (4-Theme System)</div>
+            <div class="ast-node-card">├── <strong>public/assets/zoth-nav.js</strong> (Universal Master Nav)</div>
+            <div class="ast-node-card">└── <strong>bin/zoth</strong> (Python CLI Engine)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. CENTER / MAIN WORKSPACE (Split into Chat Cockpit + Code Editor / Live Preview) -->
+    <section class="ide-center-workspace">
+      
+      <!-- MOBILE VIEW TABS BAR (Visible only on mobile/tablet screens) -->
+      <div class="ide-mobile-view-tabs" id="ideMobileViewTabs">
+        <button class="m-view-btn active" data-view="chat" onclick="setMobileIdeView('chat')">💬 Chat & Swarm</button>
+        <button class="m-view-btn" data-view="editor" onclick="setMobileIdeView('editor')">📝 Editor</button>
+        <button class="m-view-btn" data-view="preview" onclick="setMobileIdeView('preview')">👁️ Preview</button>
+        <button class="m-view-btn" data-view="terminal" onclick="setMobileIdeView('terminal')">💻 Terminal</button>
+      </div>
+
+      <!-- MAIN SPLIT WORKSPACE CONTAINER -->
+      <div class="ide-split-deck mode-split" id="ideSplitDeck">
+        
+        <!-- LEFT COLUMN: CONVERSATIONAL AGENT COCKPIT (Google Antigravity style) -->
+        <div class="ide-chat-column" id="ideChatColumn">
+          
+          <!-- Chat Header Bar -->
+          <div class="chat-column-header">
+            <div class="chat-active-agent-info">
+              <div class="chat-agent-avatar" id="chatHeaderAvatar">🌐</div>
+              <div>
+                <div class="chat-agent-title" id="chatHeaderTitle">Swarm Consensus Room</div>
+                <div class="chat-agent-sub" id="chatHeaderSub">Antigravity · Grok · Hermes · Azoth (21 connected)</div>
+              </div>
+            </div>
+            
+            <div class="chat-header-actions">
+              <button class="ide-btn-icon" onclick="clearActiveChatMessages()" title="Clear Chat History">
+                <i class="ph-bold ph-trash"></i>
+              </button>
+              <button class="ide-btn-icon" onclick="toggleLayoutSplit()" title="Toggle Fullscreen Chat / Split Deck" id="btnLayoutToggle">
+                <i class="ph-bold ph-columns"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat Messages Scroll Stream -->
+          <div class="chat-stream-scroll" id="chatStreamScroll">
+            <!-- Welcome System Banner -->
+            <div class="chat-system-banner">
+              <div class="sys-banner-icon">🪐</div>
+              <div>
+                <strong>Zoth Studio Antigravity IDE Engine</strong>
+                <p>Connected to 21 sovereign agents. Ask questions, generate code, inspect ASTs, and coordinate multi-agent swarm tasks directly from this cockpit.</p>
+              </div>
+            </div>
+
+            <!-- Preloaded Agent Dialogue Stream (Antigravity IDE conversation style) -->
+            <div class="chat-message agent-msg" data-agent="azoth">
+              <div class="msg-avatar">✨</div>
+              <div class="msg-body">
+                <div class="msg-header">
+                  <span class="msg-author" style="color:#e8c872;">Master Azoth</span>
+                  <span class="msg-role">Prime Architect</span>
+                  <span class="msg-time">Just now</span>
+                </div>
+                <div class="msg-content">
+                  Welcome to the <strong>Antigravity IDE Cockpit</strong>, Operator. The full pantheon of 21 sovereign AI agents is synchronized. We are ready to architect, refactor, and synthesize your applications locally with zero cloud data leakage.
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-message agent-msg" data-agent="antigravity">
+              <div class="msg-avatar">🪐</div>
+              <div class="msg-body">
+                <div class="msg-header">
+                  <span class="msg-author" style="color:#7c9cff;">Antigravity</span>
+                  <span class="msg-role">Lead AST Orchestrator</span>
+                  <span class="msg-time">Just now</span>
+                </div>
+                <div class="msg-content">
+                  Topology analysis complete. Workspace tree mapped across 83 public hub pages and core daemons. I can execute multi-step plans, spawn parallel subagents, and edit files live in the editor beside us.
+                </div>
+                <!-- Interactive Action Chips -->
+                <div class="msg-actions-row">
+                  <button class="msg-chip" onclick="quickSendPrompt('Audit the current project structure and report AST telemetry')">🔍 Audit Project AST</button>
+                  <button class="msg-chip" onclick="quickSendPrompt('Synthesize a new WebGL 3D shader preview')">✨ Build 3D Shader</button>
+                  <button class="msg-chip" onclick="quickSendPrompt('Launch multi-agent consensus verification on active file')">⚔️ Run Consensus</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-message agent-msg" data-agent="grok">
+              <div class="msg-avatar">📐</div>
+              <div class="msg-body">
+                <div class="msg-header">
+                  <span class="msg-author" style="color:#34d399;">Grok</span>
+                  <span class="msg-role">Astrolabe Truth Oracle</span>
+                  <span class="msg-time">Just now</span>
+                </div>
+                <div class="msg-content">
+                  Mathematical invariants holding steady at 100%. Ready to verify logic graphs, perform semantic AEO indexing, and check syntax before any file is saved.
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-message agent-msg" data-agent="hermes">
+              <div class="msg-avatar">⚡</div>
+              <div class="msg-body">
+                <div class="msg-header">
+                  <span class="msg-author" style="color:#f59e0b;">Hermes</span>
+                  <span class="msg-role">Tool Dispatcher</span>
+                  <span class="msg-time">Just now</span>
+                </div>
+                <div class="msg-content">
+                  47+ tool harnesses armed on loopback. Terminal sub-process execution ready with live stdout capture.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input Compose Deck -->
+          <div class="chat-compose-deck">
+            <!-- Mention / Target Agent Selector Strip -->
+            <div class="agent-mention-strip" id="agentMentionStrip">
+              <span class="mention-label">Target:</span>
+              <button class="mention-pill active" onclick="setTargetAgent('all')">🌐 All 21 Swarm</button>
+              <button class="mention-pill" onclick="setTargetAgent('azoth')">✨ @azoth</button>
+              <button class="mention-pill" onclick="setTargetAgent('antigravity')">🪐 @antigravity</button>
+              <button class="mention-pill" onclick="setTargetAgent('grok')">📐 @grok</button>
+              <button class="mention-pill" onclick="setTargetAgent('hermes')">⚡ @hermes</button>
+              <button class="mention-pill" onclick="setTargetAgent('ghostbyte')">🔒 @ghostbyte</button>
+              <button class="mention-pill" onclick="setTargetAgent('kitsune')">🦊 @kitsune</button>
+            </div>
+
+            <!-- Input Box & Action Buttons -->
+            <div class="compose-input-wrapper">
+              <textarea id="ideChatInput" class="ide-textarea" placeholder="Ask anything, prompt a new feature, or mention an agent (e.g. @antigravity refactor the navbar)..." rows="2"></textarea>
+              <div class="compose-actions-bar">
+                <div class="compose-left-tools">
+                  <button class="compose-tool-btn" onclick="insertSnippet('@antigravity ')" title="Tag Antigravity">🪐 @agy</button>
+                  <button class="compose-tool-btn" onclick="insertSnippet('@grok ')" title="Tag Grok">📐 @grok</button>
+                  <button class="compose-tool-btn" onclick="insertSnippet('@hermes ')" title="Tag Hermes">⚡ @hermes</button>
+                </div>
+                <button class="ide-send-btn" id="btnIdeSend" onclick="submitIdePrompt()" title="Send Prompt (Enter)">
+                  <span>Dispatch</span>
+                  <i class="ph-bold ph-paper-plane-tilt"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: TABBED CODE EDITOR, LIVE PREVIEW, & TERMINAL -->
+        <div class="ide-editor-column" id="ideEditorColumn">
+          
+          <!-- Editor Header & Tab Switcher -->
+          <div class="editor-tabs-header">
+            <div class="editor-tabs-list" id="editorTabsList">
+              <div class="editor-tab active" data-file="public/index.html" onclick="switchEditorTab('public/index.html')">
+                <i class="ph-bold ph-file-html" style="color:#e8c872"></i>
+                <span>public/index.html</span>
+                <button class="tab-close" onclick="closeEditorTab(event, 'public/index.html')">✕</button>
+              </div>
+              <div class="editor-tab" data-file="public/assets/zoth-theme.css" onclick="switchEditorTab('public/assets/zoth-theme.css')">
+                <i class="ph-bold ph-file-css" style="color:#38bdf8"></i>
+                <span>public/assets/zoth-theme.css</span>
+                <button class="tab-close" onclick="closeEditorTab(event, 'public/assets/zoth-theme.css')">✕</button>
+              </div>
+              <div class="editor-tab" data-file="bin/zoth" onclick="switchEditorTab('bin/zoth')">
+                <i class="ph-bold ph-file-code" style="color:#34d399"></i>
+                <span>bin/zoth</span>
+                <button class="tab-close" onclick="closeEditorTab(event, 'bin/zoth')">✕</button>
+              </div>
+            </div>
+
+            <!-- Mode Switcher: Code Editor vs Live Iframe Preview -->
+            <div class="editor-mode-toggle">
+              <button class="mode-toggle-btn active" id="btnModeEditor" onclick="setEditorPaneMode('editor')" title="View Code Editor">
+                <i class="ph-bold ph-code"></i> <span>Editor</span>
+              </button>
+              <button class="mode-toggle-btn" id="btnModePreview" onclick="setEditorPaneMode('preview')" title="View Live Interactive Web Preview">
+                <i class="ph-bold ph-globe"></i> <span>Preview</span>
+              </button>
+              <button class="mode-toggle-btn" id="btnRunCode" onclick="runActiveFileDiagnostics()" title="Run Invariant Check">
+                <i class="ph-bold ph-play" style="color:#34d399"></i> <span>Run Check</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Editor Body (Code View) -->
+          <div class="editor-content-pane" id="paneEditor">
+            <div class="editor-line-numbers" id="editorLineNumbers">
+              <!-- 1 to 50 numbers -->
+            </div>
+            <textarea class="editor-textarea" id="ideCodeEditor" spellcheck="false"></textarea>
+          </div>
+
+          <!-- Preview Body (Live Iframe View) -->
+          <div class="preview-content-pane" id="panePreview" style="display:none;">
+            <div class="preview-address-bar">
+              <span class="preview-status-dot"></span>
+              <input type="text" class="preview-url-input" id="previewUrlInput" value="http://127.0.0.1:8088/studio/site-generator.html" />
+              <button class="preview-action-btn" onclick="reloadIframePreview()" title="Reload Preview"><i class="ph-bold ph-arrows-clockwise"></i></button>
+              <a class="preview-action-btn" id="previewOpenExternal" href="/studio/site-generator.html" target="_blank" title="Open in New Tab"><i class="ph-bold ph-arrow-square-out"></i></a>
+            </div>
+            <iframe id="ideLivePreviewIframe" src="/studio/site-generator.html" class="ide-preview-frame"></iframe>
+          </div>
+
+          <!-- BOTTOM DRAWER: EMBEDDED TERMINAL & AST TELEMETRY -->
+          <div class="ide-bottom-terminal" id="ideBottomTerminal">
+            <div class="terminal-header">
+              <div class="terminal-tabs">
+                <button class="term-tab active" id="tabTerminal" onclick="switchTerminalTab('term')">
+                  <i class="ph-bold ph-terminal-window"></i> <span>Terminal (:8088 & :8484)</span>
+                </button>
+                <button class="term-tab" id="tabDiagnostics" onclick="switchTerminalTab('diag')">
+                  <i class="ph-bold ph-check-circle" style="color:#34d399"></i> <span>AST Diagnostics (0 Errors)</span>
+                </button>
+                <button class="term-tab" id="tabSwarmBus" onclick="switchTerminalTab('bus')">
+                  <i class="ph-bold ph-activity" style="color:var(--cyan)"></i> <span>Swarm Event Bus</span>
+                </button>
+              </div>
+              <div class="terminal-ctrls">
+                <button class="term-ctrl-btn" onclick="clearTerminalOutput()" title="Clear Terminal">Clear</button>
+                <button class="term-ctrl-btn" onclick="toggleTerminalCollapse()" title="Collapse / Expand Terminal" id="btnTermCollapse">_</button>
+              </div>
+            </div>
+
+            <!-- Terminal Output Stream -->
+            <div class="terminal-body" id="terminalBody">
+              <div class="term-line"><span class="term-prompt">zoth-studio $</span> <span class="term-cmd">zoth status --telemetry</span></div>
+              <div class="term-line green">✔ Zoth Web Hub running on http://0.0.0.0:8088</div>
+              <div class="term-line green">✔ Orchestrator & Swarm Bus running on http://0.0.0.0:8484</div>
+              <div class="term-line green">✔ Memory Daemon & 3D Volumetric Mesh running on http://127.0.0.1:8788</div>
+              <div class="term-line cyan">● 21 Sovereign Agents registered · AST Invariants Verified (0 syntax collisions)</div>
+              <div class="term-line"><span class="term-prompt">zoth-studio $</span> <span class="term-cursor">_</span></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT BUNDLES & ENGINES -->
+  <script src="/assets/studio/antigravity-ide.js"></script>
+  <script src="/assets/zoth-workbench.js"></script>
+  <script src="/assets/zoth-nav.js"></script>
+  <script src="/assets/zoth-gate.js"></script>
+  <script src="/assets/zoth-annotator.js"></script>
+</body>
+</html>
