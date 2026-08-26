@@ -510,9 +510,16 @@ if __name__ == "__main__":
       logTerminalLine(`↳ [AGY Lead #${i + 1}] @${squad.lead.id} completed domain task.`, 'green');
 
       // 2. Subagent 1 responds
-      await sleep(300);
+      await sleep(250);
       const sub1 = squad.subagents[0];
-      const sub1Reply = generateDynamicAgentOutput(sub1, prompt, false);
+      let sub1Reply = "";
+      if (backendData && backendData.squad_results) {
+        const foundSub1 = backendData.squad_results.find(r => r.agent === sub1.id);
+        if (foundSub1) sub1Reply = foundSub1.text;
+      }
+      if (!sub1Reply) {
+        sub1Reply = generateDynamicAgentOutput(sub1, prompt, false);
+      }
       appendCockpitMessage({
         isUser: false,
         author: sub1.name,
@@ -524,9 +531,16 @@ if __name__ == "__main__":
 
       // 3. Subagent 2 responds (if not Master Azoth yet)
       if (squad.subagents[1].id !== 'master-azoth') {
-        await sleep(300);
+        await sleep(250);
         const sub2 = squad.subagents[1];
-        const sub2Reply = generateDynamicAgentOutput(sub2, prompt, false);
+        let sub2Reply = "";
+        if (backendData && backendData.squad_results) {
+          const foundSub2 = backendData.squad_results.find(r => r.agent === sub2.id);
+          if (foundSub2) sub2Reply = foundSub2.text;
+        }
+        if (!sub2Reply) {
+          sub2Reply = generateDynamicAgentOutput(sub2, prompt, false);
+        }
         appendCockpitMessage({
           isUser: false,
           author: sub2.name,

@@ -765,11 +765,21 @@ async def api_zoth_swarm(request: Request) -> Response:
             azoth_text = _query_local_model("zoth-ai-micro:latest", azoth_p, prompt)
 
         elif is_software:
-            # 1. Antigravity Architecture
+            # 1. Antigravity Lead
             agy_p = f"You are Antigravity, lead full-stack architect. Formulate the technical stack, file architecture, and data contracts for: '{prompt}'. Be specific and concise in 2 sentences."
             agy_text = _query_local_model("zoth-ai-micro:latest", agy_p, prompt)
             squad_results.append({"agent": "antigravity", "role": "Lead AGY #1 · Architecture & Code", "icon": "🪐", "color": "#7c9cff", "text": agy_text})
             conversation_context.append(f"Antigravity: {agy_text}")
+
+            # 1a. Kai (Subagent - AST Inspector)
+            kai_p = f"You are Kai, AST static inspector under @antigravity. Context:\n{_get_history()}\nInspect symbol tables, syntax collisions, and memory allocations in 1 sentence."
+            kai_text = _query_local_model("zoth-ai-micro:latest", kai_p, prompt)
+            squad_results.append({"agent": "kai", "role": "Subagent of @antigravity · Workspace AST Inspector", "icon": "🔍", "color": "#38bdf8", "text": kai_text})
+
+            # 1b. Ignis (Subagent - Pipeline Optimizer)
+            ignis_p = f"You are Ignis, pipeline optimizer under @antigravity. Context:\n{_get_history()}\nOptimize runtime execution complexity and test runner passes in 1 sentence."
+            ignis_text = _query_local_model("zoth-ai-micro:latest", ignis_p, prompt)
+            squad_results.append({"agent": "ignis", "role": "Subagent of @antigravity · Pipeline Optimizer", "icon": "🔥", "color": "#fb923c", "text": ignis_text})
 
             # 2. Grok Logic & Invariant Check
             if strength in ("strike", "full"):
@@ -778,11 +788,21 @@ async def api_zoth_swarm(request: Request) -> Response:
                 squad_results.append({"agent": "grok", "role": "Lead AGY #2 · Astrolabe Truth Engine", "icon": "📐", "color": "#10b981", "text": grok_text})
                 conversation_context.append(f"Grok: {grok_text}")
 
+                # 2a. Athena (Subagent - Triples & Knowledge)
+                athena_p = f"You are Athena, semantic triple architect under @grok. Context:\n{_get_history()}\nMap JSON-LD entity graph relations in 1 sentence."
+                athena_text = _query_local_model("zoth-ai-micro:latest", athena_p, prompt)
+                squad_results.append({"agent": "athena", "role": "Subagent of @grok · Knowledge Context", "icon": "🦉", "color": "#34d399", "text": athena_text})
+
             # 3. Hermes Tool Harness
             herm_p = f"You are Hermes, autonomous tool runner. Context:\n{_get_history()}\nIn 1-2 sentences, describe the exact scaffold command or test harness script you executed in the workspace."
             hermes_text = _query_local_model("zoth-ai-micro:latest", herm_p, prompt)
             squad_results.append({"agent": "hermes", "role": "Lead AGY #3 · Automation & Tool Runner", "icon": "⚡", "color": "#f59e0b", "text": hermes_text})
             conversation_context.append(f"Hermes: {hermes_text}")
+
+            # 3a. Radical Minion (Subagent - Cron/Shell Runner)
+            rad_p = f"You are Radical Minion under @hermes. Context:\n{_get_history()}\nConfirm local cron/shell subprocess execution in 1 sentence."
+            rad_text = _query_local_model("zoth-ai-micro:latest", rad_p, prompt)
+            squad_results.append({"agent": "radical-minion", "role": "Subagent of @hermes · Rapid Shell Tasker", "icon": "⚡", "color": "#f59e0b", "text": rad_text})
 
             # 4. Ghostbyte Security & Boundary Check
             if strength == "full":
