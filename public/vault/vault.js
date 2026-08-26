@@ -2046,16 +2046,18 @@ function initWebGL() {
     });
 
     let composer = null;
+    let bloom = null;
     try {
       composer = new EffectComposer(renderer);
       composer.addPass(new RenderPass(scene, camera));
       const safeW2 = getSafeSize(innerWidth);
       const safeH2 = getSafeSize(innerHeight);
-      const bloom = new UnrealBloomPass(new THREE.Vector2(safeW2, safeH2), 0.72, 0.55, 0.72);
+      bloom = new UnrealBloomPass(new THREE.Vector2(safeW2, safeH2), 0.72, 0.55, 0.72);
       composer.addPass(bloom);
     } catch (compErr) {
       console.warn("[Vault WebGL] Postprocessing pass bypassed:", compErr);
       composer = null;
+      bloom = null;
     }
 
     function onResize() {
@@ -2149,7 +2151,9 @@ function initWebGL() {
       cornerA.intensity = 1.9 + Math.sin(t * 1.4) * 0.35;
       cornerB.intensity = 1.4 + Math.cos(t * 1.1) * 0.25;
       keyLight.intensity = 2.8 + Math.sin(t * 0.9) * 0.25;
-      bloom.strength = spawnPulse > 0 ? 0.72 + (spawnPulse = Math.max(0, spawnPulse - dt)) * 0.55 : 0.72;
+      if (bloom) {
+        bloom.strength = spawnPulse > 0 ? 0.72 + (spawnPulse = Math.max(0, spawnPulse - dt)) * 0.55 : 0.72;
+      }
 
       // Browser idle auto-lock only — daemon session TTL is driven by updateSessionHud()
       if (masterPass && autoLockEnabled && storageMode !== "daemon") {
