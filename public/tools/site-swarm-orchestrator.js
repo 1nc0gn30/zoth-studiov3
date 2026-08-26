@@ -301,6 +301,10 @@
       ].join('\n');
     }
 
+    // Generate Archetype-Specific Pollinations Visual Assets
+    var heroImgPrompt = encodeURIComponent((s.name + ' ' + (s.tagline || 'cybernetic architecture') + ' cinematic high contrast aesthetic 8k').trim());
+    var heroImgUrl = 'https://image.pollinations.ai/prompt/' + heroImgPrompt + '?width=1200&height=630&nologo=true&seed=428941&model=flux';
+
     var indexBody = '';
     var indexScripts = '';
 
@@ -309,9 +313,12 @@
         '<div class="badge">🌿 Verified Local Contractor · 5.0 Star Rated</div>' +
         '<h1>' + (s.hero && s.hero.title ? s.hero.title : 'Precision Lawn Care & Grounds Maintenance Across Hampton Roads') + '</h1>' +
         '<p class="tagline">' + (s.hero && s.hero.sub ? s.hero.sub : 'Owner-led precision lawn care, core aeration, overseeding, and grounds maintenance for Virginia Beach, Norfolk, and Chesapeake.') + '</p>' +
-        '<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">' +
+        '<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:30px;">' +
           '<a href="#quote-calculator" style="' + btnStyle + 'text-decoration:none;">🌱 Get Instant Rate Estimate</a>' +
           '<a href="contact.html" style="display:inline-block;padding:12px 24px;border-radius:8px;background:rgba(255,255,255,0.06);color:#ffffff;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,0.15);">📞 Call (757) 555-0199</a>' +
+        '</div>' +
+        '<div style="max-width:880px;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid ' + border + ';box-shadow:0 12px 40px rgba(0,0,0,0.5);">' +
+          '<img src="' + heroImgUrl + '" alt="' + s.name + ' Hero" style="width:100%;height:auto;display:block;aspect-ratio:16/9;object-fit:cover;" loading="lazy"/>' +
         '</div>' +
       '</header>' +
       '<section class="section-wrap" id="quote-calculator">' +
