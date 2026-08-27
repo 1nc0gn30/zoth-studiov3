@@ -124,22 +124,26 @@
           <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold">DAEMON :5225</span>
         </div>
 
-        <!-- QR Display Canvas Box -->
-        <div class="my-6 relative p-4 bg-white rounded-xl shadow-2xl">
+        <!-- QR Display Canvas Box (Real High-Res Scannable QR) -->
+        <div class="my-6 relative p-3 bg-white rounded-2xl shadow-[0_0_40px_rgba(0,240,255,0.25)] flex flex-col items-center justify-center">
           <div class="qr-scanner-line"></div>
-          <!-- SVG QR Code representing simplex link: simplex://contact/zoth_sovereign_bridge -->
-          <svg class="w-52 h-52 text-slate-950" viewBox="0 0 100 100" fill="currentColor">
-            <path d="M0 0h30v30H0zM10 10h10v10H10zM70 0h30v30H70zM80 10h10v10H80zM0 70h30v30H0zM10 80h10v10H10zM40 0h10v20H40zM55 0h10v10H55zM40 25h20v10H40zM0 35h10v30H0zM20 35h10v15H20zM35 40h30v20H35zM75 35h25v10H75zM85 50h15v20H85zM40 70h10v30H40zM55 85h20v15H55zM75 75h10v10H75zM90 90h10v10H90z"/>
-          </svg>
+          <img src="/assets/media/simplex_sovereign_qr.png" alt="SimpleX Sovereign QR Code" class="w-56 h-56 block rounded-lg" id="simplex-qr-img" />
+          <span class="text-[11px] font-mono text-slate-600 font-bold mt-1">100% Scannable with SimpleX Chat App</span>
         </div>
 
         <div class="w-full space-y-3">
-          <div class="bg-black/60 border border-slate-800 rounded-lg p-3 font-mono text-xs text-cyan-300 break-all select-all">
-            simplex://contact/zoth_sovereign_bridge_operator_node
+          <div id="simplex-uri-box" class="bg-black/80 border border-cyan-500/40 rounded-xl p-3 font-mono text-xs text-cyan-300 break-all select-all cursor-pointer transition-colors hover:border-cyan-400" title="Click to copy URI">
+            simplex://contact/zoth_sovereign_bridge_operator_node#/?servers=smp://simplex.nullai.tech:5223
           </div>
-          <button type="button" onclick="navigator.clipboard.writeText('simplex://contact/zoth_sovereign_bridge_operator_node'); alert('Copied SimpleX Sovereign Invitation Link!');" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold font-mono text-sm rounded-xl transition-transform hover:-translate-y-0.5 shadow-lg shadow-cyan-500/20">
-            🔗 Copy SimpleX Invitation Link
+          
+          <button type="button" id="btn-copy-simplex" class="w-full py-3.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-extrabold font-mono text-sm rounded-xl transition-all hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
+            <span id="copy-btn-icon">🔗</span>
+            <span id="copy-btn-text">Copy SimpleX Invitation Link</span>
           </button>
+          
+          <div id="copy-toast" class="hidden py-2 px-3 bg-emerald-500/20 border border-emerald-500 text-emerald-400 text-xs font-mono rounded-lg text-center transition-all">
+            ✔ Copied to clipboard! Ready to paste into SimpleX Chat.
+          </div>
         </div>
       </div>
 
@@ -266,5 +270,56 @@
 
   <script src="/assets/zoth-nav.js"></script>
   <script src="/assets/zoth-pet-hud.js"></script>
+
+  <script>
+    function copySimpleXLink() {
+      const uri = "simplex://contact/zoth_sovereign_bridge_operator_node#/?servers=smp://simplex.nullai.tech:5223";
+      const toast = document.getElementById("copy-toast");
+      const btnText = document.getElementById("copy-btn-text");
+      const btnIcon = document.getElementById("copy-btn-icon");
+
+      // Robust clipboard write with fallback
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(uri).then(onSuccess, fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
+
+      function fallbackCopy() {
+        const tempInput = document.createElement("textarea");
+        tempInput.value = uri;
+        tempInput.style.position = "fixed";
+        tempInput.style.left = "-9999px";
+        document.body.appendChild(tempInput);
+        tempInput.focus();
+        tempInput.select();
+        try {
+          document.execCommand("copy");
+          onSuccess();
+        } catch (err) {
+          console.error("Copy error:", err);
+        }
+        document.body.removeChild(tempInput);
+      }
+
+      function onSuccess() {
+        if (toast) toast.classList.remove("hidden");
+        if (btnText) btnText.textContent = "Copied to Clipboard! ✓";
+        if (btnIcon) btnIcon.textContent = "✅";
+        if (window.ZothPetHUD && window.ZothPetHUD.say) {
+          window.ZothPetHUD.say("Copied sovereign SimpleX contact URI to clipboard!");
+        }
+        setTimeout(() => {
+          if (toast) toast.classList.add("hidden");
+          if (btnText) btnText.textContent = "Copy SimpleX Invitation Link";
+          if (btnIcon) btnIcon.textContent = "🔗";
+        }, 3000);
+      }
+    }
+
+    document.getElementById("btn-copy-simplex").addEventListener("click", copySimpleXLink);
+    document.getElementById("simplex-uri-box").addEventListener("click", copySimpleXLink);
+  </script>
+
 </body>
 </html>
