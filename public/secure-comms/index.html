@@ -394,20 +394,26 @@
       liveTerminal.scrollTop = liveTerminal.scrollHeight;
     }
 
-    // Live Polling & Outbound Dispatcher via Port 8767 (Direct SQLite Sync)
+        // Live Polling & Outbound Dispatcher via Port 8767 (Direct SQLite Sync)
     let renderedMsgIds = new Set();
-    const BRIDGE_API = "http://" + window.location.hostname + ":8767";
+    let hasLoadedFirstBatch = false;
+    const bridgeHost = window.location.hostname || "127.0.0.1";
+    const BRIDGE_API = "http://" + bridgeHost + ":8767";
 
     async function pollLiveMessages() {
       try {
-        const res = await fetch(`${BRIDGE_API}/api/simplex/messages`);
+        const res = await fetch(`${BRIDGE_API}/api/simplex/messages`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data.messages && data.messages.length > 0) {
+            // On first successful load, clear initial static placeholders
+            if (!hasLoadedFirstBatch) {
+              liveTerminal.innerHTML = "";
+              hasLoadedFirstBatch = true;
+            }
             data.messages.forEach(m => {
               if (!renderedMsgIds.has(m.id)) {
                 renderedMsgIds.add(m.id);
-                // Filter out repetitive system banners if needed
                 if (m.text && !m.text.startsWith("chat banner") && !m.text.includes("Disappearing messages:")) {
                   appendLiveMessage(m.sender, m.text, m.isOutbound);
                   if (!m.isOutbound && window.ZothPetHUD && window.ZothPetHUD.say) {
@@ -419,10 +425,10 @@
           }
         }
       } catch (err) {
-        // Silent catch
+        console.warn("Bridge poll warning:", err);
       }
     }
-    setInterval(pollLiveMessages, 1000);
+    setInterval(pollLiveMessages, 800);
     pollLiveMessages();
 
     btnSendLive.onclick = async function() {
