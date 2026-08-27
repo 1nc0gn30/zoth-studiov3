@@ -248,13 +248,26 @@
         return '<option value="' + p.id + '" ' + selected + '>' + p.emoji + ' ' + p.name + ' — ' + p.domain + '</option>';
       }).join('');
 
-      hud.innerHTML = [
-        '<!-- Speech Bubble for dynamic reactions -->',
+            hud.innerHTML = [
+        '<!-- Floating Avatar Trigger Orb (Azoth / Active Spirit) -->',
+        '<button type="button" class="pet-hud-trigger" id="pet-hud-trigger" aria-expanded="false" aria-label="Toggle Master Narrator & Companion Panel">',
+        '  <div class="pet-hud-orb">',
+        '    <img src="' + pet.avatar + '" alt="' + pet.name + '" id="pet-hud-orb-img" onerror="this.src=\'/assets/mascot/azoth-mask.jpg\'" />',
+        '    <div class="pet-hud-pulse-ring"></div>',
+        '    <div class="pet-hud-orb-status"></div>',
+        '  </div>',
+        '</button>',
+
+        '<!-- Exact Classic Zoth Digest Speech Bubble -->',
         '<div class="pet-hud-speech-bubble" id="pet-hud-speech">',
-        '  <span class="pet-hud-speech-text">Companion online & watching over session.</span>',
+        '  <div class="pet-hud-speech-header">',
+        '    <span class="pet-hud-speech-title">' + pet.emoji + ' ' + (pet.name || "Azoth") + '</span>',
+        '    <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">×</button>',
+        '  </div>',
+        '  <span class="pet-hud-speech-text">Companion online &amp; watching over session.</span>',
         '</div>',
 
-        '<!-- Expanded Companion Dossier Panel -->',
+        '<!-- Expanded Companion Dossier Panel (Opens on Click) -->',
         '<div class="pet-hud-card" id="pet-hud-card" role="region" aria-label="Pet Companion Panel">',
         '  <div class="pet-hud-header">',
         '    <div class="pet-hud-title-group">',
@@ -293,8 +306,8 @@
         '      </div>',
         '    </div>',
 
-                '    <div class="pet-hud-field" style="margin-top: 10px;">',
-        '      <label class="pet-hud-field-label">👁️ Sovereign Vision & Screen Capture</label>',
+        '    <div class="pet-hud-field" style="margin-top: 10px;">',
+        '      <label class="pet-hud-field-label">👁️ Sovereign Vision &amp; Screen Capture</label>',
         '      <button type="button" class="pet-hud-vision-btn" id="pet-hud-vision-btn" style="width:100%; padding:9px 12px; background:linear-gradient(135deg, rgba(0,240,255,0.2), rgba(168,85,247,0.25)); border:1px solid var(--border-cyan, #00f0ff); border-radius:8px; color:#fff; font-family:inherit; font-weight:700; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">',
         '        <span>👁️ Activate Visionary Screen Eye</span>',
         '      </button>',
@@ -319,20 +332,7 @@
         '    <a href="/pets/" class="pet-hud-footer-link">🐾 Sanctuary Roster (24)</a>',
         '    <a href="/pets/studio.html" class="pet-hud-footer-link">💎 3D Studio ↗</a>',
         '  </div>',
-        '</div>',
-
-        '<!-- Unified Floating Narrator & Companion Avatar -->',
-        '<button type="button" class="pet-hud-trigger" id="pet-hud-trigger" aria-expanded="false" aria-label="Toggle Master Narrator & Companion Panel">',
-        '  <div class="pet-hud-orb">',
-        '    <img src="' + pet.avatar + '" alt="' + pet.name + '" id="pet-hud-orb-img" onerror="this.src=\'/assets/mascot/azoth-mask.jpg\'" />',
-        '    <div class="pet-hud-pulse-ring"></div>',
-        '    <div class="pet-hud-orb-status"></div>',
-        '  </div>',
-        '  <div class="pet-hud-trigger-info">',
-        '    <span class="pet-hud-trigger-name" id="pet-hud-trigger-name">' + pet.name + '</span>',
-        '    <span class="pet-hud-trigger-state">Narrator · Tap to Change</span>',
-        '  </div>',
-        '</button>'
+        '</div>'
       ].join('\n');
 
       document.body.appendChild(hud);
