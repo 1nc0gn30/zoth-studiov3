@@ -36,6 +36,11 @@
               w3Link.href = "/studio/web3-hub.html";
               w3Link.innerHTML = "<strong>🪙 Web3 &amp; Solana Bridge</strong><small>Multi-Chain Wallets, Live SOL Ticker &amp; Radar</small>";
               menu.appendChild(w3Link);
+              var msgLink = document.createElement("a");
+              msgLink.href = "/secure-messaging/";
+              msgLink.innerHTML = "<strong>💬 Secure Signal Bridge</strong><small>E2EE Double Ratchet, Matrix &amp; Swarm Dispatch</small>";
+              menu.appendChild(msgLink);
+    
             }
           }
           if (title.indexOf("Core") !== -1) {
@@ -62,6 +67,11 @@
             a.href = "/studio/web3-hub.html";
             a.innerHTML = "🪙 Web3 &amp; Solana Swarm Bridge";
             sh.parentElement.appendChild(a);
+            var aMsg = document.createElement("a");
+            aMsg.href = "/secure-messaging/";
+            aMsg.innerHTML = "💬 Secure Signal Swarm Bridge";
+            sh.parentElement.appendChild(aMsg);
+    
           }
         });
 
