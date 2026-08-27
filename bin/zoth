@@ -103,6 +103,25 @@ def get_server_status() -> dict[str, Any]:
         "ui_url": "http://127.0.0.1:8788/ui/"
     }
 
+    # 5. SimpleX Headless Daemon :5225
+    simplex_up = check_port(5225)
+    status["simplex"] = {
+        "name": "SimpleX Sovereign Chat Daemon (Post-Quantum E2EE)",
+        "port": 5225,
+        "up": simplex_up,
+        "url": "ws://127.0.0.1:5225"
+    }
+
+    # 6. SimpleX Web Bridge API :8767
+    bridge_up = check_port(8767)
+    status["simplex_bridge"] = {
+        "name": "SimpleX Live Web Bridge & Console API",
+        "port": 8767,
+        "up": bridge_up,
+        "url": "http://127.0.0.1:8767",
+        "api_url": "http://127.0.0.1:8767/api/simplex/messages"
+    }
+
     return status
 
 def cmd_status(args):
@@ -1360,8 +1379,8 @@ def cmd_start(args):
 
 def cmd_stop(args):
     print_banner()
-    print(f"{BOLD}Stopping active Zoth servers on ports 8484, 8088, 8787, 8788...{RESET}\n")
-    for port in [8484, 8088, 8787, 8788]:
+    print(f"{BOLD}Stopping active Zoth servers on ports 8484, 8088, 8787, 8788, 5225, 8767, 8766...{RESET}\n")
+    for port in [8484, 8088, 8787, 8788, 5225, 8767, 8766]:
         try:
             out = subprocess.check_output(["lsof", "-ti", f":{port}"], text=True).strip()
             if out:
