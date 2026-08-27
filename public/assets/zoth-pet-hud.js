@@ -1017,7 +1017,7 @@
         var y = parseInt(savedY, 10);
         var vw = window.innerWidth || document.documentElement.clientWidth;
         var vh = window.innerHeight || document.documentElement.clientHeight;
-        if (!isNaN(x) && !isNaN(y) && x >= 0 && x < vw && y >= 0 && y < vh) {
+        if (vw > 640 && !isNaN(x) && !isNaN(y) && x >= 0 && x < vw && y >= 0 && y < vh) {
           hud.style.left = x + "px";
           hud.style.top = y + "px";
           hud.style.right = "auto";
