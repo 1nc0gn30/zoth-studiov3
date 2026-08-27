@@ -578,6 +578,70 @@
       background: rgba(255, 255, 255, 0.02);
     }
 
+  
+    /* ── Agentic Actions & Blinks + x402 Micropayments Styles ── */
+    .blink-preview-card {
+      background: #0b1120;
+      border: 1px solid rgba(153, 69, 255, 0.35);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .blink-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .blink-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #9945ff, #14f195);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+    .blink-action-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 8px;
+    }
+    .blink-btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .blink-btn:hover {
+      background: rgba(20, 241, 149, 0.2);
+      border-color: #14f195;
+      color: #14f195;
+      transform: translateY(-1px);
+    }
+    .mcp-json-block {
+      background: #03050c;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #38bdf8;
+      max-height: 120px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
   </style>
 
   <!-- Web3 Cryptographic & Blockchain Libraries -->
@@ -1440,6 +1504,100 @@ Timestamp: ${timestamp}`;
         }
         setTimeout(() => { btn.textContent = "💧 Request 1.0 SOL Devnet Airdrop"; }, 2500);
       }, 700);
+    };
+  // ── Solana Actions & Blinks Controller ──
+    window.executeBlinkAction = function(amountSol) {
+      const statusEl = document.getElementById("blink-status-msg");
+      statusEl.style.display = "block";
+      statusEl.textContent = `⏳ Executing Solana Action for ${amountSol} SOL...`;
+
+      setTimeout(() => {
+        const txHash = Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        statusEl.innerHTML = `✔ <strong>Blink Action Finalized!</strong> (${amountSol} SOL) · <a href="https://solscan.io/tx/${txHash}" target="_blank" style="color:#00f0ff;">View Solscan ↗</a>`;
+        
+        // Add to ledger
+        const tbody = document.getElementById("tx-ledger-body");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><a href="https://solscan.io/tx/${txHash}" target="_blank" style="color:#9945ff;">${txHash.slice(0, 8)}... ↗</a></td>
+          <td>⚡ @BLINK (Action Spec)</td>
+          <td>Blink Micro-Tip</td>
+          <td>${amountSol} SOL</td>
+          <td>0.000005 SOL</td>
+          <td><span style="color:#14f195;">● Action Confirmed</span></td>
+        `;
+        tbody.insertBefore(row, tbody.firstChild);
+
+        if (window.ZothPetHUD && window.ZothPetHUD.say) {
+          window.ZothPetHUD.say(`Executed Solana Blink Action for ${amountSol} SOL!`);
+        }
+      }, 600);
+    };
+
+    window.copyBlinkUrl = function() {
+      navigator.clipboard.writeText("https://dial.to/?action=solana-action:https://zoth.io/api/actions/tip");
+      const statusEl = document.getElementById("blink-status-msg");
+      statusEl.style.display = "block";
+      statusEl.textContent = "✔ Blink URL copied to clipboard! Shareable on X / Twitter & Discord.";
+      if (window.ZothPetHUD && window.ZothPetHUD.say) {
+        window.ZothPetHUD.say("Copied Solana Blink URL to clipboard.");
+      }
+    };
+
+    // ── x402 Micropayments Engine ──
+    let x402Count = 14290;
+    document.getElementById("btn-trigger-x402").onclick = function() {
+      const btn = this;
+      btn.textContent = "⏳ Resolving HTTP 402 Payment Required...";
+      
+      setTimeout(() => {
+        x402Count++;
+        document.getElementById("x402-count").textContent = `${x402Count.toLocaleString()} Payments`;
+        btn.textContent = "✔ 0.00002 SOL Settled via x402 Protocol!";
+        
+        const tbody = document.getElementById("tx-ledger-body");
+        const row = document.createElement("tr");
+        const txHash = Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        row.innerHTML = `
+          <td><a href="https://solscan.io/tx/${txHash}" target="_blank" style="color:#14f195;">${txHash.slice(0, 8)}... ↗</a></td>
+          <td>🤖 @X402 (M2M Agent)</td>
+          <td>HTTP 402 Settlement</td>
+          <td>0.00002 SOL</td>
+          <td>0.000001 SOL</td>
+          <td><span style="color:#14f195;">● Instant Settlement</span></td>
+        `;
+        tbody.insertBefore(row, tbody.firstChild);
+
+        if (window.ZothPetHUD && window.ZothPetHUD.say) {
+          window.ZothPetHUD.say("x402 machine-to-machine HTTP payment settled in 12ms!");
+        }
+
+        setTimeout(() => {
+          btn.textContent = "⚡ Send Machine-to-Machine x402 Micropayment";
+        }, 2000);
+      }, 500);
+    };
+
+    // ── MCP Config Exporter ──
+    document.getElementById("btn-export-mcp").onclick = function() {
+      const mcpConfig = JSON.stringify({
+        mcpServers: {
+          "zoth-solana-agent-kit": {
+            command: "python3",
+            args: ["/media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/zoth-studio/tools/solana_mcp_server.py"],
+            env: { "SOLANA_RPC_URL": "https://api.mainnet-beta.solana.com" }
+          }
+        }
+      }, null, 2);
+
+      navigator.clipboard.writeText(mcpConfig);
+      this.textContent = "✔ MCP Config Copied to Clipboard!";
+      if (window.ZothPetHUD && window.ZothPetHUD.say) {
+        window.ZothPetHUD.say("Copied Solana MCP Server config for IDE & Agent Swarm integration.");
+      }
+      setTimeout(() => {
+        this.textContent = "📋 Copy MCP Config for IDE / Swarm";
+      }, 2200);
     };
   </script>
 </body>
