@@ -1838,6 +1838,41 @@
       downloadStudioFile(`${pet.id}-SOUL.md`, md);
     };
 
+    
+    // Animation Loop
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const time = clock.getElapsedTime();
+
+      // Smooth camera interpolation
+      camera.position.lerp(targetCamPos, 0.08);
+      camera.lookAt(targetLookAt);
+
+      if (autoRotate && !isDragging && petFigure && petFigure.group) {
+        petFigure.group.rotation.y += 0.008;
+      }
+
+      if (petFigure && petFigure.tick) {
+        petFigure.tick(time, delta);
+      }
+
+      ring.rotation.z += 0.005;
+      drawSpectrum();
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Responsive Resize Handler
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
     // Integrate Custom Pets on Load in pet-studio
     try {
       if (window.PetModels && window.PetModels.getCustomPets) {
