@@ -13,6 +13,13 @@
     document.head.appendChild(themeScript);
   }
 
+  // Ensure Universal Pet HUD & Desk Companion is loaded
+  if (!window.ZothPetHUD && !document.querySelector('script[src*="zoth-pet-hud.js"]')) {
+    var petHudScript = document.createElement("script");
+    petHudScript.src = "/assets/zoth-pet-hud.js";
+    document.head.appendChild(petHudScript);
+  }
+
   function initNav() {
     var burger = document.getElementById("burger") || document.querySelector(".burger");
     var drawer = document.getElementById("drawer") || document.querySelector(".drawer");

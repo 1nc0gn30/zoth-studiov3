@@ -1,0 +1,634 @@
+/* =============================================================================
+   🐾 ZOTH STUDIO — Global Pet HUD & Desk Companion (v1.0)
+   =============================================================================
+   Floating desk companion HUD, mini modal, reactions, vibration monitor,
+   pet switcher, terminal summon helper, and responsive glassmorphism.
+   Adapts cleanly to Dark, Light, Matrix, and Gold themes.
+   Positioned comfortably on the bottom-left to harmonize alongside the annotator.
+   ============================================================================= */
+
+/* Root HUD Container */
+#zoth-pet-hud {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 2147483642;
+  font-family: var(--font-theme-body, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  pointer-events: none;
+}
+
+#zoth-pet-hud * {
+  box-sizing: border-box;
+}
+
+#zoth-pet-hud button,
+#zoth-pet-hud a,
+#zoth-pet-hud select,
+#zoth-pet-hud .pet-hud-trigger,
+#zoth-pet-hud .pet-hud-card {
+  pointer-events: auto;
+}
+
+/* =============================================================================
+   Floating Trigger Bubble (Desk Companion Orb)
+   ============================================================================= */
+.pet-hud-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 9999px;
+  background: var(--panel, rgba(14, 19, 34, 0.92));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-card, rgba(0, 240, 255, 0.3));
+  box-shadow: 0 10px 32px var(--shadow-color, rgba(0, 0, 0, 0.5)),
+              0 0 18px var(--accent-glow, rgba(0, 240, 255, 0.25));
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.pet-hud-trigger:hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: var(--accent, #00f0ff);
+  box-shadow: 0 14px 40px var(--shadow-color, rgba(0, 0, 0, 0.6)),
+              0 0 28px var(--accent-glow, rgba(0, 240, 255, 0.45));
+}
+
+.pet-hud-trigger:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Avatar Orb */
+.pet-hud-orb {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--accent, #00f0ff);
+  background: var(--bg-2, #090c16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
+}
+
+.pet-hud-orb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pet-hud-trigger:hover .pet-hud-orb img {
+  transform: scale(1.12);
+}
+
+/* Live Pulse Ring */
+.pet-hud-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent, #00f0ff);
+  opacity: 0.7;
+  animation: petHudPulse 2.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes petHudPulse {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  50% { transform: scale(1.25); opacity: 0.1; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+/* Status Indicator Dot */
+.pet-hud-orb-status {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--green, #34d399);
+  border: 2px solid var(--bg, #05060a);
+  box-shadow: 0 0 8px var(--green, #34d399);
+}
+
+/* Trigger Text Info */
+.pet-hud-trigger-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.pet-hud-trigger-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.pet-hud-trigger-state {
+  font-size: 0.68rem;
+  font-family: var(--font-theme-mono, monospace);
+  color: var(--accent, #00f0ff);
+  opacity: 0.9;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pet-hud-trigger-state::before {
+  content: "•";
+  font-size: 0.9rem;
+  color: var(--green, #34d399);
+}
+
+/* Reaction Speech Bubble */
+.pet-hud-speech-bubble {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  max-width: 260px;
+  background: var(--panel-solid, #0d1222);
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--accent, #00f0ff);
+  padding: 8px 12px;
+  border-radius: 12px 12px 12px 2px;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px var(--shadow-color, rgba(0,0,0,0.4)),
+              0 0 16px var(--accent-glow, rgba(0,240,255,0.25));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px) scale(0.95);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 2147483644;
+}
+
+.pet-hud-speech-bubble.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.pet-hud-speech-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 18px;
+  width: 10px;
+  height: 6px;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  background: var(--accent, #00f0ff);
+}
+
+/* =============================================================================
+   Expanded Companion Panel
+   ============================================================================= */
+.pet-hud-card {
+  width: 330px;
+  max-width: calc(100vw - 32px);
+  background: var(--glass-bg, rgba(9, 13, 26, 0.94));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-card, rgba(0, 240, 255, 0.28));
+  border-radius: 20px;
+  box-shadow: 0 16px 48px var(--shadow-color, rgba(0, 0, 0, 0.65)),
+              0 0 32px var(--accent-glow, rgba(0, 240, 255, 0.2));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform-origin: bottom left;
+  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.92);
+}
+
+#zoth-pet-hud.open .pet-hud-card {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+/* Panel Header */
+.pet-hud-header {
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pet-hud-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pet-hud-badge-icon {
+  font-size: 1rem;
+}
+
+.pet-hud-title {
+  font-family: var(--font-theme-heading, serif);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary, #ffffff);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pet-hud-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pet-hud-icon-btn {
+  background: transparent;
+  border: 1px solid var(--line, rgba(255,255,255,0.12));
+  color: var(--muted, #94a3b8);
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.pet-hud-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #ffffff);
+  border-color: var(--accent, #00f0ff);
+}
+
+/* Panel Body */
+.pet-hud-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 480px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* Companion Hero Showcase Inside Modal */
+.pet-hud-hero-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface-card, rgba(16, 22, 40, 0.85));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  padding: 12px;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pet-hud-hero-box::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  background: var(--accent-glow, rgba(0,240,255,0.2));
+  filter: blur(24px);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.pet-hud-hero-img-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--accent, #00f0ff);
+  background: var(--bg, #05060a);
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+.pet-hud-hero-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pet-hud-hero-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pet-hud-hero-name {
+  font-family: var(--font-theme-heading, serif);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary, #ffffff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pet-hud-hero-archetype {
+  font-size: 0.72rem;
+  color: var(--cyan-soft, #38bdf8);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.pet-hud-hero-element {
+  font-size: 0.66rem;
+  font-family: var(--font-theme-mono, monospace);
+  color: var(--muted, #94a3b8);
+}
+
+/* Vibration & Live Telemetry Section */
+.pet-hud-telemetry {
+  background: var(--surface-card, rgba(16, 22, 40, 0.85));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  padding: 10px 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pet-hud-telemetry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+
+.pet-hud-label {
+  color: var(--muted, #94a3b8);
+  font-weight: 500;
+}
+
+.pet-hud-val {
+  font-family: var(--font-theme-mono, monospace);
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.pet-hud-vibe-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.pet-hud-vibe-fill {
+  height: 100%;
+  width: 88%;
+  background: linear-gradient(90deg, var(--cyan, #00f0ff), var(--magenta, #d946ef));
+  border-radius: 3px;
+  box-shadow: 0 0 8px var(--accent-glow, rgba(0,240,255,0.4));
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Quick Summon Select */
+.pet-hud-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pet-hud-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted, #94a3b8);
+}
+
+.pet-hud-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--input-bg, #090d1a);
+  color: var(--input-text, #ffffff);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  font-size: 0.78rem;
+  font-family: var(--font-theme-body, sans-serif);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.pet-hud-select:focus {
+  border-color: var(--accent, #00f0ff);
+  box-shadow: 0 0 10px var(--accent-glow, rgba(0,240,255,0.25));
+}
+
+/* Terminal Summon Code Helper */
+.pet-hud-cmd-box {
+  background: var(--code-bg, #050811);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pet-hud-cmd-text {
+  font-family: var(--font-theme-mono, monospace);
+  font-size: 0.7rem;
+  color: var(--code-text, #38bdf8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pet-hud-copy-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  color: var(--text-primary, #ffffff);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.pet-hud-copy-btn:hover {
+  background: var(--accent, #00f0ff);
+  color: var(--text-on-accent, #05060a);
+  border-color: var(--accent, #00f0ff);
+}
+
+/* Footer Link */
+.pet-hud-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+}
+
+.pet-hud-footer-link {
+  color: var(--accent, #00f0ff);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.pet-hud-footer-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* =============================================================================
+   Minimized / Docked Mode
+   ============================================================================= */
+#zoth-pet-hud.docked .pet-hud-trigger {
+  padding: 6px;
+}
+
+#zoth-pet-hud.docked .pet-hud-trigger-info {
+  display: none;
+}
+
+#zoth-pet-hud.docked .pet-hud-orb {
+  width: 36px;
+  height: 36px;
+}
+
+/* =============================================================================
+   Theme Specific Nuances & Glow Overrides
+   ============================================================================= */
+
+/* Light Theme */
+html[data-theme="light"] #zoth-pet-hud .pet-hud-trigger,
+html.theme-light #zoth-pet-hud .pet-hud-trigger,
+body[data-theme="light"] #zoth-pet-hud .pet-hud-trigger,
+body.theme-light #zoth-pet-hud .pet-hud-trigger {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(0, 102, 204, 0.25);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] #zoth-pet-hud .pet-hud-card,
+html.theme-light #zoth-pet-hud .pet-hud-card,
+body[data-theme="light"] #zoth-pet-hud .pet-hud-card,
+body.theme-light #zoth-pet-hud .pet-hud-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(0, 102, 204, 0.2);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+}
+
+html[data-theme="light"] #zoth-pet-hud .pet-hud-speech-bubble,
+html.theme-light #zoth-pet-hud .pet-hud-speech-bubble,
+body[data-theme="light"] #zoth-pet-hud .pet-hud-speech-bubble,
+body.theme-light #zoth-pet-hud .pet-hud-speech-bubble {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #0066cc;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Matrix Theme */
+html[data-theme="matrix"] #zoth-pet-hud .pet-hud-trigger,
+html.theme-matrix #zoth-pet-hud .pet-hud-trigger,
+body[data-theme="matrix"] #zoth-pet-hud .pet-hud-trigger,
+body.theme-matrix #zoth-pet-hud .pet-hud-trigger {
+  border-radius: 4px;
+  border-color: #00ff41;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.35);
+}
+
+html[data-theme="matrix"] #zoth-pet-hud .pet-hud-card,
+html.theme-matrix #zoth-pet-hud .pet-hud-card,
+body[data-theme="matrix"] #zoth-pet-hud .pet-hud-card,
+body.theme-matrix #zoth-pet-hud .pet-hud-card {
+  border-radius: 4px;
+  border-color: #00ff41;
+  box-shadow: 0 0 25px rgba(0, 255, 65, 0.3);
+}
+
+html[data-theme="matrix"] #zoth-pet-hud .pet-hud-orb,
+html.theme-matrix #zoth-pet-hud .pet-hud-orb,
+body[data-theme="matrix"] #zoth-pet-hud .pet-hud-orb,
+body.theme-matrix #zoth-pet-hud .pet-hud-orb {
+  border-radius: 4px;
+}
+
+/* Gold Theme */
+html[data-theme="gold"] #zoth-pet-hud .pet-hud-trigger,
+html.theme-gold #zoth-pet-hud .pet-hud-trigger,
+body[data-theme="gold"] #zoth-pet-hud .pet-hud-trigger,
+body.theme-gold #zoth-pet-hud .pet-hud-trigger {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+html[data-theme="gold"] #zoth-pet-hud .pet-hud-card,
+html.theme-gold #zoth-pet-hud .pet-hud-card,
+body[data-theme="gold"] #zoth-pet-hud .pet-hud-card,
+body.theme-gold #zoth-pet-hud .pet-hud-card {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 35px rgba(245, 158, 11, 0.2);
+}
+
+/* =============================================================================
+   Mobile Responsiveness
+   ============================================================================= */
+@media (max-width: 640px) {
+  #zoth-pet-hud {
+    bottom: 16px;
+    left: 16px;
+  }
+  
+  .pet-hud-card {
+    width: calc(100vw - 32px);
+  }
+  
+  .pet-hud-trigger-info {
+    display: none;
+  }
+  
+  .pet-hud-trigger {
+    padding: 6px;
+  }
+  
+  .pet-hud-orb {
+    width: 38px;
+    height: 38px;
+  }
+}
