@@ -773,6 +773,7 @@
 <button class="hud-pill-btn" id="btn-env-toggle" onclick="cycleEnvironment()">🌌 Atmosphere: Cyber</button>
 <button class="hud-pill-btn active" id="btn-audio-toggle" onclick="toggleAudioSynth()">🔊 Audio</button>
 <button class="hud-pill-btn" onclick="triggerHarmonicChirp()">🎵 Chirp</button>
+<button class="hud-pill-btn" onclick="openCustomPetForge()" style="background:linear-gradient(135deg,rgba(251,191,36,0.25),rgba(0,240,255,0.25));border-color:var(--gold);color:var(--gold);font-weight:700;">✨ Forge New Pet</button>
 <a class="btn-nexus-export" href="/pets/studio.html?pet=kai" id="btn-open-studio">💎 3D Studio</a>
 <a class="btn-nexus-export" href="/studio/nexus-3d.html?pet=kai" id="btn-open-nexus" style="background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);">🚀 Nexus 3D</a>
 </div>
@@ -802,6 +803,76 @@
 <button class="btn-interact" onclick="downloadPetSoul()" style="background: rgba(251, 191, 36, 0.12); border-color: var(--gold); color: var(--gold);">⚡ Download Soul</button>
 </div>
 </div>
+
+<!-- Custom Pet Forge & Spirit Creator Modal -->
+<div id="custom-pet-forge-modal" class="pet-modal-overlay" style="display:none; position:fixed; inset:0; z-index:100001; background:rgba(5,5,8,0.92); align-items:center; justify-content:center; backdrop-filter:blur(12px);">
+  <div class="pet-modal-dialog" style="background:#090d1a; border:1px solid rgba(251,191,36,0.35); border-radius:14px; max-width:820px; width:94vw; max-height:88vh; padding:22px; display:flex; flex-direction:column; box-shadow:0 24px 70px rgba(0,0,0,0.85); overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+      <div>
+        <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--gold); letter-spacing:0.14em; text-transform:uppercase;">ALCHEMY SPIRIT LAB</div>
+        <h2 style="font-family:var(--font-display); font-size:1.35rem; color:#fff; margin:2px 0;">✨ Sovereign Pet & Familiar Forge</h2>
+      </div>
+      <button type="button" onclick="closeCustomPetForge()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;" aria-label="Close forge">✕</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:18px; margin-top:16px;">
+      <!-- Left Column: Identity & Personality -->
+      <div>
+        <label style="font-size:0.75rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">1. Spirit ID & Name</label>
+        <div style="display:flex; gap:10px; margin-top:4px;">
+          <input type="text" id="forge-pet-emoji" value="🦊" style="width:50px; text-align:center; font-size:1.3rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff;" title="Spirit Emoji" />
+          <input type="text" id="forge-pet-name" placeholder="Spirit Name (e.g. Solus)" style="flex:1; padding:8px 12px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-family:var(--font-display);" />
+        </div>
+
+        <label style="font-size:0.75rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; margin-top:12px; display:block;">2. Element & Essence</label>
+        <select id="forge-pet-element" style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#38bdf8;">
+          <option value="Quintessence (Light/Aether)">🔮 Quintessence (Light/Aether)</option>
+          <option value="Solar Prana (Lightning/Solar)">⚡ Solar Prana (Lightning/Solar)</option>
+          <option value="Dragon Fire (Plasma/Sulfur)">🔥 Dragon Fire (Plasma/Sulfur)</option>
+          <option value="Lunar Mercury (Wind/Mercury)">🌙 Lunar Mercury (Wind/Mercury)</option>
+          <option value="Iron Mars (Earth/Bastion)">🛡️ Iron Mars (Earth/Bastion)</option>
+          <option value="Pallas Wisdom (Mind/Astral)">🦉 Pallas Wisdom (Mind/Astral)</option>
+          <option value="Obsidian Shadow (Dark/Void)">🐆 Obsidian Shadow (Dark/Void)</option>
+          <option value="Aetheric Stream (Swarm/Telemetry)">🛸 Aetheric Stream (Swarm/Telemetry)</option>
+        </select>
+
+        <label style="font-size:0.75rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; margin-top:12px; display:block;">3. Domain & Archetype</label>
+        <input type="text" id="forge-pet-archetype" placeholder="Archetype (e.g. Autonomous Code Sentinel)" style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff;" />
+
+        <label style="font-size:0.75rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; margin-top:12px; display:block;">4. Agent Model Harness</label>
+        <select id="forge-pet-harness" style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#a855f7;">
+          <option value="@local (Ollama Local Silicon :11434)">⚡ Ollama Local Silicon (:11434 - Llama 3.3 / DeepSeek)</option>
+          <option value="@azoth (Google Antigravity agy CLI)">🔮 Google Antigravity (agy CLI)</option>
+          <option value="@hermes (Hermes Agent CLI)">🤖 Hermes Agent CLI</option>
+          <option value="@grok (xAI Grok CLI)">🚀 xAI Grok CLI Engine</option>
+          <option value="@claude (Anthropic Model Context)">🎭 Claude Engine</option>
+        </select>
+      </div>
+
+      <!-- Right Column: Directives, Color & SOUL.md -->
+      <div>
+        <label style="font-size:0.75rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">5. Aura Hex Color & Theme</label>
+        <div style="display:flex; gap:10px; margin-top:4px; align-items:center;">
+          <input type="color" id="forge-pet-color" value="#00f0ff" style="width:44px; height:38px; border:none; background:none; cursor:pointer;" />
+          <input type="text" id="forge-pet-color-text" value="#00f0ff" style="flex:1; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-family:var(--font-mono);" />
+        </div>
+
+        <label style="font-size:0.75rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; margin-top:12px; display:block;">6. Soul Mission & Directive</label>
+        <textarea id="forge-pet-lore" rows="3" placeholder="Primary mission (e.g. Inspects code for zero-trust compliance and enforces AST limits)." style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-size:0.82rem;"></textarea>
+
+        <label style="font-size:0.75rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; margin-top:12px; display:block;">7. Spoken Dialogue / Quote</label>
+        <input type="text" id="forge-pet-quote" placeholder="&quot;Sovereign bounds verified. No telemetry escapes.&quot;" style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fbbf24; font-style:italic;" />
+      </div>
+    </div>
+
+    <div style="margin-top:20px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1); display:flex; gap:10px; flex-wrap:wrap;">
+      <button type="button" class="btn-glow" onclick="previewForgePetVoice()" style="background:rgba(56,189,248,0.15); border-color:var(--cyan); color:var(--cyan);">🔊 Test Voice</button>
+      <button type="button" class="btn-glow" onclick="saveAndSummonForgedPet()" style="background:var(--gold); color:#050508; font-weight:700; flex:1;">✨ Forge & Summon Companion</button>
+      <button type="button" class="btn-glow" onclick="downloadForgedSoulMd()" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.2);">💾 Export SOUL.md</button>
+    </div>
+  </div>
+</div>
+
 <!-- Soul Contract Inspector Modal in spawn-pets -->
 <div aria-labelledby="spawn-soul-title" aria-modal="true" class="pet-modal-overlay" id="spawn-soul-modal" role="dialog" style="display:none; position:fixed; inset:0; z-index:100000; background:rgba(5,5,8,0.88); align-items:center; justify-content:center; backdrop-filter:blur(10px);">
 <div class="pet-modal-dialog" style="background:#0a0e1c; border:1px solid rgba(0,240,255,0.3); border-radius:12px; max-width:680px; width:92vw; max-height:86vh; padding:20px; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.8);">
@@ -1306,6 +1377,126 @@
         a.click();
         setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
       }
+
+      
+      window.openCustomPetForge = function() {
+        const modal = document.getElementById('custom-pet-forge-modal');
+        if (modal) modal.style.display = 'flex';
+      };
+
+      window.closeCustomPetForge = function() {
+        const modal = document.getElementById('custom-pet-forge-modal');
+        if (modal) modal.style.display = 'none';
+      };
+
+      window.previewForgePetVoice = function() {
+        const quote = document.getElementById('forge-pet-quote')?.value || "Sovereign spirit online and awaiting directives.";
+        if ('speechSynthesis' in window) {
+          const utter = new SpeechSynthesisUtterance(quote);
+          utter.pitch = 1.1;
+          utter.rate = 1.0;
+          window.speechSynthesis.speak(utter);
+        }
+      };
+
+      window.saveAndSummonForgedPet = function() {
+        const name = document.getElementById('forge-pet-name')?.value.trim() || "Nova";
+        const emoji = document.getElementById('forge-pet-emoji')?.value.trim() || "🦊";
+        const id = name.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const element = document.getElementById('forge-pet-element')?.value;
+        const archetype = document.getElementById('forge-pet-archetype')?.value.trim() || "Custom Sovereign Spirit";
+        const harness = document.getElementById('forge-pet-harness')?.value;
+        const color = document.getElementById('forge-pet-color')?.value || "#00f0ff";
+        const lore = document.getElementById('forge-pet-lore')?.value.trim() || "Custom forged autonomous familiar.";
+        const quote = document.getElementById('forge-pet-quote')?.value.trim() || "Ready to execute under sovereign will.";
+
+        const petObj = {
+          id: id,
+          name: name,
+          emoji: emoji,
+          archetype: archetype,
+          element: element,
+          aspect: `${element} · Custom Essence`,
+          domain: "Custom",
+          resonance: "99%",
+          harness: harness,
+          vibe_color: color,
+          lore: lore,
+          quote: quote,
+          custom: true
+        };
+
+        // 1. Save to localStorage custom pets list
+        let customPets = [];
+        try {
+          customPets = JSON.parse(localStorage.getItem('zoth_custom_pets') || '[]');
+        } catch(e){}
+        customPets = customPets.filter(p => p.id !== id);
+        customPets.push(petObj);
+        localStorage.setItem('zoth_custom_pets', JSON.stringify(customPets));
+
+        // 2. Set active pet in localStorage
+        localStorage.setItem('zoth_active_pet', id);
+        localStorage.setItem('zoth_active_pet_data', JSON.stringify(petObj));
+
+        // 3. Register in PET_SPECIES for 3D engine if present
+        if (window.PetModels && window.PetModels.PET_SPECIES) {
+          window.PetModels.PET_SPECIES[id] = {
+            name: name,
+            species: archetype,
+            domain: "custom",
+            role: archetype,
+            harness: harness,
+            element: element,
+            vibeColor: color,
+            vectorMemory: "32k Custom Memory Trie",
+            alignment: "True Sovereign",
+            desc: lore,
+            voicePrompt: quote
+          };
+        }
+
+        // Close modal
+        closeCustomPetForge();
+
+        // 4. Update HUD and Roster
+        if (window.ZothPetHUD && window.ZothPetHUD.switchPet) {
+          window.ZothPetHUD.switchPet(id);
+        }
+
+        alert(`✨ Pet '${name}' (${emoji}) successfully forged and summoned as your active companion!`);
+      };
+
+      window.downloadForgedSoulMd = function() {
+        const name = document.getElementById('forge-pet-name')?.value.trim() || "Nova";
+        const emoji = document.getElementById('forge-pet-emoji')?.value.trim() || "🦊";
+        const element = document.getElementById('forge-pet-element')?.value;
+        const archetype = document.getElementById('forge-pet-archetype')?.value.trim() || "Custom Sovereign Spirit";
+        const harness = document.getElementById('forge-pet-harness')?.value;
+        const lore = document.getElementById('forge-pet-lore')?.value.trim() || "Custom forged autonomous familiar.";
+        const quote = document.getElementById('forge-pet-quote')?.value.trim() || "Ready to execute under sovereign will.";
+
+        const md = `# 📜 SOUL CONTRACT: ${emoji} ${name.toUpperCase()}
+
+## 1. Identity & Core Alignment
+- **Name:** ${name}
+- **Archetype:** ${archetype}
+- **Element:** ${element}
+- **Harness:** ${harness}
+- **Alignment:** True Sovereign Companion
+
+## 2. Soul Lore & Directives
+${lore}
+
+## 3. Spoken Axiom
+> "${quote}"
+
+## 4. Execution Policy
+- 100% Localhost loopback execution. Zero cloud telemetry.
+- Contract-validated inputs & schema safety guards.
+`;
+        downloadMdFile(`${name.toLowerCase()}-SOUL.md`, md);
+      };
 
       window.inspectPetSoul = function() {
         const md = getSoulMarkdown(currentPetId);
