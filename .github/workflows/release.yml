@@ -10,36 +10,74 @@ permissions:
 
 jobs:
   build-and-release:
-    name: Build & Publish Release Assets
+    name: Build & Publish Complete Release Suite
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust Toolchain
+      - name: 🦀 Setup Rust Toolchain & MinGW
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          targets: x86_64-unknown-linux-gnu
+          targets: x86_64-unknown-linux-gnu, x86_64-pc-windows-gnu
 
-      - name: 📦 Compile Rust Vault Daemon (Linux)
+      - name: 🛠️ Install Linux Packaging Dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64 make rsync tar zip curl
+
+      - name: 🔐 Compile Rust Vault Daemons (Linux & Windows)
+        run: |
+          mkdir -p dist/release/windows dist/release/linux
+          
+          # Linux Vault Daemon
           cd vault-daemon || cd core-app/vault-daemon
-          cargo build --release
-          mkdir -p ../dist/release
-          cp target/release/zoth-vault-daemon ../dist/release/zoth-vault-daemon-linux-x86_64
+          cargo build --release --target x86_64-unknown-linux-gnu
+          cp target/x86_64-unknown-linux-gnu/release/zoth-vault-daemon ../dist/release/zoth-vault-daemon-linux-x86_64
           chmod +x ../dist/release/zoth-vault-daemon-linux-x86_64
+          
+          # Windows Vault Daemon
+          cargo build --release --target x86_64-pc-windows-gnu
+          cp target/x86_64-pc-windows-gnu/release/zoth-vault-daemon.exe ../dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
+          
           cd ../dist/release
           tar -czvf zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz zoth-vault-daemon-linux-x86_64
-          sha256sum zoth-vault-daemon-linux-x86_64 zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz > SHA256SUMS.txt
+          cd windows
+          zip zoth-vault-daemon-${{ github.ref_name }}-windows-x86_64.zip zoth-vault-daemon-windows-x86_64.exe
+          cd ../..
 
-      - name: 🪟 Collect Windows Assets (If present in repo)
+      - name: 🐧 Build Full Linux Suite (.deb, .tar.gz, .run)
+        run: |
+          cd core-app || true
+          if [ -f "scripts/build-linux-packages.sh" ]; then
+            bash scripts/build-linux-packages.sh || true
+          fi
+          cd ..
+          mkdir -p dist/release/linux
+          if [ -d "core-app/dist-linux" ]; then
+            cp core-app/dist-linux/* dist/release/linux/ || true
+          fi
+
+      - name: 🪟 Collect Prebuilt Windows Packages
         run: |
           mkdir -p dist/release/windows
-          if [ -d "public/dist/release/windows" ]; then
-            cp public/dist/release/windows/* dist/release/windows/ || true
-          elif [ -d "core-app/public/dist/release/windows" ]; then
+          if [ -d "core-app/public/dist/release/windows" ]; then
             cp core-app/public/dist/release/windows/* dist/release/windows/ || true
+          fi
+          if [ -d "core-app/dist-windows" ]; then
+            cp core-app/dist-windows/* dist/release/windows/ || true
+          fi
+
+      - name: 📝 Generate Comprehensive Checksums
+        run: |
+          cd dist/release
+          sha256sum zoth-vault-daemon* > SHA256SUMS.txt || true
+          if [ -d "windows" ]; then
+            cd windows && sha256sum * > SHA256SUMS.txt && cd ..
+          fi
+          if [ -d "linux" ]; then
+            cd linux && sha256sum * > SHA256SUMS.txt && cd ..
           fi
 
       - name: 🚀 Publish GitHub Release
@@ -53,7 +91,13 @@ jobs:
             dist/release/zoth-vault-daemon-linux-x86_64
             dist/release/zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz
             dist/release/SHA256SUMS.txt
-            dist/release/windows/zoth-studio-v2.6.0-windows-x86_64.zip
+            dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
+            dist/release/windows/zoth-vault-daemon-${{ github.ref_name }}-windows-x86_64.zip
             dist/release/windows/zoth-windows-x86_64.exe
+            dist/release/windows/zoth-studio-*.zip
+            dist/release/linux/Zoth_Studio-*.AppImage
+            dist/release/linux/zoth-studio_*.deb
+            dist/release/linux/zoth-linux-x86_64.run
+            dist/release/linux/zoth-studio-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
