@@ -981,6 +981,7 @@
 <button class="btn-tool" data-cam="top" id="cam-top" title="Top-Down">🛸 Top</button>
 </div>
 <div class="tool-btns">
+<button class="btn-tool" onclick="openStudioForgeModal()" style="background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(0,240,255,0.25)); border-color: var(--gold); color: var(--gold); font-weight: 700;">✨ Forge</button>
 <button class="btn-tool active" id="btn-orbit">🔄 Orbit</button>
 <button class="btn-tool" id="btn-wire">🕸️ Mesh</button>
 <button class="btn-tool" id="btn-reset">🎯 Center</button>
@@ -1010,6 +1011,123 @@
 <button class="btn-tool" id="btn-studio-download-soul" style="flex: 1; min-height: 34px; background: rgba(251, 191, 36, 0.12); border-color: var(--gold); color: var(--gold);">⚡ Familiar</button>
 <canvas height="26" id="spectrum-canvas" style="border-radius: 4px; background: rgba(0,0,0,0.5);" width="90"></canvas>
 </div>
+</div>
+
+<!-- Custom Pet Forge & Spirit Creator Modal in pet-studio -->
+<div id="studio-pet-forge-modal" class="pet-modal-overlay" style="display:none; position:fixed; inset:0; z-index:100001; background:rgba(5,5,8,0.92); align-items:center; justify-content:center; backdrop-filter:blur(14px);">
+  <div class="pet-modal-dialog" style="background:#090d1a; border:1px solid rgba(251,191,36,0.35); border-radius:16px; max-width:920px; width:95vw; max-height:90vh; padding:24px; display:flex; flex-direction:column; box-shadow:0 24px 70px rgba(0,0,0,0.85); overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:14px;">
+      <div>
+        <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--gold); letter-spacing:0.14em; text-transform:uppercase;">ALCHEMY SPIRIT FOUNDRY</div>
+        <h2 style="font-family:var(--font-display); font-size:1.45rem; color:#fff; margin:2px 0;">✨ Custom Pet Forge & Spirit Creator</h2>
+      </div>
+      <button type="button" onclick="closeStudioForgeModal()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;" aria-label="Close forge">✕</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:18px; margin-top:16px;">
+      <!-- Left Column: Identity, Emoji, Element & Harness -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div>
+          <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">1. Mascot Name & Symbol</label>
+          <div style="display:flex; gap:10px; margin-top:4px;">
+            <input type="text" id="studio-forge-emoji" value="🦊" maxlength="4" style="width:58px; text-align:center; font-size:1.4rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff;" title="Mascot Emoji" oninput="updateStudioForgePreview()" />
+            <input type="text" id="studio-forge-name" value="Solus" placeholder="Mascot Name (e.g. Solus)" style="flex:1; padding:8px 12px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-family:var(--font-display); font-weight:700;" oninput="updateStudioForgePreview()" />
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">2. Elemental Aspect</label>
+          <select id="studio-forge-element" onchange="onStudioForgeElementChange()" style="width:100%; margin-top:4px; padding:9px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#38bdf8; font-family:var(--font-mono); font-size:0.82rem;">
+            <option value="quintessence">🔮 Quintessence / Aether (Sovereign Magus)</option>
+            <option value="lightning">⚡ Solar Lightning / Core Prana (Loopback Velocity)</option>
+            <option value="fire">🔥 Calcinatio / Phoenix Fire (Refactoring Flame)</option>
+            <option value="iron">🛡️ Bastion Iron / Mars Shield (AST Sentinel)</option>
+            <option value="wisdom">🦉 Pallas Wisdom / Sacred Geometry (Hypergraph AEO)</option>
+            <option value="shadow">🐆 Obsidian Void / Night Stalker (Stealth Recon)</option>
+            <option value="mercury">🌙 Lunar Mercury / Fluid Flux (DOM Inspector)</option>
+            <option value="sound">📡 Harmonic Resonance / Audio DSP (Swarm Stream)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">3. Domain & Ethical Alignment</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+            <select id="studio-forge-domain" style="padding:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fbbf24; font-family:var(--font-mono); font-size:0.8rem;" onchange="updateStudioForgePreview()">
+              <option value="autonomy">AUTONOMY</option>
+              <option value="build" selected>BUILD & CODE</option>
+              <option value="security">SECURITY</option>
+              <option value="knowledge">KNOWLEDGE</option>
+              <option value="creative">CREATIVE</option>
+              <option value="ops">OPS & TOOLS</option>
+            </select>
+            <input type="text" id="studio-forge-alignment" value="True Sovereign Alchemical" placeholder="Alignment" style="padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-family:var(--font-mono); font-size:0.8rem;" oninput="updateStudioForgePreview()" />
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">4. Agent Model Harness</label>
+          <select id="studio-forge-harness" onchange="onStudioForgeHarnessChange()" style="width:100%; margin-top:4px; padding:9px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#a855f7; font-family:var(--font-mono); font-size:0.82rem;">
+            <option value="antigravity">🔮 Google Antigravity (@azoth agy CLI)</option>
+            <option value="hermes">🤖 Hermes Agent CLI (@hermes Autonomous)</option>
+            <option value="ollama">⚡ Ollama Local Weights (:11434 - Qwen/DeepSeek)</option>
+            <option value="grok">🚀 xAI Grok CLI (@grok High-Throughput)</option>
+            <option value="claude">🎭 Anthropic Claude Code CLI (@claude AST)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Right Column: 3D Aura, Colors, Voice & SOUL.md -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">5. 3D Aura Shape</label>
+            <select id="studio-forge-aura" style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-family:var(--font-mono); font-size:0.8rem;" onchange="updateStudioForgePreview()">
+              <option value="neon-rings">Dual Celestial Rings</option>
+              <option value="sacred-halo">Sacred Geometry Halo</option>
+              <option value="quantum-vortex">Quantum Vortex</option>
+              <option value="pulsar-grid">Pulsar Grid Matrix</option>
+              <option value="minimal-orbit">Minimalist Horizon</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">6. Aura Color</label>
+            <div style="display:flex; gap:8px; margin-top:4px; align-items:center;">
+              <input type="color" id="studio-forge-color" value="#00f0ff" style="width:38px; height:34px; border:none; background:none; cursor:pointer;" oninput="onStudioForgeColorPicker(this.value)" />
+              <input type="text" id="studio-forge-color-text" value="#00f0ff" style="flex:1; padding:7px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-family:var(--font-mono); font-size:0.8rem;" oninput="onStudioForgeColorText(this.value)" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">7. Role & Autonomous Directive</label>
+          <input type="text" id="studio-forge-role" value="Lead Workspace Inspector & Guardian" placeholder="Role (e.g. Lead Workspace Inspector)" style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#38bdf8; font-size:0.82rem;" oninput="updateStudioForgePreview()" />
+          <textarea id="studio-forge-lore" rows="2" placeholder="Primary mission (e.g. Inspects code for zero-trust compliance, validates schemas, and coordinates multi-agent synthesis)." style="width:100%; margin-top:6px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-size:0.8rem; line-height:1.4;" oninput="updateStudioForgePreview()">Inspects code for zero-trust compliance, validates JSON schemas, and coordinates multi-agent synthesis on local loopback.</textarea>
+        </div>
+
+        <div>
+          <label style="font-size:0.74rem; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase;">8. Spoken Voice Prompt</label>
+          <input type="text" id="studio-forge-quote" value="Sovereign companion online. Terminal nodes and AST boundaries secured." placeholder="Spoken greeting..." style="width:100%; margin-top:4px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fbbf24; font-style:italic; font-size:0.8rem;" oninput="updateStudioForgePreview()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Contract Preview Accordion -->
+    <div style="margin-top:14px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.08em;">📜 Auto-Generated SOUL.md Preview</span>
+        <button type="button" onclick="autoGenerateStudioSoulContract()" style="background:rgba(0,240,255,0.12); border:1px solid var(--cyan); color:var(--cyan); border-radius:6px; padding:4px 10px; font-size:0.7rem; font-family:var(--font-mono); cursor:pointer;">⚡ Regenerate Soul</button>
+      </div>
+      <pre id="studio-forge-soul-preview" style="font-family:var(--font-mono); font-size:0.72rem; color:#94a3b8; max-height:100px; overflow-y:auto; margin-top:8px; white-space:pre-wrap; word-break:break-all;"></pre>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1); display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button type="button" class="btn-tool" onclick="previewStudioForgeVoice()" style="background:rgba(56,189,248,0.15); border:1px solid var(--cyan); color:var(--cyan); min-height:40px;">🔊 Test Voice & Aura</button>
+      <button type="button" class="btn-tool" onclick="saveAndSummonStudioForgedPet()" style="background:linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color:#050508; font-weight:800; flex:1; min-height:40px;">✨ Forge & Load in 3D Studio</button>
+      <button type="button" class="btn-tool" onclick="exportStudioForgedPetToHermes()" style="background:rgba(168,85,247,0.18); border:1px solid var(--purple); color:#c084fc; min-height:40px;">🤖 Export to Hermes Agent</button>
+      <button type="button" class="btn-tool" onclick="downloadStudioForgedSoulMd()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:#fff; min-height:40px;">💾 Download SOUL.md</button>
+    </div>
+  </div>
 </div>
 
 <!-- Soul Contract Inspector Modal in pet-studio -->
@@ -1179,12 +1297,18 @@
         petFigure = null;
       }
 
-      const texPath = window.PetModels ? window.PetModels.petPortrait(id) : `/assets/pets/${id}-neon.jpg`;
+      const spec = (window.PetModels?.PET_SPECIES && window.PetModels.PET_SPECIES[id]) || current;
       if (window.PetModels) {
-        texture = await window.PetModels.loadPetTexture(THREE, texPath);
+        if (spec.isCustom || current.isCustom) {
+          texture = window.PetModels.createEmojiPetTexture(THREE, spec.emoji || current.emoji || "✨", spec.name || current.name, "#0a0f24", spec.vibeColor || current.vibeColor || "#00f0ff");
+        } else {
+          const texPath = window.PetModels.petPortrait(id);
+          texture = await window.PetModels.loadPetTexture(THREE, texPath);
+        }
+
         petFigure = window.PetModels.createPetFigure(THREE, {
           id: id,
-          color: (window.PetModels.PET_SPECIES[id] && window.PetModels.PET_SPECIES[id].vibeColor) || current.vibeColor || "#00f0ff",
+          color: spec.vibeColor || current.vibeColor || "#00f0ff",
           texture: texture,
           style: "realistic",
           initialVibe: currentVibe,
@@ -1559,20 +1683,186 @@
       initialTouchDist = null;
     }, { passive: true });
 
-    // Window Resize & ResizeObserver
-    function handleResize() {
-      const w = container.clientWidth || window.innerWidth;
-      const h = container.clientHeight || window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    }
-    window.addEventListener("resize", handleResize, { passive: true });
-    if (window.ResizeObserver) {
-      new ResizeObserver(handleResize).observe(container);
+    // Custom Spirit Forge Handlers for Pet Studio
+    window.onStudioForgeElementChange = function() {
+      const sel = document.getElementById('studio-forge-element')?.value;
+      const preset = window.PetModels?.ELEMENT_PRESETS && window.PetModels.ELEMENT_PRESETS[sel];
+      if (preset) {
+        const colorInput = document.getElementById('studio-forge-color');
+        const colorText = document.getElementById('studio-forge-color-text');
+        if (colorInput) colorInput.value = preset.color;
+        if (colorText) colorText.value = preset.color;
+      }
+      updateStudioForgePreview();
+    };
+
+    window.onStudioForgeHarnessChange = function() {
+      const sel = document.getElementById('studio-forge-harness')?.value;
+      const preset = window.PetModels?.HARNESS_PRESETS && window.PetModels.HARNESS_PRESETS[sel];
+      if (preset) {
+        const roleInput = document.getElementById('studio-forge-role');
+        if (roleInput && (!roleInput.value || roleInput.value.includes('Inspector') || roleInput.value.includes('Partner'))) {
+          roleInput.value = preset.name;
+        }
+      }
+      updateStudioForgePreview();
+    };
+
+    window.onStudioForgeColorPicker = function(val) {
+      const colorText = document.getElementById('studio-forge-color-text');
+      if (colorText) colorText.value = val;
+      updateStudioForgePreview();
+    };
+
+    window.onStudioForgeColorText = function(val) {
+      const colorPicker = document.getElementById('studio-forge-color');
+      if (colorPicker && /^#[0-9A-Fa-f]{6}$/.test(val)) colorPicker.value = val;
+      updateStudioForgePreview();
+    };
+
+    function buildStudioForgePetObject() {
+      const name = document.getElementById('studio-forge-name')?.value.trim() || "Solus";
+      const emoji = document.getElementById('studio-forge-emoji')?.value.trim() || "🦊";
+      const id = name.toLowerCase().replace(/[^a-z0-9_-]/g, '-') || "custom-spirit";
+      const elementKey = document.getElementById('studio-forge-element')?.value || "quintessence";
+      const elemPreset = (window.PetModels?.ELEMENT_PRESETS && window.PetModels.ELEMENT_PRESETS[elementKey]) || { name: "Quintessence", color: "#00f0ff" };
+      const domain = document.getElementById('studio-forge-domain')?.value || "build";
+      const alignment = document.getElementById('studio-forge-alignment')?.value.trim() || "True Sovereign Alchemical";
+      const harnessKey = document.getElementById('studio-forge-harness')?.value || "antigravity";
+      const harnessPreset = (window.PetModels?.HARNESS_PRESETS && window.PetModels.HARNESS_PRESETS[harnessKey]) || { prefix: "@antigravity", protocol: "antigravity" };
+      const auraType = document.getElementById('studio-forge-aura')?.value || "neon-rings";
+      const color = document.getElementById('studio-forge-color')?.value || elemPreset.color || "#00f0ff";
+      const role = document.getElementById('studio-forge-role')?.value.trim() || "Autonomous Sovereign Companion";
+      const lore = document.getElementById('studio-forge-lore')?.value.trim() || "Autonomous custom-forged companion spirit.";
+      const quote = document.getElementById('studio-forge-quote')?.value.trim() || "Sovereign bounds verified. Ready for directive.";
+
+      return {
+        id: id,
+        name: name,
+        species: `${role} (${elemPreset.name.split('/')[0].trim()})`,
+        emoji: emoji,
+        role: role,
+        domain: domain.toUpperCase(),
+        element: elemPreset.name,
+        elementKey: elementKey,
+        alignment: alignment,
+        harness: harnessPreset.prefix || `@${harnessKey}`,
+        harnessType: harnessPreset.protocol || harnessKey,
+        vibeColor: color,
+        color: color,
+        auraType: auraType,
+        vectorMemory: "64k Ephemeral Multi-Turn Trie",
+        desc: lore,
+        blurb: lore,
+        voicePrompt: quote,
+        prompt: quote,
+        isCustom: true
+      };
     }
 
-    // Burger Drawer Toggle
+    window.autoGenerateStudioSoulContract = function() {
+      const pet = buildStudioForgePetObject();
+      const md = window.PetModels ? window.PetModels.generateSoulContractMarkdown(pet.id, pet) : `# SOUL: ${pet.name}`;
+      const preview = document.getElementById('studio-forge-soul-preview');
+      if (preview) preview.textContent = md;
+      return md;
+    };
+
+    window.updateStudioForgePreview = function() {
+      window.autoGenerateStudioSoulContract();
+    };
+
+    window.openStudioForgeModal = function() {
+      const modal = document.getElementById('studio-pet-forge-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        updateStudioForgePreview();
+      }
+    };
+
+    window.closeStudioForgeModal = function() {
+      const modal = document.getElementById('studio-pet-forge-modal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.previewStudioForgeVoice = function() {
+      const pet = buildStudioForgePetObject();
+      const quote = pet.voicePrompt || "Sovereign spirit online and awaiting directives.";
+      
+      const elemPreset = window.PetModels?.ELEMENT_PRESETS && window.PetModels.ELEMENT_PRESETS[pet.elementKey];
+      const freq = (elemPreset && elemPreset.soundFreq) || 528;
+      playSynthesizedChirp(freq, 0.45);
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(quote);
+        utter.pitch = 1.05;
+        utter.rate = 1.0;
+        window.speechSynthesis.speak(utter);
+      }
+    };
+
+    window.saveAndSummonStudioForgedPet = function() {
+      const pet = buildStudioForgePetObject();
+
+      if (window.PetModels && window.PetModels.saveCustomPet) {
+        window.PetModels.saveCustomPet(pet);
+      }
+
+      // Add to MASCOTS array
+      const existingIdx = MASCOTS.findIndex(m => m.id === pet.id);
+      if (existingIdx !== -1) {
+        MASCOTS[existingIdx] = pet;
+      } else {
+        MASCOTS.unshift(pet);
+        const opt = document.createElement("option");
+        opt.value = pet.id;
+        opt.textContent = `✨ ${pet.emoji} ${pet.name} — ${pet.domain}`;
+        picker.insertBefore(opt, picker.firstChild);
+      }
+
+      closeStudioForgeModal();
+      picker.value = pet.id;
+      loadPet(pet.id);
+    };
+
+    window.exportStudioForgedPetToHermes = function() {
+      const pet = buildStudioForgePetObject();
+      const md = window.PetModels ? window.PetModels.generateSoulContractMarkdown(pet.id, pet) : `# SOUL: ${pet.name}`;
+      downloadStudioFile(`${pet.id}-hermes-soul.md`, md);
+    };
+
+    window.downloadStudioForgedSoulMd = function() {
+      const pet = buildStudioForgePetObject();
+      const md = window.PetModels ? window.PetModels.generateSoulContractMarkdown(pet.id, pet) : `# SOUL: ${pet.name}`;
+      downloadStudioFile(`${pet.id}-SOUL.md`, md);
+    };
+
+    // Integrate Custom Pets on Load in pet-studio
+    try {
+      if (window.PetModels && window.PetModels.getCustomPets) {
+        const customList = window.PetModels.getCustomPets();
+        customList.forEach(cp => {
+          if (!MASCOTS.some(m => m.id === cp.id)) {
+            MASCOTS.unshift({
+              id: cp.id,
+              name: cp.name,
+              emoji: cp.emoji || "✨",
+              domain: (cp.domain || "CUSTOM").toUpperCase(),
+              role: cp.role || "Autonomous Custom Spirit",
+              harness: cp.harness || "@antigravity",
+              desc: cp.desc || cp.blurb || "Custom forged companion spirit.",
+              vibeColor: cp.vibeColor || cp.color || "#00f0ff",
+              isCustom: true
+            });
+            const opt = document.createElement("option");
+            opt.value = cp.id;
+            opt.textContent = `✨ ${cp.emoji || '✨'} ${cp.name} — ${cp.domain || 'CUSTOM'}`;
+            picker.insertBefore(opt, picker.firstChild);
+          }
+        });
+      }
+    } catch (e) {}
     </script>
 <script defer="" src="/assets/zoth-tip.js"></script>
 <script defer="" src="/assets/zoth-annotator.js"></script>

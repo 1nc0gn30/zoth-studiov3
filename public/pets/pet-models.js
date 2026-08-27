@@ -322,8 +322,252 @@ export const PET_SPECIES = {
  * Generates a complete SOUL.md contract markdown for any mascot.
  * Fully compatible with Hermes Agent and OpenClaw workspace soul specifications.
  */
-export function generateSoulContractMarkdown(id) {
-  const p = PET_SPECIES[id] || PET_SPECIES.azoth;
+
+export const ELEMENT_PRESETS = {
+  quintessence: { id: "quintessence", name: "Quintessence / Aether", color: "#fbbf24", ringColor: "#ffe58f", soundFreq: 640, desc: "Pure alchemical quintessence and sovereign divine intellect." },
+  lightning: { id: "lightning", name: "Solar Lightning / Core Prana", color: "#facc15", ringColor: "#fef08a", soundFreq: 580, desc: "High-voltage kinetic surges, speed, and real-time execution." },
+  fire: { id: "fire", name: "Calcinatio / Phoenix Fire", color: "#ff007a", ringColor: "#f43f5e", soundFreq: 520, desc: "Refactoring flame, calcinatio heat, and radical transformation." },
+  iron: { id: "iron", name: "Bastion Iron / Mars Shield", color: "#10b981", ringColor: "#34d399", soundFreq: 340, desc: "AST perimeter walls, memory shields, and threat fortification." },
+  wisdom: { id: "wisdom", name: "Pallas Wisdom / Sacred Geometry", color: "#a855f7", ringColor: "#c084fc", soundFreq: 432, desc: "Episodic hypergraphs, semantic embeddings, and AEO indices." },
+  shadow: { id: "shadow", name: "Obsidian Void / Night Stalker", color: "#ec4899", ringColor: "#64748b", soundFreq: 280, desc: "Stealth recon, OSINT telemetry, and zero-trust red teaming." },
+  mercury: { id: "mercury", name: "Lunar Mercury / Fluid Flux", color: "#00f0ff", ringColor: "#38bdf8", soundFreq: 490, desc: "Dynamic DOM inspection, accessibility, and UI adaptability." },
+  sound: { id: "sound", name: "Harmonic Resonance / Audio DSP", color: "#06b6d4", ringColor: "#67e8f9", soundFreq: 528, desc: "Sonic frequencies, audio synthesis, and neural broadcast." }
+};
+
+export const HARNESS_PRESETS = {
+  antigravity: {
+    id: "antigravity",
+    name: "Google Antigravity agy CLI",
+    prefix: "@antigravity (Google Antigravity agy CLI)",
+    protocol: "antigravity",
+    runCmd: "agy run --soul=\"./SOUL.md\"",
+    desc: "Autonomous deep-reasoning multi-agent workstation with terminal tools."
+  },
+  hermes: {
+    id: "hermes",
+    name: "Hermes Agent CLI",
+    prefix: "@hermes (Hermes Agent CLI)",
+    protocol: "hermes",
+    runCmd: "hermes agent run --soul=\"./SOUL.md\"",
+    desc: "Autonomous multi-step playbook execution partner with verifiable checkpoints."
+  },
+  ollama: {
+    id: "ollama",
+    name: "Ollama Local Neural (:11434)",
+    prefix: "@ollama (Ollama Local Weights on :11434)",
+    protocol: "ollama",
+    runCmd: "ollama run qwen2.5-coder:14b",
+    desc: "100% private local neural weights running on localhost port 11434."
+  },
+  grok: {
+    id: "grok",
+    name: "xAI Grok CLI",
+    prefix: "@grok (xAI Grok CLI)",
+    protocol: "grok",
+    runCmd: "grok execute --prompt=\"./SOUL.md\"",
+    desc: "High-throughput rapid code generation, live tool harness, and motion design."
+  },
+  claude: {
+    id: "claude",
+    name: "Claude Code CLI",
+    prefix: "@claude (Anthropic Claude Code CLI)",
+    protocol: "claude",
+    runCmd: "claude --system-prompt=\"./SOUL.md\"",
+    desc: "Architectural synthesis, AST verification, and codebase-wide refactoring."
+  }
+};
+
+export const AURA_PRESETS = {
+  "neon-rings": { id: "neon-rings", name: "Dual Celestial Rings", ringCount: 2, particles: true, halo: false },
+  "sacred-halo": { id: "sacred-halo", name: "Sacred Geometry Halo", ringCount: 1, particles: true, halo: true },
+  "quantum-vortex": { id: "quantum-vortex", name: "Quantum Vortex", ringCount: 3, particles: true, halo: false },
+  "pulsar-grid": { id: "pulsar-grid", name: "Pulsar Grid Matrix", ringCount: 2, particles: true, halo: false },
+  "minimal-orbit": { id: "minimal-orbit", name: "Minimalist Horizon", ringCount: 1, particles: false, halo: false }
+};
+
+export function getCustomPets() {
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("zoth_custom_pets");
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function saveCustomPet(pet) {
+  if (!pet || !pet.id) return pet;
+  const list = getCustomPets().filter(p => p.id !== pet.id);
+  list.unshift(pet);
+  if (typeof localStorage !== "undefined") {
+    try {
+      localStorage.setItem("zoth_custom_pets", JSON.stringify(list));
+      setActivePet(pet);
+    } catch (e) {}
+  }
+  // Register in runtime PET_SPECIES
+  PET_SPECIES[pet.id] = {
+    depth: pet.depth || 0.44,
+    scale: pet.scale || 1.05,
+    vibeColor: pet.vibeColor || pet.color || "#00f0ff",
+    name: pet.name,
+    species: pet.species || "Custom Sovereign Mascot",
+    domain: (pet.domain || "build").toLowerCase(),
+    role: pet.role || "Autonomous Custom Spirit",
+    harness: pet.harness || "@antigravity",
+    harnessType: pet.harnessType || "antigravity",
+    element: pet.element || "Quintessence",
+    vectorMemory: pet.vectorMemory || "64k Custom Buffer",
+    alignment: pet.alignment || "Sovereign Creator",
+    desc: pet.desc || pet.blurb || "Custom-forged mascot spirit.",
+    voicePrompt: pet.voicePrompt || ("Greetings Operator. I am " + pet.name + ", your custom companion spirit."),
+    isCustom: true,
+    emoji: pet.emoji || "✨",
+    auraType: pet.auraType || "neon-rings"
+  };
+  return pet;
+}
+
+export function deleteCustomPet(id) {
+  if (typeof localStorage === "undefined") return;
+  const list = getCustomPets().filter(p => p.id !== id);
+  try {
+    localStorage.setItem("zoth_custom_pets", JSON.stringify(list));
+    delete PET_SPECIES[id];
+  } catch (e) {}
+}
+
+export function setActivePet(pet) {
+  if (typeof localStorage === "undefined") return;
+  const petObj = typeof pet === "string" ? (PET_SPECIES[pet] || { id: pet, name: pet }) : pet;
+  const id = petObj.id || (typeof pet === "string" ? pet : "kai");
+  const payload = {
+    active_pet: id,
+    id: id,
+    name: petObj.name || id,
+    species: petObj.species || "Sovereign Mascot",
+    element: petObj.element || "Aether",
+    domain: petObj.domain || "build",
+    role: petObj.role || "Autonomous Familiar",
+    alignment: petObj.alignment || "Sovereign",
+    harness: petObj.harness || "@antigravity",
+    harnessType: petObj.harnessType || "antigravity",
+    vibeColor: petObj.vibeColor || petObj.color || "#00f0ff",
+    auraType: petObj.auraType || "neon-rings",
+    updated_at: new Date().toISOString()
+  };
+  try {
+    localStorage.setItem("zoth_active_pet", JSON.stringify(payload));
+  } catch (e) {}
+  return payload;
+}
+
+export function getActivePet() {
+  if (typeof localStorage === "undefined") return { active_pet: "kai", name: "Kai" };
+  try {
+    const raw = localStorage.getItem("zoth_active_pet");
+    return raw ? JSON.parse(raw) : { active_pet: "kai", name: "Kai" };
+  } catch (e) {
+    return { active_pet: "kai", name: "Kai" };
+  }
+}
+
+export function syncCustomPetsToRuntime() {
+  const customList = getCustomPets();
+  customList.forEach(pet => {
+    if (pet && pet.id) {
+      PET_SPECIES[pet.id] = {
+        depth: pet.depth || 0.44,
+        scale: pet.scale || 1.05,
+        vibeColor: pet.vibeColor || pet.color || "#00f0ff",
+        name: pet.name,
+        species: pet.species || "Custom Sovereign Mascot",
+        domain: (pet.domain || "build").toLowerCase(),
+        role: pet.role || "Autonomous Custom Spirit",
+        harness: pet.harness || "@antigravity",
+        harnessType: pet.harnessType || "antigravity",
+        element: pet.element || "Quintessence",
+        vectorMemory: pet.vectorMemory || "64k Custom Buffer",
+        alignment: pet.alignment || "Sovereign Creator",
+        desc: pet.desc || pet.blurb || "Custom-forged mascot spirit.",
+        voicePrompt: pet.voicePrompt || ("Greetings Operator. I am " + pet.name + ", your custom companion spirit."),
+        isCustom: true,
+        emoji: pet.emoji || "✨",
+        auraType: pet.auraType || "neon-rings"
+      };
+    }
+  });
+}
+try { syncCustomPetsToRuntime(); } catch (e) {}
+
+export function createEmojiPetTexture(THREE, emoji = "🐱", name = "Spirit", bgHex = "#0a0f24", glowHex = "#00f0ff") {
+  if (typeof document === "undefined") return null;
+  const size = 1024;
+  const c = document.createElement("canvas");
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext("2d");
+
+  // Alchemical background radial
+  const grad = ctx.createRadialGradient(size/2, size/2, size*0.08, size/2, size/2, size*0.68);
+  grad.addColorStop(0, bgHex);
+  grad.addColorStop(0.7, "#050814");
+  grad.addColorStop(1, "#020306");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+
+  // Outer border with sacred geometry glow
+  ctx.save();
+  ctx.strokeStyle = glowHex;
+  ctx.lineWidth = 14;
+  ctx.shadowColor = glowHex;
+  ctx.shadowBlur = 40;
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size*0.44, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  // Secondary dashed ring
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.25)";
+  ctx.lineWidth = 4;
+  ctx.setLineDash([16, 12]);
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size*0.38, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw giant glowing Emoji
+  ctx.save();
+  ctx.font = "360px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = glowHex;
+  ctx.shadowBlur = 60;
+  ctx.fillText(emoji, size/2, size/2 - 25);
+  ctx.restore();
+
+  // Draw Name Banner
+  ctx.save();
+  ctx.fillStyle = glowHex;
+  ctx.font = "bold 52px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.shadowColor = glowHex;
+  ctx.shadowBlur = 24;
+  ctx.fillText(String(name).toUpperCase(), size/2, size * 0.88);
+  ctx.restore();
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.generateMipmaps = true;
+  return tex;
+}
+
+export function generateSoulContractMarkdown(id, customPetData = null) {
+  const p = customPetData || PET_SPECIES[id] || PET_SPECIES.azoth;
   const now = new Date().toISOString();
   return `# SOUL CONTRACT: ${p.name.toUpperCase()} (${p.species})
 <!-- Zoth Sovereign Familiar Contract Specification v2.4 -->
@@ -831,11 +1075,22 @@ if (typeof window !== "undefined") {
   window.PetModels = {
     PET_SPECIES,
     TASK_VIBES,
+    ELEMENT_PRESETS,
+    HARNESS_PRESETS,
+    AURA_PRESETS,
     petPortrait,
     loadPetTexture,
+    fallbackPetTexture,
+    createEmojiPetTexture,
     createPetFigure,
     exportFigureToOBJ,
-    generateSoulContractMarkdown
+    generateSoulContractMarkdown,
+    getCustomPets,
+    saveCustomPet,
+    deleteCustomPet,
+    setActivePet,
+    getActivePet,
+    syncCustomPetsToRuntime
   };
 }
 
