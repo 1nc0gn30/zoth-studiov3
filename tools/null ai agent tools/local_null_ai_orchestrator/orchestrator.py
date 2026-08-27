@@ -996,7 +996,14 @@ created: {now_utc}
 
         # Helper to query local Ollama with fast timeout and fallback
         def _call_ollama(model_name: str, sys_prompt: str, user_prompt: str) -> str | None:
+            import socket
             try:
+                # Fast socket probe on port 11434 first (10ms)
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(0.02)
+                    if s.connect_ex(("127.0.0.1", 11434)) != 0:
+                        return None
+
                 import urllib.request
                 req_data = json.dumps({
                     "model": model_name,
@@ -1012,7 +1019,7 @@ created: {now_utc}
                     data=req_data,
                     headers={"Content-Type": "application/json"}
                 )
-                with urllib.request.urlopen(req, timeout=4.0) as resp:
+                with urllib.request.urlopen(req, timeout=0.8) as resp:
                     res_json = json.loads(resp.read().decode("utf-8"))
                     msg = res_json.get("message", {}).get("content", "").strip()
                     if msg:

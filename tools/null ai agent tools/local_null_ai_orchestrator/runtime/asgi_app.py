@@ -718,7 +718,14 @@ async def api_zoth_swarm(request: Request) -> Response:
         
         # Real Ollama inference helper (non-blocking async thread)
         def _sync_query(model_name: str, sys_prompt: str, user_prompt: str, fallback_text: str = "") -> str:
+            import socket
             try:
+                # Fast socket probe on port 11434 (15ms)
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(0.02)
+                    if s.connect_ex(("127.0.0.1", 11434)) != 0:
+                        return fallback_text or f"Architected execution plan for: {user_prompt[:50]}."
+
                 import urllib.request
                 req_data = json.dumps({
                     "model": model_name,
@@ -734,7 +741,7 @@ async def api_zoth_swarm(request: Request) -> Response:
                     data=req_data,
                     headers={"Content-Type": "application/json"}
                 )
-                with urllib.request.urlopen(req, timeout=1.8) as resp:
+                with urllib.request.urlopen(req, timeout=0.8) as resp:
                     res_json = json.loads(resp.read().decode("utf-8"))
                     msg = res_json.get("message", {}).get("content", "").strip()
                     if msg:
@@ -2265,6 +2272,7 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/api/harness/terminals/{sid}", api_harness_terminal_one, methods=["GET", "DELETE"]),
         Route("/api/hermes/status", api_hermes_status),
         Route("/api/zoth/swarm", api_zoth_swarm, methods=["POST"]),
+        Route("/api/zoth/swarm/squad", api_zoth_swarm, methods=["POST"]),
         Route("/api/swarm", api_swarm),
         Route("/api/swarm/status", api_swarm),
         Route("/api/v1/swarm/state", api_swarm),
