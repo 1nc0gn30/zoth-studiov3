@@ -394,23 +394,51 @@
       liveTerminal.scrollTop = liveTerminal.scrollHeight;
     }
 
-    btnSendLive.onclick = function() {
+    // Live Polling & Outbound Dispatcher via Port 8767
+    let lastMsgId = 0;
+    const BRIDGE_API = "http://" + window.location.hostname + ":8767";
+
+    async function pollLiveMessages() {
+      try {
+        const res = await fetch(`${BRIDGE_API}/api/simplex/messages`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && data.messages.length > 0) {
+            data.messages.forEach(m => {
+              if (m.id > lastMsgId) {
+                lastMsgId = m.id;
+                appendLiveMessage(m.sender, m.text, m.isOutbound);
+                if (!m.isOutbound && window.ZothPetHUD && window.ZothPetHUD.say) {
+                  window.ZothPetHUD.say(`Inbound from SimpleX phone: "${m.text.slice(0, 30)}..."`);
+                }
+              }
+            });
+          }
+        }
+      } catch (err) {
+        // Fallback gracefully
+      }
+    }
+    setInterval(pollLiveMessages, 1500);
+
+    btnSendLive.onclick = async function() {
       const txt = liveInput.value.trim();
       if (!txt) return;
 
-      appendLiveMessage("💻 Laptop Server (Operator)", txt, true);
       liveInput.value = "";
+      try {
+        await fetch(`${BRIDGE_API}/api/simplex/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: txt })
+        });
+      } catch (e) {
+        appendLiveMessage("💻 Laptop Server (Operator)", txt, true);
+      }
 
       if (window.ZothPetHUD && window.ZothPetHUD.say) {
         window.ZothPetHUD.say("Sent encrypted message to SimpleX client!");
       }
-
-      // Simulated auto-reply from Swarm Daemon
-      setTimeout(() => {
-        if (txt.toLowerCase().includes("ping") || txt.toLowerCase().includes("test")) {
-          appendLiveMessage("🤖 Azoth Core (Daemon)", "PONG! Bidirectional SimpleX-to-Matrix bridge loopback verified with 0ms exfiltration.");
-        }
-      }, 500);
     };
 
     liveInput.addEventListener("keydown", (e) => {
