@@ -702,20 +702,12 @@
       var copyCmd = document.getElementById("pet-hud-copy-cmd");
       var hud = document.getElementById("zoth-pet-hud");
 
-            var visionBtn = document.getElementById("pet-hud-vision-btn");
+      var visionBtn = document.getElementById("pet-hud-vision-btn");
       if (visionBtn) {
         visionBtn.addEventListener("click", function (e) {
           e.preventDefault();
           e.stopPropagation();
           PetHUD.activateVisionary();
-        });
-      }
-
-      if (trigger) {
-        trigger.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          PetHUD.toggle();
         });
       }
 
@@ -755,6 +747,9 @@
         });
       }
 
+      // Initialize draggable fling & bounce physics
+      this.setupDraggablePhysics();
+
       // Close panel on clicking outside
       document.addEventListener("click", function (e) {
         if (PetHUD.isOpen && hud && !hud.contains(e.target)) {
@@ -768,6 +763,265 @@
           PetHUD.close();
         }
       });
+
+      // Window resize bounds containment
+      window.addEventListener("resize", function () {
+        PetHUD.clampToBounds();
+      });
+    },
+
+    setupDraggablePhysics: function () {
+      var self = this;
+      var trigger = document.getElementById("pet-hud-trigger");
+      var hud = document.getElementById("zoth-pet-hud");
+      if (!trigger || !hud) return;
+
+      var isDragging = false;
+      var dragStarted = false;
+      var startX = 0, startY = 0;
+      var hudStartX = 0, hudStartY = 0;
+      var moveHistory = [];
+      var animId = null;
+
+      // Restore position from localStorage if saved
+      self.restoreSavedPosition();
+
+      function updateOrientation(x, y) {
+        var vw = window.innerWidth || document.documentElement.clientWidth;
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        if (x < vw / 2) {
+          hud.classList.add("orient-left");
+        } else {
+          hud.classList.remove("orient-left");
+        }
+        if (y < vh * 0.45) {
+          hud.classList.add("orient-down");
+        } else {
+          hud.classList.remove("orient-down");
+        }
+      }
+
+      self.clampToBounds = function () {
+        var rect = hud.getBoundingClientRect();
+        var vw = window.innerWidth || document.documentElement.clientWidth;
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        var curLeft = rect.left;
+        var curTop = rect.top;
+        var maxL = Math.max(0, vw - rect.width);
+        var maxT = Math.max(0, vh - rect.height);
+        var nLeft = Math.min(Math.max(8, curLeft), maxL - 8);
+        var nTop = Math.min(Math.max(8, curTop), maxT - 8);
+
+        if (hud.style.left || hud.style.top) {
+          hud.style.left = nLeft + "px";
+          hud.style.top = nTop + "px";
+          hud.style.right = "auto";
+          hud.style.bottom = "auto";
+          updateOrientation(nLeft, nTop);
+        }
+      };
+
+      function onPointerDown(e) {
+        // Only primary button
+        if (e.button !== undefined && e.button !== 0) return;
+        
+        // Cancel ongoing physics animation
+        if (animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
+        }
+
+        var rect = hud.getBoundingClientRect();
+        hudStartX = rect.left;
+        hudStartY = rect.top;
+        startX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        startY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        isDragging = false;
+        dragStarted = true;
+        moveHistory = [{ x: startX, y: startY, t: performance.now() }];
+
+        window.addEventListener("pointermove", onPointerMove, { passive: false });
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
+      }
+
+      function onPointerMove(e) {
+        if (!dragStarted) return;
+        var clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        var clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        var dx = clientX - startX;
+        var dy = clientY - startY;
+
+        if (!isDragging && Math.hypot(dx, dy) > 5) {
+          isDragging = true;
+        }
+
+        if (isDragging) {
+          e.preventDefault();
+          var rect = hud.getBoundingClientRect();
+          var vw = window.innerWidth || document.documentElement.clientWidth;
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+
+          var newX = hudStartX + dx;
+          var newY = hudStartY + dy;
+
+          var minX = 0;
+          var maxX = vw - rect.width;
+          var minY = 0;
+          var maxY = vh - rect.height;
+
+          // Clamp while dragging with slight elasticity at boundaries
+          newX = Math.max(minX, Math.min(newX, maxX));
+          newY = Math.max(minY, Math.min(newY, maxY));
+
+          hud.style.left = newX + "px";
+          hud.style.top = newY + "px";
+          hud.style.right = "auto";
+          hud.style.bottom = "auto";
+
+          updateOrientation(newX, newY);
+
+          var now = performance.now();
+          moveHistory.push({ x: clientX, y: clientY, t: now });
+          if (moveHistory.length > 8) moveHistory.shift();
+        }
+      }
+
+      function onPointerUp(e) {
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onPointerUp);
+        window.removeEventListener("pointercancel", onPointerUp);
+
+        if (!dragStarted) return;
+        dragStarted = false;
+
+        if (!isDragging) {
+          // Clean click -> toggle panel
+          PetHUD.toggle();
+          return;
+        }
+
+        // Calculate fling release velocity
+        var now = performance.now();
+        var recent = moveHistory.filter(function (p) { return now - p.t < 120; });
+        var vx = 0, vy = 0;
+        if (recent.length >= 2) {
+          var first = recent[0];
+          var last = recent[recent.length - 1];
+          var dt = (last.t - first.t) || 16.66;
+          // Velocity in px per frame (~16.66ms)
+          vx = ((last.x - first.x) / dt) * 16.66;
+          vy = ((last.y - first.y) / dt) * 16.66;
+        }
+
+        // Cap fling velocity
+        var speed = Math.hypot(vx, vy);
+        var maxSpeed = 42;
+        if (speed > maxSpeed) {
+          var ratio = maxSpeed / speed;
+          vx *= ratio;
+          vy *= ratio;
+        }
+
+        // Launch physics simulation (deceleration + wall bounce)
+        var curRect = hud.getBoundingClientRect();
+        var posX = curRect.left;
+        var posY = curRect.top;
+        var friction = 0.94;
+        var restitution = 0.75; // Bounciness off walls
+
+        function stepPhysics() {
+          var vw = window.innerWidth || document.documentElement.clientWidth;
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+          var w = hud.offsetWidth || 140;
+          var h = hud.offsetHeight || 56;
+          var maxX = Math.max(0, vw - w);
+          var maxY = Math.max(0, vh - h);
+
+          posX += vx;
+          posY += vy;
+          vx *= friction;
+          vy *= friction;
+
+          var bounced = false;
+
+          // Left wall
+          if (posX <= 0) {
+            posX = 0;
+            vx = -vx * restitution;
+            bounced = true;
+          }
+          // Right wall
+          if (posX >= maxX) {
+            posX = maxX;
+            vx = -vx * restitution;
+            bounced = true;
+          }
+          // Top wall
+          if (posY <= 0) {
+            posY = 0;
+            vy = -vy * restitution;
+            bounced = true;
+          }
+          // Bottom wall
+          if (posY >= maxY) {
+            posY = maxY;
+            vy = -vy * restitution;
+            bounced = true;
+          }
+
+          hud.style.left = Math.round(posX) + "px";
+          hud.style.top = Math.round(posY) + "px";
+          hud.style.right = "auto";
+          hud.style.bottom = "auto";
+
+          updateOrientation(posX, posY);
+
+          if (bounced && Math.hypot(vx, vy) > 2) {
+            trigger.style.transform = "scale(0.92)";
+            setTimeout(function () { trigger.style.transform = ""; }, 90);
+          }
+
+          if (Math.hypot(vx, vy) > 0.25) {
+            animId = requestAnimationFrame(stepPhysics);
+          } else {
+            animId = null;
+            // Save final resting position
+            localStorage.setItem("zoth_pet_hud_pos_x", String(Math.round(posX)));
+            localStorage.setItem("zoth_pet_hud_pos_y", String(Math.round(posY)));
+          }
+        }
+
+        if (speed > 1.2) {
+          animId = requestAnimationFrame(stepPhysics);
+        } else {
+          localStorage.setItem("zoth_pet_hud_pos_x", String(Math.round(posX)));
+          localStorage.setItem("zoth_pet_hud_pos_y", String(Math.round(posY)));
+        }
+      }
+
+      trigger.addEventListener("pointerdown", onPointerDown);
+    },
+
+    restoreSavedPosition: function () {
+      var hud = document.getElementById("zoth-pet-hud");
+      if (!hud) return;
+      var savedX = localStorage.getItem("zoth_pet_hud_pos_x");
+      var savedY = localStorage.getItem("zoth_pet_hud_pos_y");
+      if (savedX !== null && savedY !== null) {
+        var x = parseInt(savedX, 10);
+        var y = parseInt(savedY, 10);
+        var vw = window.innerWidth || document.documentElement.clientWidth;
+        var vh = window.innerHeight || document.documentElement.clientHeight;
+        if (!isNaN(x) && !isNaN(y) && x >= 0 && x < vw && y >= 0 && y < vh) {
+          hud.style.left = x + "px";
+          hud.style.top = y + "px";
+          hud.style.right = "auto";
+          hud.style.bottom = "auto";
+          if (x < vw / 2) hud.classList.add("orient-left");
+          if (y < vh * 0.45) hud.classList.add("orient-down");
+        }
+      }
     },
 
     toggle: function () {
@@ -841,24 +1095,211 @@
       this.say("Summoned " + target.name + " (" + target.domain + ")!");
     },
 
-    say: function (text, durationMs) {
+    say: function (content, durationMs, titleOverride) {
       var speech = document.getElementById("pet-hud-speech");
       if (!speech) return;
 
-      var textSpan = speech.querySelector(".pet-hud-speech-text");
-      if (textSpan) textSpan.textContent = text;
+      var pet = this.activePet || PETS_ROSTER[0];
+      var headerTitle = titleOverride || (pet.name + " · " + (pet.domain || "Companion"));
+
+      if (Array.isArray(content)) {
+        // Multi-line digest list
+        var listHtml = content.map(function (item) {
+          return '<li>' + item + '</li>';
+        }).join('');
+
+        speech.innerHTML = [
+          '<div class="pet-hud-speech-header">',
+          '  <span class="pet-hud-speech-title">' + pet.emoji + ' ' + headerTitle + '</span>',
+          '  <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">✕</button>',
+          '</div>',
+          '<ul class="pet-hud-speech-list">',
+          listHtml,
+          '</ul>'
+        ].join('');
+      } else {
+        // Single text string
+        speech.innerHTML = [
+          '<div class="pet-hud-speech-header">',
+          '  <span class="pet-hud-speech-title">' + pet.emoji + ' ' + headerTitle + '</span>',
+          '  <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">✕</button>',
+          '</div>',
+          '<span class="pet-hud-speech-text">' + content + '</span>'
+        ].join('');
+      }
+
+      var closeBtn = speech.querySelector(".pet-hud-speech-close");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          speech.classList.remove("active");
+          speech.setAttribute("data-hold", "1");
+        });
+      }
 
       speech.classList.add("active");
       if (this.bubbleTimeout) clearTimeout(this.bubbleTimeout);
 
+      var effectiveDuration = durationMs || (Array.isArray(content) ? 9000 : 4500);
       this.bubbleTimeout = setTimeout(function () {
         speech.classList.remove("active");
-      }, durationMs || 3500);
+      }, effectiveDuration);
+    },
+
+    narrateGuide: function (rawGuideText, sectionName) {
+      var speech = document.getElementById("pet-hud-speech");
+      if (speech && speech.getAttribute("data-hold") === "1") return;
+
+      var pet = this.activePet || PETS_ROSTER[0];
+      var lines = String(rawGuideText || "")
+        .split("|")
+        .map(function (s) { return s.trim(); })
+        .filter(Boolean)
+        .slice(0, 3);
+
+      if (!lines.length) return;
+
+      // Tailor lines to the active pet persona tone
+      var tailoredLines = this.tailorToPetVoice(lines, pet, sectionName);
+      var title = pet.name + " (" + (pet.archetype || pet.domain) + ")";
+      this.say(tailoredLines, 8500, title);
+    },
+
+    tailorToPetVoice: function (lines, pet, sectionName) {
+      var petId = (pet.id || "").toLowerCase();
+      var prefix = "";
+      var suffix = "";
+
+      switch (petId) {
+        case "kai":
+          prefix = "🔍 [Audit Inspection]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "• " + l;
+          });
+        case "draco":
+          prefix = "🐉 [Fusion AST]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "⚙️ " + l;
+          });
+        case "lycan":
+          prefix = "🐺 [OWASP Bastion]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "🛡️ " + l;
+          });
+        case "athena":
+          prefix = "🦉 [AEO Knowledge Matrix]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "📖 " + l;
+          });
+        case "kitsune":
+          prefix = "🦊 [Taste & Flow]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "✨ " + l;
+          });
+        case "pixel-shiba":
+          prefix = "🐕 [Vault Guard]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "🔒 " + l;
+          });
+        case "pixel-neko":
+          prefix = "👾 [Registry Index]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "📦 " + l;
+          });
+        case "radical-minion":
+          prefix = "🤖 [Hermes Dispatch]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "⚡ " + l;
+          });
+        case "workbot":
+          prefix = "🦾 [Neural Tensor :11434]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "⚡ " + l;
+          });
+        case "zoth":
+          prefix = "⚡ [Loopback :8484]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "▸ " + l;
+          });
+        case "azoth":
+        default:
+          prefix = "🔮 [Hermetic Alchemical Core]: ";
+          return lines.map(function (l, i) {
+            return i === 0 ? prefix + l : "✦ " + l;
+          });
+      }
+    },
+
+    setupScrollNarration: function () {
+      var self = this;
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) return;
+
+      var guideNodes = [].slice.call(document.querySelectorAll("[data-guide]"));
+      if (!guideNodes.length) return;
+
+      var currentSection = null;
+      var scrollTimeout = null;
+
+      function checkSectionInView() {
+        var speech = document.getElementById("pet-hud-speech");
+        if (speech && speech.getAttribute("data-hold") === "1") return;
+
+        var vh = window.innerHeight || 800;
+        var best = null;
+        var bestScore = 0;
+
+        guideNodes.forEach(function (el) {
+          var r = el.getBoundingClientRect();
+          var vis = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+          if (vis < Math.min(140, r.height * 0.28)) return;
+          var score = vis / Math.max(r.height, 1);
+          if (score > bestScore) {
+            bestScore = score;
+            best = el;
+          }
+        });
+
+        if (best !== currentSection) {
+          currentSection = best;
+          if (best) {
+            var rawGuide = best.getAttribute("data-guide");
+            var sectionId = best.id || best.getAttribute("class") || "Section";
+            self.narrateGuide(rawGuide, sectionId);
+          }
+        }
+      }
+
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function () {
+          checkSectionInView();
+        }, {
+          threshold: [0.18, 0.4, 0.65],
+          rootMargin: "-8% 0px -18% 0px"
+        });
+        guideNodes.forEach(function (el) { io.observe(el); });
+      }
+
+      window.addEventListener("scroll", function () {
+        if (!scrollTimeout) {
+          scrollTimeout = setTimeout(function () {
+            checkSectionInView();
+            scrollTimeout = null;
+          }, 120);
+        }
+      }, { passive: true });
+
+      // Initial check after short settle delay
+      setTimeout(checkSectionInView, 600);
     },
 
     setupReactions: function () {
-      // 1. React when user copies anything on page
+      // 1. Setup Scroll-driven narration for sections
+      this.setupScrollNarration();
+
+      // 2. React when user copies anything on page
       document.addEventListener("copy", function () {
+        var pet = PetHUD.activePet || PETS_ROSTER[0];
         var phrases = [
           "Artifact copied to memory buffer!",
           "Code snippet captured in vector cache.",
@@ -868,7 +1309,7 @@
         PetHUD.say(pick, 3000);
       });
 
-      // 2. React on theme change event (supports both 'zoth-theme-change' and 'zoth:theme-change')
+      // 3. React on theme change event (supports both 'zoth-theme-change' and 'zoth:theme-change')
       var handleThemeEvent = function (e) {
         var theme = (e.detail && e.detail.theme) || "new";
         PetHUD.say("Calibrated to " + theme.toUpperCase() + " spectrum.", 3000);
@@ -876,7 +1317,7 @@
       window.addEventListener("zoth-theme-change", handleThemeEvent);
       window.addEventListener("zoth:theme-change", handleThemeEvent);
 
-      // 3. React on link clicks (exploration)
+      // 4. React on link clicks (exploration)
       document.addEventListener("click", function (e) {
         var link = e.target.closest("a");
         if (link && link.href && !link.href.startsWith("javascript") && !link.closest("#zoth-pet-hud")) {
@@ -887,7 +1328,7 @@
         }
       });
 
-      // 4. Periodic subtle vitality ping
+      // 5. Periodic subtle vitality ping
       setInterval(function () {
         if (!PetHUD.isOpen && Math.random() < 0.15) {
           var idleVibes = [
