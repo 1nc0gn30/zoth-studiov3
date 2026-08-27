@@ -1,4 +1,4 @@
-# ⚡ Zoth Studio v0.1.0 — Sovereign AI Multi-Agent Workstation
+# ⚡ Zoth Studio v6.6.0 — Sovereign AI Multi-Agent Workstation
 
 ### 🔐 Sovereign Rust Key Vault (`zoth-vault-daemon`)
 - **Memory-Hard KDF:** RFC 9106 Argon2id v19 ($m=64\text{ MiB}, t=3, p=4$).
