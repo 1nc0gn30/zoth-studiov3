@@ -394,8 +394,8 @@
       liveTerminal.scrollTop = liveTerminal.scrollHeight;
     }
 
-    // Live Polling & Outbound Dispatcher via Port 8767
-    let lastMsgId = 0;
+    // Live Polling & Outbound Dispatcher via Port 8767 (Direct SQLite Sync)
+    let renderedMsgIds = new Set();
     const BRIDGE_API = "http://" + window.location.hostname + ":8767";
 
     async function pollLiveMessages() {
@@ -405,21 +405,25 @@
           const data = await res.json();
           if (data.messages && data.messages.length > 0) {
             data.messages.forEach(m => {
-              if (m.id > lastMsgId) {
-                lastMsgId = m.id;
-                appendLiveMessage(m.sender, m.text, m.isOutbound);
-                if (!m.isOutbound && window.ZothPetHUD && window.ZothPetHUD.say) {
-                  window.ZothPetHUD.say(`Inbound from SimpleX phone: "${m.text.slice(0, 30)}..."`);
+              if (!renderedMsgIds.has(m.id)) {
+                renderedMsgIds.add(m.id);
+                // Filter out repetitive system banners if needed
+                if (m.text && !m.text.startsWith("chat banner") && !m.text.includes("Disappearing messages:")) {
+                  appendLiveMessage(m.sender, m.text, m.isOutbound);
+                  if (!m.isOutbound && window.ZothPetHUD && window.ZothPetHUD.say) {
+                    window.ZothPetHUD.say(`Inbound from SimpleX phone: "${m.text.slice(0, 30)}"`);
+                  }
                 }
               }
             });
           }
         }
       } catch (err) {
-        // Fallback gracefully
+        // Silent catch
       }
     }
-    setInterval(pollLiveMessages, 1500);
+    setInterval(pollLiveMessages, 1000);
+    pollLiveMessages();
 
     btnSendLive.onclick = async function() {
       const txt = liveInput.value.trim();
