@@ -59,15 +59,21 @@ jobs:
             cp core-app/dist-linux/* dist/release/linux/ || true
           fi
 
-      - name: 🪟 Collect Prebuilt Windows Packages
+      - name: 🪟 Build Windows Suite (Portable ZIP & Launcher)
         run: |
-          mkdir -p dist/release/windows
-          if [ -d "core-app/public/dist/release/windows" ]; then
-            cp core-app/public/dist/release/windows/* dist/release/windows/ || true
+          cd core-app || true
+          if [ -f "scripts/build-windows-package.sh" ]; then
+            bash scripts/build-windows-package.sh || true
           fi
+          cd ..
+          mkdir -p dist/release/windows
           if [ -d "core-app/dist-windows" ]; then
             cp core-app/dist-windows/* dist/release/windows/ || true
           fi
+          if [ -d "core-app/public/dist/release/windows" ]; then
+            cp core-app/public/dist/release/windows/* dist/release/windows/ || true
+          fi
+
 
       - name: 📝 Generate Comprehensive Checksums
         run: |

@@ -1751,6 +1751,15 @@ def run_tui(stdscr):
                             safe_addstr(stdscr, y_pos, content_x, line_name, name_color | (curses.A_BOLD if is_active else 0))
                             safe_addstr(stdscr, y_pos, content_x + len(line_name) + 1, line_meta[:content_w - len(line_name) - 2], curses.color_pair(6) | curses.A_DIM)
 
+                    # Render live animated sprite of currently selected pet in list mode (top right of content pane if width allows)
+                    if 0 <= pet_cursor < len(SOVEREIGN_SPIRITS) and content_w >= 65:
+                        cur_spirit = SOVEREIGN_SPIRITS[pet_cursor]
+                        cur_sprite = get_pet_sprite_frame(cur_spirit['id'], tick_counter)
+                        sprite_x = content_x + content_w - 20
+                        for s_i, s_line in enumerate(cur_sprite):
+                            if 5 + s_i < h - 3:
+                                safe_addstr(stdscr, 5 + s_i, sprite_x, s_line, curses.color_pair(2) | curses.A_BOLD)
+
                     if pet_status_msg:
                         safe_addstr(stdscr, h - 3, content_x, f"Status: {pet_status_msg[:content_w-10]}", curses.color_pair(3) | curses.A_BOLD)
 
