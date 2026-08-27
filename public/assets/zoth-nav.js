@@ -36,6 +36,11 @@
               w3Link.href = "/studio/web3-hub.html";
               w3Link.innerHTML = "<strong>🪙 Web3 &amp; Solana Bridge</strong><small>Multi-Chain Wallets, Live SOL Ticker &amp; Radar</small>";
               menu.appendChild(w3Link);
+              var commsLink = document.createElement("a");
+              commsLink.href = "/secure-comms/";
+              commsLink.innerHTML = "<strong>🔒 Sovereign Comms (SimpleX)</strong><small>Zero-Knowledge SimpleX ↔ Matrix Bridge &amp; QR</small>";
+              menu.appendChild(commsLink);
+    
               var msgLink = document.createElement("a");
               msgLink.href = "/secure-messaging/";
               msgLink.innerHTML = "<strong>💬 Secure Signal Bridge</strong><small>E2EE Double Ratchet, Matrix &amp; Swarm Dispatch</small>";
@@ -67,6 +72,11 @@
             a.href = "/studio/web3-hub.html";
             a.innerHTML = "🪙 Web3 &amp; Solana Swarm Bridge";
             sh.parentElement.appendChild(a);
+            var aComms = document.createElement("a");
+            aComms.href = "/secure-comms/";
+            aComms.innerHTML = "🔒 Zero-Knowledge Sovereign Comms (SimpleX)";
+            sh.parentElement.appendChild(aComms);
+    
             var aMsg = document.createElement("a");
             aMsg.href = "/secure-messaging/";
             aMsg.innerHTML = "💬 Secure Signal Swarm Bridge";

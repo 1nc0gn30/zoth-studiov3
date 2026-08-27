@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoth Studio: Zero-Knowledge Sovereign Communications | SimpleX ↔ Matrix Bridge</title>
+  
+  <meta name="description" content="Custom-built SimpleX-to-Matrix bridge ensuring absolute metadata privacy, zero user identifiers, and local-first cryptographic keys. Multiplexed SQLite crypto store with E2EE Megolm ratchet encryption.">
+  <meta name="theme-color" content="#060913">
+  
+  <link rel="stylesheet" href="/assets/zoth-nav.css">
+  <link rel="stylesheet" href="/assets/zoth-pet-hud.css">
+  
+  <!-- Tailwind CDN for rapid zero-knowledge cyber aesthetic -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            zoth: {
+              bg: '#040711',
+              panel: 'rgba(10, 15, 30, 0.88)',
+              border: 'rgba(0, 240, 255, 0.25)',
+              cyan: '#00f0ff',
+              emerald: '#10b981',
+              gold: '#fbbf24',
+              purple: '#a855f7',
+            }
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+            sans: ['system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #040711;
+      color: #f8fafc;
+      font-family: system-ui, sans-serif;
+    }
+    .grid-bg {
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12) 0%, transparent 60%),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 36px 36px, 36px 36px;
+    }
+    .neon-border {
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.12);
+    }
+    .qr-scanner-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #00f0ff;
+      box-shadow: 0 0 12px #00f0ff;
+      animation: scanAnim 2.5s infinite linear;
+    }
+    @keyframes scanAnim {
+      0% { top: 0; opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+  </style>
+</head>
+<body class="grid-bg min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bar" id="topbar">
+    <div class="brand">
+      <a class="logo" href="/">
+        <span class="logo-txt">ZOTH</span>
+        <span class="logo-badge">STUDIO</span>
+      </a>
+    </div>
+    <nav class="menu" aria-label="Main Navigation">
+      <a class="nav-link" href="/">✦ Home</a>
+      <a class="nav-link" href="/studio/">🛠️ Studio</a>
+      <a class="nav-link text-cyan-400 font-bold" href="/secure-comms/">🔒 Sovereign Comms</a>
+      <a class="nav-link" href="/studio/web3-hub.html" style="color:var(--gold);">🪙 Web3</a>
+      <a class="nav-link" href="/libsignal/">🔐 LibSignal Suite</a>
+      <a class="nav-link" href="/memory/">🧠 Netrunner Memory</a>
+      <a class="nav-pill js-deck" href="http://127.0.0.1:8484/"><span class="deck-pulse"></span> Deck :8484</a>
+    </nav>
+    <button class="burger" id="burger" type="button">Menu</button>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-6 pt-28 pb-20 flex-1 w-full">
+    
+    <!-- Hero Section -->
+    <div class="text-center max-w-4xl mx-auto mb-16">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-400 font-mono text-xs uppercase tracking-widest mb-6">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse"></span>
+        Zero-Knowledge Architecture // Non-Custodial
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent mb-6">
+        Zoth Studio: Zero-Knowledge Sovereign Communications
+      </h1>
+      <p class="text-lg md:text-xl text-slate-400 leading-relaxed">
+        A custom-built, headless <strong class="text-slate-200">SimpleX-to-Matrix bridge</strong> ensuring absolute metadata privacy, zero user identifiers, and local-first cryptographic keys. Intercepts outgoing matrix messages and bridges them seamlessly through isolated SimpleX WebSocket channels.
+      </p>
+    </div>
+
+    <!-- The Onboarding Gateway & Live QR Code Card -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-16">
+      
+      <!-- Left: Sovereign QR Code Scanner Component -->
+      <div class="lg:col-span-5 bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8 neon-border flex flex-col items-center justify-between text-center relative overflow-hidden">
+        <div class="w-full flex justify-between items-center pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase font-bold">
+            <span>⚡</span> SimpleX Static Link / QR Gateway
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold">DAEMON :5225</span>
+        </div>
+
+        <!-- QR Display Canvas Box -->
+        <div class="my-6 relative p-4 bg-white rounded-xl shadow-2xl">
+          <div class="qr-scanner-line"></div>
+          <!-- SVG QR Code representing simplex link: simplex://contact/zoth_sovereign_bridge -->
+          <svg class="w-52 h-52 text-slate-950" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M0 0h30v30H0zM10 10h10v10H10zM70 0h30v30H70zM80 10h10v10H80zM0 70h30v30H0zM10 80h10v10H10zM40 0h10v20H40zM55 0h10v10H55zM40 25h20v10H40zM0 35h10v30H0zM20 35h10v15H20zM35 40h30v20H35zM75 35h25v10H75zM85 50h15v20H85zM40 70h10v30H40zM55 85h20v15H55zM75 75h10v10H75zM90 90h10v10H90z"/>
+          </svg>
+        </div>
+
+        <div class="w-full space-y-3">
+          <div class="bg-black/60 border border-slate-800 rounded-lg p-3 font-mono text-xs text-cyan-300 break-all select-all">
+            simplex://contact/zoth_sovereign_bridge_operator_node
+          </div>
+          <button type="button" onclick="navigator.clipboard.writeText('simplex://contact/zoth_sovereign_bridge_operator_node'); alert('Copied SimpleX Sovereign Invitation Link!');" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold font-mono text-sm rounded-xl transition-transform hover:-translate-y-0.5 shadow-lg shadow-cyan-500/20">
+            🔗 Copy SimpleX Invitation Link
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Step-by-Step Client Onboarding Instructions -->
+      <div class="lg:col-span-7 bg-slate-900/60 backdrop-blur-xl rounded-2xl p-8 border border-slate-800 flex flex-col justify-between">
+        <div>
+          <h2 class="text-2xl font-extrabold text-white mb-4 flex items-center gap-3">
+            <span>🛡️</span> Zero-Knowledge Onboarding Guide
+          </h2>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+            Follow these 3 simple steps to pair your client device directly with the local Zoth Studio swarm via SimpleX Chat without exposing phone numbers, emails, DNS identities, or centralized metadata.
+          </p>
+
+          <div class="space-y-4">
+            <!-- Step 1 -->
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-black/40 border border-slate-800/80">
+              <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 font-mono font-bold flex items-center justify-center text-sm">1</span>
+              <div>
+                <strong class="text-white text-sm block mb-0.5">Download SimpleX Chat</strong>
+                <p class="text-xs text-slate-400">Install the privacy-focused SimpleX app on iOS, Android, or desktop (simplex.chat). No identifiers or phone numbers required.</p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-black/40 border border-slate-800/80">
+              <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 font-mono font-bold flex items-center justify-center text-sm">2</span>
+              <div>
+                <strong class="text-white text-sm block mb-0.5">Scan QR or Paste Contact Link</strong>
+                <p class="text-xs text-slate-400">Scan the Sovereign QR code on the left or paste the contact URI. SimpleX will negotiate a single-use pairwise unidirectional queue.</p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-black/40 border border-slate-800/80">
+              <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 font-mono font-bold flex items-center justify-center text-sm">3</span>
+              <div>
+                <strong class="text-white text-sm block mb-0.5">Automatic E2EE Megolm Bridge Provisioning</strong>
+                <p class="text-xs text-slate-400">The Rust Bridge dynamically spawns a ghost user in the Matrix Application Service, establishing a 100% end-to-end encrypted Megolm channel.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between font-mono text-xs text-slate-500">
+          <span>Bridge Daemon Port: <strong class="text-cyan-400">:8766</strong></span>
+          <span>SimpleX WebSocket: <strong class="text-emerald-400">:5225</strong></span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Deep Technical Architecture Breakdown -->
+    <div class="bg-slate-900/60 backdrop-blur-xl rounded-2xl p-8 border border-slate-800 mb-12">
+      <h2 class="text-2xl font-extrabold text-white mb-2 flex items-center gap-3">
+        <span>⚙️</span> Technical Cryptographic Pipeline
+      </h2>
+      <p class="text-slate-400 text-sm mb-8">
+        How the custom Zoth Studio Rust middleware translates messages between isolated SimpleX queues and Matrix Application Services without breaking end-to-end encryption.
+      </p>
+
+      <!-- 5-Node Pipeline Flowchart -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-center font-mono text-xs mb-8">
+        
+        <div class="p-4 rounded-xl bg-black/50 border border-cyan-500/30 flex flex-col items-center justify-center gap-2">
+          <span class="text-2xl">📱</span>
+          <strong class="text-white">SimpleX Client</strong>
+          <span class="text-[10px] text-slate-400">Headless WS (:5225)</span>
+        </div>
+
+        <div class="p-4 rounded-xl bg-black/50 border border-cyan-500/30 flex flex-col items-center justify-center gap-2">
+          <span class="text-2xl">🦀</span>
+          <strong class="text-white">Rust Middleware</strong>
+          <span class="text-[10px] text-cyan-300">tokio-tungstenite</span>
+        </div>
+
+        <div class="p-4 rounded-xl bg-black/50 border border-purple-500/30 flex flex-col items-center justify-center gap-2">
+          <span class="text-2xl">🗄️</span>
+          <strong class="text-white">Multiplexed SQLite</strong>
+          <span class="text-[10px] text-purple-300">bridge.db &amp; Keys</span>
+        </div>
+
+        <div class="p-4 rounded-xl bg-black/50 border border-emerald-500/30 flex flex-col items-center justify-center gap-2">
+          <span class="text-2xl">🛡️</span>
+          <strong class="text-white">Matrix Appservice</strong>
+          <span class="text-[10px] text-emerald-300">AS Push API (:8766)</span>
+        </div>
+
+        <div class="p-4 rounded-xl bg-black/50 border border-blue-500/30 flex flex-col items-center justify-center gap-2">
+          <span class="text-2xl">🔒</span>
+          <strong class="text-white">E2EE Megolm Room</strong>
+          <span class="text-[10px] text-blue-300">Zero-Knowledge Mesh</span>
+        </div>
+
+      </div>
+
+      <!-- Core Code Blueprint Block -->
+      <div class="bg-black/80 rounded-xl p-5 border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto">
+        <div class="text-slate-500 mb-2">// Rust Bridge Mapping Event Handler (src/main.rs &amp; src/simplex/client.rs)</div>
+        <pre><code class="text-cyan-400">pub async fn handle_simplex_inbound(event: SimpleXEvent, store: &amp;BridgeStore, router: &amp;BridgeRouter) -&gt; Result&lt;()&gt; {
+    match event {
+        SimpleXEvent::NewChatItems { chat, items } =&gt; {
+            if let (Some(contact_id), Some(item)) = (chat.contact_id, items.first()) {
+                if let Some(matrix_room) = store.get_matrix_room(&amp;contact_id)? {
+                    let ghost = GhostUserClient::new(&amp;contact_id, &amp;chat.name.unwrap_or_default());
+                    ghost.push_to_matrix_room(&amp;matrix_room, item.text.as_deref().unwrap_or("")).await?;
+                }
+            }
+        }
+        _ =&gt; {}
+    }
+    Ok(())
+}</code></pre>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-8 text-center font-mono text-xs text-slate-500">
+    <div>ZOTH STUDIO · ZERO-KNOWLEDGE SOVEREIGN COMMUNICATIONS · NULLAI TECH</div>
+    <div class="mt-1 text-slate-600">SimpleX Chat Headless ↔ Matrix Appservice Megolm Bridge · 100% Non-Custodial</div>
+  </footer>
+
+  <script src="/assets/zoth-nav.js"></script>
+  <script src="/assets/zoth-pet-hud.js"></script>
+</body>
+</html>
