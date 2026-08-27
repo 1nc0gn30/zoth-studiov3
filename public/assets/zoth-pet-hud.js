@@ -609,7 +609,7 @@
         '        </div>',
         '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
         thoughts.whatISee.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
-        '        </ul>',
+        '        </ol>',
         '      </div>',
 
         '      <!-- Channel 2: Where I See It -->',
@@ -620,7 +620,7 @@
         '        </div>',
         '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
         thoughts.whereISeeIt.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
-        '        </ul>',
+        '        </ol>',
         '      </div>',
 
         '      <!-- Channel 3: What I Understand -->',
@@ -631,7 +631,7 @@
         '        </div>',
         '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
         thoughts.whatIUnderstand.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
-        '        </ul>',
+        '        </ol>',
         '      </div>',
 
         '      <!-- Channel 4: What I Might Not Understand -->',
@@ -642,7 +642,7 @@
         '        </div>',
         '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
         thoughts.whatIMightNotUnderstand.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
-        '        </ul>',
+        '        </ol>',
         '      </div>',
 
         '      <!-- Channel 5: What I Want To Do (Proactive Intent) -->',
@@ -653,7 +653,7 @@
         '        </div>',
         '        <ul style="margin:0; padding-left:18px; color:#e2e8f0; font-size:0.82rem; line-height:1.5;">',
         thoughts.whatIWantToDo.map(function(t){ return '<li style="margin-bottom:4px; font-weight:600;">' + t + '</li>'; }).join(''),
-        '        </ul>',
+        '        </ol>',
         '      </div>',
 
         '    </div>',
@@ -1113,9 +1113,9 @@
           '  <span class="pet-hud-speech-title">' + pet.emoji + ' ' + headerTitle + '</span>',
           '  <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">✕</button>',
           '</div>',
-          '<ul class="pet-hud-speech-list">',
+          '<ol class="pet-hud-speech-list">',
           listHtml,
-          '</ul>'
+          '</ol>'
         ].join('');
       } else {
         // Single text string
