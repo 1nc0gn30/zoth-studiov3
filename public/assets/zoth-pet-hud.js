@@ -341,7 +341,7 @@
     
     activateVisionary: function () {
       var self = this;
-      self.speak("👁️ Visionary Mode Engaging... Requesting screen viewport capture.");
+      self.say("👁️ Visionary Mode Engaging... Requesting screen viewport capture.");
       
       if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
         // Fallback for environments where getDisplayMedia is unsupported: DOM screenshot & layout canvas
@@ -373,11 +373,11 @@
             
             var dataUrl = canvas.toDataURL("image/png");
             self.showVisionaryOverlay(dataUrl, canvas.width, canvas.height);
-            self.speak("✨ Screen Captured! " + self.activePet.name + " is analyzing full-display viewport.");
+            self.say("✨ Screen Captured! " + self.activePet.name + " is analyzing full-display viewport.");
           }, 400);
         };
       }).catch(function (err) {
-        self.speak("⚠️ Vision capture cancelled or restricted. Falling back to DOM visual snapshot.");
+        self.say("⚠️ Vision capture cancelled or restricted. Falling back to DOM visual snapshot.");
         self.fallbackDomVision();
       });
     },

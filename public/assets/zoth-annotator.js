@@ -138,6 +138,8 @@
 
   async function fetchBackendAnnotations() {
     try {
+      // Only query backend if orchestrator port (:8484) or specific API route is available
+      if (window.location.port === '8088') return; // Static web server
       const res = await fetch(API_ENDPOINT);
       if (res.ok) {
         const data = await res.json();
