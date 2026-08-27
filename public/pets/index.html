@@ -393,16 +393,16 @@
 <div class="pet-modal-body">
 <div class="modal-stats-strip">
 <div class="modal-stat-item">
-<label>Alchemical Aspect</label>
+<label>Alchemical Element</label>
 <strong id="modal-aspect">Lunar Mercury</strong>
 </div>
 <div class="modal-stat-item">
-<label>Energy Resonance</label>
-<strong id="modal-resonance">96%</strong>
+<label>Vector Memory</label>
+<strong id="modal-resonance">32k Tensor Grid</strong>
 </div>
 <div class="modal-stat-item">
-<label>CLI Harness</label>
-<strong id="modal-harness-badge">Chrome DevTools</strong>
+<label>Alignment / Harness</label>
+<strong id="modal-harness-badge">Vigilant Analytical</strong>
 </div>
 </div>
 <p id="modal-desc" style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
@@ -418,10 +418,37 @@
 <span id="modal-cmd">@kai what is your active mission status?</span>
 <button class="btn-copy-cli" id="btn-copy-cmd">Copy Cmd</button>
 </div>
-<div class="modal-actions">
-<button class="btn-card-inspect" id="btn-voice-preview" style="flex: 1;">Test voice</button>
-<a class="btn-card-inspect" href="/pets/spawn-pets.html" style="flex: 1;">Spawn</a>
-<a class="btn-card-3d" href="/pets/studio.html" id="btn-modal-3d" style="flex: 1;">3D studio</a>
+<div class="modal-actions" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
+<button class="btn-card-inspect" id="btn-voice-preview" style="flex: 1; min-height: 40px;">🔊 Synthesize Voice</button>
+<button class="btn-card-inspect" id="btn-inspect-soul" style="flex: 1; min-height: 40px; background: rgba(0, 240, 255, 0.1); border-color: var(--cyan); color: var(--cyan);">📜 Soul Contract (SOUL.md)</button>
+<button class="btn-card-inspect" id="btn-download-soul" style="flex: 1; min-height: 40px; background: rgba(251, 191, 36, 0.1); border-color: var(--gold); color: var(--gold);">⚡ Download Hermes Soul</button>
+</div>
+<div class="modal-actions" style="display: flex; gap: 8px; margin-top: 8px;">
+<a class="btn-card-inspect" href="/pets/spawn-pets.html" style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center;">🐾 Spawn Familiar</a>
+<a class="btn-card-3d" href="/pets/studio.html" id="btn-modal-3d" style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center;">💎 3D Studio Preview</a>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Soul Contract Inspector Modal -->
+<div aria-labelledby="soul-modal-title" aria-modal="true" class="pet-modal-overlay" id="soul-contract-modal" role="dialog" style="display: none; z-index: 100002;">
+<div class="pet-modal-dialog" style="max-width: 720px; width: 95vw; max-height: 88vh; display: flex; flex-direction: column;">
+<div class="pet-modal-header" style="border-bottom: 1px solid var(--line, rgba(255,255,255,0.12)); padding-bottom: 12px;">
+<div>
+<div class="pet-domain-kicker" style="color: var(--gold);">HERMES &amp; OPENCLAW WORKSPACE SPEC</div>
+<h3 id="soul-modal-title" style="font-family: var(--font-display); font-size: 1.3rem; color: var(--text-primary); margin: 2px 0;">SOUL.md Contract Inspector</h3>
+</div>
+<button aria-label="Close soul contract dialog" class="pet-modal-close" id="soul-modal-close" type="button">×</button>
+</div>
+<div class="pet-modal-body" style="overflow-y: auto; flex: 1; padding: 16px 0;">
+<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+This contract defines the sovereign autonomy parameters, local loopback tool boundaries, voice prompts, and memory vectors for integration into Hermes Agent or OpenClaw environments.
+</p>
+<pre id="soul-contract-code" style="background: rgba(0,0,0,0.6); border: 1px solid var(--border-glass, rgba(255,255,255,0.1)); border-radius: 8px; padding: 14px; font-family: var(--font-mono, monospace); font-size: 0.8rem; color: #38bdf8; line-height: 1.5; white-space: pre-wrap; word-break: break-all; max-height: 380px; overflow-y: auto; user-select: all;"></pre>
+<div style="display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;">
+<button class="pets-btn pets-btn-gold" id="btn-copy-soul-md" style="flex: 1;" type="button">📋 Copy SOUL.md</button>
+<button class="pets-btn pets-btn-ghost" id="btn-download-soul-md" style="flex: 1;" type="button">💾 Download SOUL.md</button>
 </div>
 </div>
 </div>
@@ -1049,13 +1076,97 @@
       });
     }
 
+    // Soul Contract Inspector Elements & Handlers
+    const soulModal = document.getElementById("soul-contract-modal");
+    const soulModalClose = document.getElementById("soul-modal-close");
+    const soulCode = document.getElementById("soul-contract-code");
+    const btnInspectSoul = document.getElementById("btn-inspect-soul");
+    const btnDownloadSoul = document.getElementById("btn-download-soul");
+    const btnCopySoulMd = document.getElementById("btn-copy-soul-md");
+    const btnDownloadSoulMd = document.getElementById("btn-download-soul-md");
+
+    function buildSoulMarkdown(pet) {
+      if (window.PetModels && typeof window.PetModels.generateSoulContractMarkdown === "function") {
+        return window.PetModels.generateSoulContractMarkdown(pet.id);
+      }
+      const now = new Date().toISOString();
+      return `# SOUL CONTRACT: ${pet.name.toUpperCase()}
+<!-- Target: Hermes Agent / OpenClaw / Google Antigravity Workspaces -->
+- **Mascot Identifier**: \`${pet.id}\`
+- **Name**: ${pet.name}
+- **Role**: ${pet.title}
+- **Element**: ${pet.aspect}
+- **Vector Memory**: ${pet.resonance}
+- **CLI Harness**: \`${pet.harness}\`
+- **Generated At**: \`${now}\`
+
+## Directive
+${pet.desc}
+
+## Voice Prompt
+> "Greetings Operator. I am ${pet.name}, ${pet.title} for Zoth Studio."
+`;
+    }
+
+    function downloadFile(filename, text) {
+      const blob = new Blob([text], { type: "text/markdown;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+    }
+
+    if (btnInspectSoul) {
+      btnInspectSoul.addEventListener("click", () => {
+        if (!currentModalPet) return;
+        const md = buildSoulMarkdown(currentModalPet);
+        soulCode.textContent = md;
+        document.getElementById("soul-modal-title").textContent = `${currentModalPet.name} — SOUL.md Contract`;
+        soulModal.style.display = "flex";
+      });
+    }
+
+    if (btnDownloadSoul) {
+      btnDownloadSoul.addEventListener("click", () => {
+        if (!currentModalPet) return;
+        const md = buildSoulMarkdown(currentModalPet);
+        downloadFile(`${currentModalPet.id}-SOUL.md`, md);
+      });
+    }
+
+    if (btnCopySoulMd) {
+      btnCopySoulMd.addEventListener("click", function() {
+        if (!soulCode.textContent) return;
+        navigator.clipboard.writeText(soulCode.textContent);
+        copyFeedback(this, "📋 Copied SOUL.md");
+      });
+    }
+
+    if (btnDownloadSoulMd) {
+      btnDownloadSoulMd.addEventListener("click", function() {
+        if (!currentModalPet || !soulCode.textContent) return;
+        downloadFile(`${currentModalPet.id}-SOUL.md`, soulCode.textContent);
+        copyFeedback(this, "💾 Downloaded!");
+      });
+    }
+
+    if (soulModalClose) soulModalClose.addEventListener("click", () => { soulModal.style.display = "none"; });
+    if (soulModal) soulModal.addEventListener("click", (e) => { if (e.target === soulModal) soulModal.style.display = "none"; });
+
     const btnVoice = document.getElementById("btn-voice-preview");
     if (btnVoice) {
       btnVoice.addEventListener("click", () => {
         if (!currentModalPet) return;
         if ("speechSynthesis" in window) {
           window.speechSynthesis.cancel();
-          const utter = new SpeechSynthesisUtterance(`Greetings Operator. I am ${currentModalPet.name}, ${currentModalPet.title} for Zoth Studio.`);
+          const spec = (window.PetModels && window.PetModels.PET_SPECIES && window.PetModels.PET_SPECIES[currentModalPet.id]) || {};
+          const text = spec.voicePrompt || `Greetings Operator. I am ${currentModalPet.name}, ${currentModalPet.title} for Zoth Studio. All systems operational.`;
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.rate = 1.05;
+          utter.pitch = currentModalPet.domain === "security" ? 0.9 : (currentModalPet.domain === "creative" ? 1.15 : 1.0);
           window.speechSynthesis.speak(utter);
         }
       });

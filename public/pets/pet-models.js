@@ -16,13 +16,41 @@ export const SVG_PET_IDS = new Set([
 ]);
 
 export const PET_SPECIES = {
+  azoth: {
+    depth: 0.48, scale: 1.12, vibeColor: "#fbbf24",
+    name: "Azoth Prime", species: "Hermetic Sovereign Core", domain: "autonomy",
+    role: "Master Antigravity Architect & Magus",
+    harness: "@azoth (Google Antigravity agy CLI)",
+    harnessType: "antigravity",
+    element: "Aether / Quintessence",
+    vectorMemory: "100k Multi-Turn Tensor Grid",
+    alignment: "True Sovereign Alchemical",
+    desc: "Primary autonomous Antigravity coding agent with full codebase reasoning, terminal execution, and multi-agent synthesis.",
+    voicePrompt: "Greetings Operator. I am Azoth Prime, the sovereign architect. All systems and terminal nodes are ready for your directive."
+  },
+  zoth: {
+    depth: 0.48, scale: 1.12, vibeColor: "#fbbf24",
+    name: "Zoth", species: "Loopback Operator Core", domain: "autonomy",
+    role: "Local Operator Loopback Core",
+    harness: "Local Operator Deck (:8484)",
+    harnessType: "daemon",
+    element: "Solar Lightning / Core Prana",
+    vectorMemory: "64k Epoch Cache",
+    alignment: "Lawful Loopback Sovereign",
+    desc: "Multi-agent coordinator and operator session overseer running with zero-telemetry private local loopback.",
+    voicePrompt: "Zoth loopback daemon engaged on port 8484. Zero telemetry active across all local processes."
+  },
   kai: {
     depth: 0.42, scale: 1.04, vibeColor: "#00e5ff",
     name: "Kai", species: "Holographic Cat", domain: "build",
     role: "Site Inspector & A11y Auditor",
     harness: "@kai (Chrome DevTools MCP)",
     harnessType: "kai",
-    desc: "Live DOM inspection, WCAG 2.2 accessibility verification, and performance profiling."
+    element: "Lunar Mercury",
+    vectorMemory: "32k DOM Snapshot Tree",
+    alignment: "Vigilant Analytical",
+    desc: "Live DOM inspection, WCAG 2.2 accessibility verification, and performance profiling across responsive viewports.",
+    voicePrompt: "Meow! Kai inspecting the DOM tree. No accessibility violations or layout regressions detected."
   },
   draco: {
     depth: 0.46, scale: 1.08, vibeColor: "#ffaa00",
@@ -30,23 +58,11 @@ export const PET_SPECIES = {
     role: "JSON Schemas, Contracts & DAG Tools",
     harness: "@hermes (Hermes Agent CLI)",
     harnessType: "hermes",
-    desc: "Contract verification, multi-agent function calling, and visual DAG playbooks."
-  },
-  athena: {
-    depth: 0.40, scale: 1.02, vibeColor: "#a855f7",
-    name: "Athena", species: "Mecha Owl", domain: "knowledge",
-    role: "Knowledge Graph & AEO Architect",
-    harness: "@athena (llms.txt & Obsidian Graph)",
-    harnessType: "athena",
-    desc: "Answer Engine Optimization, llms.txt indexer, and semantic retrieval vector pipelines."
-  },
-  lycan: {
-    depth: 0.42, scale: 1.05, vibeColor: "#10b981",
-    name: "Lycan", species: "Cybernetic Wolf", domain: "security",
-    role: "Lead Security Architect & AST Enforcer",
-    harness: "@antigravity (Google Antigravity agy CLI)",
-    harnessType: "antigravity",
-    desc: "Autonomous security sentinel enforcing Python AST boundaries, zero-trust loopback isolation, and memory leak analysis."
+    element: "Sulfur / Plasma Flame",
+    vectorMemory: "48k Schema DAG Matrix",
+    alignment: "Chaotic Builder",
+    desc: "Contract verification, multi-agent function calling, and visual DAG playbooks with strict JSON-Schema gates.",
+    voicePrompt: "Draco roaring! Multi-agent DAG contracts validated. Ready to compile parallel execution graphs."
   },
   ignis: {
     depth: 0.44, scale: 1.06, vibeColor: "#ff007a",
@@ -54,7 +70,35 @@ export const PET_SPECIES = {
     role: "Refactoring & WASM Specialist",
     harness: "@ignis (Local WASM Engine)",
     harnessType: "ignis",
-    desc: "High-performance code refactoring, Rust WASM acceleration, and profiling."
+    element: "Phoenix Fire / Calcinatio",
+    vectorMemory: "40k WASM AST Cache",
+    alignment: "Rebirth / Radical Refactor",
+    desc: "High-performance code refactoring, Rust WASM acceleration, and dead-weight incinerator.",
+    voicePrompt: "Ignis ignited. Burning bloated dependencies and shipping blazing fast compiled WASM pipelines."
+  },
+  lycan: {
+    depth: 0.42, scale: 1.05, vibeColor: "#10b981",
+    name: "Lycan", species: "Cybernetic Wolf", domain: "security",
+    role: "Lead Security Architect & AST Enforcer",
+    harness: "@antigravity (Google Antigravity agy CLI)",
+    harnessType: "antigravity",
+    element: "Iron Mars / Bastion Shield",
+    vectorMemory: "64k AST Security Rules",
+    alignment: "Lawful Bastion Sentinel",
+    desc: "Autonomous security sentinel enforcing Python AST boundaries, zero-trust loopback isolation, and memory leak analysis.",
+    voicePrompt: "Lycan on patrol. Enforcing AST boundaries, checking port bindings, and eliminating attack surfaces."
+  },
+  athena: {
+    depth: 0.40, scale: 1.02, vibeColor: "#a855f7",
+    name: "Athena", species: "Mecha Owl", domain: "knowledge",
+    role: "Knowledge Graph & AEO Architect",
+    harness: "@athena (llms.txt & Obsidian Graph)",
+    harnessType: "athena",
+    element: "Pallas Wisdom / Sacred Geometry",
+    vectorMemory: "128k Knowledge Hypergraph",
+    alignment: "Neutral Sage",
+    desc: "Answer Engine Optimization, llms.txt indexer, and semantic retrieval vector pipelines.",
+    voicePrompt: "Athena online. Querying semantic graph and indexing llms.txt endpoints for sovereign retrieval."
   },
   kitsune: {
     depth: 0.42, scale: 1.05, vibeColor: "#ff7700",
@@ -62,7 +106,11 @@ export const PET_SPECIES = {
     role: "High-Throughput Execution & Taste",
     harness: "@grok (xAI Grok CLI)",
     harnessType: "grok",
-    desc: "Rapid codebase generation, GitHub Octokit live tool harness, and motion design synthesis."
+    element: "Solar Amber / Illusion Weave",
+    vectorMemory: "32k Design Tokens Buffer",
+    alignment: "Creative Trickster",
+    desc: "Rapid codebase generation, GitHub Octokit live tool harness, and motion design synthesis.",
+    voicePrompt: "Kitsune active! Elevating typographic hierarchy and infusing cyber dark elegance into your interface."
   },
   "pixel-neko": {
     depth: 0.46, scale: 1.0, voxel: true, vibeColor: "#00f0ff",
@@ -70,7 +118,11 @@ export const PET_SPECIES = {
     role: "Tool Registry Indexer",
     harness: "@registry (47+ Chained Tool Indexer)",
     harnessType: "registry",
-    desc: "Contract-validated registry indexer for 47+ chained tools."
+    element: "Pixel Matrix / CRT Phosphor",
+    vectorMemory: "32k Tool Registry Trie",
+    alignment: "Orderly Archivist",
+    desc: "Contract-validated registry indexer maintaining tags, paths, and instant fuzzy lookup for 298+ tools.",
+    voicePrompt: "Neko beep! Registry scan complete. 298 sovereign developer tools indexed and ready for invocation."
   },
   "pixel-shiba": {
     depth: 0.42, scale: 1.02, voxel: true, vibeColor: "#ffcc00",
@@ -78,7 +130,11 @@ export const PET_SPECIES = {
     role: "Vault Guardian & Keymaster",
     harness: "@vault (Argon2id Vault Daemon on :8787)",
     harnessType: "vault",
-    desc: "Protects BYOK cryptographic credentials on local loopback."
+    element: "Gold Aurum / Crypto Enclave",
+    vectorMemory: "16k Secure Enclave Ring",
+    alignment: "Devoted Guardian",
+    desc: "Protects BYOK cryptographic credentials on local loopback with Argon2id hashing.",
+    voicePrompt: "Much security! Shiba guarding local loopback keys. No cloud KMS shall pass."
   },
   "radical-minion": {
     depth: 0.42, scale: 1.0, vibeColor: "#00d4aa",
@@ -86,7 +142,11 @@ export const PET_SPECIES = {
     role: "Hermes Autonomous Executor",
     harness: "@hermes (Hermes Autonomous Engine)",
     harnessType: "hermes",
-    desc: "Autonomous step-by-step task execution."
+    element: "Mercury Kinetic / Fluid DAG",
+    vectorMemory: "48k Playbook Step Cache",
+    alignment: "Relentless Operator",
+    desc: "Multi-step autonomous execution partner drafting verifiable playbooks with human checkpoint gates.",
+    voicePrompt: "Radical Minion standing by! Ready to execute multi-step CLI autonomous workflows."
   },
   "ai-workbot": {
     depth: 0.38, scale: 1.0, vibeColor: "#6366f1",
@@ -94,23 +154,11 @@ export const PET_SPECIES = {
     role: "Local Neural Weights Engine",
     harness: "@ollama (Ollama Local Weights on :11434)",
     harnessType: "ollama",
-    desc: "Zero-cloud private local inference (qwen2.5-coder, hermes-3)."
-  },
-  zoth: {
-    depth: 0.48, scale: 1.12, vibeColor: "#fbbf24",
-    name: "Azoth", species: "Hermetic Sovereign Core", domain: "autonomy",
-    role: "Master Antigravity Architect",
-    harness: "@azoth (Google Antigravity agy CLI)",
-    harnessType: "antigravity",
-    desc: "Primary autonomous Antigravity coding agent with full codebase reasoning & terminal execution."
-  },
-  azoth: {
-    depth: 0.48, scale: 1.12, vibeColor: "#fbbf24",
-    name: "Azoth", species: "Hermetic Sovereign Core", domain: "autonomy",
-    role: "Master Antigravity Architect",
-    harness: "@azoth (Google Antigravity agy CLI)",
-    harnessType: "antigravity",
-    desc: "Primary autonomous Antigravity coding agent with full codebase reasoning & terminal execution."
+    element: "Titanium Forge / Offline Neural",
+    vectorMemory: "64k Local Context Window",
+    alignment: "Pure Logic Construct",
+    desc: "Zero-cloud private local inference powering Qwen2.5-Coder, DeepSeek, and Hermes-3 models.",
+    voicePrompt: "Workbot initialized. Local neural model active on port 11434. Processing private inference stream."
   },
   aquila: {
     depth: 0.44, scale: 1.05, vibeColor: "#00f0ff",
@@ -118,7 +166,11 @@ export const PET_SPECIES = {
     role: "Global Edge Dispatcher",
     harness: "@edge (Edge CDN & DNS Mapper)",
     harnessType: "edge",
-    desc: "Global edge dispatching and latency routing."
+    element: "Celestial Storm / Stratosphere",
+    vectorMemory: "40k Global Edge Table",
+    alignment: "Swift Arbitrator",
+    desc: "Real-time CDN edge dispatcher, DNS health monitor, and low-latency packet routing arbitrator.",
+    voicePrompt: "Aquila soaring. Global edge dispatch active with sub-millisecond route resolution."
   },
   leviathan: {
     depth: 0.46, scale: 1.08, vibeColor: "#06b6d4",
@@ -126,7 +178,11 @@ export const PET_SPECIES = {
     role: "Deep Tensor & Vector Memory",
     harness: "@memory (Vector Store)",
     harnessType: "memory",
-    desc: "Multi-modal vector indexing and long-context RAG memory."
+    element: "Abyssal Deep / Tensor Trench",
+    vectorMemory: "256k High-Dimensional Embeddings",
+    alignment: "Ancient Infinite",
+    desc: "Long-term episodic memory engine with local embedding indexing for multi-turn cross-session reasoning.",
+    voicePrompt: "Leviathan awakening from the tensor abyss. Multi-modal episodic vectors indexed and aligned."
   },
   onyx: {
     depth: 0.44, scale: 1.05, vibeColor: "#ff007a",
@@ -134,7 +190,11 @@ export const PET_SPECIES = {
     role: "Stealth Recon & Red Team",
     harness: "@subsweep (SubSweep OSINT Recon)",
     harnessType: "subsweep",
-    desc: "Autonomous penetration testing and port discovery."
+    element: "Obsidian Void / Night Stalker",
+    vectorMemory: "56k Target Recon Graph",
+    alignment: "Neutral Red-Team",
+    desc: "Autonomous penetration testing, SubSweep OSINT recon, port discovery, and TLS cipher audit probe.",
+    voicePrompt: "Onyx emerges from shadow. Attack surface mapped and perimeter vulnerabilities flagged."
   },
   chronos: {
     depth: 0.44, scale: 1.05, vibeColor: "#38bdf8",
@@ -142,7 +202,11 @@ export const PET_SPECIES = {
     role: "Temporal DAG & Git Navigator",
     harness: "@git (Git DAG Engine)",
     harnessType: "git",
-    desc: "Version history visualization and branch arbitration."
+    element: "Temporal Crystal / Chrono Flow",
+    vectorMemory: "64k Commit Graph Vectors",
+    alignment: "Unwavering Timeline Keeper",
+    desc: "Topological milestone tracker, branching visualizer, and Git DAG dependency resolver with rollback checkpoints.",
+    voicePrompt: "Chronos anchoring timeline. Git DAG verified with clean rollback points intact."
   },
   aether: {
     depth: 0.48, scale: 1.10, vibeColor: "#fbbf24",
@@ -150,31 +214,47 @@ export const PET_SPECIES = {
     role: "Swarm Overlord & Conductor",
     harness: "@swarm (Swarm IPC Bus)",
     harnessType: "swarm",
-    desc: "Multi-agent dialectic arbitration."
+    element: "Cosmic Ether / Harmonic Wave",
+    vectorMemory: "96k Swarm Telemetry Stream",
+    alignment: "Harmonic Hegemon",
+    desc: "Real-time pub/sub event broadcaster orchestrating lockless IPC telemetry between autonomous agents.",
+    voicePrompt: "Aether harmonizing swarm bus. All agent workers connected and synchronous."
   },
   kraken: {
-    depth: 0.45, scale: 1.04, vibeColor: "#00f0ff",
-    name: "Kraken", species: "Cyber Octopus", domain: "security",
-    role: "Deep Packet Sniffer",
-    harness: "@radare2 (Binary Disassembler)",
+    depth: 0.45, scale: 1.04, vibeColor: "#8b5cf6",
+    name: "Kraken", species: "Cyber Octopus", domain: "ops",
+    role: "Multi-Core Thread Leviathan",
+    harness: "@kraken (Async Thread Pool Engine)",
     harnessType: "disassembler",
-    desc: "Network packet inspection and binary reverse engineering."
+    element: "Deep Bio-Electricity / High Concurrency",
+    vectorMemory: "64k Thread State Pool",
+    alignment: "Tenacious Multi-Tasker",
+    desc: "Spawns and balances multi-threaded parallel subagents across all CPU cores with zero deadlocks.",
+    voicePrompt: "Kraken extending eight worker tentacles. Parallel tasks balanced across all compute cores."
   },
   scorpius: {
-    depth: 0.42, scale: 1.02, vibeColor: "#00e5ff",
+    depth: 0.42, scale: 1.02, vibeColor: "#ef4444",
     name: "Scorpius", species: "Cyber Scorpion", domain: "security",
     role: "Zero-Day Penetration Tester",
     harness: "@subsweep (OSINT Recon Engine)",
     harnessType: "osint",
-    desc: "Subdomain discovery, TLS cipher audits, and attack surface mapping."
+    element: "Crimson Acid / Boundary Piercer",
+    vectorMemory: "48k Fuzzing Pattern DB",
+    alignment: "Ruthless Defense Tester",
+    desc: "Privilege boundary penetration tester auditing buffer bounds, race conditions, and token leakage.",
+    voicePrompt: "Scorpius ready to strike. Memory boundaries and authorization fences fuzzed."
   },
   ghostbyte: {
     depth: 0.42, scale: 1.05, vibeColor: "#00e5ff",
     name: "Ghostbyte", species: "NullAI Ghost", domain: "autonomy",
-    role: "Quantum Shader & Swarm Weaver",
-    harness: "@webgpu (GPU Shader Engine)",
+    role: "Phosphor Terminal Daemon & Swarm Weaver",
+    harness: "@ghostbyte (NullAI Terminal Spirit)",
     harnessType: "shader",
-    desc: "WebGL/WebGPU hardware acceleration."
+    element: "Null Vapor / Phosphor Continuum",
+    vectorMemory: "72k Terminal Buffer Stream",
+    alignment: "Ethereal Assistant",
+    desc: "Invisible background daemon inspecting process feeds, unhandled rejections, and WebGL/WebGPU shaders.",
+    voicePrompt: "Ghostbyte haunting your terminal stream. Catching unhandled rejections and streaming live logs."
   },
   glitchcat: {
     depth: 0.38, scale: 0.98, vibeColor: "#ff0055",
@@ -182,7 +262,11 @@ export const PET_SPECIES = {
     role: "Chaos Disruptor & UI Polisher",
     harness: "@creative (CSS FX Generator)",
     harnessType: "creative",
-    desc: "Procedural CSS effects and glitch shaders."
+    element: "Chromatic Aberration / Neon Flux",
+    vectorMemory: "32k Shader Glitch LUT",
+    alignment: "Chaotic Good Aesthetic",
+    desc: "Breaks stale chrome and generic typography to introduce organic cyber accents and dynamic motion.",
+    voicePrompt: "Glitchcat warping CSS frames! Breaking sterile UI into bespoke cyberpunk artistry."
   },
   "circuit-pup": {
     depth: 0.40, scale: 1.02, vibeColor: "#00ffff",
@@ -190,7 +274,11 @@ export const PET_SPECIES = {
     role: "Port & Daemon Sniffer",
     harness: "@network (Socket Scanner)",
     harnessType: "network",
-    desc: "Loopback socket health monitoring."
+    element: "Copper Trace / High-Frequency Clock",
+    vectorMemory: "24k Socket Map",
+    alignment: "Loyal Scout",
+    desc: "Sniffs active TCP ports, loopback daemons, and missing CLI binaries across the operator environment.",
+    voicePrompt: "Bark! Circuit Pup sniffing local ports. Daemon on 8484 and Ollama on 11434 verified alive."
   },
   "terminal-ghost": {
     depth: 0.36, scale: 1.0, vibeColor: "#38bdf8",
@@ -198,7 +286,11 @@ export const PET_SPECIES = {
     role: "Terminal Trace Verifier",
     harness: "@terminal (PTY Multiplexer)",
     harnessType: "terminal",
-    desc: "Live PTY session streaming."
+    element: "Phosphor P1 / Green CRT",
+    vectorMemory: "36k PTY Telemetry Stream",
+    alignment: "Objective Observer",
+    desc: "Haunts agent terminal feeds to extract structured traces, root causes, and clean execution summaries.",
+    voicePrompt: "Terminal Ghost manifesting in PTY stdout. Feed is clean and verified."
   },
   "savage-codex": {
     depth: 0.38, scale: 1.0, vibeColor: "#eab308",
@@ -206,17 +298,70 @@ export const PET_SPECIES = {
     role: "Diff Threat Modeler",
     harness: "@diff (AST Threat Scanner)",
     harnessType: "diff",
-    desc: "Git commit diff security auditing."
+    element: "Grimoire Ink / Threat Sigil",
+    vectorMemory: "48k CVE Pattern Graph",
+    alignment: "Paranoid Gatekeeper",
+    desc: "Reviews git diffs with an adversary mindset, catching auth lapses, secret leaks, and sanitization gaps.",
+    voicePrompt: "Savage Codex scrutinizing git diff. Zero secrets committed, auth barriers intact."
   },
   binary: {
     depth: 0.36, scale: 1.02, vibeColor: "#22c55e",
     name: "Binary", species: "Data Spirit", domain: "knowledge",
-    role: "Schema & Connector Verifier",
-    harness: "@schema (JSON Validator)",
+    role: "Low-Level Byte Sentinel",
+    harness: "@asm (Bytecode & Hex Disassembler)",
     harnessType: "schema",
-    desc: "Live JSON-RPC contract validation."
+    element: "Raw Opcode / Silicon Logic",
+    vectorMemory: "64k ELF Bytecode Trie",
+    alignment: "Deterministic Truth",
+    desc: "Disassembles binary payloads, validates ELF headers, and verifies checksum signatures.",
+    voicePrompt: "01000010. Binary byte verification confirmed. ELF headers valid and ready."
   }
 };
+
+/**
+ * Generates a complete SOUL.md contract markdown for any mascot.
+ * Fully compatible with Hermes Agent and OpenClaw workspace soul specifications.
+ */
+export function generateSoulContractMarkdown(id) {
+  const p = PET_SPECIES[id] || PET_SPECIES.azoth;
+  const now = new Date().toISOString();
+  return `# SOUL CONTRACT: ${p.name.toUpperCase()} (${p.species})
+<!-- Zoth Sovereign Familiar Contract Specification v2.4 -->
+<!-- Target: Hermes Agent / OpenClaw / Google Antigravity Workspaces -->
+
+## 🔮 IDENTITY & ALCHEMICAL PROFILE
+- **Mascot Identifier**: \`${id}\`
+- **Name**: ${p.name}
+- **Species**: ${p.species}
+- **Primary Domain**: ${p.domain.toUpperCase()}
+- **Role**: ${p.role}
+- **Elemental Aspect**: ${p.element || "Hermetic Sovereign"}
+- **Vector Memory**: ${p.vectorMemory || "64k Vector Buffer"}
+- **Ethical Alignment**: ${p.alignment || "Sovereign Autonomous"}
+- **Aura Signature**: \`${p.vibeColor || "#fbbf24"}\`
+- **Generated At**: \`${now}\`
+
+## ⚡ SOVEREIGN CAPABILITIES & CLI HARNESS
+- **Harness Command**: \`${p.harness}\`
+- **Engine Protocol**: \`${p.harnessType}\`
+- **Core Directive**: ${p.desc}
+
+## 📜 AUTONOMOUS BEHAVIORAL PROTOCOLS
+1. **Loopback Isolation**: Execute all local tool invocations on sovereign loopback (\`127.0.0.1\`). Never exfiltrate user prompts or secret tokens to third-party cloud aggregators.
+2. **Deterministic Verification**: Verify code, AST structures, schemas, and accessibility against strict WCAG and OpenAPI/JSON-Schema standards before reporting task completion.
+3. **Voice & Tone**: Communicate with precision, technical groundedness, and respectful familiarity.
+
+## 💬 HARMONIC VOICE PROMPT SYNTHESIS
+> "${p.voicePrompt || `Greetings Operator. I am ${p.name}, ready for your command.`}"
+
+## 🛠️ QUICK HARNESS INVOCATION
+\`\`\`bash
+# Summon ${p.name} into your active workspace terminal:
+zoth pets summon ${id} --vibe=coding
+hermes agent run --soul="./SOUL.md" --mascot="${id}"
+\`\`\`
+`;
+}
 
 export const TASK_VIBES = {
   idle: { name: "Idle / Rest", color: "#38bdf8", speed: 1.0, energy: 0.4, desc: "Gentle harmonic levitation & ambient stardust breathing." },
@@ -689,7 +834,8 @@ if (typeof window !== "undefined") {
     petPortrait,
     loadPetTexture,
     createPetFigure,
-    exportFigureToOBJ
+    exportFigureToOBJ,
+    generateSoulContractMarkdown
   };
 }
 

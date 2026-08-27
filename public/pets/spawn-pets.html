@@ -797,6 +797,29 @@
 <button class="btn-interact" onclick="feedCompanionEnergy()">⚡ Charge</button>
 <button class="btn-interact" onclick="meditateCompanion()">🧘 Meditate</button>
 </div>
+<div class="interaction-bar" style="margin-top: 6px;">
+<button class="btn-interact" onclick="inspectPetSoul()" style="background: rgba(0, 240, 255, 0.12); border-color: var(--cyan); color: var(--cyan);">📜 Soul Contract</button>
+<button class="btn-interact" onclick="downloadPetSoul()" style="background: rgba(251, 191, 36, 0.12); border-color: var(--gold); color: var(--gold);">⚡ Download Soul</button>
+</div>
+</div>
+<!-- Soul Contract Inspector Modal in spawn-pets -->
+<div aria-labelledby="spawn-soul-title" aria-modal="true" class="pet-modal-overlay" id="spawn-soul-modal" role="dialog" style="display:none; position:fixed; inset:0; z-index:100000; background:rgba(5,5,8,0.88); align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+<div class="pet-modal-dialog" style="background:#0a0e1c; border:1px solid rgba(0,240,255,0.3); border-radius:12px; max-width:680px; width:92vw; max-height:86vh; padding:20px; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+<div>
+<div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase;">SOVEREIGN CONTRACT SPEC</div>
+<h3 id="spawn-soul-title" style="font-family:var(--font-display); font-size:1.25rem; color:#fff; margin:2px 0;">SOUL.md Contract</h3>
+</div>
+<button aria-label="Close dialog" onclick="document.getElementById('spawn-soul-modal').style.display='none'" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer;" type="button">✕</button>
+</div>
+<div style="overflow-y:auto; flex:1; padding:14px 0;">
+<pre id="spawn-soul-code" style="background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:0.78rem; color:#38bdf8; line-height:1.45; white-space:pre-wrap; word-break:break-all; max-height:360px; overflow-y:auto; user-select:all;"></pre>
+<div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+<button class="btn-glow" id="btn-spawn-copy-soul" onclick="copySpawnSoulMd()" style="flex:1;">📋 Copy SOUL.md</button>
+<button class="btn-glow" onclick="downloadSpawnSoulMd()" style="flex:1; background:rgba(251,191,36,0.15); border-color:var(--gold); color:var(--gold);">💾 Download SOUL.md</button>
+</div>
+</div>
+</div>
 </div>
 <div class="chat-feed" id="pet-chat-feed">
 <div class="chat-msg system">
@@ -1248,7 +1271,75 @@
           feed.appendChild(petDiv);
           feed.scrollTop = feed.scrollHeight;
           playSound('chirp');
+          if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+            const spec = (PET_SPECIES && PET_SPECIES[currentPetId]) || {};
+            const utter = new SpeechSynthesisUtterance(`${pet.name} responding: Executing directive.`);
+            utter.rate = 1.1;
+            window.speechSynthesis.speak(utter);
+          }
         }, 400);
+      };
+
+      function getSoulMarkdown(id) {
+        if (typeof generateSoulContractMarkdown === 'function') {
+          return generateSoulContractMarkdown(id);
+        }
+        const p = (PET_SPECIES && PET_SPECIES[id]) || {};
+        return `# SOUL CONTRACT: ${p.name || id}
+<!-- Target: Hermes Agent / OpenClaw / Google Antigravity Workspaces -->
+- **Identifier**: \`${id}\`
+- **Role**: ${p.role || "Autonomous Familiar"}
+- **Element**: ${p.element || "Sovereign"}
+- **Vector Memory**: ${p.vectorMemory || "64k Tensor"}
+- **Directive**: ${p.desc || "Autonomous executor"}
+`;
+      }
+
+      function downloadMdFile(filename, text) {
+        const blob = new Blob([text], { type: "text/markdown;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+      }
+
+      window.inspectPetSoul = function() {
+        const md = getSoulMarkdown(currentPetId);
+        const codeEl = document.getElementById('spawn-soul-code');
+        if (codeEl) codeEl.textContent = md;
+        const titleEl = document.getElementById('spawn-soul-title');
+        const p = (PET_SPECIES && PET_SPECIES[currentPetId]) || { name: currentPetId };
+        if (titleEl) titleEl.textContent = `${p.name} — SOUL.md Contract`;
+        const modal = document.getElementById('spawn-soul-modal');
+        if (modal) modal.style.display = 'flex';
+      };
+
+      window.downloadPetSoul = function() {
+        const md = getSoulMarkdown(currentPetId);
+        downloadMdFile(`${currentPetId}-SOUL.md`, md);
+      };
+
+      window.copySpawnSoulMd = function() {
+        const codeEl = document.getElementById('spawn-soul-code');
+        if (codeEl && codeEl.textContent) {
+          navigator.clipboard.writeText(codeEl.textContent);
+          const btn = document.getElementById('btn-spawn-copy-soul');
+          if (btn) {
+            btn.textContent = '📋 Copied!';
+            setTimeout(() => { btn.textContent = '📋 Copy SOUL.md'; }, 1800);
+          }
+        }
+      };
+
+      window.downloadSpawnSoulMd = function() {
+        const codeEl = document.getElementById('spawn-soul-code');
+        if (codeEl && codeEl.textContent) {
+          downloadMdFile(`${currentPetId}-SOUL.md`, codeEl.textContent);
+        }
       };
 
       // Burger Drawer Toggle

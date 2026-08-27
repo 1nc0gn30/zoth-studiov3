@@ -1005,8 +1005,30 @@
       @kai (Chrome DevTools MCP)
     </div>
 <div style="display: flex; gap: 6px; margin-top: 2px;">
-<button class="btn-tool" id="btn-copy-sig" style="flex: 1; min-height: 34px;">📋 Copy @Cmd</button>
+<button class="btn-tool" id="btn-copy-sig" style="flex: 1; min-height: 34px;">📋 @Cmd</button>
+<button class="btn-tool" id="btn-studio-soul" style="flex: 1; min-height: 34px; background: rgba(0, 240, 255, 0.12); border-color: var(--cyan); color: var(--cyan);">📜 SOUL.md</button>
+<button class="btn-tool" id="btn-studio-download-soul" style="flex: 1; min-height: 34px; background: rgba(251, 191, 36, 0.12); border-color: var(--gold); color: var(--gold);">⚡ Familiar</button>
 <canvas height="26" id="spectrum-canvas" style="border-radius: 4px; background: rgba(0,0,0,0.5);" width="90"></canvas>
+</div>
+</div>
+
+<!-- Soul Contract Inspector Modal in pet-studio -->
+<div aria-labelledby="studio-soul-title" aria-modal="true" class="pet-modal-overlay" id="studio-soul-modal" role="dialog" style="display:none; position:fixed; inset:0; z-index:100000; background:rgba(5,5,8,0.88); align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+<div class="pet-modal-dialog" style="background:#0a0e1c; border:1px solid rgba(0,240,255,0.3); border-radius:12px; max-width:680px; width:92vw; max-height:86vh; padding:20px; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+<div>
+<div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase;">SOVEREIGN CONTRACT SPEC</div>
+<h3 id="studio-soul-title" style="font-family:var(--font-display); font-size:1.25rem; color:#fff; margin:2px 0;">SOUL.md Contract Inspector</h3>
+</div>
+<button aria-label="Close dialog" onclick="document.getElementById('studio-soul-modal').style.display='none'" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer;" type="button">✕</button>
+</div>
+<div style="overflow-y:auto; flex:1; padding:14px 0;">
+<pre id="studio-soul-code" style="background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:0.78rem; color:#38bdf8; line-height:1.45; white-space:pre-wrap; word-break:break-all; max-height:360px; overflow-y:auto; user-select:all;"></pre>
+<div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+<button class="btn-tool" id="btn-studio-copy-soul" onclick="copyStudioSoulMd()" style="flex:1; min-height:40px; background:var(--gold); color:#050508; font-weight:700;">📋 Copy SOUL.md</button>
+<button class="btn-tool" onclick="downloadStudioSoulMd()" style="flex:1; min-height:40px; background:rgba(251,191,36,0.15); border-color:var(--gold); color:var(--gold);">💾 Download SOUL.md</button>
+</div>
+</div>
 </div>
 </div>
 <!-- Collapsible Shader Drawer -->
@@ -1381,13 +1403,84 @@
     btnSpeak.addEventListener("click", () => {
       const current = MASCOTS.find(m => m.id === picker.value);
       if (!current) return;
-      playSynthesizedChirp(440, 0.4);
+      playSynthesizedChirp(520, 0.4);
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(`Greetings Operator. I am ${current.name}, ${current.role} of Zoth Studio.`);
+        const spec = (window.PetModels && window.PetModels.PET_SPECIES && window.PetModels.PET_SPECIES[current.id]) || {};
+        const text = spec.voicePrompt || `Greetings Operator. I am ${current.name}, ${current.role} of Zoth Studio. Ready for directives.`;
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.05;
+        utter.pitch = current.domain === "SECURITY" ? 0.9 : (current.domain === "CREATIVE" ? 1.15 : 1.0);
         window.speechSynthesis.speak(utter);
       }
     });
+
+    function getStudioSoulMarkdown(id) {
+      if (window.PetModels && typeof window.PetModels.generateSoulContractMarkdown === "function") {
+        return window.PetModels.generateSoulContractMarkdown(id);
+      }
+      const p = MASCOTS.find(m => m.id === id) || MASCOTS[0];
+      return `# SOUL CONTRACT: ${p.name.toUpperCase()}
+- **Identifier**: \`${p.id}\`
+- **Role**: ${p.role}
+- **CLI Harness**: \`${p.harness}\`
+- **Directive**: ${p.desc}
+`;
+    }
+
+    function downloadStudioFile(filename, text) {
+      const blob = new Blob([text], { type: "text/markdown;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+    }
+
+    const btnStudioSoul = document.getElementById("btn-studio-soul");
+    if (btnStudioSoul) {
+      btnStudioSoul.addEventListener("click", () => {
+        const id = picker.value;
+        const p = MASCOTS.find(m => m.id === id) || MASCOTS[0];
+        const md = getStudioSoulMarkdown(id);
+        const codeEl = document.getElementById("studio-soul-code");
+        if (codeEl) codeEl.textContent = md;
+        const titleEl = document.getElementById("studio-soul-title");
+        if (titleEl) titleEl.textContent = `${p.name} — SOUL.md Contract`;
+        const modal = document.getElementById("studio-soul-modal");
+        if (modal) modal.style.display = "flex";
+      });
+    }
+
+    const btnStudioDownloadSoul = document.getElementById("btn-studio-download-soul");
+    if (btnStudioDownloadSoul) {
+      btnStudioDownloadSoul.addEventListener("click", () => {
+        const id = picker.value;
+        const md = getStudioSoulMarkdown(id);
+        downloadStudioFile(`${id}-SOUL.md`, md);
+      });
+    }
+
+    window.copyStudioSoulMd = function() {
+      const codeEl = document.getElementById("studio-soul-code");
+      if (codeEl && codeEl.textContent) {
+        navigator.clipboard.writeText(codeEl.textContent);
+        const btn = document.getElementById("btn-studio-copy-soul");
+        if (btn) {
+          btn.textContent = "📋 Copied!";
+          setTimeout(() => { btn.textContent = "📋 Copy SOUL.md"; }, 1800);
+        }
+      }
+    };
+
+    window.downloadStudioSoulMd = function() {
+      const codeEl = document.getElementById("studio-soul-code");
+      if (codeEl && codeEl.textContent) {
+        downloadStudioFile(`${picker.value}-SOUL.md`, codeEl.textContent);
+      }
+    };
 
     document.getElementById("btn-copy-sig").addEventListener("click", function() {
       const current = MASCOTS.find(m => m.id === picker.value);

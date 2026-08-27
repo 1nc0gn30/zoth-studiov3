@@ -237,6 +237,26 @@ const PETS = [
     engage: "Engage Scorpius: test application endpoints against race conditions and logic flaws.",
     tags: ["fuzzing", "penetration", "zero-day", "security"],
   },
+  {
+    id: "azoth",
+    name: "Azoth Prime",
+    domain: "autonomy",
+    role: "Master Antigravity Architect",
+    neon: petPortrait("azoth"),
+    blurb: "Azoth synthesizes autonomous codebase directives, terminal execution, and alchemical plans.",
+    engage: "Engage Azoth: plan and execute complex multi-step codebase transformations with full architectural reasoning.",
+    tags: ["antigravity", "architect", "sovereign", "magus"],
+  },
+  {
+    id: "ghostbyte",
+    name: "Ghostbyte",
+    domain: "autonomy",
+    role: "Phosphor Terminal Daemon",
+    neon: petPortrait("ghostbyte"),
+    blurb: "Ghostbyte haunts terminal feeds, WebGPU shaders, and unhandled signal rejections.",
+    engage: "Engage Ghostbyte: trace loopback process feeds and verify WebGL/WebGPU hardware acceleration.",
+    tags: ["terminal", "daemon", "phosphor", "webgpu"],
+  },
 ];
 
 const $ = (id) => document.getElementById(id);
