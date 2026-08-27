@@ -67,6 +67,19 @@
         });
       });
 
+      // Ensure Universe / Articles section in Mobile Drawer has direct link to Articles
+      var universeHeading = Array.from(drawer.querySelectorAll(".drawer-heading")).find(function(h) {
+        return h.textContent.includes("Universe") || h.textContent.includes("Media");
+      });
+      if (universeHeading && universeHeading.parentElement) {
+        if (!universeHeading.parentElement.querySelector('a[href^="/articles"]')) {
+          var artLink = document.createElement("a");
+          artLink.href = "/articles/";
+          artLink.innerHTML = "📜 Engineering Articles & Manifesto";
+          universeHeading.parentElement.insertBefore(artLink, universeHeading.nextSibling);
+        }
+      }
+
       // Inject Mobile Annotator Trigger into Drawer if not already present
       if (!drawer.querySelector(".drawer-annotator-btn")) {
         var annotatorSection = document.createElement("div");
