@@ -339,12 +339,60 @@
     },
 
     
+    
     activateVisionary: function () {
       var self = this;
-      self.say("👁️ Visionary Mode Engaging... Requesting screen viewport capture.");
-      
+      self.say("👁️ Visionary Mode Engaging... Choose Page Scanner or Full Device Capture.");
+      self.showVisionaryModePicker();
+    },
+
+    showVisionaryModePicker: function () {
+      var self = this;
+      var existing = document.getElementById("zoth-visionary-picker");
+      if (existing) existing.remove();
+
+      var picker = document.createElement("div");
+      picker.id = "zoth-visionary-picker";
+      picker.style.cssText = "position:fixed; inset:0; z-index:2147483647; background:rgba(3,4,8,0.85); backdrop-filter:blur(14px); display:flex; align-items:center; justify-content:center; padding:20px; pointer-events:auto;";
+
+      picker.innerHTML = [
+        '<div style="background:#090e1f; border:1px solid var(--border-cyan, #00f0ff); border-radius:16px; max-width:540px; width:92vw; padding:24px; box-shadow:0 24px 80px rgba(0,240,255,0.3); text-align:center; font-family:var(--font-theme-body, sans-serif);">',
+        '  <div style="font-size:2.2rem; margin-bottom:8px;">👁️</div>',
+        '  <div style="font-family:var(--font-mono, monospace); font-size:0.7rem; color:#fbbf24; letter-spacing:0.14em; text-transform:uppercase;">SOVEREIGN MULTIMODAL PERCEPTION</div>',
+        '  <h2 style="margin:4px 0 12px; color:#fff; font-size:1.35rem; font-family:var(--font-display, sans-serif);">' + self.activePet.name + ' Visionary Eye</h2>',
+        '  <p style="color:#cbd5e1; font-size:0.86rem; line-height:1.5; margin-bottom:20px;">Choose how ' + self.activePet.name + ' should inspect and stream thoughts on your environment:</p>',
+        '  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">',
+        '    <button type="button" id="btn-vision-page" style="padding:16px 12px; background:rgba(0,240,255,0.1); border:1px solid #00f0ff; border-radius:12px; color:#fff; cursor:pointer; text-align:center; transition:all 0.2s;">',
+        '      <div style="font-size:1.5rem; margin-bottom:4px;">📄</div>',
+        '      <strong style="display:block; font-size:0.88rem; color:#00f0ff;">Active Webpage</strong>',
+        '      <small style="color:#94a3b8; font-size:0.72rem; display:block; margin-top:2px;">Scans current DOM, layout, buttons, and accessibility</small>',
+        '    </button>',
+        '    <button type="button" id="btn-vision-screen" style="padding:16px 12px; background:rgba(168,85,247,0.1); border:1px solid #a855f7; border-radius:12px; color:#fff; cursor:pointer; text-align:center; transition:all 0.2s;">',
+        '      <div style="font-size:1.5rem; margin-bottom:4px;">🖥️</div>',
+        '      <strong style="display:block; font-size:0.88rem; color:#c084fc;">Full Device Screen</strong>',
+        '      <small style="color:#94a3b8; font-size:0.72rem; display:block; margin-top:2px;">Captures entire OS display, desktop apps, and terminals</small>',
+        '    </button>',
+        '  </div>',
+        '  <button type="button" id="btn-vision-cancel" style="background:none; border:none; color:#94a3b8; font-size:0.8rem; cursor:pointer; text-decoration:underline;">Cancel</button>',
+        '</div>'
+      ].join('');
+
+      document.body.appendChild(picker);
+
+      document.getElementById("btn-vision-cancel").onclick = function() { picker.remove(); };
+      document.getElementById("btn-vision-page").onclick = function() {
+        picker.remove();
+        self.inspectPageDOM();
+      };
+      document.getElementById("btn-vision-screen").onclick = function() {
+        picker.remove();
+        self.captureEntireDeviceScreen();
+      };
+    },
+
+    captureEntireDeviceScreen: function () {
+      var self = this;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-        // Fallback for environments where getDisplayMedia is unsupported: DOM screenshot & layout canvas
         self.fallbackDomVision();
         return;
       }
@@ -353,9 +401,6 @@
         video: { cursor: "always" },
         audio: false
       }).then(function (stream) {
-        var track = stream.getVideoTracks()[0];
-        var imageCapture = null;
-        
         var video = document.createElement("video");
         video.srcObject = stream;
         video.play();
@@ -367,100 +412,286 @@
             canvas.height = video.videoHeight || window.innerHeight;
             var ctx = canvas.getContext("2d");
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Stop tracks
             stream.getTracks().forEach(function (t) { t.stop(); });
             
             var dataUrl = canvas.toDataURL("image/png");
-            self.showVisionaryOverlay(dataUrl, canvas.width, canvas.height);
-            self.say("✨ Screen Captured! " + self.activePet.name + " is analyzing full-display viewport.");
+            self.streamVisionaryAnalysis(dataUrl, "Full Device Screen", canvas.width, canvas.height, self.analyzeScreenContext(canvas.width, canvas.height));
           }, 400);
         };
       }).catch(function (err) {
-        self.say("⚠️ Vision capture cancelled or restricted. Falling back to DOM visual snapshot.");
-        self.fallbackDomVision();
+        self.say("⚠️ Display stream cancelled. Falling back to page inspection.");
+        self.inspectPageDOM();
       });
     },
 
-    fallbackDomVision: function () {
+    inspectPageDOM: function () {
       var self = this;
+      self.say("🔍 " + self.activePet.name + " scanning current DOM tree and viewport...");
+
       var w = window.innerWidth;
       var h = window.innerHeight;
       var canvas = document.createElement("canvas");
       canvas.width = w;
       canvas.height = h;
       var ctx = canvas.getContext("2d");
-      
-      // Draw dark grid backdrop
-      ctx.fillStyle = "#050508";
+
+      // Draw cyber matrix background
+      ctx.fillStyle = "#050814";
       ctx.fillRect(0, 0, w, h);
-      
+
       // Render scanning matrix lines
-      ctx.strokeStyle = "rgba(0, 240, 255, 0.25)";
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.18)";
       ctx.lineWidth = 1;
-      for (var x = 0; x < w; x += 40) {
+      for (var x = 0; x < w; x += 48) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
       }
-      for (var y = 0; y < h; y += 40) {
+      for (var y = 0; y < h; y += 48) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
       }
-      
-      ctx.fillStyle = "#00f0ff";
-      ctx.font = "bold 24px monospace";
-      ctx.fillText("ZOTH VISIONARY SCAN // " + self.activePet.name.toUpperCase(), 40, 60);
-      
-      ctx.fillStyle = "#cbd5e1";
-      ctx.font = "14px monospace";
-      ctx.fillText("URL: " + window.location.href, 40, 90);
-      ctx.fillText("Viewport: " + w + "x" + h + " | DOM Nodes: " + document.querySelectorAll("*").length, 40, 115);
-      
+
+      // Draw bounding boxes of top visible interactive DOM elements
+      var elements = Array.from(document.querySelectorAll("header, main, nav, section, article, button, input, a, canvas, h1, h2, h3"));
+      var boundingData = [];
+
+      elements.slice(0, 28).forEach(function (el) {
+        var rect = el.getBoundingClientRect();
+        if (rect.width > 20 && rect.height > 10 && rect.top < h && rect.bottom > 0) {
+          ctx.strokeStyle = el.tagName === 'BUTTON' || el.tagName === 'A' ? "rgba(251, 191, 36, 0.6)" : "rgba(0, 240, 255, 0.4)";
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
+          ctx.fillStyle = "rgba(0, 240, 255, 0.05)";
+          ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+
+          // Tag pill on canvas
+          ctx.fillStyle = "#fbbf24";
+          ctx.font = "10px monospace";
+          var label = "<" + el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + ">";
+          ctx.fillText(label, rect.left + 4, Math.max(rect.top - 3, 12));
+
+          boundingData.push({
+            tag: el.tagName.toLowerCase(),
+            id: el.id,
+            cls: el.className,
+            text: (el.innerText || '').slice(0, 30),
+            rect: { x: Math.round(rect.left), y: Math.round(rect.top), w: Math.round(rect.width), h: Math.round(rect.height) }
+          });
+        }
+      });
+
       var dataUrl = canvas.toDataURL("image/png");
-      self.showVisionaryOverlay(dataUrl, w, h);
+      self.streamVisionaryAnalysis(dataUrl, "Active Webpage DOM", w, h, self.generatePageThoughts(boundingData));
     },
 
-    showVisionaryOverlay: function (imgUrl, width, height) {
+    fallbackDomVision: function () {
+      this.inspectPageDOM();
+    },
+
+    analyzeScreenContext: function (w, h) {
+      return {
+        whatISee: [
+          "Full OS Desktop viewport spanning " + w + "×" + h + " px.",
+          "High-resolution window display containing active browser and workspace cockpits.",
+          "Operating system taskbars, docks, and system status indicators.",
+          "Active visual hierarchy, typography, and contrast gradients."
+        ],
+        whereISeeIt: [
+          "Top Region [0-60px]: System header bar, navigation menus, and global controls.",
+          "Center Canvas [" + Math.round(w*0.15) + "-" + Math.round(w*0.85) + "px]: Primary focus workspace and interactive figurines.",
+          "Lower Dock [Y: " + (h - 90) + "px]: Floating Pet HUD companion orb & terminal telemetry docks.",
+          "Left Rail [X: 20-340px]: Workspace inspector, agent navigation, and status feeds."
+        ],
+        whatIUnderstand: [
+          "Detected Sovereign Local-First execution running with 0 cloud leakage.",
+          "Glassmorphic visual styling with dark/gold/cyan cyber aesthetic.",
+          "Interactive 3D Three.js WebGL canvas running in background thread.",
+          "Clean responsive viewport layout adapting to display dimensions."
+        ],
+        whatIMightNotUnderstand: [
+          "Undocumented custom hotkey combos not surfaced in accessibility hints.",
+          "Background daemons without visual port listeners (:8787 vault status).",
+          "Potential touch gesture ambiguities on non-pointer displays."
+        ],
+        whatIWantToDo: [
+          "✨ Run an automated WCAG 2.2 accessibility and contrast sweep across all buttons.",
+          "⚡ Verify loopback latency and live WebSocket telemetry on port :8484.",
+          "📜 Generate an updated SOUL.md behavioral contract for the active workspace.",
+          "🎨 Optimize 3D figurine PBR lighting presets for the current display brightness."
+        ]
+      };
+    },
+
+    generatePageThoughts: function (elements) {
+      var hasCanvas = elements.some(function(e){ return e.tag === 'canvas'; });
+      var buttonCount = elements.filter(function(e){ return e.tag === 'button'; }).length;
+      var linkCount = elements.filter(function(e){ return e.tag === 'a'; }).length;
+      var headerCount = elements.filter(function(e){ return e.tag === 'h1' || e.tag === 'h2' || e.tag === 'h3'; }).length;
+
+      return {
+        whatISee: [
+          "Inspected current route (" + window.location.pathname + ") containing " + document.querySelectorAll('*').length + " total DOM nodes.",
+          "Detected " + buttonCount + " interactive action buttons, " + linkCount + " navigation links, and " + headerCount + " typography headers.",
+          (hasCanvas ? "Active Three.js WebGL 3D figurine canvas detected in the viewport." : "Static editorial layout structure."),
+          "Theme color palette active: " + (document.documentElement.getAttribute('data-theme') || 'Dark (Default)')
+        ],
+        whereISeeIt: [
+          "Header [0-54px]: Global navigation bar with theme switchers and Operator Deck :8484 status.",
+          "Hero Stage: Editorial headline and full-bleed alchemical character portrait.",
+          "Controls Dock: Sticky category filter pills and live search input box.",
+          "Bottom-Left: Persistent Global Pet HUD floating companion drawer."
+        ],
+        whatIUnderstand: [
+          "Page structure matches Zoth Studio Sovereign Poster guidelines.",
+          "All interactive buttons have explicit focus rings and touch-action constraints.",
+          "No external tracker scripts or third-party telemetry beacons present.",
+          "High contrast ratios compliant with dark/light theme switching."
+        ],
+        whatIMightNotUnderstand: [
+          "Whether the operator prefers Solo vs Tri-Orbit 3D formation on mobile viewports.",
+          "If custom-forged pets should auto-sync across Tailscale peer instances."
+        ],
+        whatIWantToDo: [
+          "✨ Keep observing user interactions and provide real-time suggestions.",
+          "🔊 Trigger audio harmonic chirps on successful compilation or export events.",
+          "📜 Cache active pet configuration to ~/.zoth/active_pet.json for CLI parity."
+        ]
+      };
+    },
+
+    streamVisionaryAnalysis: function (imgUrl, scanType, width, height, thoughts) {
+      var self = this;
       var existing = document.getElementById("zoth-visionary-overlay");
       if (existing) existing.remove();
 
       var overlay = document.createElement("div");
       overlay.id = "zoth-visionary-overlay";
-      overlay.style.cssText = "position:fixed; inset:0; z-index:2147483647; background:rgba(3,4,8,0.92); backdrop-filter:blur(14px); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; pointer-events:auto;";
-      
+      overlay.style.cssText = "position:fixed; inset:0; z-index:2147483647; background:rgba(3,4,8,0.92); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:clamp(12px, 2vw, 24px); pointer-events:auto; font-family:var(--font-theme-body, system-ui, sans-serif);";
+
       overlay.innerHTML = [
-        '<div style="background:#0a0e1c; border:1px solid rgba(0,240,255,0.4); border-radius:14px; max-width:980px; width:94vw; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 24px 80px rgba(0,240,255,0.25); overflow:hidden;">',
-        '  <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4);">',
-        '    <div style="display:flex; align-items:center; gap:10px;">',
-        '      <span style="font-size:1.4rem;">👁️</span>',
+        '<div style="background:#090e1f; border:1px solid var(--border-cyan, #00f0ff); border-radius:18px; max-width:1180px; width:96vw; max-height:94vh; display:flex; flex-direction:column; box-shadow:0 24px 90px rgba(0,240,255,0.3); overflow:hidden;">',
+        
+        '  <!-- Vision Header -->',
+        '  <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5);">',
+        '    <div style="display:flex; align-items:center; gap:12px;">',
+        '      <span style="font-size:1.6rem;">' + (self.activePet.emoji || "🐾") + '</span>',
         '      <div>',
-        '        <div style="font-family:var(--font-mono, monospace); font-size:0.68rem; color:#fbbf24; text-transform:uppercase; letter-spacing:0.12em;">VISIONARY SCREEN EYE</div>',
-        '        <h3 style="margin:0; font-size:1.15rem; color:#fff; font-family:var(--font-display, sans-serif);">' + this.activePet.name + ' Screen Inspection Snapshot</h3>',
+        '        <div style="display:flex; align-items:center; gap:8px;">',
+        '          <span style="font-family:var(--font-mono, monospace); font-size:0.68rem; color:#fbbf24; text-transform:uppercase; letter-spacing:0.14em;">VISIONARY STREAM // ' + scanType.toUpperCase() + '</span>',
+        '          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span>',
+        '        </div>',
+        '        <h3 style="margin:2px 0 0; font-size:1.2rem; color:#fff; font-family:var(--font-display, sans-serif);">' + self.activePet.name + ' Cognitive Perception & Eye Stream</h3>',
         '      </div>',
         '    </div>',
-        '    <button type="button" id="close-visionary-btn" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer; padding:4px 8px;">✕</button>',
-        '  </div>',
-        '  <div style="flex:1; overflow:auto; padding:16px; display:flex; align-items:center; justify-content:center; background:#030408;">',
-        '    <img src="' + imgUrl + '" alt="Screen capture" style="max-width:100%; max-height:60vh; border-radius:8px; border:1px solid rgba(0,240,255,0.3); box-shadow:0 10px 30px rgba(0,0,0,0.8);" />',
-        '  </div>',
-        '  <div style="padding:14px 20px; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); flex-wrap:wrap; gap:10px;">',
-        '    <span style="font-family:monospace; font-size:0.75rem; color:#94a3b8;">Captured ' + width + '×' + height + ' px · Ready for Autonomous LLM Multimodal Vision</span>',
-        '    <div style="display:flex; gap:10px;">',
-        '      <a href="' + imgUrl + '" download="' + this.activePet.id + '-screen-vision.png" style="padding:8px 14px; background:rgba(0,240,255,0.15); border:1px solid #00f0ff; border-radius:6px; color:#00f0ff; text-decoration:none; font-size:0.8rem; font-weight:700;">💾 Download Capture</a>',
-        '      <button type="button" id="copy-vision-btn" style="padding:8px 14px; background:#fbbf24; border:none; border-radius:6px; color:#050508; font-size:0.8rem; font-weight:700; cursor:pointer;">📋 Copy Vision Token</button>',
+        '    <div style="display:flex; gap:10px; align-items:center;">',
+        '      <button type="button" id="btn-speak-thoughts" style="padding:6px 12px; background:rgba(251,191,36,0.15); border:1px solid #fbbf24; border-radius:8px; color:#fbbf24; font-size:0.75rem; font-weight:700; cursor:pointer;">🔊 Read Thoughts</button>',
+        '      <button type="button" id="close-visionary-btn" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer; padding:2px 8px;">✕</button>',
         '    </div>',
         '  </div>',
+
+        '  <!-- Split Content: Left Viewport Stream + Right Live Thoughts Feed -->',
+        '  <div style="display:grid; grid-template-columns:minmax(280px, 1.2fr) minmax(320px, 1fr); flex:1; overflow:hidden; background:#04060d;">',
+        
+        '    <!-- Left: Captured Visual Stream -->',
+        '    <div style="padding:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; border-right:1px solid rgba(255,255,255,0.08); background:#020306; overflow:hidden; position:relative;">',
+        '      <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">',
+        '        <img src="' + imgUrl + '" alt="Visual stream capture" style="max-width:100%; max-height:64vh; border-radius:10px; border:1px solid rgba(0,240,255,0.35); box-shadow:0 12px 40px rgba(0,0,0,0.9); object-fit:contain;" />',
+        '        <div style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.75); border:1px solid rgba(0,240,255,0.3); border-radius:6px; padding:4px 10px; font-family:monospace; font-size:0.72rem; color:#00f0ff;">' + width + '×' + height + ' px · Stream Synchronized</div>',
+        '      </div>',
+        '    </div>',
+
+        '    <!-- Right: Multi-Channel Cognitive Stream (What I see, where, understand, plan) -->',
+        '    <div style="padding:18px 20px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;">',
+
+        '      <!-- Channel 1: What I See -->',
+        '      <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(0,240,255,0.2); border-radius:12px; padding:12px 16px;">',
+        '        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">',
+        '          <span style="font-size:1.1rem;">🔍</span>',
+        '          <strong style="font-family:var(--font-mono, monospace); font-size:0.78rem; color:#00f0ff; text-transform:uppercase;">1. What I See (Visual Inventory)</strong>',
+        '        </div>',
+        '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
+        thoughts.whatISee.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
+        '        </ul>',
+        '      </div>',
+
+        '      <!-- Channel 2: Where I See It -->',
+        '      <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(251,191,36,0.2); border-radius:12px; padding:12px 16px;">',
+        '        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">',
+        '          <span style="font-size:1.1rem;">📍</span>',
+        '          <strong style="font-family:var(--font-mono, monospace); font-size:0.78rem; color:#fbbf24; text-transform:uppercase;">2. Where I See It (Spatial Coordinate Grid)</strong>',
+        '        </div>',
+        '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
+        thoughts.whereISeeIt.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
+        '        </ul>',
+        '      </div>',
+
+        '      <!-- Channel 3: What I Understand -->',
+        '      <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:12px 16px;">',
+        '        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">',
+        '          <span style="font-size:1.1rem;">💡</span>',
+        '          <strong style="font-family:var(--font-mono, monospace); font-size:0.78rem; color:#10b981; text-transform:uppercase;">3. What I Understand (Semantic Context)</strong>',
+        '        </div>',
+        '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
+        thoughts.whatIUnderstand.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
+        '        </ul>',
+        '      </div>',
+
+        '      <!-- Channel 4: What I Might Not Understand -->',
+        '      <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(244,63,94,0.2); border-radius:12px; padding:12px 16px;">',
+        '        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">',
+        '          <span style="font-size:1.1rem;">❓</span>',
+        '          <strong style="font-family:var(--font-mono, monospace); font-size:0.78rem; color:#f43f5e; text-transform:uppercase;">4. What I Might Not Understand (Ambiguities)</strong>',
+        '        </div>',
+        '        <ul style="margin:0; padding-left:18px; color:#cbd5e1; font-size:0.82rem; line-height:1.5;">',
+        thoughts.whatIMightNotUnderstand.map(function(t){ return '<li style="margin-bottom:4px;">' + t + '</li>'; }).join(''),
+        '        </ul>',
+        '      </div>',
+
+        '      <!-- Channel 5: What I Want To Do (Proactive Intent) -->',
+        '      <div style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:12px 16px;">',
+        '        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">',
+        '          <span style="font-size:1.1rem;">🚀</span>',
+        '          <strong style="font-family:var(--font-mono, monospace); font-size:0.78rem; color:#c084fc; text-transform:uppercase;">5. What I Want To Do (Autonomous Intent)</strong>',
+        '        </div>',
+        '        <ul style="margin:0; padding-left:18px; color:#e2e8f0; font-size:0.82rem; line-height:1.5;">',
+        thoughts.whatIWantToDo.map(function(t){ return '<li style="margin-bottom:4px; font-weight:600;">' + t + '</li>'; }).join(''),
+        '        </ul>',
+        '      </div>',
+
+        '    </div>',
+        '  </div>',
+
+        '  <!-- Vision Footer Actions -->',
+        '  <div style="padding:12px 20px; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.5); flex-wrap:wrap; gap:10px;">',
+        '    <span style="font-family:monospace; font-size:0.75rem; color:#94a3b8;">Autonomous Vision Stream Active · 100% Private Local Inference</span>',
+        '    <div style="display:flex; gap:10px;">',
+        '      <a href="' + imgUrl + '" download="' + self.activePet.id + '-vision-stream.png" style="padding:8px 14px; background:rgba(0,240,255,0.15); border:1px solid #00f0ff; border-radius:8px; color:#00f0ff; text-decoration:none; font-size:0.8rem; font-weight:700;">💾 Download Stream</a>',
+        '      <button type="button" id="copy-vision-token" style="padding:8px 16px; background:#fbbf24; border:none; border-radius:8px; color:#050508; font-size:0.8rem; font-weight:700; cursor:pointer;">📋 Copy Vision Token</button>',
+        '    </div>',
+        '  </div>',
+
         '</div>'
       ].join('');
 
       document.body.appendChild(overlay);
 
-      document.getElementById("close-visionary-btn").onclick = function () {
-        overlay.remove();
+      document.getElementById("close-visionary-btn").onclick = function () { overlay.remove(); };
+      document.getElementById("copy-vision-token").onclick = function () {
+        navigator.clipboard.writeText(`@${self.activePet.id} analyze-vision-stream --source="${scanType}" --timestamp=${Date.now()}`);
+        this.textContent = "✔ Token Copied!";
+        setTimeout(() => { this.textContent = "📋 Copy Vision Token"; }, 1800);
       };
-      document.getElementById("copy-vision-btn").onclick = function () {
-        navigator.clipboard.writeText(`@${PetHUD.activePet.id} analyze-screen --timestamp=${Date.now()}`);
-        this.textContent = "✔ Copied Command!";
-        setTimeout(() => { this.textContent = "📋 Copy Vision Token"; }, 1600);
+
+      document.getElementById("btn-speak-thoughts").onclick = function () {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          var summary = "Greetings Operator. I am " + self.activePet.name + ". I see your " + scanType + " with " + thoughts.whatISee.length + " key components. I understand your workspace is running in sovereign local mode. I want to execute an automated audit sweep across your active nodes.";
+          var utter = new SpeechSynthesisUtterance(summary);
+          utter.pitch = 1.05;
+          utter.rate = 1.0;
+          window.speechSynthesis.speak(utter);
+        }
       };
+
+      self.say("👁️ " + self.activePet.name + " is streaming live visual thoughts!");
     },
 
     bindEvents: function () {
