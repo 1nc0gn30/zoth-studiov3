@@ -924,6 +924,24 @@ SOVEREIGN_SPIRITS = [
 
 PET_STATE_FILE = Path.home() / ".zoth" / "active_pet.json"
 FALLBACK_PET_STATE = CORE_APP_DIR / "data" / "active_pet.json"
+CUSTOM_PETS_FILE = Path.home() / ".zoth" / "custom_pets.json"
+FALLBACK_CUSTOM_PETS = CORE_APP_DIR / "data" / "custom_pets.json"
+
+def load_all_spirits() -> list[dict[str, Any]]:
+    """Load 24 core spirits plus any user-created custom pets."""
+    spirits = list(SOVEREIGN_SPIRITS)
+    for p_file in [CUSTOM_PETS_FILE, FALLBACK_CUSTOM_PETS]:
+        if p_file.exists():
+            try:
+                custom_list = json.loads(p_file.read_text(encoding="utf-8"))
+                if isinstance(custom_list, list):
+                    for cp in custom_list:
+                        if isinstance(cp, dict) and cp.get("id"):
+                            if not any(s["id"].lower() == cp["id"].lower() for s in spirits):
+                                spirits.append(cp)
+            except Exception:
+                pass
+    return spirits
 
 def get_vector_memory_status() -> tuple[bool, str]:
     """Check if the Vector Memory Daemon (:8788) is bound and running."""
@@ -933,16 +951,17 @@ def get_vector_memory_status() -> tuple[bool, str]:
     return False, "UNBOUND [Port :8788 · Offline]"
 
 def find_spirit(query: str) -> dict[str, Any] | None:
-    """Find a spirit by ID or Name (case-insensitive fuzzy match)."""
+    """Find a spirit by ID or Name (case-insensitive fuzzy match) from core & custom spirits."""
     q = query.strip().lower()
     if not q:
         return None
+    all_s = load_all_spirits()
     # 1. Exact ID or Name match
-    for s in SOVEREIGN_SPIRITS:
+    for s in all_s:
         if s["id"].lower() == q or s["name"].lower() == q:
             return s
     # 2. Substring match
-    for s in SOVEREIGN_SPIRITS:
+    for s in all_s:
         if q in s["id"].lower() or q in s["name"].lower():
             return s
     return None
@@ -1002,7 +1021,8 @@ def cmd_pet_list(args=None):
     print(f"{BOLD}{header}{RESET}")
     print(f"  {'─'*116}")
 
-    for idx, s in enumerate(SOVEREIGN_SPIRITS, 1):
+    all_spirits_list = load_all_spirits()
+    for idx, s in enumerate(all_spirits_list, 1):
         is_active = (s["id"] == active_id)
         status_tag = f"{GOLD}{BOLD}★ [ACTIVE]{RESET}" if is_active else f"{GRAY}AVAILABLE{RESET}"
         name_padded = f"{s['name']:<18}"
