@@ -1,0 +1,3296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>⚡ Zoth Sovereign Netrunner Memory Hub | Master Azoth Core</title>
+<!-- Zoth Studio Universal Design System -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@700;800;900&display=swap" rel="stylesheet"/>
+<link href="/assets/zoth-guide.css" rel="stylesheet"/>
+<link href="/assets/zoth-theme.css" rel="stylesheet"/>
+<link href="/assets/zoth-nav.css" rel="stylesheet"/>
+<link href="/assets/zoth-tailwind-magic.css" rel="stylesheet"/>
+<!-- Three.js + OrbitControls for 3D Obsidian Graph View -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root {
+  --bg: #050508;
+  --surface: #0b0f19;
+  --surface-2: #121826;
+  --border: #1e293b;
+  --text: #f1f5f9;
+  --text-primary: #f8fafc;
+  --text-subhead: #94a3b8;
+  --muted: #64748b;
+  --gold: #fbbf24;
+  --gold-glow: rgba(251, 191, 36, 0.4);
+  --cyan: #00f0ff;
+  --cyan-glow: rgba(0, 240, 255, 0.4);
+  --purple: #c084fc;
+  --green: #34d399;
+  --font-display: "Syne", system-ui, sans-serif;
+  --font-sans: "Figtree", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Master Azoth Poster Hero */
+.azoth-poster {
+  min-height: calc(85vh - 54px);
+  display: grid;
+  grid-template-columns: minmax(20rem, 38rem) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  position: relative;
+  border-bottom: 1px solid rgba(251,191,36,0.25);
+  background: radial-gradient(circle at 20% 40%, rgba(251,191,36,0.06), transparent 60%), #050508;
+}
+.azoth-poster-copy {
+  padding: clamp(32px, 5vw, 64px) clamp(24px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 2;
+}
+.azoth-poster-copy .kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.azoth-poster h1 {
+  font-family: var(--font-display);
+  color: #fff6dc;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin: 0 0 16px;
+  font-weight: 900;
+}
+.azoth-poster .lede {
+  color: #cbd5e1;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  max-width: 34rem;
+}
+.azoth-poster-figure {
+  position: relative;
+  background: #020305;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.azoth-poster-figure img {
+  width: 100%;
+  height: 100%;
+  max-height: 540px;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 0 40px rgba(251,191,36,0.25));
+}
+.azoth-poster-figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #050508 0%, transparent 35%, transparent 65%, #050508 100%),
+              linear-gradient(180deg, transparent 60%, #050508 100%);
+  pointer-events: none;
+}
+.cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  border-radius: 10px;
+  padding: 12px 22px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-gold {
+  background: var(--gold);
+  color: #050508;
+  border: none;
+  box-shadow: 0 4px 18px var(--gold-glow);
+}
+.btn-gold:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-cyan {
+  background: linear-gradient(90deg, #00f0ff, #3b82f6);
+  color: #05070f;
+  border: none;
+  font-weight: 800;
+  box-shadow: 0 4px 18px var(--cyan-glow);
+}
+.btn-cyan:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-ghost {
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+
+@media (max-width: 900px) {
+  .azoth-poster { grid-template-columns: 1fr; min-height: auto; }
+  .azoth-poster-figure { min-height: 40vh; order: -1; }
+  .azoth-poster-copy { padding: 28px 20px 40px; }
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 960px) {
+  .grid { grid-template-columns: 1.15fr 0.85fr; }
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.toolbar input, input, textarea, select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  width: 100%;
+}
+.toolbar input { width: auto; min-width: 170px; }
+button {
+  background: linear-gradient(135deg, #fcd34d, #f59e0b);
+  color: #050508;
+  font-weight: 800;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .02em;
+}
+button.secondary {
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.mem {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--surface);
+}
+.mem + .mem { margin-top: 10px; }
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(0,240,255,0.08);
+  border: 1px solid rgba(0,240,255,0.25);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+}
+.perspectives {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+.persp {
+  border-left: 2px solid rgba(0,240,255,0.35);
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.persp-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.persp-head .role { font-weight: 700; font-size: 12px; }
+.persp-head .agent { font-size: 11px; color: var(--cyan); font-family: var(--font-mono); }
+.persp-body { color: #cbd5e1; font-size: 12px; margin-top: 4px; }
+.persp-foot { margin-top: 6px; font-size: 11px; font-weight: 600; color: var(--green); font-family: var(--font-mono); }
+.scene {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--border);
+  background: rgba(255,255,255,.03);
+  border-radius: 8px;
+}
+.scene-label { font: 700 11px var(--font-mono); color: var(--muted); text-transform: uppercase; }
+.scene-line { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.scene-center { font-size: 12px; color: var(--text); margin-top: 2px; }
+.scene-count { font: 600 11px var(--font-mono); color: var(--muted); margin-top: 4px; }
+.scene-count-effect { color: var(--cyan); }
+
+/* Master Zoth Mega Footer */
+footer.site {
+  border-top: 1px solid var(--border);
+  background: #030407;
+  padding: 64px 24px 40px;
+  margin-top: 60px;
+}
+.foot-wrap { max-width: 1200px; margin: 0 auto; position: relative; }
+.foot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 36px;
+  margin-bottom: 48px;
+}
+.foot-brand-title { font-family: var(--font-display); font-size: 18px; color: #fff; font-weight: 800; display: block; margin-top: 10px; }
+.foot-brand-desc { font-size: 12px; color: var(--muted); line-height: 1.5; display: block; margin-top: 4px; }
+.foot-col h3 { font-family: var(--font-mono); font-size: 11px; color: var(--gold); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 16px; font-weight: 700; }
+.mega-footer-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: all .15s ease;
+}
+.mega-footer-link:hover { color: var(--cyan); transform: translateX(3px); }
+.foot-bottom {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+</style>
+</head>
+<body>
+
+<!-- Zoth Universal Top Navigation Bar -->
+<header class="bar" id="topbar" role="banner" style="position:fixed;top:0;left:0;right:0;height:54px;background:rgba(5,5,8,0.92);border-bottom:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:900">
+  <a aria-label="Zoth Studio Home" class="brand js-hub" href="http://127.0.0.1:8088/" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff">
+    <img alt="Zoth Golden Z Emblem" decoding="async" height="32" src="/assets/brand/zoth-golden-z-192.png" style="border-radius:6px;box-shadow:0 0 10px rgba(251,191,36,0.3);" width="32"/>
+    <span style="font-family:var(--font-display);font-weight:800;font-size:16px;letter-spacing:-.02em">Zoth <small style="font-family:var(--font-mono);font-size:10px;color:var(--gold);font-weight:600">by NullAI</small></span>
+  </a>
+  <nav aria-label="Primary navigation" class="menu" role="navigation" style="display:flex;align-items:center;gap:18px">
+    <a class="nav-link" href="http://127.0.0.1:8088/#how-it-works" style="color:#94a3b8;font-size:13px;text-decoration:none;font-weight:600">✦ How It Works</a>
+    <a class="nav-link" href="http://127.0.0.1:8088/zoth/" style="color:#fbbf24;font-size:13px;text-decoration:none;font-weight:700">🔮 Master Azoth</a>
+    <a class="nav-link" href="http://127.0.0.1:8088/agents/" style="color:#94a3b8;font-size:13px;text-decoration:none;font-weight:600">⚡ 21 Agents</a>
+    <a class="nav-link" href="http://127.0.0.1:8088/studio/" style="color:#94a3b8;font-size:13px;text-decoration:none;font-weight:600">🛠️ Studio Workstations</a>
+    <a class="nav-link" href="/docs" style="color:var(--cyan);font-size:13px;text-decoration:none;font-weight:700">🧠 Neuroscience Docs</a>
+    <a class="nav-pill js-deck" href="http://127.0.0.1:8484/" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);color:var(--gold);padding:4px 12px;border-radius:999px;font-size:11px;font-family:var(--font-mono);text-decoration:none;font-weight:700">⚡ Deck :8484</a>
+  </nav>
+</header>
+
+<main id="main-content" style="padding-top:54px">
+
+  <!-- Master Azoth Alchemical Hero Banner (Matching official Zoth Studio aesthetics) -->
+  <section aria-label="Master Azoth Sovereign Neural Engine" class="azoth-poster">
+    <div class="azoth-poster-copy">
+      <p class="kicker"><span style="display:inline-block;width:8px;height:8px;background:var(--gold);border-radius:50%;box-shadow:0 0 8px var(--gold)"></span> PRIME COGNITIVE ARCHITECT · LOOPBACK :8788</p>
+      <h1>Master Azoth</h1>
+      <p class="lede">Sovereign alchemist and supreme tiebreaker of Zoth Studio. He weaves episodic experiences into the persistent neural graph, triggers causal STDP synapses, and grounds multi-agent memory on this machine.</p>
+      <div class="cta-group">
+        <button class="btn btn-cyan" onclick="enterMemoryWorld()">⬢ Enter 3D Netrunner World</button>
+        <a class="btn btn-gold" href="/docs">🧠 Neuroscience Whitepaper</a>
+        <a class="btn btn-ghost" href="#memory-console">⚡ Memory Console ↓</a>
+      </div>
+    </div>
+    <div class="azoth-poster-figure">
+      <img alt="Master Azoth in an alchemical mask" height="540" src="/assets/mascot/azoth-portrait.jpg"/>
+    </div>
+  </section>
+
+  <div class="wrap" id="memory-console">
+    <!-- Telemetry & Live Neural Swarm Vitals -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:20px">
+      <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(0,240,255,0.3);border-radius:12px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.4)">
+        <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-mono)">Active Memory Stratum</div>
+        <div id="statMems" style="font-size:24px;font-weight:900;color:#00f0ff;margin-top:4px;font-family:var(--font-display)">-- NODES</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px">Persistent local JSON stratum</div>
+      </div>
+      <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(167,139,250,0.3);border-radius:12px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.4)">
+        <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-mono)">Cognitive Causal Links</div>
+        <div id="statLinks" style="font-size:24px;font-weight:900;color:#c084fc;margin-top:4px;font-family:var(--font-display)">-- SYNAPSES</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px">Bidirectional before/after STDP</div>
+      </div>
+      <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(52,211,153,0.3);border-radius:12px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.4)">
+        <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-mono)">Swarm Perspectives</div>
+        <div id="statPersp" style="font-size:24px;font-weight:900;color:#34d399;margin-top:4px;font-family:var(--font-display)">-- VIEWS</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px">Azoth • Athena • Hermes • GhostByte</div>
+      </div>
+      <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(244,114,182,0.3);border-radius:12px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.4)">
+        <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-mono)">Lucy Netrunner Oracle</div>
+        <div style="font-size:18px;font-weight:900;color:#f472b6;margin-top:6px;font-family:var(--font-mono)">CODEC 141.12</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px">Trans-dimensional breach online</div>
+      </div>
+    </div>
+
+    <!-- 1-Command Universal Agent Connection Bar -->
+    <div class="panel" style="margin-bottom:20px;background:rgba(15,23,42,0.85);border:1px solid rgba(0,240,255,0.35);box-shadow:0 0 24px rgba(0,0,0,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12px;font-weight:800;color:#00f0ff;letter-spacing:.1em;font-family:var(--font-mono)">🔗 1-COMMAND UNIVERSAL AGENT INTERFACE</div>
+        <div style="font-size:12px;color:#94a3b8">Link any local AI agent, LLM prompt, or CLI in one call</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:12px">
+        <div style="background:#05070e;padding:12px 14px;border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:#a78bfa;font-weight:700;margin-bottom:6px;font-family:var(--font-mono)">BASH / CURL (STORE MEMORY)</div>
+          <code style="font-size:11px;color:#38bdf8;word-break:break-all;user-select:all;display:block;background:transparent;border:none">curl -X POST http://127.0.0.1:8788/v1/memories/encode -H "Content-Type: application/json" -d '{"agent_id":"azoth","text":"Calibrated biomorphic neural lattice","category":"coordination"}'</code>
+        </div>
+        <div style="background:#05070e;padding:12px 14px;border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:#34d399;font-weight:700;margin-bottom:6px;font-family:var(--font-mono)">PYTHON / AGENT RECALL</div>
+          <code style="font-size:11px;color:#fde047;word-break:break-all;user-select:all;display:block;background:transparent;border:none">import urllib.request, json; urllib.request.urlopen("http://127.0.0.1:8788/v1/recall", data=json.dumps({"topic":"neural"}).encode())</code>
+        </div>
+      </div>
+    </div>
+  <div class="panel" style="margin-bottom:14px;font-size:13.5px;line-height:1.65">
+    <div style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;margin-bottom:8px">What you are looking at</div>
+    <p style="margin:0 0 8px 0">This is a <b>living memory system for the Zoth Studio agent swarm</b>, modeled on how the human brain encodes, consolidates and recalls memory. Every node is a <b>memory</b>; every line is an <b>association</b> — a "before" (what caused it) or an "after" (what it enabled). Memories are encoded by agents as they work, linked by shared meaning (topics), and strengthened each time they're recalled — just as rehearsal strengthens a synapse in a real brain.</p>
+    <p style="margin:0 0 8px 0">
+      <span style="color:#fbbf24">● gold flash</span>&nbsp; = azoth &nbsp;
+      <span style="color:#ffaa40">● amber</span>&nbsp; = hermes &nbsp;
+      <span style="color:#38bdf8">● blue</span>&nbsp; = grok / athena &nbsp;
+      <span style="color:#00d4aa">● teal</span>&nbsp; = kitsune &nbsp;
+      <span style="color:#ef4444">● red</span>&nbsp; = draco —
+      when a memory is <i>used</i> by an agent, its node pulses in that agent's color, live.
+    </p>
+    <p style="margin:0"><b>Interact:</b> drag to pan · scroll to zoom · hover for a preview · click a node to see why it exists (its causes and effects). Switch layout modes above the graph to view the swarm by category clusters, tag constellations, or orbital perspectives.</p>
+    <p style="margin:10px 0 0 0"><a href="/docs/" style="color:var(--cyan)">Read the full documentation →</a> <span style="color:#8b949e">— how encoding, decay, consolidation and recall map onto the real human brain.</span></p>
+  </div>
+  <!-- Sleek 3D Obsidian Neural Graph Section -->
+  <section class="panel" style="margin-bottom:20px;border:1px solid rgba(0,240,255,0.25);box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+    <!-- Header with Live Controls -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;border-bottom:1px solid var(--border);padding-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="display:inline-block;width:10px;height:10px;background:#00f0ff;border-radius:50%;box-shadow:0 0 10px #00f0ff;animation:pulse 2s infinite"></span>
+        <h2 style="font-family:var(--font-display);font-size:16px;margin:0;font-weight:800;color:#fff;letter-spacing:.06em">3D OBSIDIAN NEURAL GRAPH</h2>
+        <span id="graph3dBadge" style="font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #34d399;color:#34d399;background:rgba(52,211,153,0.12);font-weight:700">3D WEBGL ACTIVE</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button id="toggle3dBtn" class="secondary" onclick="toggleGraph3D()" style="font-size:12px;padding:6px 12px;border-color:#00f0ff;color:#00f0ff;font-weight:700">⬢ 3D / 2D</button>
+        <button id="autoRotateBtn" class="secondary" onclick="toggleAutoRotate()" style="font-size:12px;padding:6px 12px;color:#a78bfa;border-color:rgba(167,139,250,0.4)">🔄 Rotate [ON]</button>
+        <select id="layoutMode" onchange="setLayout(this.value)" style="font-size:12px;padding:6px 10px">
+          <option value="category">Layout: Category Clusters</option>
+          <option value="orbit">Layout: Orbital Perspectives</option>
+          <option value="tags">Layout: Tag Constellations</option>
+          <option value="swarm">Layout: Agent Swarm</option>
+        </select>
+        <select id="colorMode" onchange="setColorMode(this.value)" style="font-size:12px;padding:6px 10px">
+          <option value="agent">Color: By Agent</option>
+          <option value="theme">Color: By Topic Theme</option>
+          <option value="strength">Color: By Memory Strength</option>
+        </select>
+        <button class="secondary" onclick="reset3DCamera()" style="font-size:12px;padding:6px 12px">Reset</button>
+        <button onclick="enterMemoryWorld()" style="background:var(--cyan);border:none;color:#001318;font-weight:800;padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px">⬢ Launch 3D World</button>
+      </div>
+    </div>
+
+    <!-- 3D Canvas Viewport -->
+    <div style="position:relative;width:100%;height:580px;background:#05070e;border:1px solid rgba(0,240,255,0.2);border-radius:10px;overflow:hidden;box-shadow:inset 0 0 24px rgba(0,0,0,0.8)">
+      <div id="threeGraphContainer" style="width:100%;height:100%;display:block;cursor:grab"></div>
+      <canvas id="graphCanvas" width="1100" height="580" style="display:none;width:100%;height:100%;background:#0b0d14;cursor:grab"></canvas>
+      <div id="graphTooltip" style="position:absolute;display:none;pointer-events:none;background:rgba(15,23,42,0.95);border:1px solid #00f0ff;border-radius:8px;padding:10px 14px;font-size:12px;max-width:360px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.7);backdrop-filter:blur(8px)"></div>
+    </div>
+
+    <!-- Node Inspector Telemetry Deck -->
+    <div id="graphFocus" style="margin-top:12px;padding:12px 16px;background:rgba(15,23,42,0.6);border:1px solid var(--border);border-radius:8px;font-size:12.5px;color:#94a3b8">
+      <div class="empty">Click any node to inspect its causal synapses. Drag to rotate 3D cluster · Scroll to zoom · Right-click/Shift+drag to pan.</div>
+    </div>
+  </section>
+  <div id="memoryWorld" style="display:none;position:fixed;inset:0;z-index:1000;background:#05070f;flex-direction:column">
+    <!-- Sleek, High-End Cyberpunk Glassmorphic Top HUD Console -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 18px;background:rgba(8,12,22,0.88);border-bottom:1px solid rgba(0,240,255,0.35);backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,0.6);z-index:1050">
+      <!-- Left: Brand & Telemetry Badges -->
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="display:inline-block;width:9px;height:9px;background:#00f0ff;border-radius:50%;box-shadow:0 0 10px #00f0ff;animation:pulse 2s infinite"></span>
+          <strong style="font-family:var(--font-display);font-size:13px;letter-spacing:.12em;color:#fff;font-weight:800">NETRUNNER MATRIX</strong>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px">
+          <span style="background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.4);color:var(--cyan);padding:3px 10px;border-radius:6px;font-weight:700">WASD · MOVE</span>
+          <span style="background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.4);color:#c084fc;padding:3px 10px;border-radius:6px;font-weight:700">CLICK · LOOK</span>
+          <span style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);color:var(--gold);padding:3px 10px;border-radius:6px;font-weight:700">SHIFT · SPRINT</span>
+          <span style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.4);color:#34d399;padding:3px 10px;border-radius:6px;font-weight:700">SPACE · JUMP</span>
+        </div>
+      </div>
+      
+      <!-- Right: Sector Status & Exit -->
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="hudSectorStatus" style="font-family:var(--font-mono);font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:6px">
+          <span style="color:#00f0ff">LIVE STRATUM</span> · <span id="hudCoords" style="color:#e2e8f0">X: 0 | Z: 0</span>
+        </div>
+        <button onclick="exitMemoryWorld()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.5);color:#fca5a5;padding:5px 14px;border-radius:6px;font-family:var(--font-mono);font-size:11px;font-weight:800;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">✕ EXIT MAZE</button>
+      </div>
+    </div>
+    <canvas id="worldCanvas" style="flex:1;width:100%;height:100%;cursor:crosshair"></canvas>
+    <!-- Cyberpunk x MGS Codec Communication Terminal (Stays open until dismissed with Close [X] or [C] key) -->
+    <div id="mazeSubtitle" style="display:none;position:absolute;left:50%;bottom:32px;transform:translateX(-50%);width:min(760px, 92vw);background:rgba(6,11,20,0.94);border:2px solid #00f0ff;box-shadow:0 0 28px rgba(0,240,255,0.4), inset 0 0 16px rgba(0,240,255,0.15);border-radius:8px;padding:14px 18px;color:#e6edf3;font-family:ui-monospace, monospace;z-index:1100;backdrop-filter:blur(10px)">
+      <!-- Top header bar with MGS Codec freq & Cyberpunk badge & Dismiss Controls -->
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,240,255,0.3);padding-bottom:8px;margin-bottom:10px;font-size:11px;letter-spacing:.14em">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="display:inline-block;width:8px;height:8px;background:#00f0ff;box-shadow:0 0 8px #00f0ff;border-radius:50%"></span>
+          <span id="codecChannel" style="color:#00f0ff;font-weight:700">CODEC 140.85 // MEMORY LINK</span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <span id="speakerRole" style="font-size:10px;border:1px solid #a78bfa;color:#a78bfa;padding:2px 8px;border-radius:4px">QUANTUM COGNITION</span>
+          <span style="color:rgba(255,255,255,0.6);font-size:10px">PRESS [C] TO DISMISS</span>
+          <button onclick="dismissCodec()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(0,240,255,0.4);color:#00f0ff;border-radius:4px;padding:2px 8px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700">✕ CLOSE</button>
+        </div>
+      </div>
+      <!-- Body with Portrait and Typewriter text -->
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <div id="codecAvatarWrap" style="position:relative;width:68px;height:68px;flex-shrink:0;background:#0b1320;border:1px solid #00f0ff;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(0,240,255,0.3)">
+          <img id="codecAvatar" src="https://nullai.tech/DarkMode-NullAI-Icon.png" style="width:54px;height:54px;object-fit:contain;filter:drop-shadow(0 0 6px #00f0ff) drop-shadow(0 0 12px #a78bfa)"/>
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,240,255,0.14) 2px, rgba(0,240,255,0.14) 4px);pointer-events:none"></div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span id="speakerName" style="color:#00f0ff;font-weight:800;font-size:13px;letter-spacing:.1em;text-shadow:0 0 8px rgba(0,240,255,0.6)">NULL-AI GHOST</span>
+            <div id="codecEqualizer" style="display:flex;gap:2px;align-items:flex-end;height:12px">
+              <span style="width:3px;height:12px;background:#00f0ff;animation:codecPulse 0.4s infinite alternate"></span>
+              <span style="width:3px;height:6px;background:#00f0ff;animation:codecPulse 0.6s infinite alternate"></span>
+              <span style="width:3px;height:10px;background:#a78bfa;animation:codecPulse 0.3s infinite alternate"></span>
+              <span style="width:3px;height:4px;background:#a78bfa;animation:codecPulse 0.5s infinite alternate"></span>
+            </div>
+          </div>
+          <div id="codecText" style="font-size:13px;line-height:1.55;color:#f0f6fc;word-break:break-word;text-shadow:0 0 2px rgba(255,255,255,0.2)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right-Edge Hover Detection Zone & Quick Action Sidebar -->
+    <div id="sidebarTrigger" style="position:absolute;right:0;top:50px;bottom:0;width:24px;z-index:1090"></div>
+    <div id="mazeSidebar" style="position:absolute;right:-72px;top:52px;bottom:0;width:68px;background:rgba(8,12,22,0.92);border-left:1px solid rgba(0,240,255,0.4);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:16px;z-index:1095;transition:right 0.22s cubic-bezier(0.4, 0, 0.2, 1);backdrop-filter:blur(8px);box-shadow:-6px 0 24px rgba(0,0,0,0.6)">
+      <div style="font-size:9px;color:rgba(0,240,255,0.8);letter-spacing:.1em;margin-bottom:4px;font-weight:700">SYS.OPS</div>
+      <button class="sideBtn" onclick="openGameModal('lucy3d')" title="Lucy 3D Hologram Model">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </button>
+      <button class="sideBtn" onclick="openGameModal('memories')" title="Browse Memories">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </button>
+      <button class="sideBtn" onclick="openGameModal('agents')" title="Linked Agents">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </button>
+      <button class="sideBtn" onclick="openGameModal('audio')" title="Voice & Synthesis Controls">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      </button>
+      <button class="sideBtn" onclick="openGameModal('export')" title="Export & Backup Stratum">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="sideBtn" onclick="openGameModal('settings')" title="Visual & FPS Tuning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <!-- In-Game Pop-up Modal Panel (Video game style) -->
+    <div id="gameModal" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(680px, 90vw);max-height:80vh;background:#090d16;border:2px solid #00f0ff;border-radius:10px;box-shadow:0 0 40px rgba(0,240,255,0.4), inset 0 0 20px rgba(0,0,0,0.8);z-index:1200;flex-direction:column;overflow:hidden;backdrop-filter:blur(14px)">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(0,240,255,0.1);border-bottom:1px solid rgba(0,240,255,0.3)">
+        <div id="gameModalTitle" style="font-size:14px;color:#00f0ff;font-weight:700;letter-spacing:.12em">SYSTEM OVERVIEW</div>
+        <button onclick="closeGameModal()" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#e6edf3;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit">✕ CLOSE</button>
+      </div>
+      <div id="gameModalBody" style="padding:18px;overflow-y:auto;flex:1;font-size:13px;color:#cbd5e1;line-height:1.6"></div>
+    </div>
+
+    <div id="mazeHint" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);flex-direction:column;gap:12px;pointer-events:none">
+      <div style="font-size:20px;color:#fff;font-family:ui-monospace,monospace;letter-spacing:.15em">CLICK TO ENTER THE MAZE</div>
+      <div style="font-size:13px;color:#8b949e">Every room is a memory. Doors are its links. Walk through. Move mouse to right edge for Menu.</div>
+    </div>
+  </div>
+  <!-- Clean, Tabbed Memory & Perspectives Studio Workstation -->
+  <section class="panel" style="margin-top:24px;border:1px solid rgba(251,191,36,0.3);box-shadow:0 12px 36px rgba(0,0,0,0.6)">
+    <!-- Workstation Tab Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 10px var(--gold)"></span>
+        <h2 style="font-family:var(--font-display);font-size:18px;margin:0;font-weight:800;color:#fff">MEMORY & PERSPECTIVES STUDIO</h2>
+      </div>
+      
+      <!-- Workstation Mode Switcher Tabs -->
+      <div style="display:flex;gap:6px;background:rgba(0,0,0,0.4);padding:4px;border-radius:10px;border:1px solid var(--border);flex-wrap:wrap">
+        <button id="tabBtnExplore" class="workstation-tab active" onclick="switchWorkstationTab('explore')" style="background:var(--gold);color:#050508;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer">📂 Browse Ledger</button>
+        <button id="tabBtnEncode" class="workstation-tab" onclick="switchWorkstationTab('encode')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">+ Encode Memory</button>
+        <button id="tabBtnPersp" class="workstation-tab" onclick="switchWorkstationTab('perspectives')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">👁️ Add Perspective</button>
+        <button id="tabBtnLink" class="workstation-tab" onclick="switchWorkstationTab('link')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">🔗 Causal Synapse</button>
+        <button id="tabBtnOps" class="workstation-tab" onclick="switchWorkstationTab('ops')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">⚙️ Swarm Tools</button>
+      </div>
+    </div>
+
+    <!-- TAB 1: BROWSE & FILTER MEMORIES -->
+    <div id="tabContentExplore" style="display:block">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+        <input id="search" placeholder="🔍 Search memory keywords..." style="flex:1;min-width:220px" oninput="load()"/>
+        <select id="agentFilter" onchange="load()" style="width:auto;min-width:160px">
+          <option value="">All Agents (Swarm)</option>
+          <option value="azoth">Azoth (Lead)</option>
+          <option value="athena">Athena</option>
+          <option value="hermes">Hermes</option>
+          <option value="draco">Draco</option>
+          <option value="kitsune">Kitsune</option>
+          <option value="ghostbyte">GhostByte</option>
+          <option value="zoth-docs">Zoth Docs</option>
+        </select>
+        <button class="secondary" onclick="load()" style="padding:10px 16px">Refresh</button>
+        <span class="count" id="count" style="font-family:var(--font-mono);font-size:12px;color:var(--muted)"></span>
+      </div>
+
+      <!-- Clean Cards Grid -->
+      <div id="memories" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 360px), 1fr));gap:12px;max-height:680px;overflow-y:auto;padding-right:4px"></div>
+    </div>
+
+    <!-- TAB 2: ENCODE NEW MEMORY -->
+    <div id="tabContentEncode" style="display:none;max-width:680px;margin:0 auto">
+      <form id="memoryForm" style="display:grid;gap:12px">
+        <div style="font-size:13px;color:var(--gold);font-weight:700">✍️ RECORD NEW EPISODIC MEMORY TRACE</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">AGENT ID</label>
+            <input id="agentId" placeholder="e.g. azoth, hermes, netrunner" value="azoth" required/>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">CATEGORY</label>
+            <select id="category">
+              <option value="learning">Learning / Discovery</option>
+              <option value="planning">Planning / Architecture</option>
+              <option value="building">Building / Code</option>
+              <option value="coordination">Coordination / Handoff</option>
+              <option value="debug">Debugging / Error</option>
+              <option value="general">General Memory</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">MEMORY TEXT CONTENT</label>
+          <textarea id="text" rows="4" placeholder="Describe the event, discovery, or state change..." required></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">TOPIC TAGS (COMMA-SEPARATED)</label>
+          <input id="tags" placeholder="e.g. rust, threejs, memory-palace"/>
+        </div>
+        <button type="submit" style="background:var(--gold);color:#050508;font-weight:800;padding:12px;border-radius:8px">⚡ Save to Memory Stratum</button>
+      </form>
+    </div>
+
+    <!-- TAB 3: ADD PERSPECTIVE -->
+    <div id="tabContentPerspectives" style="display:none;max-width:680px;margin:0 auto">
+      <form id="perspForm" style="display:grid;gap:12px">
+        <div style="font-size:13px;color:var(--cyan);font-weight:700">👁️ ATTACH MULTI-AGENT PERSPECTIVE</div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">TARGET MEMORY ID</label>
+          <input id="memoryId" placeholder="Paste memory ID or click 'Perspectives' on any card" required/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">OBSERVER AGENT</label>
+            <input id="pAgentId" placeholder="e.g. athena, hermes" value="athena" required/>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">ROLE</label>
+            <input id="role" placeholder="e.g. reviewer, optimizer, security" value="reviewer" required/>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">SUMMARY & INTERPRETATION</label>
+          <textarea id="summary" rows="3" placeholder="What is this agent's viewpoint on the memory?"></textarea>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">CONFIDENCE SCORE (0.00 – 1.00)</label>
+          <input id="confidence" type="number" step="0.05" min="0" max="1" value="0.95" placeholder="0.95"/>
+        </div>
+        <button type="submit" style="background:var(--cyan);color:#05070f;font-weight:800;padding:12px;border-radius:8px">👁️ Attach Immutable Perspective</button>
+      </form>
+      <div id="perspectives" style="margin-top:14px;display:grid;gap:8px"></div>
+    </div>
+
+    <!-- TAB 4: CAUSAL LINK -->
+    <div id="tabContentLink" style="display:none;max-width:680px;margin:0 auto">
+      <form id="linkForm" style="display:grid;gap:12px">
+        <div style="font-size:13px;color:var(--purple);font-weight:700">🔗 CREATE CAUSAL SYNAPSE (STDP TOPOLOGY)</div>
+        <div style="display:grid;grid-template-columns:1fr 120px 1fr;gap:10px;align-items:center">
+          <select id="linkSource" required style="font-size:12px"><option value="">Source memory...</option></select>
+          <select id="linkDirection" style="font-size:12px">
+            <option value="after">➔ Enables</option>
+            <option value="before">⬅ Caused by</option>
+          </select>
+          <select id="linkTarget" required style="font-size:12px"><option value="">Target memory...</option></select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">RATIONALE / SHARED CONCEPT</label>
+          <input id="linkReason" placeholder="e.g. shared: rustc, 3d-matrix"/>
+        </div>
+        <button type="submit" style="background:var(--purple);color:#050508;font-weight:800;padding:12px;border-radius:8px">🔗 Forge Neural Link</button>
+      </form>
+    </div>
+
+    <!-- TAB 5: SWARM TOOLS & CONSOLIDATION -->
+    <div id="tabContentOps" style="display:none;max-width:760px;margin:0 auto">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:14px">
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:6px">🧠 CONSOLIDATION BEAT</div>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 12px">Run a biological replay and decay cycle. Re-indexes topics and trims weak dormant synaptic traces.</p>
+          <button type="button" onclick="runBeat()" style="width:100%;background:var(--gold);color:#050508">⚡ Execute Memory Beat</button>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:6px">🧬 AUTO-LINK TOPICS</div>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 12px">Scan all memories and automatically establish STDP causal links between memories sharing 2+ topics.</p>
+          <button type="button" onclick="runAutoLink()" style="width:100%;background:var(--cyan);color:#05070f">🧬 Run Auto-Link</button>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px;grid-column:1/-1">
+          <div style="font-size:13px;font-weight:700;color:#34d399;margin-bottom:6px">💬 CONVERSATION TRANSCRIPT INGESTION</div>
+          <form id="conversationForm" style="display:grid;gap:10px">
+            <textarea id="conversationText" rows="4" placeholder="Paste multi-turn conversation or transcript to automatically parse into linked memories..."></textarea>
+            <div style="display:flex;gap:10px">
+              <input id="conversationAgent" placeholder="Agent ID (e.g. azoth)" value="azoth" style="max-width:200px"/>
+              <button type="submit" style="flex:1;background:#34d399;color:#050508">📥 Ingest Conversation</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Master Zoth Sovereign Mega Footer (100% matched to website) -->
+<footer class="site">
+  <div class="foot-wrap">
+    <div class="foot-grid">
+      <div class="foot-brand-col">
+        <img alt="Zoth Golden Z Emblem" class="foot-brand-logo" height="48" src="/assets/brand/zoth-golden-z-192.png" width="48" style="border-radius:8px;box-shadow:0 0 16px rgba(251,191,36,0.3)"/>
+        <strong class="foot-brand-title">Zoth Studio</strong>
+        <small class="foot-brand-desc">Local-first autonomous multi-agent engineering & biomorphic memory environment.</small>
+      </div>
+      <div class="foot-col">
+        <h3>Studio &amp; Core</h3>
+        <a class="mega-footer-link js-deck" href="http://127.0.0.1:8484/"><span>⚡</span> Operator Deck (:8484)</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/studio/"><span>🛠️</span> Studio Workstations</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/studio/site-generator.html"><span>🚀</span> Website Generator</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/studio/swarm.html"><span>🌐</span> 3D Swarm Arena</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/studio/consensus.html"><span>⚔️</span> Consensus Arena</a>
+      </div>
+      <div class="foot-col">
+        <h3>Ecosystem &amp; Agents</h3>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/zoth/"><span>🔮</span> Master Azoth Core</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/agents/"><span>🪐</span> 21-Agent Pantheon</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/pets/"><span>💎</span> Companion Pets 3D</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/vault/"><span>🔐</span> Sovereign Key Vault</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/adytum/"><span>🏛️</span> Adytum Sanctum</a>
+      </div>
+      <div class="foot-col">
+        <h3>Cognition &amp; Research</h3>
+        <a class="mega-footer-link" href="/docs"><span>🧠</span> Neuroscience Whitepaper</a>
+        <a class="mega-footer-link" href="javascript:void(0)" onclick="enterMemoryWorld()"><span>⬢</span> 3D Memory ICE Maze</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/comic/"><span>🎨</span> Anime Comic (S01)</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/signal/"><span>📡</span> Signal Command Bridge</a>
+      </div>
+      <div class="foot-col">
+        <h3>Resources &amp; Code</h3>
+        <a class="mega-footer-link" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank"><span>🐙</span> GitHub Repository ↗</a>
+        <a class="mega-footer-link" href="http://127.0.0.1:8088/docs/"><span>📚</span> Documentation Manual</a>
+        <a class="mega-footer-link" href="https://nullai.tech/" rel="noopener noreferrer" target="_blank"><span>🌐</span> NullAI Tech ↗</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <p>100% Local Sovereign Execution · Zero-Telemetry · Engineered for Pure Privacy</p>
+      <p>© 2026 NullAI Tech. Released under MIT / Open Source Sovereign Architecture.</p>
+    </div>
+  </div>
+</footer>
+<script>
+const API=window.location.origin;
+const SCENE_TEMPLATES = {
+  bug: { before: 'broken state', center: 'crash/failure', after: 'fixed state', color: '#ef4444' },
+  error: { before: 'broken state', center: 'failure', after: 'fixed state', color: '#ef4444' },
+  fix: { before: 'broken state', center: 'repair', after: 'fixed state', color: '#ef4444' },
+  idea: { before: 'unclear', center: 'emerging plan', after: 'actionable', color: '#fbbf24' },
+  plan: { before: 'unclear', center: 'planning', after: 'actionable', color: '#fbbf24' },
+  goal: { before: 'unclear', center: 'goal setting', after: 'actionable', color: '#fbbf24' },
+  learn: { before: 'unknown', center: 'discovery', after: 'known', color: '#00f0ff' },
+  research: { before: 'unknown', center: 'research', after: 'known', color: '#00f0ff' },
+  fact: { before: 'unknown', center: 'discovery', after: 'known', color: '#00f0ff' },
+  build: { before: 'empty canvas', center: 'building...', after: 'shipped', color: '#34d399' },
+  code: { before: 'empty canvas', center: 'coding', after: 'shipped', color: '#34d399' },
+  ship: { before: 'empty canvas', center: 'shipping', after: 'shipped', color: '#34d399' },
+};
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function stateColor(agent){ const colors = {azoth:'#fbbf24',athena:'#38bdf8',antigravity:'#7c9cff',hermes:'#ffaa40',draco:'#ef4444',kitsune:'#00d4aa',grok:'#38bdf8',ollama:'#34d399'}; return colors[agent] || 'var(--cyan)'; }
+function sceneFor(m){
+  const tags = (m.tags || []).map(t => t.toLowerCase());
+  const t = SCENE_TEMPLATES[tags[0]] || { before: 'prior state', center: 'transition', after: 'new state', color: '#c084fc' };
+  return `<div class="scene">
+    <div class="scene-label">Scene</div>
+    <div class="scene-line">Before: ${t.before}</div>
+    <div class="scene-center">${t.center}</div>
+    <div class="scene-line">After: ${t.after}</div>
+    ${(m.before||[]).length ? `<div class="scene-count">← ${m.before.length} cause(s)</div>` : ''}
+    ${(m.after||[]).length ? `<div class="scene-count scene-count-effect">→ ${m.after.length} effect(s)</div>` : ''}
+  </div>`;
+}
+function switchWorkstationTab(tabName){
+  const tabs = ['explore', 'encode', 'perspectives', 'link', 'ops'];
+  tabs.forEach(t => {
+    const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+    const content = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) {
+      if (t === tabName) {
+        btn.style.background = 'var(--gold)';
+        btn.style.color = '#050508';
+        btn.style.fontWeight = '800';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = '#94a3b8';
+        btn.style.fontWeight = '700';
+      }
+    }
+    if (content) content.style.display = (t === tabName) ? 'block' : 'none';
+  });
+}
+
+function cleanMemoryPreview(raw){
+  if (!raw) return '';
+  let s = String(raw).trim();
+  // Strip raw HTML tags and excessive markdown badges/links
+  s = s.replace(/<[^>]*>/g, ' ');
+  s = s.replace(/\[!\[.*?\]\(.*?\)\]\(.*?\)/g, '');
+  s = s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  s = s.replace(/[#*`>_]/g, '');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s.length > 180 ? s.slice(0, 180) + '...' : s;
+}
+
+async function load(){
+  const search = (document.getElementById('search').value || '').trim();
+  const agent = (document.getElementById('agentFilter').value || '').trim();
+  let url = API + '/v1/memories';
+  const params = new URLSearchParams();
+  if (agent) params.set('agent_id', agent);
+  if (search) params.set('q', search);
+  if (params.toString()) url += '?' + params.toString();
+  const mems = await (await fetch(url)).json();
+  graphState.mems = mems || [];
+  if (graph3D.active && graph3D.scene) {
+    updateThreeGraph(graphState.mems);
+  }
+
+  // Update Telemetry Vitals
+  let totalLinks = 0, totalPersp = 0;
+  mems.forEach(m => {
+    totalLinks += (m.before || []).length + (m.after || []).length;
+    totalPersp += (m.perspectives || []).length;
+  });
+  const statMemsEl = document.getElementById('statMems');
+  const statLinksEl = document.getElementById('statLinks');
+  const statPerspEl = document.getElementById('statPersp');
+  if (statMemsEl) statMemsEl.textContent = mems.length + ' NODES';
+  if (statLinksEl) statLinksEl.textContent = totalLinks + ' SYNAPSES';
+  if (statPerspEl) statPerspEl.textContent = totalPersp + ' VIEWS';
+  const shown = mems.slice(0, 60);
+  document.getElementById('count').textContent = mems.length + ' memories' + (mems.length > shown.length ? ' (showing ' + shown.length + ')' : '');
+  
+  // Render Clean, Modern Memory Cards
+  document.getElementById('memories').innerHTML = shown.map(m => {
+    const color = stateColor(m.agent_id);
+    const tags = (m.tags || []).slice(0, 4).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+    const cleanText = cleanMemoryPreview(m.text);
+    const linksCount = (m.before || []).length + (m.after || []).length;
+    const perspCount = (m.perspectives || []).length;
+
+    return `<div class="mem" style="background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;transition:all .2s ease" onmouseover="this.style.borderColor='${color}'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+      <div>
+        <div class="meta" style="margin-bottom:8px">
+          <span style="color:${color};font-weight:700;letter-spacing:.05em">● ${escapeHtml(m.agent_id.toUpperCase())}</span>
+          <span style="font-size:11px;color:var(--muted)">${new Date(m.created_at).toLocaleDateString()}</span>
+        </div>
+        <div style="font-size:13px;line-height:1.55;color:#e2e8f0;font-weight:500">${escapeHtml(cleanText)}</div>
+        ${tags ? `<div class="tags" style="margin-top:10px">${tags}</div>` : ''}
+      </div>
+      
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;font-family:var(--font-mono);color:var(--muted)">
+          <span style="color:var(--cyan)">${linksCount} link${linksCount===1?'':'s'}</span> · 
+          <span style="color:var(--purple)">${perspCount} view${perspCount===1?'':'s'}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="quickAddPerspective('${m.id}')" style="background:rgba(0,240,255,0.1);border:1px solid rgba(0,240,255,0.3);color:var(--cyan);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer">+ View</button>
+          <button class="secondary" onclick="loadLog('${m.id}')" style="font-size:11px;padding:4px 8px;border-radius:6px">Log</button>
+        </div>
+      </div>
+      <div id="perspectives-${m.id}" class="perspectives" style="margin-top:8px"></div>
+      <div id="log-${m.id}" style="margin-top:6px;display:grid;gap:4px"></div>
+    </div>`;
+  }).join('') || '<div class="empty">No memories match query.</div>';
+  return mems;
+}
+
+function quickAddPerspective(id){
+  switchWorkstationTab('perspectives');
+  const input = document.getElementById('memoryId');
+  if (input) {
+    input.value = id;
+    input.focus();
+  }
+}
+document.getElementById('memoryForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const tags = document.getElementById('tags').value.split(',').map(x=>x.trim()).filter(Boolean);
+  const body = { agent_id: document.getElementById('agentId').value, category: document.getElementById('category').value || undefined, text: document.getElementById('text').value, tags };
+  await fetch(API + '/v1/memories/encode', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  document.getElementById('memoryForm').reset();
+  load();
+});
+document.getElementById('conversationForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = document.getElementById('conversationText').value;
+  const agent_id = document.getElementById('conversationAgent').value || 'system';
+  await fetch(API + '/v1/conversations/ingest', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text, agent_id }) });
+  document.getElementById('conversationForm').reset();
+  load();
+});
+document.getElementById('perspForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const memory_id = document.getElementById('memoryId').value;
+  const body = { agent_id: document.getElementById('pAgentId').value, role: document.getElementById('role').value, summary: document.getElementById('summary').value || null, confidence: document.getElementById('confidence').value ? parseFloat(document.getElementById('confidence').value) : null };
+  await fetch(API + '/v1/memories/' + encodeURIComponent(memory_id) + '/perspectives', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  document.getElementById('perspForm').reset();
+  loadPerspectives(memory_id);
+});
+document.getElementById('linkForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const memory_id = document.getElementById('linkSource').value;
+  const target_id = document.getElementById('linkTarget').value;
+  const direction = document.getElementById('linkDirection').value;
+  const reason = document.getElementById('linkReason').value || '';
+  await fetch(API + '/v1/memories/' + encodeURIComponent(memory_id) + '/link', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ direction, target_id, reason }) });
+  document.getElementById('linkForm').reset();
+  load();
+});
+window.loadPerspectives = async (id) => {
+  const items = await (await fetch(API + '/v1/memories/' + encodeURIComponent(id) + '/perspectives')).json();
+  const container = document.getElementById('perspectives-' + id);
+  container.innerHTML = items.map(p => `<div class="persp">
+    <div class="persp-head"><span class="role">${escapeHtml(p.role || '')}</span><span class="agent">${escapeHtml(p.agent_id || '')}</span></div>
+    ${p.summary ? `<div class="persp-body">${escapeHtml(p.summary)}</div>` : ''}
+    <div class="persp-foot">confidence ${p.confidence ?? '—'}</div>
+  </div>`).join('') || '<div class="empty">No perspectives.</div>';
+};
+window.loadLog = async (id) => {
+  const items = await (await fetch(API + '/v1/memories/' + encodeURIComponent(id) + '/log')).json();
+  document.getElementById('log-' + id).innerHTML = items.map(x => `<div class="log-line">${new Date(x.created_at).toLocaleString()} — ${escapeHtml(x.event)} · ${escapeHtml(x.agent_id)}${x.details ? ' — ' + escapeHtml(x.details) : ''}</div>`).join('') || '<div class="empty">No log entries.</div>';
+};
+window.recallByTopic = async () => {
+  const topic = document.getElementById('recallTopic').value;
+  if (!topic) return;
+  const items = await (await fetch(API + '/v1/memories/recall?topic=' + encodeURIComponent(topic))).json();
+  document.getElementById('recallResults').innerHTML = items.map(x => `<div class="log-line">${escapeHtml(x.text)}</div>`).join('') || '<div class="empty">No recalls.</div>';
+};
+window.triggerMemory = async () => {
+  const id = document.getElementById('triggerId').value;
+  if (!id) return;
+  const data = await (await fetch(API + '/v1/memories/' + encodeURIComponent(id) + '/trigger')).json();
+  const items = data.related || [];
+  document.getElementById('triggerResults').innerHTML = items.map(x => `<div class="log-line">${escapeHtml(x.text)}</div>`).join('') || '<div class="empty">No related memories.</div>';
+};
+window.runBeat = async () => {
+  const data = await (await fetch(API + '/v1/beat/run')).json();
+  alert('Beat: ' + JSON.stringify(data));
+};
+window.ingestZothDocs = async () => {
+  const root = document.getElementById('zothDocsRoot').value || '.';
+  const data = await (await fetch(API + '/v1/zoth/ingest-docs', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ root, agent_id:'zoth-docs', patterns:['**/*.md','**/*.json','**/*.jsonl'], max_bytes:2200 }) })).json();
+  alert('Ingested docs: ' + data.encoded);
+  load();
+};
+document.getElementById('search').addEventListener('input', load);
+document.getElementById('agentFilter').addEventListener('input', load);
+const agentColors = {azoth:'#fbbf24',athena:'#38bdf8',antigravity:'#7c9cff',hermes:'#ffaa40',draco:'#ef4444',kitsune:'#00d4aa',grok:'#38bdf8',ollama:'#34d399'};
+let graphState = { mems: [], centers: {}, selected: null, hover: null,
+  view: { x: 0, y: 0, k: 1 }, dragging: false, dragMoved: false, dragStart: null,
+  needsRender: false };
+
+function requestRender(){
+  if (!graphState.needsRender) {
+    graphState.needsRender = true;
+    requestAnimationFrame(renderLoop);
+  }
+}
+function renderLoop(){
+  graphState.needsRender = false;
+  drawGraph(null);
+  const nowMs = performance.now();
+  if (Object.values(flashes).some(f => f.until > nowMs)) requestRender();
+}
+
+window.graphZoom = (factor) => {
+  const canvas = document.getElementById('graphCanvas');
+  zoomAt(canvas.clientWidth / 2, canvas.clientHeight / 2, factor);
+};
+function zoomAt(px, py, factor){
+  const v = graphState.view;
+  const k = Math.min(8, Math.max(0.12, v.k * factor));
+  const applied = k / v.k;
+  v.x = px - (px - v.x) * applied;
+  v.y = py - (py - v.y) * applied;
+  v.k = k;
+  requestRender();
+}
+window.graphReset = () => {
+  graphState.view = { x: 0, y: 0, k: 1 };
+  requestRender();
+};
+
+function nodeAt(x, y){
+  // x,y in screen space; convert to graph space; tolerance scales with zoom
+  const v = graphState.view;
+  const gx = (x - v.x) / v.k, gy = (y - v.y) / v.k;
+  const tol = 14 / v.k;
+  let best = null, bestD = Infinity;
+  for (const [id, pos] of Object.entries(graphState.centers)) {
+    const d = Math.hypot(pos.x - gx, pos.y - gy);
+    if (d <= tol && d < bestD) { best = id; bestD = d; }
+  }
+  return best;
+}
+
+function connectionsOf(id){
+  const m = graphState.mems.find(x => x.id === id);
+  if (!m) return [];
+  return [
+    ...(m.before||[]).map(b => ({ dir: 'before', id: b.id, reason: b.reason || '' })),
+    ...(m.after||[]).map(a => ({ dir: 'after', id: a.id, reason: a.reason || '' })),
+  ];
+}
+
+// ---- Layout modes & coloring ----
+graphState.mode = 'category';
+graphState.colorMode = 'agent';
+
+const THEME_COLORS = {
+  debug: '#ef4444', error: '#ef4444', fix: '#f97316',
+  planning: '#fbbf24', plan: '#fbbf24', goal: '#eab308',
+  building: '#34d399', code: '#34d399', ship: '#10b981',
+  learning: '#00f0ff', research: '#22d3ee',
+  coordination: '#a855f7', swarm: '#c084fc',
+  general: '#94a3b8',
+};
+const AGENT_COLORS = agentColors;
+function hashStr(s){
+  if (!s) return 0;
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) & 0xffffffff;
+  }
+  return Math.abs(h);
+}
+
+function colorFor(m){
+  if (graphState.colorMode === 'theme') {
+    const keys = [...(m.tags||[]), ...(m.topics||[]), m.category].map(x => String(x).toLowerCase());
+    for (const k of keys) if (THEME_COLORS[k]) return THEME_COLORS[k];
+    return '#94a3b8';
+  }
+  if (graphState.colorMode === 'strength') {
+    const s = Math.min(2, m.strength ?? 1);
+    const t = Math.max(0, Math.min(1, (s - 0.5) / 1.5)); // 0=weak 1=strong
+    const r = Math.round(148 + (251 - 148) * t);
+    const g = Math.round(163 + (191 - 163) * t);
+    const b = Math.round(184 + (36 - 184) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+  return AGENT_COLORS[m.agent_id] || '#00f0ff';
+}
+
+window.setLayout = (mode) => {
+  graphState.mode = mode;
+  _layoutCache = null;
+  if (graph3D.active) {
+    updateThreeGraph(graphState.mems);
+  } else {
+    graphReset();
+  }
+};
+window.setColorMode = (mode) => {
+  graphState.colorMode = mode;
+  if (graph3D.active) {
+    updateThreeGraph(graphState.mems);
+  } else {
+    requestRender();
+  }
+};
+
+// ================= 3D OBSIDIAN WEBGL GRAPH VIEW (THREE.JS) =================
+let graph3D = {
+  active: true,
+  autoRotate: true,
+  scene: null,
+  camera: null,
+  renderer: null,
+  controls: null,
+  nodeGroup: null,
+  linkGroup: null,
+  nodes: [], // { mesh, glowMesh, id, pos, color }
+  links: [], // { line, srcId, dstId, color }
+  raycaster: null,
+  mouse: null,
+  hoveredId: null
+};
+
+window.toggleGraph3D = () => {
+  graph3D.active = !graph3D.active;
+  const container = document.getElementById('threeGraphContainer');
+  const canvas2d = document.getElementById('graphCanvas');
+  const badge = document.getElementById('graph3dBadge');
+  const btn = document.getElementById('toggle3dBtn');
+  if (graph3D.active) {
+    if (container) container.style.display = 'block';
+    if (canvas2d) canvas2d.style.display = 'none';
+    if (badge) { badge.textContent = '3D WEBGL ACTIVE'; badge.style.color = '#34d399'; badge.style.borderColor = '#34d399'; }
+    if (btn) btn.textContent = '⬢ Switch to 2D Canvas';
+    initThreeGraph();
+    updateThreeGraph(graphState.mems);
+  } else {
+    if (container) container.style.display = 'none';
+    if (canvas2d) canvas2d.style.display = 'block';
+    if (badge) { badge.textContent = '2D CANVAS ACTIVE'; badge.style.color = '#fbbf24'; badge.style.borderColor = '#fbbf24'; }
+    if (btn) btn.textContent = '⬢ Switch to 3D WebGL';
+    requestRender();
+  }
+};
+
+window.toggleAutoRotate = () => {
+  graph3D.autoRotate = !graph3D.autoRotate;
+  const btn = document.getElementById('autoRotateBtn');
+  if (btn) {
+    btn.textContent = graph3D.autoRotate ? '🔄 Auto-Rotate [ON]' : '🔄 Auto-Rotate [OFF]';
+    btn.style.color = graph3D.autoRotate ? '#a78bfa' : '#8b949e';
+  }
+  if (graph3D.controls) graph3D.controls.autoRotate = graph3D.autoRotate;
+};
+
+window.reset3DCamera = () => {
+  if (graph3D.camera && graph3D.controls) {
+    graph3D.camera.position.set(0, 0, 480);
+    graph3D.controls.target.set(0, 0, 0);
+    graph3D.controls.update();
+  }
+};
+
+function initThreeGraph(){
+  const container = document.getElementById('threeGraphContainer');
+  if (!container || typeof THREE === 'undefined') return;
+  if (graph3D.renderer) {
+    resizeThreeGraph();
+    return;
+  }
+
+  const width = container.clientWidth || 1100;
+  const height = container.clientHeight || 580;
+
+  // Scene setup with subtle space fog
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x060912, 0.0012);
+  graph3D.scene = scene;
+
+  // Camera
+  const camera = new THREE.PerspectiveCamera(55, width / height, 1, 3000);
+  camera.position.set(0, 0, 480);
+  graph3D.camera = camera;
+
+  // WebGL Renderer with High-DPI and Anti-Aliasing
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x060912, 1);
+  container.innerHTML = '';
+  container.appendChild(renderer.domElement);
+  graph3D.renderer = renderer;
+
+  // OrbitControls
+  if (typeof THREE.OrbitControls !== 'undefined') {
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.autoRotate = graph3D.autoRotate;
+    controls.autoRotateSpeed = 0.8;
+    controls.maxDistance = 1400;
+    controls.minDistance = 60;
+    graph3D.controls = controls;
+  }
+
+  // Lighting
+  const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
+  scene.add(ambLight);
+  const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.2);
+  dirLight1.position.set(200, 300, 400);
+  scene.add(dirLight1);
+  const dirLight2 = new THREE.DirectionalLight(0xa78bfa, 0.8);
+  dirLight2.position.set(-200, -200, -300);
+  scene.add(dirLight2);
+
+  // Groups
+  graph3D.nodeGroup = new THREE.Group();
+  graph3D.linkGroup = new THREE.Group();
+  scene.add(graph3D.linkGroup);
+  scene.add(graph3D.nodeGroup);
+
+  // Raycaster & Mouse for 3D picking & hovering
+  graph3D.raycaster = new THREE.Raycaster();
+  graph3D.raycaster.params.Points.threshold = 4;
+  graph3D.mouse = new THREE.Vector2();
+
+  // Event Listeners for 3D interaction
+  const dom = renderer.domElement;
+  dom.addEventListener('mousemove', onThreeMouseMove);
+  dom.addEventListener('click', onThreeClick);
+  window.addEventListener('resize', resizeThreeGraph);
+
+  // Animation Loop
+  animateThreeGraph();
+}
+
+function resizeThreeGraph(){
+  const container = document.getElementById('threeGraphContainer');
+  if (!container || !graph3D.renderer || !graph3D.camera) return;
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  graph3D.camera.aspect = width / height;
+  graph3D.camera.updateProjectionMatrix();
+  graph3D.renderer.setSize(width, height);
+}
+
+function onThreeMouseMove(e){
+  const container = document.getElementById('threeGraphContainer');
+  if (!container || !graph3D.camera) return;
+  const rect = container.getBoundingClientRect();
+  graph3D.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  graph3D.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+  graph3D.raycaster.setFromCamera(graph3D.mouse, graph3D.camera);
+  const meshes = graph3D.nodes.map(n => n.mesh);
+  const intersects = graph3D.raycaster.intersectObjects(meshes);
+
+  if (intersects.length > 0) {
+    const hit = intersects[0].object;
+    const nodeObj = graph3D.nodes.find(n => n.mesh === hit);
+    if (nodeObj && nodeObj.id !== graph3D.hoveredId) {
+      graph3D.hoveredId = nodeObj.id;
+      graphState.hover = nodeObj.id;
+      updateTooltip(nodeObj.id, e);
+      container.style.cursor = 'pointer';
+      highlight3DConnections(nodeObj.id);
+    }
+  } else {
+    if (graph3D.hoveredId) {
+      graph3D.hoveredId = null;
+      graphState.hover = null;
+      hideTooltip();
+      container.style.cursor = 'grab';
+      highlight3DConnections(graphState.selected);
+    }
+  }
+}
+
+function onThreeClick(e){
+  if (graph3D.hoveredId) {
+    graphState.selected = graph3D.hoveredId;
+    renderFocusPanel();
+    highlight3DConnections(graph3D.hoveredId);
+    // Visual feedback: brief scale punch
+    const targetNode = graph3D.nodes.find(n => n.id === graph3D.hoveredId);
+    if (targetNode) {
+      targetNode.mesh.scale.set(1.8, 1.8, 1.8);
+    }
+  } else {
+    graphState.selected = null;
+    renderFocusPanel();
+    highlight3DConnections(null);
+  }
+}
+
+function highlight3DConnections(focusId){
+  const focusSet = new Set();
+  if (focusId) {
+    focusSet.add(focusId);
+    for (const c of connectionsOf(focusId)) focusSet.add(c.id);
+  }
+
+  // Adjust node scale & glow
+  for (const n of graph3D.nodes) {
+    const isFocus = focusId && n.id === focusId;
+    const isConnected = focusSet.has(n.id);
+    const targetScale = isFocus ? 1.6 : (isConnected ? 1.25 : (focusId ? 0.75 : 1.0));
+    n.mesh.scale.set(targetScale, targetScale, targetScale);
+    if (n.glowMesh) {
+      n.glowMesh.visible = !focusId || isConnected;
+      n.glowMesh.scale.set(targetScale * 1.5, targetScale * 1.5, targetScale * 1.5);
+    }
+  }
+
+  // Adjust link visibility / opacity
+  for (const l of graph3D.links) {
+    const isLinked = focusId && (l.srcId === focusId || l.dstId === focusId);
+    l.line.material.opacity = focusId ? (isLinked ? 0.95 : 0.08) : 0.35;
+    l.line.material.linewidth = isLinked ? 2 : 1;
+  }
+}
+
+function updateThreeGraph(mems){
+  if (!graph3D.scene || !mems || !mems.length) return;
+
+  // Clear existing 3D nodes & links
+  while (graph3D.nodeGroup.children.length) {
+    const obj = graph3D.nodeGroup.children[0];
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) obj.material.dispose();
+    graph3D.nodeGroup.remove(obj);
+  }
+  while (graph3D.linkGroup.children.length) {
+    const obj = graph3D.linkGroup.children[0];
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) obj.material.dispose();
+    graph3D.linkGroup.remove(obj);
+  }
+  graph3D.nodes = [];
+  graph3D.links = [];
+
+  // Compute 3D volumetric coordinates for each cluster & memory
+  const layout = compute3DLayout(mems, graphState.mode);
+  const sphereGeo = new THREE.SphereGeometry(3.6, 16, 16);
+  const glowGeo = new THREE.SphereGeometry(6.2, 12, 12);
+
+  // Build high-quality 3D Node spheres
+  for (const m of mems) {
+    const pos = layout.positions[m.id];
+    if (!pos) continue;
+
+    const hexColor = colorFor(m);
+    const colObj = new THREE.Color(hexColor);
+
+    // Inner glossy emissive core
+    const mat = new THREE.MeshPhongMaterial({
+      color: colObj,
+      emissive: colObj,
+      emissiveIntensity: 0.65,
+      shininess: 90,
+      specular: 0xffffff
+    });
+    const mesh = new THREE.Mesh(sphereGeo, mat);
+    mesh.position.set(pos.x, pos.y, pos.z);
+
+    // Outer soft volumetric glow aura
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: colObj,
+      transparent: true,
+      opacity: 0.28,
+      wireframe: true
+    });
+    const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+    glowMesh.position.set(pos.x, pos.y, pos.z);
+
+    graph3D.nodeGroup.add(mesh);
+    graph3D.nodeGroup.add(glowMesh);
+
+    graph3D.nodes.push({
+      mesh,
+      glowMesh,
+      id: m.id,
+      pos,
+      color: colObj,
+      baseColor: colObj
+    });
+  }
+
+  // Build glowing 3D Link lines
+  for (const m of mems) {
+    const pA = layout.positions[m.id];
+    if (!pA) continue;
+
+    // "After" and "Before" associations
+    const allLinks = [
+      ...(m.after || []).map(a => ({ target: a.id, isAfter: true })),
+      ...(m.before || []).map(b => ({ target: b.id, isAfter: false }))
+    ];
+
+    for (const link of allLinks) {
+      const pB = layout.positions[link.target];
+      if (!pB) continue;
+
+      const lineGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(pA.x, pA.y, pA.z),
+        new THREE.Vector3(pB.x, pB.y, pB.z)
+      ]);
+      const lineColor = link.isAfter ? 0x00f0ff : 0xfbbf24;
+      const lineMat = new THREE.LineBasicMaterial({
+        color: lineColor,
+        transparent: true,
+        opacity: 0.35
+      });
+      const line = new THREE.Line(lineGeo, lineMat);
+      graph3D.linkGroup.add(line);
+      graph3D.links.push({ line, srcId: m.id, dstId: link.target, color: lineColor });
+    }
+  }
+
+  highlight3DConnections(graphState.selected);
+}
+
+function compute3DLayout(mems, mode){
+  const positions = {};
+  const R = 220; // 3D Sphere radius
+
+  if (mode === 'swarm') {
+    // 3D Agent constellation rings
+    const agents = [...new Set(mems.map(m => m.agent_id || 'unknown'))];
+    agents.forEach((ag, i) => {
+      const phi = (i / agents.length) * Math.PI * 2;
+      const ax = Math.cos(phi) * R * 0.9;
+      const az = Math.sin(phi) * R * 0.9;
+      const ay = ((i % 3) - 1) * 70;
+      mems.filter(m => (m.agent_id||'unknown') === ag).forEach((m, idx) => {
+        const seed = hashStr(m.id);
+        const theta = ((seed % 360) / 360) * Math.PI * 2;
+        const rad = 25 + (Math.abs(seed >> 4) % 65);
+        positions[m.id] = {
+          x: ax + Math.cos(theta) * rad,
+          y: ay + Math.sin(theta) * rad * 0.7,
+          z: az + Math.sin(theta) * rad
+        };
+      });
+    });
+  } else if (mode === 'orbit') {
+    // 3D Orbital solar system
+    mems.forEach((m, idx) => {
+      const seed = hashStr(m.id);
+      const theta = ((seed % 360) / 360) * Math.PI * 2;
+      const phi = (((seed >> 6) % 180) / 180) * Math.PI;
+      const rad = 40 + ((seed >> 2) % 200);
+      positions[m.id] = {
+        x: Math.sin(phi) * Math.cos(theta) * rad,
+        y: Math.cos(phi) * rad * 0.6,
+        z: Math.sin(phi) * Math.sin(theta) * rad
+      };
+    });
+  } else {
+    // Category 3D spherical clusters (default)
+    const categories = [...new Set(mems.map(m => m.category || 'general'))];
+    categories.forEach((cat, i) => {
+      const phi = Math.acos(-1 + (2 * i) / categories.length);
+      const theta = Math.sqrt(categories.length * Math.PI) * phi;
+      const cx = R * 0.85 * Math.cos(theta) * Math.sin(phi);
+      const cy = R * 0.65 * Math.sin(theta) * Math.sin(phi);
+      const cz = R * 0.85 * Math.cos(phi);
+
+      mems.filter(m => (m.category||'general') === cat).forEach(m => {
+        const seed = hashStr(m.id);
+        const u = ((seed % 360) / 360) * Math.PI * 2;
+        const v = (((seed >> 4) % 180) / 180) * Math.PI;
+        const spread = 20 + ((seed >> 8) % 55);
+        positions[m.id] = {
+          x: cx + Math.sin(v) * Math.cos(u) * spread,
+          y: cy + Math.cos(v) * spread * 0.8,
+          z: cz + Math.sin(v) * Math.sin(u) * spread
+        };
+      });
+    });
+  }
+
+  return { positions };
+}
+
+function animateThreeGraph(){
+  requestAnimationFrame(animateThreeGraph);
+  if (!graph3D.active || !graph3D.renderer || !graph3D.scene || !graph3D.camera) return;
+
+  if (graph3D.controls) {
+    graph3D.controls.update();
+  }
+
+  // Gentle floating oscillation for nodes
+  const time = performance.now() * 0.0015;
+  if (graph3D.nodeGroup) {
+    // Individual pulse on hovered / active
+    for (let i = 0; i < graph3D.nodes.length; i++) {
+      const n = graph3D.nodes[i];
+      if (n.glowMesh && n.glowMesh.visible) {
+        const pulse = 1.0 + 0.15 * Math.sin(time * 3 + i);
+        n.glowMesh.scale.set(pulse, pulse, pulse);
+      }
+    }
+  }
+
+  graph3D.renderer.render(graph3D.scene, graph3D.camera);
+}
+
+function drawGraph(mems){
+  if (mems) { graphState.mems = mems; }
+  mems = graphState.mems;
+
+  if (graph3D.active) {
+    if (!graph3D.renderer) initThreeGraph();
+    updateThreeGraph(mems);
+    return;
+  }
+
+  const canvas = document.getElementById('graphCanvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  if (!_canvasSetup || _canvasSetup.w !== rect.width || _canvasSetup.h !== rect.height || _canvasSetup.dpr !== dpr) {
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    _canvasSetup = { w: rect.width, h: rect.height, dpr };
+  }
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0,0,rect.width,rect.height);
+
+  if (!mems.length) {
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '12px ui-sans-serif,system-ui';
+    ctx.fillText('No memories to graph.', 16, 24);
+    return;
+  }
+
+  // ---- Layout (cached per dataset+mode, deterministic) ----
+  const cacheKey = mems.length + '|' + graphState.mode;
+  if (!_layoutCache || _layoutCache.key !== cacheKey) {
+    _layoutCache = computeLayout(mems, graphState.mode);
+  }
+  const { centers } = _layoutCache;
+  graphState.centers = centers;
+
+  const focusId = graphState.selected || graphState.hover;
+  const focusSet = new Set();
+  if (focusId) {
+    focusSet.add(focusId);
+    for (const c of connectionsOf(focusId)) focusSet.add(c.id);
+  }
+  const v = graphState.view;
+
+  ctx.save();
+  ctx.translate(v.x, v.y);
+  ctx.scale(v.k, v.k);
+
+  // Links — single path pass, dimmed when focused
+  const linksBefore = [], linksAfter = [];
+  mems.forEach(m => {
+    (m.before || []).forEach(b => {
+      const a = centers[m.id], c = centers[b.id];
+      if (!a || !c) return;
+      linksBefore.push([a, c, focusId && (m.id === focusId || b.id === focusId)]);
+    });
+    (m.after || []).forEach(a => {
+      const s = centers[m.id], d = centers[a.id];
+      if (!s || !d) return;
+      linksAfter.push([s, d, focusId && (m.id === focusId || a.id === focusId)]);
+    });
+  });
+  ctx.lineWidth = 1 / v.k;
+  ctx.strokeStyle = 'rgba(148,163,184,0.18)';
+  ctx.beginPath();
+  for (const [a, c, focused] of linksBefore) {
+    if (focusId && !focused) continue;
+    ctx.moveTo(a.x, a.y); ctx.lineTo(c.x, c.y);
+  }
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,240,255,0.25)';
+  ctx.beginPath();
+  for (const [s, d, focused] of linksAfter) {
+    if (focusId && !focused) continue;
+    ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y);
+  }
+  ctx.stroke();
+
+  // Highlighted focus links on top
+  if (focusId) {
+    ctx.lineWidth = 2 / v.k;
+    ctx.strokeStyle = 'rgba(251,191,36,0.85)';
+    ctx.beginPath();
+    for (const [a, c, focused] of linksBefore) {
+      if (!focused) continue;
+      ctx.moveTo(a.x, a.y); ctx.lineTo(c.x, c.y);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,240,255,0.9)';
+    ctx.beginPath();
+    for (const [s, d, focused] of linksAfter) {
+      if (!focused) continue;
+      ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y);
+    }
+    ctx.stroke();
+  }
+
+  // Nodes — batched by color group, no shadowBlur (perf killer)
+  const rBase = 5;
+  const nowMs = performance.now();
+  // expire old flashes
+  for (const [id, f] of Object.entries(flashes)) {
+    if (f.until < nowMs) delete flashes[id];
+  }
+  const groups = {};
+  mems.forEach(m => {
+    const pos = centers[m.id];
+    if (!pos) return;
+    const color = colorFor(m);
+    (groups[color] = groups[color] || []).push([pos, m]);
+  });
+  // Flash halos under nodes + persistent recently-used glow
+  for (const [id, f] of Object.entries(flashes)) {
+    const pos = centers[id];
+    if (!pos) continue;
+    const startMs = f.until - 1600;
+    const age = (nowMs - startMs) / 1600;
+    if (age <= 1) {
+      const alpha = Math.max(0, 1 - age);
+      ctx.fillStyle = f.color;
+      ctx.globalAlpha = alpha * 0.5;
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, rBase + 8 + age * 16, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = alpha * 0.25;
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, rBase + 3, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+    } else {
+      // slow fade of "recently used" halo over the next 60s
+      const sinceEnd = (nowMs - f.until) / 1000;
+      if (sinceEnd < 60) {
+        ctx.strokeStyle = f.color;
+        ctx.globalAlpha = 0.35 * (1 - sinceEnd / 60);
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, rBase + 6, 0, Math.PI*2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      } else delete flashes[id];
+    }
+  }
+  const labelLimit = 90 / v.k > 20;
+  for (const [color, items] of Object.entries(groups)) {
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.92;
+    ctx.beginPath();
+    for (const [pos] of items) {
+      ctx.moveTo(pos.x + rBase, pos.y);
+      ctx.arc(pos.x, pos.y, rBase, 0, Math.PI*2);
+    }
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  // Focus ring
+  if (focusId && centers[focusId]) {
+    const p = centers[focusId];
+    ctx.strokeStyle = graphState.selected ? '#fbbf24' : 'rgba(255,255,255,.85)';
+    ctx.lineWidth = 2 / v.k;
+    ctx.beginPath(); ctx.arc(p.x, p.y, rBase + 5, 0, Math.PI*2); ctx.stroke();
+  }
+  // Labels only when zoomed in enough (clutter control)
+  if (v.k > 1.6) {
+    ctx.fillStyle = '#e6edf3';
+    ctx.font = `${Math.max(9, 10 / v.k)}px ui-monospace, monospace`;
+    let count = 0;
+    for (const m of mems) {
+      if (count++ > 400) break;
+      const pos = centers[m.id];
+      if (!pos) continue;
+      ctx.fillText(m.id.slice(0,6), pos.x + 9, pos.y + 3);
+    }
+  }
+  // Cluster labels
+  if (_layoutCache.labels) {
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px ui-monospace, monospace';
+    for (const [text, lx, ly] of _layoutCache.labels) {
+      ctx.fillText(text, lx, ly);
+    }
+  }
+
+  ctx.restore();
+}
+
+let _canvasSetup = null;
+let _layoutCache = null;
+
+// ---- Pointer interaction: smooth pan + wheel zoom + stable hover ----
+function bindGraphEvents(){
+  const canvas = document.getElementById('graphCanvas');
+  if (!canvas || canvas._bound) return;
+  canvas._bound = true;
+
+  canvas.addEventListener('mousedown', e => {
+    graphState.dragging = true;
+    graphState.dragMoved = false;
+    graphState.dragStart = { x: e.offsetX, y: e.offsetY, vx: graphState.view.x, vy: graphState.view.y };
+    canvas.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', e => {
+    if (graphState.dragging) {
+      const dx = e.clientX - canvas.getBoundingClientRect().left - graphState.dragStart.x;
+      const dy = e.clientY - canvas.getBoundingClientRect().top - graphState.dragStart.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) graphState.dragMoved = true;
+      graphState.view.x = graphState.dragStart.vx + dx;
+      graphState.view.y = graphState.dragStart.vy + dy;
+      requestRender();
+      return;
+    }
+    if (e.target !== canvas) {
+      if (graphState.hover) { graphState.hover = null; requestRender(); }
+      return;
+    }
+    const id = nodeAt(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
+    if (id !== graphState.hover) {
+      graphState.hover = id;
+      updateTooltip(id, e);
+      requestRender();
+    } else if (id) {
+      updateTooltip(id, e);
+    }
+  });
+  window.addEventListener('mouseup', e => {
+    if (graphState.dragging && !graphState.dragMoved) {
+      // treat as click
+      const rect = canvas.getBoundingClientRect();
+      const id = nodeAt(e.clientX - rect.left, e.clientY - rect.top);
+      graphState.selected = (id && id !== graphState.selected) ? id : null;
+      renderFocusPanel();
+    }
+    graphState.dragging = false;
+    canvas.style.cursor = 'grab';
+  });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    zoomAt(e.clientX - rect.left, e.clientY - rect.top, e.deltaY < 0 ? 1.15 : 0.87);
+  }, { passive: false });
+  canvas.addEventListener('mouseleave', () => {
+    if (graphState.hover) { graphState.hover = null; hideTooltip(); requestRender(); }
+  });
+}
+
+function updateTooltip(id, ev){
+  const tip = document.getElementById('graphTooltip');
+  if (!tip) return;
+  if (!id) { hideTooltip(); return; }
+  const m = graphState.mems.find(x => x.id === id);
+  if (!m) { hideTooltip(); return; }
+  const n = connectionsOf(id).length;
+  tip.innerHTML = `<b style="color:${agentColors[m.agent_id] || '#00f0ff'}">${escapeHtml(m.agent_id)}</b> · ${escapeHtml(m.category || 'general')} · ${n} link(s)<br/>${escapeHtml(m.text.slice(0,140))}${m.text.length>140?'…':''}`;
+  tip.style.display = 'block';
+  const wrap = tip.parentElement.getBoundingClientRect();
+  const cx = ev.clientX - wrap.left + 14, cy = ev.clientY - wrap.top + 14;
+  tip.style.left = Math.min(cx, wrap.width - 360) + 'px';
+  tip.style.top = cy + 'px';
+}
+function hideTooltip(){
+  const tip = document.getElementById('graphTooltip');
+  if (tip) tip.style.display = 'none';
+}
+
+function renderFocusPanel(){
+  const panel = document.getElementById('graphFocus');
+  if (!panel) return;
+  const id = graphState.selected;
+  if (!id) { panel.innerHTML = '<div class="empty">Click a node to inspect its connections.</div>'; return; }
+  const m = graphState.mems.find(x => x.id === id);
+  if (!m) { panel.innerHTML = '<div class="empty">Memory not found.</div>'; return; }
+  const conns = connectionsOf(id);
+  panel.innerHTML = `
+    <div class="mem" style="margin-bottom:8px">
+      <div class="meta"><span>${escapeHtml(m.category || 'general')} · ${escapeHtml(m.agent_id)}</span><span>strength ${(m.strength ?? 1).toFixed(2)}</span></div>
+      <div style="margin-top:6px">${escapeHtml(m.text.slice(0, 220))}${m.text.length > 220 ? '…' : ''}</div>
+      <div style="margin-top:6px;font-size:11px;color:#8b949e">id ${id}</div>
+    </div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8b949e;margin-bottom:4px">${conns.length} connection(s)</div>
+    ${conns.map(c => {
+      const t = graphState.mems.find(x => x.id === c.id);
+      return `<div class="log-line"><b style="color:${c.dir === 'before' ? '#fbbf24' : '#00f0ff'}">${c.dir}</b> → ${escapeHtml(t ? (t.text.slice(0,80) + (t.text.length > 80 ? '…' : '')) : c.id.slice(0,8))}${c.reason ? ` <i>(${escapeHtml(c.reason)})</i>` : ''}</div>`;
+    }).join('') || '<div class="empty">No links yet.</div>'}`;
+}
+
+function fillMemorySelects(mems){
+  const opts = mems.slice(0, 300).map(m => {
+    const label = (m.text.slice(0, 60) + (m.text.length > 60 ? '…' : '')) + ' [' + (m.category || 'general') + ']';
+    return `<option value="${m.id}">${escapeHtml(label)}</option>`;
+  }).join('');
+  for (const selId of ['linkSource', 'linkTarget', 'memoryId', 'triggerId']) {
+    const sel = document.getElementById(selId);
+    if (!sel) continue;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">' + (selId === 'memoryId' ? 'Pick memory for perspective...' : selId === 'triggerId' ? 'Pick memory to trigger...' : 'Pick memory...') + '</option>' + opts;
+    if (current) sel.value = current;
+  }
+}
+
+window.runAutoLink = async () => {
+  const data = await (await fetch(API + '/v1/autolink', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ min_shared: 1 }) })).json();
+  alert('Auto-linked pairs: ' + (data.links_created ?? JSON.stringify(data)));
+  load();
+};
+
+(async () => {
+  const mems = await load();
+  fillMemorySelects(mems || []);
+  if (graph3D.active) {
+    initThreeGraph();
+    updateThreeGraph(mems || []);
+  } else {
+    drawGraph(mems || []);
+  }
+  renderFocusPanel();
+  bindGraphEvents();
+  connectEventStream();
+})();
+
+
+// ================= MEMORY MAZE WORLD =================
+// Each memory = an enclosed room. Doors in walls = links to other memories.
+// Inside a room: floating data panel with relative work / config / debug context.
+let world3d = null;
+let _nullai_ghost_img = null;
+let _lucy_oracle_img = null;
+(() => {
+  const img1 = new Image();
+  img1.src = '/assets/nullai.png';
+  img1.onload = () => { _nullai_ghost_img = img1; };
+
+  const img2 = new Image();
+  img2.src = '/assets/lucy.png';
+  img2.onload = () => { _lucy_oracle_img = img2; };
+})();
+
+window.enterMemoryWorld = () => {
+  const overlay = document.getElementById('memoryWorld');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+  if (!world3d) {
+    world3d = initWorld();
+  } else {
+    // Rebuild maze with complete up-to-date memory stratum
+    buildMaze(world3d);
+  }
+  world3d.running = true;
+  loopWorld();
+};
+
+window.exitMemoryWorld = () => {
+  const overlay = document.getElementById('memoryWorld');
+  if (overlay) overlay.style.display = 'none';
+  if (world3d) {
+    world3d.running = false;
+    if (document.pointerLockElement) document.exitPointerLock();
+  }
+};
+
+const ROOM = 340;          // room size (walls at ±ROOM/2)
+const HALF = ROOM / 2;
+
+function initWorld(){
+  const canvas = document.getElementById('worldCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Cybernetic ambient dust motes
+  const particles = [];
+  for (let i = 0; i < 180; i++) {
+    particles.push({
+      x: (Math.random() - 0.5) * 3600,
+      y: -HALF + Math.random() * ROOM,
+      z: (Math.random() - 0.5) * 3600,
+      vx: (Math.random() - 0.5) * 18,
+      vy: (Math.random() - 0.5) * 12,
+      vz: (Math.random() - 0.5) * 18,
+      size: 1.2 + Math.random() * 2.2,
+      hue: Math.random() > 0.5 ? 185 : 280, // Cyan & Neon Violet motes
+      alpha: 0.25 + Math.random() * 0.55
+    });
+  }
+
+  const st = {
+    canvas, ctx, running: true,
+    rooms: [], roomAt: {}, edges: [],
+    cam: { x: 0, y: -40, z: 0 }, keys: {}, yaw: 0, pitch: 0,
+    locked: false, currentRoom: null, glitchSeed: 0,
+    showMap: false,
+    particles,
+    ghost: { x: 0, y: -50, z: 0, radius: 90, pulse: 0, phase: 0, alpha: 0.5, speed: 0.0009, dir: 1, angle: 0 },
+    lucyHolo: { x: 0, y: -45, z: 0, alpha: 0.0, targetAlpha: 0.0, angle: 0 }
+  };
+  buildMaze(st);
+  if (st.rooms && st.rooms.length > 0) {
+    const hub = st.rooms.reduce((a,b) => (b.links.length > a.links.length ? b : a), st.rooms[0]);
+    if (hub) {
+      st.cam = { x: hub.x, y: -40, z: hub.z };
+      st.ghost.x = hub.x; st.ghost.z = hub.z;
+      st.lucyHolo.x = hub.x; st.lucyHolo.z = hub.z;
+    }
+  }
+  bindMazeInput(st);
+  resizeWorld(st);
+  return st;
+}
+
+function buildMaze(st){
+  // Reset existing maze structures
+  st.rooms = [];
+  st.roomAt = {};
+
+  // Grid placement: Layout ALL memories in the database as an expansive Cyberpunk Megacity
+  let mems = graphState.mems && graphState.mems.length ? graphState.mems : [];
+  if (!mems.length) {
+    mems = [{
+      id: "genesis-01",
+      agent_id: "netrunner",
+      category: "genesis",
+      text: "Neural matrix initialized. Standby for memory encoding.",
+      strength: 1.0,
+      tags: ["genesis"],
+      topics: ["initialization"],
+      before: [],
+      after: []
+    }];
+  }
+  const adj = {};
+  mems.forEach(m => adj[m.id] = []);
+  const linkDir = {};
+  mems.forEach(m => {
+    (m.after||[]).forEach(a => { if (adj[a.id] !== undefined) { adj[m.id].push(a.id); adj[a.id].push(m.id); linkDir[m.id+'|'+a.id]='after'; } });
+    (m.before||[]).forEach(b => { if (adj[b.id] !== undefined) { adj[m.id].push(b.id); adj[b.id].push(m.id); linkDir[m.id+'|'+b.id]='before'; } });
+  });
+  mems.sort((a,b) => ((b.after||[]).length + (b.before||[]).length) - ((a.after||[]).length + (a.before||[]).length));
+  const startId = mems[0] ? mems[0].id : "genesis-01";
+  const placed = { [startId]: [0, 0] };
+  const queue = [startId];
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
+  while (queue.length) {
+    const cur = queue.shift();
+    const [cx, cz] = placed[cur];
+    let slot = 0;
+    for (const nb of adj[cur]) {
+      if (placed[nb]) continue;
+      // try directions in order until free
+      let placedNb = false;
+      for (let tries = 0; tries < dirs.length && !placedNb; tries++) {
+        const d = dirs[(slot + tries) % dirs.length];
+        const nx = cx + d[0], nz = cz + d[1];
+        if (!Object.values(placed).some(([px,pz]) => px===nx && pz===nz)) {
+          placed[nb] = [nx, nz];
+          queue.push(nb);
+          placedNb = true;
+        }
+      }
+      slot++;
+    }
+  }
+  // leftover unlinked memories: spiral outward
+  let ring = 2, ang = 0;
+  for (const m of mems) {
+    if (placed[m.id]) continue;
+    while (true) {
+      const nx = Math.round(Math.cos(ang) * ring), nz = Math.round(Math.sin(ang) * ring);
+      ang += 2.4; if (ang > Math.PI*2) { ang = 0; ring++; }
+      if (!Object.values(placed).some(([px,pz]) => px===nx && pz===nz)) {
+        placed[m.id] = [nx, nz];
+        break;
+      }
+    }
+  }
+  // Build rooms
+  const catHue = {};
+  mems.forEach(m => {
+    const c = m.category || 'general';
+    if (!(c in catHue)) catHue[c] = Object.keys(catHue).length;
+  });
+  for (const m of mems) {
+    const [gx, gz] = placed[m.id];
+    const room = {
+      m, gx, gz,
+      x: gx * ROOM, z: gz * ROOM,
+      y: 0,
+      doors: [],   // {side:'N|S|E|W', target}
+      links: adj[m.id],
+      idx: catHue[m.category || 'general'],
+    };
+    st.roomAt[m.id] = room;
+    st.rooms.push(room);
+  }
+  // Doors: for every link, put doors on facing walls, AND ensure corridor openings to adjacent grid rooms
+  for (const m of mems) {
+    const r = st.roomAt[m.id];
+    // 1. Direct explicit links
+    for (const nb of adj[m.id]) {
+      const nr = st.roomAt[nb];
+      if (!nr) continue;
+      const dx = nr.gx - r.gx, dz = nr.gz - r.gz;
+      let side = dx === 1 ? 'E' : dx === -1 ? 'W' : dz === 1 ? 'S' : dz === -1 ? 'N' : null;
+      if (side && !r.doors.some(d => d.side === side && d.target === nb)) {
+        r.doors.push({ side, target: nb, label: nr.m.category || 'link' });
+        const opp = side === 'E' ? 'W' : side === 'W' ? 'E' : side === 'S' ? 'N' : 'S';
+        if (!nr.doors.some(d => d.side === opp && d.target === m.id)) {
+          nr.doors.push({ side: opp, target: m.id, label: r.m.category || 'link' });
+        }
+      } else if (!side && !r.doors.some(d => d.target === nb)) {
+        // non-adjacent link: portal door on a wall
+        const sides = ['N','S','E','W'];
+        const s2 = sides[Math.abs(hashStr(m.id + nb)) % 4];
+        r.doors.push({ side: s2, target: nb, portal: true, label: nr.m.category || 'portal' });
+      }
+    }
+
+    // 2. Physical grid connectivity: Ensure all geometrically adjacent rooms have open archways/corridor doors
+    const neighborOffsets = [
+      { dx: 1, dz: 0, side: 'E', opp: 'W' },
+      { dx: -1, dz: 0, side: 'W', opp: 'E' },
+      { dx: 0, dz: 1, side: 'S', opp: 'N' },
+      { dx: 0, dz: -1, side: 'N', opp: 'S' }
+    ];
+    for (const off of neighborOffsets) {
+      const neighborRoom = st.rooms.find(other => other.gx === r.gx + off.dx && other.gz === r.gz + off.dz);
+      if (neighborRoom) {
+        if (!r.doors.some(d => d.side === off.side)) {
+          r.doors.push({ side: off.side, target: neighborRoom.m.id, isGridDoor: true, label: neighborRoom.m.category || 'grid' });
+        }
+        if (!neighborRoom.doors.some(d => d.side === off.opp)) {
+          neighborRoom.doors.push({ side: off.opp, target: r.m.id, isGridDoor: true, label: r.m.category || 'grid' });
+        }
+      }
+    }
+
+    // 3. Special Scenic World Warp Gateways (Sketchfab 3D Realms)
+    // Place exotic destination portals into key hub rooms: City, Woods, Gateway, and Snowy Mountain
+    const EXOTIC_REALMS = [
+      { id: "realm-city", name: "Neo-Tokyo Cyber City", type: "city", modelId: "c00b3b8c71594890a2a3c46c20a30b5c", prompt: "Cyberpunk Metropolis", color: "#00f0ff" },
+      { id: "realm-woods", name: "Whispering Timber Shacks", type: "woods", modelId: "d140716cf1ea47bb9cea545abbd4f95a", prompt: "Ancient Forest Shacks", color: "#10b981" },
+      { id: "realm-gate", name: "Trans-Dimensional Gate", type: "gate", modelId: "7920a3125baf4655a6b2a29c0bec2c3b", prompt: "You Are Now Entering Portal", color: "#f472b6" },
+      { id: "realm-mountain", name: "Snowy Mountain Peak", type: "mountain", modelId: "6bb4c86e088c42b083e95089c9e88d8b", prompt: "Alpine Glacial Summit", color: "#60a5fa" }
+    ];
+    if (mems.indexOf(m) % 4 === 0) {
+      const realm = EXOTIC_REALMS[(mems.indexOf(m) / 4) % EXOTIC_REALMS.length];
+      r.doors.push({
+        side: ['N','E','S','W'][Math.abs(hashStr(m.id + realm.id)) % 4],
+        target: realm.id,
+        isExoticPortal: true,
+        portal: true,
+        realmInfo: realm,
+        label: `WARP // ${realm.name.toUpperCase()}`
+      });
+    }
+
+    // 4. If a standalone/isolated room still has 0 doors, create at least 2 open portal archways so player is never trapped
+    if (r.doors.length === 0) {
+      r.doors.push({ side: 'N', target: startId, portal: true, label: 'quantum warp' });
+      r.doors.push({ side: 'S', target: startId, portal: true, label: 'neural hub' });
+    }
+  }
+}
+
+function resizeWorld(st){
+  const dpr = window.devicePixelRatio || 1;
+  const rect = st.canvas.getBoundingClientRect();
+  st.canvas.width = Math.round(rect.width * dpr);
+  st.canvas.height = Math.round(rect.height * dpr);
+}
+
+function project(st, x, y, z){
+  const c = st.cam;
+  // translate relative to camera
+  const dx = x - c.x;
+  const dy = y - c.y;
+  const dz = z - c.z;
+
+  // rotate around Y (yaw)
+  const sinY = Math.sin(-st.yaw), cosY = Math.cos(-st.yaw);
+  const x1 = dx * cosY - dz * sinY;
+  const z1 = dx * sinY + dz * cosY;
+
+  // rotate around X (pitch)
+  const sinP = Math.sin(-st.pitch), cosP = Math.cos(-st.pitch);
+  const y2 = dy * cosP - z1 * sinP;
+  const z2 = dy * sinP + z1 * cosP;
+
+  if (z2 <= 2) return null; // near clipping
+
+  const w = st.canvas.clientWidth, h = st.canvas.clientHeight;
+  const fov = 0.85;
+  const f = (w * fov) / z2;
+  return { sx: w/2 + x1 * f, sy: h/2 + y2 * f, scale: f / w, depth: z2 };
+}
+
+function loopWorld(){
+  if (!world3d || !world3d.running) return;
+  stepWorld(world3d);
+  drawWorld(world3d, performance.now());
+  requestAnimationFrame(loopWorld);
+}
+
+function stepWorld(st){
+  const k = st.keys, c = st.cam;
+  const dt = Math.min(0.05, (performance.now() - (st._lastT || performance.now())) / 1000);
+  st._lastT = performance.now();
+
+  // Keyboard turning (Arrow Keys)
+  if (k['ArrowLeft'])  st.yaw -= 2.4 * dt;
+  if (k['ArrowRight']) st.yaw += 2.4 * dt;
+  if (k['ArrowUp'])    st.pitch = Math.max(-1.4, Math.min(1.4, st.pitch - 1.8 * dt));
+  if (k['ArrowDown'])  st.pitch = Math.max(-1.4, Math.min(1.4, st.pitch + 1.8 * dt));
+
+  // Movement speed (ROOM size is 340)
+  const isSprint = (k['ShiftLeft'] || k['ShiftRight'] || k['Shift'] || k['shift']);
+  const speed = isSprint ? 600 : 300;
+
+  // Forward unit vector in world space: (sin(yaw), cos(yaw))
+  // Right strafe unit vector in world space: (cos(yaw), -sin(yaw))
+  const sinY = Math.sin(st.yaw), cosY = Math.cos(st.yaw);
+  const fwdX = sinY, fwdZ = cosY;
+  const rightX = cosY, rightZ = -sinY;
+
+  let moveX = 0, moveZ = 0;
+  if (k['KeyW'] || k['w'] || k['W']) { moveX += fwdX; moveZ += fwdZ; }
+  if (k['KeyS'] || k['s'] || k['S']) { moveX -= fwdX; moveZ -= fwdZ; }
+  if (k['KeyA'] || k['a'] || k['A']) { moveX -= rightX; moveZ -= rightZ; }
+  if (k['KeyD'] || k['d'] || k['D']) { moveX += rightX; moveZ += rightZ; }
+
+  // Normalize diagonal movement
+  const moveLen = Math.hypot(moveX, moveZ);
+  if (moveLen > 0.001) {
+    moveX = (moveX / moveLen) * speed;
+    moveZ = (moveZ / moveLen) * speed;
+  }
+
+  // Smooth acceleration / deceleration
+  st.vx = (st.vx || 0) + (moveX - (st.vx || 0)) * Math.min(1, dt * 14);
+  st.vz = (st.vz || 0) + (moveZ - (st.vz || 0)) * Math.min(1, dt * 14);
+
+  // Jump and vertical movement (Space = Jump, Q/E = vertical fly)
+  const floorY = -40;
+  const isJumping = (k['Space'] || k[' '] || k['space']);
+  if (isJumping && !st.inAir && Math.abs(c.y - floorY) < 15) {
+    st.vy = -360; // upward jump velocity
+    st.inAir = true;
+  }
+  if (st.inAir) {
+    st.vy = (st.vy || 0) + 840 * dt; // gravity
+    c.y += st.vy * dt;
+    if (c.y >= floorY) {
+      c.y = floorY;
+      st.vy = 0;
+      st.inAir = false;
+    }
+  } else {
+    if (k['KeyE'] || k['e'] || k['E']) c.y -= speed * 0.7 * dt;
+    if (k['KeyQ'] || k['q'] || k['Q']) c.y += speed * 0.7 * dt;
+    c.y = Math.max(-HALF + 20, Math.min(HALF - 20, c.y));
+  }
+
+  // Apply head bobbing while grounded and moving
+  if (!st.inAir && Math.hypot(st.vx, st.vz) > 10) {
+    st.bob = (st.bob || 0) + dt * 10;
+    c.y += Math.sin(st.bob) * 1.2;
+  }
+
+  // Apply horizontal velocity
+  c.x += st.vx * dt;
+  c.z += st.vz * dt;
+
+  // Particle dust physics (recycle when drifting out of range)
+  if (st.particles) {
+    for (const p of st.particles) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.z += p.vz * dt;
+      if (Math.abs(p.x - c.x) > 1200) p.x = c.x - Math.sign(p.vx) * 1180;
+      if (p.y < -HALF) p.y = HALF - 10;
+      if (p.y > HALF) p.y = -HALF + 10;
+      if (Math.abs(p.z - c.z) > 1200) p.z = c.z - Math.sign(p.vz) * 1180;
+    }
+  }
+
+  // Lucy Hologram Netrunner Beacon: Materializes near player & appears in active rooms
+  if (st.lucyHolo) {
+    st.lucyHolo.targetAlpha = (st.lucyActive || (_oracleFlash && _oracleFlash.active)) ? 0.95 : 0.45;
+    st.lucyHolo.alpha += (st.lucyHolo.targetAlpha - st.lucyHolo.alpha) * Math.min(1, dt * 4);
+    if (st.currentRoom) {
+      const lRadius = 80;
+      st.lucyHolo.angle = (st.lucyHolo.angle || 0) + 0.4 * dt;
+      st.lucyHolo.x = st.currentRoom.x + Math.sin(st.lucyHolo.angle) * lRadius;
+      st.lucyHolo.z = st.currentRoom.z + Math.cos(st.lucyHolo.angle) * lRadius;
+      st.lucyHolo.y = -40 + Math.sin(performance.now() * 0.002) * 8;
+    }
+  }
+
+  // GhostByte physics & dynamic room stroll encounters
+  if (st.ghost) {
+    st.ghost.angle = (st.ghost.angle || 0) + 0.7 * dt;
+    const gRadius = 90 + 35 * Math.sin(performance.now() / 2000);
+    st.ghost.x = c.x + Math.cos(st.ghost.angle) * gRadius;
+    st.ghost.z = c.z + Math.sin(st.ghost.angle) * gRadius;
+    st.ghost.y = -42 + Math.sin(performance.now() / 800) * 18;
+    st.ghost.alpha = Math.max(0.2, 0.6 + 0.35 * Math.sin(performance.now() / 1500));
+  }
+
+  // Current room detection + Exotic Portal Encounter Warp check
+  const rNow = roomContaining(st, c.x, c.z);
+  if (rNow !== st.currentRoom) {
+    const prev = st.currentRoom;
+    st.currentRoom = rNow;
+    if (rNow && (!st.lastAnnounced || st.lastAnnounced !== rNow.m.id)) {
+      st.enterGlow = { room: rNow, t: performance.now() };
+      announceRoom(rNow.m);
+      st.lastAnnounced = rNow.m.id;
+
+      // Random stroll encounter trigger with GhostByte or Lucy
+      const encounterRoll = Math.random();
+      if (encounterRoll > 0.65) {
+        st.lucyActive = true;
+        setTimeout(() => { st.lucyActive = false; }, 6000);
+      }
+    }
+  }
+
+  // Seamless door traversal: Walking through any door smoothly transitions camera into that connected room
+  if (st.currentRoom && st.currentRoom.doors) {
+    for (const d of st.currentRoom.doors) {
+      // Calculate distance to doorway center
+      let doorX = st.currentRoom.x, doorZ = st.currentRoom.z;
+      if (d.side === 'E') doorX += HALF;
+      if (d.side === 'W') doorX -= HALF;
+      if (d.side === 'S') doorZ += HALF;
+      if (d.side === 'N') doorZ -= HALF;
+      
+      const distToDoor = Math.hypot(c.x - doorX, c.z - doorZ);
+      if (distToDoor < 45 && (!st._lastPortalWarp || performance.now() - st._lastPortalWarp > 1200)) {
+        st._lastPortalWarp = performance.now();
+
+        // 1. If it's an interconnected memory room, teleport player directly inside that room
+        const targetRoom = st.roomAt[d.target];
+        if (targetRoom) {
+          c.x = targetRoom.x;
+          c.z = targetRoom.z;
+          st.vx = 0; st.vz = 0;
+          st.enterGlow = { room: targetRoom, t: performance.now() };
+        } else if (d.isExoticPortal && d.realmInfo) {
+          // If it's a scenic gateway, subtly notify rather than forcing intrusive popups
+          const banner = document.getElementById('mazeSubtitle');
+          if (banner) {
+            showCodecDialog({
+              name: "WARP BEACON // " + d.realmInfo.name.toUpperCase(),
+              role: "SCENIC REALM GATEWAY",
+              channel: "TRANS-DIMENSIONAL BRIDGE",
+              avatar: "/assets/nullai.png",
+              isOracle: false
+            }, `Approaching ${d.realmInfo.name}. Neural sector bridge linked.`);
+          }
+        }
+      }
+    }
+  }
+}
+
+// ---- Room ambience: brightness ramp on entry ----
+function roomGlow(st){
+  if (!st.enterGlow) return 0;
+  const age = (performance.now() - st.enterGlow.t) / 1000;
+  return Math.max(0, 1 - age / 2.5);
+}
+
+// Global state for female character light burst
+let _oracleFlash = { t: 0, active: false };
+
+// ---- Character Voice & MGS Codec System ----
+const _summaries = {};
+let _lastSpeakerIndex = 0;
+
+async function announceRoom(m){
+  let summary = _summaries[m.id];
+  if (!summary) {
+    try {
+      const r = await fetch(API + '/v1/memories/' + m.id + '/summarize', { method: 'POST' });
+      const d = await r.json();
+      summary = d.summary || '';
+      _summaries[m.id] = summary;
+    } catch(e) {}
+  }
+  if (!summary) {
+    const cat = m.category || 'general';
+    const topics = (m.topics || []).slice(0,3).join(', ');
+    summary = `Memory stratum confirmed: ${cat} sector indexing ${topics || 'unclassified neural traces'}.`;
+  }
+
+  // Alternate characters: 0 = NullAI Ghost (Quantum Cyber-Entity), 1 = Unseen Female Oracle (Aura / Voice of the Grid)
+  _lastSpeakerIndex = (_lastSpeakerIndex + 1) % 2;
+  const isOracle = _lastSpeakerIndex === 1;
+
+  if (isOracle) {
+    // Unseen female character: Lucy (Lucyna Kushinada) - Deep-Dive Netrunner / Oracle
+    _oracleFlash = { t: performance.now(), active: true };
+    const charInfo = {
+      name: "LUCY // LUCYNA KUSHINADA",
+      role: "DEEP-DIVE NETRUNNER",
+      channel: "CODEC 141.12 // DEEP NET BREACH",
+      avatar: "/assets/lucy.png",
+      isOracle: true
+    };
+    showCodecDialog(charInfo, summary);
+    speakCharacter("female", summary);
+  } else {
+    const charInfo = {
+      name: "GHOSTBYTE // NULL-AI QUANTUM ENTITY",
+      role: "SYNAPTIC MEMORY GUIDE",
+      channel: "CODEC 140.85 // GHOSTBYTE LINK",
+      avatar: "/assets/nullai.png",
+      isOracle: false
+    };
+    showCodecDialog(charInfo, summary);
+    speakCharacter("ghost", summary);
+  }
+}
+
+function openExoticRealmModal(realm){
+  const modal = document.getElementById('gameModal');
+  const title = document.getElementById('gameModalTitle');
+  const body = document.getElementById('gameModalBody');
+  if (!modal || !title || !body) return;
+  modal.style.display = 'flex';
+  if (document.pointerLockElement) document.exitPointerLock();
+
+  title.textContent = `// TRANSCENDENTAL WARP GATEWAY: ${realm.name.toUpperCase()}`;
+  body.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#111827;padding:12px;border-radius:8px;border:1px solid ${realm.color}">
+        <div>
+          <div style="color:${realm.color};font-weight:800;font-size:14px;letter-spacing:.08em">⬢ ${realm.name.toUpperCase()}</div>
+          <div style="color:#94a3b8;font-size:12px;margin-top:2px">${realm.prompt} • Trans-Dimensional Neural Sector</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <a href="https://sketchfab.com/3d-models/${realm.modelId}" target="_blank" rel="noopener noreferrer" style="background:#00f0ff;color:#000;padding:6px 14px;border-radius:4px;text-decoration:none;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px">⚡ Open Direct 3D ↗</a>
+          <button onclick="closeGameModal()" style="background:${realm.color}22;border:1px solid ${realm.color};color:#fff;padding:6px 14px;border-radius:4px;cursor:pointer;font-weight:700">✕ Exit Warp</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:440px;border-radius:8px;overflow:hidden;border:1px solid ${realm.color}88;background:#05070e;display:flex;align-items:center;justify-content:center">
+        <iframe id="realmFrame-${realm.modelId}" title="${realm.name}" allow="fullscreen; xr-spatial-tracking; webgl" allowfullscreen style="width:100%;height:100%;border:none" src="https://sketchfab.com/models/${realm.modelId}/embed?autostart=1&ui_hint=0&ui_theme=dark"></iframe>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#8b949e">
+        <span>🎮 Click iframe to activate 3D orbit & zoom.</span>
+        <span>If your browser's Enhanced Tracking Protection blocks third-party WebGL storage, click <b>"Open Direct 3D ↗"</b> above.</span>
+      </div>
+    </div>
+  `;
+}
+
+let _voiceLock = false;
+function speakCharacter(type, text){
+  try {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    _voiceLock = true;
+    const u = new SpeechSynthesisUtterance(text);
+    const voices = speechSynthesis.getVoices();
+
+    if (type === 'female') {
+      // Unseen female voice: ethereal, higher pitch, crystal clear
+      u.rate = 1.02;
+      u.pitch = 1.25;
+      u.volume = 1.0;
+      const fem = voices.find(v => /female|samantha|victoria|karen|zira|fiona|moira|google uk english female/i.test(v.name)) ||
+                  voices.find(v => v.lang.startsWith('en'));
+      if (fem) u.voice = fem;
+    } else {
+      // NullAI Ghost: Cybernetic / pitch-modulated synthesized tone
+      u.rate = 0.92;
+      u.pitch = 0.68;
+      u.volume = 0.95;
+      const male = voices.find(v => /daniel|alex|fred|george|david|google uk english male/i.test(v.name)) ||
+                   voices.find(v => v.lang.startsWith('en'));
+      if (male) u.voice = male;
+    }
+
+    u.onend = () => { _voiceLock = false; };
+    u.onerror = () => { _voiceLock = false; };
+    speechSynthesis.speak(u);
+  } catch(e) { _voiceLock = false; }
+}
+
+let _codecTimer = null;
+let _typewriterInterval = null;
+
+function showCodecDialog(char, fullText){
+  const el = document.getElementById('mazeSubtitle');
+  if (!el) return;
+  
+  const chEl = document.getElementById('codecChannel');
+  const roleEl = document.getElementById('speakerRole');
+  const nameEl = document.getElementById('speakerName');
+  const textEl = document.getElementById('codecText');
+  const avatarEl = document.getElementById('codecAvatar');
+  const avatarWrap = document.getElementById('codecAvatarWrap');
+
+  if (chEl) chEl.textContent = char.channel;
+  if (roleEl) {
+    roleEl.textContent = char.role;
+    roleEl.style.borderColor = char.isOracle ? '#f472b6' : '#a78bfa';
+    roleEl.style.color = char.isOracle ? '#f472b6' : '#a78bfa';
+  }
+  if (nameEl) {
+    nameEl.textContent = char.name;
+    nameEl.style.color = char.isOracle ? '#f472b6' : '#00f0ff';
+    nameEl.style.textShadow = char.isOracle ? '0 0 10px rgba(244,114,182,0.8)' : '0 0 10px rgba(0,240,255,0.8)';
+  }
+  if (avatarEl) {
+    avatarEl.src = char.avatar;
+    avatarEl.style.filter = char.isOracle ? 
+      'hue-rotate(120deg) drop-shadow(0 0 8px #f472b6) drop-shadow(0 0 16px #ffffff)' : 
+      'drop-shadow(0 0 6px #00f0ff) drop-shadow(0 0 12px #a78bfa)';
+  }
+  if (avatarWrap) {
+    avatarWrap.style.borderColor = char.isOracle ? '#f472b6' : '#00f0ff';
+    avatarWrap.style.boxShadow = char.isOracle ? '0 0 14px rgba(244,114,182,0.5)' : '0 0 14px rgba(0,240,255,0.4)';
+  }
+
+  el.style.borderColor = char.isOracle ? '#f472b6' : '#00f0ff';
+  el.style.boxShadow = char.isOracle ? 
+    '0 0 28px rgba(244,114,182,0.5), inset 0 0 16px rgba(255,255,255,0.2)' : 
+    '0 0 24px rgba(0,240,255,0.35), inset 0 0 14px rgba(0,240,255,0.15)';
+  el.style.display = 'block';
+
+  // Metal Gear Solid fast typewriter text stream
+  if (_typewriterInterval) clearInterval(_typewriterInterval);
+  let idx = 0;
+  if (textEl) textEl.textContent = '';
+  _typewriterInterval = setInterval(() => {
+    if (idx < fullText.length) {
+      if (textEl) textEl.textContent += fullText[idx];
+      idx++;
+    } else {
+      clearInterval(_typewriterInterval);
+    }
+  }, 16);
+}
+
+function dismissCodec(){
+  const el = document.getElementById('mazeSubtitle');
+  if (el) el.style.display = 'none';
+  if (_typewriterInterval) clearInterval(_typewriterInterval);
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function openGameModal(tab){
+  if (document.pointerLockElement) document.exitPointerLock();
+  const modal = document.getElementById('gameModal');
+  const title = document.getElementById('gameModalTitle');
+  const body = document.getElementById('gameModalBody');
+  if (!modal || !title || !body) return;
+
+  const mems = graphState ? graphState.mems : [];
+  modal.style.display = 'flex';
+
+  if (tab === 'lucy3d') {
+    title.textContent = '// NETRUNNER ORACLE: LUCYNA KUSHINADA 3D MODEL';
+    body.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#111827;padding:12px;border-radius:8px;border:1px solid #f472b6">
+          <div style="display:flex;align-items:center;gap:14px">
+            <img src="/assets/lucy.png" style="width:52px;height:52px;border-radius:50%;border:2px solid #f472b6;object-fit:cover"/>
+            <div>
+              <div style="color:#f472b6;font-weight:800;font-size:14px;letter-spacing:.08em">LUCY // DEEP-DIVE NETRUNNER</div>
+              <div style="color:#94a3b8;font-size:12px;margin-top:2px">Cyberpunk: Edgerunners • Oracle of the Sovereign Neural Matrix</div>
+            </div>
+          </div>
+          <a href="https://sketchfab.com/3d-models/cyberpunk-edgerunners-lucyna-kushinada-594983853fc0403695c6987037b23bde" target="_blank" rel="noopener noreferrer" style="background:#f472b6;color:#000;padding:6px 12px;border-radius:4px;text-decoration:none;font-weight:700;font-size:11px">⚡ Direct 3D ↗</a>
+        </div>
+        <div style="position:relative;width:100%;height:380px;border-radius:8px;overflow:hidden;border:1px solid rgba(0,240,255,0.4);background:#05070e">
+          <iframe title="Cyberpunk Edgerunners Lucyna Kushinada" allow="fullscreen; xr-spatial-tracking; webgl" allowfullscreen style="width:100%;height:100%;border:none" src="https://sketchfab.com/models/594983853fc0403695c6987037b23bde/embed?autostart=1&ui_hint=0&ui_theme=dark"></iframe>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#8b949e">
+          <span>🎮 Drag with mouse to orbit & rotate Lucy's 3D mesh. Scroll to zoom.</span>
+          <a href="https://sketchfab.com/3d-models/cyberpunk-edgerunners-lucyna-kushinada-594983853fc0403695c6987037b23bde" target="_blank" rel="noopener noreferrer" style="color:#00f0ff;text-decoration:none">View on Sketchfab ↗</a>
+        </div>
+      </div>
+    `;
+  } else if (tab === 'memories') {
+    title.textContent = `// SOVEREIGN MEMORY STRATUM (${mems.length} NODES)`;
+    body.innerHTML = `
+      <div style="margin-bottom:12px;display:flex;gap:8px">
+        <input id="modalSearch" placeholder="Search memory nodes..." oninput="filterModalMemories(this.value)" style="flex:1;background:#0d1117;border:1px solid rgba(0,240,255,0.4);color:#fff;padding:8px 12px;border-radius:6px"/>
+      </div>
+      <div id="modalMemList" style="display:grid;gap:8px;max-height:50vh;overflow-y:auto">
+        ${mems.slice(0, 30).map(m => `
+          <div style="background:#111827;border:1px solid rgba(0,240,255,0.25);border-radius:6px;padding:10px 14px">
+            <div style="display:flex;justify-content:space-between;color:#00f0ff;font-size:11px;font-weight:700">
+              <span>${escapeHtml(m.agent_id)} // ${escapeHtml(m.category||'general')}</span>
+              <span style="color:#a78bfa">σ ${(m.strength ?? 1).toFixed(2)}</span>
+            </div>
+            <div style="font-size:12px;color:#e2e8f0;margin-top:4px">${escapeHtml((m.text||'').slice(0, 160))}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if (tab === 'agents') {
+    const agents = [...new Set(mems.map(m => m.agent_id || 'system'))];
+    title.textContent = `// ACTIVE LINKED AGENTS (${agents.length} IDENTIFIERS)`;
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:10px">
+        ${agents.map(a => `
+          <div style="background:#111827;border:1px solid #a78bfa;border-radius:6px;padding:12px;box-shadow:0 0 10px rgba(167,139,250,0.2)">
+            <div style="color:#00f0ff;font-weight:700;font-size:13px">${escapeHtml(a)}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:4px">Memories linked: ${mems.filter(m => m.agent_id === a).length}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if (tab === 'audio') {
+    title.textContent = '// AUDIO SYNTHESIS & CHARACTER VOICE SETTINGS';
+    body.innerHTML = `
+      <div style="display:grid;gap:14px">
+        <div style="background:#111827;border:1px solid rgba(0,240,255,0.3);padding:14px;border-radius:6px">
+          <div style="font-weight:700;color:#00f0ff">GhostByte Voice (NullAI Quantum Synth)</div>
+          <div style="font-size:11px;color:#94a3b8;margin:6px 0 10px">Pitch-shifted cybernetic carrier synthesis with real-time room stroll appearances.</div>
+          <button onclick="speakCharacter('ghost', 'GhostByte online. Quantum synaptic link established.')" style="background:rgba(0,240,255,0.2);border:1px solid #00f0ff;color:#fff;padding:6px 14px;border-radius:4px;cursor:pointer">▶ Test GhostByte Voice</button>
+        </div>
+        <div style="background:#111827;border:1px solid rgba(244,114,182,0.4);padding:14px;border-radius:6px">
+          <div style="font-weight:700;color:#f472b6">Lucy // Netrunner Oracle</div>
+          <div style="font-size:11px;color:#94a3b8;margin:6px 0 10px">High-frequency radiant neural resonance with full-screen light pulse and 3D hologram materialization.</div>
+          <button onclick="announceRoom({id:'test', category:'oracle', topics:['quantum alignment']})" style="background:rgba(244,114,182,0.2);border:1px solid #f472b6;color:#fff;padding:6px 14px;border-radius:4px;cursor:pointer">▶ Test Lucy Voice & Light Burst</button>
+        </div>
+      </div>
+    `;
+  } else if (tab === 'export') {
+    title.textContent = '// EXPORT & DOWNLOAD PERSISTENCE STRATUM';
+    body.innerHTML = `
+      <div style="display:grid;gap:12px">
+        <p>Download sovereign memory graphs, link relations, and vector indices as raw JSON snapshot.</p>
+        <button onclick="downloadMemoryBackup()" style="background:linear-gradient(90deg,#00f0ff,#3b82f6);border:none;color:#000;font-weight:700;padding:10px 18px;border-radius:6px;cursor:pointer">⬇ Download Memories (JSON)</button>
+      </div>
+    `;
+  } else if (tab === 'settings') {
+    title.textContent = '// VISUAL, GRAPHICS & FPS CONFIG';
+    body.innerHTML = `
+      <div style="display:grid;gap:12px">
+        <label style="display:flex;justify-content:space-between;align-items:center">
+          <span>Camera Field of View</span>
+          <input type="range" min="60" max="110" value="85" oninput="world3d && (world3d._fov = this.value/100)"/>
+        </label>
+        <label style="display:flex;justify-content:space-between;align-items:center">
+          <span>Sprint Boost Multiplier</span>
+          <span style="color:#00f0ff">2.2x (Active)</span>
+        </label>
+        <label style="display:flex;justify-content:space-between;align-items:center">
+          <span>3D Psychedelic Door Plasma Waves</span>
+          <span style="color:#34d399">ENABLED</span>
+        </label>
+      </div>
+    `;
+  }
+}
+
+function closeGameModal(){
+  const modal = document.getElementById('gameModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function filterModalMemories(query){
+  const mems = graphState ? graphState.mems : [];
+  const q = query.toLowerCase();
+  const filtered = mems.filter(m => (m.text||'').toLowerCase().includes(q) || (m.agent_id||'').toLowerCase().includes(q));
+  const list = document.getElementById('modalMemList');
+  if (list) {
+    list.innerHTML = filtered.slice(0, 30).map(m => `
+      <div style="background:#111827;border:1px solid rgba(0,240,255,0.25);border-radius:6px;padding:10px 14px">
+        <div style="display:flex;justify-content:space-between;color:#00f0ff;font-size:11px;font-weight:700">
+          <span>${escapeHtml(m.agent_id)} // ${escapeHtml(m.category||'general')}</span>
+          <span style="color:#a78bfa">σ ${(m.strength ?? 1).toFixed(2)}</span>
+        </div>
+        <div style="font-size:12px;color:#e2e8f0;margin-top:4px">${escapeHtml((m.text||'').slice(0, 160))}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function downloadMemoryBackup(){
+  const mems = graphState ? graphState.mems : [];
+  const blob = new Blob([JSON.stringify(mems, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `zoth_memories_stratum_${Date.now()}.json`;
+  a.click();
+}
+
+function roomContaining(st, x, z){
+  const gx = Math.round(x / ROOM), gz = Math.round(z / ROOM);
+  return st.rooms.find(r => r.gx === gx && r.gz === gz) || null;
+}
+
+function insideAnyRoom(st, ox, oz, x, z){
+  const r2 = roomContaining(st, x, z);
+  if (r2) return true;
+  const r1 = roomContaining(st, ox, oz);
+  if (!r1) return Math.hypot(x, z) < HALF * 3; // free-roam fallback so player never gets stuck
+  const lx = x - r1.x, lz = z - r1.z;
+  // Doorway corridors: generous 140px-wide passage centered on each facing door
+  for (const d of r1.doors) {
+    const t = st.roomAt[d.target];
+    if (!t) continue;
+    const tdx = t.gx - r1.gx, tdz = t.gz - r1.gz;
+    if (Math.abs(tdx) + Math.abs(tdz) !== 1 && !d.portal) continue;
+    if ((d.side === 'E' && tdx === 1) || d.portal && hashStr(d.target)%4===0) {
+      if (lx > HALF - 90 && lz > -80 && lz < 80) return true;
+    }
+    if (d.side === 'W' && tdx === -1) {
+      if (lx < -HALF + 90 && lz > -80 && lz < 80) return true;
+    }
+    if (d.side === 'S' && tdz === 1) {
+      if (lz > HALF - 90 && lx > -80 && lx < 80) return true;
+    }
+    if (d.side === 'N' && tdz === -1) {
+      if (lz < -HALF + 90 && lx > -80 && lx < 80) return true;
+    }
+  }
+  return false;
+}
+
+function projectPoint(st, x, y, z){
+  const c = st.cam;
+  const dx = x - c.x, dy = y - c.y, dz = z - c.z;
+  const cy = Math.cos(st.yaw), sy = Math.sin(st.yaw);
+  const x1 = dx * cy - dz * sy;
+  const z1 = dx * sy + dz * cy;
+  const cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
+  const y2 = dy * cp - z1 * sp;
+  const z2 = dy * sp + z1 * cp;
+  return { x: x1, y: y2, z: z2 };
+}
+
+function draw3DLine(ctx, st, x0, y0, z0, x1, y1, z1, strokeStyle, lineWidth = 1, dashed = false){
+  const p0 = projectPoint(st, x0, y0, z0);
+  const p1 = projectPoint(st, x1, y1, z1);
+  const NEAR = 4;
+  if (p0.z <= NEAR && p1.z <= NEAR) return;
+
+  let xA = p0.x, yA = p0.y, zA = p0.z;
+  let xB = p1.x, yB = p1.y, zB = p1.z;
+
+  if (zA < NEAR) {
+    const t = (NEAR - zA) / (zB - zA);
+    xA = xA + t * (xB - xA);
+    yA = yA + t * (yB - yA);
+    zA = NEAR;
+  } else if (zB < NEAR) {
+    const t = (NEAR - zB) / (zA - zB);
+    xB = xB + t * (xA - xB);
+    yB = yB + t * (yA - yB);
+    zB = NEAR;
+  }
+
+  const w = st.canvas.clientWidth, h = st.canvas.clientHeight;
+  const fov = 0.85;
+  const fA = (w * fov) / zA;
+  const fB = (w * fov) / zB;
+  const sAx = w/2 + xA * fA, sAy = h/2 + yA * fA;
+  const sBx = w/2 + xB * fB, sBy = h/2 + yB * fB;
+
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  if (dashed) ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(sAx, sAy);
+  ctx.lineTo(sBx, sBy);
+  ctx.stroke();
+  if (dashed) ctx.setLineDash([]);
+}
+
+function drawWallSegment(ctx, p1, p2, alpha, glitch){
+  if (!p1 || !p2) return;
+  ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(p1.sx, p1.sy); ctx.lineTo(p2.sx, p2.sy); ctx.stroke();
+}
+
+function drawDoorGap(ctx, st, room, door, now){
+  const t = 88; // half-width of door
+  const h0 = -125, h1 = 45; // door top and bottom heights
+  const isPortal = !!door.portal;
+  
+  // Clean neon styling: Cyan for regular grid links, Pink for trans-dimensional portals
+  const mainCol = isPortal ? '#f472b6' : '#00f0ff';
+  const glowCol = isPortal ? '#fbcfe8' : '#e0f2fe';
+
+  let pA, pB, pC, pD;
+  if (door.side === 'E') {
+    const x = room.x + HALF;
+    pA = [x, h0, room.z - t]; pB = [x, h0, room.z + t];
+    pC = [x, h1, room.z + t]; pD = [x, h1, room.z - t];
+  } else if (door.side === 'W') {
+    const x = room.x - HALF;
+    pA = [x, h0, room.z - t]; pB = [x, h0, room.z + t];
+    pC = [x, h1, room.z + t]; pD = [x, h1, room.z - t];
+  } else if (door.side === 'S') {
+    const z = room.z + HALF;
+    pA = [room.x - t, h0, z]; pB = [room.x + t, h0, z];
+    pC = [room.x + t, h1, z]; pD = [room.x - t, h1, z];
+  } else {
+    const z = room.z - HALF;
+    pA = [room.x - t, h0, z]; pB = [room.x + t, h0, z];
+    pC = [room.x + t, h1, z]; pD = [room.x - t, h1, z];
+  }
+
+  // 1. Sleek, solid outer archway frame
+  draw3DLine(ctx, st, pA[0], pA[1], pA[2], pB[0], pB[1], pB[2], mainCol, 2.0);
+  draw3DLine(ctx, st, pB[0], pB[1], pB[2], pC[0], pC[1], pC[2], mainCol, 2.0);
+  draw3DLine(ctx, st, pC[0], pC[1], pC[2], pD[0], pD[1], pD[2], mainCol, 2.0);
+  draw3DLine(ctx, st, pD[0], pD[1], pD[2], pA[0], pA[1], pA[2], mainCol, 2.0);
+
+  // 2. High-performance threshold baseline & light accent bars (lightweight 2-line structure)
+  const yMid = (h0 + h1) / 2;
+  const isEW = (door.side === 'E' || door.side === 'W');
+  if (isEW) {
+    const xBase = door.side === 'E' ? room.x + HALF : room.x - HALF;
+    draw3DLine(ctx, st, xBase, yMid, room.z - t * 0.9, xBase, yMid, room.z + t * 0.9, glowCol, 1.0, true);
+  } else {
+    const zBase = door.side === 'S' ? room.z + HALF : room.z - HALF;
+    draw3DLine(ctx, st, room.x - t * 0.9, yMid, zBase, room.x + t * 0.9, yMid, zBase, glowCol, 1.0, true);
+  }
+
+  // 3. Floating Holographic Arch Header / Destination Sign
+  const signY = h0 - 18;
+  const signX = (pA[0] + pB[0]) / 2;
+  const signZ = (pA[2] + pB[2]) / 2;
+  const sp = project(st, signX, signY, signZ);
+  if (sp && sp.depth < 500) {
+    const scale = Math.max(0.6, Math.min(1.4, sp.scale * 1.5));
+    ctx.save();
+    ctx.font = `bold ${Math.round(11 * scale)}px ui-monospace, monospace`;
+    const labelText = isPortal ? `⚡ PORTAL: ${(door.label||'LINK').toUpperCase()}` : `⬡ ${(door.label||'SECTOR').toUpperCase()}`;
+    const tw = ctx.measureText(labelText).width;
+    
+    // Background pill
+    ctx.fillStyle = isPortal ? 'rgba(244, 114, 182, 0.25)' : 'rgba(0, 240, 255, 0.2)';
+    ctx.strokeStyle = isPortal ? '#f472b6' : '#00f0ff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(sp.sx - tw/2 - 6, sp.sy - 10 * scale, tw + 12, 16 * scale, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // Text glow
+    ctx.fillStyle = isPortal ? '#fbcfe8' : '#e0f2fe';
+    ctx.fillText(labelText, sp.sx - tw/2, sp.sy + 2 * scale);
+    ctx.restore();
+  }
+}
+
+function drawWorld(st, now){
+  const ctx = st.ctx;
+  const dpr = window.devicePixelRatio || 1;
+  const w = st.canvas.clientWidth, h = st.canvas.clientHeight;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#060913';
+  ctx.fillRect(0, 0, w, h);
+
+  // General ambient scene lighting gradient
+  const amb = ctx.createRadialGradient(w/2, h/2, 20, w/2, h/2, Math.max(w,h)*0.85);
+  amb.addColorStop(0, 'rgba(30, 48, 80, 0.45)');
+  amb.addColorStop(0.6, 'rgba(12, 20, 36, 0.3)');
+  amb.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = amb;
+  ctx.fillRect(0, 0, w, h);
+
+  // Cyberpunk room entry flash
+  const glow = roomGlow(st);
+  if (glow > 0) {
+    const g = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, Math.max(w,h)*0.7);
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now()/120);
+    g.addColorStop(0, `rgba(0,240,255,${glow * 0.30 * pulse})`);
+    g.addColorStop(0.5, `rgba(200,0,255,${glow * 0.16})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // ---- Super Bright Blinding Radiant Light Pulse when Female Oracle Speaks ----
+  if (_oracleFlash.active) {
+    const elapsed = (performance.now() - _oracleFlash.t) / 1000;
+    if (elapsed < 3.2) {
+      const flashAlpha = Math.max(0, Math.sin(elapsed * Math.PI / 3.2));
+      const radiant = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, Math.max(w,h)*0.95);
+      radiant.addColorStop(0, `rgba(255, 255, 255, ${flashAlpha * 0.85})`);
+      radiant.addColorStop(0.3, `rgba(244, 114, 182, ${flashAlpha * 0.65})`);
+      radiant.addColorStop(0.7, `rgba(0, 240, 255, ${flashAlpha * 0.4})`);
+      radiant.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = radiant;
+      ctx.fillRect(0, 0, w, h);
+
+      // Ethereal godray burst lines across the screen
+      ctx.save();
+      ctx.translate(w/2, h/2);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${flashAlpha * 0.45})`;
+      ctx.lineWidth = 2;
+      for (let r = 0; r < 12; r++) {
+        const ang = (r / 12) * Math.PI * 2 + (performance.now() * 0.001);
+        const rayLen = Math.max(w, h) * (0.8 + 0.2 * Math.sin(performance.now()*0.004 + r));
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(ang) * rayLen, Math.sin(ang) * rayLen);
+        ctx.stroke();
+      }
+      ctx.restore();
+    } else {
+      _oracleFlash.active = false;
+    }
+  }
+
+  // Only render rooms within visual horizon (Optimized Range = 4 for rock solid 60 FPS)
+  const c = st.cam;
+  const RANGE = 4;
+  const cgx = Math.round(c.x / ROOM), cgz = Math.round(c.z / ROOM);
+  const visible = st.rooms.filter(r => Math.abs(r.gx - cgx) <= RANGE && Math.abs(r.gz - cgz) <= RANGE);
+
+  // Fast Batched Wireframe Room Rendering
+  for (const r of visible) {
+    const y0 = -HALF, y1 = HALF;
+    const current = st.currentRoom === r;
+    const distToRoom = Math.hypot(r.gx - cgx, r.gz - cgz);
+    const distFade = Math.max(0.15, 1 - (distToRoom / (RANGE + 0.5)));
+    const baseAlpha = current ? (glow > 0 ? 1.0 : 0.95) : (0.45 * distFade);
+    const wallCol = `rgba(255,255,255,${baseAlpha.toFixed(2)})`;
+    const subCol = `rgba(255,255,255,${(current ? 0.38 : 0.18 * distFade).toFixed(2)})`;
+
+    // Floor square
+    draw3DLine(ctx, st, r.x - HALF, y1, r.z - HALF, r.x + HALF, y1, r.z - HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x + HALF, y1, r.z - HALF, r.x + HALF, y1, r.z + HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x + HALF, y1, r.z + HALF, r.x - HALF, y1, r.z + HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x - HALF, y1, r.z + HALF, r.x - HALF, y1, r.z - HALF, wallCol, 1.2);
+
+    // Ceiling square
+    draw3DLine(ctx, st, r.x - HALF, y0, r.z - HALF, r.x + HALF, y0, r.z - HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x + HALF, y0, r.z - HALF, r.x + HALF, y0, r.z + HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x + HALF, y0, r.z + HALF, r.x - HALF, y0, r.z + HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x - HALF, y0, r.z + HALF, r.x - HALF, y0, r.z - HALF, wallCol, 1.2);
+
+    // 4 Corner Verticals
+    draw3DLine(ctx, st, r.x - HALF, y0, r.z - HALF, r.x - HALF, y1, r.z - HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x + HALF, y0, r.z - HALF, r.x + HALF, y1, r.z - HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x + HALF, y0, r.z + HALF, r.x + HALF, y1, r.z + HALF, wallCol, 1.2);
+    draw3DLine(ctx, st, r.x - HALF, y0, r.z + HALF, r.x - HALF, y1, r.z + HALF, wallCol, 1.2);
+
+    // Subdivisions (rendered on close rooms only to keep FPS at 60)
+    if (distToRoom <= 2) {
+      const SUB = 2;
+      for (let s = 1; s < SUB; s++) {
+        const f = s / SUB;
+        const off = -HALF + ROOM * f;
+        const hLevel = y0 + ROOM * f;
+        draw3DLine(ctx, st, r.x + off, y0, r.z - HALF, r.x + off, y1, r.z - HALF, subCol);
+        draw3DLine(ctx, st, r.x + off, y0, r.z + HALF, r.x + off, y1, r.z + HALF, subCol);
+        draw3DLine(ctx, st, r.x + HALF, y0, r.z + off, r.x + HALF, y1, r.z + off, subCol);
+        draw3DLine(ctx, st, r.x - HALF, y0, r.z + off, r.x - HALF, y1, r.z + off, subCol);
+      }
+    }
+
+    // Doors
+    for (const d of r.doors) drawDoorGap(ctx, st, r, d, now);
+  }
+
+  // Current room's memory core: rotating wireframe octahedron + data panel
+  const cr = st.currentRoom;
+  if (cr) {
+    const bob = Math.sin(now/900) * 10;
+    const cyw = now * 0.001;
+    const size = 34;
+    const topY = -40 + bob - size;
+    const botY = -40 + bob + size;
+    const midY = -40 + bob;
+    const pts = [];
+    for (let i = 0; i < 4; i++) {
+      const ang = Math.PI/2*i + cyw;
+      pts.push([cr.x + Math.cos(ang)*size, midY, cr.z + Math.sin(ang)*size]);
+    }
+    for (let i = 0; i < 4; i++) {
+      const p = pts[i], nxt = pts[(i+1)%4];
+      draw3DLine(ctx, st, cr.x, topY, cr.z, p[0], p[1], p[2], '#00f0ff', 1.6);
+      draw3DLine(ctx, st, cr.x, botY, cr.z, p[0], p[1], p[2], '#00f0ff', 1.6);
+      draw3DLine(ctx, st, p[0], p[1], p[2], nxt[0], nxt[1], nxt[2], '#ffffff', 1.4);
+    }
+    drawRoomPanel(ctx, st, cr, w, h);
+  }
+
+  // Update Top HUD coordinates & sector status
+  const hudCoordsEl = document.getElementById('hudCoords');
+  if (hudCoordsEl) {
+    const sprintTag = (st.keys['ShiftLeft'] || st.keys['ShiftRight'] || st.keys['Shift'] || st.keys['shift']) ? ' · SPRINT' : '';
+    hudCoordsEl.textContent = `X: ${Math.round(c.x)} | Z: ${Math.round(c.z)} · ${st.rooms.length} NODES${sprintTag}`;
+  }
+
+
+  // ---- Ambient Cybernetic Dust Particles ----
+  if (st.particles) {
+    for (const p of st.particles) {
+      const sp = project(st, p.x, p.y, p.z);
+      if (sp) {
+        const rad = Math.max(1, p.size * sp.scale * 3);
+        ctx.fillStyle = `hsla(${p.hue}, 100%, 75%, ${p.alpha * Math.min(1, sp.scale * 4)})`;
+        ctx.beginPath();
+        ctx.arc(sp.sx, sp.sy, rad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // ---- 3D Lucy Kushinada Netrunner Hologram Beacon ----
+  if (st.lucyHolo && st.lucyHolo.alpha > 0.02) {
+    const lp = project(st, st.lucyHolo.x, st.lucyHolo.y, st.lucyHolo.z);
+    if (lp) {
+      const holoH = 190 * Math.max(0.4, Math.min(2.5, lp.scale * 2.5));
+      const holoW = holoH * 0.75;
+      ctx.save();
+      ctx.translate(lp.sx, lp.sy);
+
+      // Floor hologram pedestal rings with rotating quantum markings
+      ctx.strokeStyle = `rgba(244, 114, 182, ${st.lucyHolo.alpha * 0.85})`;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.ellipse(0, holoH * 0.46, holoW * 0.65, holoW * 0.22, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(0, 240, 255, ${st.lucyHolo.alpha * 0.6})`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(0, holoH * 0.46, holoW * 0.8, holoW * 0.28, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Holographic vertical light cylinder
+      const rayG = ctx.createLinearGradient(0, -holoH*0.5, 0, holoH*0.5);
+      rayG.addColorStop(0, `rgba(0, 240, 255, ${st.lucyHolo.alpha * 0.3})`);
+      rayG.addColorStop(0.5, `rgba(244, 114, 182, ${st.lucyHolo.alpha * 0.4})`);
+      rayG.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = rayG;
+      ctx.fillRect(-holoW*0.65, -holoH*0.5, holoW*1.3, holoH);
+
+      // Lucy Image Asset / Hologram Projection
+      if (_lucy_oracle_img && _lucy_oracle_img.complete && _lucy_oracle_img.naturalWidth > 0) {
+        ctx.globalAlpha = st.lucyHolo.alpha * 0.95;
+        // Subtle chromatic aberration split
+        ctx.drawImage(_lucy_oracle_img, -holoW/2 - 2, -holoH/2, holoW, holoH);
+        ctx.drawImage(_lucy_oracle_img, -holoW/2 + 2, -holoH/2, holoW, holoH);
+      }
+      
+      // Cyberpunk scanline hologram jitter
+      ctx.strokeStyle = `rgba(0, 240, 255, ${st.lucyHolo.alpha * 0.45})`;
+      ctx.lineWidth = 1;
+      for (let sl = -holoH/2; sl < holoH/2; sl += 8) {
+        ctx.beginPath();
+        ctx.moveTo(-holoW/2, sl);
+        ctx.lineTo(holoW/2, sl);
+        ctx.stroke();
+      }
+
+      // Overhead Cyber-Tag
+      ctx.font = 'bold 10px ui-monospace, monospace';
+      ctx.fillStyle = '#fbcfe8';
+      const tagText = 'LUCY // NETRUNNER ORACLE';
+      const tw = ctx.measureText(tagText).width;
+      ctx.fillText(tagText, -tw/2, -holoH*0.52);
+
+      ctx.restore();
+    }
+  }
+
+  // ---- NullAI ghost sprite: cycles in and out of the scene with rotation & glow ----
+  if (st.ghost && st.ghost.alpha > 0.03) {
+    const gp = project(st, st.ghost.x, st.ghost.y, st.ghost.z);
+    if (gp) {
+      const size = (48 + 5 * Math.sin(now / 800)) * Math.max(0.5, Math.min(2.0, gp.scale * 1.2));
+      const rot = (now * 0.0008) % (Math.PI * 2);
+      ctx.save();
+      ctx.translate(gp.sx, gp.sy);
+      ctx.rotate(rot);
+
+      // outer glowing aura
+      const aura = ctx.createRadialGradient(0, 0, 4, 0, 0, size * 1.5);
+      aura.addColorStop(0, `rgba(0, 240, 255, ${st.ghost.alpha * 0.35})`);
+      aura.addColorStop(0.5, `rgba(167, 139, 250, ${st.ghost.alpha * 0.22})`);
+      aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = aura;
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (_nullai_ghost_img && _nullai_ghost_img.complete && _nullai_ghost_img.naturalWidth > 0) {
+        ctx.globalAlpha = st.ghost.alpha * 0.9;
+        ctx.drawImage(_nullai_ghost_img, -size/2, -size/2, size, size);
+      } else {
+        // Procedural glowing ghost orb fallback
+        ctx.globalAlpha = st.ghost.alpha * 0.9;
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.65, size * 0.3, now * 0.002, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  // ---- Cyberpunk Radar Mini-Map HUD (Top-Right) ----
+  drawRadarMiniMap(ctx, st, w, h, now);
+
+  applyGlitchFilter(ctx, w, h, now);
+}
+
+function drawRadarMiniMap(ctx, st, w, h, now){
+  const mw = 170, mh = 170;
+  const mx = w - mw - 20, my = 20;
+  const cx = mx + mw/2, cy = my + mh/2;
+  const radarRad = mw/2 - 8;
+
+  ctx.save();
+
+  // Radar Circular Background with neon border
+  ctx.fillStyle = 'rgba(6, 11, 20, 0.85)';
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radarRad, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Range rings
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radarRad * 0.4, 0, Math.PI * 2);
+  ctx.arc(cx, cy, radarRad * 0.75, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Crosshairs
+  ctx.beginPath();
+  ctx.moveTo(cx - radarRad, cy); ctx.lineTo(cx + radarRad, cy);
+  ctx.moveTo(cx, cy - radarRad); ctx.lineTo(cx, cy + radarRad);
+  ctx.stroke();
+
+  // Sweeping Radar Line
+  const sweep = (now * 0.0025) % (Math.PI * 2);
+  const sweepGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, radarRad);
+  sweepGrad.addColorStop(0, 'rgba(0, 240, 255, 0.3)');
+  sweepGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+  ctx.fillStyle = sweepGrad;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.arc(cx, cy, radarRad, sweep - 0.5, sweep);
+  ctx.closePath();
+  ctx.fill();
+
+  // Plot Nearby Memory Rooms / Nodes on Radar (5x5 grid radius)
+  const c = st.cam;
+  const curGx = Math.round(c.x / ROOM), curGz = Math.round(c.z / ROOM);
+  const scale = 22; // pixels per room grid unit
+
+  for (const r of st.rooms) {
+    const relX = (r.x - c.x) / ROOM;
+    const relZ = (r.z - c.z) / ROOM;
+
+    // Rotate relative to player yaw so Up = facing direction
+    const cosY = Math.cos(-st.yaw), sinY = Math.sin(-st.yaw);
+    const rx = relX * cosY - relZ * sinY;
+    const rz = relX * sinY + relZ * cosY;
+
+    const px = cx + rx * scale;
+    const py = cy - rz * scale; // negative Z is forward
+
+    const dist = Math.hypot(px - cx, py - cy);
+    if (dist < radarRad - 4) {
+      const isCurrent = st.currentRoom === r;
+      ctx.fillStyle = isCurrent ? '#00f0ff' : (r.links && r.links.length > 2 ? '#a78bfa' : '#38bdf8');
+      ctx.beginPath();
+      ctx.arc(px, py, isCurrent ? 4 : 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Node link indicators
+      if (isCurrent && r.doors) {
+        for (const d of r.doors) {
+          ctx.strokeStyle = d.portal ? '#f472b6' : '#00f0ff';
+          ctx.lineWidth = 1.2;
+          let ddx = 0, ddy = 0;
+          if (d.side === 'N') ddy = -8;
+          if (d.side === 'S') ddy = 8;
+          if (d.side === 'E') ddx = 8;
+          if (d.side === 'W') ddx = -8;
+          // Rotate door direction with yaw
+          const rdx = ddx * cosY - ddy * sinY;
+          const rdy = ddx * sinY + ddy * cosY;
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + rdx, py - rdy);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // Player Position Triangle (Center)
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 6);
+  ctx.lineTo(cx - 4, cy + 4);
+  ctx.lineTo(cx + 4, cy + 4);
+  ctx.closePath();
+  ctx.fill();
+
+  // Radar Title Header
+  ctx.fillStyle = '#00f0ff';
+  ctx.font = 'bold 9px ui-monospace, monospace';
+  ctx.fillText('⬡ NEURAL RADAR // M-GRID', mx + 10, my + 14);
+
+  ctx.restore();
+}
+
+function drawRoomPanel(ctx, st, room, w, h){
+  const m = room.m;
+  const pad = 12;
+  const cw = 340;
+  const textLines = [];
+  const words = (m.text || '').slice(0, 180).split(' ');
+  let cur = '';
+  for (const wd of words) {
+    if ((cur+' '+wd).length > 42) { textLines.push(cur); cur = wd; } else cur = cur ? cur+' '+wd : wd;
+  }
+  if (cur) textLines.push(cur);
+  const ch = 78 + textLines.length * 15;
+  const x = 18, y = 56; // Top-left decorative HUD position
+
+  // Cyberpunk decorative corner bracket frame
+  ctx.save();
+  ctx.fillStyle = 'rgba(6, 12, 22, 0.8)';
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.roundRect(x, y, cw, ch, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  // Corner tech ticks
+  ctx.strokeStyle = '#00f0ff';
+  ctx.lineWidth = 2.5;
+  const k = 10;
+  // top-left tick
+  ctx.beginPath(); ctx.moveTo(x, y + k); ctx.lineTo(x, y); ctx.lineTo(x + k, y); ctx.stroke();
+  // bottom-right tick
+  ctx.beginPath(); ctx.moveTo(x + cw - k, y + ch); ctx.lineTo(x + cw, y + ch); ctx.lineTo(x + cw, y + ch - k); ctx.stroke();
+
+  // Header Title
+  ctx.fillStyle = '#00f0ff';
+  ctx.font = 'bold 11px ui-monospace, monospace';
+  ctx.fillText(`⬡ SECTOR ${room.gx},${room.gz} // ${room.doors.length} DOORS OPEN`, x + pad, y + 20);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = '10px ui-monospace, monospace';
+  ctx.fillText(`AGENT: ${m.agent_id}  CAT: ${m.category||'general'}  STRENGTH: ${(m.strength??1).toFixed(2)}`, x + pad, y + 36);
+
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x + pad, y + 42); ctx.lineTo(x + cw - pad, y + 42); ctx.stroke();
+
+  // Memory text preview
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '11px ui-monospace, monospace';
+  textLines.forEach((ln, i) => ctx.fillText(ln, x + pad, y + 58 + i * 15));
+  ctx.restore();
+}
+
+function applyGlitchFilter(ctx, w, h, now){
+  // Ultra-lightweight scanlines (GPU friendly)
+  ctx.globalAlpha = 0.05;
+  ctx.fillStyle = '#000';
+  for (let y = 0; y < h; y += 4) ctx.fillRect(0, y, w, 1);
+  ctx.globalAlpha = 1;
+
+  // Occasional static burst
+  if (Math.random() < 0.15) {
+    const n = Math.floor(Math.random() * 12);
+    ctx.fillStyle = 'rgba(0,240,255,0.4)';
+    for (let i = 0; i < n; i++) {
+      ctx.fillRect(Math.random()*w, Math.random()*h, Math.random()<0.5?2:4, 1);
+    }
+  }
+}
+function dprScale(){ return window.devicePixelRatio || 1; }
+
+function bindMazeInput(st){
+  const resetKeys = () => { st.keys = {}; st.vx = 0; st.vz = 0; };
+  window.addEventListener('keydown', e => {
+    if (document.getElementById('memoryWorld').style.display !== 'flex') return;
+    st.keys[e.code] = true;
+    if (e.key) {
+      st.keys[e.key.toLowerCase()] = true;
+      st.keys[e.key] = true;
+    }
+    if (e.code === 'KeyC' || e.key === 'c' || e.key === 'C') {
+      dismissCodec();
+    }
+    if (e.code === 'Escape' || e.key === 'Escape') {
+      const modal = document.getElementById('gameModal');
+      if (modal && modal.style.display === 'flex') {
+        closeGameModal();
+      } else {
+        resetKeys();
+        exitMemoryWorld();
+      }
+    }
+    if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') st.showMap = !st.showMap;
+    if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code) || ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key) || e.key === ' ') e.preventDefault();
+  });
+  window.addEventListener('keyup', e => {
+    delete st.keys[e.code];
+    if (e.key) {
+      delete st.keys[e.key.toLowerCase()];
+      delete st.keys[e.key];
+    }
+  });
+  window.addEventListener('blur', resetKeys);
+
+  const cv = st.canvas;
+  cv.addEventListener('click', (e) => {
+    const modal = document.getElementById('gameModal');
+    if (modal && modal.style.display === 'flex') return;
+    if (!document.pointerLockElement) cv.requestPointerLock();
+  });
+  document.addEventListener('pointerlockchange', () => {
+    st.locked = document.pointerLockElement === cv;
+    if (!st.locked) resetKeys();
+    const hint = document.getElementById('mazeHint');
+    if (hint) hint.style.display = st.locked ? 'none' : 'flex';
+  });
+
+  const sidebar = document.getElementById('mazeSidebar');
+  const trigger = document.getElementById('sidebarTrigger');
+  if (trigger && sidebar) {
+    trigger.addEventListener('mouseenter', () => { sidebar.style.right = '0px'; });
+    sidebar.addEventListener('mouseleave', () => { sidebar.style.right = '-72px'; });
+  }
+
+  document.addEventListener('mousemove', e => {
+    // Reveal sidebar when cursor moves to the right 30px of the screen (in unlocked mode)
+    if (!st.locked && sidebar) {
+      if (e.clientX >= window.innerWidth - 45) {
+        sidebar.style.right = '0px';
+      } else if (e.clientX < window.innerWidth - 85) {
+        sidebar.style.right = '-72px';
+      }
+    }
+    if (!st.locked) return;
+    // Standard FPS / Counter-Strike style mouse look:
+    // Move mouse right (+X) -> turn view right (+yaw)
+    // Move mouse up (-Y) -> pitch up (aim up)
+    // Move mouse down (+Y) -> pitch down (aim down)
+    st.yaw += e.movementX * 0.0022;
+    st.pitch = Math.max(-1.3, Math.min(1.3, st.pitch - e.movementY * 0.0022));
+  });
+  window.addEventListener('resize', () => resizeWorld(st));
+}
+
+// ---- Live event stream ----
+let flashes = {};  // memory_id -> {color, until}
+function connectEventStream(){
+  const es = new EventSource(API + '/v1/events');
+  es.onmessage = (e) => {
+    if (!e.data) return;
+    let evt; try { evt = JSON.parse(e.data); } catch { return; }
+    handleLiveEvent(evt);
+  };
+}
+
+function flashNode(id, color){
+  if (!id) return;
+  flashes[id] = { color: color || '#fbbf24', until: performance.now() + 1600 };
+  requestRender();
+}
+
+function handleLiveEvent(evt){
+  if (evt.type === 'trigger' || evt.type === 'activation') {
+    flashNode(evt.memory_id, agentColors[evt.agent_id] || '#fbbf24');
+    if (graphState.selected === evt.memory_id) renderFocusPanel();
+  } else if (evt.type === 'memory_created') {
+    // append to dataset and relayout
+    fetch(API + '/v1/memories/' + encodeURIComponent(evt.memory_id)).then(r => r.json()).then(m => {
+      if (!m || !m.id) return;
+      graphState.mems.push(m);
+      _layoutCache = null; // recompute layout including new node
+      drawGraph(null);
+      flashNode(m.id, agentColors[m.agent_id] || '#00f0ff');
+      fillMemorySelects(graphState.mems);
+    }).catch(()=>{});
+  } else if (evt.type === 'link_created') {
+    const srcM = graphState.mems.find(x => x.id === evt.source_id);
+    const dstM = graphState.mems.find(x => x.id === evt.target_id);
+    if (srcM && dstM) {
+      const entry = { id: dstM.id, reason: 'live link' };
+      if (evt.direction === 'before') { srcM.before = srcM.before || []; srcM.before.push(entry); }
+      else { srcM.after = srcM.after || []; srcM.after.push(entry); }
+      flashNode(evt.source_id, '#00f0ff'); flashNode(evt.target_id, '#00f0ff');
+      if (graphState.selected) renderFocusPanel();
+    }
+    requestRender();
+  }
+}
+</script>
+</body>
+</html>
