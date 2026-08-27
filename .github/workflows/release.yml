@@ -1,0 +1,59 @@
+name: 🚀 Publish Sovereign Release Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-gnu
+
+      - name: 📦 Compile Rust Vault Daemon (Linux)
+        run: |
+          cd vault-daemon || cd core-app/vault-daemon
+          cargo build --release
+          mkdir -p ../dist/release
+          cp target/release/zoth-vault-daemon ../dist/release/zoth-vault-daemon-linux-x86_64
+          chmod +x ../dist/release/zoth-vault-daemon-linux-x86_64
+          cd ../dist/release
+          tar -czvf zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz zoth-vault-daemon-linux-x86_64
+          sha256sum zoth-vault-daemon-linux-x86_64 zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz > SHA256SUMS.txt
+
+      - name: 🪟 Collect Windows Assets (If present in repo)
+        run: |
+          mkdir -p dist/release/windows
+          if [ -d "public/dist/release/windows" ]; then
+            cp public/dist/release/windows/* dist/release/windows/ || true
+          elif [ -d "core-app/public/dist/release/windows" ]; then
+            cp core-app/public/dist/release/windows/* dist/release/windows/ || true
+          fi
+
+      - name: 🚀 Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Zoth Studio ${{ github.ref_name }} — Sovereign Multi-Agent Workstation"
+          body_path: core-app/public/dist/release/RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          files: |
+            dist/release/zoth-vault-daemon-linux-x86_64
+            dist/release/zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz
+            dist/release/SHA256SUMS.txt
+            dist/release/windows/zoth-studio-v2.6.0-windows-x86_64.zip
+            dist/release/windows/zoth-windows-x86_64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
