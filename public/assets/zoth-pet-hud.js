@@ -249,16 +249,20 @@
       }).join('');
 
             hud.innerHTML = [
-        '<!-- Floating Avatar Trigger Orb (Azoth / Active Spirit) -->',
+        '<!-- Floating Master Narrator & Companion Trigger Button -->',
         '<button type="button" class="pet-hud-trigger" id="pet-hud-trigger" aria-expanded="false" aria-label="Toggle Master Narrator & Companion Panel">',
         '  <div class="pet-hud-orb">',
         '    <img src="' + pet.avatar + '" alt="' + pet.name + '" id="pet-hud-orb-img" onerror="this.src=\'/assets/mascot/azoth-mask.jpg\'" />',
         '    <div class="pet-hud-pulse-ring"></div>',
         '    <div class="pet-hud-orb-status"></div>',
         '  </div>',
+        '  <div class="pet-hud-trigger-info">',
+        '    <span class="pet-hud-trigger-name" id="pet-hud-trigger-name">' + pet.name + '</span>',
+        '    <span class="pet-hud-trigger-state">Narrator · Tap to Change</span>',
+        '  </div>',
         '</button>',
 
-        '<!-- Exact Classic Zoth Digest Speech Bubble -->',
+        '<!-- Exact Digest Speech Bubble (Resting Snugly Above Button) -->',
         '<div class="pet-hud-speech-bubble" id="pet-hud-speech">',
         '  <div class="pet-hud-speech-header">',
         '    <span class="pet-hud-speech-title">' + pet.emoji + ' ' + (pet.name || "Azoth") + '</span>',
@@ -267,7 +271,7 @@
         '  <span class="pet-hud-speech-text">Companion online &amp; watching over session.</span>',
         '</div>',
 
-        '<!-- Expanded Companion Dossier Panel (Opens on Click) -->',
+        <!-- Expanded Companion Dossier Panel (Opens on Click) -->',
         '<div class="pet-hud-card" id="pet-hud-card" role="region" aria-label="Pet Companion Panel">',
         '  <div class="pet-hud-header">',
         '    <div class="pet-hud-title-group">',

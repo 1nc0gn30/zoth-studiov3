@@ -1,6 +1,6 @@
 /* =============================================================================
-   🏛️ Authentic Classic Zoth Guide & Companion Layout
-   Horizontal lockup: [Avatar Orb] <==> [Classic Digest Bubble]
+   🏛️ Classic Zoth Guide & Master Narrator HUD (Bottom-Left Stack)
+   Vertical stack: [Bubble (Directly Above)] / [Pet Avatar Button (Bottom)]
    ============================================================================= */
 #zoth-pet-hud {
   position: fixed;
@@ -12,9 +12,9 @@
   user-select: none;
   -webkit-user-select: none;
   display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 12px;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  gap: 8px;
   pointer-events: none;
   touch-action: none;
 }
@@ -22,12 +22,13 @@
 #zoth-pet-hud.orient-right {
   left: auto;
   right: 24px;
-  flex-direction: row-reverse;
+  align-items: flex-end;
 }
 
 #zoth-pet-hud.orient-down {
   bottom: auto;
   top: 70px;
+  flex-direction: column;
 }
 
 #zoth-pet-hud * {
@@ -44,40 +45,48 @@
 }
 
 /* =============================================================================
-   Classic Avatar Orb (Azoth Master / Active Spirit)
+   Classic Avatar Orb Trigger Button (Bottom-Left Anchor)
    ============================================================================= */
 .pet-hud-trigger {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  background: transparent;
+  gap: 10px;
+  padding: 4px 14px 4px 4px;
+  border-radius: 9999px;
+  background: var(--surface, rgba(10, 14, 26, 0.94));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-gold, rgba(251, 191, 36, 0.4));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7),
+              0 0 18px rgba(251, 191, 36, 0.25);
   cursor: pointer;
   outline: none;
-  flex-shrink: 0;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease;
 }
 
 .pet-hud-trigger:hover {
-  transform: translateY(-2px) scale(1.05);
+  transform: translateY(-2px) scale(1.03);
+  border-color: var(--gold, #fbbf24);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.8),
+              0 0 26px rgba(251, 191, 36, 0.4);
 }
 
 .pet-hud-orb {
   position: relative;
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   overflow: hidden;
-  border: 1.5px solid var(--gold, #fbbf24);
+  border: 2px solid var(--gold, #fbbf24);
   background: #05060b;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.35),
-              0 8px 24px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.3);
 }
 
 .pet-hud-orb img {
@@ -94,7 +103,7 @@
 .pet-hud-pulse-ring {
   position: absolute;
   inset: -4px;
-  border-radius: 16px;
+  border-radius: 50%;
   border: 1.5px solid var(--gold, #fbbf24);
   opacity: 0.6;
   animation: petHudPulse 2.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
@@ -102,17 +111,17 @@
 }
 
 @keyframes petHudPulse {
-  0% { transform: scale(0.95); opacity: 0.9; }
-  50% { transform: scale(1.18); opacity: 0.1; }
-  100% { transform: scale(1.28); opacity: 0; }
+  0% { transform: scale(0.92); opacity: 0.9; }
+  50% { transform: scale(1.22); opacity: 0.1; }
+  100% { transform: scale(1.32); opacity: 0; }
 }
 
 .pet-hud-orb-status {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 11px;
-  height: 11px;
+  bottom: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--green, #34d399);
   border: 2px solid #05060b;
@@ -120,66 +129,89 @@
 }
 
 .pet-hud-trigger-info {
-  display: none; /* Low-profile classic mode: avatar + horizontal bubble */
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.pet-hud-trigger-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.2;
+}
+
+.pet-hud-trigger-state {
+  font-size: 0.66rem;
+  font-family: var(--font-theme-mono, monospace);
+  color: var(--gold, #fbbf24);
+  line-height: 1.2;
 }
 
 /* =============================================================================
-   Exact Classic Zoth Guide Bubble (Attached Side-by-Side)
+   Exact Narration Bubble (Rests Snugly Directly Above Pet Button)
    ============================================================================= */
 .pet-hud-speech-bubble {
   position: relative;
   background: var(--surface, rgba(12, 12, 18, 0.96));
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--text-primary, #ffffff);
   border: 1px solid var(--border-gold, rgba(251, 191, 36, 0.45));
-  border-radius: 10px;
-  padding: 10px 30px 11px 14px;
+  border-radius: 12px;
+  padding: 10px 32px 10px 14px;
   min-width: 14rem;
-  max-width: min(380px, calc(100vw - 110px));
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.8),
-              0 0 20px rgba(251, 191, 36, 0.15);
+  max-width: min(360px, calc(100vw - 48px));
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.8),
+              0 0 20px rgba(251, 191, 36, 0.18);
   opacity: 0;
   visibility: hidden;
-  transform: translateX(-6px) scale(0.97);
-  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.24s;
+  transform: translateY(6px) scale(0.98);
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.22s;
   pointer-events: none;
   z-index: 2147483644;
+  margin-bottom: 2px;
 }
 
-/* Left pointing arrow into avatar */
+/* Downward pointing notch directly over the avatar button */
 .pet-hud-speech-bubble::before {
   content: "";
   position: absolute;
-  left: -6px;
-  bottom: 18px;
+  bottom: -6px;
+  left: 20px;
   width: 10px;
   height: 10px;
   background: var(--surface, #0c0c12);
-  border-left: 1px solid var(--border-gold, rgba(251, 191, 36, 0.45));
+  border-right: 1px solid var(--border-gold, rgba(251, 191, 36, 0.45));
   border-bottom: 1px solid var(--border-gold, rgba(251, 191, 36, 0.45));
   transform: rotate(45deg);
 }
 
-#zoth-pet-hud.orient-right .pet-hud-speech-bubble {
-  transform: translateX(6px) scale(0.97);
-}
-
 #zoth-pet-hud.orient-right .pet-hud-speech-bubble::before {
   left: auto;
-  right: -6px;
-  border-left: none;
+  right: 20px;
+}
+
+#zoth-pet-hud.orient-down .pet-hud-speech-bubble {
+  margin-bottom: 0;
+  margin-top: 2px;
+}
+
+#zoth-pet-hud.orient-down .pet-hud-speech-bubble::before {
+  bottom: auto;
+  top: -6px;
+  border-right: none;
   border-bottom: none;
-  border-right: 1px solid var(--border-gold, rgba(251, 191, 36, 0.45));
+  border-left: 1px solid var(--border-gold, rgba(251, 191, 36, 0.45));
   border-top: 1px solid var(--border-gold, rgba(251, 191, 36, 0.45));
 }
 
 .pet-hud-speech-bubble.active {
   opacity: 1;
   visibility: visible;
-  transform: translateX(0) scale(1);
+  transform: translateY(0) scale(1);
   pointer-events: auto;
 }
 
@@ -256,11 +288,11 @@
 }
 
 /* =============================================================================
-   Expanded Capability Panel (Opens Above on Avatar Click)
+   Expanded Capability Panel (Opens Above Button on Click)
    ============================================================================= */
 .pet-hud-card {
   position: absolute;
-  bottom: calc(100% + 14px);
+  bottom: calc(100% + 10px);
   left: 0;
   width: 340px;
   max-width: calc(100vw - 32px);
