@@ -293,6 +293,12 @@
         '      </div>',
         '    </div>',
 
+                '    <div class="pet-hud-field" style="margin-top: 10px;">',
+        '      <label class="pet-hud-field-label">👁️ Sovereign Vision & Screen Capture</label>',
+        '      <button type="button" class="pet-hud-vision-btn" id="pet-hud-vision-btn" style="width:100%; padding:9px 12px; background:linear-gradient(135deg, rgba(0,240,255,0.2), rgba(168,85,247,0.25)); border:1px solid var(--border-cyan, #00f0ff); border-radius:8px; color:#fff; font-family:inherit; font-weight:700; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">',
+        '        <span>👁️ Activate Visionary Screen Eye</span>',
+        '      </button>',
+        '    </div>',
         '    <div class="pet-hud-field">',
         '      <label class="pet-hud-field-label">Quick Summon / Switch Spirit</label>',
         '      <select class="pet-hud-select" id="pet-hud-switcher">',
@@ -332,6 +338,131 @@
       document.body.appendChild(hud);
     },
 
+    
+    activateVisionary: function () {
+      var self = this;
+      self.speak("👁️ Visionary Mode Engaging... Requesting screen viewport capture.");
+      
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        // Fallback for environments where getDisplayMedia is unsupported: DOM screenshot & layout canvas
+        self.fallbackDomVision();
+        return;
+      }
+
+      navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: "always" },
+        audio: false
+      }).then(function (stream) {
+        var track = stream.getVideoTracks()[0];
+        var imageCapture = null;
+        
+        var video = document.createElement("video");
+        video.srcObject = stream;
+        video.play();
+        
+        video.onloadedmetadata = function () {
+          setTimeout(function () {
+            var canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth || window.innerWidth;
+            canvas.height = video.videoHeight || window.innerHeight;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Stop tracks
+            stream.getTracks().forEach(function (t) { t.stop(); });
+            
+            var dataUrl = canvas.toDataURL("image/png");
+            self.showVisionaryOverlay(dataUrl, canvas.width, canvas.height);
+            self.speak("✨ Screen Captured! " + self.activePet.name + " is analyzing full-display viewport.");
+          }, 400);
+        };
+      }).catch(function (err) {
+        self.speak("⚠️ Vision capture cancelled or restricted. Falling back to DOM visual snapshot.");
+        self.fallbackDomVision();
+      });
+    },
+
+    fallbackDomVision: function () {
+      var self = this;
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      var canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext("2d");
+      
+      // Draw dark grid backdrop
+      ctx.fillStyle = "#050508";
+      ctx.fillRect(0, 0, w, h);
+      
+      // Render scanning matrix lines
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.25)";
+      ctx.lineWidth = 1;
+      for (var x = 0; x < w; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (var y = 0; y < h; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      
+      ctx.fillStyle = "#00f0ff";
+      ctx.font = "bold 24px monospace";
+      ctx.fillText("ZOTH VISIONARY SCAN // " + self.activePet.name.toUpperCase(), 40, 60);
+      
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "14px monospace";
+      ctx.fillText("URL: " + window.location.href, 40, 90);
+      ctx.fillText("Viewport: " + w + "x" + h + " | DOM Nodes: " + document.querySelectorAll("*").length, 40, 115);
+      
+      var dataUrl = canvas.toDataURL("image/png");
+      self.showVisionaryOverlay(dataUrl, w, h);
+    },
+
+    showVisionaryOverlay: function (imgUrl, width, height) {
+      var existing = document.getElementById("zoth-visionary-overlay");
+      if (existing) existing.remove();
+
+      var overlay = document.createElement("div");
+      overlay.id = "zoth-visionary-overlay";
+      overlay.style.cssText = "position:fixed; inset:0; z-index:2147483647; background:rgba(3,4,8,0.92); backdrop-filter:blur(14px); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; pointer-events:auto;";
+      
+      overlay.innerHTML = [
+        '<div style="background:#0a0e1c; border:1px solid rgba(0,240,255,0.4); border-radius:14px; max-width:980px; width:94vw; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 24px 80px rgba(0,240,255,0.25); overflow:hidden;">',
+        '  <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4);">',
+        '    <div style="display:flex; align-items:center; gap:10px;">',
+        '      <span style="font-size:1.4rem;">👁️</span>',
+        '      <div>',
+        '        <div style="font-family:var(--font-mono, monospace); font-size:0.68rem; color:#fbbf24; text-transform:uppercase; letter-spacing:0.12em;">VISIONARY SCREEN EYE</div>',
+        '        <h3 style="margin:0; font-size:1.15rem; color:#fff; font-family:var(--font-display, sans-serif);">' + this.activePet.name + ' Screen Inspection Snapshot</h3>',
+        '      </div>',
+        '    </div>',
+        '    <button type="button" id="close-visionary-btn" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer; padding:4px 8px;">✕</button>',
+        '  </div>',
+        '  <div style="flex:1; overflow:auto; padding:16px; display:flex; align-items:center; justify-content:center; background:#030408;">',
+        '    <img src="' + imgUrl + '" alt="Screen capture" style="max-width:100%; max-height:60vh; border-radius:8px; border:1px solid rgba(0,240,255,0.3); box-shadow:0 10px 30px rgba(0,0,0,0.8);" />',
+        '  </div>',
+        '  <div style="padding:14px 20px; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); flex-wrap:wrap; gap:10px;">',
+        '    <span style="font-family:monospace; font-size:0.75rem; color:#94a3b8;">Captured ' + width + '×' + height + ' px · Ready for Autonomous LLM Multimodal Vision</span>',
+        '    <div style="display:flex; gap:10px;">',
+        '      <a href="' + imgUrl + '" download="' + this.activePet.id + '-screen-vision.png" style="padding:8px 14px; background:rgba(0,240,255,0.15); border:1px solid #00f0ff; border-radius:6px; color:#00f0ff; text-decoration:none; font-size:0.8rem; font-weight:700;">💾 Download Capture</a>',
+        '      <button type="button" id="copy-vision-btn" style="padding:8px 14px; background:#fbbf24; border:none; border-radius:6px; color:#050508; font-size:0.8rem; font-weight:700; cursor:pointer;">📋 Copy Vision Token</button>',
+        '    </div>',
+        '  </div>',
+        '</div>'
+      ].join('');
+
+      document.body.appendChild(overlay);
+
+      document.getElementById("close-visionary-btn").onclick = function () {
+        overlay.remove();
+      };
+      document.getElementById("copy-vision-btn").onclick = function () {
+        navigator.clipboard.writeText(`@${PetHUD.activePet.id} analyze-screen --timestamp=${Date.now()}`);
+        this.textContent = "✔ Copied Command!";
+        setTimeout(() => { this.textContent = "📋 Copy Vision Token"; }, 1600);
+      };
+    },
+
     bindEvents: function () {
       var trigger = document.getElementById("pet-hud-trigger");
       var closeBtn = document.getElementById("pet-hud-close-btn");
@@ -339,6 +470,15 @@
       var switcher = document.getElementById("pet-hud-switcher");
       var copyCmd = document.getElementById("pet-hud-copy-cmd");
       var hud = document.getElementById("zoth-pet-hud");
+
+            var visionBtn = document.getElementById("pet-hud-vision-btn");
+      if (visionBtn) {
+        visionBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          PetHUD.activateVisionary();
+        });
+      }
 
       if (trigger) {
         trigger.addEventListener("click", function (e) {
