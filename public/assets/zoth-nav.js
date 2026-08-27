@@ -21,6 +21,76 @@
   }
 
   function initNav() {
+
+    // ── Universal Dynamic Link Injector (Ensures Web3 & Memory are present across all pages) ──
+    function ensureUniversalNavLinks() {
+      // 1. Studio Dropdowns (Desktop)
+      document.querySelectorAll(".nav-dropdown").forEach(function(dd) {
+        var btn = dd.querySelector(".nav-dropdown-btn");
+        var menu = dd.querySelector(".nav-dropdown-menu");
+        if (btn && menu) {
+          var title = btn.textContent.trim();
+          if (title.indexOf("Studio") !== -1) {
+            if (!menu.querySelector('a[href*="web3-hub.html"]')) {
+              var w3Link = document.createElement("a");
+              w3Link.href = "/studio/web3-hub.html";
+              w3Link.innerHTML = "<strong>🪙 Web3 &amp; Solana Bridge</strong><small>Multi-Chain Wallets, Live SOL Ticker &amp; Radar</small>";
+              menu.appendChild(w3Link);
+            }
+          }
+          if (title.indexOf("Core") !== -1) {
+            if (!menu.querySelector('a[href*="/memory/"]')) {
+              var memLink = document.createElement("a");
+              memLink.href = "/memory/";
+              memLink.innerHTML = "<strong>🧠 Netrunner Memory World</strong><small>Biomorphic Associative Graph &amp; Neural Stratum</small>";
+              menu.appendChild(memLink);
+            }
+          }
+        }
+      });
+
+      // 2. Mobile Drawer
+      var drawer = document.getElementById("drawer") || document.querySelector(".drawer");
+      if (drawer) {
+        // In Studio section
+        var studioHeadings = Array.from(drawer.querySelectorAll(".drawer-heading")).filter(function(h) {
+          return h.textContent.indexOf("Studio") !== -1 || h.textContent.indexOf("Workstation") !== -1;
+        });
+        studioHeadings.forEach(function(sh) {
+          if (sh.parentElement && !sh.parentElement.querySelector('a[href*="web3-hub.html"]')) {
+            var a = document.createElement("a");
+            a.href = "/studio/web3-hub.html";
+            a.innerHTML = "🪙 Web3 &amp; Solana Swarm Bridge";
+            sh.parentElement.appendChild(a);
+          }
+        });
+
+        // In Core section
+        var coreHeadings = Array.from(drawer.querySelectorAll(".drawer-heading")).filter(function(h) {
+          return h.textContent.indexOf("Core") !== -1 || h.textContent.indexOf("Archetype") !== -1;
+        });
+        coreHeadings.forEach(function(ch) {
+          if (ch.parentElement && !ch.parentElement.querySelector('a[href*="/memory/"]')) {
+            var a = document.createElement("a");
+            a.href = "/memory/";
+            a.innerHTML = "🧠 Netrunner Memory World";
+            ch.parentElement.appendChild(a);
+          }
+        });
+      }
+
+      // 3. Topbar Direct Navbar (if no dropdowns)
+      var menuBar = document.querySelector("header.bar nav.menu") || document.querySelector("header#topbar nav.menu");
+      if (menuBar && !menuBar.querySelector('a[href*="web3-hub.html"]') && !menuBar.querySelector('.nav-dropdown')) {
+        var directLink = document.createElement("a");
+        directLink.className = "nav-link";
+        directLink.href = "/studio/web3-hub.html";
+        directLink.innerHTML = "🪙 Web3 Bridge";
+        menuBar.insertBefore(directLink, menuBar.lastElementChild);
+      }
+    }
+
+    ensureUniversalNavLinks();
     var burger = document.getElementById("burger") || document.querySelector(".burger");
     var drawer = document.getElementById("drawer") || document.querySelector(".drawer");
     var topbar = document.getElementById("topbar") || document.querySelector("header.bar") || document.querySelector("header#topbar");
