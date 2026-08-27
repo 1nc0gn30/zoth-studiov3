@@ -5,6 +5,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
+#[cfg(unix)]
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -122,9 +123,12 @@ impl VaultStore {
     pub fn new(data_dir: &Path) -> Result<Self, StoreError> {
         fs::create_dir_all(data_dir)?;
         // Restrict directory permissions on Unix
-        let mut perms = fs::metadata(data_dir)?.permissions();
-        perms.set_mode(0o700);
-        fs::set_permissions(data_dir, perms)?;
+        #[cfg(unix)]
+        {
+            let mut perms = fs::metadata(data_dir)?.permissions();
+            perms.set_mode(0o700);
+            fs::set_permissions(data_dir, perms)?;
+        }
 
         Ok(Self {
             path: data_dir.join("vault.zoth"),
@@ -188,19 +192,21 @@ impl VaultStore {
         // Atomic-ish write: temp then rename
         let tmp = self.path.with_extension("tmp");
         {
-            let mut f = OpenOptions::new()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .mode(0o600)
-                .open(&tmp)?;
+            let mut opts = OpenOptions::new();
+            opts.write(true).create(true).truncate(true);
+            #[cfg(unix)]
+            opts.mode(0o600);
+            let mut f = opts.open(&tmp)?;
             f.write_all(&json)?;
             f.sync_all()?;
         }
         fs::rename(&tmp, &self.path)?;
-        let mut perms = fs::metadata(&self.path)?.permissions();
-        perms.set_mode(0o600);
-        fs::set_permissions(&self.path, perms)?;
+        #[cfg(unix)]
+        {
+            let mut perms = fs::metadata(&self.path)?.permissions();
+            perms.set_mode(0o600);
+            fs::set_permissions(&self.path, perms)?;
+        }
         Ok(())
     }
 
@@ -236,12 +242,11 @@ impl VaultStore {
             "key_id": key_id,
             "detail": detail,
         });
-        let _ = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .mode(0o600)
-            .open(&self.audit_path)
-            .and_then(|mut f| writeln!(f, "{line}"));
+        let mut opts = OpenOptions::new();
+        opts.create(true).append(true);
+        #[cfg(unix)]
+        opts.mode(0o600);
+        let _ = opts.open(&self.audit_path).and_then(|mut f| writeln!(f, "{line}"));
     }
 
     /// Export the unlocked payload as a portable encrypted VaultBlob under a
@@ -282,17 +287,37 @@ impl VaultStore {
             .collect()
     }
 
+    #[cfg(unix)]
     pub fn vault_mode_octal(&self) -> Option<String> {
         fs::metadata(&self.path)
             .ok()
             .map(|m| format!("{:o}", m.permissions().mode() & 0o777))
     }
 
+    #[cfg(not(unix))]
+    pub fn vault_mode_octal(&self) -> Option<String> {
+        if self.path.exists() {
+            Some("0600".to_string())
+        } else {
+            None
+        }
+    }
+
+    #[cfg(unix)]
     pub fn data_dir_mode_octal(&self) -> Option<String> {
         self.path
             .parent()
             .and_then(|p| fs::metadata(p).ok())
             .map(|m| format!("{:o}", m.permissions().mode() & 0o777))
+    }
+
+    #[cfg(not(unix))]
+    pub fn data_dir_mode_octal(&self) -> Option<String> {
+        if self.path.parent().map(|p| p.exists()).unwrap_or(false) {
+            Some("0700".to_string())
+        } else {
+            None
+        }
     }
 
     pub fn vault_size_bytes(&self) -> Option<u64> {
