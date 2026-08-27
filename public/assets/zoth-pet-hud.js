@@ -790,9 +790,9 @@
         var vw = window.innerWidth || document.documentElement.clientWidth;
         var vh = window.innerHeight || document.documentElement.clientHeight;
         if (x < vw / 2) {
-          hud.classList.add("orient-left");
+          hud.classList.remove("orient-right");
         } else {
-          hud.classList.remove("orient-left");
+          hud.classList.add("orient-right");
         }
         if (y < vh * 0.45) {
           hud.classList.add("orient-down");
@@ -1018,7 +1018,7 @@
           hud.style.top = y + "px";
           hud.style.right = "auto";
           hud.style.bottom = "auto";
-          if (x < vw / 2) hud.classList.add("orient-left");
+          if (x < vw / 2) hud.classList.remove("orient-right");
           if (y < vh * 0.45) hud.classList.add("orient-down");
         }
       }
