@@ -12,8 +12,10 @@
 
 | Asset | Platform / Architecture | Size | SHA256 Hash |
 | :--- | :--- | :--- | :--- |
-| `zoth-vault-daemon-linux-x86_64` | Linux x86_64 ELF | 2.4 MB | `d1906421413db54b0b2683c76d8daac9314413bde217f2f44c4ddd0bc2588804` |
-| `zoth-vault-daemon-v0.1.0-linux-x86_64.tar.gz` | Linux Archive (tar.gz) | 1.1 MB | `9a2c56fda1c148a8c6ca9145154f594e694c4e52af395d82d5aab43e853b8b28` |
+| `zoth-vault-daemon-linux-x86_64` | Linux x86_64 ELF Binary | 2.4 MB | `d1906421413db54b0b2683c76d8daac9314413bde217f2f44c4ddd0bc2588804` |
+| `zoth-vault-daemon-v0.1.0-linux-x86_64.tar.gz` | Linux x86_64 Archive (tar.gz) | 1.1 MB | `e045cc639a877b0e2f147a32aac72b291149cf94b0e934f6f717d5f1fed26496` |
+| `zoth-windows-x86_64.exe` | Windows x86_64 Self-Extracting Executable | 77 MB | `84fead88d515877788a8baf33a49424e25530a428f895bc6031e59e8ff57824d` |
+| `zoth-studio-v2.6.0-windows-x86_64.zip` | Windows x86_64 Standalone Portable ZIP | 88 MB | `7d7fef03f3b407b31dba38b9c8cfb45e77485a69209ed2bb3aa5f1386810b2a6` |
 
 ---
 
