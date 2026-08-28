@@ -99,7 +99,7 @@
 <button aria-label="Switch to Matrix theme" class="zoth-theme-btn" data-theme-id="matrix" onclick="window.setZothTheme('matrix')" title="Matrix Theme (Shift+T)" type="button"><span class="theme-emoji">📟</span> <span class="theme-name">Matrix</span></button>
 <button aria-label="Switch to Gold theme" class="zoth-theme-btn" data-theme-id="gold" onclick="window.setZothTheme('gold')" title="Gold Theme (Shift+T)" type="button"><span class="theme-emoji">⚗️</span> <span class="theme-name">Gold</span></button>
 </div>
-<a class="nav-pill js-deck" href=ORCHESTRATOR_API_BASE + "/"><span class="deck-pulse"></span> Deck :8484</a>
+<a class="nav-pill js-deck" href="http://127.0.0.1:8484/"><span class="deck-pulse"></span> Deck :8484</a>
 <a class="nav-pill git" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">GitHub ↗</a>
 </nav>
 
@@ -145,7 +145,7 @@
 <div class="drawer-heading">Security &amp; Docs</div>
 <a href="/docs/">📚 Documentation Reference</a>
 <a href="/vault/">🔐 Sovereign Vault (:8484)</a>
-<a class="js-deck" href=ORCHESTRATOR_API_BASE + "/">⚡ Local Operator Deck (:8484)</a>
+<a class="js-deck" href="http://127.0.0.1:8484/">⚡ Local Operator Deck (:8484)</a>
 <a class="git-link" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">GitHub Repository ↗</a>
 </div>
 </nav>
@@ -161,7 +161,7 @@
 <p class="lede">Autonomous multi-agent website generator. Prompt any idea or select from <strong>182 in-house blueprints &amp; 31 open-source MIT templates</strong> with real-time live preview.</p>
 <div class="sitegen-poster-actions">
 <a class="magic-shimmer-btn" href="#foundry">🚀 Launch Foundry Workbench</a>
-<a class="btn btn-ghost js-deck" href=ORCHESTRATOR_API_BASE + "/">🔮 Ask Master Azoth</a>
+<a class="btn btn-ghost js-deck" href="http://127.0.0.1:8484/">🔮 Ask Master Azoth</a>
 </div>
 </div>
 <div class="sitegen-poster-visual">
@@ -390,9 +390,29 @@
         <button class="btn-primary" onclick="spawnAgentAndSynthesize()">
           ⚡ Spawn Agent &amp; Generate Unique Draft ➔
         </button>
+        <!-- INLINE STEP 1 LIVE AGENT REASONING & PROGRESS DECK -->
+        <div id="step1InlineProgressDeck" style="display:none;margin-top:16px;background:#030712;border:1px solid rgba(0,240,255,0.35);border-radius:14px;padding:16px;box-shadow:0 8px 32px rgba(0,240,255,0.15);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="swarm-pulse-dot" style="background:#00f0ff;box-shadow:0 0 10px #00f0ff;"></span>
+              <span style="font-size:0.78rem;font-weight:900;color:#38bdf8;font-family:var(--font-mono, monospace);" id="step1AgentBadge">⚡ @AZOTH: DEEP NEURAL SYNTHESIS</span>
+            </div>
+            <span style="font-size:0.68rem;padding:3px 10px;border-radius:99px;background:rgba(0,240,255,0.15);color:#00f0ff;border:1px solid rgba(0,240,255,0.3);font-family:var(--font-mono, monospace);" id="step1StatusBadge">Decomposing Prompt</span>
+          </div>
+
+          <!-- Animated Progress Loading Bar -->
+          <div style="width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:99px;margin-bottom:12px;overflow:hidden;">
+            <div id="step1InlineProgressBar" style="width:15%;height:100%;background:linear-gradient(90deg, #00f0ff, #38bdf8, #34d399);border-radius:99px;transition:width 0.4s ease;"></div>
+          </div>
+
+          <!-- Live Ingestion & Decomposition Log Stream -->
+          <div id="step1InlineLogStream" style="background:#010409;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;font-family:var(--font-mono, monospace);font-size:0.75rem;color:#38bdf8;display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;line-height:1.5;">
+            <div style="color:#00f0ff;">[00:01] 🔍 Connecting to @azoth neural agent kernel...</div>
+          </div>
+        </div>
         <div class="mobile-stage-nav-row">
           <button class="btn-ghost" type="button" onclick="setMobileLayoutMode('preview')">👁️ View Live Preview</button>
-          <button class="btn-primary" type="button" onclick="goToStage(2)" style="flex:1;">Continue to Step 2: Visual Style ➔</button>
+          <button class="btn-primary" type="button" onclick="goToStage(2)" style="flex:1;">Continue to Step 2: Architecture & Style ➔</button>
         </div>
       </div>
 
@@ -974,7 +994,7 @@
 </div>
 <div class="foot-col">
 <h3>Studio &amp; Core</h3>
-<a class="mega-footer-link js-deck" href=ORCHESTRATOR_API_BASE + "/"><span>⚡</span> Operator Deck (:8484)</a>
+<a class="mega-footer-link js-deck" href="http://127.0.0.1:8484/"><span>⚡</span> Operator Deck (:8484)</a>
 <a class="mega-footer-link" href="/studio/"><span>🛠️</span> Studio Workstations</a>
 <a class="mega-footer-link" href="/studio/site-generator.html"><span>🚀</span> Website Generator</a>
 <a class="mega-footer-link" href="/studio/swarm.html"><span>🌐</span> 3D Swarm Arena</a>
@@ -2304,6 +2324,20 @@
     var stepLines = document.getElementById('synthesisStepLines');
     var oTitle = document.getElementById('synthesisOverlayTitle');
     var oSub = document.getElementById('synthesisOverlaySub');
+
+    var inlineDeck = document.getElementById('step1InlineProgressDeck');
+    var inlineBar = document.getElementById('step1InlineProgressBar');
+    var inlineLogs = document.getElementById('step1InlineLogStream');
+    var inlineBadge = document.getElementById('step1AgentBadge');
+
+    if (inlineDeck) inlineDeck.style.display = 'block';
+    if (inlineBar) inlineBar.style.width = '25%';
+    if (inlineBadge) inlineBadge.textContent = '⚡ @' + selectedAgent.toUpperCase() + ': DEEP NEURAL SYNTHESIS';
+    if (inlineLogs) {
+      inlineLogs.innerHTML = '<div style="color:#00f0ff;">[00:01] ⚡ Ingesting prompt into @' + selectedAgent + '...</div>' +
+        '<div style="color:#94a3b8;">[00:03] ⏳ Formulating authentic brand entity &amp; domain constraints...</div>' +
+        '<div style="color:#94a3b8;">[00:05] ⏳ Compiling from-scratch 6-page route architecture...</div>';
+    }
 
     if (overlay) overlay.style.display = 'flex';
     if (pFill) pFill.style.width = '25%';
