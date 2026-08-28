@@ -1001,10 +1001,6 @@
     }
 
     step();
-  }, stepDelay);
-    }
-
-    step();
   }
 
   return {
