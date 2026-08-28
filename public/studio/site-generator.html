@@ -822,7 +822,34 @@
       </div>
 
       <div class="viewport-container">
-        <iframe class="preview-frame" id="previewIframe" title="Website Live Preview"></iframe>
+              <div class="viewport-container" id="viewportMainContainer">
+        <!-- Live Preview Iframe (Hidden until Step 4 finishes and user unlocks preview) -->
+        <iframe class="preview-frame" id="previewIframe" title="Website Live Preview" style="display:none;"></iframe>
+        
+        <!-- Pre-Generation / Swarm Workstation Cockpit -->
+        <div id="previewLockedCockpit" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:540px;background:#030712;padding:32px;text-align:center;box-sizing:border-box;">
+          <div style="width:72px;height:72px;border-radius:20px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.3);display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin-bottom:16px;box-shadow:0 0 30px rgba(0,240,255,0.15);">
+            🪐
+          </div>
+          <h2 style="font-family:Syne,sans-serif;font-size:1.5rem;font-weight:900;color:#ffffff;margin:0 0 8px;">Zoth Studio Sovereign Foundry</h2>
+          <div style="font-size:0.82rem;color:#38bdf8;font-family:monospace;margin-bottom:18px;" id="cockpitStatusTag">Awaiting Step 4 Swarm Synthesis</div>
+          
+          <p style="color:#94a3b8;font-size:0.88rem;max-width:440px;line-height:1.6;margin:0 0 24px;">
+            Your project is built directly from scratch. The live interactive preview will unlock automatically once Step 4 completes the 21-agent synthesis.
+          </p>
+
+          <!-- Swarm & Workspace Telemetry Stream Box -->
+          <div style="width:100%;max-width:520px;background:#060a17;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;text-align:left;font-family:monospace;font-size:0.75rem;color:#94a3b8;line-height:1.6;margin-bottom:20px;" id="cockpitTelemetryLogs">
+            <div style="color:#38bdf8;font-weight:bold;margin-bottom:6px;">⚡ Physical Workspace Telemetry:</div>
+            <div id="cockpitLogLine1">● Workspace: /workspaces/<span id="cockpitProjSlug">unassigned</span></div>
+            <div id="cockpitLogLine2">● Agent Core: Antigravity DeepMind + Grok xAI</div>
+            <div id="cockpitLogLine3">● Status: Configure Steps 1–4 on the left to spawn the swarm.</div>
+          </div>
+
+          <button id="btnUnlockPreviewDirect" class="btn-primary" onclick="unlockLivePreview(true)" style="display:none;background:linear-gradient(135deg,#34d399,#10b981);color:#050711;font-weight:900;padding:12px 28px;font-size:0.95rem;">
+            👁️ Open Live Website Preview ➔
+          </button>
+        </div>
         
         <!-- Dedicated Template Lifecycle & Dev Server Overlay -->
         <div class="devserver-lifecycle-overlay" id="devServerLoadingOverlay" style="display:none;">
@@ -1098,21 +1125,20 @@
 
     if (overlay) overlay.style.display = 'none';
 
+    resetWorkspaceToScratch();
+
     if (currentProjectMode === 'scratch') {
       switchSourceMode('prompt');
       if (modalName) {
         var pInput = document.getElementById('projectNameInput');
         if (pInput) pInput.value = modalName;
+        var cSlug = document.getElementById('cockpitProjSlug');
+        if (cSlug) cSlug.textContent = modalName;
       }
       if (modalPrompt) {
         var promptEl = document.getElementById('sitePromptInput');
         if (promptEl) promptEl.value = modalPrompt;
         spawnAgentAndSynthesize();
-      } else {
-        var iframe = document.getElementById('previewIframe');
-        if (iframe) {
-          iframe.srcdoc = '<!DOCTYPE html><html><body style="background:#050711;color:#94a3b8;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;"><div><h2 style="color:#ffffff;font-family:sans-serif;">🔨 Workspace Initialized: ' + modalName + '</h2><p>Upload brand assets on the left and enter your concept prompt to begin synthesis.</p></div></body></html>';
-        }
       }
     } else {
       switchSourceMode('inhouse');
@@ -1120,6 +1146,47 @@
   }
 
   // Global State
+    // Live Preview Gating: Hidden during Steps 1-4, unlocked on completion or explicit user request post-Step 4
+  var isLivePreviewUnlocked = false;
+
+  function unlockLivePreview(force) {
+    isLivePreviewUnlocked = true;
+    var iframe = document.getElementById('previewIframe');
+    var cockpit = document.getElementById('previewLockedCockpit');
+    var btnUnlock = document.getElementById('btnUnlockPreviewDirect');
+
+    if (cockpit) cockpit.style.display = 'none';
+    if (iframe) {
+      iframe.style.display = 'block';
+      renderDomainPreview();
+    }
+    showStudioToast('👁️ Live Website Preview Unlocked!');
+  }
+
+  function resetWorkspaceToScratch() {
+    activeTemplate = null;
+    currentSite = null;
+    multiPageCache = {};
+    isLivePreviewUnlocked = false;
+
+    var banner = document.getElementById('activeBlueprintBanner');
+    if (banner) banner.style.display = 'none';
+
+    var promptInput = document.getElementById('sitePromptInput');
+    if (promptInput) promptInput.value = '';
+
+    var iframe = document.getElementById('previewIframe');
+    var cockpit = document.getElementById('previewLockedCockpit');
+    if (iframe) iframe.style.display = 'none';
+    if (cockpit) cockpit.style.display = 'flex';
+
+    var cStatus = document.getElementById('cockpitStatusTag');
+    if (cStatus) cStatus.textContent = 'Awaiting Step 4 Swarm Synthesis';
+
+    var btnUnlock = document.getElementById('btnUnlockPreviewDirect');
+    if (btnUnlock) btnUnlock.style.display = 'none';
+  }
+
   var currentStage = 1;
   var selectedAgent = 'antigravity';
   var currentSite = null;
@@ -2606,6 +2673,7 @@
   function closePostGenerationFeedbackModal() {
     var modal = document.getElementById('postGenFeedbackModal');
     if (modal) modal.style.display = 'none';
+    unlockLivePreview();
   }
 
   function showStudioToast(msg) {
@@ -2815,7 +2883,13 @@
 
           setTimeout(function() {
             if (overlay) overlay.style.display = 'none';
-            renderDomainPreview();
+            var btnUnlock = document.getElementById('btnUnlockPreviewDirect');
+            var cStatus = document.getElementById('cockpitStatusTag');
+            if (btnUnlock) btnUnlock.style.display = 'inline-block';
+            if (cStatus) {
+              cStatus.textContent = '✅ 21-Agent Swarm Synthesis Finished!';
+              cStatus.style.color = '#34d399';
+            }
             openPostGenerationFeedbackModal(feedback);
           }, 600);
         }
