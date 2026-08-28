@@ -814,21 +814,42 @@
       var overallPct = Math.round(((currentIdx + 1) / totalAgents) * 100);
 
       onStart(Object.assign({}, agent, { task: activeTaskDesc }), currentIdx);
-      onLog('[' + new Date().toLocaleTimeString() + '] ⚡ [Agent ' + agent.num + '/21 · ' + agent.name + '] ➔ ' + activeTaskDesc);
+      onLog('[' + new Date().toLocaleTimeString() + '] ⚡ [' + agent.parentLeadName + ' ➔ ' + agent.name + '] ' + activeTaskDesc);
       onProgress(overallPct, agent);
 
-      // Real progressive agent sub-progress (0% -> 50% -> 100%)
-      onAgentProgress(agent.id, 15, activeSubsteps[0]);
-      
+      // 1. Initial execution start
+      onAgentProgress(agent.id, 20, activeSubsteps[0]);
+
+      // 2. Headless Agent Execution & Telemetry
+      if (isBrowser && typeof fetch !== 'undefined') {
+        try {
+          fetch('http://127.0.0.1:8484/api/zoth/swarm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: activeTaskDesc + ' for ' + siteName,
+              petId: agent.parentLeadId || 'antigravity'
+            })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(d) {
+            if (d && d.response) {
+              onLog('    ↳ 🤖 ' + d.response.replace(/<[^>]+>/g, '').substring(0, 140) + '...');
+            }
+          })
+          .catch(function() {});
+        } catch(e) {}
+      }
+
       setTimeout(function() {
-        onAgentProgress(agent.id, 60, activeSubsteps[1]);
+        onAgentProgress(agent.id, 65, activeSubsteps[1]);
         onLog('    ↳ 🧠 ' + activeSubsteps[1]);
-      }, Math.floor(stepDelay * 0.35));
+      }, Math.floor(stepDelay * 0.4));
 
       setTimeout(function() {
         onAgentProgress(agent.id, 100, activeSubsteps[2]);
         onLog('    ↳ ✅ ' + activeSubsteps[2]);
-      }, Math.floor(stepDelay * 0.75));
+      }, Math.floor(stepDelay * 0.8));
 
       if (currentIdx === 0 && routes['index.html']) {
         onSection('index.html', routes['index.html']);
@@ -841,7 +862,7 @@
       }, stepDelay);
     }
 
-    step();
+        step();
   }
 
   return {
