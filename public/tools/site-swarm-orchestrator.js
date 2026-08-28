@@ -19,29 +19,112 @@
 
   var VERSION = '4.2.0';
 
-  var SWARM_AGENTS = [
-    { id: 'agent_copywriter', num: 1, name: 'Domain Copywriter', icon: '✍️', role: 'Headlines & Value Props', task: 'Crafting domain-specific hero headlines, offerings catalog, and localized value propositions.' },
-    { id: 'agent_seo_architect', num: 2, name: 'SEO & Schema Architect', icon: '🔍', role: 'Schema.org JSON-LD', task: 'Injecting Schema.org LocalBusiness/SoftwareApplication graphs, canonical tags, and OpenGraph headers.' },
-    { id: 'agent_bento_designer', num: 3, name: 'Bento UI Designer', icon: '🎨', role: 'Component Grid Architecture', task: 'Generating high-contrast visual cards, interactive widgets, and responsive layouts.' },
-    { id: 'agent_multipage_router', num: 4, name: 'Multi-Page Router', icon: '🗺️', role: '6-Route Consistency & Links', task: 'Validating navigation anchors and consistent brand themes across all 6 subpages.' },
-    { id: 'agent_billing_stripe', num: 5, name: 'Stripe Billing Specialist', icon: '💳', role: 'Pricing Tiers & Checkout', task: 'Configuring trade-specific pricing cards with monthly/annual 20% prepay discount handlers.' },
-    { id: 'agent_security_guard', num: 6, name: 'Security & CSP Auditor', icon: '🛡️', role: 'Argon2id Vault & CSP Headers', task: 'Enforcing zero-trust Content Security Policy, SRI hashes, and zero cloud data leaks.' },
-    { id: 'agent_local_geo_seo', num: 7, name: 'Local Geo-SEO Engineer', icon: '📍', role: 'Maps & Service Area Triples', task: 'Injecting geographic coordinates, neighborhood tags, and Google 3-pack schema definitions.' },
-    { id: 'agent_cro_optimizer', num: 8, name: 'CRO & Conversion Strategist', icon: '🎯', role: 'Trust Proof & Friction Reduction', task: 'Adding satisfaction guarantees, instant quoting calculators, and emergency hotline callouts.' },
-    { id: 'agent_interactive_builder', num: 9, name: 'Interactive Widget Engineer', icon: '🧮', role: 'Live Sliders & Calculators', task: 'Assembling interactive JavaScript price calculators, cart drawers, and terminal playgrounds.' },
-    { id: 'agent_brand_stylist', num: 10, name: 'Brand Token Stylist', icon: '💎', role: 'Design Tokens & Monograms', task: 'Synthesizing code-based inline SVG logo monograms and tailored CSS color variables.' },
-    { id: 'agent_typography_lead', num: 11, name: 'Typography Architect', icon: '🔤', role: 'Font Hierarchy & Readability', task: 'Pairing Syne display fonts with Figtree body and IBM Plex Mono code elements.' },
-    { id: 'agent_speed_benchmark', num: 12, name: 'Core Web Vitals Auditor', icon: '⚡', role: 'Sub-10ms FID & Zero CLS', task: 'Optimizing critical CSS, preloading fonts, and guaranteeing zero cumulative layout shifts.' },
-    { id: 'agent_a11y_auditor', num: 13, name: 'Accessibility (A11y) Lead', icon: '♿', role: 'WCAG 2.1 AAA Compliance', task: 'Verifying color contrast ratios, keyboard focus states, and skip-to-content links.' },
-    { id: 'agent_i18n_translator', num: 14, name: 'i18n Localization Engine', icon: '🌐', role: 'Multi-Language Encodings', task: 'Setting HTML lang headers, UTF-8 character maps, and localized currency formatting.' },
-    { id: 'agent_code_sandbox', num: 15, name: 'Interactive Sandbox Lead', icon: '💻', role: 'In-Browser Runtime Shells', task: 'Generating live cURL code switchers, terminal simulations, and WebGL game viewports.' },
-    { id: 'agent_testimonials_curator', num: 16, name: 'Social Proof Curator', icon: '⭐', role: '5-Star Reviews & Marquees', task: 'Structuring authentic client reviews with verified homeowner initials and star ratings.' },
-    { id: 'agent_faq_author', num: 17, name: 'FAQ & Knowledge Author', icon: '❓', role: 'FAQPage Structured Entities', task: 'Formulating trade-specific technical and pricing answers for Perplexity and Google Search.' },
-    { id: 'agent_form_validator', num: 18, name: 'Lead Form & Booking Guard', icon: '📬', role: 'Client Ingestion Pipelines', task: 'Constructing accessible quote request forms with client-side field validation.' },
-    { id: 'agent_assets_bundler', num: 19, name: 'Assets & SVG Generator', icon: '🖼️', role: 'Zero-Egress Graphics', task: 'Generating lightweight inline SVG graphics, badge indicators, and social preview cards.' },
-    { id: 'agent_framework_exporter', num: 20, name: 'Framework Exporter', icon: '📦', role: 'React, Astro & Node.js Bundles', task: 'Structuring multi-framework repository packages for 1-click ZIP and Netlify export.' },
-    { id: 'agent_netlify_ax_healer', num: 21, name: 'Netlify AX Self-Healing Lead', icon: '🚀', role: 'Autonomous Edge Deployment', task: 'Injecting Netlify AX v3.0 self-healing fallback loops, immutable cache rules, and zero-404 redirects.' }
+    // 7 Sovereign Master Leads that each deploy 3 Specialized Headless Subagents (21 Total)
+  var SQUAD_HIERARCHY = [
+    {
+      leadId: 'azoth',
+      leadNum: 1,
+      leadName: 'Master Azoth',
+      leadIcon: '🔮',
+      leadRole: 'Supreme Alchemist & Synthesis Conductor',
+      leadDirective: 'Harmonize multi-agent consensus into a unified brand identity and value proposition.',
+      subagents: [
+        { id: 'agent_copywriter', num: 1, name: 'Bespoke Domain Copywriter', icon: '✍️', role: 'Headlines & Value Props', task: 'Crafting domain-specific hero headlines, offerings catalog, and localized value propositions.' },
+        { id: 'agent_brand_stylist', num: 2, name: 'Brand Token Stylist', icon: '💎', role: 'Design Tokens & Monograms', task: 'Synthesizing code-based inline SVG logo monograms and tailored CSS color variables.' },
+        { id: 'agent_testimonials_curator', num: 3, name: 'Social Proof Curator', icon: '⭐', role: '5-Star Reviews & Marquees', task: 'Structuring authentic client reviews with verified ratings and testimonial streams.' }
+      ]
+    },
+    {
+      leadId: 'antigravity',
+      leadNum: 2,
+      leadName: 'Antigravity Core',
+      leadIcon: '🪐',
+      leadRole: 'Lead Systems Architect & AST Router',
+      leadDirective: 'Scaffold zero-egress workspace ASTs and compile full 6-route navigation suite.',
+      subagents: [
+        { id: 'agent_multipage_router', num: 4, name: 'Multi-Page Router', icon: '🗺️', role: '6-Route Mesh Integrity', task: 'Validating navigation anchors and consistent brand themes across /index, /features, /pricing, /docs, /about, /contact.' },
+        { id: 'agent_code_sandbox', num: 5, name: 'Interactive Sandbox Lead', icon: '💻', role: 'In-Browser Runtime Shells', task: 'Generating live cURL code switchers, terminal simulations, and interactive component runners.' },
+        { id: 'agent_framework_exporter', num: 6, name: 'Framework Exporter', icon: '📦', role: 'HTML, Astro & Vite Bundler', task: 'Structuring multi-framework repository packages for 1-click ZIP and local workspace export.' }
+      ]
+    },
+    {
+      leadId: 'grok',
+      leadNum: 3,
+      leadName: 'Grok (xAI)',
+      leadIcon: '📐',
+      leadRole: 'Mathematical Truth & Performance Auditor',
+      leadDirective: 'Validate logical invariants, sub-10ms FID performance, and zero-hallucination structured data.',
+      subagents: [
+        { id: 'agent_speed_benchmark', num: 7, name: 'Core Web Vitals Auditor', icon: '⚡', role: 'Sub-10ms FID & 0.00 CLS', task: 'Optimizing critical CSS, preloading fonts, and guaranteeing zero cumulative layout shifts.' },
+        { id: 'agent_faq_author', num: 8, name: 'FAQ & Knowledge Author', icon: '❓', role: 'FAQPage Structured Entities', task: 'Formulating trade-specific technical and pricing answers for Perplexity and Google Search.' },
+        { id: 'agent_form_validator', num: 9, name: 'Lead Form & Booking Guard', icon: '📬', role: 'Client Ingestion Pipelines', task: 'Constructing accessible quote request forms with client-side field validation.' }
+      ]
+    },
+    {
+      leadId: 'hermes',
+      leadNum: 4,
+      leadName: 'Hermes-9',
+      leadIcon: '⚡',
+      leadRole: 'Autonomous Tool Runner & Billing Specialist',
+      leadDirective: 'Execute headless file generation, interactive widgets, and Stripe checkout pipelines.',
+      subagents: [
+        { id: 'agent_billing_stripe', num: 10, name: 'Stripe Billing Specialist', icon: '💳', role: 'Pricing Tiers & Checkout', task: 'Configuring trade-specific pricing cards with monthly/annual 20% prepay discount handlers.' },
+        { id: 'agent_interactive_builder', num: 11, name: 'Interactive Widget Engineer', icon: '🧮', role: 'Live Sliders & Calculators', task: 'Assembling interactive JavaScript price calculators, cart drawers, and product customizers.' },
+        { id: 'agent_assets_bundler', num: 12, name: 'Assets & SVG Generator', icon: '🖼️', role: 'Zero-Egress Graphics', task: 'Generating lightweight inline SVG graphics, badge indicators, and social preview cards.' }
+      ]
+    },
+    {
+      leadId: 'ghostbyte',
+      leadNum: 5,
+      leadName: 'GhostByte Sentinel',
+      leadIcon: '🔒',
+      leadRole: 'Zero-Knowledge Cryptographer & A11y Guard',
+      leadDirective: 'Enforce strict loopback containment, WCAG 2.1 AAA contrast, and memory security.',
+      subagents: [
+        { id: 'agent_security_guard', num: 13, name: 'Security & CSP Auditor', icon: '🛡️', role: 'Argon2id Vault & CSP Headers', task: 'Enforcing zero-trust Content Security Policy, SRI hashes, and zero cloud data leaks.' },
+        { id: 'agent_a11y_auditor', num: 14, name: 'Accessibility (A11y) Lead', icon: '♿', role: 'WCAG 2.1 AAA Compliance', task: 'Verifying color contrast ratios, keyboard focus states, and skip-to-content links.' },
+        { id: 'agent_i18n_translator', num: 15, name: 'i18n Localization Engine', icon: '🌐', role: 'Multi-Language Encodings', task: 'Setting HTML lang headers, UTF-8 character maps, and localized currency formatting.' }
+      ]
+    },
+    {
+      leadId: 'athena',
+      leadNum: 6,
+      leadName: 'Athena Matrix',
+      leadIcon: '🦉',
+      leadRole: 'Semantic Search & Conversion Architect',
+      leadDirective: 'Inject machine-readable JSON-LD Schema.org graphs, local SEO coordinates, and conversion hooks.',
+      subagents: [
+        { id: 'agent_seo_architect', num: 16, name: 'SEO & Schema Architect', icon: '🔍', role: 'Schema.org JSON-LD', task: 'Injecting Schema.org LocalBusiness/Product graphs, canonical tags, and OpenGraph headers.' },
+        { id: 'agent_local_geo_seo', num: 17, name: 'Local Geo-SEO Engineer', icon: '📍', role: 'Maps & Service Area Triples', task: 'Injecting geographic coordinates, neighborhood tags, and Google 3-pack schema definitions.' },
+        { id: 'agent_cro_optimizer', num: 18, name: 'CRO & Conversion Strategist', icon: '🎯', role: 'Trust Proof & Friction Reduction', task: 'Adding satisfaction guarantees, instant quoting calculators, and emergency hotline callouts.' }
+      ]
+    },
+    {
+      leadId: 'kitsune',
+      leadNum: 7,
+      leadName: 'Kitsune Visuals',
+      leadIcon: '🦊',
+      leadRole: '3D Neural Shaders & Netlify AX Specialist',
+      leadDirective: 'Compose Fibonacci bento layouts, aesthetic typography, and Netlify AX self-healing loops.',
+      subagents: [
+        { id: 'agent_bento_designer', num: 19, name: 'Bento UI Designer', icon: '🎨', role: 'Component Grid Architecture', task: 'Generating high-contrast visual cards, interactive widgets, and responsive layouts.' },
+        { id: 'agent_typography_lead', num: 20, name: 'Typography Architect', icon: '🔤', role: 'Font Hierarchy & Readability', task: 'Pairing Syne display fonts with Figtree body and IBM Plex Mono code elements.' },
+        { id: 'agent_netlify_ax_healer', num: 21, name: 'Netlify AX Self-Healing Lead', icon: '🚀', role: 'Autonomous Edge Deployment', task: 'Injecting Netlify AX v3.0 self-healing fallback loops, immutable cache rules, and zero-404 redirects.' }
+      ]
+    }
   ];
+
+  // Flatten all 21 subagents with their parent lead metadata
+  var SWARM_AGENTS = [];
+  SQUAD_HIERARCHY.forEach(function(squad) {
+    squad.subagents.forEach(function(sub) {
+      SWARM_AGENTS.push(Object.assign({}, sub, {
+        parentLeadId: squad.leadId,
+        parentLeadName: squad.leadName,
+        parentLeadIcon: squad.leadIcon
+      }));
+    });
+  });
 
   function getAgent(idOrNum) {
     if (typeof idOrNum === 'number') {

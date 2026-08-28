@@ -2025,29 +2025,53 @@
 
   // Populate 21 Agents in the HUD Grid
   // Populate 21 Agents in the HUD Grid with individual progress bars
+  // Render the 7 Master Leads & their 3 Subagents (21 Headless Agents Total)
   function renderSwarmGrid() {
     var grid = document.getElementById('swarmGridContainer');
     if (!grid || typeof ZothSwarmOrchestrator === 'undefined') return;
 
     var agents = ZothSwarmOrchestrator.getAllAgents();
     var gridHtml = '';
-    agents.forEach(function(a) {
-      gridHtml += '<div class="swarm-agent-tile" id="tile_' + a.id + '">' +
-        '<div style="display:flex;align-items:center;gap:8px;width:100%;">' +
-          '<div class="swarm-pulse-dot" id="dot_' + a.id + '"></div>' +
-          '<div class="swarm-agent-tile-info" style="flex:1;min-width:0;">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-              '<div class="swarm-agent-tile-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + a.icon + ' ' + a.num + '. ' + a.name + '</div>' +
-              '<span id="agent_pct_' + a.id + '" style="font-size:0.68rem;font-family:var(--font-mono, monospace);color:#94a3b8;">0%</span>' +
-            '</div>' +
-            '<div class="swarm-agent-tile-role" id="agent_sub_' + a.id + '" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + a.role + '</div>' +
-            '<div style="width:100%;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:4px;overflow:hidden;">' +
-              '<div id="agent_bar_' + a.id + '" style="width:0%;height:100%;background:var(--gen-cyan);transition:width 0.15s ease;"></div>' +
+    
+    // Group into 7 squads
+    var squadGroups = [
+      { id: 'azoth', name: '🔮 Master Azoth (Chief Alchemist & Product)', color: '#fbbf24' },
+      { id: 'antigravity', name: '🪐 Antigravity (Lead Systems & Router)', color: '#38bdf8' },
+      { id: 'grok', name: '📐 Grok (Truth & Invariant Auditor)', color: '#a855f7' },
+      { id: 'hermes', name: '⚡ Hermes-9 (Autonomous Tool Runner)', color: '#00f0ff' },
+      { id: 'ghostbyte', name: '🔒 GhostByte (Zero-Knowledge Sentinel)', color: '#34d399' },
+      { id: 'athena', name: '🦉 Athena (Knowledge & Conversion)', color: '#f59e0b' },
+      { id: 'kitsune', name: '🦊 Kitsune (Visuals & Netlify AX)', color: '#f43f5e' }
+    ];
+
+    squadGroups.forEach(function(sq) {
+      var squadAgents = agents.filter(function(a) { return a.parentLeadId === sq.id; });
+      if (squadAgents.length === 0) return;
+
+      gridHtml += '<div style="grid-column:1/-1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-left:3px solid ' + sq.color + ';border-radius:8px;padding:8px 12px;margin:6px 0 2px;font-size:0.75rem;font-weight:800;color:' + sq.color + ';display:flex;justify-content:space-between;align-items:center;">' +
+        '<span>' + sq.name + '</span>' +
+        '<span style="font-size:0.65rem;color:#94a3b8;font-family:var(--font-mono, monospace);">3 Subagents Dispatched</span>' +
+      '</div>';
+
+      squadAgents.forEach(function(a) {
+        gridHtml += '<div class="swarm-agent-tile" id="tile_' + a.id + '" style="margin-bottom:4px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;width:100%;">' +
+            '<div class="swarm-pulse-dot" id="dot_' + a.id + '"></div>' +
+            '<div class="swarm-agent-tile-info" style="flex:1;min-width:0;">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+                '<div class="swarm-agent-tile-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + a.icon + ' ' + a.num + '. ' + a.name + '</div>' +
+                '<span id="agent_pct_' + a.id + '" style="font-size:0.68rem;font-family:var(--font-mono, monospace);color:#94a3b8;">0%</span>' +
+              '</div>' +
+              '<div class="swarm-agent-tile-role" id="agent_sub_' + a.id + '" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + a.role + '</div>' +
+              '<div style="width:100%;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:4px;overflow:hidden;">' +
+                '<div id="agent_bar_' + a.id + '" style="width:0%;height:100%;background:var(--gen-cyan);transition:width 0.15s ease;"></div>' +
+              '</div>' +
             '</div>' +
           '</div>' +
-        '</div>' +
-      '</div>';
+        '</div>';
+      });
     });
+
     grid.innerHTML = gridHtml;
   }
 
@@ -2237,6 +2261,20 @@
     if (logTerm) logTerm.innerHTML = '<div>[00:00:00] ⚡ 21-Agent Megacluster Orchestration Kernel Initiated...</div>';
 
     renderSwarmGrid();
+    // Asynchronously dispatch real headless swarm broadcast to orchestrator on :8484
+    try {
+      fetch('http://127.0.0.1:8484/api/zoth/swarm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: (currentSite ? (currentSite.name + ': ' + (currentSite.tagline || '')) : 'Synthesize website'),
+          to: 'aether',
+          framework: studioConfig.framework,
+          agents_count: 21,
+          mode: swarmMode
+        })
+      }).catch(function(e) { console.log('[Swarm Daemon Bridge]', e); });
+    } catch(err) {}
 
     var swarmCfg = Object.assign({}, studioConfig, {
       mode: swarmMode || 'rapid',
