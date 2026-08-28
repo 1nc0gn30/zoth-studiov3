@@ -2229,16 +2229,20 @@ created: {now_utc}
                 ]
 
                 # Craft rich instruction for the AI agent
-                refine_line = f"User Refinement Feedback: {prompt}" if is_feedback else "Create a complete, bespoke website architecture from scratch."
-                sys_prompt = f"""You are Master Azoth, Lead Autonomous Web Engineer.
-Operator Prompt: '{prompt}'
+                refine_line = f"User Refinement Feedback: {prompt}" if is_feedback else "Perform a deep fullstack architecture decomposition from the ground up."
+                sys_prompt = f"""You are Master Azoth leading a senior autonomous engineering swarm.
+The operator commanded you to build a website from scratch:
+"{prompt}"
 {refine_line}
 
-INSTRUCTIONS:
-1. If the user prompt is extremely vague or requires a crucial choice, you may set 'needsClarification': true and provide 'question' and 2-4 'options'. Otherwise set 'needsClarification': false.
-2. Invent an authentic, high-end brand name (e.g. 'Vanguard Skate Co.', 'Aura Living', 'Apex Dynamics' — NEVER use filler words like 'dope', 'make a', 'site', 'app').
-3. Generate bespoke hero copy, 4-6 features, 4 catalog items, 3 pricing plans, and 3 FAQs tailored to this exact business.
-4. Choose optimal framework ('static_html'|'astro'|'vite_react') and palette accent hex color.
+Perform a rigorous architectural build plan:
+1. Deeply understand all operator constraints & negative constraints:
+   - Identify primary purpose, target audience, aesthetic themes, and explicit negative constraints (e.g. if 'no products sold / no sign ups', strictly enforce non-commercial media architecture with zero commerce / auth walls).
+2. Formulate authentic brand entity, punchy tagline, and unadulterated hero statement.
+3. Design 6 bespoke routes tailored specifically for this domain (e.g. /index, /features, /pricing or /free-access, /docs or /zine, /about, /contact).
+4. Specify tailored UI components (e.g. interactive toggles, video reels, interactive canvas, or calculator depending on domain).
+5. Specify exact image prompts for visual hero assets and vector brand stickers.
+
 Output a single valid raw JSON object with keys:
 {{
   "needsClarification": false,
@@ -2249,14 +2253,26 @@ Output a single valid raw JSON object with keys:
   "tagline": "...",
   "heroTitle": "...",
   "heroSub": "...",
-  "paletteAccent": "#00f0ff",
+  "paletteAccent": "#FF2A00",
   "framework": "static_html",
-  "targetAudience": "tech",
-  "monetization": "subscription",
-  "bentoFeatures": [{{"icon": "...", "title": "...", "desc": "..."}}],
-  "itemsCatalog": [{{"name": "...", "place": "...", "time": "...", "price": "...", "rating": "..."}}],
-  "pricingTiers": [{{"tier": "...", "price": "...", "popular": true, "desc": "...", "perks": []}}],
-  "faq": [{{"q": "...", "a": "..."}}]
+  "targetAudience": "...",
+  "monetization": "100% Free Open Access / Non-Commercial",
+  "bentoFeatures": [
+    {{"icon": "...", "title": "...", "desc": "..."}}
+  ],
+  "itemsCatalog": [
+    {{"name": "...", "place": "...", "time": "...", "price": "FREE STREAM", "rating": "..."}}
+  ],
+  "pricingTiers": [
+    {{"tier": "...", "price": "$0", "popular": true, "desc": "...", "perks": ["..."]}}
+  ],
+  "faq": [
+    {{"q": "...", "a": "..."}}
+  ],
+  "imagePrompts": [
+    {{"filename": "hero-graphic.png", "prompt": "..."}},
+    {{"filename": "brand-badge.png", "prompt": "..."}}
+  ]
 }}
 Output ONLY the JSON object."""
 
