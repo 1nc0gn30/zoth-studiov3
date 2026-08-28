@@ -1339,7 +1339,17 @@ created: {now_utc}
             self.wfile.write(body)
 
         def do_OPTIONS(self):
-            self._send_json({"ok": True})
+            self.send_response(200)
+            origin = self.headers.get("Origin", "")
+            if origin:
+                self.send_header("Access-Control-Allow-Origin", origin)
+            else:
+                self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+            self.send_header("Access-Control-Allow-Credentials", "true")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
 
         def do_GET(self):
             if not self._check_auth():
@@ -2253,7 +2263,13 @@ Output a single valid raw JSON object with keys:
   "tagline": "...",
   "heroTitle": "...",
   "heroSub": "...",
-  "paletteAccent": "#FF2A00",
+    "paletteAccent": "#FF2A00",
+  "decisionRationales": {
+    "framework": "Why this framework was selected based on user constraints",
+    "design": "Why this visual styling and design system was selected",
+    "monetization": "Why this monetization model fits the user directives",
+    "connectors": "Why these API gateways and connectors are appropriate"
+  },
   "framework": "static_html",
   "targetAudience": "...",
   "monetization": "100% Free Open Access / Non-Commercial",

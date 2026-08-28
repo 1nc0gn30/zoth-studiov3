@@ -1740,6 +1740,7 @@
       el.classList.add('active');
     }
 
+    if (currentSite) renderAIDecisionRationales(currentSite.decisionRationales || (currentSite.plan ? currentSite.plan.decisionRationales : null));
     updateStackSummary();
     renderDomainPreview();
   }
@@ -1751,6 +1752,7 @@
     } else if (!isChecked && idx !== -1) {
       studioConfig.connectors.splice(idx, 1);
     }
+    if (currentSite) renderAIDecisionRationales(currentSite.decisionRationales || (currentSite.plan ? currentSite.plan.decisionRationales : null));
     updateStackSummary();
   }
 
@@ -1816,7 +1818,8 @@
       }
     }
     if (stageNum === 3) {
-      updateStackSummary();
+      if (currentSite) renderAIDecisionRationales(currentSite.decisionRationales || (currentSite.plan ? currentSite.plan.decisionRationales : null));
+    updateStackSummary();
     }
   }
 
@@ -1893,6 +1896,52 @@
 
     // Synchronize visual state across Step 3 (Framework/Design/Palette) and Step 4 (Audience/Monetization/Review)
     syncUIConfigSelections();
+  }
+
+  function renderAIDecisionRationales(rationales) {
+    if (!rationales) return;
+
+    // 1. Framework rationale
+    if (rationales.framework) {
+      var fwCard = document.getElementById('fw_' + studioConfig.framework);
+      if (fwCard) {
+        var oldR = fwCard.querySelector('.ai-rationale-badge');
+        if (oldR) oldR.remove();
+        var rDiv = document.createElement('div');
+        rDiv.className = 'ai-rationale-badge';
+        rDiv.style.marginTop = '8px';
+        rDiv.style.padding = '6px 10px';
+        rDiv.style.borderRadius = '6px';
+        rDiv.style.background = 'rgba(0,240,255,0.08)';
+        rDiv.style.border = '1px solid rgba(0,240,255,0.25)';
+        rDiv.style.fontSize = '0.72rem';
+        rDiv.style.color = '#38bdf8';
+        rDiv.style.lineHeight = '1.4';
+        rDiv.innerHTML = '<strong>🧠 @Azoth Reasoning:</strong> ' + rationales.framework;
+        fwCard.appendChild(rDiv);
+      }
+    }
+
+    // 2. Design rationale
+    if (rationales.design) {
+      var desCard = document.getElementById('des_' + studioConfig.design);
+      if (desCard) {
+        var oldR = desCard.querySelector('.ai-rationale-badge');
+        if (oldR) oldR.remove();
+        var rDiv = document.createElement('div');
+        rDiv.className = 'ai-rationale-badge';
+        rDiv.style.marginTop = '8px';
+        rDiv.style.padding = '6px 10px';
+        rDiv.style.borderRadius = '6px';
+        rDiv.style.background = 'rgba(0,240,255,0.08)';
+        rDiv.style.border = '1px solid rgba(0,240,255,0.25)';
+        rDiv.style.fontSize = '0.72rem';
+        rDiv.style.color = '#38bdf8';
+        rDiv.style.lineHeight = '1.4';
+        rDiv.innerHTML = '<strong>🧠 @Azoth Reasoning:</strong> ' + rationales.design;
+        desCard.appendChild(rDiv);
+      }
+    }
   }
 
   function syncUIConfigSelections() {
@@ -2139,7 +2188,8 @@
 
         multiPageCache = {};
         renderDomainPreview();
-        updateStackSummary();
+        if (currentSite) renderAIDecisionRationales(currentSite.decisionRationales || (currentSite.plan ? currentSite.plan.decisionRationales : null));
+    updateStackSummary();
         showStudioToast('✨ @Azoth successfully refined the site draft according to your feedback!');
       }
     })
@@ -2321,7 +2371,12 @@
             bentoFeatures: p.bentoFeatures || [],
             itemsCatalog: p.itemsCatalog || [],
             pricing: p.pricingTiers || [],
-            faq: p.faq || []
+            faq: p.faq || [],
+            decisionRationales: p.decisionRationales || {
+              framework: "Selected for optimal sub-10ms browser execution with zero bundling complexity.",
+              design: "Tailored visual palette and high-contrast typography matching domain aesthetics.",
+              monetization: "Aligned with your non-commercial and direct access directives."
+            }
           };
 
           if (p.framework) studioConfig.framework = p.framework;
@@ -2348,7 +2403,8 @@
           }
 
           syncUIConfigSelections();
-          updateStackSummary();
+          if (currentSite) renderAIDecisionRationales(currentSite.decisionRationales || (currentSite.plan ? currentSite.plan.decisionRationales : null));
+    updateStackSummary();
           syncFilesToPhysicalWorkspace();
 
           goToStage(2);
@@ -2939,6 +2995,7 @@
   // Initialize Studio on DOM load
   document.addEventListener('DOMContentLoaded', function() {
     initTemplateVault();
+    if (currentSite) renderAIDecisionRationales(currentSite.decisionRationales || (currentSite.plan ? currentSite.plan.decisionRationales : null));
     updateStackSummary();
     goToStage(1);
   });
