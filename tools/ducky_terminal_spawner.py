@@ -4,6 +4,7 @@ import sys
 import time
 import json
 import re
+import threading
 from pathlib import Path
 
 def spawn_real_agent_terminal(project_name, prompt, agent="agy"):
@@ -23,19 +24,30 @@ def spawn_real_agent_terminal(project_name, prompt, agent="agy"):
     # 1. Create a tmux session located inside the project folder
     subprocess.run(["tmux", "new-session", "-d", "-s", session_name, "-c", str(ws_dir)], check=True)
 
-    # 2. Launch AGY interactive session inside the tmux container
-    subprocess.run(["tmux", "send-keys", "-t", session_name, "/home/neo/.local/bin/agy", "Enter"])
+    # 2. Asynchronous DuckyScript Sequence:
+    # Step 1: Type 'agy' and press Enter to initiate
+    # Step 2: Wait 2.5s, press Enter to confirm/trust folder
+    # Step 3: Wait 2.0s, type user prompt with -l, press Enter, and let agent work
+    def _run_duckyscript_sequence():
+        # Type agy
+        subprocess.run(["tmux", "send-keys", "-t", session_name, "/home/neo/.local/bin/agy", "Enter"])
+        time.sleep(2.5)
 
-    # Give AGY interactive CLI 4.5 seconds to fully mount its TUI and cursor box
-    time.sleep(4.5)
+        # Press Enter to trust workspace / accept defaults
+        subprocess.run(["tmux", "send-keys", "-t", session_name, "Enter"])
+        time.sleep(2.0)
 
-    # 3. DuckyScript keystroke injection: type user task with -l (literal) so it enters cleanly into AGY
-    task_directive = f"Build a complete, bespoke, production-ready website for: '{prompt}'. Write index.html and all necessary CSS/JS assets directly into this directory now."
-    subprocess.run(["tmux", "send-keys", "-l", "-t", session_name, task_directive])
-    time.sleep(0.4)
-    subprocess.run(["tmux", "send-keys", "-t", session_name, "Enter"])
+        # Type the user's prompt directly into the prompt box
+        clean_prompt = prompt.strip()
+        subprocess.run(["tmux", "send-keys", "-l", "-t", session_name, clean_prompt])
+        time.sleep(0.5)
 
-    # 4. Launch an actual visible GUI desktop terminal window (konsole / xterm) attached to the live session!
+        # Press Enter to submit prompt
+        subprocess.run(["tmux", "send-keys", "-t", session_name, "Enter"])
+
+    threading.Thread(target=_run_duckyscript_sequence, daemon=True).start()
+
+    # 3. Launch an actual visible GUI desktop terminal window (konsole / xterm) attached to the live session!
     env = os.environ.copy()
     if "DISPLAY" not in env or not env["DISPLAY"]:
         env["DISPLAY"] = ":0"
@@ -73,7 +85,7 @@ def send_terminal_feedback(session_name, feedback_text):
     return {"status": "ok", "session": session_name, "feedback": feedback_text}
 
 def get_terminal_screen(session_name):
-    res = subprocess.run(["tmux", "capture-pane", "-pt", session_name], capture_output=True, text=True)
+    res = subprocess.run(["tmux", "capture-pane", "-pt", session_name, "-S", "-80"], capture_output=True, text=True)
     # Check if files have been created in directory
     repo_root = Path("/media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/zoth-studio")
     proj_slug = session_name.replace("zoth_", "")
