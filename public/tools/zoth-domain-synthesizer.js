@@ -17,6 +17,11 @@
       const hasWord = (word) => new RegExp('\\b' + word + '\\b', 'i').test(p);
       const hasAny = (list) => list.some(w => hasWord(w) || p.includes(w));
 
+      // 0. Skateboarding, Action Sports & Street Culture
+      if (hasAny(['skate', 'skateboard', 'skateboarding', 'skateshop', 'skatepark', 'surfboard', 'snowboard', 'bmx', 'streetwear'])) {
+        return 'action_sports_skate';
+      }
+
       // 1. Education & EdTech (check before AI if it mentions bootcamp/school/academy/curriculum)
       if (hasAny(['bootcamp', 'curriculum', 'tutoring', 'tutor', 'course', 'academy', 'school', 'university', 'edtech', 'learn to code', 'masterclass'])) {
         return 'education_edtech';
@@ -72,9 +77,9 @@
         return 'healthcare_medical';
       }
 
-      // 12. Fitness & Athletics
-      if (hasAny(['fitness', 'crossfit', 'gym', 'workout', 'personal training', 'powerlifting', 'athletic club', 'yoga sanctuary', 'pilates', 'boxing club'])) {
-        return 'fitness_athletics';
+      // 12. Fitness, Athletics, Skateboarding & Action Sports
+      if (hasAny(['skateboard', 'skateboarding', 'skate', 'skateshop', 'skatepark', 'surf', 'snowboard', 'bmx', 'streetwear', 'fitness', 'crossfit', 'gym', 'workout', 'personal training', 'powerlifting', 'athletic club', 'boxing club'])) {
+        return 'action_sports_skate';
       }
 
       // 13. Legal & Intellectual Property
@@ -130,11 +135,20 @@
       const quoted = p.match(/["']([^"']+)["']/);
       if (quoted) return quoted[1];
 
-      // Extract meaningful brand words ignoring stop words
-      const stopWords = new Set(['a', 'an', 'the', 'for', 'with', 'and', 'or', 'in', 'on', 'at', 'to', 'of', 'is', 'app', 'website', 'made', 'built', 'handcrafted', 'handmade', 'crafted', 'from', 'our', 'your']);
-      const words = p.split(/\s+/).filter(w => !stopWords.has(w.toLowerCase()));
+      // Strip command verbs & common fluff prefixes
+      var cleaned = p.replace(/^(make|create|build|design|generate|produce|code|craft)\s+(a|an|the|me\s+a)?\s+/i, '');
+      cleaned = cleaned.replace(/\b(website|web\s*app|landing\s*page|platform|site)\b/gi, '').trim();
+
+      const stopWords = new Set(['a', 'an', 'the', 'for', 'with', 'and', 'or', 'in', 'on', 'at', 'to', 'of', 'is', 'app', 'website', 'made', 'built', 'dope', 'cool', 'super', 'awesome', 'fresh', 'my', 'our', 'your']);
+      const words = cleaned.split(/\s+/).filter(w => w && !stopWords.has(w.toLowerCase()));
+      
       if (words.length >= 2) {
         return words.slice(0, 2).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      }
+      if (words.length === 1) {
+        var baseWord = words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+        if (p.toLowerCase().includes('skate')) return baseWord + ' Skateboards';
+        return baseWord + ' Studio';
       }
       if (words.length === 1) {
         return words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase() + ' Studio';
@@ -173,6 +187,8 @@
       const name = this.extractBrandName(prompt, domain);
 
       switch(domain) {
+        case 'action_sports_skate':
+          return this.generateActionSportsSite(prompt, name, agent);
         case 'ai_saas':
           return this.generateAiSaasSite(prompt, name, agent);
         case 'cybersecurity':
@@ -706,6 +722,60 @@
           text: '#ffffff',
           textMuted: '#94a3b8'
         },
+
+    // 12. ACTION SPORTS, SKATEBOARDING & STREET CULTURE
+    generateActionSportsSite(prompt, name, agent) {
+      const p = prompt.toLowerCase();
+      const isSkate = p.includes('skate') || p.includes('board');
+      const brand = isSkate ? (name.includes('Skate') ? name : (name + ' Skate Co.')) : (name + ' Athletics');
+
+      return {
+        domain: 'action_sports_skate',
+        name: brand,
+        tagline: isSkate ? 'Uncompromising Street Skateboarding Decks, Completes & Apparel' : 'High-Performance Athletics & Action Sports Equipment',
+        badge: isSkate ? '🛹 100% Hard Rock Canadian Maple' : '⚡ Pro-Grade Performance Gear',
+        icon: isSkate ? '🛹' : '⚡',
+        theme: {
+          bg: '#07090e',
+          surface: '#10141f',
+          border: 'rgba(244, 63, 94, 0.3)',
+          accent: '#f43f5e',
+          accentSecondary: '#fbbf24',
+          text: '#ffffff',
+          textMuted: '#94a3b8'
+        },
+        hero: {
+          title: isSkate ? 'Built for the Streets. Unbreakable Pop & Pure Precision.' : 'Engineered for High-Velocity Action & Unmatched Durability.',
+          sub: isSkate 
+            ? 'Cold-pressed 7-ply Canadian hard rock maple decks, hollow titanium trucks, conical street urethane, and limited-edition underground artist graphics.'
+            : 'Pro-tested athletic and extreme action sports equipment built to withstand maximum impact with zero compromises.',
+          cta: isSkate ? '🛹 Shop Decks & Completes' : '⚡ Explore Gear Lineup',
+          ctaSecondary: isSkate ? '🎬 Watch Team Street Video' : '📖 View Technical Specs'
+        },
+        bentoFeatures: [
+          { icon: '🛹', title: 'Cold-Pressed Epoxy 7-Ply', desc: 'Precision hydraulic pressed Canadian hard rock maple for long-lasting pop and snap.' },
+          { icon: '⚙️', title: 'Hollow Titanium Trucks', desc: '40% lighter hollow kingpins and axles with aircraft-grade aluminum hangers.' },
+          { icon: '🌀', title: '101A Conical Street Wheels', desc: 'Anti-flatspot urethane formula engineered for smooth street ledges, stairs, and bowls.' },
+          { icon: '🎨', title: 'Underground Artist Drops', desc: 'Limited edition screenprinted graphic runs in collaboration with street artists.' }
+        ],
+        itemsCatalog: [
+          { name: brand + ' Pro 8.25" Street Deck', place: 'Hard Maple', time: 'In Stock', price: '$65.00', rating: '5.0 ★' },
+          { name: brand + ' Titanium Hollow Trucks (Pair)', place: 'Lightweight', time: 'In Stock', price: '$58.00', rating: 'Team Pick' },
+          { name: '54mm 101A Conical Street Wheels', place: 'Street Urethane', time: 'In Stock', price: '$38.00', rating: 'Best Seller' },
+          { name: 'Ceramic Swiss High-Speed Bearings', place: 'Low Friction', time: 'In Stock', price: '$45.00', rating: '5.0 ★' }
+        ],
+        pricing: [
+          { tier: 'Street Setup', price: '$129', desc: 'Complete custom setup ready to skate out of the box', perks: ['7-Ply Hard Rock Maple Deck', 'Hollow Kingpin Trucks', '52mm 99A Street Wheels', 'ABEC-7 Speed Bearings', 'Free Pro Grip Tape Applied'] },
+          { tier: 'Pro Grade Complete', price: '$189', popular: true, desc: 'Team-tested professional competition spec', perks: ['Signature Series Deck', 'Titanium Hollow Axle Trucks', '54mm Conical Wheels', 'Swiss Ceramic Bearings', 'Skate T-Tool & Spare Bushings'] },
+          { tier: 'Atelier Collector Edition', price: '$269', desc: 'Hand-screenprinted limited edition artist run', perks: ['Custom Numbered Deck (1 of 100)', 'Signed Certificate of Authenticity', 'Matching Graphic Streetwear Tee', 'Wood Wall Display Mount Included', 'Lifetime Snap Guarantee'] }
+        ],
+        faq: [
+          { q: 'What deck width should I pick for street skating?', a: '8.0" to 8.25" is the gold standard for technical street flip tricks. For transition, pools, or cruising, 8.38" to 8.75" provides extra stability.' },
+          { q: 'Do completes come pre-assembled with grip tape?', a: 'Yes! Every complete is assembled by hand by skaters, gripped with bubble-free perforated grip tape, and tuned ready to roll.' },
+          { q: 'What is your warranty on snapped boards?', a: 'All decks are covered against manufacturer delamination and structural defects with easy replacement.' }
+        ]
+      };
+    },
         hero: {
           title: 'Unleash Your Full Athletic Potential with World-Class Training.',
           sub: 'State-of-the-art strength equipment, expert Olympic coaching, functional HIIT classes, and contrast therapy recovery suites.',
@@ -732,6 +802,60 @@
         faq: [
           { q: 'Is there a long-term contract?', a: 'No, all memberships are month-to-month with flexible cancellation options.' },
           { q: 'Are classes suitable for beginners?', a: 'Yes! Our coaches provide scale options for every fitness level from beginner to competitive athlete.' }
+        ]
+      };
+    },
+
+    // 12B. ACTION SPORTS, SKATEBOARDING & STREET CULTURE
+    generateActionSportsSite(prompt, name, agent) {
+      const p = prompt.toLowerCase();
+      const isSkate = p.includes('skate') || p.includes('board') || p.includes('dope');
+      const brand = isSkate ? (name.includes('Skate') ? name : (name + ' Skate Co.')) : (name + ' Athletics');
+
+      return {
+        domain: 'action_sports_skate',
+        name: brand,
+        tagline: isSkate ? 'Uncompromising Street Skateboarding Decks, Completes & Streetwear' : 'High-Performance Athletics & Action Sports Equipment',
+        badge: isSkate ? '🛹 100% Hard Rock Canadian Maple · Pro Spec' : '⚡ Pro-Grade Performance Gear',
+        icon: isSkate ? '🛹' : '⚡',
+        theme: {
+          bg: '#07090e',
+          surface: 'rgba(16, 20, 31, 0.9)',
+          border: 'rgba(244, 63, 94, 0.3)',
+          accent: '#f43f5e',
+          accentSecondary: '#fbbf24',
+          text: '#ffffff',
+          textMuted: '#94a3b8'
+        },
+        hero: {
+          title: isSkate ? 'Built for the Streets. Unbreakable Pop & Pure Precision.' : 'Engineered for High-Velocity Action & Unmatched Durability.',
+          sub: isSkate 
+            ? 'Cold-pressed 7-ply Canadian hard rock maple decks, hollow titanium trucks, 101A conical street urethane, and limited-edition underground artist drops.'
+            : 'Pro-tested athletic and extreme action sports equipment built to withstand maximum impact with zero compromises.',
+          cta: isSkate ? '🛹 Shop Decks & Completes' : '⚡ Explore Gear Lineup',
+          ctaSecondary: isSkate ? '🎬 Watch Team Street Video' : '📖 View Technical Specs'
+        },
+        bentoFeatures: [
+          { icon: '🛹', title: 'Cold-Pressed Epoxy 7-Ply', desc: 'Precision hydraulic pressed Canadian hard rock maple for long-lasting pop, snap, and stiffness.' },
+          { icon: '⚙️', title: 'Hollow Titanium Trucks', desc: '40% lighter hollow kingpins and axles with aircraft-grade aluminum alloy hangers.' },
+          { icon: '🌀', title: '101A Conical Street Wheels', desc: 'Anti-flatspot street urethane formula engineered for high-speed ledges, stairs, and concrete parks.' },
+          { icon: '🎨', title: 'Underground Artist Drops', desc: 'Limited edition screenprinted graphic runs in collaboration with underground street artists.' }
+        ],
+        itemsCatalog: [
+          { name: brand + ' Pro 8.25" Street Deck', place: 'Hard Maple', time: 'In Stock', price: '$65.00', rating: '5.0 ★' },
+          { name: brand + ' Titanium Hollow Trucks (Pair)', place: 'Lightweight', time: 'In Stock', price: '$58.00', rating: 'Team Pick' },
+          { name: '54mm 101A Conical Street Wheels', place: 'Street Urethane', time: 'In Stock', price: '$38.00', rating: 'Best Seller' },
+          { name: 'Ceramic Swiss High-Speed Bearings', place: 'Low Friction', time: 'In Stock', price: '$45.00', rating: '5.0 ★' }
+        ],
+        pricing: [
+          { tier: 'Street Setup', price: '$129', desc: 'Complete custom setup ready to skate out of the box', perks: ['7-Ply Hard Rock Maple Deck', 'Hollow Kingpin Trucks', '52mm 99A Street Wheels', 'ABEC-7 Speed Bearings', 'Free Pro Grip Tape Applied'] },
+          { tier: 'Pro Grade Complete', price: '$189', popular: true, desc: 'Team-tested professional competition spec', perks: ['Signature Series Deck', 'Titanium Hollow Axle Trucks', '54mm Conical Wheels', 'Swiss Ceramic Bearings', 'Skate T-Tool & Spare Bushings'] },
+          { tier: 'Atelier Collector Edition', price: '$269', desc: 'Hand-screenprinted limited edition artist run', perks: ['Custom Numbered Deck (1 of 100)', 'Signed Certificate of Authenticity', 'Matching Graphic Streetwear Tee', 'Wood Wall Display Mount Included', 'Lifetime Snap Guarantee'] }
+        ],
+        faq: [
+          { q: 'What deck width should I pick for street skating?', a: '8.0" to 8.25" is the gold standard for technical street flip tricks. For transition, pools, or cruising, 8.38" to 8.75" provides extra stability.' },
+          { q: 'Do completes come pre-assembled with grip tape?', a: 'Yes! Every complete is assembled by hand by skaters, gripped with bubble-free perforated grip tape, and tuned ready to roll.' },
+          { q: 'What is your warranty on snapped boards?', a: 'All decks are covered against manufacturer delamination and structural defects with easy replacement.' }
         ]
       };
     },
