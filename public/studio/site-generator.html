@@ -1849,14 +1849,14 @@
     nextLog();
   }
 
-  function spawnAgentAndSynthesize() {
+    function spawnAgentAndSynthesize() {
     var promptEl = document.getElementById('sitePromptInput');
     var prompt = (promptEl && promptEl.value.trim()) ? promptEl.value.trim() : 'AI code copilot and autonomous agent devtools with AST verification';
     
     // Invalidate multiPageCache for fresh site
     multiPageCache = {};
 
-    // ⚡ 1. Dedicated Agent immediately auto-selects all optimal settings
+    // 1. Initial heuristic pre-configuration while deep LLM thinking runs
     var detectedArchetype = (typeof ZothSwarmOrchestrator !== 'undefined') ? ZothSwarmOrchestrator.detectArchetype({ prompt: prompt }) : 'saas';
     autoSelectOptimalConfiguration(prompt, detectedArchetype);
 
@@ -1870,12 +1870,12 @@
       currentSite = ZothDomainSynthesizer.synthesize(prompt, selectedAgent);
     } else {
       currentSite = {
-        name: 'Lumina Compute',
-        tagline: 'Autonomous AI Compute & Neural Engine Infrastructure',
-        badge: '⚡ 21-Agent Cluster Online',
+        name: 'Apex Studio',
+        tagline: 'High-Performance Bespoke Digital Experience',
+        badge: '⚡ Sovereign Platform',
         icon: '⚡',
         theme: { bg: '#040711', surface: '#0c1122', border: 'rgba(0, 240, 255, 0.25)', accent: studioConfig.customAccent || '#00f0ff', textMuted: '#94a3b8' },
-        hero: { title: 'Build & Deploy Autonomous AI Workflows at Lightning Velocity.', sub: 'Zero-cloud-egress local execution and AST self-healing code compilation.', cta: '⚡ Launch Free Workspace', ctaSecondary: '📖 Read API Reference' }
+        hero: { title: 'Bespoke High-Performance Digital Experience', sub: 'Zero-cloud-egress local execution and AST self-healing code compilation.', cta: '⚡ Launch Free Workspace', ctaSecondary: '📖 Read API Reference' }
       };
     }
 
@@ -1888,16 +1888,64 @@
     
     var subEl = document.getElementById('agentSynthesisSub');
     if (subEl) {
-      var prefix = activeTemplate ? ('Rebranding [' + activeTemplate.title + '] as ') : 'Synthesizing ';
-      subEl.textContent = selectedAgent.toUpperCase() + ' is ' + prefix + (currentSite.name || 'custom site') + ' with dedicated architectural reasoning...';
+      subEl.textContent = selectedAgent.toUpperCase() + ' is executing deep headless architectural synthesis & formulating a bespoke plan...';
     }
 
-    // Run active reasoning stream and immediately render live preview
+    // Run active reasoning stream
     runAgentReasoningStream(prompt, selectedAgent, function() {
       renderDomainPreview();
       updateStackSummary();
       showStudioToast('✨ Blueprint synthesized! Review details or continue to Step 3.');
     });
+
+    // ⚡ ASYNC: Dispatch real headless AGY plan synthesis to local daemon on :8484
+    try {
+      fetch('http://127.0.0.1:8484/api/zoth/swarm/synthesize-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data && data.status === 'ok' && data.plan) {
+          var p = data.plan;
+          console.log('⚡ [Headless AGY Plan Ingested]:', p);
+          
+          // Apply sanitized brand name & bespoke copy
+          if (p.brandName) currentSite.name = p.brandName;
+          if (p.tagline) currentSite.tagline = p.tagline;
+          if (p.heroTitle) {
+            if (!currentSite.hero) currentSite.hero = {};
+            currentSite.hero.title = p.heroTitle;
+          }
+          if (p.heroSub) {
+            if (!currentSite.hero) currentSite.hero = {};
+            currentSite.hero.sub = p.heroSub;
+          }
+          if (p.bentoFeatures && p.bentoFeatures.length > 0) currentSite.bentoFeatures = p.bentoFeatures;
+          if (p.itemsCatalog && p.itemsCatalog.length > 0) currentSite.itemsCatalog = p.itemsCatalog;
+          if (p.pricingTiers && p.pricingTiers.length > 0) currentSite.pricing = p.pricingTiers;
+          if (p.faq && p.faq.length > 0) currentSite.faq = p.faq;
+
+          // Apply AI-selected architectural settings for Step 3 & 4
+          if (p.framework) studioConfig.framework = p.framework;
+          if (p.paletteAccent) {
+            studioConfig.customAccent = p.paletteAccent;
+            if (currentSite.theme) currentSite.theme.accent = p.paletteAccent;
+          }
+          if (p.targetAudience) studioConfig.audience = p.targetAudience;
+          if (p.monetization) studioConfig.monetization = p.monetization;
+
+          // Sync UI controls
+          syncUIConfigSelections();
+          renderDomainPreview();
+          updateStackSummary();
+        }
+      })
+      .catch(function(err) {
+        console.log('[Headless AGY Bridge Note]', err);
+      });
+    } catch(e) {}
 
     renderDomainPreview();
   }

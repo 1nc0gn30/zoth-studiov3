@@ -2125,6 +2125,68 @@ created: {now_utc}
                 self._send_json(res)
                 return
 
+            # ─── API: Autonomous Architectural Plan Synthesis (Headless AGY Core) ───
+            if path in ("/api/zoth/swarm/synthesize-plan", "/api/swarm/plan"):
+                prompt = data.get("prompt", data.get("message", data.get("text", ""))).strip()
+                if not prompt:
+                    self._send_json({"error": "prompt required"}, 400)
+                    return
+
+                # Invoke headless AGY to deeply reason, sanitize typos, and synthesize a complete multi-page architectural plan
+                sys_instruct = (
+                    "You are the Lead Systems Architect of Zoth Studio.\n"
+                    "The operator provided a raw concept (which may contain typos or informal shorthand).\n"
+                    "Your job:\n"
+                    "1. Fix all typos, understand the true domain intent.\n"
+                    "2. Formulate a strong, authentic brand name (never repeat raw typos or verbs like 'make a dope').\n"
+                    "3. Choose the optimal framework (static_html, astro, or vite_react), chromatic accent token, target audience, and monetization model.\n"
+                    "4. Generate bespoke hero copy, 4 bento features, 4-5 catalog items, 3 pricing tiers, and 4 FAQs.\n"
+                    "Output ONLY valid raw JSON."
+                )
+                user_msg = (
+                    f"Operator Concept: '{prompt}'\n"
+                    "Generate valid JSON with keys: brandName, domain, tagline, heroTitle, heroSub, "
+                    "framework (static_html|astro|vite_react), paletteAccent, targetAudience (tech|business|consumer|luxury|web3), "
+                    "monetization (subscription|checkout|freemium|booking), "
+                    "bentoFeatures (list of {icon, title, desc}), "
+                    "itemsCatalog (list of {name, place, time, price, rating}), "
+                    "pricingTiers (list of {tier, price, popular, desc, perks}), "
+                    "faq (list of {q, a})."
+                )
+
+                import subprocess
+                plan_json = None
+                try:
+                    res = subprocess.run(
+                        ["/home/neo/.local/bin/agy", "--print", f"{sys_instruct}\n\n{user_msg}", "--dangerously-skip-permissions"],
+                        capture_output=True,
+                        text=True,
+                        timeout=18
+                    )
+                    raw_out = res.stdout.strip()
+                    # Strip markdown fence if present
+                    if "```json" in raw_out:
+                        raw_out = raw_out.split("```json")[1].split("```")[0].strip()
+                    elif "```" in raw_out:
+                        raw_out = raw_out.split("```")[1].split("```")[0].strip()
+                    plan_json = json.loads(raw_out)
+                except Exception as e:
+                    print("[Plan Synthesis Fallback]", e)
+
+                if plan_json:
+                    self._send_json({
+                        "status": "ok",
+                        "engine": "headless_agy_core",
+                        "plan": plan_json,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    })
+                else:
+                    self._send_json({
+                        "status": "fallback",
+                        "error": "Plan generation timed out or invalid JSON"
+                    }, 500)
+                return
+
             # ─── API: Direct Agent / Companion Prompt Routing ───
             if path in ("/api/zoth/swarm", "/api/zoth/chat", "/api/agent/chat", "/api/swarm/prompt", "/api/zoth/swarm/squad"):
                 prompt = data.get("prompt", data.get("message", data.get("text", "")))
