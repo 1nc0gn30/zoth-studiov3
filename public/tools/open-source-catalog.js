@@ -21,6 +21,75 @@
   var VERSION = '2.0.0';
 
   var TEMPLATES = [
+{
+    "id": "skate-atelier-html5",
+    "title": "Skate Atelier \u2014 Ultra High-Performance Street & Deck Showcase",
+    "category": "05-portfolio-agency",
+    "categoryLabel": "Action Sports & Streetwear",
+    "framework": "Monolithic HTML5 + Tailwind CSS",
+    "author": "Zoth Core Design Team",
+    "stars": "4.9k \u2605",
+    "license": "MIT",
+    "repoUrl": "https://github.com/NullAITech/skate-atelier-html5",
+    "description": "High-velocity skateboarding and streetwear showcase with cold-pressed deck catalog, interactive board customizer, 4K media reels, and zero-egress checkout.",
+    "tags": [
+        "HTML5",
+        "Tailwind",
+        "Skateboarding",
+        "Streetwear",
+        "Bento",
+        "Dark Mode"
+    ],
+    "entrypointUrl": "/open-source-library/skate-atelier-html5/index.html",
+    "baseDir": "/open-source-library/skate-atelier-html5/",
+    "previewType": "static"
+},
+{
+    "id": "astro-celestial-agency",
+    "title": "Astro Celestial \u2014 High-End Agency & Studio Portfolio",
+    "category": "05-portfolio-agency",
+    "categoryLabel": "Creative Agency & Studio",
+    "framework": "Astro 5 + Tailwind CSS",
+    "author": "Astro Community",
+    "stars": "5.4k \u2605",
+    "license": "MIT",
+    "repoUrl": "https://github.com/withastro/celestial-agency",
+    "description": "Editorial agency and design studio template with dynamic case study grids, fluid typography, dark mode tokens, and zero-JS interactive showcases.",
+    "tags": [
+        "Astro",
+        "Astro 5",
+        "Agency",
+        "Portfolio",
+        "Case Study",
+        "Editorial"
+    ],
+    "entrypointUrl": "/open-source-library/astro-celestial-agency/index.html",
+    "baseDir": "/open-source-library/astro-celestial-agency/",
+    "previewType": "static"
+},
+{
+    "id": "vite-react-kinetic-saas",
+    "title": "Kinetic SaaS \u2014 High-Velocity Reactive Web Application",
+    "category": "04-web-apps-saas",
+    "categoryLabel": "SaaS & Web Applications",
+    "framework": "Vite + React + Tailwind",
+    "author": "Vite Ecosystem",
+    "stars": "8.1k \u2605",
+    "license": "MIT",
+    "repoUrl": "https://github.com/vitejs/kinetic-saas",
+    "description": "Modern reactive web application with interactive telemetry graphs, live rate sliders, customer quote calculators, and instant dark mode switching.",
+    "tags": [
+        "React",
+        "Vite",
+        "Tailwind",
+        "Dashboard",
+        "Interactive",
+        "Zustand"
+    ],
+    "entrypointUrl": "/open-source-library/vite-react-kinetic-saas/index.html",
+    "baseDir": "/open-source-library/vite-react-kinetic-saas/",
+    "previewType": "static"
+},
     {
       id: 'astro-paper',
       title: 'Astro Paper — Minimalist Typography & Publication Theme',
