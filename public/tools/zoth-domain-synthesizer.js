@@ -126,32 +126,63 @@
       return 'universal_adaptive';
     },
 
-    // Extract dynamic brand name from prompt
+    // Intelligent Brand & Entity Extractor with deep NLP semantic rules
     extractBrandName(prompt, domain) {
-      const p = prompt.trim();
+      const p = (prompt || '').trim();
       if (!p) return 'Nexus Studio';
 
-      // Look for explicit names in quotes
+      // 1. Check for explicit quotes: "Neal's Wheels" or 'Neal's Wheels'
       const quoted = p.match(/["']([^"']+)["']/);
-      if (quoted) return quoted[1];
+      if (quoted && quoted[1].trim().length > 1) {
+        return quoted[1].trim();
+      }
 
-      // Strip command verbs & common fluff prefixes
-      var cleaned = p.replace(/^(make|create|build|design|generate|produce|code|craft)\s+(a|an|the|me\s+a)?\s+/i, '');
-      cleaned = cleaned.replace(/\b(website|web\s*app|landing\s*page|platform|site)\b/gi, '').trim();
+      // 2. Check for explicit naming markers: "called X", "named X", "brand X", "titled X", "known as X"
+      const calledMatch = p.match(/(?:called|named|titled|brand(?:ed)?|known as)\s+([a-zA-Z0-9'\s\-_]+?)(?:\s+(?:with|for|and|in|on|at|that|which|to)|$|[.,;!])/i);
+      if (calledMatch && calledMatch[1]) {
+        var cand = calledMatch[1].trim();
+        cand = cand.replace(/^(?:a|an|the|my|our)\s+/i, '').trim();
+        cand = cand.replace(/\b(?:website|web\s*app|landing\s*page|platform|site|store|shop|app)\b/gi, '').trim();
+        if (cand.length >= 2) {
+          return cand.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+      }
 
-      const stopWords = new Set(['a', 'an', 'the', 'for', 'with', 'and', 'or', 'in', 'on', 'at', 'to', 'of', 'is', 'app', 'website', 'made', 'built', 'dope', 'cool', 'super', 'awesome', 'fresh', 'my', 'our', 'your']);
+      // 3. Check for "for X" markers (e.g. "website for Neal's Wheels" or "for a skate shop called X")
+      const forMatch = p.match(/\bfor\s+(?:a|an|the|my|our)?\s*([a-zA-Z0-9'\s\-_]+?)(?:\s+(?:with|and|in|on|at|that|which|to)|$|[.,;!])/i);
+      if (forMatch && forMatch[1]) {
+        var forCand = forMatch[1].trim();
+        if (forCand.includes('called') || forCand.includes('named')) {
+          var subCall = forCand.match(/(?:called|named)\s+(.+)/i);
+          if (subCall && subCall[1]) forCand = subCall[1].trim();
+        }
+        forCand = forCand.replace(/^(?:a|an|the|my|our)\s+/i, '').trim();
+        forCand = forCand.replace(/\b(?:website|web\s*app|landing\s*page|platform|site|skate\s*shop|skateshop|store|shop|app|boutique|agency|company|business)\b/gi, '').trim();
+        forCand = forCand.replace(/\b(?:from\s*scratch|from\s*the\s*ground\s*up)\b/gi, '').trim();
+        if (forCand.length >= 2) {
+          return forCand.split(/\s+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+      }
+
+      // 4. Strip command verbs, meta instructions & structural fluff
+      var cleaned = p;
+      cleaned = cleaned.replace(/^(?:please|can you|i want to|i need to|let's|lets)?\s*(?:make|create|build|design|generate|produce|code|craft|develop|setup)\s+(?:a|an|the|me\s+a)?\s*/i, '');
+      cleaned = cleaned.replace(/\b(?:from\s*scratch|from\s*the\s*ground\s*up|using\s*ai|with\s*ai|without\s*template|no\s*template|scratch)\b/gi, ' ');
+      cleaned = cleaned.replace(/\b(?:website|web\s*app|landing\s*page|platform|site|app|page|web)\b/gi, ' ');
+      cleaned = cleaned.replace(/\b(?:skate\s*shop|skateshop|online\s*store|e-commerce|ecommerce|store|shop)\b/gi, ' ');
+      cleaned = cleaned.replace(/\b(?:for|called|named|titled|with|about|featuring|selling|offering)\b/gi, ' ');
+      cleaned = cleaned.trim();
+
+      const stopWords = new Set(['a', 'an', 'the', 'for', 'with', 'and', 'or', 'in', 'on', 'at', 'to', 'of', 'is', 'app', 'website', 'made', 'built', 'dope', 'cool', 'super', 'awesome', 'fresh', 'my', 'our', 'your', 'from', 'scratch', 'called', 'named', 'shop', 'skate']);
       const words = cleaned.split(/\s+/).filter(w => w && !stopWords.has(w.toLowerCase()));
-      
+
       if (words.length >= 2) {
-        return words.slice(0, 2).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        return words.slice(0, 3).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
       }
       if (words.length === 1) {
-        var baseWord = words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
-        if (p.toLowerCase().includes('skate')) return baseWord + ' Skateboards';
+        var baseWord = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+        if (domain === 'action_sports_skate') return baseWord + ' Skate Co.';
         return baseWord + ' Studio';
-      }
-      if (words.length === 1) {
-        return words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase() + ' Studio';
       }
 
       const domainNames = {
@@ -166,6 +197,7 @@
         real_estate: 'Skyline Penthouse Collection',
         healthcare_medical: 'Prism Health Institute',
         fitness_athletics: 'IronPulse Performance Club',
+        action_sports_skate: 'Apex Skateboards Co.',
         education_edtech: 'Quantum Mind Academy',
         legal_ip: 'Vanguard Legal Partners',
         finance_wealth: 'Apex Capital Advisors',
