@@ -355,19 +355,25 @@
       { name: s.name + ' Custom Build', place: 'Custom Spec', time: 'Made to Order', price: '$149.00', rating: 'Top Choice' }
     ];
 
-    catalogItems.forEach(function(it) {
-      catalogCardsHtml += '<div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">' +
-        '<div>' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
-            '<span style="font-size:0.75rem;color:' + accent + ';font-weight:700;text-transform:uppercase;">' + (it.place || 'Featured') + '</span>' +
-            '<span style="font-size:0.75rem;color:#fbbf24;">' + (it.rating || '5.0 ★') + '</span>' +
-          '</div>' +
-          '<h3 style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:800;color:#ffffff;margin:0 0 8px;">' + it.name + '</h3>' +
-          '<p style="font-size:0.82rem;color:' + textMuted + ';margin:0 0 16px;">' + (it.time || 'Available Now') + '</p>' +
+    catalogItems.forEach(function(it, idx) {
+      var itemImgPrompt = encodeURIComponent((s.name + ' ' + it.name + ' high detail photography cinematic studio lighting 8k').trim());
+      var itemImgUrl = 'https://image.pollinations.ai/prompt/' + itemImgPrompt + '?width=600&height=450&nologo=true&seed=' + (91023 + idx * 77) + '&model=flux';
+
+      catalogCardsHtml += '<div class="card" style="display:flex;flex-direction:column;justify-content:space-between;padding:0;overflow:hidden;">' +
+        '<div style="width:100%;height:180px;background:#03050a;position:relative;overflow:hidden;">' +
+          '<img src="' + itemImgUrl + '" alt="' + it.name + '" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s ease;" loading="lazy"/>' +
+          '<div style="position:absolute;top:10px;left:10px;background:rgba(5,7,15,0.85);backdrop-filter:blur(8px);border:1px solid ' + border + ';padding:2px 8px;border-radius:6px;font-size:0.7rem;color:' + accent + ';font-weight:800;text-transform:uppercase;">' + (it.place || 'Featured') + '</div>' +
+          '<div style="position:absolute;top:10px;right:10px;background:rgba(5,7,15,0.85);backdrop-filter:blur(8px);border:1px solid rgba(251,191,36,0.3);padding:2px 8px;border-radius:6px;font-size:0.7rem;color:#fbbf24;font-weight:800;">' + (it.rating || '5.0 ★') + '</div>' +
         '</div>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;">' +
-          '<span style="font-family:Syne,sans-serif;font-size:1.25rem;font-weight:900;color:' + accent + ';">' + it.price + '</span>' +
-          '<a href="pricing.html" style="' + btnStyle + 'padding:6px 14px;font-size:0.78rem;text-decoration:none;">Order Now</a>' +
+        '<div style="padding:20px;display:flex;flex-direction:column;flex:1;justify-content:space-between;">' +
+          '<div>' +
+            '<h3 style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:800;color:#ffffff;margin:0 0 6px;">' + it.name + '</h3>' +
+            '<p style="font-size:0.82rem;color:' + textMuted + ';margin:0 0 16px;">' + (it.time || 'Available Now') + '</p>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;margin-top:auto;">' +
+            '<span style="font-family:Syne,sans-serif;font-size:1.3rem;font-weight:900;color:' + accent + ';">' + it.price + '</span>' +
+            '<a href="pricing.html" style="' + btnStyle + 'padding:6px 14px;font-size:0.78rem;text-decoration:none;">Order Now</a>' +
+          '</div>' +
         '</div>' +
       '</div>';
     });
@@ -412,6 +418,36 @@
         '<p style="font-size:0.9rem;color:' + textMuted + ';margin:0;">' + item.a + '</p>' +
       '</div>';
     });
+
+    // Media & Visual Showcase Section
+    var videoPrompt = encodeURIComponent((s.name + ' street action dynamic motion cinematic 8k').trim());
+    var galleryImg1 = 'https://image.pollinations.ai/prompt/' + videoPrompt + '%20lifestyle?width=800&height=600&nologo=true&seed=1192&model=flux';
+    var galleryImg2 = 'https://image.pollinations.ai/prompt/' + videoPrompt + '%20action%20trick?width=800&height=600&nologo=true&seed=2293&model=flux';
+    var galleryImg3 = 'https://image.pollinations.ai/prompt/' + videoPrompt + '%20atelier%20workshop?width=800&height=600&nologo=true&seed=3394&model=flux';
+
+    var mediaGallerySection = '<section class="section-wrap" style="margin-top:60px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;gap:12px;">' +
+        '<div>' +
+          '<span class="badge">🎬 Team Media & Gallery</span>' +
+          '<h2 style="font-family:Syne,sans-serif;font-size:1.9rem;color:#ffffff;margin:6px 0;">Visual Culture & Field Action</h2>' +
+        '</div>' +
+        '<span style="font-size:0.8rem;color:' + accent + ';font-family:monospace;">⚡ 4K High-Velocity Visual Stream</span>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">' +
+        '<div class="card" style="padding:0;overflow:hidden;border-radius:14px;">' +
+          '<img src="' + galleryImg1 + '" alt="Gallery 1" style="width:100%;height:220px;object-fit:cover;display:block;" loading="lazy"/>' +
+          '<div style="padding:14px;"><strong style="color:#ffffff;font-size:0.9rem;">Street Culture & City Spots</strong><div style="font-size:0.75rem;color:' + textMuted + ';">Shot on location with the team.</div></div>' +
+        '</div>' +
+        '<div class="card" style="padding:0;overflow:hidden;border-radius:14px;">' +
+          '<img src="' + galleryImg2 + '" alt="Gallery 2" style="width:100%;height:220px;object-fit:cover;display:block;" loading="lazy"/>' +
+          '<div style="padding:14px;"><strong style="color:#ffffff;font-size:0.9rem;">High-Impact Competition Testing</strong><div style="font-size:0.75rem;color:' + textMuted + ';">Rigorously field tested under extreme friction.</div></div>' +
+        '</div>' +
+        '<div class="card" style="padding:0;overflow:hidden;border-radius:14px;">' +
+          '<img src="' + galleryImg3 + '" alt="Gallery 3" style="width:100%;height:220px;object-fit:cover;display:block;" loading="lazy"/>' +
+          '<div style="padding:14px;"><strong style="color:#ffffff;font-size:0.9rem;">Atelier Handcrafted Finishing</strong><div style="font-size:0.75rem;color:' + textMuted + ';">Hand-inspected before packaging and dispatch.</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
 
     // --- COMPOSE THE 6 ROUTES ---
 
