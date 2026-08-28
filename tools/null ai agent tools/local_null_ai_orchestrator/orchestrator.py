@@ -2215,8 +2215,11 @@ created: {now_utc}
                 sys.path.insert(0, str(ORCH_DIR.parent))
                 try:
                     import ducky_terminal_spawner
-                    screen = ducky_terminal_spawner.get_terminal_screen(session_name)
-                    self._send_json({"status": "ok", "screen": screen})
+                    screen_data = ducky_terminal_spawner.get_terminal_screen(session_name)
+                    if isinstance(screen_data, dict):
+                        self._send_json({"status": "ok", **screen_data})
+                    else:
+                        self._send_json({"status": "ok", "screen": screen_data})
                 except Exception as e:
                     self._send_json({"error": str(e)}, 500)
                 return
