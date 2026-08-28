@@ -2125,6 +2125,105 @@ created: {now_utc}
                 self._send_json(res)
                 return
 
+            # ─── API: Autonomous Project Workspace & Asset Storage ───
+            if path in ("/api/zoth/workspace/create", "/api/workspace/create"):
+                proj_name = data.get("projectName", data.get("name", "untitled-project")).strip()
+                proj_slug = re.sub(r'[^a-zA-Z0-9_-]', '-', proj_name).lower().strip('-') or 'zoth-app'
+                prompt = data.get("prompt", "")
+                assets = data.get("assets", [])
+
+                ws_root = ORCH_DIR.parent / "workspaces" / proj_slug
+                ws_root.mkdir(parents=True, exist_ok=True)
+                assets_dir = ws_root / "assets"
+                assets_dir.mkdir(parents=True, exist_ok=True)
+
+                saved_assets = []
+                for a in assets:
+                    fname = a.get("name", f"asset-{int(time.time()*1000)}")
+                    content = a.get("content", "")
+                    is_b64 = a.get("isBase64", False)
+                    target_file = assets_dir / fname
+                    try:
+                        if is_b64 and "," in content:
+                            content = content.split(",")[1]
+                            import base64
+                            target_file.write_bytes(base64.b64decode(content))
+                        elif isinstance(content, str):
+                            target_file.write_text(content, encoding="utf-8")
+                        saved_assets.append(str(target_file.name))
+                    except Exception as e:
+                        print(f"[Asset Save Error] {fname}: {e}")
+
+                manifest = {
+                    "projectName": proj_name,
+                    "slug": proj_slug,
+                    "prompt": prompt,
+                    "createdAt": datetime.now(timezone.utc).isoformat(),
+                    "assets": saved_assets,
+                    "workspacePath": str(ws_root)
+                }
+                (ws_root / "project-manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+                self._send_json({
+                    "status": "ok",
+                    "slug": proj_slug,
+                    "workspace": str(ws_root),
+                    "assets": saved_assets,
+                    "manifest": manifest
+                })
+                return
+
+            # ─── API: Iterative Feedback & Refinement Loop to @Azoth ───
+            if path in ("/api/zoth/swarm/refine-plan", "/api/swarm/refine"):
+                prompt = data.get("prompt", "").strip()
+                feedback = data.get("feedback", "").strip()
+                current_plan = data.get("currentPlan", {})
+                
+                sys_instruct = (
+                    "You are Master Azoth, Supreme Alchemist and Lead Systems Architect of Zoth Studio.\n"
+                    "The operator reviewed the previous website draft and provided direct feedback/change requests.\n"
+                    "Your job:\n"
+                    "1. Incorporate the operator's comments into the existing architecture.\n"
+                    "2. Update brand name, tagline, features, catalog, pricing, and FAQs accordingly.\n"
+                    "3. Ensure all framework (static_html|astro|vite_react), design tokens, and monetization choices align with feedback.\n"
+                    "Output ONLY valid raw JSON."
+                )
+                user_msg = (
+                    f"Original Concept: '{prompt}'\n"
+                    f"Operator Feedback / Change Request: '{feedback}'\n"
+                    f"Previous Plan JSON: {json.dumps(current_plan)}\n"
+                    "Generate updated JSON matching the required specification."
+                )
+
+                import subprocess
+                plan_json = None
+                try:
+                    res = subprocess.run(
+                        ["/home/neo/.local/bin/agy", "--print", f"{sys_instruct}\n\n{user_msg}", "--dangerously-skip-permissions"],
+                        capture_output=True,
+                        text=True,
+                        timeout=18
+                    )
+                    raw_out = res.stdout.strip()
+                    if "```json" in raw_out:
+                        raw_out = raw_out.split("```json")[1].split("```")[0].strip()
+                    elif "```" in raw_out:
+                        raw_out = raw_out.split("```")[1].split("```")[0].strip()
+                    plan_json = json.loads(raw_out)
+                except Exception as e:
+                    print("[Plan Refinement Fallback]", e)
+
+                if plan_json:
+                    self._send_json({
+                        "status": "ok",
+                        "engine": "azoth_refinement_core",
+                        "plan": plan_json,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    })
+                else:
+                    self._send_json({"status": "fallback", "error": "Refinement timed out"}, 500)
+                return
+
             # ─── API: Autonomous Architectural Plan Synthesis (Headless AGY Core) ───
             if path in ("/api/zoth/swarm/synthesize-plan", "/api/swarm/plan"):
                 prompt = data.get("prompt", data.get("message", data.get("text", ""))).strip()
