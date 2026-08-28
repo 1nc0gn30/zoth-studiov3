@@ -325,10 +325,94 @@
         makeNav(activePage),
         bodyHtml,
         makeFooter(),
-        extraScripts || '',
+        (extraScripts || '') + '\n<script>\n  function updateSkatePrice() {\n    var d = parseFloat(document.getElementById(\'cfgDeckSize\') ? document.getElementById(\'cfgDeckSize\').value : 65);\n    var t = parseFloat(document.getElementById(\'cfgTrucks\') ? document.getElementById(\'cfgTrucks\').value : 58);\n    var w = parseFloat(document.getElementById(\'cfgWheels\') ? document.getElementById(\'cfgWheels\').value : 36);\n    var b = parseFloat(document.getElementById(\'cfgBearings\') ? document.getElementById(\'cfgBearings\').value : 40);\n    var total = d + t + w + b;\n    var el = document.getElementById(\'skateBuildPrice\');\n    if (el) el.textContent = \'$\' + total.toFixed(2);\n  }\n</script>',
         '</body>',
         '</html>'
       ].join('\n');
+    }
+
+    
+    // Build Domain-Bespoke Interactive Module HTML
+    var interactiveSectionHtml = '';
+    
+    // Archetype 1: Action Sports & Skateboarding (Interactive Custom Skateboard Builder)
+    if (archetype === 'action_sports_skate' || (s.domain && s.domain.includes('skate')) || (s.name && s.name.toLowerCase().includes('wheel')) || (s.name && s.name.toLowerCase().includes('skate'))) {
+      interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="custom-builder">' +
+        '<div style="background:linear-gradient(145deg, rgba(16,21,36,0.9), rgba(5,7,15,0.95));border:1px solid ' + accent + '66;border-radius:18px;padding:32px;box-shadow:0 12px 40px rgba(0,0,0,0.6);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;">' +
+            '<div>' +
+              '<span class="badge" style="background:rgba(244,63,94,0.15);border-color:' + accent + ';color:' + accent + ';">🛹 3D Custom Complete Configurator</span>' +
+              '<h2 style="font-family:Syne,sans-serif;font-size:2rem;color:#ffffff;margin:8px 0 4px;">Build Your Custom ' + s.name + ' Setup</h2>' +
+              '<p style="color:' + textMuted + ';font-size:0.92rem;margin:0;">Select your deck width, titanium truck hollows, wheel formula, and bearings for hand-assembly.</p>' +
+            '</div>' +
+            '<div style="background:rgba(0,0,0,0.5);border:1px solid ' + accent + '44;border-radius:12px;padding:12px 20px;text-align:right;">' +
+              '<div style="font-size:0.75rem;color:' + textMuted + ';text-transform:uppercase;font-weight:700;">Custom Build Total</div>' +
+              '<div style="font-family:Syne,sans-serif;font-size:2.2rem;font-weight:900;color:' + accent + ';" id="skateBuildPrice">$149.00</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;">' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">1. Deck Width</label>' +
+              '<select id="cfgDeckSize" onchange="updateSkatePrice()" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option value="65">8.00" Street Tech ($65)</option>' +
+                '<option value="65" selected>8.25" All-Terrain Pro ($65)</option>' +
+                '<option value="68">8.38" Transition Shape ($68)</option>' +
+                '<option value="72">8.50" Pool &amp; Vert Shovel ($72)</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">2. Trucks Hollow</label>' +
+              '<select id="cfgTrucks" onchange="updateSkatePrice()" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option value="48">Standard Hollow Axis (+$48)</option>' +
+                '<option value="58" selected>Titanium Hollow Pro (+$58)</option>' +
+                '<option value="64">Magnesium Ultra-Light (+$64)</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">3. Conical Wheels</label>' +
+              '<select id="cfgWheels" onchange="updateSkatePrice()" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option value="36" selected>52mm 101A Street Conical (+$36)</option>' +
+                '<option value="38">54mm 99A Park Radial (+$38)</option>' +
+                '<option value="42">56mm 97A Cruiser Hybrid (+$42)</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">4. Precision Bearings</label>' +
+              '<select id="cfgBearings" onchange="updateSkatePrice()" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option value="20">Titanium ABEC-9 (+$20)</option>' +
+                '<option value="40" selected>Ceramic Swiss Low-Friction (+$40)</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">' +
+            '<div style="font-size:0.82rem;color:#34d399;display:flex;align-items:center;gap:6px;"><span>✓</span> Free grip tape &amp; hand assembly included. Dispatches within 24h.</div>' +
+            '<button onclick="alert(&quot;Custom complete added to cart for $&quot; + document.getElementById(&quot;skateBuildPrice&quot;).textContent.replace(&quot;$&quot;,&quot;&quot;) + &quot;! Direct checkout ready.&quot;)" style="' + btnStyle + 'padding:14px 28px;font-size:0.95rem;">⚡ Assemble &amp; Order Complete ➔</button>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+    }
+    // Archetype 2: Tech & Cyber Defense (Interactive Threat Simulation Matrix)
+    else if (archetype === 'developer_terminal' || (s.domain && (s.domain.includes('cyber') || s.domain.includes('saas')))) {
+      interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="telemetry-sim">' +
+        '<div style="background:#020617;border:1px solid ' + accent + '66;border-radius:18px;padding:32px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">' +
+            '<div>' +
+              '<span class="badge">🛡️ Live Threat Defense Terminal</span>' +
+              '<h2 style="font-family:Syne,sans-serif;font-size:1.9rem;color:#ffffff;margin:6px 0;">' + s.name + ' Autonomous Sentinel Telemetry</h2>' +
+            '</div>' +
+            '<div style="font-family:monospace;font-size:0.8rem;color:#34d399;">● 0 DATA LEAKAGE · ZERO-EGRESS ACTIVE</div>' +
+          '</div>' +
+          '<div style="background:#000;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;font-family:monospace;font-size:0.8rem;color:#38bdf8;line-height:1.6;margin-bottom:20px;">' +
+            '<div>[SENTINEL_DAEMON] Scanning edge nodes on 0.0.0.0... <span style="color:#34d399;">[SECURE]</span></div>' +
+            '<div>[AST_VERIFIER] Invariant integrity verified across 21 multi-tenant clusters.</div>' +
+            '<div>[ARGON2ID_KEYRING] Zero memory retention mode engaged. Encryption cipher: ChaCha20-Poly1305.</div>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">' +
+            '<div style="font-size:0.82rem;color:' + textMuted + ';">Real-time automated incident mitigation latency: &lt; 4.2ms</div>' +
+            '<a href="contact.html" style="' + btnStyle + 'padding:10px 22px;text-decoration:none;">Deploy Sentinel Cluster ➔</a>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
     }
 
     // 1. Build Dynamic Bento Features HTML
@@ -464,6 +548,7 @@
         '<img src="' + heroImgUrl + '" alt="' + s.name + ' Showcase" style="width:100%;height:auto;display:block;aspect-ratio:16/9;object-fit:cover;" loading="lazy"/>' +
       '</div>' +
     '</header>' +
+    interactiveSectionHtml +
     '<section class="section-wrap">' +
       '<div style="text-align:center;margin-bottom:30px;">' +
         '<span class="badge">✦ Core Pillars</span>' +
@@ -489,6 +574,7 @@
       '<h1>' + s.name + ' Offerings & Lineup</h1>' +
       '<p class="tagline">Explore our complete collection, hardware specs, and dedicated bespoke solutions.</p>' +
     '</header>' +
+    interactiveSectionHtml +
     '<section class="section-wrap">' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">' +
         catalogCardsHtml +
@@ -510,6 +596,7 @@
       '<h1>Simple, Honest Pricing for Every Level</h1>' +
       '<p class="tagline">Select the perfect tier tailored to your exact needs with zero hidden fees.</p>' +
     '</header>' +
+    interactiveSectionHtml +
     '<section class="section-wrap">' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">' +
         pricingCardsHtml +
@@ -522,6 +609,7 @@
       '<h1>Everything You Need to Know</h1>' +
       '<p class="tagline">Frequently asked questions, maintenance guides, and operational details for ' + s.name + '.</p>' +
     '</header>' +
+    interactiveSectionHtml +
     '<section class="section-wrap" style="max-width:820px;">' +
       faqRowsHtml +
     '</section>';
@@ -532,6 +620,7 @@
       '<h1>About ' + s.name + '</h1>' +
       '<p class="tagline">Born out of passion for uncompromising quality, authentic culture, and forward-thinking design.</p>' +
     '</header>' +
+    interactiveSectionHtml +
     '<section class="section-wrap" style="max-width:860px;">' +
       '<div class="card" style="margin-bottom:24px;">' +
         '<h2 style="font-family:Syne,sans-serif;font-size:1.5rem;color:#ffffff;margin:0 0 12px;">Driven by Authentic Obsession</h2>' +
@@ -549,6 +638,7 @@
       '<h1>Connect with ' + s.name + '</h1>' +
       '<p class="tagline">Have a question, custom project request, or want to collaborate? Send us a message.</p>' +
     '</header>' +
+    interactiveSectionHtml +
     '<section class="section-wrap" style="max-width:680px;">' +
       '<div class="card">' +
         '<form onsubmit="event.preventDefault();alert(&quot;Thank you! Your message has been sent to ' + s.name + '. We will reply promptly.&quot;);" style="display:flex;flex-direction:column;gap:16px;">' +
