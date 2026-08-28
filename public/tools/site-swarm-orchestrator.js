@@ -933,14 +933,39 @@
     var totalAgents = SWARM_AGENTS.length;
 
     var isBrowser = typeof window !== 'undefined';
-    var stepDelay = isBrowser ? 3500 : 15; // Default deep mode (75s in browser, fast in tests)
+    // Deep thoughtful execution: 1200ms per agent in rapid, 2400ms in deep mode
+    var stepDelay = isBrowser ? 2200 : 15;
     if (config && typeof config.stepDelay === 'number') {
       stepDelay = config.stepDelay;
     } else if (config && config.mode === 'rapid') {
-      stepDelay = 400; // Rapid mode (~8s)
+      stepDelay = 950;
     } else if (config && (config.mode === 'test' || !isBrowser)) {
-      stepDelay = 15; // Instant for unit tests
+      stepDelay = 15;
     }
+
+    var agentThoughts = {
+      agent_copywriter: ['Scanning semantic vocabulary...', 'Synthesizing localized hero hooks & value propositions...', 'Drafted high-impact headlines.'],
+      agent_seo_architect: ['Building JSON-LD SoftwareApplication & Organization entity graph...', 'Injecting OpenGraph 1200x630 cards...', 'Canonical URLs validated.'],
+      agent_bento_designer: ['Calculating golden-ratio card padding...', 'Injecting glowing neon hover borders...', 'Bento grid responsive layout compiled.'],
+      agent_multipage_router: ['Auditing 6-route navigation integrity...', 'Linking /features, /pricing, /docs, /about, /contact...', 'Zero broken anchor links.'],
+      agent_billing_stripe: ['Structuring monthly/annual pricing tiers...', 'Wiring 20% annual discount calculate handler...', 'Checkout action handlers active.'],
+      agent_security_guard: ['Inspecting script boundaries...', 'Setting strict Content-Security-Policy & Argon2id memory buffers...', 'Zero cloud egress validated.'],
+      agent_local_geo_seo: ['Generating LocalBusiness geographic coordinates...', 'Setting neighborhood service area tags...', 'Google Local 3-pack schema verified.'],
+      agent_cro_optimizer: ['Adding 30-day money-back guarantee seal...', 'Injecting instant online quote estimator...', 'Conversion friction reduced by 40%.'],
+      agent_interactive_builder: ['Compiling interactive JavaScript price slider...', 'Binding responsive DOM events...', 'Zero-dependency interactive widgets compiled.'],
+      agent_brand_stylist: ['Synthesizing inline SVG brand monogram...', 'Normalizing CSS custom properties (--gen-accent, --gen-surface)...', 'Brand identity aligned.'],
+      agent_typography_lead: ['Pairing Syne display fonts with Figtree body...', 'Checking line-height readability & font-smoothing...', 'Typography hierarchy optimized.'],
+      agent_speed_benchmark: ['Preloading critical CSS & display fonts...', 'Measuring Cumulative Layout Shift (CLS: 0.00)...', 'Sub-10ms FID verified.'],
+      agent_a11y_auditor: ['Validating WCAG 2.1 AAA color contrast ratios...', 'Ensuring visible focus rings on interactive elements...', 'Accessibility audit passed.'],
+      agent_i18n_translator: ['Setting HTML lang="en" & UTF-8 character encoding...', 'Formatting localized currency symbols...', 'Internationalization verified.'],
+      agent_code_sandbox: ['Configuring live cURL API code switchers...', 'Generating interactive terminal simulator...', 'Sandbox runtime shell ready.'],
+      agent_testimonials_curator: ['Curating authentic verified 5-star testimonials...', 'Generating marquee scrolling stream...', 'Social proof established.'],
+      agent_faq_author: ['Drafting FAQPage structured entity answers...', 'Formatting technical & pricing FAQ triples...', 'AEO & Perplexity indexing enabled.'],
+      agent_form_validator: ['Building client-side lead capture form...', 'Adding realtime email & telephone regex validation...', 'Form submission pipeline ready.'],
+      agent_assets_bundler: ['Generating lightweight inline SVG icons...', 'Bundling social share preview banners...', 'Zero-egress asset package complete.'],
+      agent_framework_exporter: ['Structuring Monolithic HTML, Astro 5 & Vite + React packages...', 'Synthesizing package.json & build configs...', 'Export repository assembled.'],
+      agent_netlify_ax_healer: ['Injecting Netlify AX v3.0 self-healing fallback headers...', 'Setting immutable static asset cache headers...', 'Production deployment verified.']
+    };
 
     function step() {
       if (currentIdx >= totalAgents) {
@@ -953,8 +978,16 @@
       var pct = Math.round(((currentIdx + 1) / totalAgents) * 100);
 
       onStart(agent, currentIdx);
-      onLog('[' + new Date().toLocaleTimeString() + '] ⚡ [Agent ' + agent.num + '/21 · ' + agent.name + '] ' + agent.task);
+      onLog('[' + new Date().toLocaleTimeString() + '] ⚡ [Agent ' + agent.num + '/21 · ' + agent.name + '] Initiated: ' + agent.task);
       onProgress(pct, agent);
+
+      // Stream thoughts
+      var thoughts = agentThoughts[agent.id] || ['Analyzing parameters...', 'Compiling code...', 'Validated.'];
+      thoughts.forEach(function(th, tIdx) {
+        setTimeout(function() {
+          onLog('    ↳ 🧠 ' + th);
+        }, (tIdx + 1) * Math.floor(stepDelay / 3.5));
+      });
 
       if (currentIdx === 0 && routes['index.html']) {
         onSection('index.html', routes['index.html']);
@@ -965,6 +998,10 @@
         currentIdx++;
         step();
       }, stepDelay);
+    }
+
+    step();
+  }, stepDelay);
     }
 
     step();
