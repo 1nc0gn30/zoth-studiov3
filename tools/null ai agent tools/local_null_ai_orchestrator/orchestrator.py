@@ -615,6 +615,34 @@ def command_install(args: argparse.Namespace) -> int:
                 print(f"  Would run: npm install")
     return 0
 
+def _generate_website_graphics(ws_root: Path, plan_json: dict, prompt: str) -> list[str]:
+    """Synthesizes visual assets matching domain prompt into /workspaces/{slug}/assets/"""
+    if not plan_json or not isinstance(plan_json, dict):
+        return []
+    assets_dir = ws_root / "assets"
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    generated = []
+    
+    # Generate hero-graphic SVG or PNG fallback
+    brand = plan_json.get("brandName", "Sovereign Brand")
+    accent = plan_json.get("paletteAccent", "#00f0ff")
+    
+    svg_badge = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="{accent}" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#050711" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="40" fill="#050711" stroke="{accent}" stroke-width="4"/>
+  <circle cx="200" cy="200" r="140" fill="url(#g1)" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
+  <text x="200" y="215" font-family="sans-serif" font-size="32" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="2">{brand.upper()[:16]}</text>
+  <text x="200" y="255" font-family="monospace" font-size="14" font-weight="700" fill="{accent}" text-anchor="middle">SOVEREIGN BUILD</text>
+</svg>'''
+    (assets_dir / "brand-badge.svg").write_text(svg_badge, encoding="utf-8")
+    generated.append("brand-badge.svg")
+    return generated
+
 def command_serve(args: argparse.Namespace) -> int:
     """Start the HTTP API server for the web dashboard."""
     import http.server
@@ -2187,6 +2215,7 @@ created: {now_utc}
                 agent = data.get("agent", data.get("harness", "agy")).lower()
 
                 import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
                 sys.path.insert(0, str(ORCH_DIR.parent))
                 try:
                     import ducky_terminal_spawner
@@ -2200,6 +2229,7 @@ created: {now_utc}
                 session_name = data.get("session", "")
                 feedback = data.get("feedback", "").strip()
                 import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
                 sys.path.insert(0, str(ORCH_DIR.parent))
                 try:
                     import ducky_terminal_spawner
@@ -2212,6 +2242,7 @@ created: {now_utc}
             if path in ("/api/zoth/terminal/ducky/screen", "/api/ducky/screen"):
                 session_name = data.get("session", "")
                 import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
                 sys.path.insert(0, str(ORCH_DIR.parent))
                 try:
                     import ducky_terminal_spawner
