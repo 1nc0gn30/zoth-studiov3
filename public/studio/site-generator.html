@@ -98,7 +98,7 @@
 <button aria-label="Switch to Matrix theme" class="zoth-theme-btn" data-theme-id="matrix" onclick="window.setZothTheme('matrix')" title="Matrix Theme (Shift+T)" type="button"><span class="theme-emoji">📟</span> <span class="theme-name">Matrix</span></button>
 <button aria-label="Switch to Gold theme" class="zoth-theme-btn" data-theme-id="gold" onclick="window.setZothTheme('gold')" title="Gold Theme (Shift+T)" type="button"><span class="theme-emoji">⚗️</span> <span class="theme-name">Gold</span></button>
 </div>
-<a class="nav-pill js-deck" href="http://127.0.0.1:8484/"><span class="deck-pulse"></span> Deck :8484</a>
+<a class="nav-pill js-deck" href=ORCHESTRATOR_API_BASE + "/"><span class="deck-pulse"></span> Deck :8484</a>
 <a class="nav-pill git" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">GitHub ↗</a>
 </nav>
 
@@ -143,7 +143,7 @@
 <div class="drawer-heading">Security &amp; Docs</div>
 <a href="/docs/">📚 Documentation Reference</a>
 <a href="/vault/">🔐 Sovereign Vault (:8484)</a>
-<a class="js-deck" href="http://127.0.0.1:8484/">⚡ Local Operator Deck (:8484)</a>
+<a class="js-deck" href=ORCHESTRATOR_API_BASE + "/">⚡ Local Operator Deck (:8484)</a>
 <a class="git-link" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">GitHub Repository ↗</a>
 </div>
 </nav>
@@ -159,7 +159,7 @@
 <p class="lede">Autonomous multi-agent website generator. Prompt any idea or select from <strong>182 in-house blueprints &amp; 31 open-source MIT templates</strong> with real-time live preview.</p>
 <div class="sitegen-poster-actions">
 <a class="magic-shimmer-btn" href="#foundry">🚀 Launch Foundry Workbench</a>
-<a class="btn btn-ghost js-deck" href="http://127.0.0.1:8484/">🔮 Ask Master Azoth</a>
+<a class="btn btn-ghost js-deck" href=ORCHESTRATOR_API_BASE + "/">🔮 Ask Master Azoth</a>
 </div>
 </div>
 <div class="sitegen-poster-visual">
@@ -1010,7 +1010,7 @@
 </div>
 <div class="foot-col">
 <h3>Studio &amp; Core</h3>
-<a class="mega-footer-link js-deck" href="http://127.0.0.1:8484/"><span>⚡</span> Operator Deck (:8484)</a>
+<a class="mega-footer-link js-deck" href=ORCHESTRATOR_API_BASE + "/"><span>⚡</span> Operator Deck (:8484)</a>
 <a class="mega-footer-link" href="/studio/"><span>🛠️</span> Studio Workstations</a>
 <a class="mega-footer-link" href="/studio/site-generator.html"><span>🚀</span> Website Generator</a>
 <a class="mega-footer-link" href="/studio/swarm.html"><span>🌐</span> 3D Swarm Arena</a>
@@ -1060,6 +1060,8 @@
 
 <script>
   // --- STAGE 0 PROJECT INITIALIZATION CONTROLLER ---
+    // Dynamic Orchestrator API Base URL
+  var ORCHESTRATOR_API_BASE = (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484';
   var currentProjectMode = 'scratch';
 
   function selectProjectMode(mode) {
@@ -2089,7 +2091,7 @@
     }
 
         // Inject feedback directly into live running terminal session
-    fetch('http://127.0.0.1:8484/api/zoth/terminal/ducky/feedback', {
+    fetch(ORCHESTRATOR_API_BASE + '/api/zoth/terminal/ducky/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2099,7 +2101,7 @@
     }).catch(function() {});
 
     // Call /api/zoth/swarm/refine-plan to pipe feedback to @Azoth
-    fetch('http://127.0.0.1:8484/api/zoth/swarm/refine-plan', {
+    fetch(ORCHESTRATOR_API_BASE + '/api/zoth/swarm/refine-plan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2149,7 +2151,7 @@
 
     var routes = ZothSwarmOrchestrator.generateRouteSuite(currentSite, studioConfig);
 
-    fetch('http://127.0.0.1:8484/api/zoth/workspace/compile-files', {
+    fetch(ORCHESTRATOR_API_BASE + '/api/zoth/workspace/compile-files', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2230,7 +2232,7 @@
 
     // ⚡ ASYNC 1: Create physical workspace folder & save uploaded brand assets
     try {
-      fetch('http://127.0.0.1:8484/api/zoth/workspace/create', {
+      fetch(ORCHESTRATOR_API_BASE + '/api/zoth/workspace/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2244,7 +2246,7 @@
             var activeDuckySession = 'zoth_' + projName.toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-+|-+$/g, '');
 
     // ⚡ REAL DUCKY SCRIPT TERMINAL: Open Desktop Terminal -> cd into folder -> Run agy -> Type Prompt
-    fetch('http://127.0.0.1:8484/api/zoth/terminal/ducky/spawn', {
+    fetch(ORCHESTRATOR_API_BASE + '/api/zoth/terminal/ducky/spawn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2264,7 +2266,7 @@
           pollCount++;
           if (pollCount > 30) clearInterval(screenPollTimer);
 
-          fetch('http://127.0.0.1:8484/api/zoth/terminal/ducky/screen', {
+          fetch(ORCHESTRATOR_API_BASE + '/api/zoth/terminal/ducky/screen', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session: activeDuckySession })
@@ -2285,7 +2287,7 @@
     .catch(function(err) {
       console.log('[Ducky Terminal Bridge Note]', err);
     });
-    fetch('http://127.0.0.1:8484/api/zoth/terminal/session', {
+    fetch(ORCHESTRATOR_API_BASE + '/api/zoth/terminal/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2719,7 +2721,7 @@
     renderSwarmGrid();
     // Asynchronously dispatch real headless swarm broadcast to orchestrator on :8484
     try {
-      fetch('http://127.0.0.1:8484/api/zoth/swarm', {
+      fetch(ORCHESTRATOR_API_BASE + '/api/zoth/swarm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
