@@ -1059,6 +1059,64 @@
 <script src="/tools/site-workspace-spawner.js"></script>
 
 <script>
+  // --- STAGE 0 PROJECT INITIALIZATION CONTROLLER ---
+  var currentProjectMode = 'scratch';
+
+  function selectProjectMode(mode) {
+    currentProjectMode = mode;
+    var cScratch = document.getElementById('modeCardScratch');
+    var cTpl = document.getElementById('modeCardTemplate');
+    var scratchFields = document.getElementById('scratchSetupFields');
+
+    if (mode === 'scratch') {
+      if (cScratch) { cScratch.style.borderColor = '#00f0ff'; cScratch.style.borderWidth = '2px'; }
+      if (cTpl) { cTpl.style.borderColor = 'rgba(255,255,255,0.1)'; cTpl.style.borderWidth = '1px'; }
+      if (scratchFields) scratchFields.style.display = 'block';
+    } else {
+      if (cScratch) { cScratch.style.borderColor = 'rgba(255,255,255,0.1)'; cScratch.style.borderWidth = '1px'; }
+      if (cTpl) { cTpl.style.borderColor = '#00f0ff'; cTpl.style.borderWidth = '2px'; }
+      if (scratchFields) scratchFields.style.display = 'none';
+    }
+  }
+
+  function syncProjectName(val) {
+    var pInput = document.getElementById('projectNameInput');
+    if (pInput) pInput.value = val;
+  }
+
+  function syncInitialPrompt(val) {
+    var pInput = document.getElementById('sitePromptInput');
+    if (pInput) pInput.value = val;
+  }
+
+  function launchInitialProject() {
+    var overlay = document.getElementById('projectInitOverlay');
+    var modalName = document.getElementById('modalProjectName') ? document.getElementById('modalProjectName').value.trim() : 'my-sovereign-site';
+    var modalPrompt = document.getElementById('modalPromptInput') ? document.getElementById('modalPromptInput').value.trim() : '';
+
+    if (overlay) overlay.style.display = 'none';
+
+    if (currentProjectMode === 'scratch') {
+      switchSourceMode('prompt');
+      if (modalName) {
+        var pInput = document.getElementById('projectNameInput');
+        if (pInput) pInput.value = modalName;
+      }
+      if (modalPrompt) {
+        var promptEl = document.getElementById('sitePromptInput');
+        if (promptEl) promptEl.value = modalPrompt;
+        spawnAgentAndSynthesize();
+      } else {
+        var iframe = document.getElementById('previewIframe');
+        if (iframe) {
+          iframe.srcdoc = '<!DOCTYPE html><html><body style="background:#050711;color:#94a3b8;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;"><div><h2 style="color:#ffffff;font-family:sans-serif;">🔨 Workspace Initialized: ' + modalName + '</h2><p>Upload brand assets on the left and enter your concept prompt to begin synthesis.</p></div></body></html>';
+        }
+      }
+    } else {
+      switchSourceMode('inhouse');
+    }
+  }
+
   // Global State
   var currentStage = 1;
   var selectedAgent = 'antigravity';
