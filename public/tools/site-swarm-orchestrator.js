@@ -348,7 +348,7 @@
     var interactiveSectionHtml = '';
 
     // 1. Action Sports & Skateboarding
-    if (archetype === 'action_sports_skate' || (s.domain && s.domain.includes('skate')) || (s.name && s.name.toLowerCase().includes('skate'))) {
+    if ((archetype === 'action_sports_skate' || (s.domain && s.domain.includes('skate')) || (s.name && s.name.toLowerCase().includes('skate'))) && s.monetization !== '100% Free Open Access / Non-Commercial' && (!s.tagline || !s.tagline.toLowerCase().includes('zero commerce')) && (!s.heroTitle || !s.heroTitle.toLowerCase().includes('no merch'))) {
       interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="custom-builder">' +
         '<div style="background:linear-gradient(145deg, rgba(16,21,36,0.9), rgba(5,7,15,0.95));border:1px solid ' + accent + '66;border-radius:18px;padding:32px;box-shadow:0 12px 40px rgba(0,0,0,0.6);">' +
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;">' +
@@ -577,7 +577,7 @@
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;margin-top:auto;">' +
             '<span style="font-family:Syne,sans-serif;font-size:1.3rem;font-weight:900;color:' + accent + ';">' + it.price + '</span>' +
-            '<a href="pricing.html" style="' + btnStyle + 'padding:6px 14px;font-size:0.78rem;text-decoration:none;">Order Now</a>' +
+            '<a href="features.html" style="' + btnStyle + 'padding:6px 14px;font-size:0.78rem;text-decoration:none;">' + ((it.price && (it.price.includes('FREE') || it.price === '$0')) ? 'Watch Part ➔' : 'Order Now') + '</a>' +
           '</div>' +
         '</div>' +
       '</div>';

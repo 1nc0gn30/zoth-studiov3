@@ -2325,6 +2325,12 @@ Output ONLY the JSON object."""
                     "plan": plan_json,
                     "updatedAt": datetime.now(timezone.utc).isoformat()
                 }
+                                # Automatically synthesize bespoke visual graphics into workspace
+                gen_assets = _generate_website_graphics(ws_root, plan_json, prompt)
+                if gen_assets:
+                    term_logs.append(f"[graphics] Synthesized visual assets: {', '.join(gen_assets)}")
+                    manifest["generatedAssets"] = gen_assets
+
                 (ws_root / "project-manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
                 self._send_json({
