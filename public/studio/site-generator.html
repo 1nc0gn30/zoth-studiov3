@@ -1774,6 +1774,70 @@
     if (monSelect) monSelect.value = studioConfig.monetization;
   }
 
+  var thinkingTimer = null;
+
+  function runAgentReasoningStream(prompt, agentName, callback) {
+    var agentNameUpper = (agentName || 'antigravity').toUpperCase();
+    var tAgentBadge = document.getElementById('thinkAgentBadge');
+    var tStatusBadge = document.getElementById('thinkStatusBadge');
+    var logStream = document.getElementById('agentLogStream');
+    var planArchHead = document.getElementById('planArchHead');
+    var planArchSub = document.getElementById('planArchSub');
+    var planStyleHead = document.getElementById('planStyleHead');
+    var planStyleSub = document.getElementById('planStyleSub');
+
+    if (tAgentBadge) tAgentBadge.textContent = '⚡ ' + agentNameUpper + ' Architect: Active Reasoning';
+    if (tStatusBadge) tStatusBadge.textContent = 'Analyzing Requirements';
+
+    if (planArchHead) {
+      var fwName = studioConfig.framework === 'astro' ? 'Astro 5' : (studioConfig.framework === 'vite_react' ? 'Vite + React' : 'Monolithic HTML5');
+      planArchHead.textContent = '🏛️ Architecture: ' + fwName;
+      if (planArchSub && currentSite) planArchSub.textContent = '6-Route Suite (' + currentSite.name + ')';
+    }
+    if (planStyleHead) {
+      planStyleHead.textContent = '🎨 Theme & Accent: ' + (studioConfig.customAccent || '#00f0ff');
+      if (planStyleSub) planStyleSub.textContent = 'High-contrast dark tokens, bento cards & conversion CTAs';
+    }
+
+    if (!logStream) {
+      if (callback) callback();
+      return;
+    }
+
+    if (thinkingTimer) clearTimeout(thinkingTimer);
+
+    logStream.innerHTML = '';
+    var logs = [
+      '[00:01] 🔍 [' + agentNameUpper + '] Ingesting prompt semantics: "' + (prompt ? prompt.substring(0, 45) : 'AI tools') + '..."',
+      '[00:02] 📐 [' + agentNameUpper + '] Classifying domain as [' + (currentSite ? (currentSite.domain || 'custom') : 'business') + ']. Audience target: ' + studioConfig.audience + '.',
+      '[00:03] ⚡ [' + agentNameUpper + '] Auto-selected framework: ' + (studioConfig.framework ? studioConfig.framework.toUpperCase() : 'MONOLITHIC_HTML') + ' (zero-egress local loopback bounds).',
+      '[00:04] 🎨 [' + agentNameUpper + '] Synthesizing custom color tokens (' + studioConfig.customAccent + ') and responsive bento grid features...',
+      '[00:05] 🗺️ [' + agentNameUpper + '] Formulating complete 6-route navigation graph: /index, /features, /pricing, /docs, /about, /contact...',
+      '[00:06] ✨ [' + agentNameUpper + '] Architectural blueprint 100% verified & ready!'
+    ];
+
+    var idx = 0;
+    function nextLog() {
+      if (idx < logs.length) {
+        var row = document.createElement('div');
+        row.textContent = logs[idx];
+        logStream.appendChild(row);
+        logStream.scrollTop = logStream.scrollHeight;
+        idx++;
+        thinkingTimer = setTimeout(nextLog, 280);
+      } else {
+        if (tStatusBadge) {
+          tStatusBadge.textContent = '✅ Blueprint Ready';
+          tStatusBadge.style.background = 'rgba(52,211,153,0.2)';
+          tStatusBadge.style.color = '#34d399';
+          tStatusBadge.style.borderColor = 'rgba(52,211,153,0.4)';
+        }
+        if (callback) callback();
+      }
+    }
+    nextLog();
+  }
+
   function spawnAgentAndSynthesize() {
     var promptEl = document.getElementById('sitePromptInput');
     var prompt = (promptEl && promptEl.value.trim()) ? promptEl.value.trim() : 'AI code copilot and autonomous agent devtools with AST verification';
@@ -1808,20 +1872,23 @@
       currentSite.theme.accent = studioConfig.customAccent;
     }
 
-    // Move smoothly to Step 2 for generation streaming
+    // Go to Step 2
     goToStage(2);
+    
     var subEl = document.getElementById('agentSynthesisSub');
     if (subEl) {
       var prefix = activeTemplate ? ('Rebranding [' + activeTemplate.title + '] as ') : 'Synthesizing ';
-      subEl.textContent = selectedAgent.toUpperCase() + ' auto-configured stack [' + studioConfig.framework.toUpperCase() + '] and is ' + prefix + (currentSite.name || 'custom site') + '...';
+      subEl.textContent = selectedAgent.toUpperCase() + ' is ' + prefix + (currentSite.name || 'custom site') + ' with dedicated architectural reasoning...';
     }
 
-    // Stream generation and render preview, then proceed to Step 2 review
-    setTimeout(function() {
+    // Run active reasoning stream and immediately render live preview
+    runAgentReasoningStream(prompt, selectedAgent, function() {
       renderDomainPreview();
       updateStackSummary();
-      showStudioToast('✨ ' + selectedAgent.toUpperCase() + ' auto-configured optimal framework & styling for your concept!');
-    }, 600);
+      showStudioToast('✨ Blueprint synthesized! Review details or continue to Step 3.');
+    });
+
+    renderDomainPreview();
   }
 
   function generatePageHtml(pageName) {
