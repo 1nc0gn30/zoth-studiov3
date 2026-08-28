@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/assets/zoth-nav.css" />
   <link rel="stylesheet" href="/assets/zoth-theme.css" />
   <link rel="stylesheet" href="/assets/zoth-guide.css" />
-  <link rel="stylesheet" href="/assets/zoth-webgen-poster.css?v=20260828" />
+  <link rel="stylesheet" href="/assets/zoth-webgen-poster.css?v=20260828b" />
 
   <script src="/assets/zoth-theme.js"></script>
   <script src="/assets/zoth-nav.js"></script>
@@ -71,6 +71,17 @@
       <h1 class="webgen-h1">WebGen Studio</h1>
       <p class="webgen-lede">Direct keystroke injection. Types directly into an authentic CLI terminal session, trusts the directory, executes AGY, and compiles your website in real time.</p>
 
+      <!-- Active / Saved Sessions Tracker -->
+      <div class="webgen-field-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <label class="webgen-label">Active &amp; Tracked Terminals</label>
+          <span onclick="fetchTrackedSessions()" style="font-size:0.7rem;color:var(--webgen-cyan);cursor:pointer;font-family:var(--font-theme-mono, monospace);">🔄 Refresh</span>
+        </div>
+        <div class="webgen-sessions-tray" id="trackedSessionsTray">
+          <div style="font-size:0.72rem;color:var(--webgen-muted);font-family:var(--font-theme-mono, monospace);">Loading active terminals...</div>
+        </div>
+      </div>
+
       <!-- Project Slug -->
       <div class="webgen-field-wrap">
         <label class="webgen-label" for="projNameInput">1. Target Workspace Directory</label>
@@ -79,7 +90,7 @@
 
       <!-- User Prompt -->
       <div class="webgen-field-wrap">
-        <label class="webgen-label" for="promptInput">2. What should the agent build?</label>
+        <label class="webgen-label" for="promptInput">2. Prompt / Iteration Directive</label>
         <textarea id="promptInput" class="webgen-textarea" placeholder="e.g. Build a dope 3D website about Stoicism with Three.js interactive canvas, Marcus Aurelius quotes, dark mode styling, and responsive layout..."></textarea>
       </div>
 
@@ -93,13 +104,13 @@
 
       <!-- Launch Button -->
       <button class="webgen-btn-launch" id="btnSpawnAgent" onclick="spawnAgentSession()">
-        🚀 Inject Keystrokes &amp; Build Website ➔
+        🚀 Launch / Re-Prompt Terminal ➔
       </button>
 
       <!-- Live Terminal Streaming HUD -->
       <div class="webgen-hud-box" id="terminalHud" style="display:none;">
         <div class="webgen-hud-top">
-          <span id="termSessionLabel">⚡ SESSION: CONNECTING</span>
+          <span id="termSessionLabel">⚡ SESSION: CONNECTED</span>
           <span id="termStatusBadge" style="color:#34d399;font-weight:700;">● RUNNING</span>
         </div>
 
@@ -112,8 +123,9 @@
           </div>
         </div>
 
+        <!-- Real-Time Interactive Review & Iteration Input -->
         <div style="display:flex;gap:8px;margin-top:4px;">
-          <input type="text" id="feedbackText" class="webgen-input" style="flex:1;padding:8px 12px;font-size:0.78rem;" placeholder="Type instruction to inject into live agent terminal..." onkeydown="if(event.key==='Enter') sendFeedback()" />
+          <input type="text" id="feedbackText" class="webgen-input" style="flex:1;padding:8px 12px;font-size:0.78rem;" placeholder="Inject iteration / review instruction directly into this terminal..." onkeydown="if(event.key==='Enter') sendFeedback()" />
           <button onclick="sendFeedback()" style="background:var(--webgen-cyan);color:#050711;font-weight:900;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:var(--font-theme-mono, monospace);font-size:0.8rem;">Send</button>
         </div>
       </div>
@@ -145,9 +157,77 @@
     var pollInterval = null;
     var currentPreviewUrl = '';
 
+    function getApiBase() {
+      return (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484';
+    }
+
     function setPrompt(text) {
       var p = document.getElementById('promptInput');
       if (p) p.value = text;
+    }
+
+    function fetchTrackedSessions() {
+      fetch(getApiBase() + '/api/zoth/terminal/ducky/sessions')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var tray = document.getElementById('trackedSessionsTray');
+          if (!tray) return;
+
+          if (data && data.sessions && data.sessions.length) {
+            tray.innerHTML = '';
+            data.sessions.forEach(function(s) {
+              var item = document.createElement('div');
+              item.className = 'webgen-session-item' + (activeSession === s.session ? ' active' : '');
+              item.onclick = function() { selectSession(s); };
+
+              var isLiveBadge = s.isLive
+                ? '<span class="webgen-live-badge live">● LIVE PTY</span>'
+                : '<span class="webgen-live-badge saved">📁 SAVED</span>';
+
+              item.innerHTML = 
+                '<div class="webgen-session-info">' +
+                  '<div class="webgen-session-title">⚡ ' + s.slug + ' ' + isLiveBadge + '</div>' +
+                  '<div class="webgen-session-prompt">' + (s.prompt || 'No initial prompt recorded') + '</div>' +
+                '</div>' +
+                '<div style="font-size:0.7rem;color:var(--webgen-cyan);font-family:monospace;">Select ➔</div>';
+
+              tray.appendChild(item);
+            });
+          } else {
+            tray.innerHTML = '<div style="font-size:0.72rem;color:var(--webgen-muted);font-family:monospace;">No active sessions recorded yet. Launch one below!</div>';
+          }
+        })
+        .catch(function(err) {
+          console.warn('Sessions fetch error:', err);
+        });
+    }
+
+    function selectSession(sess) {
+      activeSession = sess.session;
+      currentPreviewUrl = sess.previewUrl;
+
+      var slugInput = document.getElementById('projNameInput');
+      if (slugInput) slugInput.value = sess.slug;
+
+      var promptInput = document.getElementById('promptInput');
+      if (promptInput && sess.prompt) promptInput.value = sess.prompt;
+
+      var hud = document.getElementById('terminalHud');
+      if (hud) hud.style.display = 'flex';
+
+      var sessLabel = document.getElementById('termSessionLabel');
+      if (sessLabel) sessLabel.textContent = '⚡ SESSION: ' + sess.session;
+
+      var iframe = document.getElementById('webgenPreviewIframe');
+      var urlLabel = document.getElementById('previewUrlLabel');
+      var newTabBtn = document.getElementById('previewNewTabBtn');
+
+      if (urlLabel) urlLabel.textContent = window.location.origin + currentPreviewUrl;
+      if (newTabBtn) newTabBtn.href = currentPreviewUrl;
+      if (iframe && sess.hasIndex) iframe.src = currentPreviewUrl;
+
+      fetchTrackedSessions();
+      startTerminalPolling();
     }
 
     function spawnAgentSession() {
@@ -168,9 +248,7 @@
         btn.textContent = '⚡ Injecting Ducky Keystrokes...';
       }
 
-      var apiBase = (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484';
-
-      fetch(apiBase + '/api/zoth/terminal/ducky/spawn', {
+      fetch(getApiBase() + '/api/zoth/terminal/ducky/spawn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -183,7 +261,7 @@
       .then(function(data) {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = '🚀 Re-Prompt Live Agent ➔';
+          btn.textContent = '🚀 Re-Prompt / Iterate ➔';
         }
 
         if (data && data.session) {
@@ -193,6 +271,7 @@
           var sessLabel = document.getElementById('termSessionLabel');
           if (sessLabel) sessLabel.textContent = '⚡ SESSION: ' + data.session;
 
+          fetchTrackedSessions();
           startTerminalPolling();
         }
       })
@@ -200,7 +279,7 @@
         console.warn('Spawn notice:', err);
         if (btn) {
           btn.disabled = false;
-          btn.textContent = '🚀 Inject Keystrokes & Build Website ➔';
+          btn.textContent = '🚀 Launch / Re-Prompt Terminal ➔';
         }
       });
     }
@@ -208,12 +287,10 @@
     function startTerminalPolling() {
       if (pollInterval) clearInterval(pollInterval);
 
-      var apiBase = (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484';
-
       pollInterval = setInterval(function() {
         if (!activeSession) return;
 
-        fetch(apiBase + '/api/zoth/terminal/ducky/screen', {
+        fetch(getApiBase() + '/api/zoth/terminal/ducky/screen', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session: activeSession })
@@ -225,6 +302,12 @@
             if (screenBox && data.screen) {
               screenBox.textContent = data.screen;
               screenBox.scrollTop = screenBox.scrollHeight;
+            }
+
+            var statusBadge = document.getElementById('termStatusBadge');
+            if (statusBadge) {
+              statusBadge.textContent = data.isAlive ? '● LIVE PTY' : '○ IDLE';
+              statusBadge.style.color = data.isAlive ? '#34d399' : '#94a3b8';
             }
 
             // Render workspace files
@@ -265,9 +348,7 @@
       var fbText = fbInput ? fbInput.value.trim() : '';
       if (!fbText || !activeSession) return;
 
-      var apiBase = (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484';
-
-      fetch(apiBase + '/api/zoth/terminal/ducky/feedback', {
+      fetch(getApiBase() + '/api/zoth/terminal/ducky/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -286,6 +367,11 @@
         iframe.src = currentPreviewUrl + '?v=' + Date.now();
       }
     }
+
+    // Initialize tracked sessions on load
+    window.addEventListener('DOMContentLoaded', function() {
+      fetchTrackedSessions();
+    });
   </script>
 </body>
 </html>

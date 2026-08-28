@@ -1653,6 +1653,20 @@ created: {now_utc}
                 return
 
             # ─── API: health ───
+            
+            # ─── API: DuckyScript Active Sessions Registry & Tracker ───
+            if path in ("/api/zoth/terminal/ducky/sessions", "/api/ducky/sessions"):
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
+                sys.path.insert(0, str(ORCH_DIR.parent))
+                try:
+                    import ducky_terminal_spawner
+                    sessions = ducky_terminal_spawner.list_all_active_sessions()
+                    self._send_json({"status": "ok", "sessions": sessions})
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
             if path == "/api/health":
                 self._send_json({"status": "ok", "version": "2.0.0", "uptime": True})
                 return
