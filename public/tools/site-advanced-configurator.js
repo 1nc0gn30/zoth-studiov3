@@ -123,20 +123,18 @@ CMD ["nginx", "-g", "daemon off;"]
     }
   };
 
-  const FRAMEWORKS = {
-    nextjs: {
-      id: 'nextjs',
-      name: 'Next.js 15 App Router',
-      icon: '⚡',
-      lang: 'TypeScript + React 19',
-      features: ['Server Actions', 'Turbopack', 'Tailwind CSS v4', 'Dynamic Metadata'],
+    const FRAMEWORKS = {
+    static_html: {
+      id: 'static_html',
+      name: 'Monolithic HTML5',
+      icon: '🌐',
+      lang: 'Monolithic HTML5 & ES6',
+      features: ['Zero Build Step', '100% Native Browser Execution', 'Sub-10ms TTFB', 'Self-Contained'],
       packageJson: (name) => ({
         name: name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        version: '0.1.0',
-        private: true,
-        scripts: { dev: 'next dev --turbo', build: 'next build', start: 'next start' },
-        dependencies: { next: '^15.1.0', react: '^19.0.0', 'react-dom': '^19.0.0', lucide_react: '^0.460.0' },
-        devDependencies: { typescript: '^5.7.0', '@types/node': '^22.0.0', '@types/react': '^19.0.0', tailwindcss: '^3.4.15' }
+        version: '1.0.0',
+        scripts: { start: 'npx serve public' },
+        devDependencies: { serve: '^14.2.4' }
       })
     },
     astro: {
@@ -166,33 +164,6 @@ CMD ["nginx", "-g", "daemon off;"]
         scripts: { dev: 'vite', build: 'vite build', preview: 'vite preview' },
         dependencies: { react: '^18.3.1', 'react-dom': '^18.3.1', 'lucide-react': '^0.460.0', zustand: '^5.0.0' },
         devDependencies: { vite: '^5.4.11', '@vitejs/plugin-react': '^4.3.3', tailwindcss: '^3.4.15' }
-      })
-    },
-    sveltekit: {
-      id: 'sveltekit',
-      name: 'SvelteKit 2 (Svelte 5)',
-      icon: '🔶',
-      lang: 'TypeScript + Runes',
-      features: ['Svelte 5 Runes', 'Sub-15kb Runtime', 'SSR/SSG Adapter', 'Tailwind CSS'],
-      packageJson: (name) => ({
-        name: name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        version: '0.0.1',
-        type: 'module',
-        scripts: { dev: 'vite dev', build: 'vite build', preview: 'vite preview' },
-        devDependencies: { '@sveltejs/kit': '^2.8.0', '@sveltejs/vite-plugin-svelte': '^4.0.0', svelte: '^5.0.0', vite: '^5.4.11', tailwindcss: '^3.4.15' }
-      })
-    },
-    static_html: {
-      id: 'static_html',
-      name: '6-Page Clean HTML5 / JS',
-      icon: '🌐',
-      lang: 'Modern CSS3 & ES6',
-      features: ['Zero Build Step', '100% Native Browser Execution', 'Sub-50ms TTFB', 'Self-Contained'],
-      packageJson: (name) => ({
-        name: name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        version: '1.0.0',
-        scripts: { start: 'npx serve public' },
-        devDependencies: { serve: '^14.2.4' }
       })
     }
   };
