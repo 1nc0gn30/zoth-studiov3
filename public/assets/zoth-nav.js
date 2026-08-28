@@ -31,21 +31,23 @@
         if (btn && menu) {
           var title = btn.textContent.trim();
           if (title.indexOf("Studio") !== -1) {
+            if (!menu.querySelector('a[href*="/secure-comms/"]')) {
+              var commsLink = document.createElement("a");
+              commsLink.href = "/secure-comms/";
+              commsLink.innerHTML = "<strong>🔒 SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE SimpleX, Matrix &amp; Swarm QR</small>";
+              menu.appendChild(commsLink);
+            }
             if (!menu.querySelector('a[href*="web3-hub.html"]')) {
               var w3Link = document.createElement("a");
               w3Link.href = "/studio/web3-hub.html";
               w3Link.innerHTML = "<strong>🪙 Web3 &amp; Solana Bridge</strong><small>Multi-Chain Wallets, Live SOL Ticker &amp; Radar</small>";
               menu.appendChild(w3Link);
-              var commsLink = document.createElement("a");
-              commsLink.href = "/secure-comms/";
-              commsLink.innerHTML = "<strong>🔒 Sovereign Comms (SimpleX)</strong><small>Zero-Knowledge SimpleX ↔ Matrix Bridge &amp; QR</small>";
-              menu.appendChild(commsLink);
-    
+            }
+            if (!menu.querySelector('a[href*="/secure-messaging/"]')) {
               var msgLink = document.createElement("a");
               msgLink.href = "/secure-messaging/";
               msgLink.innerHTML = "<strong>💬 Secure Signal Bridge</strong><small>E2EE Double Ratchet, Matrix &amp; Swarm Dispatch</small>";
               menu.appendChild(msgLink);
-    
             }
           }
           if (title.indexOf("Core") !== -1) {
@@ -67,21 +69,23 @@
           return h.textContent.indexOf("Studio") !== -1 || h.textContent.indexOf("Workstation") !== -1;
         });
         studioHeadings.forEach(function(sh) {
+          if (sh.parentElement && !sh.parentElement.querySelector('a[href*="/secure-comms/"]')) {
+            var aComms = document.createElement("a");
+            aComms.href = "/secure-comms/";
+            aComms.innerHTML = "🔒 SimpleX ↔ Matrix Bridge (E2EE)";
+            sh.parentElement.appendChild(aComms);
+          }
           if (sh.parentElement && !sh.parentElement.querySelector('a[href*="web3-hub.html"]')) {
             var a = document.createElement("a");
             a.href = "/studio/web3-hub.html";
             a.innerHTML = "🪙 Web3 &amp; Solana Swarm Bridge";
             sh.parentElement.appendChild(a);
-            var aComms = document.createElement("a");
-            aComms.href = "/secure-comms/";
-            aComms.innerHTML = "🔒 Zero-Knowledge Sovereign Comms (SimpleX)";
-            sh.parentElement.appendChild(aComms);
-    
+          }
+          if (sh.parentElement && !sh.parentElement.querySelector('a[href*="/secure-messaging/"]')) {
             var aMsg = document.createElement("a");
             aMsg.href = "/secure-messaging/";
             aMsg.innerHTML = "💬 Secure Signal Swarm Bridge";
             sh.parentElement.appendChild(aMsg);
-    
           }
         });
 
@@ -99,14 +103,22 @@
         });
       }
 
-      // 3. Topbar Direct Navbar (if no dropdowns)
+      // 3. Topbar Direct Navbar
       var menuBar = document.querySelector("header.bar nav.menu") || document.querySelector("header#topbar nav.menu");
-      if (menuBar && !menuBar.querySelector('a[href*="web3-hub.html"]') && !menuBar.querySelector('.nav-dropdown')) {
-        var directLink = document.createElement("a");
-        directLink.className = "nav-link";
-        directLink.href = "/studio/web3-hub.html";
-        directLink.innerHTML = "🪙 Web3 Bridge";
-        menuBar.insertBefore(directLink, menuBar.lastElementChild);
+      if (menuBar && !menuBar.querySelector('a[href*="/secure-comms/"]')) {
+        var directComms = document.createElement("a");
+        directComms.className = "nav-link";
+        directComms.href = "/secure-comms/";
+        directComms.innerHTML = "🔒 SimpleX Matrix";
+        directComms.style.color = "var(--cyan)";
+        directComms.style.textShadow = "0 0 10px rgba(0,240,255,0.4)";
+        // Insert right next to Web3 or before dropdowns
+        var targetSibling = menuBar.querySelector('a[href*="web3-hub.html"]') || menuBar.querySelector('.nav-dropdown') || menuBar.lastElementChild;
+        if (targetSibling) {
+          menuBar.insertBefore(directComms, targetSibling.nextSibling);
+        } else {
+          menuBar.appendChild(directComms);
+        }
       }
     }
 
