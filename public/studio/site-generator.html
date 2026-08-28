@@ -294,12 +294,9 @@
               <span style="font-size:0.72rem;color:#94a3b8;">Framework:</span>
               <select id="templateFrameworkFilter" class="qa-select" style="padding:4px 8px;font-size:0.72rem;" onchange="filterTemplateVault()">
                 <option value="all">⚡ All Frameworks</option>
-                <option value="react">⚛️ React + Vite</option>
-                <option value="astro">🚀 Astro</option>
-                <option value="tailwind">🎨 Tailwind CSS</option>
-                <option value="html5">🌐 Static HTML5</option>
-                <option value="nextjs">▲ Next.js</option>
-                <option value="node">🟢 Node.js Fullstack</option>
+                <option value="html5">🌐 Monolithic HTML5</option>
+                <option value="astro">🚀 Astro 5</option>
+                <option value="react">⚛️ Vite + React</option>
               </select>
             </div>
 
@@ -399,33 +396,17 @@
         </div>
 
 
-        <!-- 1. Web Hosting Provider Picker -->
+        <!-- 1. Streamlined Web Hosting & Deployment Target -->
         <div class="form-group">
-          <label class="form-label">🚀 Web Hosting Target</label>
-          <div class="config-card-grid">
+          <label class="form-label">🚀 Primary Deployment Target</label>
+          <div class="config-card-grid" style="grid-template-columns: 1fr 1fr;">
             <div class="config-card active" id="host_netlify" onclick="setConfigOption('hosting', 'netlify', this)">
               <div class="config-card-head">⚡ Netlify (AX v3.0)</div>
-              <div class="config-card-sub">Edge Functions, Blobs, Forms &amp; Self-Healing</div>
-            </div>
-            <div class="config-card" id="host_vercel" onclick="setConfigOption('hosting', 'vercel', this)">
-              <div class="config-card-head">▲ Vercel Edge</div>
-              <div class="config-card-sub">Next.js Edge Runtime, Serverless &amp; KV</div>
-            </div>
-            <div class="config-card" id="host_cloudflare" onclick="setConfigOption('hosting', 'cloudflare', this)">
-              <div class="config-card-head">☁️ Cloudflare Pages</div>
-              <div class="config-card-sub">Global Edge CDN, Workers AI &amp; D1 Database</div>
-            </div>
-            <div class="config-card" id="host_render" onclick="setConfigOption('hosting', 'render', this)">
-              <div class="config-card-head">🚆 Render Blueprint</div>
-              <div class="config-card-sub">Static Web Service + Managed PostgreSQL</div>
-            </div>
-            <div class="config-card" id="host_aws" onclick="setConfigOption('hosting', 'aws', this)">
-              <div class="config-card-head">📦 AWS S3 + CloudFront</div>
-              <div class="config-card-sub">Global S3 Bucket + Lambda@Edge Invalidation</div>
+              <div class="config-card-sub">Production Edge Functions, Form Handling, Blobs &amp; Self-Healing Deployment</div>
             </div>
             <div class="config-card" id="host_sovereign" onclick="setConfigOption('hosting', 'sovereign', this)">
-              <div class="config-card-head">🔒 Sovereign Docker / Nginx</div>
-              <div class="config-card-sub">Air-Gapped Container &amp; Zero Cloud Egress</div>
+              <div class="config-card-head">🔒 Sovereign Offline / Local Deck</div>
+              <div class="config-card-sub">Zero-cloud-egress local execution on loopback :8088 / :8787 container</div>
             </div>
           </div>
         </div>
@@ -1861,6 +1842,22 @@
     if (activeTemplate && activeTemplate.entrypointUrl) {
       loadAuthenticTemplateInPreview(activeTemplate, iframe);
       return;
+    }
+
+    if (!currentSite) {
+      var promptEl = document.getElementById('sitePromptInput');
+      var prompt = (promptEl && promptEl.value.trim()) ? promptEl.value.trim() : 'AI code copilot and autonomous agent devtools with AST verification';
+      if (typeof ZothDomainSynthesizer !== 'undefined') {
+        currentSite = ZothDomainSynthesizer.synthesize(prompt, selectedAgent);
+      }
+    }
+
+    // Generate fresh suite if not cached
+    if (!multiPageCache[activePage]) {
+      if (typeof ZothSwarmOrchestrator !== 'undefined') {
+        var suite = ZothSwarmOrchestrator.generateRouteSuite(currentSite, studioConfig);
+        Object.assign(multiPageCache, suite);
+      }
     }
 
     var html = multiPageCache[activePage] || generatePageHtml(activePage);
