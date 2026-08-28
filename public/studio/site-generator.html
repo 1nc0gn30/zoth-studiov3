@@ -2231,24 +2231,35 @@
       }).catch(function() {});
     } catch(e) {}
 
-    // ⚡ ASYNC 2: Dispatch real headless AGY plan synthesis to @Azoth on :8484
-    try {
-      fetch('http://127.0.0.1:8484/api/zoth/swarm/synthesize-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: prompt,
-          projectName: projName,
-          assetsCount: uploadedAssets.length
-        })
+        // ⚡ REAL TERMINAL EXECUTION: cd into project workspace & run harness CLI (agy / grok)
+    fetch('http://127.0.0.1:8484/api/zoth/terminal/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        projectName: projName,
+        prompt: prompt,
+        harness: selectedAgent === 'grok' ? 'grok' : 'agy',
+        isFeedback: false
       })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (data && data.status === 'ok' && data.plan) {
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data && data.status === 'ok') {
+        var logStream = document.getElementById('agentLogStream');
+        if (logStream && data.terminalLogs) {
+          data.terminalLogs.forEach(function(l) {
+            var row = document.createElement('div');
+            row.style.color = '#38bdf8';
+            row.style.fontFamily = 'var(--font-mono, monospace)';
+            row.textContent = l;
+            logStream.appendChild(row);
+          });
+          logStream.scrollTop = logStream.scrollHeight;
+        }
+
+        if (data.plan) {
           var p = data.plan;
-          console.log('⚡ [Headless AGY Plan Ingested]:', p);
-          
-          // Apply sanitized brand name & bespoke copy
+          console.log('⚡ [Headless Terminal Output Received]:', p);
           if (p.brandName) currentSite.name = p.brandName;
           if (p.tagline) currentSite.tagline = p.tagline;
           if (p.heroTitle) {
@@ -2264,25 +2275,22 @@
           if (p.pricingTiers && p.pricingTiers.length > 0) currentSite.pricing = p.pricingTiers;
           if (p.faq && p.faq.length > 0) currentSite.faq = p.faq;
 
-          // Apply AI-selected architectural settings for Step 3 & 4
           if (p.framework) studioConfig.framework = p.framework;
           if (p.paletteAccent) {
             studioConfig.customAccent = p.paletteAccent;
             if (currentSite.theme) currentSite.theme.accent = p.paletteAccent;
           }
-          if (p.targetAudience) studioConfig.audience = p.targetAudience;
-          if (p.monetization) studioConfig.monetization = p.monetization;
 
-          // Sync UI controls
           syncUIConfigSelections();
           renderDomainPreview();
           updateStackSummary();
+          syncFilesToPhysicalWorkspace();
         }
-      })
-      .catch(function(err) {
-        console.log('[Headless AGY Bridge Note]', err);
-      });
-    } catch(e) {}
+      }
+    })
+    .catch(function(err) {
+      console.log('[Terminal Session Bridge Note]', err);
+    });
 
     renderDomainPreview();
   }

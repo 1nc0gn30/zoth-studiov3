@@ -2172,6 +2172,118 @@ created: {now_utc}
                 })
                 return
 
+            # ─── API: Headless Terminal Session in Project Workspace CWD ───
+            if path in ("/api/zoth/terminal/session", "/api/terminal/run", "/api/zoth/terminal/execute"):
+                proj_name = data.get("projectName", data.get("slug", "zoth-project")).strip()
+                proj_slug = re.sub(r'[^a-zA-Z0-9_-]', '-', proj_name).lower().strip('-') or 'zoth-app'
+                prompt = data.get("prompt", "").strip()
+                harness = data.get("harness", data.get("agent", "agy")).lower()
+                is_feedback = data.get("isFeedback", False)
+
+                ws_root = ORCH_DIR.parent / "workspaces" / proj_slug
+                ws_root.mkdir(parents=True, exist_ok=True)
+                (ws_root / "assets").mkdir(parents=True, exist_ok=True)
+
+                if not prompt:
+                    self._send_json({"error": "prompt required"}, 400)
+                    return
+
+                # Terminal log history
+                term_logs = [
+                    f"[terminal] $ cd /workspaces/{proj_slug}",
+                    f"[terminal] $ pwd -> {ws_root}",
+                    f"[terminal] $ {harness} -p '{prompt[:60]}...'"
+                ]
+
+                # Craft structured instruction for harness
+                sys_prompt = (
+                    f"You are Master Azoth, Lead Autonomous Web Engineer working inside '{ws_root}'.\n"
+                    f"Task: {'Refine the existing website according to feedback: ' + prompt if is_feedback else 'Build a complete, bespoke, production-ready website from scratch for: ' + prompt}\n"
+                    "Output a single valid raw JSON object with keys:\n"
+                    "- brandName: (extracted/cleaned brand name)\n"
+                    "- domain: (industry domain)\n"
+                    "- tagline: (concise tagline)\n"
+                    "- heroTitle: (headline)\n"
+                    "- heroSub: (subhead)\n"
+                    "- paletteAccent: (hex color)\n"
+                    "- framework: (static_html|astro|vite_react)\n"
+                    "- bentoFeatures: [{icon, title, desc}]\n"
+                    "- itemsCatalog: [{name, place, time, price, rating}]\n"
+                    "- pricingTiers: [{tier, price, popular, desc, perks: []}]\n"
+                    "- faq: [{q, a}]\n"
+                    "Output ONLY valid JSON."
+                )
+
+                import subprocess
+                plan_json = None
+                raw_stdout = ""
+
+                # 1. Execute x.ai Grok if selected
+                if harness == "grok":
+                    try:
+                        grok_p = subprocess.Popen(
+                            ["/home/neo/.local/bin/grok", "-p", sys_prompt, "--always-approve", "--no-auto-update"],
+                            cwd=str(ws_root),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True
+                        )
+                        raw_stdout, raw_stderr = grok_p.communicate(timeout=20)
+                        term_logs.append(f"[grok] Process exited with code {grok_p.returncode}")
+                    except Exception as ge:
+                        term_logs.append(f"[grok:err] {ge}. Falling back to agy...")
+
+                # 2. Execute Google Antigravity (agy)
+                if not raw_stdout or "{" not in raw_stdout:
+                    try:
+                        agy_p = subprocess.Popen(
+                            ["/home/neo/.local/bin/agy", "-p", sys_prompt, "--dangerously-skip-permissions"],
+                            cwd=str(ws_root),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True
+                        )
+                        raw_stdout, raw_stderr = agy_p.communicate(timeout=20)
+                        term_logs.append(f"[agy] Process completed with code {agy_p.returncode}")
+                    except Exception as ae:
+                        term_logs.append(f"[agy:err] {ae}")
+
+                # Extract JSON
+                cleaned_out = raw_stdout.strip()
+                if "```json" in cleaned_out:
+                    cleaned_out = cleaned_out.split("```json")[1].split("```")[0].strip()
+                elif "```" in cleaned_out:
+                    cleaned_out = cleaned_out.split("```")[1].split("```")[0].strip()
+
+                try:
+                    plan_json = json.loads(cleaned_out)
+                    term_logs.append(f"[kernel] Successfully synthesized '{plan_json.get('brandName', proj_slug)}' blueprint.")
+                except Exception as je:
+                    term_logs.append(f"[kernel:warning] JSON parse fallback: {je}")
+
+                # Update project manifest on disk
+                manifest = {
+                    "projectName": proj_name,
+                    "slug": proj_slug,
+                    "workspacePath": str(ws_root),
+                    "lastPrompt": prompt,
+                    "harness": harness,
+                    "plan": plan_json,
+                    "updatedAt": datetime.now(timezone.utc).isoformat()
+                }
+                (ws_root / "project-manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+                self._send_json({
+                    "status": "ok",
+                    "slug": proj_slug,
+                    "workspace": str(ws_root),
+                    "harness": harness,
+                    "terminalLogs": term_logs,
+                    "plan": plan_json,
+                    "manifest": manifest
+                })
+                return
+
             # ─── API: Autonomous Project Workspace & Asset Storage ───
             if path in ("/api/zoth/workspace/create", "/api/workspace/create"):
                 proj_name = data.get("projectName", data.get("name", "untitled-project")).strip()
