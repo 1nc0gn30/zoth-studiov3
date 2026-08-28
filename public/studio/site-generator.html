@@ -2024,6 +2024,42 @@
     toggleRefinementBox();
   }
 
+    // Physically writes and compiles all multi-page routes into the project's workspace folder on disk
+  function syncFilesToPhysicalWorkspace(callback) {
+    if (!currentSite || typeof ZothSwarmOrchestrator === 'undefined') return;
+
+    var projNameEl = document.getElementById('projectNameInput');
+    var projName = (projNameEl && projNameEl.value.trim()) ? projNameEl.value.trim() : (currentSite.name || 'zoth-project');
+    var projSlug = projName.toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-+|-+$/g, '') || 'zoth-app';
+
+    var routes = ZothSwarmOrchestrator.generateRouteSuite(currentSite, studioConfig);
+
+    fetch('http://127.0.0.1:8484/api/zoth/workspace/compile-files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        slug: projSlug,
+        routes: routes,
+        config: studioConfig,
+        manifest: {
+          prompt: document.getElementById('sitePromptInput') ? document.getElementById('sitePromptInput').value : '',
+          brandName: currentSite.name,
+          domain: currentSite.domain
+        }
+      })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data && data.status === 'ok') {
+        console.log('✔ [Disk Sync] Physically written files to:', data.workspace, data.files);
+        if (callback) callback(data);
+      }
+    })
+    .catch(function(err) {
+      console.log('[Disk Sync Note]', err);
+    });
+  }
+
     function spawnAgentAndSynthesize() {
     var promptEl = document.getElementById('sitePromptInput');
     var prompt = (promptEl && promptEl.value.trim()) ? promptEl.value.trim() : 'AI code copilot and autonomous agent devtools with AST verification';
@@ -2070,7 +2106,8 @@
     runAgentReasoningStream(prompt, selectedAgent, function() {
       renderDomainPreview();
       updateStackSummary();
-      showStudioToast('✨ Blueprint synthesized! Review details or continue to Step 3.');
+      showStudioToast('✨ Blueprint synthesized & written to /workspaces/' + (currentSite.name||'project') + '!');
+      syncFilesToPhysicalWorkspace();
     });
 
     var projNameEl = document.getElementById('projectNameInput');
