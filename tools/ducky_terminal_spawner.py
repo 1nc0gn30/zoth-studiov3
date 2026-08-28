@@ -23,30 +23,24 @@ def spawn_real_agent_terminal(project_name, prompt, agent="agy"):
     # 1. Create a tmux session located inside the project folder
     subprocess.run(["tmux", "new-session", "-d", "-s", session_name, "-c", str(ws_dir)], check=True)
 
-    # 2. DuckyScript-style Keystroke Injection:
-    if agent == "grok":
-        agent_cmd = "/home/neo/.local/bin/grok"
-    elif agent == "hermes":
-        agent_cmd = "/home/neo/.local/bin/hermes"
-    elif agent == "codex":
-        agent_cmd = "/usr/bin/codex"
-    else:
-        agent_cmd = "/home/neo/.local/bin/agy"
-
-    subprocess.run(["tmux", "send-keys", "-t", session_name, agent_cmd, "Enter"])
-    
-    # Wait for CLI banner to fully mount (3.5s)
-    time.sleep(3.5)
-
-    # Type the actual user prompt directly into the interactive agent prompt box
-    # Format instruction so the agent builds index.html and multi-page assets
+    # Formulate explicit task instruction for autonomous execution
     task_directive = (
         f"You are an autonomous senior web engineer building a website in this directory. "
         f"User prompt: '{prompt}'. "
         f"Build a complete, high-quality, production-ready website with index.html, styled with Tailwind CSS, custom assets, and responsive navigation. Write all files directly to this directory now."
     )
-    escaped_prompt = task_directive.replace('"', '\"').replace("'", "'\''")
-    subprocess.run(["tmux", "send-keys", "-t", session_name, escaped_prompt, "Enter"])
+
+    # 2. Launch agent with non-interactive prompt flag so it immediately starts executing
+    if agent == "grok":
+        cmd_str = f'/home/neo/.local/bin/grok -p "{task_directive}" --always-approve --no-auto-update'
+    elif agent == "hermes":
+        cmd_str = f'/home/neo/.local/bin/hermes -z "{task_directive}" --yolo'
+    elif agent == "codex":
+        cmd_str = f'/usr/bin/codex exec --full-auto "{task_directive}"'
+    else:
+        cmd_str = f'/home/neo/.local/bin/agy -p "{task_directive}" --dangerously-skip-permissions'
+
+    subprocess.run(["tmux", "send-keys", "-t", session_name, cmd_str, "Enter"])
 
     # 3. Launch an actual visible GUI desktop terminal window (konsole / xterm) attached to the live session!
     env = os.environ.copy()
