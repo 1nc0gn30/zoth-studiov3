@@ -332,11 +332,12 @@
     }
 
     
-    // Build Domain-Bespoke Interactive Module HTML
+
+    // Build Truly Bespoke Domain-Specific Interactive Module HTML
     var interactiveSectionHtml = '';
-    
-    // Archetype 1: Action Sports & Skateboarding (Interactive Custom Skateboard Builder)
-    if (archetype === 'action_sports_skate' || (s.domain && s.domain.includes('skate')) || (s.name && s.name.toLowerCase().includes('wheel')) || (s.name && s.name.toLowerCase().includes('skate'))) {
+
+    // 1. Action Sports & Skateboarding
+    if (archetype === 'action_sports_skate' || (s.domain && s.domain.includes('skate')) || (s.name && s.name.toLowerCase().includes('skate'))) {
       interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="custom-builder">' +
         '<div style="background:linear-gradient(145deg, rgba(16,21,36,0.9), rgba(5,7,15,0.95));border:1px solid ' + accent + '66;border-radius:18px;padding:32px;box-shadow:0 12px 40px rgba(0,0,0,0.6);">' +
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;">' +
@@ -386,36 +387,145 @@
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">' +
             '<div style="font-size:0.82rem;color:#34d399;display:flex;align-items:center;gap:6px;"><span>✓</span> Free grip tape &amp; hand assembly included. Dispatches within 24h.</div>' +
-            '<button onclick="alert(&quot;Custom complete added to cart for $&quot; + document.getElementById(&quot;skateBuildPrice&quot;).textContent.replace(&quot;$&quot;,&quot;&quot;) + &quot;! Direct checkout ready.&quot;)" style="' + btnStyle + 'padding:14px 28px;font-size:0.95rem;">⚡ Assemble &amp; Order Complete ➔</button>' +
+            '<button onclick="alert(&quot;Custom complete added to cart!&quot;)" style="' + btnStyle + 'padding:14px 28px;font-size:0.95rem;">⚡ Assemble &amp; Order Complete ➔</button>' +
           '</div>' +
         '</div>' +
       '</section>';
     }
-    // Archetype 2: Tech & Cyber Defense (Interactive Threat Simulation Matrix)
-    else if (archetype === 'developer_terminal' || (s.domain && (s.domain.includes('cyber') || s.domain.includes('saas')))) {
-      interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="telemetry-sim">' +
-        '<div style="background:#020617;border:1px solid ' + accent + '66;border-radius:18px;padding:32px;">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">' +
+    // 2. Restaurants, Cafes & Artisan Bakeries
+    else if (archetype === 'food_restaurant' || (s.domain && (s.domain.includes('restaurant') || s.domain.includes('cafe')))) {
+      interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="order-customizer">' +
+        '<div style="background:linear-gradient(145deg, #140d07, #07090e);border:1px solid ' + accent + '66;border-radius:18px;padding:32px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;">' +
             '<div>' +
-              '<span class="badge">🛡️ Live Threat Defense Terminal</span>' +
-              '<h2 style="font-family:Syne,sans-serif;font-size:1.9rem;color:#ffffff;margin:6px 0;">' + s.name + ' Autonomous Sentinel Telemetry</h2>' +
+              '<span class="badge" style="border-color:' + accent + ';color:' + accent + ';">☕ Weekly Roaster &amp; Sourdough Box Subscription</span>' +
+              '<h2 style="font-family:Syne,sans-serif;font-size:2rem;color:#ffffff;margin:8px 0 4px;">Customize Your ' + s.name + ' Fresh Box</h2>' +
+              '<p style="color:' + textMuted + ';font-size:0.92rem;margin:0;">Select roast profile, whole-bean grind, artisan loaf pairings, and delivery cadence.</p>' +
             '</div>' +
-            '<div style="font-family:monospace;font-size:0.8rem;color:#34d399;">● 0 DATA LEAKAGE · ZERO-EGRESS ACTIVE</div>' +
+            '<div style="background:rgba(0,0,0,0.5);border:1px solid ' + accent + '44;border-radius:12px;padding:12px 20px;text-align:right;">' +
+              '<div style="font-size:0.75rem;color:' + textMuted + ';text-transform:uppercase;font-weight:700;">Subscription Total</div>' +
+              '<div style="font-family:Syne,sans-serif;font-size:2.2rem;font-weight:900;color:' + accent + ';" id="foodSubPrice">$34 / wk</div>' +
+            '</div>' +
           '</div>' +
-          '<div style="background:#000;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;font-family:monospace;font-size:0.8rem;color:#38bdf8;line-height:1.6;margin-bottom:20px;">' +
-            '<div>[SENTINEL_DAEMON] Scanning edge nodes on 0.0.0.0... <span style="color:#34d399;">[SECURE]</span></div>' +
-            '<div>[AST_VERIFIER] Invariant integrity verified across 21 multi-tenant clusters.</div>' +
-            '<div>[ARGON2ID_KEYRING] Zero memory retention mode engaged. Encryption cipher: ChaCha20-Poly1305.</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;">' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">Single-Origin Roast</label>' +
+              '<select id="cfgRoast" onchange="updateFoodPrice()" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option value="18">Ethiopian Yirgacheffe (Floral &amp; Citrus)</option>' +
+                '<option value="19" selected>Guatemalan Huehuetenango (Chocolate &amp; Plum)</option>' +
+                '<option value="22">Sumatra Mandheling (Earthy &amp; Spiced)</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">Artisan Hearth Loaf</label>' +
+              '<select id="cfgLoaf" onchange="updateFoodPrice()" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option value="12" selected>Country Wild Sourdough (36h Ferment)</option>' +
+                '<option value="14">Seeded Multigrain Rye</option>' +
+                '<option value="16">Rosemary &amp; Sea Salt Focaccia</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">Delivery Frequency</label>' +
+              '<select id="cfgCadence" onchange="updateFoodPrice()" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option value="1" selected>Weekly (15% Subscriber Savings)</option>' +
+                '<option value="0.95">Bi-Weekly (10% Savings)</option>' +
+                '<option value="0.9">Monthly Drop</option>' +
+              '</select>' +
+            '</div>' +
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">' +
-            '<div style="font-size:0.82rem;color:' + textMuted + ';">Real-time automated incident mitigation latency: &lt; 4.2ms</div>' +
-            '<a href="contact.html" style="' + btnStyle + 'padding:10px 22px;text-decoration:none;">Deploy Sentinel Cluster ➔</a>' +
+            '<div style="font-size:0.82rem;color:#34d399;">✓ Freshly baked &amp; roasted mornings before dispatch. Cancel anytime.</div>' +
+            '<button onclick="alert(&quot;Subscription Box Activated!&quot;)" style="' + btnStyle + 'padding:14px 28px;">⚡ Start Weekly Delivery ➔</button>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+    }
+    // 3. Real Estate, Architecture & Penthouse Living
+    else if (archetype === 'real_estate' || (s.domain && (s.domain.includes('real_estate') || s.domain.includes('property')))) {
+      interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="roi-estimator">' +
+        '<div style="background:linear-gradient(145deg, #090e1a, #030509);border:1px solid ' + accent + '66;border-radius:18px;padding:32px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:20px;">' +
+            '<div>' +
+              '<span class="badge" style="border-color:' + accent + ';color:' + accent + ';">🏛️ Luxury Residence &amp; Rental Yield Calculator</span>' +
+              '<h2 style="font-family:Syne,sans-serif;font-size:2rem;color:#ffffff;margin:8px 0 4px;">' + s.name + ' Portfolio Investment Model</h2>' +
+              '<p style="color:' + textMuted + ';font-size:0.92rem;margin:0;">Estimate estimated cap rates, annual appreciation, and VIP concierge residency privileges.</p>' +
+            '</div>' +
+            '<div style="background:rgba(0,0,0,0.5);border:1px solid ' + accent + '44;border-radius:12px;padding:12px 20px;text-align:right;">' +
+              '<div style="font-size:0.75rem;color:' + textMuted + ';text-transform:uppercase;font-weight:700;">Est. Annual Rental Yield</div>' +
+              '<div style="font-family:Syne,sans-serif;font-size:2.2rem;font-weight:900;color:' + accent + ';" id="propYieldVal">8.4% APY</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;">' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">Residence Tier</label>' +
+              '<select id="cfgPropTier" style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option selected>Duplex Sky Penthouse (4,200 sq ft)</option>' +
+                '<option>Oceanfront Panoramic Villa (6,800 sq ft)</option>' +
+                '<option>Private Island Architectural Estate</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="card" style="padding:16px;">' +
+              '<label style="font-size:0.8rem;font-weight:800;color:#ffffff;display:block;margin-bottom:8px;">Management Tier</label>' +
+              '<select style="width:100%;padding:10px;border-radius:8px;background:#050711;border:1px solid rgba(255,255,255,0.15);color:#ffffff;outline:none;">' +
+                '<option selected>Full Ultra-Luxury Butler &amp; Yacht Management</option>' +
+                '<option>Owner Exclusive Private Use</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">' +
+            '<div style="font-size:0.82rem;color:#34d399;">✓ Direct private broker booking with zero intermediary commissions.</div>' +
+            '<button onclick="alert(&quot;Private Viewing Scheduled!&quot;)" style="' + btnStyle + 'padding:14px 28px;">📅 Schedule Private VIP Viewing ➔</button>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+    }
+    // 4. Web3, DeFi & Solana Crypto
+    else if (archetype === 'crypto_web3' || (s.domain && (s.domain.includes('web3') || s.domain.includes('crypto')))) {
+      interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="liquidity-calculator">' +
+        '<div style="background:linear-gradient(145deg, #09091f, #03040c);border:1px solid ' + accent + '66;border-radius:18px;padding:32px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:20px;">' +
+            '<div>' +
+              '<span class="badge" style="border-color:' + accent + ';color:' + accent + ';">🪐 Concentrated Liquidity &amp; Staking APY</span>' +
+              '<h2 style="font-family:Syne,sans-serif;font-size:2rem;color:#ffffff;margin:8px 0 4px;">' + s.name + ' Automated Yield Terminal</h2>' +
+              '<p style="color:' + textMuted + ';font-size:0.92rem;margin:0;">Non-custodial smart contracts with sub-second execution on Solana high-frequency vaults.</p>' +
+            '</div>' +
+            '<div style="background:rgba(0,0,0,0.5);border:1px solid ' + accent + '44;border-radius:12px;padding:12px 20px;text-align:right;">' +
+              '<div style="font-size:0.75rem;color:' + textMuted + ';text-transform:uppercase;font-weight:700;">Est. Net APY</div>' +
+              '<div style="font-family:Syne,sans-serif;font-size:2.2rem;font-weight:900;color:' + accent + ';">24.8% APY</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:20px;">' +
+            '<div style="font-size:0.82rem;color:#34d399;">● Smart Contracts Audited by Zero-Trust Verifier · 100% Non-Custodial</div>' +
+            '<button onclick="alert(&quot;Wallet Connect Terminal Initialized!&quot;)" style="' + btnStyle + 'padding:14px 28px;">⚡ Connect Phantom Wallet ➔</button>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+    }
+    // 5. Universal Adaptive Fallback (SaaS / Devtools / Agency / Local Services)
+    else {
+      interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="interactive-suite">' +
+        '<div style="background:linear-gradient(145deg, #090e1f, #03050a);border:1px solid ' + accent + '66;border-radius:18px;padding:32px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:20px;">' +
+            '<div>' +
+              '<span class="badge" style="border-color:' + accent + ';color:' + accent + ';">⚡ Interactive ' + s.name + ' Service Estimator</span>' +
+              '<h2 style="font-family:Syne,sans-serif;font-size:2rem;color:#ffffff;margin:8px 0 4px;">Tailor Your Custom Solution</h2>' +
+              '<p style="color:' + textMuted + ';font-size:0.92rem;margin:0;">Instant transparent pricing and custom specifications engineered to your exact requirements.</p>' +
+            '</div>' +
+            '<div style="background:rgba(0,0,0,0.5);border:1px solid ' + accent + '44;border-radius:12px;padding:12px 20px;text-align:right;">' +
+              '<div style="font-size:0.75rem;color:' + textMuted + ';text-transform:uppercase;font-weight:700;">Estimated Project Cost</div>' +
+              '<div style="font-family:Syne,sans-serif;font-size:2.2rem;font-weight:900;color:' + accent + ';">$99 / mo</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:20px;">' +
+            '<div style="font-size:0.82rem;color:#34d399;">✓ 100% Satisfaction Guarantee · Transparent Direct Onboarding</div>' +
+            '<a href="contact.html" style="' + btnStyle + 'padding:14px 28px;text-decoration:none;">⚡ Get Started with ' + s.name + ' ➔</a>' +
           '</div>' +
         '</div>' +
       '</section>';
     }
 
-    // 1. Build Dynamic Bento Features HTML
+
+        // 1. Build Dynamic Bento Features HTML
     var bentoCardsHtml = '';
     var featuresList = (s.bentoFeatures && s.bentoFeatures.length > 0) ? s.bentoFeatures : [
       { icon: '✨', title: 'Premium Craftsmanship', desc: 'Meticulously crafted with high-grade components designed to last.' },
