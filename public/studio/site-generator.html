@@ -2024,6 +2024,7 @@
   }
 
   // Populate 21 Agents in the HUD Grid
+  // Populate 21 Agents in the HUD Grid with individual progress bars
   function renderSwarmGrid() {
     var grid = document.getElementById('swarmGridContainer');
     if (!grid || typeof ZothSwarmOrchestrator === 'undefined') return;
@@ -2032,10 +2033,18 @@
     var gridHtml = '';
     agents.forEach(function(a) {
       gridHtml += '<div class="swarm-agent-tile" id="tile_' + a.id + '">' +
-        '<div class="swarm-pulse-dot" id="dot_' + a.id + '"></div>' +
-        '<div class="swarm-agent-tile-info">' +
-          '<div class="swarm-agent-tile-name">' + a.icon + ' ' + a.num + '. ' + a.name + '</div>' +
-          '<div class="swarm-agent-tile-role">' + a.role + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;width:100%;">' +
+          '<div class="swarm-pulse-dot" id="dot_' + a.id + '"></div>' +
+          '<div class="swarm-agent-tile-info" style="flex:1;min-width:0;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+              '<div class="swarm-agent-tile-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + a.icon + ' ' + a.num + '. ' + a.name + '</div>' +
+              '<span id="agent_pct_' + a.id + '" style="font-size:0.68rem;font-family:var(--font-mono, monospace);color:#94a3b8;">0%</span>' +
+            '</div>' +
+            '<div class="swarm-agent-tile-role" id="agent_sub_' + a.id + '" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + a.role + '</div>' +
+            '<div style="width:100%;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:4px;overflow:hidden;">' +
+              '<div id="agent_bar_' + a.id + '" style="width:0%;height:100%;background:var(--gen-cyan);transition:width 0.15s ease;"></div>' +
+            '</div>' +
+          '</div>' +
         '</div>' +
       '</div>';
     });
@@ -2230,8 +2239,8 @@
     renderSwarmGrid();
 
     var swarmCfg = Object.assign({}, studioConfig, {
-      mode: swarmMode || 'deep',
-      stepDelay: (swarmMode === 'rapid' ? 400 : 3500)
+      mode: swarmMode || 'rapid',
+      stepDelay: (swarmMode === 'deep' ? 750 : 280)
     });
 
     if (typeof ZothSwarmOrchestrator !== 'undefined') {
@@ -2241,8 +2250,24 @@
           if (statusDesc) statusDesc.textContent = agent.task;
           var tile = document.getElementById('tile_' + agent.id);
           var dot = document.getElementById('dot_' + agent.id);
+          var subEl = document.getElementById('agent_sub_' + agent.id);
           if (tile) tile.classList.add('active');
           if (dot) dot.className = 'swarm-pulse-dot running';
+          if (subEl) subEl.textContent = '⚡ ' + agent.task;
+        },
+        onAgentProgress: function(agentId, pct, substepText) {
+          var pEl = document.getElementById('agent_pct_' + agentId);
+          var bEl = document.getElementById('agent_bar_' + agentId);
+          var subEl = document.getElementById('agent_sub_' + agentId);
+          if (pEl) {
+            pEl.textContent = pct + '%';
+            pEl.style.color = pct === 100 ? '#34d399' : 'var(--gen-cyan)';
+          }
+          if (bEl) {
+            bEl.style.width = pct + '%';
+            if (pct === 100) bEl.style.background = '#34d399';
+          }
+          if (subEl && substepText) subEl.textContent = substepText;
         },
         onLog: function(msg) {
           if (logTerm) {
@@ -2257,7 +2282,6 @@
           if (pBar) pBar.style.width = pct + '%';
         },
         onSectionStream: function(sectionKey, html) {
-          // Live streaming into preview iframe only when no authentic template is active
           if (!activeTemplate) {
             var iframe = document.getElementById('previewIframe');
             if (iframe) {
@@ -2268,11 +2292,21 @@
         onAgentDone: function(agent, idx) {
           var tile = document.getElementById('tile_' + agent.id);
           var dot = document.getElementById('dot_' + agent.id);
+          var pEl = document.getElementById('agent_pct_' + agent.id);
+          var bEl = document.getElementById('agent_bar_' + agent.id);
           if (tile) {
             tile.classList.remove('active');
             tile.classList.add('done');
           }
           if (dot) dot.className = 'swarm-pulse-dot done';
+          if (pEl) {
+            pEl.textContent = '100%';
+            pEl.style.color = '#34d399';
+          }
+          if (bEl) {
+            bEl.style.width = '100%';
+            bEl.style.background = '#34d399';
+          }
         },
         onComplete: function(routes, feedback) {
           if (!activeTemplate) {
@@ -2291,6 +2325,8 @@
         }
       });
     }
+  }
+  }
   }
 
   function downloadSelectedZip(explicitFw) {

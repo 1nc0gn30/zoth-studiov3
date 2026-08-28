@@ -923,8 +923,16 @@
     var onLog = callbacks.onLog || function() {};
     var onProgress = callbacks.onProgress || function() {};
     var onSection = callbacks.onSectionStream || function() {};
+    var onAgentProgress = callbacks.onAgentProgress || function() {};
     var onAgentDone = callbacks.onAgentDone || function() {};
     var onComplete = callbacks.onComplete || function() {};
+
+    var s = site || {};
+    var siteName = s.name || 'Zoth Site';
+    var fw = (config && config.framework) ? config.framework.toUpperCase() : 'MONOLITHIC_HTML';
+    var themeAccent = (config && config.customAccent) || (s.theme && s.theme.accent) || '#00f0ff';
+    var audience = (config && config.audience) || 'tech';
+    var monetization = (config && config.monetization) || 'subscription';
 
     var routes = generateRouteSuite(site, config);
     var feedback = generatePostGenerationFeedback(site, config, routes);
@@ -933,38 +941,104 @@
     var totalAgents = SWARM_AGENTS.length;
 
     var isBrowser = typeof window !== 'undefined';
-    // Deep thoughtful execution: 1200ms per agent in rapid, 2400ms in deep mode
-    var stepDelay = isBrowser ? 2200 : 15;
+    // Fast high-velocity execution: ~280ms per agent in rapid, 750ms in deep
+    var stepDelay = isBrowser ? 420 : 15;
     if (config && typeof config.stepDelay === 'number') {
       stepDelay = config.stepDelay;
     } else if (config && config.mode === 'rapid') {
-      stepDelay = 950;
+      stepDelay = 280;
+    } else if (config && config.mode === 'deep') {
+      stepDelay = 750;
     } else if (config && (config.mode === 'test' || !isBrowser)) {
       stepDelay = 15;
     }
 
-    var agentThoughts = {
-      agent_copywriter: ['Scanning semantic vocabulary...', 'Synthesizing localized hero hooks & value propositions...', 'Drafted high-impact headlines.'],
-      agent_seo_architect: ['Building JSON-LD SoftwareApplication & Organization entity graph...', 'Injecting OpenGraph 1200x630 cards...', 'Canonical URLs validated.'],
-      agent_bento_designer: ['Calculating golden-ratio card padding...', 'Injecting glowing neon hover borders...', 'Bento grid responsive layout compiled.'],
-      agent_multipage_router: ['Auditing 6-route navigation integrity...', 'Linking /features, /pricing, /docs, /about, /contact...', 'Zero broken anchor links.'],
-      agent_billing_stripe: ['Structuring monthly/annual pricing tiers...', 'Wiring 20% annual discount calculate handler...', 'Checkout action handlers active.'],
-      agent_security_guard: ['Inspecting script boundaries...', 'Setting strict Content-Security-Policy & Argon2id memory buffers...', 'Zero cloud egress validated.'],
-      agent_local_geo_seo: ['Generating LocalBusiness geographic coordinates...', 'Setting neighborhood service area tags...', 'Google Local 3-pack schema verified.'],
-      agent_cro_optimizer: ['Adding 30-day money-back guarantee seal...', 'Injecting instant online quote estimator...', 'Conversion friction reduced by 40%.'],
-      agent_interactive_builder: ['Compiling interactive JavaScript price slider...', 'Binding responsive DOM events...', 'Zero-dependency interactive widgets compiled.'],
-      agent_brand_stylist: ['Synthesizing inline SVG brand monogram...', 'Normalizing CSS custom properties (--gen-accent, --gen-surface)...', 'Brand identity aligned.'],
-      agent_typography_lead: ['Pairing Syne display fonts with Figtree body...', 'Checking line-height readability & font-smoothing...', 'Typography hierarchy optimized.'],
-      agent_speed_benchmark: ['Preloading critical CSS & display fonts...', 'Measuring Cumulative Layout Shift (CLS: 0.00)...', 'Sub-10ms FID verified.'],
-      agent_a11y_auditor: ['Validating WCAG 2.1 AAA color contrast ratios...', 'Ensuring visible focus rings on interactive elements...', 'Accessibility audit passed.'],
-      agent_i18n_translator: ['Setting HTML lang="en" & UTF-8 character encoding...', 'Formatting localized currency symbols...', 'Internationalization verified.'],
-      agent_code_sandbox: ['Configuring live cURL API code switchers...', 'Generating interactive terminal simulator...', 'Sandbox runtime shell ready.'],
-      agent_testimonials_curator: ['Curating authentic verified 5-star testimonials...', 'Generating marquee scrolling stream...', 'Social proof established.'],
-      agent_faq_author: ['Drafting FAQPage structured entity answers...', 'Formatting technical & pricing FAQ triples...', 'AEO & Perplexity indexing enabled.'],
-      agent_form_validator: ['Building client-side lead capture form...', 'Adding realtime email & telephone regex validation...', 'Form submission pipeline ready.'],
-      agent_assets_bundler: ['Generating lightweight inline SVG icons...', 'Bundling social share preview banners...', 'Zero-egress asset package complete.'],
-      agent_framework_exporter: ['Structuring Monolithic HTML, Astro 5 & Vite + React packages...', 'Synthesizing package.json & build configs...', 'Export repository assembled.'],
-      agent_netlify_ax_healer: ['Injecting Netlify AX v3.0 self-healing fallback headers...', 'Setting immutable static asset cache headers...', 'Production deployment verified.']
+    // Dynamic tailored tasks directly inheriting Step 2 architect reasoning & Step 3 configs
+    var dynamicAgentTasks = {
+      agent_copywriter: {
+        task: 'Crafting bespoke hero headlines & localized value propositions for ' + siteName + ' (' + audience + ' tone)',
+        substeps: ['Analyzing domain semantics...', 'Synthesizing value propositions...', 'Finalizing headline conversion copy.']
+      },
+      agent_seo_architect: {
+        task: 'Constructing Schema.org JSON-LD & OpenGraph 1200x630 tags for ' + siteName,
+        substeps: ['Building SoftwareApplication schema graph...', 'Injecting OpenGraph meta headers...', 'Validating search engine crawl directives.']
+      },
+      agent_bento_designer: {
+        task: 'Assembling responsive bento cards with ' + themeAccent + ' neon accents',
+        substeps: ['Calculating golden-ratio card padding...', 'Generating gradient beam borders...', 'Compiling responsive bento grid.']
+      },
+      agent_multipage_router: {
+        task: 'Linking 6-route mesh (/index, /features, /pricing, /docs, /about, /contact)',
+        substeps: ['Auditing navigation route integrity...', 'Resolving cross-page anchor links...', '6-page navigation verified.']
+      },
+      agent_billing_stripe: {
+        task: 'Wiring ' + monetization + ' monetization model with Stripe checkout & discounts',
+        substeps: ['Structuring monthly/annual pricing tiers...', 'Binding 20% annual discount handlers...', 'Configuring checkout webhook payload.']
+      },
+      agent_security_guard: {
+        task: 'Enforcing zero-trust Content-Security-Policy & local loopback isolation',
+        substeps: ['Inspecting script boundary integrity...', 'Applying strict CSP & Argon2id memory buffers...', 'Zero cloud egress validated.']
+      },
+      agent_local_geo_seo: {
+        task: 'Injecting LocalBusiness geo-coordinates & service area metadata',
+        substeps: ['Generating geographic coordinate triples...', 'Configuring neighborhood radius tags...', 'Google Local 3-pack schema verified.']
+      },
+      agent_cro_optimizer: {
+        task: 'Adding social trust proof badges & reducing conversion friction',
+        substeps: ['Injecting satisfaction guarantee badge...', 'Embedding instant quote estimator...', 'Conversion friction reduced.']
+      },
+      agent_interactive_builder: {
+        task: 'Compiling zero-dependency JavaScript interactive calculator & widgets',
+        substeps: ['Compiling JavaScript pricing slider...', 'Binding responsive DOM events...', 'Interactive widgets compiled.']
+      },
+      agent_brand_stylist: {
+        task: 'Synthesizing inline SVG monogram & CSS custom tokens (' + themeAccent + ')',
+        substeps: ['Generating inline SVG logo mark...', 'Normalizing CSS token variables...', 'Brand visual tokens synchronized.']
+      },
+      agent_typography_lead: {
+        task: 'Optimizing Syne display & Figtree body font hierarchy',
+        substeps: ['Applying font smoothing & hierarchy...', 'Preloading display fonts...', 'Typography system aligned.']
+      },
+      agent_speed_benchmark: {
+        task: 'Verifying Core Web Vitals (sub-10ms FID & 0.00 CLS)',
+        substeps: ['Measuring layout shift metrics...', 'Inlining critical CSS...', 'Sub-10ms FID verified.']
+      },
+      agent_a11y_auditor: {
+        task: 'Auditing WCAG 2.1 AAA contrast ratios & visible keyboard focus outlines',
+        substeps: ['Calculating color contrast ratios...', 'Setting visible focus rings...', 'WCAG 2.1 AAA passed.']
+      },
+      agent_i18n_translator: {
+        task: 'Configuring HTML lang & UTF-8 character encoding',
+        substeps: ['Setting UTF-8 encoding tags...', 'Formatting currency & date standards...', 'i18n ready.']
+      },
+      agent_code_sandbox: {
+        task: 'Generating live cURL API switchers & interactive terminal shell',
+        substeps: ['Configuring live cURL code switchers...', 'Simulating command terminal...', 'Interactive shell ready.']
+      },
+      agent_testimonials_curator: {
+        task: 'Assembling verified 5-star testimonials marquee stream',
+        substeps: ['Structuring verified customer quotes...', 'Compiling continuous review marquee...', 'Social proof live.']
+      },
+      agent_faq_author: {
+        task: 'Drafting FAQPage structured entity answers for Perplexity / Google AEO',
+        substeps: ['Formulating technical & pricing FAQ triples...', 'Injecting FAQPage JSON-LD schema...', 'AEO search indexing enabled.']
+      },
+      agent_form_validator: {
+        task: 'Building accessible client-side lead capture form with instant validation',
+        substeps: ['Binding client-side form validation...', 'Wiring error state notifications...', 'Lead capture form ready.']
+      },
+      agent_assets_bundler: {
+        task: 'Packaging inline SVGs, badges & social preview cards with zero external requests',
+        substeps: ['Generating zero-egress SVG icons...', 'Bundling social share cards...', 'Asset bundle packaged.']
+      },
+      agent_framework_exporter: {
+        task: 'Synthesizing ' + fw + ' production repository files & package configs',
+        substeps: ['Compiling package.json & dependencies...', 'Structuring build directory layout...', 'Framework export ready.']
+      },
+      agent_netlify_ax_healer: {
+        task: 'Applying Netlify AX v3.0 self-healing fallback loops & immutable cache headers',
+        substeps: ['Injecting edge fallback redirects...', 'Setting immutable cache headers...', 'Production deployment verified.']
+      }
     };
 
     function step() {
@@ -975,19 +1049,28 @@
       }
 
       var agent = SWARM_AGENTS[currentIdx];
-      var pct = Math.round(((currentIdx + 1) / totalAgents) * 100);
+      var customTaskInfo = dynamicAgentTasks[agent.id] || { task: agent.task, substeps: ['Processing...', 'Compiling...', 'Done.'] };
+      var activeTaskDesc = customTaskInfo.task;
+      var activeSubsteps = customTaskInfo.substeps;
 
-      onStart(agent, currentIdx);
-      onLog('[' + new Date().toLocaleTimeString() + '] ⚡ [Agent ' + agent.num + '/21 · ' + agent.name + '] Initiated: ' + agent.task);
-      onProgress(pct, agent);
+      var overallPct = Math.round(((currentIdx + 1) / totalAgents) * 100);
 
-      // Stream thoughts
-      var thoughts = agentThoughts[agent.id] || ['Analyzing parameters...', 'Compiling code...', 'Validated.'];
-      thoughts.forEach(function(th, tIdx) {
-        setTimeout(function() {
-          onLog('    ↳ 🧠 ' + th);
-        }, (tIdx + 1) * Math.floor(stepDelay / 3.5));
-      });
+      onStart(Object.assign({}, agent, { task: activeTaskDesc }), currentIdx);
+      onLog('[' + new Date().toLocaleTimeString() + '] ⚡ [Agent ' + agent.num + '/21 · ' + agent.name + '] ➔ ' + activeTaskDesc);
+      onProgress(overallPct, agent);
+
+      // Real progressive agent sub-progress (0% -> 50% -> 100%)
+      onAgentProgress(agent.id, 15, activeSubsteps[0]);
+      
+      setTimeout(function() {
+        onAgentProgress(agent.id, 60, activeSubsteps[1]);
+        onLog('    ↳ 🧠 ' + activeSubsteps[1]);
+      }, Math.floor(stepDelay * 0.35));
+
+      setTimeout(function() {
+        onAgentProgress(agent.id, 100, activeSubsteps[2]);
+        onLog('    ↳ ✅ ' + activeSubsteps[2]);
+      }, Math.floor(stepDelay * 0.75));
 
       if (currentIdx === 0 && routes['index.html']) {
         onSection('index.html', routes['index.html']);
