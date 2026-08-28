@@ -2172,6 +2172,47 @@ created: {now_utc}
                 })
                 return
 
+            # ─── API: DuckyScript Live Real Terminal Spawner & Keystroke Injection ───
+            if path in ("/api/zoth/terminal/ducky/spawn", "/api/ducky/spawn"):
+                proj_name = data.get("projectName", data.get("slug", "zoth-project")).strip()
+                prompt = data.get("prompt", "").strip()
+                agent = data.get("agent", data.get("harness", "agy")).lower()
+
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent))
+                try:
+                    import ducky_terminal_spawner
+                    res = ducky_terminal_spawner.spawn_real_agent_terminal(proj_name, prompt, agent)
+                    self._send_json(res)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/zoth/terminal/ducky/feedback", "/api/ducky/feedback"):
+                session_name = data.get("session", "")
+                feedback = data.get("feedback", "").strip()
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent))
+                try:
+                    import ducky_terminal_spawner
+                    res = ducky_terminal_spawner.send_terminal_feedback(session_name, feedback)
+                    self._send_json(res)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/zoth/terminal/ducky/screen", "/api/ducky/screen"):
+                session_name = data.get("session", "")
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent))
+                try:
+                    import ducky_terminal_spawner
+                    screen = ducky_terminal_spawner.get_terminal_screen(session_name)
+                    self._send_json({"status": "ok", "screen": screen})
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
             # ─── API: Headless Terminal Session in Project Workspace CWD ───
             if path in ("/api/zoth/terminal/session", "/api/terminal/run", "/api/zoth/terminal/execute"):
                 proj_name = data.get("projectName", data.get("slug", "zoth-project")).strip()

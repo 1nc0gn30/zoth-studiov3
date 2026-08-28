@@ -2088,6 +2088,16 @@
       logStream.appendChild(row);
     }
 
+        // Inject feedback directly into live running terminal session
+    fetch('http://127.0.0.1:8484/api/zoth/terminal/ducky/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session: 'zoth_' + (currentSite ? currentSite.name : 'zoth-project').toLowerCase().replace(/[^a-z0-9_-]/g, '-'),
+        feedback: feedback
+      })
+    }).catch(function() {});
+
     // Call /api/zoth/swarm/refine-plan to pipe feedback to @Azoth
     fetch('http://127.0.0.1:8484/api/zoth/swarm/refine-plan', {
       method: 'POST',
@@ -2231,7 +2241,50 @@
       }).catch(function() {});
     } catch(e) {}
 
-        // ⚡ REAL TERMINAL EXECUTION: cd into project workspace & run harness CLI (agy / grok)
+            var activeDuckySession = 'zoth_' + projName.toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-+|-+$/g, '');
+
+    // ⚡ REAL DUCKY SCRIPT TERMINAL: Open Desktop Terminal -> cd into folder -> Run agy -> Type Prompt
+    fetch('http://127.0.0.1:8484/api/zoth/terminal/ducky/spawn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        projectName: projName,
+        prompt: prompt,
+        agent: selectedAgent === 'grok' ? 'grok' : 'agy'
+      })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data && data.status === 'ok') {
+        showStudioToast('🖥️ Launched live agent terminal in /workspaces/' + projName + '!');
+        
+        // Start live polling of the terminal screen
+        var pollCount = 0;
+        var screenPollTimer = setInterval(function() {
+          pollCount++;
+          if (pollCount > 30) clearInterval(screenPollTimer);
+
+          fetch('http://127.0.0.1:8484/api/zoth/terminal/ducky/screen', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session: activeDuckySession })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(sData) {
+            if (sData && sData.screen) {
+              var logStream = document.getElementById('agentLogStream');
+              if (logStream) {
+                logStream.textContent = sData.screen;
+                logStream.scrollTop = logStream.scrollHeight;
+              }
+            }
+          }).catch(function() {});
+        }, 1200);
+      }
+    })
+    .catch(function(err) {
+      console.log('[Ducky Terminal Bridge Note]', err);
+    });
     fetch('http://127.0.0.1:8484/api/zoth/terminal/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2331,12 +2384,11 @@
       return;
     }
 
-    if (!currentSite) {
-      var promptEl = document.getElementById('sitePromptInput');
-      var prompt = (promptEl && promptEl.value.trim()) ? promptEl.value.trim() : 'AI code copilot and autonomous agent devtools with AST verification';
-      if (typeof ZothDomainSynthesizer !== 'undefined') {
-        currentSite = ZothDomainSynthesizer.synthesize(prompt, selectedAgent);
-      }
+    if (!currentSite && !activeTemplate) {
+      // Do NOT synthesize fake defaults if user hasn't prompted yet
+      iframe.removeAttribute('src');
+      iframe.srcdoc = '<!DOCTYPE html><html><body style="background:#030712;color:#64748b;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;padding:24px;"><div><div style="font-size:3rem;margin-bottom:12px;">🪐 ⚡ 🚀</div><h2 style="color:#ffffff;font-size:1.4rem;margin-bottom:8px;">Zoth Studio Sovereign Foundry</h2><p style="font-size:0.9rem;max-width:480px;line-height:1.6;margin:0 auto 20px;">Name your project, upload brand assets, and prompt your concept on the left to spawn the autonomous agent build.</p><div style="font-family:monospace;font-size:0.75rem;color:#00f0ff;border:1px dashed rgba(0,240,255,0.3);padding:8px 16px;border-radius:8px;display:inline-block;">⚡ Ready for Operator Prompt</div></div></body></html>';
+      return;
     }
 
     // Generate fresh suite if not cached
