@@ -2302,27 +2302,50 @@ created: {now_utc}
 
                 import subprocess
                 plan_json = None
-                try:
-                    res = subprocess.run(
-                        ["/home/neo/.local/bin/agy", "--print", f"{sys_instruct}\n\n{user_msg}", "--dangerously-skip-permissions"],
-                        capture_output=True,
-                        text=True,
-                        timeout=18
-                    )
-                    raw_out = res.stdout.strip()
-                    # Strip markdown fence if present
-                    if "```json" in raw_out:
-                        raw_out = raw_out.split("```json")[1].split("```")[0].strip()
-                    elif "```" in raw_out:
-                        raw_out = raw_out.split("```")[1].split("```")[0].strip()
-                    plan_json = json.loads(raw_out)
-                except Exception as e:
-                    print("[Plan Synthesis Fallback]", e)
+                agent_pref = data.get("agent", data.get("agentId", "agy")).lower()
+
+                # If Grok is requested, execute per x.ai headless scripting specification: grok -p "<prompt>" --always-approve
+                if agent_pref == "grok":
+                    try:
+                        grok_res = subprocess.run(
+                            ["/home/neo/.local/bin/grok", "-p", f"{sys_instruct}\n\n{user_msg}", "--always-approve", "--no-auto-update"],
+                            capture_output=True,
+                            text=True,
+                            timeout=18
+                        )
+                        raw_grok = grok_res.stdout.strip()
+                        if "```json" in raw_grok:
+                            raw_grok = raw_grok.split("```json")[1].split("```")[0].strip()
+                        elif "```" in raw_grok:
+                            raw_grok = raw_grok.split("```")[1].split("```")[0].strip()
+                        plan_json = json.loads(raw_grok)
+                        engine_used = "headless_grok_core"
+                    except Exception as ge:
+                        print("[Grok Headless Note - Falling back to AGY]", ge)
+
+                # Execute Google Antigravity Headless CLI: agy -p "<prompt>" --dangerously-skip-permissions
+                if not plan_json:
+                    try:
+                        res = subprocess.run(
+                            ["/home/neo/.local/bin/agy", "-p", f"{sys_instruct}\n\n{user_msg}", "--dangerously-skip-permissions"],
+                            capture_output=True,
+                            text=True,
+                            timeout=18
+                        )
+                        raw_out = res.stdout.strip()
+                        if "```json" in raw_out:
+                            raw_out = raw_out.split("```json")[1].split("```")[0].strip()
+                        elif "```" in raw_out:
+                            raw_out = raw_out.split("```")[1].split("```")[0].strip()
+                        plan_json = json.loads(raw_out)
+                        engine_used = "headless_agy_core"
+                    except Exception as e:
+                        print("[Plan Synthesis Fallback]", e)
 
                 if plan_json:
                     self._send_json({
                         "status": "ok",
-                        "engine": "headless_agy_core",
+                        "engine": engine_used,
                         "plan": plan_json,
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     })
