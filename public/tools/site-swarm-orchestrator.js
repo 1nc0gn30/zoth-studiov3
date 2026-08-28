@@ -188,35 +188,46 @@
   }
 
   function generateRouteSuite(site, config) {
-    var s = site || {
-      name: 'Apex Studio',
-      tagline: 'High-Performance Bespoke Digital Experience',
-      badge: '⚡ Sovereign Platform',
-      icon: '🛹',
-      domain: 'studio.nullai.tech',
-      theme: { bg: '#050711', surface: '#0c1122', border: 'rgba(0,240,255,0.22)', accent: '#00f0ff', textMuted: '#94a3b8' },
-      hero: { title: 'Bespoke High-Performance Digital Experience', sub: 'Engineered for speed, sovereignty, and scale.', cta: '⚡ Get Started', ctaSecondary: '📖 Learn More' },
-      bentoFeatures: [
-        { icon: '🛹', title: 'Custom Deck Construction', desc: '7-ply Canadian hard rock maple decks pressed with epoxy resin for maximum pop and durability.' },
-        { icon: '⚡', title: 'High-Speed Precision Bearings', desc: 'Titanium-coated ABEC-9 bearings engineered for ultra-low rolling friction and speed.' },
-        { icon: '🎨', title: 'Exclusive Artist Collaboration', desc: 'Limited edition screenprinted graphics designed by underground street and skate artists.' }
-      ],
-      itemsCatalog: [
-        { name: 'Street Pro 8.25" Deck', place: 'Hard Maple', time: 'In Stock', price: '$65.00', rating: '5.0 ★' },
-        { name: 'Titanium Hollow Trucks (Pair)', place: 'Lightweight', time: 'In Stock', price: '$58.00', rating: 'Top Choice' },
-        { name: '54mm 99A Conical Wheels', place: 'Street Urethane', time: 'In Stock', price: '$36.00', rating: 'Best Seller' },
-        { name: 'Ceramic Swiss Speed Bearings', place: 'Low Friction', time: 'In Stock', price: '$42.00', rating: '5.0 ★' }
-      ],
-      pricing: [
-        { tier: 'Street Setup', price: '$129', desc: 'Complete custom complete skateboard ready to rip', perks: ['7-Ply Maple Deck', 'Hollow Kingpin Trucks', '52mm Street Wheels', 'ABEC-7 Bearings'] },
-        { tier: 'Pro Grade', price: '$189', popular: true, desc: 'Professional team-spec setup with premium hardware', perks: ['Signature Pro Deck', 'Titanium Hollow Trucks', '54mm Conical Wheels', 'Ceramic Speed Bearings', 'Free Skate Tool & Grip Tape'] },
-        { tier: 'Custom Atelier', price: '$279', desc: 'One-of-a-kind hand-painted limited edition collectible', perks: ['Custom Screenprinted Graphic', 'Hand-Numbered Edition Certificate', 'Display Wall Mount Included', 'Lifetime Deck Replacement Guarantee'] }
-      ],
-      faq: [
-        { q: 'What deck size should I choose?', a: 'Street and technical skaters usually prefer 8.0" to 8.25", while transition and park skaters lean toward 8.38" to 8.75".' },
-        { q: 'How fast do orders ship?', a: 'All custom completes are assembled by hand and dispatched within 24 hours with trackable express shipping.' }
-      ]
-    };
+    var s = site || {};
+    var siteName = s.name || 'Sovereign Studio';
+    var siteTagline = s.tagline || (s.hero ? s.hero.sub : 'Autonomous High-Velocity Digital Architecture');
+    var siteIcon = s.icon || '✨';
+
+    if (!s.hero) {
+      s.hero = {
+        title: 'Welcome to ' + siteName,
+        sub: siteTagline,
+        cta: '⚡ Get Started',
+        ctaSecondary: '📖 Learn More'
+      };
+    }
+    if (!s.bentoFeatures || s.bentoFeatures.length === 0) {
+      s.bentoFeatures = [
+        { icon: '✨', title: 'Precision Craftsmanship', desc: 'Engineered with attention to detail and high-velocity execution.' },
+        { icon: '⚡', title: 'High Performance', desc: 'Zero latency, instant responsiveness, and seamless user experience.' },
+        { icon: '🛡️', title: 'Guaranteed Quality', desc: 'Built to the highest technical and architectural standards.' }
+      ];
+    }
+    if (!s.itemsCatalog || s.itemsCatalog.length === 0) {
+      s.itemsCatalog = [
+        { name: siteName + ' Core Edition', place: 'Flagship', time: 'In Stock', price: '$49.00', rating: '5.0 ★' },
+        { name: siteName + ' Professional', place: 'Top Choice', time: 'In Stock', price: '$99.00', rating: 'Best Seller' },
+        { name: siteName + ' Custom Bespoke', place: 'Made to Order', time: 'Available', price: '$199.00', rating: '5.0 ★' }
+      ];
+    }
+    if (!s.pricing || s.pricing.length === 0) {
+      s.pricing = [
+        { tier: 'Starter', price: '$29', desc: 'Essential package for individuals', perks: ['Core features included', 'Standard support', 'Regular updates'] },
+        { tier: 'Pro', price: '$79', popular: true, desc: 'Complete solution for enthusiasts and teams', perks: ['All Starter features', 'Priority expedited handling', 'Advanced custom features', 'Direct concierge support'] },
+        { tier: 'Enterprise', price: '$199', desc: 'Dedicated custom architecture and consultation', perks: ['Full bespoke customization', 'Dedicated account specialist', 'SLA uptime guarantee', 'Lifetime support'] }
+      ];
+    }
+    if (!s.faq || s.faq.length === 0) {
+      s.faq = [
+        { q: 'What makes ' + siteName + ' unique?', a: 'We focus on rigorous attention to detail, premium quality, and authentic craftsmanship tailored specifically to our community.' },
+        { q: 'How do I place an order or get started?', a: 'You can explore our offerings online, choose your package, or contact our team directly through our contact page.' }
+      ];
+    }
 
     var cfg = config || {};
     var archetype = detectArchetype(s);

@@ -755,7 +755,7 @@ footer.site {
   </div>
 </footer>
 <script>
-const API=window.location.origin;
+const API=(window.location.protocol||'http:') + '//' + (window.location.hostname||'127.0.0.1') + ':8788';
 const SCENE_TEMPLATES = {
   bug: { before: 'broken state', center: 'crash/failure', after: 'fixed state', color: '#ef4444' },
   error: { before: 'broken state', center: 'failure', after: 'fixed state', color: '#ef4444' },
@@ -824,7 +824,17 @@ async function load(){
   if (agent) params.set('agent_id', agent);
   if (search) params.set('q', search);
   if (params.toString()) url += '?' + params.toString();
-  const mems = await (await fetch(url)).json();
+  let mems = [];
+  try {
+    const res = await fetch(url);
+    if (res.ok) {
+      mems = await res.json();
+    } else {
+      console.warn('[Memory Daemon] Non-200 response:', res.status);
+    }
+  } catch (err) {
+    console.warn('[Memory Daemon Fetch Error]:', err);
+  }
   graphState.mems = mems || [];
   if (graph3D.active && graph3D.scene) {
     updateThreeGraph(graphState.mems);
