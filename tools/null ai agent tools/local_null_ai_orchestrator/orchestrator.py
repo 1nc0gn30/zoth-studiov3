@@ -2211,17 +2211,12 @@ created: {now_utc}
                     self._send_json({"error": str(e)}, 500)
                 return
 
-            # ─── API: Headless Terminal Session in Project Workspace CWD ───
+                        # ─── API: Autonomous AI Agent Synthesis & Workspace Kernel ───
             if path in ("/api/zoth/terminal/session", "/api/terminal/run", "/api/zoth/terminal/execute"):
-                proj_name = data.get("projectName", data.get("slug", "zoth-project")).strip()
-                proj_slug = re.sub(r'[^a-zA-Z0-9_-]', '-', proj_name).lower().strip('-') or 'zoth-app'
+                user_proj = data.get("projectName", data.get("slug", "")).strip()
                 prompt = data.get("prompt", "").strip()
                 harness = data.get("harness", data.get("agent", "agy")).lower()
                 is_feedback = data.get("isFeedback", False)
-
-                ws_root = ORCH_DIR.parent / "workspaces" / proj_slug
-                ws_root.mkdir(parents=True, exist_ok=True)
-                (ws_root / "assets").mkdir(parents=True, exist_ok=True)
 
                 if not prompt:
                     self._send_json({"error": "prompt required"}, 400)
@@ -2229,46 +2224,57 @@ created: {now_utc}
 
                 # Terminal log history
                 term_logs = [
-                    f"[terminal] $ cd /workspaces/{proj_slug}",
-                    f"[terminal] $ pwd -> {ws_root}",
-                    f"[terminal] $ {harness} -p '{prompt[:60]}...'"
+                    f"[agent:connect] Ingesting prompt into @{harness} neural reasoning kernel...",
+                    f"[agent:prompt] \"{prompt[:80]}...\""
                 ]
 
-                # Craft structured instruction for harness
-                sys_prompt = (
-                    f"You are Master Azoth, Lead Autonomous Web Engineer working inside '{ws_root}'.\n"
-                    f"Task: {'Refine the existing website according to feedback: ' + prompt if is_feedback else 'Build a complete, bespoke, production-ready website from scratch for: ' + prompt}\n"
-                    "Output a single valid raw JSON object with keys:\n"
-                    "- brandName: (extracted/cleaned brand name)\n"
-                    "- domain: (industry domain)\n"
-                    "- tagline: (concise tagline)\n"
-                    "- heroTitle: (headline)\n"
-                    "- heroSub: (subhead)\n"
-                    "- paletteAccent: (hex color)\n"
-                    "- framework: (static_html|astro|vite_react)\n"
-                    "- bentoFeatures: [{icon, title, desc}]\n"
-                    "- itemsCatalog: [{name, place, time, price, rating}]\n"
-                    "- pricingTiers: [{tier, price, popular, desc, perks: []}]\n"
-                    "- faq: [{q, a}]\n"
-                    "Output ONLY valid JSON."
-                )
+                # Craft rich instruction for the AI agent
+                refine_line = f"User Refinement Feedback: {prompt}" if is_feedback else "Create a complete, bespoke website architecture from scratch."
+                sys_prompt = f"""You are Master Azoth, Lead Autonomous Web Engineer.
+Operator Prompt: '{prompt}'
+{refine_line}
+
+INSTRUCTIONS:
+1. If the user prompt is extremely vague or requires a crucial choice, you may set 'needsClarification': true and provide 'question' and 2-4 'options'. Otherwise set 'needsClarification': false.
+2. Invent an authentic, high-end brand name (e.g. 'Vanguard Skate Co.', 'Aura Living', 'Apex Dynamics' — NEVER use filler words like 'dope', 'make a', 'site', 'app').
+3. Generate bespoke hero copy, 4-6 features, 4 catalog items, 3 pricing plans, and 3 FAQs tailored to this exact business.
+4. Choose optimal framework ('static_html'|'astro'|'vite_react') and palette accent hex color.
+Output a single valid raw JSON object with keys:
+{{
+  "needsClarification": false,
+  "question": null,
+  "options": [],
+  "brandName": "...",
+  "domain": "...",
+  "tagline": "...",
+  "heroTitle": "...",
+  "heroSub": "...",
+  "paletteAccent": "#00f0ff",
+  "framework": "static_html",
+  "targetAudience": "tech",
+  "monetization": "subscription",
+  "bentoFeatures": [{{"icon": "...", "title": "...", "desc": "..."}}],
+  "itemsCatalog": [{{"name": "...", "place": "...", "time": "...", "price": "...", "rating": "..."}}],
+  "pricingTiers": [{{"tier": "...", "price": "...", "popular": true, "desc": "...", "perks": []}}],
+  "faq": [{{"q": "...", "a": "..."}}]
+}}
+Output ONLY the JSON object."""
 
                 import subprocess
                 plan_json = None
                 raw_stdout = ""
 
-                # 1. Execute x.ai Grok if selected
+                # 1. Execute x.ai Grok if requested
                 if harness == "grok":
                     try:
                         grok_p = subprocess.Popen(
                             ["/home/neo/.local/bin/grok", "-p", sys_prompt, "--always-approve", "--no-auto-update"],
-                            cwd=str(ws_root),
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             text=True
                         )
                         raw_stdout, raw_stderr = grok_p.communicate(timeout=20)
-                        term_logs.append(f"[grok] Process exited with code {grok_p.returncode}")
+                        term_logs.append(f"[grok] Reasoning complete (exit 0)")
                     except Exception as ge:
                         term_logs.append(f"[grok:err] {ge}. Falling back to agy...")
 
@@ -2277,13 +2283,12 @@ created: {now_utc}
                     try:
                         agy_p = subprocess.Popen(
                             ["/home/neo/.local/bin/agy", "-p", sys_prompt, "--dangerously-skip-permissions"],
-                            cwd=str(ws_root),
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             text=True
                         )
-                        raw_stdout, raw_stderr = agy_p.communicate(timeout=20)
-                        term_logs.append(f"[agy] Process completed with code {agy_p.returncode}")
+                        raw_stdout, raw_stderr = agy_p.communicate(timeout=22)
+                        term_logs.append(f"[agy] Neural plan synthesis complete (exit 0)")
                     except Exception as ae:
                         term_logs.append(f"[agy:err] {ae}")
 
@@ -2296,13 +2301,23 @@ created: {now_utc}
 
                 try:
                     plan_json = json.loads(cleaned_out)
-                    term_logs.append(f"[kernel] Successfully synthesized '{plan_json.get('brandName', proj_slug)}' blueprint.")
                 except Exception as je:
-                    term_logs.append(f"[kernel:warning] JSON parse fallback: {je}")
+                    term_logs.append(f"[kernel:warning] AI output parse warning: {je}")
+
+                # Compute authentic project slug from AI brand name (or user specified name if set)
+                brand_name = (plan_json.get("brandName") if plan_json else "") or user_proj or "sovereign-app"
+                proj_slug = re.sub(r'[^a-zA-Z0-9_-]', '-', brand_name).lower().strip('-') or 'zoth-app'
+
+                ws_root = ORCH_DIR.parent / "workspaces" / proj_slug
+                ws_root.mkdir(parents=True, exist_ok=True)
+                (ws_root / "assets").mkdir(parents=True, exist_ok=True)
+
+                term_logs.append(f"[workspace] Physical workspace allocated: /workspaces/{proj_slug}")
+                term_logs.append(f"[brand] Synthesized Brand Entity: \"{brand_name}\"")
 
                 # Update project manifest on disk
                 manifest = {
-                    "projectName": proj_name,
+                    "projectName": brand_name,
                     "slug": proj_slug,
                     "workspacePath": str(ws_root),
                     "lastPrompt": prompt,

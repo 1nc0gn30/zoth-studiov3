@@ -2246,116 +2246,89 @@
     });
   }
 
-    function spawnAgentAndSynthesize() {
+    var pendingClarificationData = null;
+
+  function showClarificationModal(question, options, rawPlan) {
+    pendingClarificationData = rawPlan;
+    var modal = document.getElementById('agentClarificationModal');
+    var qEl = document.getElementById('clarificationQuestionText');
+    var optCont = document.getElementById('clarificationOptionsContainer');
+    var customInput = document.getElementById('clarificationCustomInput');
+
+    if (qEl) qEl.textContent = question || 'Master Azoth has a quick question before finalizing the architecture:';
+    if (customInput) customInput.value = '';
+
+    if (optCont) {
+      optCont.innerHTML = '';
+      (options || []).forEach(function(optText, idx) {
+        var optBtn = document.createElement('div');
+        optBtn.style.background = '#0c1122';
+        optBtn.style.border = '1px solid rgba(0,240,255,0.25)';
+        optBtn.style.borderRadius = '8px';
+        optBtn.style.padding = '10px 14px';
+        optBtn.style.cursor = 'pointer';
+        optBtn.style.fontSize = '0.85rem';
+        optBtn.style.color = '#ffffff';
+        optBtn.style.transition = 'all 0.2s ease';
+        optBtn.innerHTML = '<strong>' + (idx + 1) + '.</strong> ' + optText;
+        optBtn.onclick = function() {
+          if (customInput) customInput.value = optText;
+          submitClarificationReply();
+        };
+        optCont.appendChild(optBtn);
+      });
+    }
+
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeClarificationModal() {
+    var modal = document.getElementById('agentClarificationModal');
+    if (modal) modal.style.display = 'none';
+    goToStage(2);
+  }
+
+  function submitClarificationReply() {
+    var customInput = document.getElementById('clarificationCustomInput');
+    var reply = (customInput && customInput.value.trim()) ? customInput.value.trim() : '';
+    closeClarificationModal();
+
+    if (reply) {
+      var promptEl = document.getElementById('sitePromptInput');
+      var originalPrompt = promptEl ? promptEl.value : '';
+      var combinedPrompt = originalPrompt + ' (Clarification details: ' + reply + ')';
+      if (promptEl) promptEl.value = combinedPrompt;
+      spawnAgentAndSynthesize(true);
+    }
+  }
+
+  function spawnAgentAndSynthesize(isClarified) {
     var promptEl = document.getElementById('sitePromptInput');
     var prompt = (promptEl && promptEl.value.trim()) ? promptEl.value.trim() : 'AI code copilot and autonomous agent devtools with AST verification';
     
-    // Invalidate multiPageCache for fresh site
     multiPageCache = {};
+    activeTemplate = null;
 
-    // 1. Initial heuristic pre-configuration while deep LLM thinking runs
-    var detectedArchetype = (typeof ZothSwarmOrchestrator !== 'undefined') ? ZothSwarmOrchestrator.detectArchetype({ prompt: prompt }) : 'saas';
-    autoSelectOptimalConfiguration(prompt, detectedArchetype);
+    var overlay = document.getElementById('step1SynthesisOverlay');
+    var pFill = document.getElementById('synthesisOverlayProgressFill');
+    var stepLines = document.getElementById('synthesisStepLines');
+    var oTitle = document.getElementById('synthesisOverlayTitle');
+    var oSub = document.getElementById('synthesisOverlaySub');
 
-    if (activeTemplate) {
-      if (typeof ZothTemplateRebrander !== 'undefined') {
-        var rebrandResult = ZothTemplateRebrander.rebrand(activeTemplate, prompt, studioConfig);
-        currentSite = rebrandResult.site;
-      }
-      multiPageCache = {};
-    } else if (typeof ZothDomainSynthesizer !== 'undefined') {
-      currentSite = ZothDomainSynthesizer.synthesize(prompt, selectedAgent);
-    } else {
-      currentSite = {
-        name: 'Apex Studio',
-        tagline: 'High-Performance Bespoke Digital Experience',
-        badge: '⚡ Sovereign Platform',
-        icon: '⚡',
-        theme: { bg: '#040711', surface: '#0c1122', border: 'rgba(0, 240, 255, 0.25)', accent: studioConfig.customAccent || '#00f0ff', textMuted: '#94a3b8' },
-        hero: { title: 'Bespoke High-Performance Digital Experience', sub: 'Zero-cloud-egress local execution and AST self-healing code compilation.', cta: '⚡ Launch Free Workspace', ctaSecondary: '📖 Read API Reference' }
-      };
+    if (overlay) overlay.style.display = 'flex';
+    if (pFill) pFill.style.width = '25%';
+    if (oTitle) oTitle.textContent = 'Spawning @' + selectedAgent.toUpperCase() + ' Agent Kernel';
+    if (oSub) oSub.textContent = 'Piping prompt directly into neural reasoning engine...';
+
+    if (stepLines) {
+      stepLines.innerHTML = '<div style="color:#00f0ff;">⚡ [1/3] Ingesting prompt into @' + selectedAgent + '...</div>' +
+        '<div style="color:#94a3b8;">⏳ [2/3] Formulating authentic brand entity &amp; design tokens...</div>' +
+        '<div style="color:#94a3b8;">⏳ [3/3] Compiling from-scratch 6-page architecture...</div>';
     }
-
-    if (studioConfig.customAccent && currentSite.theme) {
-      currentSite.theme.accent = studioConfig.customAccent;
-    }
-
-    // Go to Step 2
-    goToStage(2);
-    
-    var subEl = document.getElementById('agentSynthesisSub');
-    if (subEl) {
-      subEl.textContent = selectedAgent.toUpperCase() + ' is executing deep headless architectural synthesis & formulating a bespoke plan...';
-    }
-
-    // Run active reasoning stream
-    runAgentReasoningStream(prompt, selectedAgent, function() {
-      renderDomainPreview();
-      updateStackSummary();
-      showStudioToast('✨ Blueprint synthesized & written to /workspaces/' + (currentSite.name||'project') + '!');
-      syncFilesToPhysicalWorkspace();
-    });
 
     var projNameEl = document.getElementById('projectNameInput');
-    var projName = (projNameEl && projNameEl.value.trim()) ? projNameEl.value.trim() : 'zoth-project';
+    var projName = (projNameEl && projNameEl.value.trim()) ? projNameEl.value.trim() : '';
 
-    // ⚡ ASYNC 1: Create physical workspace folder & save uploaded brand assets
-    try {
-      fetch(ORCHESTRATOR_API_BASE + '/api/zoth/workspace/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectName: projName,
-          prompt: prompt,
-          assets: uploadedAssets
-        })
-      }).catch(function() {});
-    } catch(e) {}
-
-            var activeDuckySession = 'zoth_' + projName.toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-+|-+$/g, '');
-
-    // ⚡ REAL DUCKY SCRIPT TERMINAL: Open Desktop Terminal -> cd into folder -> Run agy -> Type Prompt
-    fetch(ORCHESTRATOR_API_BASE + '/api/zoth/terminal/ducky/spawn', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        projectName: projName,
-        prompt: prompt,
-        agent: selectedAgent === 'grok' ? 'grok' : 'agy'
-      })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data && data.status === 'ok') {
-        showStudioToast('🖥️ Launched live agent terminal in /workspaces/' + projName + '!');
-        
-        // Start live polling of the terminal screen
-        var pollCount = 0;
-        var screenPollTimer = setInterval(function() {
-          pollCount++;
-          if (pollCount > 30) clearInterval(screenPollTimer);
-
-          fetch(ORCHESTRATOR_API_BASE + '/api/zoth/terminal/ducky/screen', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session: activeDuckySession })
-          })
-          .then(function(r) { return r.json(); })
-          .then(function(sData) {
-            if (sData && sData.screen) {
-              var logStream = document.getElementById('agentLogStream');
-              if (logStream) {
-                logStream.textContent = sData.screen;
-                logStream.scrollTop = logStream.scrollHeight;
-              }
-            }
-          }).catch(function() {});
-        }, 1200);
-      }
-    })
-    .catch(function(err) {
-      console.log('[Ducky Terminal Bridge Note]', err);
-    });
     fetch(ORCHESTRATOR_API_BASE + '/api/zoth/terminal/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2368,55 +2341,88 @@
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
-      if (data && data.status === 'ok') {
-        var logStream = document.getElementById('agentLogStream');
-        if (logStream && data.terminalLogs) {
-          data.terminalLogs.forEach(function(l) {
-            var row = document.createElement('div');
-            row.style.color = '#38bdf8';
-            row.style.fontFamily = 'var(--font-mono, monospace)';
-            row.textContent = l;
-            logStream.appendChild(row);
-          });
-          logStream.scrollTop = logStream.scrollHeight;
-        }
+      if (pFill) pFill.style.width = '85%';
+      if (stepLines) {
+        stepLines.innerHTML = '<div style="color:#34d399;">✔ [1/3] Prompt parsed by @' + selectedAgent + '</div>' +
+          '<div style="color:#00f0ff;">⚡ [2/3] Brand Entity: ' + (data.plan ? data.plan.brandName : data.slug) + '</div>' +
+          '<div style="color:#38bdf8;">⚡ [3/3] Formulating workspace files in /workspaces/' + data.slug + '...</div>';
+      }
 
-        if (data.plan) {
+      setTimeout(function() {
+        if (overlay) overlay.style.display = 'none';
+
+        if (data && data.status === 'ok' && data.plan) {
           var p = data.plan;
-          console.log('⚡ [Headless Terminal Output Received]:', p);
-          if (p.brandName) currentSite.name = p.brandName;
-          if (p.tagline) currentSite.tagline = p.tagline;
-          if (p.heroTitle) {
-            if (!currentSite.hero) currentSite.hero = {};
-            currentSite.hero.title = p.heroTitle;
+
+          if (p.needsClarification && p.question && !isClarified) {
+            showClarificationModal(p.question, p.options || [], p);
+            return;
           }
-          if (p.heroSub) {
-            if (!currentSite.hero) currentSite.hero = {};
-            currentSite.hero.sub = p.heroSub;
-          }
-          if (p.bentoFeatures && p.bentoFeatures.length > 0) currentSite.bentoFeatures = p.bentoFeatures;
-          if (p.itemsCatalog && p.itemsCatalog.length > 0) currentSite.itemsCatalog = p.itemsCatalog;
-          if (p.pricingTiers && p.pricingTiers.length > 0) currentSite.pricing = p.pricingTiers;
-          if (p.faq && p.faq.length > 0) currentSite.faq = p.faq;
+
+          currentSite = {
+            name: p.brandName || 'Sovereign Studio',
+            domain: p.domain || (p.brandName ? p.brandName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com' : 'custom.app'),
+            tagline: p.tagline || 'Engineered for exceptional craft and performance.',
+            badge: '⚡ AI-Synthesized Sovereign Build',
+            icon: '✨',
+            theme: {
+              bg: '#050711',
+              surface: '#0c1122',
+              border: 'rgba(0, 240, 255, 0.25)',
+              accent: p.paletteAccent || '#00f0ff',
+              textMuted: '#94a3b8'
+            },
+            hero: {
+              title: p.heroTitle || ('Welcome to ' + p.brandName),
+              sub: p.heroSub || p.tagline || 'Precision engineering.',
+              cta: '⚡ Get Started',
+              ctaSecondary: '📖 Documentation'
+            },
+            bentoFeatures: p.bentoFeatures || [],
+            itemsCatalog: p.itemsCatalog || [],
+            pricing: p.pricingTiers || [],
+            faq: p.faq || []
+          };
 
           if (p.framework) studioConfig.framework = p.framework;
-          if (p.paletteAccent) {
-            studioConfig.customAccent = p.paletteAccent;
-            if (currentSite.theme) currentSite.theme.accent = p.paletteAccent;
+          if (p.paletteAccent) studioConfig.customAccent = p.paletteAccent;
+          if (p.targetAudience) studioConfig.audience = p.targetAudience;
+          if (p.monetization) studioConfig.monetization = p.monetization;
+
+          if (projNameEl && p.brandName) {
+            projNameEl.value = p.brandName;
+          }
+
+          var cSlug = document.getElementById('cockpitProjSlug');
+          if (cSlug) cSlug.textContent = data.slug;
+
+          var logStream = document.getElementById('agentLogStream');
+          if (logStream && data.terminalLogs) {
+            logStream.innerHTML = '';
+            data.terminalLogs.forEach(function(l) {
+              var row = document.createElement('div');
+              row.style.color = '#38bdf8';
+              row.textContent = l;
+              logStream.appendChild(row);
+            });
           }
 
           syncUIConfigSelections();
-          renderDomainPreview();
           updateStackSummary();
           syncFilesToPhysicalWorkspace();
+
+          goToStage(2);
+          showStudioToast('✨ @' + selectedAgent + ' successfully synthesized bespoke architecture!');
+        } else {
+          goToStage(2);
         }
-      }
+      }, 500);
     })
     .catch(function(err) {
-      console.log('[Terminal Session Bridge Note]', err);
+      if (overlay) overlay.style.display = 'none';
+      console.warn('[AI Synthesis Bridge Error]:', err);
+      goToStage(2);
     });
-
-    renderDomainPreview();
   }
 
   function generatePageHtml(pageName) {
