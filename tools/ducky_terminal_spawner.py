@@ -23,26 +23,18 @@ def spawn_real_agent_terminal(project_name, prompt, agent="agy"):
     # 1. Create a tmux session located inside the project folder
     subprocess.run(["tmux", "new-session", "-d", "-s", session_name, "-c", str(ws_dir)], check=True)
 
-    # Formulate explicit task instruction for autonomous execution
-    task_directive = (
-        f"You are an autonomous senior web engineer building a website in this directory. "
-        f"User prompt: '{prompt}'. "
-        f"Build a complete, high-quality, production-ready website with index.html, styled with Tailwind CSS, custom assets, and responsive navigation. Write all files directly to this directory now."
-    )
+    # 2. Launch AGY interactive session
+    subprocess.run(["tmux", "send-keys", "-t", session_name, "/home/neo/.local/bin/agy", "Enter"])
 
-    # 2. Launch agent with non-interactive prompt flag so it immediately starts executing
-    if agent == "grok":
-        cmd_str = f'/home/neo/.local/bin/grok -p "{task_directive}" --always-approve --no-auto-update'
-    elif agent == "hermes":
-        cmd_str = f'/home/neo/.local/bin/hermes -z "{task_directive}" --yolo'
-    elif agent == "codex":
-        cmd_str = f'/usr/bin/codex exec --full-auto "{task_directive}"'
-    else:
-        cmd_str = f'/home/neo/.local/bin/agy -p "{task_directive}" --dangerously-skip-permissions'
+    # Give AGY interactive CLI 3 seconds to mount its prompt UI
+    time.sleep(3)
 
-    subprocess.run(["tmux", "send-keys", "-t", session_name, cmd_str, "Enter"])
+    # 3. DuckyScript keystroke injection: type user task directly into prompt box
+    task_directive = f"Build a complete, bespoke, production-ready website for: {prompt}. Write index.html and all necessary CSS/JS assets directly into this current working directory."
+    escaped_directive = task_directive.replace('"', '\"').replace("'", "'\''")
+    subprocess.run(["tmux", "send-keys", "-t", session_name, escaped_directive, "Enter"])
 
-    # 3. Launch an actual visible GUI desktop terminal window (konsole / xterm) attached to the live session!
+    # 4. Launch an actual visible GUI desktop terminal window (konsole / xterm) attached to the live session!
     env = os.environ.copy()
     if "DISPLAY" not in env or not env["DISPLAY"]:
         env["DISPLAY"] = ":0"
