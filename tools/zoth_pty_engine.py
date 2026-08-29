@@ -171,15 +171,15 @@ class ZothPTYManager:
         def _ducky_sequence():
             # Step 1: Launch agent (e.g. agy)
             time.sleep(0.6)
-            session.write(f"{agent}")
+            session.write(agent + "\r")
             
             # Step 2: Wait 3.5s for AGY TUI to mount its welcome / trust screen, then press Enter
             time.sleep(3.5)
-            session.write("")
+            session.write("\r")
             
             # Step 3: Wait 2.5s for cursor focus on prompt box, then type prompt cleanly
             time.sleep(2.5)
-            session.write(prompt.strip() + "")
+            session.write(prompt.strip() + "\r")
 
         threading.Thread(target=_ducky_sequence, daemon=True).start()
         return session
@@ -205,15 +205,3 @@ class ZothPTYManager:
 
 # Global singleton instance
 pty_manager = ZothPTYManager()
-
-if __name__ == "__main__":
-    print("Testing Zoth PTY Engine...")
-    s = pty_manager.get_or_create("test-pty")
-    print(f"Created session: {s.session_id}, PID: {s.pid}")
-    time.sleep(1)
-    s.write("ls -la\n")
-    time.sleep(1)
-    print("Output received:")
-    print(s.get_history())
-    s.terminate()
-    print("Test finished successfully!")
