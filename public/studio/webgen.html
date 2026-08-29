@@ -133,6 +133,17 @@
       <h1 class="webgen-h1">WebGen Terminal</h1>
       <p class="webgen-lede">Authentic interactive PTY terminal. Works natively across Linux, macOS, and Windows with real ANSI color, full keyboard navigation, and DuckyScript automation.</p>
 
+            <!-- Active / Saved Workspaces & Previous Builds Tracker -->
+      <div class="webgen-field-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <label class="webgen-label">PREVIOUS BUILDS &amp; ACTIVE WORKSPACES</label>
+          <span onclick="fetchTrackedSessions()" style="font-size:0.7rem;color:var(--webgen-cyan);cursor:pointer;font-family:var(--font-mono);">🔄 Refresh List</span>
+        </div>
+        <div class="webgen-sessions-tray" id="trackedSessionsTray">
+          <div style="font-size:0.72rem;color:var(--webgen-mute);font-family:var(--font-mono);">Loading workspaces...</div>
+        </div>
+      </div>
+
       <!-- Project Slug -->
       <div class="webgen-field-wrap">
         <label class="webgen-label" for="projNameInput">1. Target Workspace Directory</label>
@@ -299,6 +310,73 @@
       });
     }
 
+    
+    function fetchTrackedSessions() {
+      fetch(getApiBase() + '/api/zoth/terminal/ducky/sessions')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var tray = document.getElementById('trackedSessionsTray');
+          if (!tray) return;
+
+          if (data && data.sessions && data.sessions.length) {
+            tray.innerHTML = '';
+            data.sessions.forEach(function(s) {
+              var item = document.createElement('div');
+              item.className = 'webgen-session-item' + (currentSlug === s.slug ? ' active' : '');
+              item.onclick = function() { selectSession(s); };
+
+              var isLiveBadge = s.isLive
+                ? '<span class="webgen-live-badge live">● LIVE PTY</span>'
+                : '<span class="webgen-live-badge saved">📁 READY</span>';
+
+              item.innerHTML = 
+                '<div class="webgen-session-info">' +
+                  '<div class="webgen-session-title">⚡ ' + s.slug + ' ' + isLiveBadge + '</div>' +
+                  '<div class="webgen-session-prompt">' + (s.prompt || 'Workspace: ' + s.slug) + '</div>' +
+                '</div>' +
+                '<div style="font-size:0.7rem;color:var(--webgen-gold);font-family:monospace;font-weight:700;">Open ➔</div>';
+
+              tray.appendChild(item);
+            });
+          } else {
+            tray.innerHTML = '<div style="font-size:0.72rem;color:var(--webgen-mute);font-family:monospace;">No previous builds found.</div>';
+          }
+        })
+        .catch(function(err) {
+          console.warn('Sessions fetch error:', err);
+        });
+    }
+
+    function selectSession(sess) {
+      currentSlug = sess.slug;
+      currentPreviewUrl = sess.previewUrl;
+
+      var slugInput = document.getElementById('projNameInput');
+      if (slugInput) slugInput.value = sess.slug;
+
+      var promptInput = document.getElementById('promptInput');
+      if (promptInput && sess.prompt && !sess.prompt.startsWith('Workspace:')) {
+        promptInput.value = sess.prompt;
+      }
+
+      var sessLabel = document.getElementById('termSessionLabel');
+      if (sessLabel) sessLabel.textContent = '⚡ ZOTH PTY: ' + sess.slug;
+
+      var iframe = document.getElementById('webgenPreviewIframe');
+      var urlLabel = document.getElementById('previewUrlLabel');
+      var newTabBtn = document.getElementById('previewNewTabBtn');
+
+      if (urlLabel) urlLabel.textContent = window.location.origin + currentPreviewUrl;
+      if (newTabBtn) newTabBtn.href = currentPreviewUrl;
+      if (iframe && sess.hasIndex) {
+        iframe.src = currentPreviewUrl;
+      }
+
+      // Switch terminal
+      initZothTerminal(sess.slug);
+      fetchTrackedSessions();
+    }
+
     function reloadPreview() {
       var iframe = document.getElementById('webgenPreviewIframe');
       if (iframe && currentPreviewUrl) {
@@ -308,7 +386,7 @@
 
     // Auto-mount default PTY on load
     window.addEventListener('DOMContentLoaded', function () {
-      initZothTerminal('stoic-app');
+      initZothTerminal('defi'); fetchTrackedSessions();
     });
   </script>
 </body>

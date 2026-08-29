@@ -145,16 +145,19 @@ def get_terminal_screen(session_name):
     }
 
 def list_all_active_sessions():
-    """Returns all active registered sessions + checks live tmux state"""
+    """Returns all active and previously built workspaces on disk + live tmux state"""
     registry = _get_registry()
     sessions = []
+    seen_slugs = set()
     
     # Get live tmux sessions
     res = subprocess.run(["tmux", "list-sessions", "-F", "#{session_name}"], capture_output=True, text=True)
     live_tmux = set(res.stdout.strip().splitlines()) if res.returncode == 0 else set()
 
+    # 1. Registered sessions
     for sname, info in list(registry.items()):
         proj_slug = info.get("slug", sname.replace("zoth_", ""))
+        seen_slugs.add(proj_slug)
         ws_dir = REPO_ROOT / "core-app" / "public" / "workspaces" / proj_slug
         files = [f.name for f in ws_dir.glob("*") if f.is_file()] if ws_dir.exists() else []
         has_index = (ws_dir / "index.html").exists() if ws_dir.exists() else False
@@ -173,8 +176,43 @@ def list_all_active_sessions():
             "isLive": is_live
         })
 
-    # Sort most recent first
-    sessions.sort(key=lambda x: x.get("lastActive", ""), reverse=True)
+    # 2. Also discover any physical workspaces on disk that have index.html or files
+    ws_parent = REPO_ROOT / "core-app" / "public" / "workspaces"
+    if ws_parent.exists():
+        for d in sorted(ws_parent.iterdir()):
+            if d.is_dir() and d.name not in seen_slugs and not d.name.startswith("."):
+                has_index = (d / "index.html").exists()
+                files = [f.name for f in d.glob("*") if f.is_file()]
+                sname = f"zoth_{d.name}"
+                is_live = sname in live_tmux
+                
+                # Check for zoth.session.json
+                meta_file = d / "zoth.session.json"
+                prompt_val = ""
+                agent_val = "agy"
+                if meta_file.exists():
+                    try:
+                        m = json.loads(meta_file.read_text(encoding="utf-8"))
+                        prompt_val = m.get("prompt", "")
+                        agent_val = m.get("agent", "agy")
+                    except Exception:
+                        pass
+
+                sessions.append({
+                    "session": sname,
+                    "slug": d.name,
+                    "agent": agent_val,
+                    "prompt": prompt_val or f"Workspace: {d.name}",
+                    "createdAt": "",
+                    "lastActive": "",
+                    "files": files,
+                    "hasIndex": has_index,
+                    "previewUrl": f"/workspaces/{d.name}/index.html",
+                    "isLive": is_live
+                })
+
+    # Sort: live first, then alphabetical/activity
+    sessions.sort(key=lambda x: (not x.get("isLive", False), not x.get("hasIndex", False), x.get("slug", "")))
     return sessions
 
 def list_workspace_files(session_name):
