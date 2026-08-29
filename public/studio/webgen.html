@@ -10,13 +10,15 @@
   <link rel="stylesheet" href="/assets/zoth-theme.css" />
   <link rel="stylesheet" href="/assets/zoth-guide.css" />
   <link rel="stylesheet" href="/assets/vendor/xterm/xterm.css" />
-  <link rel="stylesheet" href="/assets/zoth-webgen-poster.css?v=20260828e" />
+  <link rel="stylesheet" href="/assets/zoth-webgen-poster.css?v=20260829a" />
 
+  <script src="/assets/vendor/three.min.js"></script>
   <script src="/assets/zoth-theme.js"></script>
   <script src="/assets/zoth-nav.js"></script>
   <script src="/assets/vendor/xterm/xterm.js"></script>
   <script src="/assets/vendor/xterm/addon-fit.js"></script>
   <script src="/assets/zoth-terminal.js"></script>
+  <script src="/assets/zoth-three-orb.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -133,7 +135,7 @@
       <h1 class="webgen-h1">WebGen Terminal</h1>
       <p class="webgen-lede">Authentic interactive PTY terminal. Works natively across Linux, macOS, and Windows with real ANSI color, full keyboard navigation, and DuckyScript automation.</p>
 
-            <!-- Active / Saved Workspaces & Previous Builds Tracker -->
+      <!-- Active / Saved Workspaces & Previous Builds Tracker -->
       <div class="webgen-field-wrap">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <label class="webgen-label">PREVIOUS BUILDS &amp; ACTIVE WORKSPACES</label>
@@ -179,7 +181,10 @@
         <div id="zothXtermContainer" style="width:100%;height:220px;background:#000000;border-radius:6px;overflow:hidden;padding:4px;"></div>
 
         <div>
-          <div style="font-size:0.7rem;color:var(--webgen-mute);font-family:var(--font-mono);margin-bottom:6px;">SYNTHESIZED WORKSPACE FILES:</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:0.7rem;color:var(--webgen-mute);font-family:var(--font-mono);">SYNTHESIZED WORKSPACE FILES:</span>
+            <span id="fileCountBadge" style="font-size:0.68rem;color:var(--webgen-gold);font-family:var(--font-mono);font-weight:700;">0 FILES</span>
+          </div>
           <div class="file-badge-list" id="workspaceFilesList">
             <span style="font-size:0.7rem;color:#64748b;font-family:var(--font-mono);">Waiting for agent file writes...</span>
           </div>
@@ -187,7 +192,7 @@
       </div>
     </aside>
 
-    <!-- RIGHT: Live Website Viewport -->
+    <!-- RIGHT: Live Website Viewport with Three.js Kinetic Loading Overlay -->
     <section class="webgen-preview-viewport">
       <div class="webgen-preview-header">
         <div class="webgen-url-pill">
@@ -204,6 +209,29 @@
         </div>
       </div>
 
+      <!-- Kinetic 3D Three.js Synthesis Overlay -->
+      <div class="webgen-loading-overlay hidden" id="previewLoadingOverlay">
+        <div class="webgen-three-canvas-wrap" id="threeOrbCanvasContainer"></div>
+        
+        <div class="webgen-progress-card">
+          <div class="webgen-progress-top">
+            <div class="webgen-progress-title">
+              <span>⚡</span>
+              <span id="overlayProjectTitle">Synthesizing Project...</span>
+            </div>
+            <div class="webgen-progress-pct" id="overlayProgressPct">15%</div>
+          </div>
+
+          <div class="webgen-progress-track">
+            <div class="webgen-progress-fill" id="overlayProgressFill" style="width: 15%;"></div>
+          </div>
+
+          <div class="webgen-log-ticker" id="overlayLogTicker">
+            <span>⚡ Initializing PTY subprocess &amp; dispatching prompt...</span>
+          </div>
+        </div>
+      </div>
+
       <iframe id="webgenPreviewIframe" class="webgen-iframe" src="about:blank"></iframe>
     </section>
   </main>
@@ -212,6 +240,10 @@
     var currentSlug = 'defi';
     var currentPreviewUrl = '';
     var zothTerm = null;
+    var threeOrbInstance = null;
+    var isBuilding = false;
+    var buildProgress = 15;
+    var buildInterval = null;
 
     function getApiBase() {
       return (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484';
@@ -220,6 +252,71 @@
     function setPrompt(text) {
       var p = document.getElementById('promptInput');
       if (p) p.value = text;
+    }
+
+    function showLoadingOverlay(slugName) {
+      isBuilding = true;
+      buildProgress = 15;
+
+      var overlay = document.getElementById('previewLoadingOverlay');
+      if (overlay) overlay.classList.remove('hidden');
+
+      var title = document.getElementById('overlayProjectTitle');
+      if (title) title.textContent = 'Synthesizing ' + slugName + '...';
+
+      updateProgressUI(15, '⚡ Initializing PTY kernel & dispatching DuckyScript keystrokes...');
+
+      if (!threeOrbInstance) {
+        threeOrbInstance = window.initThreeLoadingOrb ? window.initThreeLoadingOrb('threeOrbCanvasContainer') : null;
+      }
+
+      if (buildInterval) clearInterval(buildInterval);
+      buildInterval = setInterval(function () {
+        if (!isBuilding) return;
+        if (buildProgress < 90) {
+          buildProgress += Math.floor(Math.random() * 4) + 1;
+          updateProgressUI(buildProgress);
+        }
+      }, 700);
+    }
+
+    function hideLoadingOverlay() {
+      isBuilding = false;
+      if (buildInterval) clearInterval(buildInterval);
+      updateProgressUI(100, '✨ Synthesis Complete! Live Website Mounted.');
+
+      setTimeout(function () {
+        var overlay = document.getElementById('previewLoadingOverlay');
+        if (overlay) overlay.classList.add('hidden');
+      }, 600);
+    }
+
+    function updateProgressUI(pct, logText) {
+      var fill = document.getElementById('overlayProgressFill');
+      var pctLabel = document.getElementById('overlayProgressPct');
+      var ticker = document.getElementById('overlayLogTicker');
+
+      if (fill) fill.style.width = pct + '%';
+      if (pctLabel) pctLabel.textContent = pct + '%';
+      if (ticker && logText) {
+        ticker.innerHTML = '<span>' + logText + '</span>';
+      }
+    }
+
+    function feedTerminalLogToOverlay(cleanText) {
+      if (!isBuilding || !cleanText) return;
+      var lines = cleanText.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l.length > 5; });
+      if (lines.length) {
+        var lastLine = lines[lines.length - 1];
+        // Strip any residual ANSI codes
+        var stripped = lastLine.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '').trim();
+        if (stripped && stripped.length > 3) {
+          var ticker = document.getElementById('overlayLogTicker');
+          if (ticker) {
+            ticker.innerHTML = '<span>⚡ ' + stripped.slice(0, 75) + (stripped.length > 75 ? '...' : '') + '</span>';
+          }
+        }
+      }
     }
 
     function initZothTerminal(slug) {
@@ -236,8 +333,14 @@
         sessionId: sessId,
         slug: slug,
         apiBase: getApiBase(),
+        onOutputChunk: function (rawChunk) {
+          feedTerminalLogToOverlay(rawChunk);
+        },
         onFilesChange: function (files) {
           var filesList = document.getElementById('workspaceFilesList');
+          var countBadge = document.getElementById('fileCountBadge');
+          if (countBadge) countBadge.textContent = files.length + ' FILES';
+
           if (filesList && files && files.length) {
             filesList.innerHTML = '';
             files.forEach(function (f) {
@@ -246,6 +349,12 @@
               badge.textContent = '📄 ' + f;
               filesList.appendChild(badge);
             });
+
+            // If files were written, bump synthesis progress
+            if (isBuilding && buildProgress < 85) {
+              buildProgress = Math.max(buildProgress, 70);
+              updateProgressUI(buildProgress, '🔨 Synthesized ' + files[files.length - 1] + '...');
+            }
           }
         },
         onIndexFound: function (previewUrl) {
@@ -256,8 +365,12 @@
           if (urlLabel) urlLabel.textContent = window.location.origin + previewUrl;
           if (newTabBtn) newTabBtn.href = previewUrl;
 
-          if (iframe && (iframe.src === 'about:blank' || iframe.src.indexOf('about:blank') !== -1)) {
+          if (iframe && (iframe.src === 'about:blank' || iframe.src.indexOf('about:blank') !== -1 || isBuilding)) {
             iframe.src = previewUrl;
+          }
+
+          if (isBuilding) {
+            hideLoadingOverlay();
           }
         }
       });
@@ -271,6 +384,17 @@
         alert('Please enter a prompt for the AI agent.');
         return;
       }
+
+      currentSlug = projName;
+      currentPreviewUrl = '/workspaces/' + projName + '/index.html';
+
+      var urlLabel = document.getElementById('previewUrlLabel');
+      var newTabBtn = document.getElementById('previewNewTabBtn');
+      if (urlLabel) urlLabel.textContent = window.location.origin + currentPreviewUrl;
+      if (newTabBtn) newTabBtn.href = currentPreviewUrl;
+
+      // Show Three.js Alchemical Synthesis Overlay
+      showLoadingOverlay(projName);
 
       var btn = document.getElementById('btnSpawnAgent');
       if (btn) {
@@ -300,6 +424,7 @@
           if (sessLabel) sessLabel.textContent = '⚡ ZOTH PTY: ' + data.sessionId;
 
           initZothTerminal(data.slug);
+          fetchTrackedSessions();
         }
       })
       .catch(function (err) {
@@ -311,7 +436,6 @@
       });
     }
 
-    
     function fetchTrackedSessions() {
       fetch(getApiBase() + '/api/zoth/terminal/ducky/sessions')
         .then(function(res) { return res.json(); })
@@ -371,6 +495,8 @@
       if (newTabBtn) newTabBtn.href = currentPreviewUrl;
       if (iframe && sess.hasIndex) {
         iframe.src = currentPreviewUrl;
+        var overlay = document.getElementById('previewLoadingOverlay');
+        if (overlay) overlay.classList.add('hidden');
       }
 
       // Switch terminal
@@ -387,7 +513,8 @@
 
     // Auto-mount default PTY on load
     window.addEventListener('DOMContentLoaded', function () {
-      initZothTerminal('defi'); fetchTrackedSessions();
+      initZothTerminal('defi');
+      fetchTrackedSessions();
     });
   </script>
 </body>

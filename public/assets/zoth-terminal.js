@@ -21,6 +21,7 @@
     this.isPolling = false;
     this.onFilesChange = this.options.onFilesChange || null;
     this.onIndexFound = this.options.onIndexFound || null;
+    this.onOutputChunk = this.options.onOutputChunk || null;
 
     this.init();
   };
@@ -188,6 +189,9 @@
         if (data && data.status === 'ok') {
           if (data.output && data.output.length > 0) {
             self.term.write(data.output);
+            if (self.onOutputChunk) {
+              self.onOutputChunk(data.output);
+            }
           }
           if (typeof data.nextIndex === 'number') {
             self.currentChunkIndex = data.nextIndex;
