@@ -222,7 +222,7 @@ echo -e "  ${CYAN}zoth list${RESET}       Inspect all 298+ registered tools\n"
 echo -e "${BOLD}🌐 Web Dashboard & Hub Routes:${RESET}"
 echo -e "  • Studio Workstations:   ${CYAN}http://127.0.0.1:8088/studio/${RESET}"
 echo -e "  • Operator Deck (:8484):  ${CYAN}http://127.0.0.1:8484/${RESET}"
-echo -e "  • Website Foundry:        ${CYAN}http://127.0.0.1:8088/studio/site-generator.html${RESET}"
+echo -e "  • WebGen Studio:        ${CYAN}http://127.0.0.1:8088/studio/webgen.html${RESET}"
 echo -e "  • Master Azoth:           ${CYAN}http://127.0.0.1:8088/zoth/${RESET}\n"
 
 

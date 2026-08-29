@@ -32,7 +32,7 @@ graph TD
         ToolWall["Tool Registry: /registry/"]
         VaultUI["Vault UI: /vault/"]
         StudioCards["Studio Hub: /studio/"]
-        SiteGen["Rapid Site Generator: /studio/site-generator.html"]
+        SiteGen["Rapid Site Generator: /studio/webgen.html"]
         NetlifyAX["Netlify AX: /studio/netlify-ax.html"]
         Downloads["Distribution Binaries: /dist-linux/ & /dist-windows/"]
     end
@@ -120,7 +120,7 @@ Zoth Studio enforces strict isolation between external networks and local execut
 | # | Suite Entity Name | Canonical URL / Anchor | Identifier | Primary Capability |
 |---|---|---|---|---|
 | 01 | **Run Studio** | `/studio/` (`#agent-runner`) | `suite-run-studio` | Sandboxed multi-agent execution with custom persona injectors and streaming token logs on `127.0.0.1:8484`. |
-| 02 | **Rapid Website Generator Studio** | `/studio/site-generator.html` | `suite-site-generator` | Multi-agent website synthesizer, live split-screen viewport hydration, 6 themes, and multi-framework exporters (Astro, Vite React, Next.js). |
+| 02 | **WebGen Studio Studio** | `/studio/webgen.html` | `suite-site-generator` | Multi-agent website synthesizer, live split-screen viewport hydration, 6 themes, and multi-framework exporters (Astro, Vite React, Next.js). |
 | 03 | **Netlify AX Architect** | `/studio/netlify-ax.html` | `suite-netlify-ax` | Sovereign Netlify AI alternative, build diagnostics ontology, security header scanner, and JSON config API. |
 | 04 | **Consensus Arena v2** | `/studio/consensus.html` | `suite-consensus-arena` | Triangulated multi-model arbitration, Shannon agreement entropy meters, and AST validation. |
 | 05 | **Fusion Swarm Arena** | `/studio/fusion-arena.html` | `suite-fusion-arena` | 3D WebGL multi-model debate chamber and adversarial prompt critique arena for real-time model synthesis. |

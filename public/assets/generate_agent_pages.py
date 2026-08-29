@@ -1935,7 +1935,7 @@ def generate_agent_html(agent):
         </button>
         <div class="nav-dropdown-menu">
           <a href="/studio/"><strong>🛠️ Studio Directory</strong><small>14+ Visual Workstations &amp; DAGs</small></a>
-          <a href="/studio/site-generator.html"><strong>⚡ Website Generator</strong><small>Multi-Agent Web Foundry &amp; Exporters</small></a>
+          <a href="/studio/webgen.html"><strong>⚡ Website Generator</strong><small>Multi-Agent Web Foundry &amp; Exporters</small></a>
           <a href="/signal/"><strong>📡 Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></a>
           <a href="/pets/"><strong>💎 Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></a>
         </div>
@@ -1982,7 +1982,7 @@ def generate_agent_html(agent):
     <div class="drawer-section">
       <div class="drawer-heading">Studio &amp; Tools</div>
       <a href="/studio/">🛠️ Studio Workstations</a>
-      <a href="/studio/site-generator.html">⚡ Website Generator Foundry</a>
+      <a href="/studio/webgen.html">⚡ Website Generator Foundry</a>
       <a href="/signal/">📡 Signal Swarm Bridge</a>
       <a href="/pets/">💎 Companion Pets 3D</a>
     </div>
@@ -2586,7 +2586,7 @@ def generate_agent_html(agent):
           <h3>Studio &amp; Core</h3>
           <a class="mega-footer-link js-deck" href="http://127.0.0.1:8484/"><span>⚡</span> Operator Deck (:8484)</a>
           <a class="mega-footer-link" href="/studio/"><span>🛠️</span> Studio Workstations</a>
-          <a class="mega-footer-link" href="/studio/site-generator.html"><span>🚀</span> Website Generator</a>
+          <a class="mega-footer-link" href="/studio/webgen.html"><span>🚀</span> Website Generator</a>
           <a class="mega-footer-link" href="/studio/swarm.html"><span>🌐</span> 3D Swarm Arena</a>
           <a class="mega-footer-link" href="/studio/consensus.html"><span>⚔️</span> Consensus Arena</a>
         </div>
@@ -2874,7 +2874,7 @@ def generate_index_html():
         </button>
         <div class="nav-dropdown-menu">
           <a href="/studio/"><strong>🛠️ Studio Directory</strong><small>14+ Visual Workstations &amp; DAGs</small></a>
-          <a href="/studio/site-generator.html"><strong>⚡ Website Generator</strong><small>Multi-Agent Web Foundry &amp; Exporters</small></a>
+          <a href="/studio/webgen.html"><strong>⚡ Website Generator</strong><small>Multi-Agent Web Foundry &amp; Exporters</small></a>
           <a href="/signal/"><strong>📡 Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></a>
           <a href="/pets/"><strong>💎 Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></a>
         </div>
@@ -2921,7 +2921,7 @@ def generate_index_html():
     <div class="drawer-section">
       <div class="drawer-heading">Studio &amp; Tools</div>
       <a href="/studio/">🛠️ Studio Workstations</a>
-      <a href="/studio/site-generator.html">⚡ Website Generator Foundry</a>
+      <a href="/studio/webgen.html">⚡ Website Generator Foundry</a>
       <a href="/signal/">📡 Signal Swarm Bridge</a>
       <a href="/pets/">💎 Companion Pets 3D</a>
     </div>

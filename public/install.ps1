@@ -121,7 +121,7 @@ Write-Host "  zoth list       Inspect all 298+ registered tools`n" -ForegroundCo
 Write-Host "🌐 Web Dashboard & Workstations:" -ForegroundColor White
 Write-Host "  • Studio Workstations:   http://127.0.0.1:8088/studio/" -ForegroundColor Cyan
 Write-Host "  • Operator Deck (:8484): http://127.0.0.1:8484/" -ForegroundColor Cyan
-Write-Host "  • Website Foundry:       http://127.0.0.1:8088/studio/site-generator.html" -ForegroundColor Cyan
+Write-Host "  • WebGen Studio:       http://127.0.0.1:8088/studio/webgen.html" -ForegroundColor Cyan
 Write-Host "  • Master Azoth:          http://127.0.0.1:8088/zoth/`n" -ForegroundColor Cyan
 
 

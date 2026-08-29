@@ -3,7 +3,7 @@
 ## 1. Overview & Vision
 **The Cockpit** (`/studio/cockpit.html`) is the unified command center for Zoth Studio. It bridges local-first sovereign LLM instances, autonomous tool harnesses, and procedural asset generators across **21 specialized agents** organized into **7 Lead AGY Squads**.
 
-This exact same hierarchical logic and sequential execution flow is designed to power the **Universal Website & Application Generator** (`/studio/site-generator.html` and `public/tools/site-swarm-orchestrator.js`).
+This exact same hierarchical logic and sequential execution flow is designed to power the **Universal Website & Application Generator** (`/studio/webgen.html` and `public/tools/site-swarm-orchestrator.js`).
 
 ---
 
@@ -72,12 +72,12 @@ When an artifact is generated (e.g. a 1024x1024 Flux render or a React hero comp
 
 ---
 
-## 5. Integration into the Universal Website Generator
+## 5. Integration into the Universal WebGen Studio
 
-To align `site-generator.html` and `site-swarm-orchestrator.js` with The Cockpit:
+To align `webgen.html` and `site-swarm-orchestrator.js` with The Cockpit:
 
 1. **Shared Route Ingestion**:
-   - `site-generator.html` dispatches generation requests to `/api/zoth/swarm` on port `8484`.
+   - `webgen.html` dispatches generation requests to `/api/zoth/swarm` on port `8484`.
 2. **Dynamic Archetype Synthesis**:
    - Instead of static mockups, `@kitsune` generates real custom logo/hero assets via Pollinations Flux for the selected domain (e.g. roofing, restaurant, web3 app).
 3. **AST Validation & Export**:
