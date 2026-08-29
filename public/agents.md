@@ -8,7 +8,7 @@
 
 Zoth Studio is an autonomous, **sovereign local-first** multi-agent AI engineering powerhouse:
 
-1. **Public Hub** (`http://127.0.0.1:8088/` / `https://zoth.nullai.tech/`) — Static showcase, 24 companion pets hangar (`/pets/`), 3D CAD viewport (`/studio/nexus-3d.html`), tool registry (`/registry/`), and documentation portal (`/docs/`).
+1. **Public Hub** (`http://127.0.0.1:8088/` / `https://zoth.nullai.tech/`) — Static showcase, Zoth World 3D Alchemical Sanctum (`/zoth-world.html`), 24 companion pets hangar (`/pets/`), 3D CAD viewport (`/studio/nexus-3d.html`), tool registry (`/registry/`), and documentation portal (`/docs/`).
 2. **Operator Deck** (`http://127.0.0.1:8484/`) — Private operator command deck for live agent runs, subagents, and terminals. **Loopback Only (`127.0.0.1`)**.
 3. **ESP32-S3 Hardware Bridge** (`http://127.0.0.1:8585/`) — Physical Lafvin companion serial monitor, Web HUD, and TTS voice notification server.
 4. **Argon2id Key Vault** (`http://127.0.0.1:8686/`) — Zero-leak hardware-isolated key vault with Argon2id ($m=64\text{MB}, t=3, p=4$) and XChaCha20-Poly1305.

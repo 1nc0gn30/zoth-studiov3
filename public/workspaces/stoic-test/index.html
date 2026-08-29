@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meditations in Stone & Gold — Marcus Aurelius & Stoic Citadel</title>
+  
+  <!-- Google Fonts: Classical Neoclassical & Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Three.js for 3D Stoic Scene -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            cinzel: ['Cinzel', 'serif'],
+            cinzelDeco: ['"Cinzel Decorative"', 'Cinzel', 'serif'],
+            garamond: ['"EB Garamond"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            stoic: {
+              950: '#07080a',
+              900: '#0e1117',
+              850: '#141822',
+              800: '#1c2230',
+              700: '#2a3449',
+              600: '#414e6a',
+              300: '#9aa5bd',
+              100: '#e1e7f5',
+            },
+            gold: {
+              300: '#ffe885',
+              400: '#f5d054',
+              500: '#d4af37',
+              600: '#aa8214',
+              700: '#7e5e07',
+              glow: 'rgba(212, 175, 55, 0.35)',
+            },
+            crimson: {
+              800: '#5c101a',
+              900: '#3a080f',
+            },
+            marble: '#eae7df',
+          },
+          boxShadow: {
+            'gold-sm': '0 0 15px rgba(212, 175, 55, 0.2)',
+            'gold-md': '0 0 30px rgba(212, 175, 55, 0.3)',
+            'gold-lg': '0 0 50px rgba(212, 175, 55, 0.45)',
+            'inner-citadel': 'inset 0 0 60px rgba(0, 0, 0, 0.85)',
+          },
+          keyframes: {
+            floatSlow: {
+              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+              '50%': { transform: 'translateY(-10px) rotate(1deg)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+              '50%': { opacity: '0.85', transform: 'scale(1.05)' },
+            },
+            shimmer: {
+              '100%': { transform: 'translateX(100%)' },
+            },
+          },
+          animation: {
+            'float-slow': 'floatSlow 7s ease-in-out infinite',
+            'pulse-glow': 'pulseGlow 4s ease-in-out infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07080a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a3449;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d4af37;
+    }
+
+    /* Roman Border & Accents */
+    .roman-border {
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      background: linear-gradient(135deg, rgba(20, 24, 34, 0.85) 0%, rgba(14, 17, 23, 0.95) 100%);
+      backdrop-filter: blur(12px);
+    }
+    .roman-border-glow:hover {
+      border-color: rgba(212, 175, 55, 0.65);
+      box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.25), 0 0 15px rgba(212, 175, 55, 0.15);
+    }
+
+    /* Classical Latin Banner Ribbon */
+    .latin-ribbon {
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.15), transparent);
+    }
+
+    /* 3D Card Flip CSS */
+    .perspective-1000 {
+      perspective: 1200px;
+    }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: left;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .card-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Shimmer Effect for Gold Cards */
+    .gold-foil-shine {
+      position: absolute;
+      top: 0;
+      left: -150%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.03) 40%,
+        rgba(212, 175, 55, 0.18) 50%,
+        rgba(255, 255, 255, 0.03) 60%,
+        transparent 100%
+      );
+      transform: skewX(-25deg);
+      pointer-events: none;
+      transition: left 0.75s ease;
+    }
+    .quote-card-wrapper:hover .gold-foil-shine {
+      left: 150%;
+    }
+
+    /* Subtle Roman Meander Top Pattern */
+    .greek-key-pattern {
+      background-image: repeating-linear-gradient(45deg, rgba(212, 175, 55, 0.05) 0, rgba(212, 175, 55, 0.05) 1px, transparent 0, transparent 8px);
+    }
+
+    /* Breath Animation Circle */
+    @keyframes breatheCycle {
+      0%, 100% { transform: scale(0.85); border-color: rgba(212, 175, 55, 0.3); }
+      25% { transform: scale(1.25); border-color: rgba(212, 175, 55, 0.9); box-shadow: 0 0 50px rgba(212, 175, 55, 0.5); }
+      50% { transform: scale(1.25); border-color: rgba(212, 175, 55, 0.7); }
+      75% { transform: scale(0.85); border-color: rgba(212, 175, 55, 0.3); }
+    }
+    .breathe-ring {
+      animation: breatheCycle 16s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-stoic-950 text-stoic-100 font-sans min-h-screen overflow-x-hidden relative selection:bg-gold-500 selection:text-stoic-950">
+  
+  <!-- 3D Three.js Background Canvas -->
+  <div id="webgl-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+  <!-- Ambient Light Vignette Overlays -->
+  <div class="fixed inset-0 pointer-events-none z-[1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gold-500/10 via-transparent to-stoic-950/90"></div>
+  <div class="fixed inset-0 pointer-events-none z-[1] bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(7,8,10,0.85)_100%)]"></div>
+
+  <!-- Main UI Layer -->
+  <div class="relative z-10 min-h-screen flex flex-col justify-between">
+
+    <!-- Top Classical Navigation Bar -->
+    <header class="border-b border-gold-500/20 bg-stoic-950/80 backdrop-blur-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
+        
+        <!-- Imperial Monogram / Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer group" onclick="resetView()">
+          <div class="w-10 h-10 rounded-full border border-gold-500/50 bg-stoic-900 flex items-center justify-center shadow-gold-sm group-hover:border-gold-400 group-hover:shadow-gold-md transition-all">
+            <span class="font-cinzel text-gold-400 text-lg font-bold">MA</span>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="font-cinzel text-base sm:text-lg font-bold tracking-wider text-marble uppercase">
+                Marcus Aurelius
+              </h1>
+              <span class="text-[10px] px-1.5 py-0.5 rounded border border-gold-500/30 text-gold-400 font-cinzel font-semibold hidden sm:inline-block">
+                IMPERATOR
+              </span>
+            </div>
+            <p class="text-[11px] text-stoic-300 tracking-widest uppercase font-cinzel">
+              The Inner Citadel &bull; 3D Meditations
+            </p>
+          </div>
+        </div>
+
+        <!-- Center Latin Maxim (Desktop) -->
+        <div class="hidden md:flex items-center space-x-2 px-4 py-1.5 rounded-full border border-gold-500/20 bg-stoic-900/60 text-xs font-cinzel text-gold-300/80">
+          <i data-lucide="shield" class="w-3.5 h-3.5 text-gold-400"></i>
+          <span class="tracking-widest">AMOR FATI &bull; MEMENTO MORI &bull; SUSTINE ET ABSTINE</span>
+        </div>
+
+        <!-- Right Quick Action Controls -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          
+          <!-- Soundscape Audio Synthesizer Toggle -->
+          <button id="sound-btn" onclick="toggleAudio()" class="p-2.5 rounded-lg border border-gold-500/30 bg-stoic-900/80 text-gold-400 hover:text-gold-300 hover:border-gold-400 hover:bg-stoic-850 transition-all relative group" title="Stoic Sanctuary Ambient Audio">
+            <i id="sound-icon" data-lucide="volume-x" class="w-4 h-4"></i>
+            <span class="absolute -bottom-8 right-0 text-[10px] bg-stoic-900 border border-gold-500/30 text-gold-300 px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none font-cinzel">
+              Sanctuary Audio
+            </span>
+          </button>
+
+          <!-- Breathing Meditation Mode Button -->
+          <button onclick="openBreatheModal()" class="px-3 py-2 rounded-lg border border-gold-500/30 bg-stoic-900/80 text-gold-400 hover:text-gold-300 hover:border-gold-400 hover:bg-stoic-850 transition-all flex items-center space-x-1.5 text-xs font-cinzel font-semibold shadow-gold-sm">
+            <i data-lucide="wind" class="w-4 h-4 text-gold-400"></i>
+            <span class="hidden sm:inline">Inner Citadel</span>
+          </button>
+
+          <!-- Random Daily Oracle Button -->
+          <button onclick="drawDailyOracle()" class="px-3.5 py-2 rounded-lg bg-gradient-to-r from-gold-600 via-gold-500 to-gold-400 text-stoic-950 font-cinzel font-bold text-xs tracking-wider uppercase hover:brightness-110 shadow-gold-sm hover:shadow-gold-md transition flex items-center space-x-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>Oracle</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Hero Showcase Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 text-center">
+      
+      <!-- Ornamental Header Line -->
+      <div class="flex items-center justify-center space-x-4 mb-3">
+        <div class="h-px w-12 sm:w-28 bg-gradient-to-r from-transparent to-gold-500/60"></div>
+        <div class="flex items-center space-x-1.5 text-gold-400">
+          <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+          <span class="text-xs tracking-[0.3em] font-cinzel font-semibold uppercase">ΤΑ ΕΙΣ ΕΑΥΤΟΝ &bull; MEDITATIONS</span>
+          <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+        </div>
+        <div class="h-px w-12 sm:w-28 bg-gradient-to-l from-transparent to-gold-500/60"></div>
+      </div>
+
+      <!-- Main Headline with Roman Classical Elegance -->
+      <h2 class="font-cinzel text-3xl sm:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-marble via-gold-300 to-gold-500 tracking-tight leading-tight uppercase max-w-4xl mx-auto">
+        Command Your Mind.<br/><span class="text-2xl sm:text-4xl font-normal text-marble/90 italic font-garamond lowercase">You have power over your mind, not outside events.</span>
+      </h2>
+
+      <!-- Subtitle Quote Explanation -->
+      <p class="mt-4 text-stoic-300 text-sm sm:text-base max-w-2xl mx-auto font-garamond text-lg sm:text-xl italic leading-relaxed">
+        "Realize this, and you will find strength. The soul becomes dyed with the color of its thoughts."
+      </p>
+
+      <!-- Four Cardinal Virtues Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 max-w-4xl mx-auto mt-8">
+        
+        <!-- Virtue 1: Sophia / Wisdom -->
+        <div onclick="filterByTheme('Wisdom')" class="virtue-card roman-border rounded-xl p-3 text-center cursor-pointer hover:border-gold-400 hover:scale-[1.02] transition-all group">
+          <div class="flex items-center justify-center space-x-1.5 text-gold-400 mb-1">
+            <i data-lucide="eye" class="w-4 h-4 group-hover:rotate-12 transition-transform"></i>
+            <span class="font-cinzel text-xs font-bold uppercase tracking-wider">Wisdom</span>
+          </div>
+          <p class="text-[11px] text-stoic-300 font-garamond italic">Sophia &bull; Clear Truth</p>
+        </div>
+
+        <!-- Virtue 2: Andreia / Courage -->
+        <div onclick="filterByTheme('Courage')" class="virtue-card roman-border rounded-xl p-3 text-center cursor-pointer hover:border-gold-400 hover:scale-[1.02] transition-all group">
+          <div class="flex items-center justify-center space-x-1.5 text-gold-400 mb-1">
+            <i data-lucide="flame" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+            <span class="font-cinzel text-xs font-bold uppercase tracking-wider">Courage</span>
+          </div>
+          <p class="text-[11px] text-stoic-300 font-garamond italic">Andreia &bull; Endurance</p>
+        </div>
+
+        <!-- Virtue 3: Dikaiosyne / Justice -->
+        <div onclick="filterByTheme('Justice')" class="virtue-card roman-border rounded-xl p-3 text-center cursor-pointer hover:border-gold-400 hover:scale-[1.02] transition-all group">
+          <div class="flex items-center justify-center space-x-1.5 text-gold-400 mb-1">
+            <i data-lucide="scale" class="w-4 h-4 group-hover:-rotate-12 transition-transform"></i>
+            <span class="font-cinzel text-xs font-bold uppercase tracking-wider">Justice</span>
+          </div>
+          <p class="text-[11px] text-stoic-300 font-garamond italic">Dikaiosyne &bull; Duty</p>
+        </div>
+
+        <!-- Virtue 4: Sophrosyne / Temperance -->
+        <div onclick="filterByTheme('Temperance')" class="virtue-card roman-border rounded-xl p-3 text-center cursor-pointer hover:border-gold-400 hover:scale-[1.02] transition-all group">
+          <div class="flex items-center justify-center space-x-1.5 text-gold-400 mb-1">
+            <i data-lucide="anchor" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+            <span class="font-cinzel text-xs font-bold uppercase tracking-wider">Temperance</span>
+          </div>
+          <p class="text-[11px] text-stoic-300 font-garamond italic">Sophrosyne &bull; Control</p>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Dynamic Controls & Filters Toolbar -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+      <div class="roman-border rounded-2xl p-4 sm:p-5 shadow-2xl bg-stoic-900/90">
+        
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+          
+          <!-- Search Bar -->
+          <div class="relative w-full lg:w-80">
+            <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              oninput="handleSearch(this.value)"
+              placeholder="Search Meditations (e.g., 'obstacle', 'death', 'Book IV')..." 
+              class="w-full pl-10 pr-4 py-2 bg-stoic-950/80 border border-gold-500/30 rounded-xl text-xs sm:text-sm text-stoic-100 placeholder-stoic-300/50 focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400 transition"
+            />
+          </div>
+
+          <!-- Category Pillars Navigation -->
+          <div class="flex items-center flex-wrap justify-center gap-1.5 sm:gap-2 w-full lg:w-auto" id="category-pills">
+            <button onclick="filterByTheme('all')" data-cat="all" class="cat-pill active px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-gold-500/40 bg-gold-500/20 text-gold-300">
+              All Maxims (<span id="count-all">0</span>)
+            </button>
+            <button onclick="filterByTheme('Control')" data-cat="Control" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-stoic-700 bg-stoic-950/60 text-stoic-300 hover:border-gold-500/40 hover:text-gold-300">
+              Control
+            </button>
+            <button onclick="filterByTheme('Resilience')" data-cat="Resilience" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-stoic-700 bg-stoic-950/60 text-stoic-300 hover:border-gold-500/40 hover:text-gold-300">
+              Resilience
+            </button>
+            <button onclick="filterByTheme('Time & Mortality')" data-cat="Time & Mortality" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-stoic-700 bg-stoic-950/60 text-stoic-300 hover:border-gold-500/40 hover:text-gold-300">
+              Mortality
+            </button>
+            <button onclick="filterByTheme('Virtue & Duty')" data-cat="Virtue & Duty" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-stoic-700 bg-stoic-950/60 text-stoic-300 hover:border-gold-500/40 hover:text-gold-300">
+              Virtue
+            </button>
+            <button onclick="filterByTheme('Mind & Tranquility')" data-cat="Mind & Tranquility" class="cat-pill px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-stoic-700 bg-stoic-950/60 text-stoic-300 hover:border-gold-500/40 hover:text-gold-300">
+              Tranquility
+            </button>
+          </div>
+
+          <!-- Secondary Display & Saved Filter -->
+          <div class="flex items-center space-x-2">
+            
+            <!-- Bookmarked Quotes Toggle -->
+            <button id="fav-toggle-btn" onclick="toggleFavoritesOnly()" class="px-3 py-2 rounded-lg border border-gold-500/30 bg-stoic-950/80 text-xs font-cinzel font-semibold text-stoic-300 hover:text-gold-300 hover:border-gold-400 transition flex items-center space-x-1.5">
+              <i data-lucide="bookmark" class="w-3.5 h-3.5 text-gold-400"></i>
+              <span>Saved (<span id="saved-count">0</span>)</span>
+            </button>
+
+            <!-- 3D Camera Focus Reset -->
+            <button onclick="reset3DCamera()" class="p-2 rounded-lg border border-gold-500/30 bg-stoic-950/80 text-gold-400 hover:text-gold-300 hover:border-gold-400 transition" title="Re-center 3D Stoic Temple">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3D Interactive Quote Cards Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+      
+      <!-- Cards Container -->
+      <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 perspective-1000">
+        <!-- Injected via JavaScript with 3D Tilt and Flip -->
+      </div>
+
+      <!-- Empty State / No Match -->
+      <div id="empty-state" class="hidden text-center py-20">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full border border-gold-500/40 flex items-center justify-center text-gold-400 bg-stoic-900/80">
+          <i data-lucide="feather" class="w-8 h-8"></i>
+        </div>
+        <h3 class="font-cinzel text-xl font-bold text-marble">No Inscriptions Found</h3>
+        <p class="font-garamond italic text-stoic-300 mt-2 text-lg">"Let your search be steady; clarity comes to the patient observer."</p>
+        <button onclick="resetFilters()" class="mt-4 px-4 py-2 rounded-lg bg-gold-500/20 border border-gold-500/40 text-gold-300 font-cinzel text-xs uppercase tracking-wider hover:bg-gold-500/30 transition">
+          Clear Filters
+        </button>
+      </div>
+
+    </main>
+
+    <!-- Classical Footer with Latin Epilogue & Controls -->
+    <footer class="border-t border-gold-500/20 bg-stoic-950/90 backdrop-blur-md mt-16 py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          
+          <div>
+            <div class="flex items-center justify-center md:justify-start space-x-2 text-gold-400 font-cinzel font-bold text-sm tracking-widest uppercase">
+              <i data-lucide="landmark" class="w-4 h-4"></i>
+              <span>The Stoic Citadel</span>
+            </div>
+            <p class="text-xs text-stoic-300 font-garamond italic mt-1 max-w-md">
+              "Dwell on the beauty of life. Watch the stars, and see yourself running with them." &mdash; Meditations VII.47
+            </p>
+          </div>
+
+          <!-- Central Roman Inscription -->
+          <div class="text-center">
+            <p class="font-cinzel text-[11px] tracking-[0.25em] text-gold-400 uppercase font-semibold">
+              SENATVS POPVLVSQVE ROMANVS
+            </p>
+            <p class="text-[10px] text-stoic-300/80 font-cinzel tracking-widest mt-0.5">
+              ROMA &bull; ANNO DOMINI CLXI &ndash; CLXXX
+            </p>
+          </div>
+
+          <!-- Practical Actions -->
+          <div class="flex items-center space-x-3 text-xs font-cinzel">
+            <button onclick="openBreatheModal()" class="text-gold-400 hover:text-gold-300 transition flex items-center space-x-1">
+              <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+              <span>Citadel Pacer</span>
+            </button>
+            <span class="text-stoic-600">&bull;</span>
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="text-gold-400 hover:text-gold-300 transition flex items-center space-x-1">
+              <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+              <span>Ascend</span>
+            </button>
+          </div>
+
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-stoic-800/60 flex flex-col sm:flex-row items-center justify-between text-[11px] text-stoic-300 font-cinzel tracking-wider">
+          <div>Curated from the 12 Books of <em>Meditations</em> by Marcus Aurelius Antoninus.</div>
+          <div class="mt-2 sm:mt-0 text-gold-500/70">Equanimity &bull; Autonomy &bull; Sovereign Reason</div>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ==================== MODALS & OVERLAYS ==================== -->
+
+  <!-- 1. The Inner Citadel: Box Breathing & Meditative Focus Modal -->
+  <div id="breathe-modal" class="fixed inset-0 z-50 bg-stoic-950/95 backdrop-blur-xl flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-500">
+    <div class="relative max-w-xl w-full text-center p-6 sm:p-10 roman-border rounded-3xl bg-stoic-900/95 shadow-inner-citadel">
+      
+      <!-- Close Button -->
+      <button onclick="closeBreatheModal()" class="absolute top-4 right-4 p-2 rounded-full border border-gold-500/30 text-gold-400 hover:text-gold-300 hover:border-gold-400 transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="text-xs tracking-[0.3em] font-cinzel text-gold-400 uppercase mb-2">
+        Stoic Equanimity Practice
+      </div>
+      <h3 class="font-cinzel text-2xl sm:text-3xl font-bold text-marble mb-2">
+        The Inner Citadel
+      </h3>
+      <p class="font-garamond italic text-stoic-300 text-sm sm:text-base max-w-md mx-auto mb-8">
+        "Nowhere can man find a quieter or more untroubled retreat than in his own soul."
+      </p>
+
+      <!-- Breathing Ring Graphic -->
+      <div class="relative w-48 h-48 sm:w-60 sm:h-60 mx-auto flex items-center justify-center my-6">
+        <div class="breathe-ring absolute inset-0 rounded-full border-2 border-gold-400/60 transition-all"></div>
+        <div class="absolute inset-4 rounded-full border border-gold-500/20 bg-stoic-950/60 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+          <span id="breathe-phase" class="font-cinzel text-gold-300 text-lg sm:text-xl font-bold uppercase tracking-wider">
+            Inhale
+          </span>
+          <span id="breathe-timer" class="font-cinzel text-marble text-2xl sm:text-3xl font-extrabold mt-1">
+            4
+          </span>
+          <span class="text-[10px] uppercase font-cinzel text-stoic-300 tracking-widest mt-1">
+            Stoic Pacing
+          </span>
+        </div>
+      </div>
+
+      <!-- Rotating Meditation Mantras -->
+      <div id="breathe-mantra" class="font-garamond italic text-lg sm:text-xl text-gold-200 min-h-[4rem] flex items-center justify-center px-4">
+        "You have power over your mind, not outside events."
+      </div>
+
+      <div class="mt-6 flex justify-center space-x-3">
+        <button onclick="cycleBreatheMantra()" class="px-4 py-2 rounded-xl border border-gold-500/40 text-xs font-cinzel font-semibold text-gold-300 hover:bg-gold-500/10 transition">
+          Next Contemplation
+        </button>
+        <button onclick="closeBreatheModal()" class="px-5 py-2 rounded-xl bg-gold-500 text-stoic-950 text-xs font-cinzel font-bold uppercase tracking-wider hover:bg-gold-400 transition">
+          Return to Deck
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2. Oracle / Single Quote Focus Lightbox -->
+  <div id="oracle-modal" class="fixed inset-0 z-50 bg-stoic-950/90 backdrop-blur-lg flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="relative max-w-2xl w-full p-6 sm:p-10 roman-border rounded-3xl bg-stoic-900/95 shadow-gold-lg text-center">
+      
+      <!-- Close Button -->
+      <button onclick="closeOracleModal()" class="absolute top-4 right-4 p-2 rounded-full border border-gold-500/30 text-gold-400 hover:text-gold-300 transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="w-12 h-12 mx-auto mb-3 rounded-full border border-gold-500/50 bg-stoic-950 flex items-center justify-center text-gold-400 shadow-gold-sm">
+        <i data-lucide="crown" class="w-6 h-6"></i>
+      </div>
+
+      <div class="text-xs tracking-[0.3em] font-cinzel text-gold-400 uppercase mb-1">
+        Imperator's Decree
+      </div>
+      <div id="oracle-source" class="font-cinzel text-sm text-stoic-300 font-semibold mb-6">
+        Meditations &bull; Book IV.3
+      </div>
+
+      <div class="relative my-4 px-4 sm:px-8">
+        <span class="absolute -top-6 -left-2 text-6xl text-gold-500/20 font-cinzel font-bold select-none">&ldquo;</span>
+        <blockquote id="oracle-quote" class="font-garamond text-xl sm:text-2xl lg:text-3xl text-marble italic leading-relaxed">
+          <!-- Text Injected -->
+        </blockquote>
+        <span class="absolute -bottom-10 -right-2 text-6xl text-gold-500/20 font-cinzel font-bold select-none">&rdquo;</span>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-gold-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div id="oracle-latin" class="text-xs font-cinzel text-gold-400/90 tracking-widest uppercase">
+          AMOR FATI
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="oracle-copy-btn" onclick="copyOracleQuote()" class="px-3.5 py-2 rounded-lg border border-gold-500/40 text-xs font-cinzel font-semibold text-gold-300 hover:bg-gold-500/20 transition flex items-center space-x-1.5">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Copy Quote</span>
+          </button>
+          <button onclick="drawDailyOracle()" class="px-4 py-2 rounded-lg bg-gold-500 text-stoic-950 text-xs font-cinzel font-bold uppercase tracking-wider hover:bg-gold-400 transition flex items-center space-x-1.5">
+            <i data-lucide="dice-5" class="w-3.5 h-3.5"></i>
+            <span>Cast Again</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-2.5 px-4 py-3 rounded-xl roman-border bg-stoic-900/95 text-gold-300 text-xs font-cinzel font-semibold shadow-gold-md">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-gold-400"></i>
+    <span id="toast-message">Inscribed to Clipboard</span>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC & 3D ENGINE ==================== -->
+  <script>
+    /* ==========================================================================
+       1. STOIC QUOTES DATABASE (Marcus Aurelius - Meditations)
+       ========================================================================== */
+    const STOIC_QUOTES = [
+      {
+        id: 'quote-1',
+        quote: "The impediment to action advances action. What stands in the way becomes the way.",
+        source: "Meditations, Book V.20",
+        theme: "Resilience",
+        virtue: "Courage",
+        latin: "Obstaculum fit Via",
+        exercise: "When facing a setback today, ask: 'How does this obstacle provide a direct arena to practice patience, ingenuity, or courage?'",
+        audioTone: 220
+      },
+      {
+        id: 'quote-2',
+        quote: "You have power over your mind - not outside events. Realize this, and you will find strength.",
+        source: "Meditations, Book IV.3",
+        theme: "Control",
+        virtue: "Wisdom",
+        latin: "Arx Mentis",
+        exercise: "Draw a circle on paper. Inside, write 3 things strictly in your control today. Outside, write 3 things you release control over.",
+        audioTone: 261.63
+      },
+      {
+        id: 'quote-3',
+        quote: "Dwell on the beauty of life. Watch the stars, and see yourself running with them.",
+        source: "Meditations, Book VII.47",
+        theme: "Mind & Tranquility",
+        virtue: "Wisdom",
+        latin: "Conspectus Cosmicus",
+        exercise: "Practice the 'View from Above': imagine your current worries from the perspective of the cosmos, tiny and transient in eternity.",
+        audioTone: 293.66
+      },
+      {
+        id: 'quote-4',
+        quote: "When you arise in the morning think of what a privilege it is to be alive, to think, to enjoy, to love.",
+        source: "Meditations, Book V.1",
+        theme: "Mind & Tranquility",
+        virtue: "Temperance",
+        latin: "Grata Aurora",
+        exercise: "Before checking your devices tomorrow morning, pause for three breaths and consciously express gratitude for another sunrise.",
+        audioTone: 329.63
+      },
+      {
+        id: 'quote-5',
+        quote: "Waste no more time arguing what a good man should be. Be one.",
+        source: "Meditations, Book X.16",
+        theme: "Virtue & Duty",
+        virtue: "Justice",
+        latin: "Actio Non Verba",
+        exercise: "Select one high-character action you have been procrastinating on (an apology, a duty, a kindness) and execute it without debate.",
+        audioTone: 349.23
+      },
+      {
+        id: 'quote-6',
+        quote: "Very little is needed to make a happy life; it is all within yourself, in your way of thinking.",
+        source: "Meditations, Book VII.67",
+        theme: "Mind & Tranquility",
+        virtue: "Temperance",
+        latin: "Autarkeia",
+        exercise: "Audit your desires today. Identify one luxury you have treated as a necessity, and willingly go without it for 24 hours.",
+        audioTone: 392.00
+      },
+      {
+        id: 'quote-7',
+        quote: "Accept the things to which fate binds you, and love the people with whom fate brings you together, but do so with all your heart.",
+        source: "Meditations, Book VI.39",
+        theme: "Virtue & Duty",
+        virtue: "Justice",
+        latin: "Amor Fati",
+        exercise: "Embrace someone difficult in your life today by recognizing your shared mortality and common human frailty.",
+        audioTone: 440.00
+      },
+      {
+        id: 'quote-8',
+        quote: "Do not act as if you had ten thousand years to throw away. Death stands at your elbow. Be good for something while you live and it is in your power.",
+        source: "Meditations, Book IV.17",
+        theme: "Time & Mortality",
+        virtue: "Courage",
+        latin: "Memento Mori",
+        exercise: "Treat today as if it were a bonus chapter granted after the book was already completed. What petty grievance will you drop?",
+        audioTone: 493.88
+      },
+      {
+        id: 'quote-9',
+        quote: "If someone is able to show me that what I think or do is not right, I will happily change, for I seek the truth, by which no one was ever truly harmed.",
+        source: "Meditations, Book VI.21",
+        theme: "Virtue & Duty",
+        virtue: "Wisdom",
+        latin: "Veritas Liberat",
+        exercise: "When criticized today, do not retaliate. Pause, examine if there is truth in the critique, and thank the speaker for sharpening you.",
+        audioTone: 523.25
+      },
+      {
+        id: 'quote-10',
+        quote: "The best revenge is to be unlike him who performed the injury.",
+        source: "Meditations, Book VI.6",
+        theme: "Virtue & Duty",
+        virtue: "Justice",
+        latin: "Nobilitas Animi",
+        exercise: "If someone treats you with malice or rudeness today, double down on your own calm courtesy rather than sinking to their level.",
+        audioTone: 220
+      },
+      {
+        id: 'quote-11',
+        quote: "Never let the future disturb you. You will meet it, if you have to, with the same weapons of reason which today arm you against the present.",
+        source: "Meditations, Book VII.8",
+        theme: "Control",
+        virtue: "Courage",
+        latin: "Ratio Invicta",
+        exercise: "Notice future-anxiety. Tell yourself: 'Whatever storm arrives, the same rational mind I possess now will navigate it then.'",
+        audioTone: 277.18
+      },
+      {
+        id: 'quote-12',
+        quote: "Look back over the past, with its changing empires that rose and fell, and you can foresee the future too.",
+        source: "Meditations, Book VII.49",
+        theme: "Time & Mortality",
+        virtue: "Wisdom",
+        latin: "Tempus Edax Rerum",
+        exercise: "Contemplate how countless emperors and conquerors are now mere dust. Anchor your value in internal integrity, not fleeting fame.",
+        audioTone: 329.63
+      },
+      {
+        id: 'quote-13',
+        quote: "Choose not to be harmed — and you won't feel harmed. Don't feel harmed — and you haven't been.",
+        source: "Meditations, Book IV.7",
+        theme: "Control",
+        virtue: "Wisdom",
+        latin: "Nulla Iniuria",
+        exercise: "Separate the raw event from your value judgment of the event. The event is neutral; only your interpretation gives it power.",
+        audioTone: 369.99
+      },
+      {
+        id: 'quote-14',
+        quote: "Our life is what our thoughts make it.",
+        source: "Meditations, Book IV.3",
+        theme: "Mind & Tranquility",
+        virtue: "Wisdom",
+        latin: "Anima Coloratur",
+        exercise: "Guard the gates of your mind today. Filter out toxic outrage, sensationalism, and vain gossip as if protecting a fortress.",
+        audioTone: 415.30
+      },
+      {
+        id: 'quote-15',
+        quote: "Because a thing seems difficult for you, do not think it impossible for anyone to accomplish.",
+        source: "Meditations, Book VI.19",
+        theme: "Resilience",
+        virtue: "Courage",
+        latin: "Possibile Est",
+        exercise: "Reflect on a skill or challenge that intimidated you in the past and which you now master. Apply that courage to your current task.",
+        audioTone: 466.16
+      },
+      {
+        id: 'quote-16',
+        quote: "Pass then through this little space of time in accordance with nature, and come to your journey's end with a good grace.",
+        source: "Meditations, Book IV.48",
+        theme: "Time & Mortality",
+        virtue: "Temperance",
+        latin: "Secundum Naturam",
+        exercise: "Picture an olive falling softly from the branch when ripe, blessing the branch that produced it and thanking the earth that receives it.",
+        audioTone: 523.25
+      }
+    ];
+
+    /* ==========================================================================
+       2. STATE & STORAGE MANAGEMENT
+       ========================================================================== */
+    let currentThemeFilter = 'all';
+    let searchQuery = '';
+    let showFavoritesOnly = false;
+    let savedBookmarks = JSON.parse(localStorage.getItem('stoic_bookmarks') || '[]');
+
+    function saveBookmarks() {
+      localStorage.setItem('stoic_bookmarks', JSON.stringify(savedBookmarks));
+      updateBookmarkCount();
+    }
+
+    function updateBookmarkCount() {
+      const countEl = document.getElementById('saved-count');
+      if (countEl) countEl.innerText = savedBookmarks.length;
+    }
+
+    /* ==========================================================================
+       3. THREE.JS 3D SCENE (ROMAN STOIC TEMPLE & CELESTIAL AMBIENCE)
+       ========================================================================== */
+    let scene, camera, renderer, particles, columnsGroup, floatingPlatonics;
+    let mouseX = 0, mouseY = 0;
+    let targetCameraX = 0, targetCameraY = 0;
+
+    function init3D() {
+      const container = document.getElementById('webgl-container');
+      if (!container) return;
+
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x07080a, 0.035);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 2, 18);
+
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xd4af37, 0.6);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xfff5d0, 1.2);
+      dirLight.position.set(10, 20, 15);
+      scene.add(dirLight);
+
+      const rimLight = new THREE.PointLight(0x414e6a, 2, 40);
+      rimLight.position.set(-15, -5, -5);
+      scene.add(rimLight);
+
+      // 1. Procedural Particle Cosmos (Gold Stardust / Ash)
+      const particleCount = 1400;
+      const particleGeo = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const scales = new Float32Array(particleCount);
+
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 50;
+        positions[i + 1] = (Math.random() - 0.5) * 40;
+        positions[i + 2] = (Math.random() - 0.5) * 40;
+        scales[i / 3] = Math.random() * 0.8 + 0.2;
+      }
+
+      particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particleGeo.setAttribute('scale', new THREE.BufferAttribute(scales, 1));
+
+      const particleMat = new THREE.PointsMaterial({
+        color: 0xd4af37,
+        size: 0.12,
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending
+      });
+
+      particles = new THREE.Points(particleGeo, particleMat);
+      scene.add(particles);
+
+      // 2. Procedural Roman Pantheon Fluted Columns & Rotunda Arch
+      columnsGroup = new THREE.Group();
+      const colRadius = 0.5;
+      const colHeight = 14;
+      const numColumns = 14;
+      const arenaRadius = 22;
+
+      const columnGeo = new THREE.CylinderGeometry(colRadius, colRadius * 1.15, colHeight, 16);
+      const columnMat = new THREE.MeshStandardMaterial({
+        color: 0x141822,
+        roughness: 0.85,
+        metalness: 0.25,
+        wireframe: false
+      });
+
+      const capitalGeo = new THREE.BoxGeometry(colRadius * 3, 0.8, colRadius * 3);
+      const capitalMat = new THREE.MeshStandardMaterial({
+        color: 0xd4af37,
+        roughness: 0.4,
+        metalness: 0.8,
+        wireframe: true
+      });
+
+      for (let i = 0; i < numColumns; i++) {
+        const angle = (i / numColumns) * Math.PI * 1.4 - (Math.PI * 0.7);
+        const x = Math.sin(angle) * arenaRadius;
+        const z = -Math.cos(angle) * arenaRadius + 4;
+
+        const col = new THREE.Mesh(columnGeo, columnMat);
+        col.position.set(x, 0, z);
+
+        const cap = new THREE.Mesh(capitalGeo, capitalMat);
+        cap.position.set(x, colHeight / 2 + 0.4, z);
+
+        const base = new THREE.Mesh(capitalGeo, capitalMat);
+        base.position.set(x, -colHeight / 2 - 0.4, z);
+        base.scale.set(1.2, 0.8, 1.2);
+
+        columnsGroup.add(col);
+        columnsGroup.add(cap);
+        columnsGroup.add(base);
+      }
+      scene.add(columnsGroup);
+
+      // 3. Floating Stoic Virtues (Platonic Solids with Gold Wireframe)
+      floatingPlatonics = new THREE.Group();
+
+      // Dodecahedron (Universe / Stoic Logos)
+      const dodecaGeo = new THREE.DodecahedronGeometry(2.4, 0);
+      const dodecaWireMat = new THREE.MeshStandardMaterial({
+        color: 0xd4af37,
+        wireframe: true,
+        emissive: 0xaa8214,
+        emissiveIntensity: 0.3
+      });
+      const dodecaInnerMat = new THREE.MeshStandardMaterial({
+        color: 0x0e1117,
+        roughness: 0.2,
+        metalness: 0.9,
+        transparent: true,
+        opacity: 0.7
+      });
+      
+      const dodecaMesh = new THREE.Mesh(dodecaGeo, dodecaInnerMat);
+      const dodecaWire = new THREE.Mesh(dodecaGeo, dodecaWireMat);
+      dodecaMesh.add(dodecaWire);
+      dodecaMesh.position.set(0, 1.5, -4);
+      floatingPlatonics.add(dodecaMesh);
+
+      // Orbiting Octahedron
+      const octaGeo = new THREE.OctahedronGeometry(1.2, 0);
+      const octaMesh = new THREE.Mesh(octaGeo, dodecaWireMat);
+      octaMesh.position.set(-8, 5, -8);
+      floatingPlatonics.add(octaMesh);
+
+      // Orbiting Icosahedron
+      const icoGeo = new THREE.IcosahedronGeometry(1.4, 0);
+      const icoMesh = new THREE.Mesh(icoGeo, dodecaWireMat);
+      icoMesh.position.set(8, -2, -6);
+      floatingPlatonics.add(icoMesh);
+
+      scene.add(floatingPlatonics);
+
+      // Mouse & Scroll Parallax Listeners
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('scroll', onScrollParallax);
+
+      animate3D();
+    }
+
+    function onMouseMove(event) {
+      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+      targetCameraX = mouseX * 2.5;
+      targetCameraY = mouseY * 1.5 + 2;
+    }
+
+    function onScrollParallax() {
+      const scrollY = window.scrollY || window.pageYOffset;
+      if (columnsGroup) {
+        columnsGroup.rotation.y = scrollY * 0.0004;
+      }
+      if (particles) {
+        particles.position.y = -scrollY * 0.008;
+      }
+    }
+
+    function onWindowResize() {
+      if (!camera || !renderer) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function reset3DCamera() {
+      targetCameraX = 0;
+      targetCameraY = 2;
+      camera.position.set(0, 2, 18);
+      triggerAudioChime(440);
+      showToast("3D Stoic Temple Re-centered");
+    }
+
+    let clock = new THREE.Clock();
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+      const delta = clock.getDelta();
+      const time = clock.getElapsedTime();
+
+      // Camera subtle lerping
+      camera.position.x += (targetCameraX - camera.position.x) * 0.05;
+      camera.position.y += (targetCameraY - camera.position.y) * 0.05;
+      camera.lookAt(0, 0, 0);
+
+      // Slow cosmic particle drift
+      if (particles) {
+        particles.rotation.y = time * 0.02;
+        particles.rotation.x = time * 0.01;
+      }
+
+      // Floating Platonic Solids rotation & hover
+      if (floatingPlatonics) {
+        floatingPlatonics.children[0].rotation.x = time * 0.15;
+        floatingPlatonics.children[0].rotation.y = time * 0.2;
+        floatingPlatonics.children[0].position.y = 1.5 + Math.sin(time * 0.8) * 0.4;
+
+        floatingPlatonics.children[1].rotation.y = time * 0.3;
+        floatingPlatonics.children[1].position.y = 5 + Math.cos(time * 1.1) * 0.6;
+
+        floatingPlatonics.children[2].rotation.z = time * 0.25;
+        floatingPlatonics.children[2].position.y = -2 + Math.sin(time * 0.9) * 0.5;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    /* ==========================================================================
+       4. AUDIO SOUNDSCAPE SYNTHESIZER (WEB AUDIO API)
+       ========================================================================== */
+    let audioCtx = null;
+    let isAudioPlaying = false;
+    let ambientDroneNodes = [];
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+    }
+
+    function toggleAudio() {
+      initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const icon = document.getElementById('sound-icon');
+
+      if (!isAudioPlaying) {
+        startStoicDrone();
+        isAudioPlaying = true;
+        icon.setAttribute('data-lucide', 'volume-2');
+        showToast("Stoic Sanctuary Audio Active");
+      } else {
+        stopStoicDrone();
+        isAudioPlaying = false;
+        icon.setAttribute('data-lucide', 'volume-x');
+        showToast("Audio Silenced");
+      }
+      lucide.createIcons();
+    }
+
+    function startStoicDrone() {
+      if (!audioCtx) return;
+      stopStoicDrone();
+
+      // Binaural warm resonant fundamental frequency (55Hz A1 & 110Hz A2)
+      const freqs = [55, 110, 165, 220];
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq + (idx * 0.3), audioCtx.currentTime);
+
+        // Low volume ambient bed
+        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.015 / (idx + 1), audioCtx.currentTime + 3);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+
+        ambientDroneNodes.push({ osc, gain });
+      });
+    }
+
+    function stopStoicDrone() {
+      ambientDroneNodes.forEach(({ osc, gain }) => {
+        try {
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
+          setTimeout(() => osc.stop(), 1000);
+        } catch (e) {}
+      });
+      ambientDroneNodes = [];
+    }
+
+    function triggerAudioChime(freq = 440) {
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.3);
+      } catch (e) {}
+    }
+
+    /* ==========================================================================
+       5. CARD RENDERING & 3D INTERACTIVE TILT
+       ========================================================================== */
+    function renderQuoteCards() {
+      const container = document.getElementById('cards-grid');
+      const emptyState = document.getElementById('empty-state');
+      if (!container) return;
+
+      const filtered = STOIC_QUOTES.filter(item => {
+        // Category filter
+        const matchTheme = (currentThemeFilter === 'all') || 
+                           (item.theme.toLowerCase() === currentThemeFilter.toLowerCase()) ||
+                           (item.virtue.toLowerCase() === currentThemeFilter.toLowerCase());
+
+        // Search filter
+        const q = searchQuery.toLowerCase();
+        const matchSearch = !q || 
+                            item.quote.toLowerCase().includes(q) || 
+                            item.source.toLowerCase().includes(q) || 
+                            item.latin.toLowerCase().includes(q) ||
+                            item.theme.toLowerCase().includes(q);
+
+        // Favorites filter
+        const matchFav = !showFavoritesOnly || savedBookmarks.includes(item.id);
+
+        return matchTheme && matchSearch && matchFav;
+      });
+
+      // Update counter
+      const countEl = document.getElementById('count-all');
+      if (countEl) countEl.innerText = STOIC_QUOTES.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      container.innerHTML = filtered.map(item => {
+        const isBookmarked = savedBookmarks.includes(item.id);
+        
+        return `
+          <div class="quote-card-wrapper h-[440px] perspective-1000 select-none" data-id="${item.id}">
+            <div id="card-inner-${item.id}" class="card-inner roman-border rounded-2xl p-6 shadow-2xl transition-transform duration-300 relative group overflow-hidden bg-stoic-900/90">
+              
+              <!-- Shimmer light reflection layer -->
+              <div class="gold-foil-shine"></div>
+
+              <!-- ================= FRONT FACE ================= -->
+              <div class="card-face flex flex-col justify-between p-1">
+                
+                <!-- Card Header Info -->
+                <div>
+                  <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
+                    <span class="text-[10px] tracking-widest font-cinzel font-bold text-gold-400 px-2 py-0.5 rounded border border-gold-500/20 bg-stoic-950/60 uppercase">
+                      ${item.virtue} &bull; ${item.theme}
+                    </span>
+                    
+                    <div class="flex items-center space-x-1.5">
+                      <!-- Bookmark button -->
+                      <button onclick="toggleBookmark('${item.id}', event)" class="p-1.5 rounded-lg border border-transparent hover:border-gold-500/30 text-stoic-300 hover:text-gold-400 transition" title="Save Maxim">
+                        <i data-lucide="bookmark" class="w-4 h-4 ${isBookmarked ? 'fill-gold-400 text-gold-400' : ''}"></i>
+                      </button>
+                      
+                      <!-- Audio listen chime -->
+                      <button onclick="playQuoteChime(${item.audioTone}, event)" class="p-1.5 rounded-lg border border-transparent hover:border-gold-500/30 text-stoic-300 hover:text-gold-400 transition" title="Chime Tone">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Latin Motto Ribbon -->
+                  <div class="mt-3 text-[11px] font-cinzel tracking-[0.25em] text-gold-500/80 uppercase font-semibold">
+                    ${item.latin}
+                  </div>
+                </div>
+
+                <!-- Main Quote Body -->
+                <div class="my-4 relative">
+                  <span class="font-cinzel text-3xl text-gold-500/30 font-extrabold absolute -top-4 -left-1 select-none">&ldquo;</span>
+                  <p class="font-garamond text-lg sm:text-xl text-marble italic leading-relaxed pl-3 border-l-2 border-gold-500/30 group-hover:border-gold-400 transition-colors">
+                    ${item.quote}
+                  </p>
+                </div>
+
+                <!-- Card Footer & Actions -->
+                <div class="pt-3 border-t border-gold-500/15">
+                  <div class="text-xs font-cinzel text-stoic-300 font-semibold mb-3 flex items-center justify-between">
+                    <span>${item.source}</span>
+                    <span class="text-[10px] text-gold-400/80 font-cinzel">MARCVS AVRELIVS</span>
+                  </div>
+
+                  <div class="flex items-center justify-between gap-2">
+                    <!-- Flip to exercise -->
+                    <button onclick="flipCard('${item.id}', event)" class="px-3 py-1.5 rounded-lg border border-gold-500/30 bg-stoic-950 text-gold-300 hover:border-gold-400 hover:bg-gold-500/10 text-xs font-cinzel font-semibold transition flex items-center space-x-1">
+                      <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+                      <span>Practice</span>
+                    </button>
+
+                    <div class="flex items-center space-x-1.5">
+                      <!-- Copy button -->
+                      <button onclick="copyQuote('${item.id}', event)" class="p-1.5 rounded-lg border border-gold-500/20 text-stoic-300 hover:text-gold-300 hover:border-gold-400 transition" title="Copy Inscription">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                      </button>
+
+                      <!-- Focus modal -->
+                      <button onclick="openDeepFocus('${item.id}', event)" class="p-1.5 rounded-lg bg-gold-500/20 text-gold-300 hover:bg-gold-500 hover:text-stoic-950 transition" title="Contemplate">
+                        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- ================= BACK FACE (PRACTICAL EXERCISE) ================= -->
+              <div class="card-face card-back flex flex-col justify-between p-1">
+                
+                <div>
+                  <div class="flex items-center justify-between border-b border-gold-500/15 pb-2">
+                    <span class="text-[10px] tracking-widest font-cinzel font-bold text-gold-400 uppercase">
+                      Stoic Application & Exercise
+                    </span>
+                    <button onclick="flipCard('${item.id}', event)" class="p-1 rounded-lg text-stoic-300 hover:text-gold-400 transition">
+                      <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+
+                  <div class="mt-4">
+                    <h4 class="font-cinzel text-sm font-bold text-gold-300 uppercase tracking-wide">
+                      Daily Discipline
+                    </h4>
+                    <p class="font-garamond text-base sm:text-lg text-stoic-100 italic leading-relaxed mt-2 p-3 rounded-xl bg-stoic-950/70 border border-gold-500/20">
+                      ${item.exercise}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-[11px] font-cinzel text-stoic-300 mb-3 italic">
+                    "Contemplate how small a portion of infinite and boundless time is allotted to each of us."
+                  </div>
+
+                  <button onclick="flipCard('${item.id}', event)" class="w-full py-2 rounded-xl bg-gold-500 text-stoic-950 font-cinzel font-bold text-xs uppercase tracking-wider hover:bg-gold-400 transition flex items-center justify-center space-x-1.5">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Return to Maxim</span>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+      attach3DTiltListeners();
+    }
+
+    /* ==========================================================================
+       6. 3D CARD PARALLAX TILT PHYSICS
+       ========================================================================== */
+    function attach3DTiltListeners() {
+      const cardWrappers = document.querySelectorAll('.quote-card-wrapper');
+      cardWrappers.forEach(wrapper => {
+        const inner = wrapper.querySelector('.card-inner');
+        
+        wrapper.addEventListener('mousemove', (e) => {
+          if (inner.classList.contains('is-flipped')) return;
+
+          const rect = wrapper.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          const rotateX = ((y - centerY) / centerY) * -12; // Max 12 deg
+          const rotateY = ((x - centerX) / centerX) * 12;
+
+          inner.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+          if (inner.classList.contains('is-flipped')) return;
+          inner.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+        });
+      });
+    }
+
+    function flipCard(id, event) {
+      if (event) event.stopPropagation();
+      const card = document.getElementById(`card-inner-${id}`);
+      if (card) {
+        card.classList.toggle('is-flipped');
+        triggerAudioChime(350);
+      }
+    }
+
+    function playQuoteChime(tone, event) {
+      if (event) event.stopPropagation();
+      triggerAudioChime(tone || 440);
+      showToast("Harmonic Resonated");
+    }
+
+    /* ==========================================================================
+       7. ACTIONS: SEARCH, FILTERS, FAVORITES & CLIPBOARD
+       ========================================================================== */
+    function handleSearch(val) {
+      searchQuery = val;
+      renderQuoteCards();
+    }
+
+    function filterByTheme(theme) {
+      currentThemeFilter = theme;
+      
+      // Update pill styles
+      document.querySelectorAll('.cat-pill').forEach(pill => {
+        if (pill.getAttribute('data-cat') === theme) {
+          pill.className = 'cat-pill active px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-gold-500/40 bg-gold-500/20 text-gold-300';
+        } else {
+          pill.className = 'cat-pill px-3 py-1.5 rounded-lg text-xs font-cinzel font-semibold transition-all border border-stoic-700 bg-stoic-950/60 text-stoic-300 hover:border-gold-500/40 hover:text-gold-300';
+        }
+      });
+
+      triggerAudioChime(500);
+      renderQuoteCards();
+    }
+
+    function toggleFavoritesOnly() {
+      showFavoritesOnly = !showFavoritesOnly;
+      const btn = document.getElementById('fav-toggle-btn');
+      if (showFavoritesOnly) {
+        btn.classList.add('bg-gold-500/20', 'border-gold-400', 'text-gold-300');
+        showToast("Filtering Saved Maxims");
+      } else {
+        btn.classList.remove('bg-gold-500/20', 'border-gold-400', 'text-gold-300');
+      }
+      renderQuoteCards();
+    }
+
+    function toggleBookmark(id, event) {
+      if (event) event.stopPropagation();
+      const index = savedBookmarks.indexOf(id);
+      if (index === -1) {
+        savedBookmarks.push(id);
+        showToast("Inscribed to Personal Citadel");
+      } else {
+        savedBookmarks.splice(index, 1);
+        showToast("Removed from Citadel");
+      }
+      saveBookmarks();
+      renderQuoteCards();
+    }
+
+    function copyQuote(id, event) {
+      if (event) event.stopPropagation();
+      const item = STOIC_QUOTES.find(q => q.id === id);
+      if (!item) return;
+
+      const text = `"${item.quote}" — Marcus Aurelius (${item.source})`;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Inscribed to Clipboard");
+        triggerAudioChime(520);
+      });
+    }
+
+    function resetFilters() {
+      searchQuery = '';
+      const input = document.getElementById('search-input');
+      if (input) input.value = '';
+      showFavoritesOnly = false;
+      filterByTheme('all');
+    }
+
+    function resetView() {
+      resetFilters();
+      reset3DCamera();
+    }
+
+    /* ==========================================================================
+       8. DAILY ORACLE & DEEP CONTEMPLATION MODAL
+       ========================================================================== */
+    let currentOracleItem = null;
+
+    function drawDailyOracle() {
+      const randomIndex = Math.floor(Math.random() * STOIC_QUOTES.length);
+      currentOracleItem = STOIC_QUOTES[randomIndex];
+
+      document.getElementById('oracle-quote').innerText = currentOracleItem.quote;
+      document.getElementById('oracle-source').innerText = `${currentOracleItem.source} • ${currentOracleItem.virtue}`;
+      document.getElementById('oracle-latin').innerText = `${currentOracleItem.latin} • ${currentOracleItem.theme.toUpperCase()}`;
+
+      const modal = document.getElementById('oracle-modal');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      
+      triggerAudioChime(currentOracleItem.audioTone);
+      lucide.createIcons();
+    }
+
+    function openDeepFocus(id, event) {
+      if (event) event.stopPropagation();
+      const item = STOIC_QUOTES.find(q => q.id === id);
+      if (!item) return;
+
+      currentOracleItem = item;
+      document.getElementById('oracle-quote').innerText = item.quote;
+      document.getElementById('oracle-source').innerText = `${item.source} • ${item.virtue}`;
+      document.getElementById('oracle-latin').innerText = `${item.latin} • ${item.theme.toUpperCase()}`;
+
+      const modal = document.getElementById('oracle-modal');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+
+      triggerAudioChime(item.audioTone);
+      lucide.createIcons();
+    }
+
+    function closeOracleModal() {
+      const modal = document.getElementById('oracle-modal');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    function copyOracleQuote() {
+      if (!currentOracleItem) return;
+      const text = `"${currentOracleItem.quote}" — Marcus Aurelius (${currentOracleItem.source})`;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Oracle Inscribed to Clipboard");
+      });
+    }
+
+    /* ==========================================================================
+       9. INNER CITADEL BOX BREATHING PACER
+       ========================================================================== */
+    let breatheInterval = null;
+    let breatheSeconds = 4;
+    let breathePhaseIdx = 0;
+    const breathePhases = ["Inhale", "Hold", "Exhale", "Hold"];
+    const breatheMantras = [
+      "You have power over your mind, not outside events.",
+      "The impediment to action advances action.",
+      "Dwell on the beauty of life; see yourself running with the stars.",
+      "Accept what fate binds you to with all your heart.",
+      "Do not act as if you had ten thousand years to live. Be good now."
+    ];
+    let mantraIdx = 0;
+
+    function openBreatheModal() {
+      const modal = document.getElementById('breathe-modal');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      startBreatheTimer();
+      triggerAudioChime(220);
+      lucide.createIcons();
+    }
+
+    function closeBreatheModal() {
+      const modal = document.getElementById('breathe-modal');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      if (breatheInterval) clearInterval(breatheInterval);
+    }
+
+    function startBreatheTimer() {
+      if (breatheInterval) clearInterval(breatheInterval);
+      breatheSeconds = 4;
+      breathePhaseIdx = 0;
+      updateBreatheUI();
+
+      breatheInterval = setInterval(() => {
+        breatheSeconds--;
+        if (breatheSeconds <= 0) {
+          breathePhaseIdx = (breathePhaseIdx + 1) % 4;
+          breatheSeconds = 4;
+          if (breathePhaseIdx === 0) {
+            cycleBreatheMantra();
+          }
+          triggerAudioChime(220 + breathePhaseIdx * 40);
+        }
+        updateBreatheUI();
+      }, 1000);
+    }
+
+    function updateBreatheUI() {
+      const phaseEl = document.getElementById('breathe-phase');
+      const timerEl = document.getElementById('breathe-timer');
+      if (phaseEl) phaseEl.innerText = breathePhases[breathePhaseIdx];
+      if (timerEl) timerEl.innerText = breatheSeconds;
+    }
+
+    function cycleBreatheMantra() {
+      mantraIdx = (mantraIdx + 1) % breatheMantras.length;
+      const el = document.getElementById('breathe-mantra');
+      if (el) {
+        el.style.opacity = '0';
+        setTimeout(() => {
+          el.innerText = `"${breatheMantras[mantraIdx]}"`;
+          el.style.opacity = '1';
+        }, 300);
+      }
+    }
+
+    /* ==========================================================================
+       10. TOAST NOTIFICATIONS
+       ========================================================================== */
+    let toastTimeout = null;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      if (!toast || !toastMsg) return;
+
+      toastMsg.innerText = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    /* ==========================================================================
+       11. INITIALIZATION ON LOAD
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      init3D();
+      renderQuoteCards();
+      updateBookmarkCount();
+      lucide.createIcons();
+
+      // Keyboard Esc handler to close modals
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeOracleModal();
+          closeBreatheModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CYBERDEX 3D — Solana Concentrated Liquidity DEX & 3D Matrix</title>
+  
+  <meta name="description" content="An interactive 3D Solana DeFi Liquidity DEX built with Three.js. Features concentrated liquidity vaults, live price ticker cards, Jupiter smart routing, Phantom wallet connect, and interactive cyber world navigation." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Three.js (r128 UMD) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <!-- 3D WebGL Canvas Container -->
+  <div id="webgl-container"></div>
+
+  <!-- 3D Scene Tooltip (Raycasting Screen Projector) -->
+  <div id="scene-tooltip">
+    <div class="tooltip-title">Vault Node</div>
+    <div class="tooltip-desc">Fee: 0.05% · APR: 48.5%</div>
+  </div>
+
+  <!-- HUD Interface Layer -->
+  <div id="hud-overlay">
+    
+    <!-- Top Navigation Bar -->
+    <header class="top-nav interactive">
+      <div class="logo-cluster" onclick="if(window.cyberWorld) window.cyberWorld.setCameraMode('orbit');">
+        <div class="logo-emblem">⚡</div>
+        <div class="brand-details">
+          <h1>CYBERDEX 3D <span class="brand-badge">SOLANA CLMM</span></h1>
+          <div class="brand-sub">Concentrated Liquidity Holo-World</div>
+        </div>
+      </div>
+
+      <!-- Navigation Center Tabs -->
+      <nav class="nav-center-menu">
+        <button class="nav-tab-btn active" data-tab="swap">
+          <span>🔄 Swap</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="clmm">
+          <span>🏛️ Concentrated Vaults</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="positions">
+          <span>💎 My Positions</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="orderbook">
+          <span>📊 Order Book</span>
+        </button>
+      </nav>
+
+      <!-- Right Header Actions -->
+      <div class="header-actions">
+        <div class="network-pill" title="Connected to Solana Mainnet Cluster">
+          <div class="network-dot"></div>
+          <span>Mainnet-Beta</span>
+        </div>
+
+        <div class="tps-counter" title="Live Solana Transaction Speed">
+          <span>TPS:</span>
+          <span class="tps-val" id="hud-tps-val">3,280</span>
+        </div>
+
+        <button id="btn-toggle-sound" class="icon-btn" title="Toggle Cyber Audio SFX">
+          🔊
+        </button>
+
+        <button id="btn-wallet-connect" class="btn-wallet">
+          <span class="wallet-icon">👻</span>
+          <span>Connect Phantom</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Horizontal Live Price Ticker Ribbon -->
+    <div class="ticker-container interactive" id="ticker-track">
+      <!-- Dynamically populated ticker items -->
+    </div>
+
+    <!-- Main HUD Working Zone (3-Column Layout) -->
+    <main class="hud-middle">
+      
+      <!-- Left Column: 3D Camera Controls & Vault Directory -->
+      <section class="hud-left-col interactive">
+        
+        <!-- 3D Camera & World Navigator -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🧭 3D World Navigator</span>
+            </div>
+            <span class="panel-badge">WEBGL</span>
+          </div>
+          <div class="panel-body">
+            <div class="camera-modes-grid">
+              <button class="cam-btn active" data-mode="orbit">
+                <span>🪐 Orbit View</span>
+              </button>
+              <button class="cam-btn" data-mode="fps">
+                <span>🚶 Cyber Drone (WASD)</span>
+              </button>
+              <button class="cam-btn" data-mode="tour">
+                <span>✨ Guided Tour</span>
+              </button>
+              <button class="cam-btn" data-mode="clmm">
+                <span>📈 3D Voxel Depth</span>
+              </button>
+            </div>
+
+            <div class="world-fx-row">
+              <span style="font-size:10px; color:var(--text-muted);">VISUAL FX:</span>
+              <div style="display:flex; gap:4px;">
+                <span class="fx-chip active">Glow Mesh</span>
+                <span class="fx-chip active">Data Pulses</span>
+                <span class="fx-chip active">Laser FX</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concentrated Liquidity Vaults Directory -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🏛️ Concentrated Vaults</span>
+            </div>
+            <span class="panel-badge">6 POOLS</span>
+          </div>
+          <div class="panel-body">
+            <div class="vault-mini-list" id="vault-mini-list">
+              <!-- Dynamically populated from clmm.js -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Center Column: Reticle HUD & Hints -->
+      <section class="hud-center-col">
+        <div class="target-hud-badge interactive" onclick="if(window.cyberWorld) window.cyberWorld.setCameraMode('tour');">
+          <div class="target-dot"></div>
+          <div class="target-text">Interactive 3D Solana DEX Matrix · <span>Click Floating Crystals to Inspect Vaults</span></div>
+        </div>
+        <div class="controls-hint">
+          Left Drag: Orbit Camera · Mouse Wheel: Zoom · WASD: Move in Drone Mode · Space: Elevate
+        </div>
+      </section>
+
+      <!-- Right Column: Trading Chart & Swap Terminal / Tabs -->
+      <section class="hud-right-col interactive">
+        
+        <!-- Live Candlestick & Price Chart Card -->
+        <div class="glass-panel chart-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span id="chart-active-pair-name">SOL / USDC</span>
+            </div>
+            <div class="chart-timeframes">
+              <button class="tf-btn">1m</button>
+              <button class="tf-btn">5m</button>
+              <button class="tf-btn active">15m</button>
+              <button class="tf-btn">1h</button>
+              <button class="tf-btn">1d</button>
+            </div>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="dex-chart-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Swap Terminal Tab -->
+        <div class="glass-panel swap-card" id="swap-card-container">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>⚡ Instant Solana Swap</span>
+            </div>
+            <span class="panel-badge" style="color:var(--sol-green); border-color:var(--sol-green);">JUPITER V6</span>
+          </div>
+
+          <div class="panel-body">
+            
+            <!-- From Token Box -->
+            <div class="token-input-box">
+              <div class="input-top-meta">
+                <span>You Pay</span>
+                <span>Balance: <span class="balance-quick" id="swap-from-bal">42.50 SOL (MAX)</span></span>
+              </div>
+              <div class="input-main-row">
+                <input type="number" class="token-amount-input" id="swap-input-from" placeholder="0.0" value="1.5" />
+                <button class="token-selector-btn" id="btn-select-from">
+                  <span>🟣</span> <span>SOL</span> <span style="font-size:10px;">▼</span>
+                </button>
+              </div>
+              <div class="input-usd-estimate" id="swap-usd-from">≈ $261.68</div>
+            </div>
+
+            <!-- Swap Flip Action -->
+            <button class="swap-flip-btn" id="btn-swap-flip" title="Flip Swap Direction">
+              ⇅
+            </button>
+
+            <!-- To Token Box -->
+            <div class="token-input-box">
+              <div class="input-top-meta">
+                <span>You Receive (Estimated)</span>
+                <span>Balance: <span class="balance-quick" id="swap-to-bal">14,850.00 USDC</span></span>
+              </div>
+              <div class="input-main-row">
+                <input type="text" class="token-amount-input" id="swap-input-to" placeholder="0.0" readonly />
+                <button class="token-selector-btn" id="btn-select-to">
+                  <span>💵</span> <span>USDC</span> <span style="font-size:10px;">▼</span>
+                </button>
+              </div>
+              <div class="input-usd-estimate" id="swap-usd-to">≈ $261.68</div>
+            </div>
+
+            <!-- Slippage Settings -->
+            <div class="slippage-row">
+              <span>Slippage Tolerance</span>
+              <div class="slippage-chips">
+                <span class="slip-chip" data-slip="10">0.1%</span>
+                <span class="slip-chip active" data-slip="50">0.5%</span>
+                <span class="slip-chip" data-slip="100">1.0%</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Routing Details -->
+            <div class="swap-details-box" id="swap-route-details">
+              <!-- Dynamically populated from app.js -->
+            </div>
+
+            <!-- Execute Swap CTA -->
+            <button class="btn-execute-swap" id="btn-execute-swap">
+              <span>⚡ Instant Swap (SOL → USDC)</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Concentrated Vaults Card Tab (Alternative Tab) -->
+        <div class="glass-panel" id="clmm-vault-card-container" style="display: none;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🏛️ Vault Concentrated Yield</span>
+            </div>
+            <span class="panel-badge">CLMM</span>
+          </div>
+          <div class="panel-body">
+            <p style="font-size:11px; color:var(--text-secondary); margin-bottom:12px;">
+              Concentrated liquidity pools enable up to 48x capital efficiency by allocating liquidity within customized tick price bands.
+            </p>
+            <button class="btn-execute-swap" onclick="window.app.openVaultModal('sol-usdc');">
+              <span>➕ Open Concentrated Position Terminal</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- User Positions Tab -->
+        <div class="glass-panel" id="positions-card-container" style="display: none;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>💎 Active Concentrated Positions</span>
+            </div>
+            <span class="panel-badge">NFT LP</span>
+          </div>
+          <div class="panel-body">
+            <div id="positions-list">
+              <!-- Dynamically rendered active LP positions -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Book & Trades Tab -->
+        <div class="glass-panel" id="orderbook-card-container" style="display: none;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>📊 Live Order Book & Trades</span>
+            </div>
+            <span class="panel-badge">L2 STREAM</span>
+          </div>
+          <div class="panel-body">
+            <div style="font-size:10px; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:4px; font-weight:700;">
+              <span>PRICE (USDC)</span>
+              <span>SIZE</span>
+              <span>TOTAL</span>
+            </div>
+            <div id="orderbook-asks" style="margin-bottom:6px;"></div>
+            <div style="text-align:center; padding:4px 0; font-weight:700; font-family:var(--font-mono); color:var(--sol-cyan); border-top:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle); margin:4px 0;" id="orderbook-mid">$174.45</div>
+            <div id="orderbook-bids" style="margin-top:6px;"></div>
+
+            <div style="margin-top:12px; padding-top:8px; border-top:1px solid var(--border-subtle);">
+              <div style="font-weight:700; font-size:11px; margin-bottom:6px; color:#FFF;">Recent DEX Executions</div>
+              <div id="recent-trades-feed"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom Status Bar -->
+    <footer class="bottom-bar interactive">
+      <div class="system-status-pills">
+        <div class="status-indicator">
+          <div class="indicator-dot"></div>
+          <span>Solana Sub-Second Finality (~380ms)</span>
+        </div>
+        <div class="status-indicator">
+          <span>24h Ecosystem Volume: <b style="color:#FFF;">$1.42B</b></span>
+        </div>
+        <div class="status-indicator">
+          <span>Total Concentrated TVL: <b style="color:var(--sol-green);">$412.8M</b></span>
+        </div>
+      </div>
+
+      <div class="quick-action-buttons">
+        <button class="btn-action-sm" onclick="window.app.openVaultModal('sol-usdc');">
+          <span>💧 Add Liquidity</span>
+        </button>
+        <button class="btn-action-sm" onclick="if(window.cyberWorld) window.cyberWorld.setCameraMode('clmm');">
+          <span>📈 3D Depth Curve</span>
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ==========================================================================
+       Modals: Concentrated Liquidity Vault Terminal
+       ========================================================================== -->
+  <div class="modal-backdrop" id="vault-modal">
+    <div class="modal-dialog interactive">
+      <button class="modal-close-btn" title="Close">✕</button>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+        <h2 id="vault-modal-title" style="font-size:16px; font-weight:800; color:#FFF;">SOL / USDC Whirlpool (0.05%)</h2>
+        <span class="multiplier-pill" id="multiplier-badge-val">6.8x Multiplier</span>
+      </div>
+
+      <p id="vault-modal-desc" style="font-size:11px; color:var(--text-secondary); margin-bottom:12px;">
+        Concentrated depth vault with ultra-low slippage settlement.
+      </p>
+
+      <!-- Key Stats Ribbon -->
+      <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:14px;">
+        <div>
+          <div style="font-size:9px; color:var(--text-muted); font-weight:700;">EFFECTIVE APR</div>
+          <div id="vault-modal-apr" style="font-family:var(--font-mono); font-weight:700; color:var(--sol-green); font-size:13px;">142.6% APR</div>
+        </div>
+        <div>
+          <div style="font-size:9px; color:var(--text-muted); font-weight:700;">TOTAL TVL</div>
+          <div id="vault-modal-tvl" style="font-family:var(--font-mono); font-weight:700; color:#FFF; font-size:13px;">$182.4M</div>
+        </div>
+        <div>
+          <div style="font-size:9px; color:var(--text-muted); font-weight:700;">24H VOLUME</div>
+          <div id="vault-modal-vol" style="font-family:var(--font-mono); font-weight:700; color:var(--sol-cyan); font-size:13px;">$94.2M</div>
+        </div>
+        <div>
+          <div style="font-size:9px; color:var(--text-muted); font-weight:700;">EST. DAILY / $1K</div>
+          <div id="est-daily-yield-val" style="font-family:var(--font-mono); font-weight:700; color:var(--sol-gold); font-size:13px;">$3.91 / day</div>
+        </div>
+      </div>
+
+      <!-- Concentrated Range Visualizer -->
+      <div class="clmm-range-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:11px; font-weight:700; color:#FFF;">Concentrated Price Range & Tick Depth</span>
+          <span style="font-size:10px; color:var(--sol-green); font-family:var(--font-mono);">🟢 In Active Earning Zone</span>
+        </div>
+
+        <div class="clmm-chart-canvas-wrap">
+          <canvas class="clmm-chart-canvas" id="clmm-depth-canvas"></canvas>
+        </div>
+
+        <!-- Range Presets -->
+        <div class="range-presets-row">
+          <button class="preset-btn active" data-preset="narrow">Narrow (±5%) · 14.2x</button>
+          <button class="preset-btn" data-preset="balanced">Balanced (±15%) · 6.8x</button>
+          <button class="preset-btn" data-preset="wide">Wide (±30%) · 3.4x</button>
+          <button class="preset-btn" data-preset="full">Full Range · 1.0x</button>
+        </div>
+
+        <!-- Range Inputs -->
+        <div class="range-inputs-dual">
+          <div class="range-input-card">
+            <div class="range-input-label">Min Price (USDC per SOL)</div>
+            <input type="number" class="range-input-num" id="range-input-min" value="165.72" step="0.01" />
+          </div>
+          <div class="range-input-card">
+            <div class="range-input-label">Max Price (USDC per SOL)</div>
+            <input type="number" class="range-input-num" id="range-input-max" value="183.17" step="0.01" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Deposit Inputs -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+        <div class="token-input-box" style="margin-bottom:0;">
+          <div class="input-top-meta">
+            <span id="deposit-label-a">SOL Deposit</span>
+          </div>
+          <input type="number" class="token-amount-input" id="deposit-input-a" placeholder="0.0" value="2.0" />
+        </div>
+        <div class="token-input-box" style="margin-bottom:0;">
+          <div class="input-top-meta">
+            <span id="deposit-label-b">USDC Deposit</span>
+          </div>
+          <input type="number" class="token-amount-input" id="deposit-input-b" placeholder="0.0" value="348.90" />
+        </div>
+      </div>
+
+      <!-- Deposit CTA -->
+      <button class="btn-execute-swap" id="btn-deposit-liquidity">
+        <span>💎 Mint Concentrated Liquidity Position</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       Modals: Wallet Connection
+       ========================================================================== -->
+  <div class="modal-backdrop" id="wallet-modal">
+    <div class="modal-dialog interactive" style="max-width:440px;">
+      <button class="modal-close-btn" title="Close">✕</button>
+
+      <h2 style="font-size:16px; font-weight:800; color:#FFF; margin-bottom:6px;">Connect Solana Wallet</h2>
+      <p style="font-size:11px; color:var(--text-secondary); margin-bottom:16px;">
+        Connect your Phantom browser extension or test immediately in Sandbox Simulation mode.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn-wallet" id="btn-connect-phantom" style="justify-content:center; padding:12px; font-size:13px;">
+          <span style="font-size:18px;">👻</span>
+          <span>Connect Phantom Wallet Extension</span>
+        </button>
+
+        <button class="btn-wallet" id="btn-connect-sim" style="justify-content:center; padding:12px; font-size:13px; background:linear-gradient(135deg, #14F195 0%, #00F0FF 100%); color:#080914;">
+          <span style="font-size:18px;">⚡</span>
+          <span>Launch Sandbox Wallet (Pre-funded 42.5 SOL)</span>
+        </button>
+
+        <button class="btn-action-sm" id="btn-wallet-disconnect" style="justify-content:center; padding:10px; margin-top:6px; color:var(--sol-red); border-color:rgba(255,59,48,0.3);">
+          <span>Disconnect Wallet</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       Modals: Token Selector
+       ========================================================================== -->
+  <div class="modal-backdrop" id="token-modal">
+    <div class="modal-dialog interactive" style="max-width:420px;">
+      <button class="modal-close-btn" title="Close">✕</button>
+
+      <h2 style="font-size:15px; font-weight:800; color:#FFF; margin-bottom:12px;">Select Solana Token</h2>
+      <input type="text" class="token-search-input" placeholder="Search name or symbol..." />
+
+      <div class="token-list-scroll" id="token-select-list">
+        <!-- Dynamically populated token list items -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/dex.js"></script>
+  <script src="js/clmm.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

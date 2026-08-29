@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Stoa Poikile — Stoicisme 3D World & Inner Citadel</title>
+  
+  <meta name="description" content="An interactive 3D Greco-Roman philosophical sanctuary built with Three.js. Explore the Stoa of Wisdom, Bastion of Courage, Forum of Justice, and Garden of Temperance with Dichotomy of Control exercises, Memento Mori calculators, and daily meditations." />
+  <link rel="icon" href="/favicon.png" type="image/png" />
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Three.js (r128 UMD) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <!-- 3D WebGL Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- HUD Interface Layer -->
+  <div id="hud-layer">
+    
+    <!-- Top Control Bar -->
+    <header class="top-bar interactive-ui">
+      <div class="brand-section">
+        <div class="brand-emblem">🏛️</div>
+        <div class="brand-text">
+          <h1>Stoa Poikile</h1>
+          <p>The Inner Citadel · Arx Mentis 3D</p>
+        </div>
+      </div>
+
+      <!-- Navigation & Mode Controls -->
+      <div class="nav-controls">
+        <button id="btn-mode-walk" class="btn-pill" title="Walk freely using WASD / Arrow Keys">
+          <span>🚶 Walk</span>
+        </button>
+        <button id="btn-mode-orbit" class="btn-pill active" title="Orbit & inspect sanctuary architecture">
+          <span>🪐 Orbit</span>
+        </button>
+        <button id="btn-mode-tour" class="btn-pill gold" title="Start cinematic guided tour">
+          <span>✨ Guided Tour</span>
+        </button>
+        <button id="btn-mode-cosmic" class="btn-pill" title="The View from Above (Cosmic Elevation)">
+          <span>🌌 Cosmic View</span>
+        </button>
+      </div>
+
+      <!-- Atmosphere Time of Day -->
+      <div class="atmosphere-bar">
+        <button class="atmo-btn" data-atmo="dawn" title="Olympian Dawn">🌅 Dawn</button>
+        <button class="atmo-btn" data-atmo="noon" title="Golden Noon">☀️ Noon</button>
+        <button class="atmo-btn active" data-atmo="dusk" title="Aegean Sunset">🌇 Dusk</button>
+        <button class="atmo-btn" data-atmo="night" title="Midnight Cosmos">🌌 Night</button>
+      </div>
+
+      <!-- Audio & Zen Utilities -->
+      <div class="nav-controls">
+        <button id="btn-audio-toggle" class="btn-pill" title="Toggle synthesized temple soundscape">
+          <span id="audio-icon">🔊 Sound</span>
+        </button>
+        <button id="btn-zen-mode" class="btn-pill" title="Zen Mode: Hide HUD for photo/meditation (Press Z)">
+          <span>👁️ Zen</span>
+        </button>
+        <button id="btn-help" class="btn-pill" title="Sanctuary controls & keys">
+          <span>❓ Help</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Left HUD: Minimap & Telemetry -->
+    <div class="left-hud interactive-ui">
+      <div class="minimap-card">
+        <div class="minimap-header">
+          <span>Sanctuary Radar</span>
+          <span id="player-coords">0, 0</span>
+        </div>
+        <canvas id="minimap-canvas" width="140" height="140"></canvas>
+      </div>
+
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span id="current-zone-label">Central Rotunda</span>
+      </div>
+    </div>
+
+    <!-- Right HUD: Philosophy Tools -->
+    <div class="right-hud interactive-ui">
+      <button class="tool-card-btn" id="btn-open-dichotomy">
+        <span class="tool-icon">⚖️</span>
+        <div>
+          <strong>Dichotomy of Control</strong>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Interactive sorting exercise</div>
+        </div>
+      </button>
+
+      <button class="tool-card-btn" id="btn-open-memento">
+        <span class="tool-icon">⏳</span>
+        <div>
+          <strong>Memento Mori</strong>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Life in weeks & time calculus</div>
+        </div>
+      </button>
+
+      <button class="tool-card-btn" id="btn-open-forge">
+        <span class="tool-icon">🔥</span>
+        <div>
+          <strong>Amor Fati Crucible</strong>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Transmute obstacle into fuel</div>
+        </div>
+      </button>
+
+      <button class="tool-card-btn" id="btn-open-oracle">
+        <span class="tool-icon">📜</span>
+        <div>
+          <strong>Stoic Quote Oracle</strong>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Curated timeless wisdom</div>
+        </div>
+      </button>
+
+      <button class="tool-card-btn" id="btn-open-examen">
+        <span class="tool-icon">✍️</span>
+        <div>
+          <strong>Evening Examen</strong>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Seneca's 3 nightly reflections</div>
+        </div>
+      </button>
+
+      <button class="tool-card-btn" id="btn-open-codex">
+        <span class="tool-icon">🏛️</span>
+        <div>
+          <strong>Philosopher Codex</strong>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Aurelius, Seneca, Epictetus</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Tour Caption Bar (Active during Guided Tour or Landmark Focus) -->
+    <div id="tour-caption-bar" class="tour-caption-bar interactive-ui">
+      <h3 id="tour-caption-title">The Inner Citadel (Arx Mentis)</h3>
+      <p id="tour-caption-text">You stand at the center of the rational soul. External events cannot penetrate these marble arches unless your judgment permits it.</p>
+    </div>
+
+    <!-- Bottom Fast-Travel Bar -->
+    <nav class="bottom-bar interactive-ui">
+      <button class="travel-btn active" data-dest="rotunda">
+        <span class="travel-icon">🏛️</span>
+        <span class="travel-name">Rotunda</span>
+        <span class="travel-key">[1]</span>
+      </button>
+
+      <button class="travel-btn" data-dest="wisdom">
+        <span class="travel-icon">🧠</span>
+        <span class="travel-name">Wisdom</span>
+        <span class="travel-key">[2]</span>
+      </button>
+
+      <button class="travel-btn" data-dest="courage">
+        <span class="travel-icon">⚔️</span>
+        <span class="travel-name">Courage</span>
+        <span class="travel-key">[3]</span>
+      </button>
+
+      <button class="travel-btn" data-dest="justice">
+        <span class="travel-icon">⚖️</span>
+        <span class="travel-name">Justice</span>
+        <span class="travel-key">[4]</span>
+      </button>
+
+      <button class="travel-btn" data-dest="temperance">
+        <span class="travel-icon">🌊</span>
+        <span class="travel-name">Temperance</span>
+        <span class="travel-key">[5]</span>
+      </button>
+    </nav>
+
+    <!-- Key Helper Toast -->
+    <div id="key-helper-toast">
+      <span><span class="key-badge">WASD</span> Move</span>
+      <span><span class="key-badge">Mouse</span> Look/Orbit</span>
+      <span><span class="key-badge">1-5</span> Shrines</span>
+      <span><span class="key-badge">Z</span> Zen Mode</span>
+      <span><span class="key-badge">V</span> Cosmic View</span>
+    </div>
+
+  </div>
+
+  <!-- ==========================================================================
+       MODAL OVERLAYS
+       ========================================================================== -->
+
+  <!-- 1. Virtue Shrine Modal -->
+  <div id="modal-virtue" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag" id="virtue-modal-tag">CARDINAL VIRTUE</span>
+        <h2 id="virtue-modal-title">Wisdom (Sophia)</h2>
+        <div class="modal-greek" id="virtue-modal-greek">ΣΟΦΙΑ & ΦΡΟΝΗΣΙΣ</div>
+      </div>
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-tab="essence">Essence</button>
+        <button class="modal-tab-btn" data-tab="tenets">Core Tenets</button>
+        <button class="modal-tab-btn" data-tab="exercise">Daily Practice</button>
+      </div>
+      <div id="virtue-tab-content">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Dichotomy of Control Exercise Modal -->
+  <div id="modal-dichotomy" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">CORE STOIC EXERCISE</span>
+        <h2>The Dichotomy of Control</h2>
+        <div class="modal-greek">ΤΑ ΕΦ' ΗΜΙΝ ΚΑΙ ΤΑ ΟΥΚ ΕΦ' ΗΜΙΝ</div>
+      </div>
+      <p style="color:var(--text-muted);margin-bottom:16px;">
+        Epictetus teaches that freedom begins by separating what is up to us (our judgments, impulses, desires, and aversions) from what is not (the body, property, reputation, outcomes, and the external world).
+      </p>
+      <div class="dichotomy-container">
+        <div class="dichotomy-card-pool">
+          <div style="font-size:0.75rem;color:var(--gold);margin-bottom:8px;" id="dichotomy-counter">SCENARIO 1 OF 12</div>
+          <div class="current-scenario-text" id="dichotomy-scenario-text">
+            "My reaction when someone cuts me off in traffic"
+          </div>
+          <div class="dichotomy-choice-btns">
+            <button class="dichotomy-btn in-control" id="btn-choice-in">
+              🌿 Up to Me (In My Control)
+            </button>
+            <button class="dichotomy-btn outside-control" id="btn-choice-out">
+              🍃 Not Up to Me (External)
+            </button>
+          </div>
+        </div>
+        <div class="dichotomy-feedback" id="dichotomy-feedback-box">
+          <strong id="dichotomy-feedback-title" style="color:var(--emerald);">Correct!</strong>
+          <p id="dichotomy-feedback-text" style="color:var(--text-muted);margin-top:4px;"></p>
+          <button class="btn-pill" id="btn-dichotomy-next" style="margin-top:12px;background:rgba(255,255,255,0.1);color:#fff;">Next Scenario &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Amor Fati Crucible Forge Modal -->
+  <div id="modal-forge" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">ALCHEMICAL STOIC TRANSMUTATION</span>
+        <h2>The Amor Fati Crucible</h2>
+        <div class="modal-greek">AMOR FATI — LOVE OF FATE</div>
+      </div>
+      <div class="quote-card">
+        <p>"A blazing fire makes flame and brightness out of everything that is thrown into it."</p>
+        <span class="quote-author">Marcus Aurelius <span class="quote-source">Meditations, IV.1</span></span>
+      </div>
+      <div class="forge-container">
+        <p style="color:var(--text-muted);font-size:0.85rem;text-align:left;">
+          Enter a current obstacle, worry, or frustration. Cast it into the fire of Logos to transmute it into fuel for virtue.
+        </p>
+        <textarea class="forge-textarea" id="forge-input" placeholder="e.g. A difficult colleague criticizing my presentation; or sudden unexpected car repair expenses..."></textarea>
+        <button class="btn-forge" id="btn-ignite-forge">🔥 Transmute Into Fuel</button>
+        
+        <div class="forge-result" id="forge-output-box">
+          <h4 style="color:var(--gold);margin-bottom:6px;font-family:var(--font-serif);">Transmutation of Reason:</h4>
+          <p id="forge-transmuted-text" style="color:#f1f5f9;line-height:1.5;"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Memento Mori Calculator Modal -->
+  <div id="modal-memento" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">PERSPECTIVE ON TIME & MORTALITY</span>
+        <h2>Memento Mori — The Sandglass</h2>
+        <div class="modal-greek">ΜΕΜΝΗΣΟ ΟΤΙ ΘΝΗΤΟΣ ΕΙ</div>
+      </div>
+      <div class="memento-container">
+        <div class="quote-card">
+          <p>"You could leave life right now. Let that determine what you do and say and think."</p>
+          <span class="quote-author">Marcus Aurelius <span class="quote-source">Meditations, II.11</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <label style="color:var(--text-muted);font-size:0.85rem;">Enter your current age:</label>
+          <input type="number" id="memento-age-input" value="30" min="1" max="100" style="background:#090d16;border:1px solid var(--border-subtle);color:#fff;padding:6px 12px;border-radius:6px;width:80px;font-family:var(--font-mono);" />
+          <button class="btn-pill" id="btn-recalc-memento">Calculate Horizon</button>
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">
+          Assuming an 80-year human voyage (~4,160 weeks), each square below represents one week of your life. Gold weeks are already lived; gray weeks remain.
+        </div>
+        <div class="life-grid-preview" id="life-weeks-grid">
+          <!-- Injected via JS -->
+        </div>
+        <div id="memento-stats" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--cyan);background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;">
+          Lived: 1,560 weeks (37.5%) · Remaining: 2,600 weeks
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Daily Stoic Oracle & Quotes Modal -->
+  <div id="modal-oracle" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">TIMELESS WISDOM ARCHIVE</span>
+        <h2>The Stoic Oracle</h2>
+        <div class="modal-greek">ΓΝΩΜΑΙ ΚΑΙ ΑΠΟΦΘΕΓΜΑΤΑ</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <button class="btn-pill gold" id="btn-oracle-random">✨ Draw New Insight</button>
+        <button class="btn-pill" id="btn-oracle-copy">📋 Copy Quote</button>
+      </div>
+      <div id="oracle-quote-display" class="quote-card" style="padding:24px;">
+        <!-- Injected via JS -->
+      </div>
+      <div id="oracle-reflection-box" style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;margin-top:12px;">
+        <strong style="color:var(--cyan);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Practical Application:</strong>
+        <p id="oracle-reflection-text" style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;line-height:1.45;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Evening Examen Journal Modal -->
+  <div id="modal-examen" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">NIGHTLY STOIC REVIEW</span>
+        <h2>Seneca's Evening Examen</h2>
+        <div class="modal-greek">ΑΥΤΟΕΞΕΤΑΣΙΣ</div>
+      </div>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px;">
+        "When the light has been removed and my wife has fallen silent, aware of this habit that's now mine, I examine my entire day and go back over what I've done and said, hiding nothing from myself." — Seneca
+      </p>
+      <div class="examen-form">
+        <div class="examen-question-group">
+          <label>1. What bad habit or reactive impulse did I curb today?</label>
+          <div class="hint">Did you catch anger, resist mindless distraction, or maintain composure?</div>
+          <textarea class="examen-textarea" id="examen-q1" placeholder="Write your reflection..."></textarea>
+        </div>
+        <div class="examen-question-group">
+          <label>2. Where did I act with courage, justice, or clarity?</label>
+          <div class="hint">Acknowledge moments of virtue and kindness without arrogance.</div>
+          <textarea class="examen-textarea" id="examen-q2" placeholder="Write your reflection..."></textarea>
+        </div>
+        <div class="examen-question-group">
+          <label>3. What duty was left undone, and how will I improve tomorrow?</label>
+          <div class="hint">Plan tomorrow's resolve with calm clarity.</div>
+          <textarea class="examen-textarea" id="examen-q3" placeholder="Write your reflection..."></textarea>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+          <button class="btn-pill gold" id="btn-save-examen">💾 Save to Local Journal</button>
+          <span id="examen-save-status" style="font-size:0.75rem;color:var(--emerald);"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Philosophers Codex Modal -->
+  <div id="modal-codex" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">THE SAGES OF THE STOA</span>
+        <h2>Philosopher Codex</h2>
+        <div class="modal-greek">ΟΙ ΣΤΩΙΚΟΙ ΦΙΛΟΣΟΦΟΙ</div>
+      </div>
+      <div class="modal-tabs" id="codex-tabs">
+        <!-- Injected via JS -->
+      </div>
+      <div id="codex-content-display">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Help & Keyboard Controls Modal -->
+  <div id="modal-help" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-btn" data-close-modal>&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">NAVIGATION & COMMANDS</span>
+        <h2>Sanctuary Guide</h2>
+        <div class="modal-greek">ΟΔΗΓΙΕΣ ΠΕΡΙΗΓΗΣΗΣ</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;color:var(--text-muted);font-size:0.85rem;">
+        <div>
+          <h4 style="color:#fff;margin-bottom:8px;">Camera & Movement</h4>
+          <p><span class="key-badge">W, A, S, D</span> First-person walking</p>
+          <p style="margin-top:6px;"><span class="key-badge">Shift</span> Sprint / fast move</p>
+          <p style="margin-top:6px;"><span class="key-badge">Mouse Drag</span> Look around or Orbit</p>
+          <p style="margin-top:6px;"><span class="key-badge">Scroll Wheel</span> Zoom in Orbit mode</p>
+        </div>
+        <div>
+          <h4 style="color:#fff;margin-bottom:8px;">Fast Travel</h4>
+          <p><span class="key-badge">1</span> Central Rotunda (Arx Mentis)</p>
+          <p style="margin-top:6px;"><span class="key-badge">2</span> Stoa of Wisdom</p>
+          <p style="margin-top:6px;"><span class="key-badge">3</span> Bastion of Courage</p>
+          <p style="margin-top:6px;"><span class="key-badge">4</span> Forum of Justice</p>
+          <p style="margin-top:6px;"><span class="key-badge">5</span> Pavilion of Temperance</p>
+        </div>
+        <div>
+          <h4 style="color:#fff;margin-bottom:8px;">Special Views</h4>
+          <p><span class="key-badge">V</span> View from Above (Cosmic)</p>
+          <p style="margin-top:6px;"><span class="key-badge">Z</span> Zen Mode (Hide HUD)</p>
+          <p style="margin-top:6px;"><span class="key-badge">Esc</span> Close active modal</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Entrypoint Module -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

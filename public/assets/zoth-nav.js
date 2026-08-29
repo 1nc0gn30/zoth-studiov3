@@ -49,8 +49,20 @@
               msgLink.innerHTML = "<strong>💬 Secure Signal Bridge</strong><small>E2EE Double Ratchet, Matrix &amp; Swarm Dispatch</small>";
               menu.appendChild(msgLink);
             }
+            if (!menu.querySelector('a[href*="zoth-world.html"]')) {
+              var worldLink = document.createElement("a");
+              worldLink.href = "/zoth-world.html";
+              worldLink.innerHTML = "<strong>🌌 Zoth World (3D Sanctum)</strong><small>3D Alchemical Multiverse &amp; Living Pet Matrix</small>";
+              menu.insertBefore(worldLink, menu.firstChild);
+            }
           }
           if (title.indexOf("Core") !== -1) {
+            if (!menu.querySelector('a[href*="zoth-world.html"]')) {
+              var worldCoreLink = document.createElement("a");
+              worldCoreLink.href = "/zoth-world.html";
+              worldCoreLink.innerHTML = "<strong>🌌 Zoth World 3D Universe</strong><small>Living Hermetic Swarm &amp; 20 Mascot Spirits</small>";
+              menu.insertBefore(worldCoreLink, menu.firstChild);
+            }
             if (!menu.querySelector('a[href*="/memory/"]')) {
               var memLink = document.createElement("a");
               memLink.href = "/memory/";
@@ -94,6 +106,12 @@
           return h.textContent.indexOf("Core") !== -1 || h.textContent.indexOf("Archetype") !== -1;
         });
         coreHeadings.forEach(function(ch) {
+          if (ch.parentElement && !ch.parentElement.querySelector('a[href*="zoth-world.html"]')) {
+            var aW = document.createElement("a");
+            aW.href = "/zoth-world.html";
+            aW.innerHTML = "🌌 Zoth World 3D Universe";
+            ch.parentElement.appendChild(aW);
+          }
           if (ch.parentElement && !ch.parentElement.querySelector('a[href*="/memory/"]')) {
             var a = document.createElement("a");
             a.href = "/memory/";

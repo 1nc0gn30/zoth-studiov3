@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpaceX God's Eye — Starlink Constellation & Earth Reconnaissance POV</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyan: {
+              400: '#00f0ff',
+              500: '#06b6d4',
+              950: '#083344'
+            },
+            space: {
+              900: '#030712',
+              800: '#0b1329',
+              700: '#111e38'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-space-900 text-slate-100 h-screen flex flex-col overflow-hidden font-sans">
+
+  <!-- TOP APP HEADER -->
+  <header class="h-14 glass-panel border-b border-cyan-500/20 px-4 flex items-center justify-between z-30 shrink-0">
+    <div class="flex items-center gap-3">
+      <!-- SpaceX Pulse Icon -->
+      <div class="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+        <i class="fas fa-satellite text-cyan-400 text-sm animate-pulse"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-orbitron font-extrabold tracking-wider text-sm bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400">
+            SPACEX GOD'S EYE
+          </span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+            ORBITAL RECON V4.2
+          </span>
+        </div>
+        <div class="text-[10px] font-mono text-slate-400 flex items-center gap-2">
+          <span id="selected-sat-name" class="text-cyan-300 font-semibold">STARLINK-V2 #1001</span>
+          <span>•</span>
+          <span id="selected-sat-norad">NORAD #50001 • Shell 1 (550km)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Clock & Mission Elapsed Time -->
+    <div class="hidden md:flex items-center gap-6 font-mono text-xs text-slate-300">
+      <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
+        <i class="far fa-clock text-cyan-400"></i>
+        <span id="clock-utc">UTC 2026-08-28 19:40:00</span>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
+        <i class="fas fa-stopwatch text-amber-400"></i>
+        <span id="clock-met" class="text-amber-300 font-bold">MET +14:22:08</span>
+      </div>
+    </div>
+
+    <!-- Right Controls & Layout Switchers -->
+    <div class="flex items-center gap-2">
+      <!-- Layout Modes -->
+      <div class="flex items-center bg-slate-900/80 p-1 rounded-lg border border-slate-800 text-xs">
+        <button data-layout-mode="layout-split" class="active-layout px-2.5 py-1 rounded transition flex items-center gap-1.5" title="Split Screen (3D + Map)">
+          <i class="fas fa-columns"></i>
+          <span class="hidden lg:inline text-[11px]">SPLIT</span>
+        </button>
+        <button data-layout-mode="layout-pip" class="px-2.5 py-1 rounded transition flex items-center gap-1.5" title="Picture-in-Picture">
+          <i class="fas fa-clone"></i>
+          <span class="hidden lg:inline text-[11px]">PiP</span>
+        </button>
+        <button data-layout-mode="layout-3d-full" class="px-2.5 py-1 rounded transition flex items-center gap-1.5" title="Full 3D Globe View">
+          <i class="fas fa-globe"></i>
+          <span class="hidden lg:inline text-[11px]">3D</span>
+        </button>
+        <button data-layout-mode="layout-map-full" class="px-2.5 py-1 rounded transition flex items-center gap-1.5" title="Full Tactical Satellite Map">
+          <i class="fas fa-map"></i>
+          <span class="hidden lg:inline text-[11px]">MAP</span>
+        </button>
+      </div>
+
+      <!-- Snapshot Capture -->
+      <button id="snapshot-btn" class="px-3 py-1.5 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-900/60 transition text-xs font-mono flex items-center gap-1.5" title="Capture Recon Snapshot">
+        <i class="fas fa-camera"></i>
+        <span class="hidden sm:inline">PHOTO</span>
+      </button>
+
+      <!-- Audio Toggle -->
+      <button id="sound-toggle" class="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition text-xs font-mono flex items-center gap-1.5 text-slate-400" title="Toggle Aerospace Audio Synthesis">
+        <i class="fas fa-volume-mute"></i>
+        <span class="hidden sm:inline">AUDIO</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN OPERATIONAL WORKSPACE -->
+  <div class="flex flex-1 overflow-hidden relative">
+
+    <!-- LEFT SIDEBAR: Telemetry & Constellation Fleet Controller -->
+    <aside class="w-80 glass-panel border-r border-cyan-500/20 flex flex-col z-20 shrink-0 overflow-hidden">
+      <!-- Tabs Header -->
+      <div class="flex border-b border-slate-800 text-xs font-mono">
+        <button id="tab-btn-telem" onclick="switchSidebarTab('telem')" class="flex-1 py-3 text-center border-b-2 border-cyan-400 text-cyan-300 font-bold bg-cyan-950/20">
+          <i class="fas fa-chart-line mr-1"></i> TELEMETRY
+        </button>
+        <button id="tab-btn-fleet" onclick="switchSidebarTab('fleet')" class="flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          <i class="fas fa-layer-group mr-1"></i> FLEET
+        </button>
+        <button id="tab-btn-recon" onclick="switchSidebarTab('recon')" class="flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          <i class="fas fa-bullseye mr-1"></i> TARGETS
+        </button>
+      </div>
+
+      <!-- TAB 1: TELEMETRY DASHBOARD -->
+      <div id="tab-pane-telem" class="flex-1 overflow-y-auto p-4 space-y-4">
+        
+        <!-- Live Position Box -->
+        <div class="p-3.5 rounded-xl glass-panel-subtle border border-cyan-500/20 space-y-2.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400 uppercase font-mono text-[10px]">Sub-Satellite Ground Point</span>
+            <span class="flex items-center gap-1.5 text-cyan-400 font-mono text-[10px]">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> LIVE NADIR
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2 font-mono">
+            <div class="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
+              <div class="text-[10px] text-slate-500">LATITUDE</div>
+              <div id="telem-lat" class="text-sm font-bold text-slate-100">28.5728° N</div>
+            </div>
+            <div class="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
+              <div class="text-[10px] text-slate-500">LONGITUDE</div>
+              <div id="telem-lon" class="text-sm font-bold text-slate-100">80.6490° W</div>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 p-2.5 rounded-lg border border-slate-800 font-mono">
+            <div class="text-[10px] text-slate-500">GEOGRAPHICAL REGION</div>
+            <div id="telem-region" class="text-xs font-semibold text-cyan-300 mt-0.5">Gulf of Mexico / Texas Coast</div>
+          </div>
+        </div>
+
+        <!-- Orbital Flight Dynamics -->
+        <div class="p-3.5 rounded-xl glass-panel-subtle border border-slate-800 space-y-2.5">
+          <div class="text-slate-400 uppercase font-mono text-[10px] flex items-center justify-between">
+            <span>Flight Dynamics</span>
+            <i class="fas fa-tachometer-alt text-slate-500"></i>
+          </div>
+
+          <div class="space-y-2 font-mono">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">TRUE ALTITUDE</span>
+              <span id="telem-alt" class="font-bold text-slate-100">549.8 km (LEO)</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">VELOCITY</span>
+              <span id="telem-speed" class="font-bold text-amber-300 text-[11px]">7.591 km/s (Mach 24.8)</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">ORBITAL PERIOD</span>
+              <span class="text-slate-200">95.4 min</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">INCLINATION</span>
+              <span class="text-slate-200">53.0° Shell 1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Space Lasers & Comms Mesh -->
+        <div class="p-3.5 rounded-xl glass-panel-subtle border border-slate-800 space-y-2.5">
+          <div class="text-slate-400 uppercase font-mono text-[10px] flex items-center justify-between">
+            <span>Laser Crosslink & Mesh (ISL)</span>
+            <i class="fas fa-network-wired text-cyan-400"></i>
+          </div>
+
+          <div class="space-y-2 font-mono text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">LASER ISL STATUS</span>
+              <span id="telem-laser" class="text-cyan-300 font-bold text-[11px]">4/4 LOCKED (84.2 Gbps)</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">DOWNLINK LATENCY</span>
+              <span id="telem-ping" class="text-emerald-400 font-bold">18.4 ms</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">SOLAR ARRAY POWER</span>
+              <span id="telem-solar" class="text-sky-300">4,850 W</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">PROPULSION</span>
+              <span class="text-emerald-400 font-bold">Krypton Thruster NOMINAL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Constellation Layer Toggles -->
+        <div class="p-3.5 rounded-xl glass-panel-subtle border border-slate-800 space-y-2">
+          <div class="text-slate-400 uppercase font-mono text-[10px] mb-2">Display Layers</div>
+          <label class="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
+            <span>Laser Crosslink Mesh</span>
+            <input type="checkbox" id="toggle-lasers" checked class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0" />
+          </label>
+          <label class="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
+            <span>Orbital Track Trail</span>
+            <input type="checkbox" id="toggle-orbits" checked class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0" />
+          </label>
+          <label class="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
+            <span>Ground Footprint Beam</span>
+            <input type="checkbox" id="toggle-footprint" checked class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0" />
+          </label>
+          <label class="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
+            <span>Lock Map to Satellite Nadir</span>
+            <input type="checkbox" id="toggle-lock-map" checked class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0" />
+          </label>
+        </div>
+
+      </div>
+
+      <!-- TAB 2: FLEET DIRECTORY & SHELL FILTERS -->
+      <div id="tab-pane-fleet" class="hidden flex-1 flex flex-col overflow-hidden p-3 space-y-3">
+        <!-- Search Input -->
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+          <input type="text" id="sat-search-input" placeholder="Search ID, Shell, or NORAD..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono" />
+        </div>
+
+        <!-- Shell Filter Chips -->
+        <div class="flex flex-wrap gap-1 text-[10px] font-mono">
+          <button data-shell-filter="all" class="active-shell px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">ALL</button>
+          <button data-shell-filter="shell-1" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">SHELL 1</button>
+          <button data-shell-filter="shell-2" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">GEN 2</button>
+          <button data-shell-filter="shell-3" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">POLAR</button>
+          <button data-shell-filter="shell-direct2cell" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">D2CELL</button>
+          <button data-shell-filter="special" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">SPECIAL</button>
+        </div>
+
+        <!-- Scrollable Fleet List -->
+        <div id="fleet-list-container" class="flex-1 overflow-y-auto space-y-1.5 pr-1">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- TAB 3: GLOBAL RECON TARGETS & WAYPOINTS -->
+      <div id="tab-pane-recon" class="hidden flex-1 overflow-y-auto p-3 space-y-2">
+        <div class="text-[11px] text-slate-400 font-mono mb-2">Select a global reconnaissance waypoint to lock optical gimbal sensors:</div>
+        <div id="waypoints-list-container" class="space-y-2">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- TIME WARP CONTROLLER FOOTER -->
+      <div class="p-3 border-t border-slate-800 bg-slate-950/80 shrink-0">
+        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1.5">
+          <span>ORBIT SIMULATION CLOCK</span>
+          <button id="pause-btn" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+            <i class="fas fa-pause"></i> PAUSE
+          </button>
+        </div>
+        <div class="grid grid-cols-5 gap-1 font-mono text-[10px]">
+          <button data-time-scale="1" class="active-time py-1 rounded bg-slate-900 border border-slate-800 hover:border-amber-500 text-center">1X</button>
+          <button data-time-scale="10" class="py-1 rounded bg-slate-900 border border-slate-800 hover:border-amber-500 text-center">10X</button>
+          <button data-time-scale="60" class="py-1 rounded bg-slate-900 border border-slate-800 hover:border-amber-500 text-center">60X</button>
+          <button data-time-scale="300" class="py-1 rounded bg-slate-900 border border-slate-800 hover:border-amber-500 text-center">300X</button>
+          <button data-time-scale="1200" class="py-1 rounded bg-slate-900 border border-slate-800 hover:border-amber-500 text-center">1200X</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER & RIGHT: INTERACTIVE DUAL DISPLAY (3D WebGL + Leaflet Map) -->
+    <main id="main-content-layout" class="flex flex-1 relative overflow-hidden layout-split">
+
+      <!-- PANE 1: 3D THREE.JS SATELLITE POV & GLOBE -->
+      <section id="threejs-pane" class="w-1/2 h-full relative z-0 border-r border-cyan-900/50">
+        <div id="threejs-container" class="w-full h-full"></div>
+
+        <!-- HUD RETICLE OVERLAY (Active in Satellite POV / Recon Lock) -->
+        <div id="pov-hud-reticle" class="absolute inset-0 pointer-events-none z-10" style="display: none;">
+          <!-- Tactical Corners -->
+          <div class="hud-corner-tl"></div>
+          <div class="hud-corner-tr"></div>
+          <div class="hud-corner-bl"></div>
+          <div class="hud-corner-br"></div>
+
+          <!-- Crosshairs Reticle -->
+          <div class="crosshair-center"></div>
+
+          <!-- Top Recon Coordinates Banner -->
+          <div class="absolute top-6 left-1/2 transform -translate-x-1/2 text-center font-mono">
+            <div class="px-4 py-1 rounded-full bg-slate-950/80 border border-cyan-500/40 text-cyan-400 text-xs shadow-lg shadow-cyan-950 flex items-center gap-2">
+              <i class="fas fa-crosshairs animate-spin"></i>
+              <span id="hud-coords-readout">28.5728° N, 80.6490° W | ALT 550KM | MACH 24.8</span>
+            </div>
+            <div id="hud-target-info" class="mt-1.5 text-xs text-slate-200"></div>
+          </div>
+
+          <!-- Sensor Filter & Lens Badge -->
+          <div class="absolute bottom-6 left-6 font-mono text-xs space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400 text-[10px]">SENSOR MODE:</span>
+              <span id="hud-filter-tag" class="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-400 text-cyan-300 font-bold">OPTICAL RGB</span>
+            </div>
+            <div class="text-[10px] text-slate-400">GROUND RESOLUTION (GSD): <span id="gsd-display" class="text-cyan-300 font-bold">0.85 m/px</span></div>
+          </div>
+        </div>
+
+        <!-- FLOATING 3D VIEW CONTROL BAR -->
+        <div class="absolute top-4 left-4 z-20 flex flex-col gap-2">
+          <!-- Camera Mode Selector -->
+          <div class="glass-panel p-1.5 rounded-xl flex items-center gap-1 text-xs font-mono">
+            <button data-cam-mode="GLOBAL" class="active-cam px-3 py-1.5 rounded-lg border border-transparent hover:border-cyan-500 transition flex items-center gap-1.5">
+              <i class="fas fa-globe-americas"></i>
+              <span>GLOBAL ORBIT</span>
+            </button>
+            <button data-cam-mode="SATELLITE_POV" class="px-3 py-1.5 rounded-lg border border-transparent hover:border-cyan-500 transition flex items-center gap-1.5">
+              <i class="fas fa-eye text-cyan-400"></i>
+              <span>SATELLITE POV</span>
+            </button>
+            <button data-cam-mode="CHASE" class="px-3 py-1.5 rounded-lg border border-transparent hover:border-cyan-500 transition flex items-center gap-1.5">
+              <i class="fas fa-plane"></i>
+              <span>CHASE CAM</span>
+            </button>
+          </div>
+
+          <!-- Sensor Filters Selector -->
+          <div class="glass-panel p-1.5 rounded-xl flex items-center gap-1 text-[11px] font-mono">
+            <span class="text-slate-400 text-[10px] px-2">FILTER:</span>
+            <button data-filter-mode="OPTICAL" class="active-filter px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">OPTICAL</button>
+            <button data-filter-mode="SAR" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">SAR RADAR</button>
+            <button data-filter-mode="FLIR" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">THERMAL</button>
+            <button data-filter-mode="NIGHT_VISION" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">NIGHT OPS</button>
+            <button data-filter-mode="CYBER" class="px-2 py-1 rounded bg-slate-900 border border-slate-800 hover:border-cyan-500">CYBER</button>
+          </div>
+        </div>
+
+        <!-- FLOATING OPTICAL ZOOM SLIDER (Bottom Right of 3D) -->
+        <div class="absolute bottom-4 right-4 z-20 glass-panel p-3 rounded-xl flex items-center gap-3 font-mono text-xs">
+          <i class="fas fa-search-plus text-cyan-400"></i>
+          <span class="text-slate-400 text-[11px]">OPTICS ZOOM:</span>
+          <input type="range" id="zoom-slider" min="1" max="50" step="0.5" value="1" class="w-28 cursor-pointer" />
+          <span id="zoom-display" class="font-bold text-cyan-300 w-10 text-right">1.0x</span>
+        </div>
+      </section>
+
+      <!-- PANE 2: LEAFLET HIGH-RES SATELLITE RECON MAP -->
+      <section id="map-pane" class="w-1/2 h-full relative z-0">
+        <div id="leaflet-map" class="w-full h-full"></div>
+
+        <!-- Tactical Map Floating Top Toolbar -->
+        <div class="absolute top-4 left-4 z-[1000] glass-panel px-3 py-2 rounded-xl flex items-center gap-3 font-mono text-xs shadow-xl">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+            <span class="font-bold text-cyan-300">LEAFLET RECON MAP</span>
+          </div>
+          <span class="text-slate-600">|</span>
+          <span class="text-slate-400 text-[11px]">CLICK ANYWHERE TO RECON</span>
+        </div>
+
+        <!-- Tile Layer Selector (Top Right) -->
+        <div class="absolute top-4 right-14 z-[1000] glass-panel p-1.5 rounded-xl font-mono text-xs">
+          <select id="map-layer-select" class="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-cyan-500 text-xs">
+            <option value="satellite">Esri World Satellite (HD)</option>
+            <option value="dark">CartoDB Dark Matter</option>
+            <option value="night">NASA VIIRS Night Lights</option>
+            <option value="topo">Esri Topographic Relief</option>
+            <option value="streets">OpenStreetMap Standard</option>
+          </select>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Tab Switcher Script -->
+  <script>
+    function switchSidebarTab(tabName) {
+      document.getElementById('tab-pane-telem').classList.toggle('hidden', tabName !== 'telem');
+      document.getElementById('tab-pane-fleet').classList.toggle('hidden', tabName !== 'fleet');
+      document.getElementById('tab-pane-recon').classList.toggle('hidden', tabName !== 'recon');
+
+      const tabs = ['telem', 'fleet', 'recon'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab-btn-' + t);
+        if (t === tabName) {
+          btn.className = 'flex-1 py-3 text-center border-b-2 border-cyan-400 text-cyan-300 font-bold bg-cyan-950/20';
+        } else {
+          btn.className = 'flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200';
+        }
+      });
+    }
+  </script>
+
+  <!-- Application Logic -->
+  <script src="sat-data.js"></script>
+  <script src="orbit-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
