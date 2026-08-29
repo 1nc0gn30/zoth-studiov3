@@ -2259,7 +2259,7 @@ created: {now_utc}
                 sys.path.insert(0, str(ORCH_DIR.parent.parent))
                 try:
                     import zoth_pty_engine
-                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id)
+                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id) or zoth_pty_engine.pty_manager.get_or_create(session_id.replace("zoth_pty_", ""))
                     if sess:
                         success = sess.write(input_data)
                         self._send_json({"status": "ok", "written": success})
@@ -2275,7 +2275,7 @@ created: {now_utc}
                 sys.path.insert(0, str(ORCH_DIR.parent.parent))
                 try:
                     import zoth_pty_engine
-                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id)
+                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id) or zoth_pty_engine.pty_manager.get_or_create(session_id.replace("zoth_pty_", ""))
                     if sess:
                         history = sess.get_history()
                         files = sess.get_files()
@@ -2303,7 +2303,7 @@ created: {now_utc}
                 sys.path.insert(0, str(ORCH_DIR.parent.parent))
                 try:
                     import zoth_pty_engine
-                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id)
+                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id) or zoth_pty_engine.pty_manager.get_or_create(session_id.replace("zoth_pty_", ""))
                     if sess:
                         sess.resize(cols, rows)
                         self._send_json({"status": "ok"})
