@@ -27,6 +27,7 @@
 <!-- Fast Local Three.js + OrbitControls (0ms load on loopback) -->
 <script defer="" src="/assets/vendor/three.min.js"></script>
 <script defer="" src="/assets/vendor/OrbitControls.js"></script>
+<script defer="" src="/assets/vendor/GLTFLoader.js"></script>
 <script>
     if (typeof THREE === "undefined") {
       document.write('\x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">\x3C/script>');
@@ -2267,322 +2268,145 @@
     ];
 
     // Primary Agent Command Stations
+        // Enhanced 3D Pantheon with exact avatar assets and vectorized extruded badges
     const AGENTS = {
-      azoth: { id: "azoth", name: "Master Azoth", color: 0xe8c872, pos: new THREE.Vector3(0, 2.6, 0) },
-      grok: { id: "grok", name: "Grok 4.5", color: 0x00d4aa, pos: new THREE.Vector3(-4.5, 0.8, -1) },
-      antigravity: { id: "antigravity", name: "Antigravity", color: 0x7c9cff, pos: new THREE.Vector3(4.5, 0.8, -1) },
-      hermes: { id: "hermes", name: "Hermes 3", color: 0xffaa40, pos: new THREE.Vector3(0, 1.5, -5) },
-      ghostbyte: { id: "ghostbyte", name: "GhostByte", color: 0xc084fc, pos: new THREE.Vector3(-3.2, 0.9, 3.2) },
-      ollama: { id: "ollama", name: "Ollama Local Node", color: 0xf59e0b, pos: new THREE.Vector3(3.2, 0.6, 3.2) }
+      azoth: { id: "azoth", name: "Master Azoth", role: "Sovereign Core", color: 0xfbbf24, avatar: "/assets/mascot/azoth-portrait.jpg", pos: new THREE.Vector3(0, 3.2, 0) },
+      grok: { id: "grok", name: "Grok 4.5", role: "Reasoning Engine", color: 0x00d4aa, avatar: "/assets/mascot/azoth-grok.jpg", pos: new THREE.Vector3(-4.8, 1.4, -1.8) },
+      antigravity: { id: "antigravity", name: "Antigravity", role: "Lead Systems Architect", color: 0x7c9cff, avatar: "/assets/mascot/azoth-antigravity.jpg", pos: new THREE.Vector3(4.8, 1.4, -1.8) },
+      hermes: { id: "hermes", name: "Hermes 3", role: "Autonomous Worker Swarm", color: 0xffaa40, avatar: "/assets/mascot/azoth-hermes.jpg", pos: new THREE.Vector3(0, 1.8, -5.2) },
+      ghostbyte: { id: "ghostbyte", name: "GhostByte", role: "Offensive Security & Red Team", color: 0xc084fc, avatar: "/assets/mascot/ghostbyte-avatar.jpg", pos: new THREE.Vector3(-3.6, 1.2, 3.6) },
+      ollama: { id: "ollama", name: "Ollama Local Node", role: "Air-Gapped Sovereign Compute", color: 0xf59e0b, avatar: "/assets/mascot/azoth-code-matrix.jpg", pos: new THREE.Vector3(3.6, 1.2, 3.6) }
     };
 
-    /* --- Web Audio API Procedural Sound Engine --- */
-    let audioCtx = null;
-    let audioEnabled = true;
+    // Vectorized 3D Cutout Generator (Vector Silhouette + LightBurn-style Extrusion & Dual-Sided Avatar Texture)
+    function createVectorizedAvatarMesh(agent) {
+      const group = new THREE.Group();
 
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-    }
-
-    function toggleAudioFX() {
-      audioEnabled = !audioEnabled;
-      document.getElementById('audio-icon').textContent = audioEnabled ? '🔊' : '🔇';
-      document.getElementById('btn-audio-toggle').innerHTML = `<span id="audio-icon">${audioEnabled ? '🔊' : '🔇'}</span> Audio FX: ${audioEnabled ? 'ON' : 'OFF'}`;
-      if (audioEnabled) playChime();
-    }
-
-    function playLaserSound() {
-      if (!audioEnabled) return;
-      initAudio();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.25);
-    }
-
-    function playChime(frequencies = [523.25, 659.25, 783.99, 1046.50]) {
-      if (!audioEnabled) return;
-      initAudio();
-      frequencies.forEach((freq, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.05);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.05 + 0.35);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + i * 0.05);
-        osc.stop(audioCtx.currentTime + i * 0.05 + 0.35);
+      // 1. Hologram Pedestal Base
+      const cylGeo = new THREE.CylinderGeometry(0.7, 0.9, 0.35, 24);
+      const cylMat = new THREE.MeshStandardMaterial({
+        color: 0x081020,
+        metalness: 0.8,
+        roughness: 0.2,
+        emissive: agent.color,
+        emissiveIntensity: 0.18
       });
-    }
+      const cyl = new THREE.Mesh(cylGeo, cylMat);
+      group.add(cyl);
 
-    /* --- Three.js Scene Setup & Boids Flocking Simulation --- */
-    let scene, camera, renderer, controls;
-    let boids = [];
-    let agentMeshes = {};
-    let nexusMesh;
+      // Rotating Pedestal Base Ring
+      const ringGeo = new THREE.TorusGeometry(0.95, 0.02, 12, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: agent.color, wireframe: true });
+      const baseRing = new THREE.Mesh(ringGeo, ringMat);
+      baseRing.rotation.x = Math.PI / 2;
+      baseRing.position.y = 0.18;
+      group.add(baseRing);
 
-    class Boid {
-      constructor(x, y, z) {
-        this.position = new THREE.Vector3(x, y, z);
-        this.velocity = new THREE.Vector3(
-          (Math.random() - 0.5) * 0.08,
-          (Math.random() - 0.5) * 0.04,
-          (Math.random() - 0.5) * 0.08
-        );
-        this.acceleration = new THREE.Vector3();
-        this.maxSpeed = 0.09;
-        this.maxForce = 0.003;
+      // 2. LightBurn-Style Extruded Vector Badge Frame (Rounded Hexagon Contour)
+      const shape = new THREE.Shape();
+      const r = 0.85;
+      const sides = 6;
+      for (let i = 0; i < sides; i++) {
+        const a = (i / sides) * Math.PI * 2 + Math.PI / 6;
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a) * r;
+        if (i === 0) shape.moveTo(x, y);
+        else shape.lineTo(x, y);
+      }
+      shape.closePath();
 
-        const geo = new THREE.ConeGeometry(0.12, 0.35, 4);
-        geo.rotateX(Math.PI / 2);
-        const mat = new THREE.MeshBasicMaterial({
-          color: Math.random() > 0.5 ? 0x00f0ff : 0xa855f7,
-          wireframe: true
+      const extrudeSettings = {
+        steps: 1,
+        depth: 0.12,
+        bevelEnabled: true,
+        bevelThickness: 0.04,
+        bevelSize: 0.04,
+        bevelOffset: 0,
+        bevelSegments: 3
+      };
+
+      const extrudeGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+      extrudeGeo.center();
+
+      const extrudeMat = new THREE.MeshStandardMaterial({
+        color: 0x0d1527,
+        metalness: 0.85,
+        roughness: 0.25,
+        emissive: agent.color,
+        emissiveIntensity: 0.22
+      });
+
+      const frameMesh = new THREE.Mesh(extrudeGeo, extrudeMat);
+      frameMesh.position.y = 1.35;
+      group.add(frameMesh);
+
+      // 3. Exact Avatar Texture Face (Digitized No-Background Cutout / Circular Face on Front & Back)
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(agent.avatar, (tex) => {
+        tex.minFilter = THREE.LinearFilter;
+        tex.generateMipmaps = false;
+
+        const faceGeo = new THREE.CircleGeometry(0.72, 32);
+        const faceMat = new THREE.MeshBasicMaterial({
+          map: tex,
+          side: THREE.DoubleSide
         });
-        this.mesh = new THREE.Mesh(geo, mat);
-        this.mesh.position.copy(this.position);
-        scene.add(this.mesh);
-      }
 
-      update(boidsList) {
-        this.flock(boidsList);
-        this.velocity.add(this.acceleration);
-        this.velocity.clampLength(0, this.maxSpeed);
-        this.position.add(this.velocity);
-        this.acceleration.set(0, 0, 0);
+        const faceFront = new THREE.Mesh(faceGeo, faceMat);
+        faceFront.position.set(0, 1.35, 0.11);
+        group.add(faceFront);
 
-        if (this.position.x > 9) this.position.x = -9;
-        if (this.position.x < -9) this.position.x = 9;
-        if (this.position.y > 6) this.position.y = 0.5;
-        if (this.position.y < 0.2) this.position.y = 5.5;
-        if (this.position.z > 9) this.position.z = -9;
-        if (this.position.z < -9) this.position.z = 9;
+        const faceBack = new THREE.Mesh(faceGeo, faceMat);
+        faceBack.position.set(0, 1.35, -0.11);
+        faceBack.rotation.y = Math.PI;
+        group.add(faceBack);
+      });
 
-        this.mesh.position.copy(this.position);
-        if (this.velocity.lengthSq() > 0.0001) {
-          this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.velocity.clone().normalize());
-        }
-      }
+      // 4. Kinetic Holographic Halo
+      const haloGeo = new THREE.RingGeometry(1.05, 1.12, 32);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: agent.color,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending
+      });
+      const halo = new THREE.Mesh(haloGeo, haloMat);
+      halo.position.y = 1.35;
+      group.add(halo);
 
-      applyForce(force) {
-        this.acceleration.add(force);
-      }
-
-      flock(boidsList) {
-        let sep = this.separate(boidsList).multiplyScalar(1.5);
-        let ali = this.align(boidsList).multiplyScalar(1.0);
-        let coh = this.cohesion(boidsList).multiplyScalar(1.0);
-        let centerPull = new THREE.Vector3(0, 2, 0).sub(this.position).multiplyScalar(0.0004);
-
-        this.applyForce(sep);
-        this.applyForce(ali);
-        this.applyForce(coh);
-        this.applyForce(centerPull);
-      }
-
-      seek(target) {
-        let desired = target.clone().sub(this.position);
-        desired.normalize();
-        desired.multiplyScalar(this.maxSpeed);
-        let steer = desired.sub(this.velocity);
-        steer.clampLength(0, this.maxForce);
-        return steer;
-      }
-
-      separate(boidsList) {
-        let desiredSeparation = 1.2;
-        let steer = new THREE.Vector3();
-        let count = 0;
-        for (let other of boidsList) {
-          let d = this.position.distanceTo(other.position);
-          if (d > 0 && d < desiredSeparation) {
-            let diff = this.position.clone().sub(other.position);
-            diff.normalize();
-            diff.divideScalar(d);
-            steer.add(diff);
-            count++;
-          }
-        }
-        if (count > 0) {
-          steer.divideScalar(count);
-          if (steer.lengthSq() > 0) {
-            steer.normalize();
-            steer.multiplyScalar(this.maxSpeed);
-            steer.sub(this.velocity);
-            steer.clampLength(0, this.maxForce);
-          }
-        }
-        return steer;
-      }
-
-      align(boidsList) {
-        let neighborDist = 2.5;
-        let sum = new THREE.Vector3();
-        let count = 0;
-        for (let other of boidsList) {
-          let d = this.position.distanceTo(other.position);
-          if (d > 0 && d < neighborDist) {
-            sum.add(other.velocity);
-            count++;
-          }
-        }
-        if (count > 0) {
-          sum.divideScalar(count);
-          sum.normalize();
-          sum.multiplyScalar(this.maxSpeed);
-          let steer = sum.sub(this.velocity);
-          steer.clampLength(0, this.maxForce);
-          return steer;
-        }
-        return new THREE.Vector3();
-      }
-
-      cohesion(boidsList) {
-        let neighborDist = 2.5;
-        let sum = new THREE.Vector3();
-        let count = 0;
-        for (let other of boidsList) {
-          let d = this.position.distanceTo(other.position);
-          if (d > 0 && d < neighborDist) {
-            sum.add(other.position);
-            count++;
-          }
-        }
-        if (count > 0) {
-          sum.divideScalar(count);
-          return this.seek(sum);
-        }
-        return new THREE.Vector3();
-      }
+      return { group, frame: frameMesh, halo, ring: baseRing };
     }
 
-
-    function isSwarmMobileGL() {
-      try {
-        return window.matchMedia('(max-width: 880px)').matches
-          || window.matchMedia('(pointer: coarse) and (hover: none)').matches
-          || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      } catch (err) {
-        return false;
+      // Spawn 3D World Sci-Fi Environment Asset (Astronaut & Central Quantum Orb)
+      if (typeof THREE.GLTFLoader !== 'undefined') {
+        const gltfLoader = new THREE.GLTFLoader();
+        gltfLoader.load('/assets/models/scifi/Astronaut.glb', (gltf) => {
+          const model = gltf.scene;
+          model.position.set(0, -0.4, 0);
+          model.scale.set(1.4, 1.4, 1.4);
+          model.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              if (child.material) {
+                child.material.metalness = 0.6;
+                child.material.roughness = 0.3;
+              }
+            }
+          });
+          scene.add(model);
+        }, undefined, (err) => {
+          console.warn('GLTF load fallback:', err);
+        });
       }
-    }
 
-    function init3DArena() {
-      const container = document.getElementById('arena-canvas');
-      if (!container || typeof THREE === 'undefined') return;
-      if (isSwarmMobileGL()) {
-        container.classList.add('is-still');
-        return;
-      }
-
-      const width = container.clientWidth || 1200;
-      const height = container.clientHeight || 480;
-
-      scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x030408, 0.035);
-
-      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-      camera.position.set(0, 7.5, 12.5);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.35;
-      container.appendChild(renderer.domElement);
-
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.06;
-      controls.maxPolarAngle = Math.PI / 2 - 0.04;
-      controls.minDistance = 3.5;
-      controls.maxDistance = 26;
-      controls.rotateSpeed = 0.8;
-      controls.zoomSpeed = 0.85;
-      controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
-
-      // Lights
-      const ambLight = new THREE.AmbientLight(0xffffff, 0.85);
-      scene.add(ambLight);
-      const dirLight = new THREE.DirectionalLight(0x00f0ff, 1.4); dirLightRef = dirLight;
-      dirLight.position.set(5, 10, 7);
-      scene.add(dirLight);
-      const goldLight = new THREE.PointLight(0xe8c872, 1.2, 30);
-      goldLight.position.set(0, 4, 0);
-      scene.add(goldLight);
-
-      // Grid Floor
-      const grid = new THREE.GridHelper(28, 28, 0x00f0ff, 0x152238);
-      grid.position.y = -0.5;
-      scene.add(grid);
-
-      // Concentric Cyber & Gold Rings
-      const ringGeo = new THREE.RingGeometry(8.5, 8.7, 64);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = -0.48;
-      scene.add(ring);
-
-      const goldRingGeo = new THREE.RingGeometry(11.8, 12.0, 64);
-      const goldRingMat = new THREE.MeshBasicMaterial({ color: 0xe8c872, side: THREE.DoubleSide, transparent: true, opacity: 0.45 });
-      const goldRing = new THREE.Mesh(goldRingGeo, goldRingMat);
-      goldRing.rotation.x = Math.PI / 2;
-      goldRing.position.y = -0.47;
-      scene.add(goldRing);
-
-      // Celestial Particle Starfield
-      const starGeo = new THREE.BufferGeometry();
-      const starCount = 280;
-      const starPos = new Float32Array(starCount * 3);
-      for (let i = 0; i < starCount * 3; i += 3) {
-        starPos[i] = (Math.random() - 0.5) * 50;
-        starPos[i+1] = Math.random() * 20 + 0.5;
-        starPos[i+2] = (Math.random() - 0.5) * 50;
-      }
-      starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-      const starMat = new THREE.PointsMaterial({ color: 0xe8c872, size: 0.12, transparent: true, opacity: 0.7 });
-      const stars = new THREE.Points(starGeo, starMat);
-      scene.add(stars);
-
-      // Central Quantum Nexus Core
-      const nexusGeo = new THREE.IcosahedronGeometry(1.2, 1);
-      const nexusMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.85 });
-      nexusMesh = new THREE.Mesh(nexusGeo, nexusMat);
-      nexusMesh.position.set(0, 1.8, 0);
-      scene.add(nexusMesh);
-
-      // Spawn Agent Stations
+      // Spawn Agent Avatar Stations
       for (const [key, agent] of Object.entries(AGENTS)) {
-        const group = new THREE.Group();
-        group.position.copy(agent.pos);
-
-        // Station Pillar Base
-        const cylGeo = new THREE.CylinderGeometry(0.6, 0.8, 0.4, 16);
-        const cylMat = new THREE.MeshBasicMaterial({ color: 0x152238, wireframe: true });
-        const cyl = new THREE.Mesh(cylGeo, cylMat);
-        group.add(cyl);
-
-        // Station Hologram Core
-        const coreGeo = new THREE.OctahedronGeometry(0.5, 0);
-        const coreMat = new THREE.MeshBasicMaterial({ color: agent.color, wireframe: true, transparent: true, opacity: 0.85 });
-        const core = new THREE.Mesh(coreGeo, coreMat);
-        core.position.y = 0.8;
-        group.add(core);
-
-        scene.add(group);
-        agentMeshes[key] = { group, core };
+        const avatarUnit = createVectorizedAvatarMesh(agent);
+        avatarUnit.group.position.copy(agent.pos);
+        scene.add(avatarUnit.group);
+        agentMeshes[key] = avatarUnit;
       }
 
       // Spawn 48 Boids Drones
@@ -2625,8 +2449,14 @@
         }
 
         for (const key in agentMeshes) {
-          agentMeshes[key].core.rotation.y += 0.015;
-          agentMeshes[key].core.position.y = 0.8 + Math.sin(Date.now() * 0.003 + agentMeshes[key].group.position.x) * 0.12;
+          const m = agentMeshes[key];
+          if (m.frame) m.frame.rotation.y += 0.012;
+          if (m.halo) {
+            m.halo.rotation.z += 0.018;
+            m.halo.rotation.x = Math.sin(Date.now() * 0.002) * 0.2;
+          }
+          if (m.ring) m.ring.rotation.z += 0.02;
+          m.group.position.y = (AGENTS[key] ? AGENTS[key].pos.y : 1.2) + Math.sin(Date.now() * 0.0025 + m.group.position.x) * 0.15;
         }
 
         for (let b of boids) {
