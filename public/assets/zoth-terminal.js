@@ -1,5 +1,5 @@
 /**
- * Zoth Universal Web PTY Terminal Component (v1.0)
+ * Zoth Universal Web PTY Terminal Component (v2.0 Ultra)
  * Renders an authentic, full-featured interactive terminal inside the browser
  * using xterm.js, matching Zoth 4-Theme Engine with real bidirectional PTY streaming.
  */
@@ -17,7 +17,8 @@
     this.term = null;
     this.fitAddon = null;
     this.pollInterval = null;
-    this.lastOutputLength = 0;
+    this.currentChunkIndex = 0;
+    this.isPolling = false;
     this.onFilesChange = this.options.onFilesChange || null;
     this.onIndexFound = this.options.onIndexFound || null;
 
@@ -90,7 +91,9 @@
       fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace',
       theme: this.getThemePalette(),
       allowTransparency: true,
-      convertEol: true
+      convertEol: true,
+      cols: 90,
+      rows: 24
     });
 
     if (window.FitAddon && window.FitAddon.FitAddon) {
@@ -99,11 +102,16 @@
     }
 
     this.term.open(this.container);
-    if (this.fitAddon) {
-      this.fitAddon.fit();
-    }
-
+    
     var self = this;
+    setTimeout(function() {
+      if (self.fitAddon) {
+        try {
+          self.fitAddon.fit();
+          self.sendResize(self.term.cols, self.term.rows);
+        } catch(e) {}
+      }
+    }, 150);
 
     // Handle user keystrokes into PTY
     this.term.onData(function (data) {
@@ -112,9 +120,11 @@
 
     // Handle Window Resize
     window.addEventListener('resize', function () {
-      if (self.fitAddon) {
-        self.fitAddon.fit();
-        self.sendResize(self.term.cols, self.term.rows);
+      if (self.fitAddon && self.term) {
+        try {
+          self.fitAddon.fit();
+          self.sendResize(self.term.cols, self.term.rows);
+        } catch(e) {}
       }
     });
 
@@ -139,7 +149,7 @@
         data: data
       })
     }).catch(function (e) {
-      console.warn('PTY Write error:', e);
+      console.warn('PTY Write notice:', e);
     });
   };
 
@@ -161,20 +171,26 @@
     var self = this;
 
     this.pollInterval = setInterval(function () {
-      if (!self.sessionId) return;
+      if (!self.sessionId || self.isPolling) return;
+      self.isPolling = true;
 
       fetch(self.apiBase + '/api/zoth/pty/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: self.sessionId })
+        body: JSON.stringify({
+          sessionId: self.sessionId,
+          chunkIndex: self.currentChunkIndex
+        })
       })
       .then(function (res) { return res.json(); })
       .then(function (data) {
+        self.isPolling = false;
         if (data && data.status === 'ok') {
-          if (data.output && data.output.length > self.lastOutputLength) {
-            var newChunk = data.output.slice(self.lastOutputLength);
-            self.term.write(newChunk);
-            self.lastOutputLength = data.output.length;
+          if (data.output && data.output.length > 0) {
+            self.term.write(data.output);
+          }
+          if (typeof data.nextIndex === 'number') {
+            self.currentChunkIndex = data.nextIndex;
           }
 
           if (self.onFilesChange && data.files) {
@@ -186,14 +202,16 @@
           }
         }
       })
-      .catch(function () {});
-    }, 250);
+      .catch(function () {
+        self.isPolling = false;
+      });
+    }, 150);
   };
 
   ZothTerminal.prototype.switchSession = function (sessionId, slug) {
     this.sessionId = sessionId;
     this.slug = slug;
-    this.lastOutputLength = 0;
+    this.currentChunkIndex = 0;
     if (this.term) {
       this.term.clear();
       this.term.reset();

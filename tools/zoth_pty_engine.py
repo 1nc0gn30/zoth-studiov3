@@ -16,7 +16,6 @@ import select
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Platform check
 IS_WINDOWS = sys.platform == "win32"
 if not IS_WINDOWS:
     import pty
@@ -25,7 +24,6 @@ if not IS_WINDOWS:
     import struct
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-SESSIONS_FILE = REPO_ROOT / "core-app" / "public" / "workspaces" / "pty_sessions.json"
 
 class PTYSession:
     def __init__(self, session_id: str, slug: str, cwd: str, shell_cmd: str = None):
@@ -34,13 +32,11 @@ class PTYSession:
         self.cwd = cwd
         self.created_at = datetime.now(timezone.utc).isoformat()
         self.last_active = datetime.now(timezone.utc).isoformat()
-        self.history = []
-        self.max_history_bytes = 250000
+        self.chunks = []  # list of raw incremental strings
+        self.max_chunks = 5000
         self.is_alive = True
         self.master_fd = None
-        self.slave_fd = None
         self.pid = None
-        self.output_queue = queue.Queue()
         self.lock = threading.Lock()
 
         # Workspace directory
@@ -63,16 +59,24 @@ class PTYSession:
                 env = os.environ.copy()
                 env["TERM"] = "xterm-256color"
                 env["COLORTERM"] = "truecolor"
+                env["LINES"] = "32"
+                env["COLUMNS"] = "110"
                 env["ZOTH_TERMINAL"] = "1"
                 env["ZOTH_WORKSPACE"] = self.cwd
-                # Local PATH
+                
                 local_bin = os.path.expanduser("~/.local/bin")
                 if local_bin not in env.get("PATH", ""):
                     env["PATH"] = f"{local_bin}:{env.get('PATH', '')}"
 
                 os.execvpe(shell_cmd, [shell_cmd], env)
             else:
-                # Parent process: set non-blocking
+                # Parent process: set initial window size (110 cols x 32 rows)
+                try:
+                    winsize = struct.pack("HHHH", 32, 110, 0, 0)
+                    fcntl.ioctl(self.master_fd, termios.TIOCSWINSZ, winsize)
+                except Exception:
+                    pass
+
                 flags = fcntl.fcntl(self.master_fd, fcntl.F_GETFL)
                 fcntl.fcntl(self.master_fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
                 
@@ -80,13 +84,12 @@ class PTYSession:
                 t = threading.Thread(target=self._read_loop, daemon=True)
                 t.start()
         else:
-            # Windows fallback / mock
             self.is_alive = True
 
     def _read_loop(self):
         while self.is_alive and self.master_fd is not None:
             try:
-                r, _, _ = select.select([self.master_fd], [], [], 0.05)
+                r, _, _ = select.select([self.master_fd], [], [], 0.03)
                 if r:
                     data = os.read(self.master_fd, 4096)
                     if not data:
@@ -94,14 +97,10 @@ class PTYSession:
                         break
                     text = data.decode("utf-8", errors="replace")
                     with self.lock:
-                        self.history.append(text)
-                        # Trim history buffer
-                        total_len = sum(len(h) for h in self.history)
-                        while total_len > self.max_history_bytes and len(self.history) > 1:
-                            removed = self.history.pop(0)
-                            total_len -= len(removed)
+                        self.chunks.append(text)
+                        if len(self.chunks) > self.max_chunks:
+                            self.chunks = self.chunks[-self.max_chunks:]
                         self.last_active = datetime.now(timezone.utc).isoformat()
-                    self.output_queue.put(text)
             except (OSError, IOError):
                 self.is_alive = False
                 break
@@ -121,14 +120,23 @@ class PTYSession:
     def resize(self, cols: int, rows: int):
         if not IS_WINDOWS and self.master_fd is not None:
             try:
-                winsize = struct.pack("HHHH", rows, cols, 0, 0)
+                winsize = struct.pack("HHHH", max(rows, 10), max(cols, 20), 0, 0)
                 fcntl.ioctl(self.master_fd, termios.TIOCSWINSZ, winsize)
             except Exception:
                 pass
 
-    def get_history(self) -> str:
+    def get_incremental_output(self, from_chunk_index: int = 0) -> tuple[str, int]:
         with self.lock:
-            return "".join(self.history)
+            total_chunks = len(self.chunks)
+            if from_chunk_index >= total_chunks:
+                return "", total_chunks
+            # Get new chunks
+            new_text = "".join(self.chunks[from_chunk_index:])
+            return new_text, total_chunks
+
+    def get_full_history(self) -> str:
+        with self.lock:
+            return "".join(self.chunks)
 
     def get_files(self) -> list:
         if not self.ws_path.exists():
@@ -169,15 +177,15 @@ class ZothPTYManager:
         session = self.get_or_create(slug, prompt)
 
         def _ducky_sequence():
-            # Step 1: Launch agent (e.g. agy)
+            # Step 1: Launch agent
             time.sleep(0.6)
             session.write(agent + "\r")
             
-            # Step 2: Wait 3.5s for AGY TUI to mount its welcome / trust screen, then press Enter
+            # Step 2: Wait 3.5s for AGY TUI to mount welcome screen, then press Enter
             time.sleep(3.5)
             session.write("\r")
             
-            # Step 3: Wait 2.5s for cursor focus on prompt box, then type prompt cleanly
+            # Step 3: Wait 2.5s for prompt box focus, then type prompt
             time.sleep(2.5)
             session.write(prompt.strip() + "\r")
 
@@ -202,6 +210,4 @@ class ZothPTYManager:
         results.sort(key=lambda x: x["lastActive"], reverse=True)
         return results
 
-
-# Global singleton instance
 pty_manager = ZothPTYManager()

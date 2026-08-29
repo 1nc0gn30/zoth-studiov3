@@ -2271,19 +2271,21 @@ created: {now_utc}
 
             if path in ("/api/zoth/pty/stream", "/api/pty/stream"):
                 session_id = data.get("sessionId", "")
+                chunk_index = int(data.get("chunkIndex", 0))
                 import sys
                 sys.path.insert(0, str(ORCH_DIR.parent.parent))
                 try:
                     import zoth_pty_engine
                     sess = zoth_pty_engine.pty_manager.sessions.get(session_id) or zoth_pty_engine.pty_manager.get_or_create(session_id.replace("zoth_pty_", ""))
                     if sess:
-                        history = sess.get_history()
+                        output_chunk, next_index = sess.get_incremental_output(chunk_index)
                         files = sess.get_files()
                         has_index = sess.has_index()
                         self._send_json({
                             "status": "ok",
                             "sessionId": sess.session_id,
-                            "output": history,
+                            "output": output_chunk,
+                            "nextIndex": next_index,
                             "isAlive": sess.is_alive,
                             "files": files,
                             "hasIndex": has_index,
