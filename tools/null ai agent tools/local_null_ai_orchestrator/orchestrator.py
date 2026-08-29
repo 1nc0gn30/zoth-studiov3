@@ -2223,6 +2223,96 @@ created: {now_utc}
                 return
 
             # ─── API: DuckyScript Live Real Terminal Spawner & Keystroke Injection ───
+            
+            # ─── API: Universal Zoth PTY Engine & xterm.js Stream ───
+            if path in ("/api/zoth/pty/spawn", "/api/pty/spawn"):
+                slug = data.get("slug", data.get("projectName", "sovereign-app")).strip()
+                prompt = data.get("prompt", "").strip()
+                agent = data.get("agent", "agy").strip()
+                use_ducky = data.get("ducky", True)
+
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
+                try:
+                    import zoth_pty_engine
+                    if use_ducky and prompt:
+                        sess = zoth_pty_engine.pty_manager.inject_duckyscript_agent(slug, prompt, agent)
+                    else:
+                        sess = zoth_pty_engine.pty_manager.get_or_create(slug)
+                    
+                    self._send_json({
+                        "status": "ok",
+                        "sessionId": sess.session_id,
+                        "slug": sess.slug,
+                        "workspace": sess.cwd,
+                        "previewUrl": f"/workspaces/{sess.slug}/index.html",
+                        "isAlive": sess.is_alive
+                    })
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/zoth/pty/write", "/api/pty/write"):
+                session_id = data.get("sessionId", "")
+                input_data = data.get("data", "")
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
+                try:
+                    import zoth_pty_engine
+                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id)
+                    if sess:
+                        success = sess.write(input_data)
+                        self._send_json({"status": "ok", "written": success})
+                    else:
+                        self._send_json({"error": "Session not found"}, 404)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/zoth/pty/stream", "/api/pty/stream"):
+                session_id = data.get("sessionId", "")
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
+                try:
+                    import zoth_pty_engine
+                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id)
+                    if sess:
+                        history = sess.get_history()
+                        files = sess.get_files()
+                        has_index = sess.has_index()
+                        self._send_json({
+                            "status": "ok",
+                            "sessionId": sess.session_id,
+                            "output": history,
+                            "isAlive": sess.is_alive,
+                            "files": files,
+                            "hasIndex": has_index,
+                            "previewUrl": f"/workspaces/{sess.slug}/index.html"
+                        })
+                    else:
+                        self._send_json({"error": "Session not found"}, 404)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
+            if path in ("/api/zoth/pty/resize", "/api/pty/resize"):
+                session_id = data.get("sessionId", "")
+                cols = int(data.get("cols", 80))
+                rows = int(data.get("rows", 24))
+                import sys
+                sys.path.insert(0, str(ORCH_DIR.parent.parent))
+                try:
+                    import zoth_pty_engine
+                    sess = zoth_pty_engine.pty_manager.sessions.get(session_id)
+                    if sess:
+                        sess.resize(cols, rows)
+                        self._send_json({"status": "ok"})
+                    else:
+                        self._send_json({"error": "Session not found"}, 404)
+                except Exception as e:
+                    self._send_json({"error": str(e)}, 500)
+                return
+
             if path in ("/api/zoth/terminal/ducky/spawn", "/api/ducky/spawn"):
                 proj_name = data.get("projectName", data.get("slug", "zoth-project")).strip()
                 prompt = data.get("prompt", "").strip()
