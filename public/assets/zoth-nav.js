@@ -20,6 +20,14 @@
     document.head.appendChild(petHudScript);
   }
 
+  // Ensure Universal Workbench & Command Palette Engine is loaded
+  if (!window.ZothWorkbench && !document.querySelector('script[src*="zoth-workbench.js"]')) {
+    var wbScript = document.createElement("script");
+    wbScript.src = "/assets/zoth-workbench.js";
+    wbScript.defer = true;
+    document.head.appendChild(wbScript);
+  }
+
   function initNav() {
 
     // ── Universal Dynamic Link Injector (Ensures Web3 & Memory are present across all pages) ──
@@ -200,18 +208,31 @@
         }
       }
 
-      // Inject Mobile Annotator Trigger into Drawer if not already present
+      // Inject Mobile Annotator & Command Palette Trigger into Drawer if not already present
       if (!drawer.querySelector(".drawer-annotator-btn")) {
         var annotatorSection = document.createElement("div");
         annotatorSection.className = "drawer-section drawer-annotator-section";
         annotatorSection.innerHTML = [
           '<div class="drawer-heading">🛠️ Studio Developer Tools</div>',
-          '<button type="button" class="drawer-annotator-btn" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.35);color:#00f0ff;font-weight:700;font-size:0.85rem;cursor:pointer;margin-top:4px;">',
+          '<button type="button" class="drawer-palette-btn" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.35);color:#fbbf24;font-weight:700;font-size:0.85rem;cursor:pointer;margin-top:4px;">',
+          '  <span style="display:flex;align-items:center;gap:8px;"><span>🔍</span> Command Palette</span>',
+          '  <span style="font-size:0.7rem;background:rgba(251,191,36,0.25);padding:2px 8px;border-radius:999px;color:#fff;">Ctrl+K</span>',
+          '</button>',
+          '<button type="button" class="drawer-annotator-btn" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.35);color:#00f0ff;font-weight:700;font-size:0.85rem;cursor:pointer;margin-top:6px;">',
           '  <span style="display:flex;align-items:center;gap:8px;"><span>⚡</span> Visual Annotator & Notes</span>',
-          '  <span style="font-size:0.7rem;background:rgba(0,240,255,0.25);padding:2px 8px;border-radius:999px;color:#fff;">Active</span>',
+          '  <span style="font-size:0.7rem;background:rgba(0,240,255,0.25);padding:2px 8px;border-radius:999px;color:#fff;">Shift+A</span>',
           '</button>'
         ].join('');
         drawer.appendChild(annotatorSection);
+
+        annotatorSection.querySelector(".drawer-palette-btn").addEventListener("click", function () {
+          document.body.classList.remove("menu-open");
+          burger.setAttribute("aria-expanded", "false");
+          burger.textContent = "Menu";
+          if (window.ZothWorkbench && typeof window.ZothWorkbench.openPalette === "function") {
+            window.ZothWorkbench.openPalette();
+          }
+        });
 
         annotatorSection.querySelector(".drawer-annotator-btn").addEventListener("click", function () {
           document.body.classList.remove("menu-open");

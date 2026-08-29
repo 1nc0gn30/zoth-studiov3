@@ -1374,7 +1374,11 @@ def cmd_start(args):
         subprocess.run(["bash", str(script_path)])
     else:
         print(f"{RED}Launcher script not found. Starting Web Hub manually...{RESET}")
-        subprocess.Popen([sys.executable, "-m", "http.server", "8088", "--bind", "0.0.0.0", "--directory", str(PUBLIC_DIR)])
+        dev_server = BASE_DIR / "tools" / "zoth_dev_server.py"
+        if dev_server.exists():
+            subprocess.Popen([sys.executable, str(dev_server), "8088"])
+        else:
+            subprocess.Popen([sys.executable, "-m", "http.server", "8088", "--bind", "0.0.0.0", "--directory", str(PUBLIC_DIR)])
         print(f"{GREEN}✔ Web Server started on port 8088{RESET}")
 
 def cmd_stop(args):

@@ -2569,12 +2569,13 @@
 <!-- Nexus 3D Studio Engine Script -->
 <script>
       let scene, camera, renderer, controls, transformControls, composer, bloomPass;
-      let ssaoPass, godraysPass, chromaticPass, adaptiveScaler, dirLight, fillLight;
+      let ssaoPass, godraysPass, chromaticPass, adaptiveScaler, dirLight, fillLight, ambLight, gridHelper;
       let selectedObject = null;
       let nexusTimeline = null;
       let meshList = [];
       let mixer, clock = new THREE.Clock();
       let particleSystem, particleGeo;
+      let isNexusRunning = true;
       let isRecording = false;
       let mediaRecorder = null;
       let recordedChunks = [];
@@ -3078,13 +3079,13 @@
         }
 
         // Grid & Platform
-        const grid = new THREE.GridHelper(24, 24, 0x00e5ff, 0x1f293d);
-        grid.position.y = -0.01;
-        scene.add(grid);
+        gridHelper = new THREE.GridHelper(24, 24, 0x00e5ff, 0x1f293d);
+        gridHelper.position.y = -0.01;
+        scene.add(gridHelper);
 
         // Ambient & Key Lights
-        const amb = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(amb);
+        ambLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambLight);
 
         dirLight = new THREE.DirectionalLight(0x00e5ff, 2.0);
         dirLight.position.set(10, 15, 10);
@@ -3186,11 +3187,127 @@
           initSemanticKnowledgeHUD();
         }
 
+        // Dynamic Theme Event Listener
+        window.addEventListener('zoth-theme-change', (e) => {
+          const t = (e && e.detail && e.detail.theme) ? e.detail.theme : (window.getZothTheme ? window.getZothTheme() : 'dark');
+          applyNexusTheme(t);
+        });
+
+        // Apply initial visual theme
+        const initialTheme = (window.getZothTheme ? window.getZothTheme() : (document.documentElement.getAttribute('data-theme') || 'dark'));
+        applyNexusTheme(initialTheme);
+
+        // Visibilitychange handler for 60 FPS performance throttling
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            isNexusRunning = false;
+          } else {
+            isNexusRunning = true;
+            if (clock) clock.getDelta();
+          }
+        });
+
         window.addEventListener('resize', onResize, { passive: true });
         if (window.ResizeObserver) {
           new ResizeObserver(onResize).observe(host);
         }
         animate();
+      }
+
+      // Dynamic 4-Theme Reactive Engine for Nexus 3D
+      const NEXUS_THEME_PALETTES = {
+        dark: {
+          fog: 0x020306,
+          amb: 0xffffff,
+          ambInt: 0.6,
+          dir: 0x00e5ff,
+          dirInt: 2.0,
+          fill: 0xd946ef,
+          fillInt: 1.5,
+          gridCenter: 0x00e5ff,
+          gridLines: 0x1f293d,
+          pColorA: 0x00e5ff,
+          pColorB: 0xd946ef
+        },
+        light: {
+          fog: 0xf1f5f9,
+          amb: 0xffffff,
+          ambInt: 1.2,
+          dir: 0x0284c7,
+          dirInt: 2.2,
+          fill: 0xf59e0b,
+          fillInt: 1.2,
+          gridCenter: 0x0284c7,
+          gridLines: 0xcbd5e1,
+          pColorA: 0x1d4ed8,
+          pColorB: 0xd97706
+        },
+        matrix: {
+          fog: 0x020b06,
+          amb: 0x064e3b,
+          ambInt: 0.9,
+          dir: 0x00ff66,
+          dirInt: 2.4,
+          fill: 0x00d4aa,
+          fillInt: 1.6,
+          gridCenter: 0x00ff66,
+          gridLines: 0x064e3b,
+          pColorA: 0x00ff66,
+          pColorB: 0x10b981
+        },
+        gold: {
+          fog: 0x0c0a09,
+          amb: 0x291805,
+          ambInt: 0.9,
+          dir: 0xfbbf24,
+          dirInt: 2.5,
+          fill: 0xe8c872,
+          fillInt: 1.5,
+          gridCenter: 0xfbbf24,
+          gridLines: 0x451a03,
+          pColorA: 0xfbbf24,
+          pColorB: 0xf59e0b
+        }
+      };
+
+      function applyNexusTheme(themeId) {
+        const t = themeId || (window.getZothTheme ? window.getZothTheme() : 'dark');
+        const pal = NEXUS_THEME_PALETTES[t] || NEXUS_THEME_PALETTES.dark;
+
+        if (scene) {
+          if (scene.fog) scene.fog.color.setHex(pal.fog);
+          if (ambLight) {
+            ambLight.color.setHex(pal.amb);
+            ambLight.intensity = pal.ambInt;
+          }
+          if (dirLight) {
+            dirLight.color.setHex(pal.dir);
+            dirLight.intensity = pal.dirInt;
+          }
+          if (fillLight) {
+            fillLight.color.setHex(pal.fill);
+            fillLight.intensity = pal.fillInt;
+          }
+          if (gridHelper) {
+            scene.remove(gridHelper);
+            gridHelper = new THREE.GridHelper(24, 24, pal.gridCenter, pal.gridLines);
+            gridHelper.position.y = -0.01;
+            scene.add(gridHelper);
+          }
+        }
+
+        if (particleGeo && particleGeo.attributes && particleGeo.attributes.color) {
+          const colors = particleGeo.attributes.color.array;
+          const cA = new THREE.Color(pal.pColorA);
+          const cB = new THREE.Color(pal.pColorB);
+          for (let i = 0; i < colors.length / 3; i++) {
+            const c = (i % 2 === 0) ? cA : cB;
+            colors[i * 3] = c.r;
+            colors[i * 3 + 1] = c.g;
+            colors[i * 3 + 2] = c.b;
+          }
+          particleGeo.attributes.color.needsUpdate = true;
+        }
       }
 
       function initParticleSystem() {
@@ -4183,12 +4300,60 @@
         }
       }
 
+      function createProceduralFallbackModel(name) {
+        const group = new THREE.Group();
+        const hexMat = new THREE.MeshPhysicalMaterial({
+          color: 0x00e5ff,
+          emissive: 0x0088cc,
+          emissiveIntensity: 0.5,
+          roughness: 0.15,
+          metalness: 0.85,
+          transmission: 0.5,
+          transparent: true,
+          opacity: 0.85,
+          side: THREE.DoubleSide
+        });
+        const coreMat = new THREE.MeshBasicMaterial({
+          color: 0xe8c872,
+          wireframe: true
+        });
+
+        const icosa = new THREE.Mesh(new THREE.IcosahedronGeometry(1.2, 0), hexMat);
+        const wire = new THREE.Mesh(new THREE.IcosahedronGeometry(1.22, 0), coreMat);
+        const inner = new THREE.Mesh(new THREE.OctahedronGeometry(0.65, 0), new THREE.MeshStandardMaterial({
+          color: 0xd946ef,
+          emissive: 0x7c3aed,
+          emissiveIntensity: 0.8,
+          roughness: 0.2,
+          metalness: 0.9
+        }));
+        const baseRing = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.03, 12, 36), new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true }));
+        baseRing.rotation.x = Math.PI / 2;
+
+        group.add(icosa, wire, inner, baseRing);
+        group.position.set(0, 1.5, 0);
+        group.name = `[Proxy] ${name}`;
+        return group;
+      }
+
       function loadModelPreset(url, name) {
         const isObj = url.toLowerCase().endsWith('.obj');
         const tag = document.getElementById('viewport-status-tag');
         if (tag) tag.textContent = `⏳ Loading 3D Model: ${name}...`;
 
+        let modelLoaded = false;
+        const loadTimeout = setTimeout(() => {
+          if (!modelLoaded) {
+            console.warn(`Model loading timed out for: ${name} -> triggering procedural fallback`);
+            const fallback = createProceduralFallbackModel(name);
+            setupLoadedModel(fallback);
+            if (tag) tag.textContent = `⚠️ Model '${name}' timed out · Rendered procedural proxy`;
+          }
+        }, 7000);
+
         function setupLoadedModel(object) {
+          modelLoaded = true;
+          clearTimeout(loadTimeout);
           const bbox = new THREE.Box3().setFromObject(object);
           const size = new THREE.Vector3();
           bbox.getSize(size);
@@ -4211,7 +4376,7 @@
           updateOutliner();
           updateStats();
           burstParticles();
-          if (tag) tag.textContent = `📦 Loaded 3D Asset: ${name}`;
+          if (tag && !tag.textContent.includes('⚠️')) tag.textContent = `📦 Loaded 3D Asset: ${name}`;
         }
 
         if (isObj) {
@@ -4221,13 +4386,18 @@
               setupLoadedModel(obj);
             }, undefined, (err) => {
               console.warn('OBJ load fallback to procedural generator:', err);
-              spawnPrimitive('crystal');
+              const fallback = createProceduralFallbackModel(name);
+              setupLoadedModel(fallback);
+              if (tag) tag.textContent = `⚠️ OBJ '${name}' load failed · Rendered procedural proxy`;
             });
+          } else {
+            const fallback = createProceduralFallbackModel(name);
+            setupLoadedModel(fallback);
           }
           return;
         }
 
-        // GLTF / GLB Loader
+        // GLTF / GLB Loader with timeout protection
         if (typeof THREE.GLTFLoader === 'function') {
           const loader = new THREE.GLTFLoader();
           loader.load(url, (gltf) => {
@@ -4240,9 +4410,14 @@
               action.play();
             }
           }, undefined, (err) => {
-            console.warn('GLTF load error:', err);
-            spawnPrimitive('crystal');
+            console.warn('GLTF load error -> procedural fallback:', err);
+            const fallback = createProceduralFallbackModel(name);
+            setupLoadedModel(fallback);
+            if (tag) tag.textContent = `⚠️ GLB '${name}' load failed · Rendered procedural proxy`;
           });
+        } else {
+          const fallback = createProceduralFallbackModel(name);
+          setupLoadedModel(fallback);
         }
       }
 
@@ -5397,6 +5572,7 @@
       let frameCounter = 0;
       function animate() {
         requestAnimationFrame(animate);
+        if (!isNexusRunning) return;
         const dt = clock.getDelta();
         const t = clock.getElapsedTime();
         const deltaMs = dt * 1000;
