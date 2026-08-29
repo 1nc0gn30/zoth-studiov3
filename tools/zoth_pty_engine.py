@@ -169,17 +169,17 @@ class ZothPTYManager:
         session = self.get_or_create(slug, prompt)
 
         def _ducky_sequence():
-            # Step 1: Type 'agy' and press Enter
-            time.sleep(0.5)
-            session.write(f"{agent}\n")
+            # Step 1: Launch agent (e.g. agy)
+            time.sleep(0.6)
+            session.write(f"{agent}")
             
-            # Step 2: Wait 2.5s for TUI and press Enter to trust folder
+            # Step 2: Wait 3.5s for AGY TUI to mount its welcome / trust screen, then press Enter
+            time.sleep(3.5)
+            session.write("")
+            
+            # Step 3: Wait 2.5s for cursor focus on prompt box, then type prompt cleanly
             time.sleep(2.5)
-            session.write("\n")
-            
-            # Step 3: Wait 2.0s and type prompt cleanly
-            time.sleep(2.0)
-            session.write(prompt.strip() + "\n")
+            session.write(prompt.strip() + "")
 
         threading.Thread(target=_ducky_sequence, daemon=True).start()
         return session
