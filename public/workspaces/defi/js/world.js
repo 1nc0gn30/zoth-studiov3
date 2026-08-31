@@ -76,6 +76,19 @@ class CyberDexWorld {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.25;
+
+    // Gracefully handle WebGL context loss
+    this.renderer.domElement.addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      console.warn("[CyberDex 3D] WebGL context was lost. Pausing render loop...");
+      if (this.animId) cancelAnimationFrame(this.animId);
+    }, false);
+
+    this.renderer.domElement.addEventListener("webglcontextrestored", () => {
+      console.info("[CyberDex 3D] WebGL context restored. Re-initializing scene...");
+      this.init();
+    }, false);
+
     this.container.appendChild(this.renderer.domElement);
 
     // 4. Lights

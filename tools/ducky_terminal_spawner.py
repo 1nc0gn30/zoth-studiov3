@@ -155,26 +155,76 @@ def list_all_active_sessions():
     live_tmux = set(res.stdout.strip().splitlines()) if res.returncode == 0 else set()
 
     # 1. Registered sessions
-    for sname, info in list(registry.items()):
-        proj_slug = info.get("slug", sname.replace("zoth_", ""))
-        seen_slugs.add(proj_slug)
-        ws_dir = REPO_ROOT / "core-app" / "public" / "workspaces" / proj_slug
-        files = [f.name for f in ws_dir.glob("*") if f.is_file()] if ws_dir.exists() else []
-        has_index = (ws_dir / "index.html").exists() if ws_dir.exists() else False
-        is_live = sname in live_tmux
+    if isinstance(registry, dict):
+        # Handle dict format where keys are session names or 'sessions' key
+        if "sessions" in registry and isinstance(registry["sessions"], list):
+            for item in registry["sessions"]:
+                if isinstance(item, dict):
+                    slug = item.get("slug", "")
+                    if slug:
+                        seen_slugs.add(slug)
+                        ws_dir = REPO_ROOT / "core-app" / "public" / "workspaces" / slug
+                        files = [f.name for f in ws_dir.glob("*") if f.is_file()] if ws_dir.exists() else []
+                        has_index = (ws_dir / "index.html").exists() if ws_dir.exists() else False
+                        sname = item.get("session", f"zoth_{slug}")
+                        is_live = sname in live_tmux
+                        sessions.append({
+                            "session": sname,
+                            "slug": slug,
+                            "agent": item.get("agent", "agy"),
+                            "prompt": item.get("prompt", ""),
+                            "createdAt": item.get("createdAt", ""),
+                            "lastActive": item.get("lastActive", ""),
+                            "files": files,
+                            "hasIndex": has_index or item.get("hasIndex", False),
+                            "previewUrl": item.get("previewUrl", f"/workspaces/{slug}/index.html"),
+                            "isLive": is_live
+                        })
+        for sname, info in list(registry.items()):
+            if sname == "sessions" or not isinstance(info, dict):
+                continue
+            proj_slug = info.get("slug", sname.replace("zoth_", ""))
+            seen_slugs.add(proj_slug)
+            ws_dir = REPO_ROOT / "core-app" / "public" / "workspaces" / proj_slug
+            files = [f.name for f in ws_dir.glob("*") if f.is_file()] if ws_dir.exists() else []
+            has_index = (ws_dir / "index.html").exists() if ws_dir.exists() else False
+            is_live = sname in live_tmux
 
-        sessions.append({
-            "session": sname,
-            "slug": proj_slug,
-            "agent": info.get("agent", "agy"),
-            "prompt": info.get("prompt", ""),
-            "createdAt": info.get("createdAt", ""),
-            "lastActive": info.get("lastActive", ""),
-            "files": files,
-            "hasIndex": has_index,
-            "previewUrl": f"/workspaces/{proj_slug}/index.html",
-            "isLive": is_live
-        })
+            sessions.append({
+                "session": sname,
+                "slug": proj_slug,
+                "agent": info.get("agent", "agy"),
+                "prompt": info.get("prompt", ""),
+                "createdAt": info.get("createdAt", ""),
+                "lastActive": info.get("lastActive", ""),
+                "files": files,
+                "hasIndex": has_index,
+                "previewUrl": f"/workspaces/{proj_slug}/index.html",
+                "isLive": is_live
+            })
+    elif isinstance(registry, list):
+        for item in registry:
+            if isinstance(item, dict):
+                slug = item.get("slug", "")
+                if slug:
+                    seen_slugs.add(slug)
+                    ws_dir = REPO_ROOT / "core-app" / "public" / "workspaces" / slug
+                    files = [f.name for f in ws_dir.glob("*") if f.is_file()] if ws_dir.exists() else []
+                    has_index = (ws_dir / "index.html").exists() if ws_dir.exists() else False
+                    sname = item.get("session", f"zoth_{slug}")
+                    is_live = sname in live_tmux
+                    sessions.append({
+                        "session": sname,
+                        "slug": slug,
+                        "agent": item.get("agent", "agy"),
+                        "prompt": item.get("prompt", ""),
+                        "createdAt": item.get("createdAt", ""),
+                        "lastActive": item.get("lastActive", ""),
+                        "files": files,
+                        "hasIndex": has_index or item.get("hasIndex", False),
+                        "previewUrl": item.get("previewUrl", f"/workspaces/{slug}/index.html"),
+                        "isLive": is_live
+                    })
 
     # 2. Also discover any physical workspaces on disk that have index.html or files
     ws_parent = REPO_ROOT / "core-app" / "public" / "workspaces"
