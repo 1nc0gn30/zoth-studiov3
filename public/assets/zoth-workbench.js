@@ -259,6 +259,51 @@
     },
     {
       group: 'Themes & Developer Controls',
+      id: 'theme-google',
+      title: '🌐 Switch Theme: Google Material You',
+      desc: 'Material 3 Tonal Elevation & Google 4-Color Accents',
+      badge: 'THEME',
+      action: function () { if (window.setZothTheme) window.setZothTheme('google'); },
+      keywords: 'theme google material you android search cloud blue red yellow green'
+    },
+    {
+      group: 'Themes & Developer Controls',
+      id: 'theme-microsoft',
+      title: '🪟 Switch Theme: Microsoft Fluent',
+      desc: 'Mica & Acrylic Specular Translucency with Segoe UI',
+      badge: 'THEME',
+      action: function () { if (window.setZothTheme) window.setZothTheme('microsoft'); },
+      keywords: 'theme microsoft fluent windows 11 mica acrylic azure segoe'
+    },
+    {
+      group: 'Themes & Developer Controls',
+      id: 'theme-apple',
+      title: '🍎 Switch Theme: Apple Cupertino',
+      desc: 'Continuous Squircle OLED Obsidian & Frosted Glass HIG',
+      badge: 'THEME',
+      action: function () { if (window.setZothTheme) window.setZothTheme('apple'); },
+      keywords: 'theme apple cupertino macos ios sf pro glass squircle oled'
+    },
+    {
+      group: 'Themes & Developer Controls',
+      id: 'theme-openai',
+      title: '✨ Switch Theme: OpenAI Slate',
+      desc: 'ChatGPT Minimalist Dark Slate & Emerald Neural Phosphors',
+      badge: 'THEME',
+      action: function () { if (window.setZothTheme) window.setZothTheme('openai'); },
+      keywords: 'theme openai chatgpt slate emerald mint minimalist zinc'
+    },
+    {
+      group: 'Themes & Developer Controls',
+      id: 'theme-amazon',
+      title: '☁️ Switch Theme: AWS Cloud Obsidian',
+      desc: 'Technical Builder Console Density & Radiant AWS Amber',
+      badge: 'THEME',
+      action: function () { if (window.setZothTheme) window.setZothTheme('amazon'); },
+      keywords: 'theme amazon aws cloud obsidian amber orange console telemetry'
+    },
+    {
+      group: 'Themes & Developer Controls',
       id: 'annotator',
       title: '🛠️ Toggle Visual Annotator (Shift+A)',
       desc: 'Screen markup, bug pinpoints & markdown notes canvas',
@@ -689,12 +734,17 @@
         '  </div>',
         '</div>',
         '<div class="zoth-sidebar-group">',
-        '  <span class="zoth-sidebar-label">🎨 Visual Color Theme</span>',
-        '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">',
+        '  <span class="zoth-sidebar-label">🎨 Visual Color Theme (9 Options)</span>',
+        '  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">',
         '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'dark\')">🌙 Dark</button>',
         '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'light\')">☀️ Light</button>',
         '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'matrix\')">📟 Matrix</button>',
         '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'gold\')">⚗️ Gold</button>',
+        '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'google\')">🌐 Google</button>',
+        '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'microsoft\')">🪟 Fluent</button>',
+        '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'apple\')">🍎 Apple</button>',
+        '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'openai\')">✨ OpenAI</button>',
+        '    <button class="zoth-fab-btn" onclick="if(window.setZothTheme)window.setZothTheme(\'amazon\')">☁️ AWS</button>',
         '  </div>',
         '</div>'
       ].join('\n');
