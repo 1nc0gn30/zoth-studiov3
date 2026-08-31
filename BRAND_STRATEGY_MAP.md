@@ -1,7 +1,7 @@
 # 🏛️ Zoth Studio & NullAI — Brand Strategy Map & Ecosystem Architecture
 
 > **Brand**: Zoth Studio (by NullAI / 757tech)  
-> **Domains**: `nullai.tech` · `zoth.nealfrazier.tech`  
+> **Domains**: `nullai.tech` / `zoth.nullai.tech`  
 > **Core Tagline**: *Local-First Multi-Agent AI Powerhouse & Mathematical Observability Studio*  
 > **Philosophy**: Sovereign compute, zero-cloud leaks, mathematical transparency, cybernetic craftsmanship.
 
@@ -138,7 +138,7 @@ No keys on public wire  attention scaling math  9 specialized mascot spirits  re
              ▼                                                     ▼
 ┌───────────────────────────┐                         ┌───────────────────────────┐
 │     ZOTH PUBLIC HUB       │                         │   ZOTH OPERATOR DECK      │
-│  (zoth.nealfrazier.tech)  │                         │   (127.0.0.1:8484)        │
+│  (nullai.tech / zoth.nullai.tech)  │                         │   (127.0.0.1:8484)        │
 ├───────────────────────────┤                         ├───────────────────────────┤
 │ • Model Foundry & Spirits │                         │ • Zoth Chat & Math Drawer │
 │ • AI Math Pillars Suite   │                         │ • AI Workbench (47+ CLIs) │
