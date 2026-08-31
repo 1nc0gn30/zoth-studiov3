@@ -1693,6 +1693,41 @@ Zero-Cloud Leakage Audit: VERIFIED (${hash})`;
         }
       }
 
+
+      // Interactive SubSweep Recon Hotkeys
+      window.addEventListener('keydown', (e) => {
+        const isInput = (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+
+        // 1. 'Enter' in domain input => Trigger Scan
+        if (e.target.id === 'target-domain-input' && e.key === 'Enter') {
+          e.preventDefault();
+          if (typeof startReconScan === 'function') startReconScan();
+          else if (typeof triggerSubdomainScan === 'function') triggerSubdomainScan();
+        }
+
+        // 2. '1', '2', '3' => Switch Mobile Recon Views
+        if (!isInput && e.key >= '1' && e.key <= '3') {
+          const views = ['radar', 'nodes', 'packets'];
+          const idx = parseInt(e.key, 10) - 1;
+          if (views[idx]) {
+            e.preventDefault();
+            setSubsweepMobileView(views[idx]);
+          }
+        }
+
+        // 3. 'E' or 'e' => Export JSON
+        if (!isInput && (e.key === 'e' || e.key === 'E')) {
+          e.preventDefault();
+          exportReconJson();
+        }
+
+        // 4. 'C' or 'c' => Copy Summary
+        if (!isInput && (e.key === 'c' || e.key === 'C')) {
+          e.preventDefault();
+          copyReconSummary();
+        }
+      });
+
       // Initialize on load
       window.addEventListener('load', () => {
         resizeRadarCanvas();

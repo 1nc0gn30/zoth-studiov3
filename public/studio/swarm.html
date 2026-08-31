@@ -3713,6 +3713,40 @@
       attemptConnect();
     }
 
+
+    // Interactive 3D Swarm Arena Hotkeys
+    window.addEventListener('keydown', (e) => {
+      const isInput = (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+
+      // 1. 'Space' => Toggle Auto-Orbit / Camera Rotation
+      if (!isInput && e.code === 'Space') {
+        e.preventDefault();
+        autoRotateArena = !autoRotateArena;
+        if (typeof showHudNotice === 'function') {
+          showHudNotice(autoRotateArena ? '⚡ 3D Camera Orbit: ENABLED' : '⏸️ 3D Camera Orbit: PAUSED');
+        }
+      }
+
+      // 2. 'R' or 'r' => Reset Camera to Default Vector
+      if (!isInput && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault();
+        if (camera && controls) {
+          camera.position.set(0, 45, 110);
+          controls.target.set(0, 0, 0);
+          controls.update();
+        }
+      }
+
+      // 3. '1' to '9' => Instant Focus on Agent Orbit Node
+      if (!isInput && e.key >= '1' && e.key <= '9') {
+        const idx = parseInt(e.key, 10) - 1;
+        if (agentsList && agentsList[idx]) {
+          e.preventDefault();
+          selectAgentCard(agentsList[idx].id);
+        }
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       init3DArena();
       renderMascots();

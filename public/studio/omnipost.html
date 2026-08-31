@@ -5377,6 +5377,41 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
           });
         }
 
+
+        // Interactive Hotkeys for OmniPost 3.5 Video Studio
+        window.addEventListener('keydown', function (e) {
+          var isInput = (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+
+          // 1. 'Space' => Toggle Video Playback / Pause
+          if (!isInput && e.code === 'Space') {
+            e.preventDefault();
+            var playBtn = document.getElementById('btn-play-shorts') || document.querySelector('[data-action="play"]');
+            if (playBtn) playBtn.click();
+            else if (typeof toggleShortsPlay === 'function') toggleShortsPlay();
+          }
+
+          // 2. '1' - '4' => Switch OmniPost Studio Tabs
+          if (!isInput && e.key >= '1' && e.key <= '4') {
+            var tabs = ['tab-matrix', 'tab-shorts', 'tab-music', 'tab-viral'];
+            var idx = parseInt(e.key, 10) - 1;
+            if (tabs[idx]) {
+              e.preventDefault();
+              var tabBtn = document.querySelector('[data-tab="' + tabs[idx] + '"]');
+              if (tabBtn) tabBtn.click();
+            }
+          }
+
+          // 3. 'M' or 'm' => Toggle Music Audio Engine
+          if (!isInput && (e.key === 'm' || e.key === 'M')) {
+            e.preventDefault();
+            if (window.ZothMusicEngine) {
+              if (window.ZothMusicEngine.isPlaying) window.ZothMusicEngine.stopTrack();
+              else window.ZothMusicEngine.playTrack('neon_overdrive');
+              if (typeof updateMusicUI === 'function') updateMusicUI();
+            }
+          }
+        });
+
         // Initial setup
         renderMatrix(defaultOutputs);
         renderKeyframeSlides();

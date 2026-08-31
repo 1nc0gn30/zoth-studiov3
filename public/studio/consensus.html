@@ -4945,6 +4945,49 @@
       onEntropySliderInput();
     }
 
+
+    // Global Interactive Hotkeys for Consensus Arena
+    window.addEventListener('keydown', (e) => {
+      const isInput = (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+
+      // 1. '1', '2', '3', '4' => Switch primary comparison topics
+      if (!isInput && e.key === '1') { e.preventDefault(); switchTopic('ratelimit'); }
+      if (!isInput && e.key === '2') { e.preventDefault(); switchTopic('argon2id'); }
+      if (!isInput && e.key === '3') { e.preventDefault(); switchTopic('merkle'); }
+      if (!isInput && e.key === '4') { e.preventDefault(); switchTopic('byzantine'); }
+
+      // 2. 'M' or 'm' => Toggle Math / Shannon Entropy Modal
+      if (!isInput && (e.key === 'm' || e.key === 'M')) {
+        e.preventDefault();
+        const modal = document.getElementById('modal-math-entropy');
+        if (modal && modal.open) closeModal('modal-math-entropy');
+        else openMathModal();
+      }
+
+      // 3. 'C' or 'c' => Toggle Code Inspector Modal
+      if (!isInput && (e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+        const modal = document.getElementById('modal-code-inspector');
+        if (modal && modal.open) closeModal('modal-code-inspector');
+        else openCodeInspectorModal();
+      }
+
+      // 4. 'P' or 'p' => Toggle Cryptographic Proof Modal
+      if (!isInput && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        const modal = document.getElementById('modal-crypto-proof');
+        if (modal && modal.open) closeModal('modal-crypto-proof');
+        else openCryptoProofModal();
+      }
+
+      // 5. 'Escape' => Close any open dialog
+      if (e.key === 'Escape') {
+        document.querySelectorAll('dialog[open]').forEach(d => {
+          if (typeof d.close === 'function') d.close();
+        });
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       switchTopic('ratelimit');
     });
