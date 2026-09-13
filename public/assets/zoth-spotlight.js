@@ -9,7 +9,7 @@
   window.__ZOTH_SPOTLIGHT_LOADED__ = true;
 
   function initSpotlight() {
-    var targets = document.querySelectorAll('.card, .panel, .consensus-panel, .webgen-card, .radar-hud-card, .recon-card, .vault-card, .omni-card, .hud-card, .hero-value-card, .stage-scroll-panel');
+    var targets = document.querySelectorAll('.card, .panel, .consensus-panel, .webgen-card, .radar-hud-card, .recon-card, .vault-card, .omni-card, .hud-card, .hero-value-card, .stage-scroll-panel, [class*="-card"]');
 
     document.addEventListener('pointermove', function (e) {
       targets.forEach(function (card) {

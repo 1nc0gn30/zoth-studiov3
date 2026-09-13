@@ -36,6 +36,9 @@
   100% { background-position: 200% 50%; }
 }
 
+/* !important beats the inline background/-webkit-text-fill-color some pages
+   set directly on the H1 (inline style otherwise wins over any stylesheet
+   regardless of selector specificity, so the shine would silently no-op). */
 .hero h1,
 .hero-h1,
 .hero-title,
@@ -48,11 +51,11 @@
     var(--accent, var(--cyan, #00f0ff)) 50%,
     var(--text-primary, #fff) 62%,
     var(--text-primary, #fff) 100%
-  );
-  background-size: 240% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  ) !important;
+  background-size: 240% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
   animation: zoth-metal-shine 7.5s ease-in-out infinite alternate;
 }
 
@@ -88,6 +91,12 @@ html[data-theme="light"] .station-title {
    .vault-card, .omni-card, .hud-card, .hero-value-card, .stage-scroll-panel.
    This block is what actually PAINTS that data — previously unused.
    ───────────────────────────────────────────────────────────────────────── */
+/* Uses ::after (not ::before) so we never clobber the many card-specific
+   ::before top-line gradients already shipped (e.g. .mc-card::before,
+   .alchemical-resonance-card::before). Border-beam below also needs ::after
+   on premier cards only, so this spotlight layer stays scoped to opt-in
+   classes + explicit workstation containers rather than a blanket
+   [class*="-card"] selector that would fight page-specific decoration. */
 .card,
 .panel,
 .consensus-panel,
@@ -99,23 +108,25 @@ html[data-theme="light"] .station-title {
 .hud-card,
 .hero-value-card,
 .stage-scroll-panel,
+[data-spotlight],
 .zoth-tool-stage,
 .zoth-tool-canvas-wrap {
   position: relative;
   isolation: isolate;
 }
 
-.card::before,
-.panel::before,
-.consensus-panel::before,
-.webgen-card::before,
-.radar-hud-card::before,
-.recon-card::before,
-.vault-card::before,
-.omni-card::before,
-.hud-card::before,
-.hero-value-card::before,
-.stage-scroll-panel::before {
+.card::after,
+.panel::after,
+.consensus-panel::after,
+.webgen-card::after,
+.radar-hud-card::after,
+.recon-card::after,
+.vault-card::after,
+.omni-card::after,
+.hud-card::after,
+.hero-value-card::after,
+.stage-scroll-panel::after,
+[data-spotlight]::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -133,31 +144,33 @@ html[data-theme="light"] .station-title {
   mix-blend-mode: screen;
 }
 
-.card:hover::before,
-.panel:hover::before,
-.consensus-panel:hover::before,
-.webgen-card:hover::before,
-.radar-hud-card:hover::before,
-.recon-card:hover::before,
-.vault-card:hover::before,
-.omni-card:hover::before,
-.hud-card:hover::before,
-.hero-value-card:hover::before,
-.stage-scroll-panel:hover::before {
+.card:hover::after,
+.panel:hover::after,
+.consensus-panel:hover::after,
+.webgen-card:hover::after,
+.radar-hud-card:hover::after,
+.recon-card:hover::after,
+.vault-card:hover::after,
+.omni-card:hover::after,
+.hud-card:hover::after,
+.hero-value-card:hover::after,
+.stage-scroll-panel:hover::after,
+[data-spotlight]:hover::after {
   opacity: 1;
 }
 
-html[data-theme="light"] .card::before,
-html[data-theme="light"] .panel::before,
-html[data-theme="light"] .consensus-panel::before,
-html[data-theme="light"] .webgen-card::before,
-html[data-theme="light"] .radar-hud-card::before,
-html[data-theme="light"] .recon-card::before,
-html[data-theme="light"] .vault-card::before,
-html[data-theme="light"] .omni-card::before,
-html[data-theme="light"] .hud-card::before,
-html[data-theme="light"] .hero-value-card::before,
-html[data-theme="light"] .stage-scroll-panel::before {
+html[data-theme="light"] .card::after,
+html[data-theme="light"] .panel::after,
+html[data-theme="light"] .consensus-panel::after,
+html[data-theme="light"] .webgen-card::after,
+html[data-theme="light"] .radar-hud-card::after,
+html[data-theme="light"] .recon-card::after,
+html[data-theme="light"] .vault-card::after,
+html[data-theme="light"] .omni-card::after,
+html[data-theme="light"] .hud-card::after,
+html[data-theme="light"] .hero-value-card::after,
+html[data-theme="light"] .stage-scroll-panel::after,
+html[data-theme="light"] [data-spotlight]::after {
   mix-blend-mode: multiply;
   background: radial-gradient(
     260px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
@@ -168,17 +181,18 @@ html[data-theme="light"] .stage-scroll-panel::before {
 }
 
 @media (hover: none) {
-  .card::before,
-  .panel::before,
-  .consensus-panel::before,
-  .webgen-card::before,
-  .radar-hud-card::before,
-  .recon-card::before,
-  .vault-card::before,
-  .omni-card::before,
-  .hud-card::before,
-  .hero-value-card::before,
-  .stage-scroll-panel::before {
+  .card::after,
+  .panel::after,
+  .consensus-panel::after,
+  .webgen-card::after,
+  .radar-hud-card::after,
+  .recon-card::after,
+  .vault-card::after,
+  .omni-card::after,
+  .hud-card::after,
+  .hero-value-card::after,
+  .stage-scroll-panel::after,
+  [data-spotlight]::after {
     display: none;
   }
 }
