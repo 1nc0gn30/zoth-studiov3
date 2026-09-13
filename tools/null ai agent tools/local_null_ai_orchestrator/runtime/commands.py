@@ -232,6 +232,24 @@ COMMANDS: list[dict[str, Any]] = [
         "hint": "Zoth Chronicle — engineering sprint milestones & 4-phase strategic horizon",
         "tool": "studio.chronicle",
     },
+    {
+        "name": "memory",
+        "usage": "/memory",
+        "hint": "Netrunner Neuroscience Vector Memory Matrix (:8788) & CLS+STDP metrics",
+        "tool": "memory.status",
+    },
+    {
+        "name": "recall",
+        "usage": "/recall <query>",
+        "hint": "Recall relevant memory engrams and past tool executions from port 8788",
+        "tool": "memory.recall",
+    },
+    {
+        "name": "remember",
+        "usage": "/remember <text>",
+        "hint": "Store an episodic engram directly into Netrunner Memory (:8788)",
+        "tool": "memory.encode",
+    },
 ]
 
 
@@ -567,6 +585,20 @@ def _run(args: str, ctx: dict[str, Any]) -> dict[str, Any]:
             ),
             "open_panel": "studio",
         }
+    # Tie tool authorization to Netrunner Memory (:8788)
+    try:
+        from runtime.netrunner_memory import record_tool_run
+        record_tool_run(
+            tool_id=tool_id,
+            command=f"/run {tool_id}",
+            agent_id=ctx.get("model", "harness_agent"),
+            exit_code=0,
+            stdout=f"Authorized tool {tool_id}: {hit.get('name', '')}",
+            metadata={"source": "slash_command", "tool_meta": hit}
+        )
+    except Exception:
+        pass
+
     return {
         "handled": False,
         "command": "run",
@@ -1189,6 +1221,85 @@ def _chronicle(_args: str, _ctx: dict[str, Any]) -> dict[str, Any]:
     return {"handled": True, "command": "chronicle", "display": display}
 
 
+def _memory_cmd(args: str, _ctx: dict[str, Any]) -> dict[str, Any]:
+    try:
+        from runtime.netrunner_memory import is_memory_daemon_online, MEMORY_API_BASE
+        import urllib.request
+        if not is_memory_daemon_online(timeout=0.8):
+            return {
+                "handled": True,
+                "command": "memory",
+                "display": "🧠 **Netrunner Memory Matrix (:8788)**: Daemon is currently offline or restarting."
+            }
+        
+        req = urllib.request.Request(f"{MEMORY_API_BASE}/brain/status", headers={"User-Agent": "ZothHarness/3.0"})
+        with urllib.request.urlopen(req, timeout=1.5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            subsystems_md = "\n".join([
+                f"- **{v.get('name', k)}**: {v.get('count', 0)} engrams (`{v.get('role', '')}`)"
+                for k, v in data.get("subsystems", {}).items()
+            ])
+            display = f"""### 🧠 Zoth Neuroscience Vector Memory Matrix (:8788)
+- **Architecture**: `{data.get('theory', 'CLS + STDP')}`
+- **Synaptic Nodes**: **{data.get('total_nodes', 0)}**
+- **Synapses**: **{data.get('total_synapses', 0)}** (Density: `{data.get('synaptic_density', 1.0):.3f}`)
+- **Total Rehearsals**: {data.get('total_rehearsals', 0)}
+
+#### Biological Subsystems:
+{subsystems_md}
+
+🔗 **3D Memory Maze**: [http://127.0.0.1:8088/studio/memory-maze.html](http://127.0.0.1:8088/studio/memory-maze.html)
+"""
+            return {"handled": True, "command": "memory", "display": display}
+    except Exception as e:
+        return {"handled": True, "command": "memory", "display": f"🧠 Memory error: {e}"}
+
+
+def _recall_cmd(args: str, _ctx: dict[str, Any]) -> dict[str, Any]:
+    if not args.strip():
+        return {"handled": True, "command": "recall", "display": "Usage: `/recall <topic or query>` — e.g. `/recall ast invariants`"}
+    try:
+        from runtime.netrunner_memory import recall_memories
+        mems = recall_memories(query=args.strip(), limit=5)
+        if not mems:
+            return {"handled": True, "command": "recall", "display": f"🧠 No memory engrams found matching query `{args.strip()}`."}
+        
+        lines = [f"### 🧠 Recalled Memory Engrams for `{args.strip()}`:"]
+        for m in mems:
+            mid = m.get("id", "")[:8]
+            agent = m.get("agent_id", "operator")
+            cat = m.get("category", "general")
+            text = m.get("text", "")[:120].replace("\n", " ")
+            lines.append(f"- `[{mid}]` **@{agent}** `[{cat}]`: {text}")
+        
+        return {"handled": True, "command": "recall", "display": "\n".join(lines)}
+    except Exception as e:
+        return {"handled": True, "command": "recall", "display": f"🧠 Recall error: {e}"}
+
+
+def _remember_cmd(args: str, ctx: dict[str, Any]) -> dict[str, Any]:
+    if not args.strip():
+        return {"handled": True, "command": "remember", "display": "Usage: `/remember <text>` — e.g. `/remember AST validator requires strict schema check`"}
+    try:
+        from runtime.netrunner_memory import encode_memory_async
+        agent_id = ctx.get("model", "operator")
+        encode_memory_async({
+            "text": f"🧠 [Engram] {args.strip()} (by @{agent_id})",
+            "title": f"Engram: {args.strip()[:40]}",
+            "agent_id": agent_id,
+            "category": "learning",
+            "tags": ["cli-engram", "user-insight"],
+            "salience": 0.75
+        })
+        return {
+            "handled": True,
+            "command": "remember",
+            "display": f"✨ **Memory Engram Encoded into Netrunner Matrix (:8788)**: \"{args.strip()}\""
+        }
+    except Exception as e:
+        return {"handled": True, "command": "remember", "display": f"🧠 Remember error: {e}"}
+
+
 HANDLERS: dict[str, CommandFn] = {
     "help": _help,
     "math": _math_cmd,
@@ -1227,6 +1338,11 @@ HANDLERS: dict[str, CommandFn] = {
     "docs": _docs,
     "consensus": _consensus,
     "chronicle": _chronicle,
+    "memory": _memory_cmd,
+    "mem": _memory_cmd,
+    "recall": _recall_cmd,
+    "remember": _remember_cmd,
+    "encode": _remember_cmd,
 }
 
 

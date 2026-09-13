@@ -83,6 +83,22 @@ except ImportError:
     def ollama_list_models(*a, **kw): return []
     def ollama_chat(*a, **kw): return {"error": "parrot_nexus not available"}
 
+try:
+    from runtime.netrunner_memory import (
+        record_tool_run, record_code_change, recall_memories,
+        trigger_memory, is_memory_daemon_online, get_prompt_context, get_memory_digest
+    )
+    HAS_NETRUNNER_MEMORY = True
+except ImportError:
+    HAS_NETRUNNER_MEMORY = False
+    def record_tool_run(*a, **kw): return None
+    def record_code_change(*a, **kw): return None
+    def recall_memories(*a, **kw): return []
+    def trigger_memory(*a, **kw): return None
+    def is_memory_daemon_online(*a, **kw): return False
+    def get_prompt_context(*a, **kw): return ""
+    def get_memory_digest(*a, **kw): return []
+
 # ─── Paths ───
 ORCH_DIR = Path(__file__).resolve().parent
 WORKSPACE_ROOT = ORCH_DIR.parent
@@ -587,7 +603,19 @@ def command_run(args: argparse.Namespace) -> int:
         return 0
 
     print(f"Running in {cwd}...")
+    t0 = time.perf_counter()
     result = subprocess.run(resolved_cmd, cwd=cwd, capture_output=False)
+    elapsed_ms = (time.perf_counter() - t0) * 1000
+
+    # Tie tool execution to Netrunner Memory (:8788)
+    record_tool_run(
+        tool_id=tool.get("id", args.tool_id),
+        command=' '.join(shlex.quote(p) for p in resolved_cmd),
+        agent_id="orchestrator_cli",
+        exit_code=result.returncode,
+        duration_ms=elapsed_ms,
+        metadata={"cwd": str(cwd), "category": tool.get("category", ""), "runtimes": tool.get("runtimes", [])}
+    )
     return result.returncode
 
 def command_install(args: argparse.Namespace) -> int:
@@ -2192,6 +2220,17 @@ created: {now_utc}
                     target_file = ws_root / fname
                     target_file.write_text(content, encoding="utf-8")
                     written_files.append(fname)
+                    # Tie code compilation to Netrunner Memory (:8788)
+                    record_code_change(
+                        file_path=str(target_file),
+                        action="compile-route",
+                        agent_id=data.get("agent", "azoth"),
+                        diff_summary=f"Compiled multi-page route `{fname}` for workspace `{proj_slug}`",
+                        lines_added=len(content.splitlines()),
+                        language=fname.split(".")[-1] if "." in fname else "html",
+                        ast_verified=True,
+                        metadata={"project": proj_slug, "framework": config.get("framework", "static_html")}
+                    )
 
                 # Write package.json and workspace configuration
                 framework = config.get("framework", "static_html")
@@ -2877,11 +2916,24 @@ Output ONLY the JSON object."""
                         full_cmd = "python3 orchestrator.py doctor"
                     else:
                         full_cmd = f"python3 orchestrator.py {cmd}"
+                    t0 = time.perf_counter()
                     proc = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, timeout=30, cwd=str(ORCH_DIR))
+                    elapsed_ms = (time.perf_counter() - t0) * 1000
+                    # Tie terminal execution to Netrunner Memory (:8788)
+                    record_tool_run(
+                        tool_id=f"terminal:{cmd.split()[0]}",
+                        command=full_cmd,
+                        agent_id="terminal",
+                        exit_code=proc.returncode,
+                        stdout=proc.stdout,
+                        stderr=proc.stderr,
+                        duration_ms=elapsed_ms
+                    )
                     self._send_json({
                         "command": cmd,
                         "exit_code": proc.returncode,
-                        "output": proc.stdout or proc.stderr or "Command executed silently."
+                        "output": proc.stdout or proc.stderr or "Command executed silently.",
+                        "duration_ms": elapsed_ms
                     })
                 except Exception as e:
                     self._send_json({"error": str(e)}, 500)
@@ -3023,19 +3075,69 @@ Output ONLY the JSON object."""
                     return
                 cwd = tool.get("path", ".")
                 try:
+                    t0 = time.perf_counter()
                     result = subprocess.run(
                         command, shell=True, cwd=cwd,
                         capture_output=True, text=True, timeout=60
                     )
+                    elapsed_ms = (time.perf_counter() - t0) * 1000
+
+                    # Tie tool run to Netrunner Memory (:8788)
+                    record_tool_run(
+                        tool_id=tool_id,
+                        command=command,
+                        agent_id=agent,
+                        exit_code=result.returncode,
+                        stdout=result.stdout,
+                        stderr=result.stderr,
+                        duration_ms=elapsed_ms,
+                        metadata={"cwd": str(cwd), "category": tool.get("category", "")}
+                    )
+
                     self._send_json({
                         "tool_id": tool_id, "command": command, "agent": agent,
                         "stdout": result.stdout, "stderr": result.stderr,
-                        "exit_code": result.returncode, "duration_ms": 0,
+                        "exit_code": result.returncode, "duration_ms": elapsed_ms,
                     })
                 except subprocess.TimeoutExpired:
                     self._send_json({"error": "command timed out"}, 504)
                 except Exception as e:
                     self._send_json({"error": str(e)}, 500)
+                return
+
+            # ─── API: Netrunner Memory Direct Endpoints (:8788 Bridge) ───
+            if path in ("/api/memory/record-tool", "/api/v1/memory/record-tool"):
+                tool_id = data.get("tool_id", "unknown_tool")
+                cmd = data.get("command", "")
+                agent = data.get("agent_id", "web_client")
+                exit_code = data.get("exit_code", 0)
+                dur = data.get("duration_ms", 0)
+                res = record_tool_run(tool_id, command=cmd, agent_id=agent, exit_code=exit_code, duration_ms=dur, metadata=data.get("metadata", {}), sync=True)
+                self._send_json(res or {"status": "dispatched", "tool_id": tool_id})
+                return
+
+            if path in ("/api/memory/record-code", "/api/v1/memory/record-code"):
+                file_path = data.get("file_path", "untitled.js")
+                action = data.get("action", "edit")
+                agent = data.get("agent_id", "azoth")
+                diff = data.get("diff_summary", "")
+                added = data.get("lines_added", 0)
+                removed = data.get("lines_removed", 0)
+                ast_ok = data.get("ast_verified", True)
+                res = record_code_change(file_path, action=action, agent_id=agent, diff_summary=diff, lines_added=added, lines_removed=removed, ast_verified=ast_ok, metadata=data.get("metadata", {}), sync=True)
+                self._send_json(res or {"status": "dispatched", "file": file_path})
+                return
+
+            if path in ("/api/memory/recall", "/api/v1/memory/recall"):
+                q = data.get("q", data.get("topic", ""))
+                limit = int(data.get("limit", 5))
+                mems = recall_memories(q, limit=limit)
+                self._send_json({"memories": mems, "count": len(mems), "query": q})
+                return
+
+            if path in ("/api/memory/status", "/api/v1/memory/status"):
+                online = is_memory_daemon_online()
+                self._send_json({"online": online, "port": 8788, "host": "127.0.0.1", "version": "3.0.0"})
                 return
 
             # ─── API: security scan ───

@@ -71,17 +71,47 @@ The **Math Pillars Academy** ([`/studio/math-pillars.html`](http://127.0.0.1:808
 
 ---
 
-## 🧠 4. Sovereign Memory Whitespace & Netrunner Cyberspace (`/memory/`)
+## 🧠 4. Sovereign Memory Whitespace & Dual-Version Netrunner Engine (`/memory/`)
 
 The **Memory Whitespace Hub** ([`/memory/`](http://127.0.0.1:8088/memory/) and [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html)) is the dedicated sovereign cognitive space:
 
-* **Dual-Layer Architecture**:
-  - **Human Narrative Digest**: Clean, distraction-free markdown summaries designed for human strategic review, milestone tracking, and calm thinking.
-  - **Lossless AI Grounding**: Strict XML `<memory_context>` tags with raw AST diffs, terminal traces, and cryptographic hashes for zero-drift LLM recall.
-* **Lucy Netrunner Oracle**:
-  - Embodying Lucy from *Cyberpunk: Edgerunners*, this oracle navigates the 3D associative memory graph, performs Blackwall diagnostic scans, and uncovers cross-project patterns.
-* **STDP Causal Traversal**:
-  - Sub-millisecond root cause search linking historical agent actions to present outcomes via `/v1/memories/causal-path`.
+### 📖 Dual-Version Representation Architecture
+Every memory recorded across Zoth Studio (tool runs, code changes, AST arbitrations) is automatically structured with two synchronized formats:
+* **📖 Human Narrative Digest (`human_digest`)**:
+  - Clean, distraction-free markdown storytelling crafted for human strategic review, milestone tracking, and calm thinking.
+  - Includes high-level context, intent, actions taken, outcome summaries, and key takeaways without clutter.
+  - Rendered by default in web workstation cards and standard CLI lists.
+* **🧬 AI Full Spectrum Telemetry (`ai_spectrum`)**:
+  - Raw, lossless machine telemetry designed for deterministic AI agent reasoning, AST diff tracking, and tool replay.
+  - Contains exact CLI arguments, exit codes, output tails, byte sizes, AST invariants, and neuromodulator valence/arousal/dominance vectors.
+  - Formatted into `<ai_spectrum>` tags inside `<memory_context>` XML blocks for prompt injection.
+
+### 💻 Operator Memory CLI Runbook (`zoth mem`)
+```bash
+# 1. View recent human narrative digests
+zoth mem list
+
+# 2. Inspect raw AI full-spectrum telemetry (tool args, AST diffs, exit codes)
+zoth mem list --spectrum
+
+# 3. Search memories by semantic query or tool name
+zoth mem search "refactor theme tokens"
+zoth mem search "webgen_compiler" --spectrum
+
+# 4. Generate deterministic XML memory context for autonomous agent prompt injection
+zoth mem prompt-context --mode dual --limit 5
+
+# 5. Record tool execution event with automated dual-version synthesis
+zoth mem record-tool "webgen_compiler" "success" "Compiled 3-page Astro workspace" --output "OK"
+
+# 6. Record codebase mutation event with AST invariants
+zoth mem record-code "public/studio/swarm.html" "modified" "Added 3D laser sound effects"
+```
+
+### 🎮 Lucy Netrunner Oracle & 3D Matrix
+* **Lucy Netrunner Oracle**: Embodying Lucy from *Cyberpunk: Edgerunners*, this oracle navigates the 3D associative memory graph, performs Blackwall diagnostic scans, broadcasts deep neural context, and triggers audio voice lines.
+* **Dual-View Workstation HUD**: Switch between 📖 **Human Digest** and 🧬 **AI Full Spectrum** modes in real time with 1-click XML prompt copying for LLM sessions.
+* **STDP Causal Traversal**: Sub-millisecond root cause search linking historical agent actions to present outcomes via `/v1/memories/causal-path`.
 
 ---
 

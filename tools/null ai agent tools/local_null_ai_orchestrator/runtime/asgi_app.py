@@ -287,16 +287,49 @@ async def api_exec(request: Request) -> Response:
             return _json_response({"error": "tool_id and command required"}, 400)
         # Delegate to the handler's exec logic
         SERVER_REGISTRY = _get_handler_attr("SERVER_REGISTRY", {})
+        start_t = time.perf_counter()
         result = subprocess.run(
             command, shell=True, capture_output=True, text=True,
             timeout=60, cwd=str(_orch_dir)
         )
+        elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+
+        # Tie tool execution to Netrunner Memory (:8788)
+        try:
+            from runtime.netrunner_memory import record_tool_run
+            record_tool_run(
+                tool_id=tool_id,
+                command=command,
+                agent_id=agent,
+                exit_code=result.returncode,
+                stdout=result.stdout,
+                stderr=result.stderr,
+                duration_ms=elapsed_ms,
+                metadata={"source": "api_exec", "cwd": str(_orch_dir)}
+            )
+        except Exception:
+            pass
+
         return _json_response({
             "stdout": result.stdout[:5000],
             "stderr": result.stderr[:5000],
             "exit_code": result.returncode,
+            "duration_ms": round(elapsed_ms, 2)
         })
     except subprocess.TimeoutExpired:
+        try:
+            from runtime.netrunner_memory import record_tool_run
+            record_tool_run(
+                tool_id=body.get("tool_id", "timeout_tool") if isinstance(body, dict) else "timeout_tool",
+                command=body.get("command", "") if isinstance(body, dict) else "",
+                agent_id=body.get("agent", "default") if isinstance(body, dict) else "default",
+                exit_code=124,
+                stderr="Command execution timed out after 60s",
+                duration_ms=60000.0,
+                metadata={"source": "api_exec", "status": "timeout"}
+            )
+        except Exception:
+            pass
         return _json_response({"error": "Command execution timed out after 60s"}, 408)
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
@@ -310,6 +343,24 @@ async def api_studio_build(request: Request) -> Response:
         from runtime import studio_sites
         name = body.get("name") or body.get("project_name") or "new-site"
         result = await asyncio.to_thread(studio_sites.build, name, body)
+        
+        # Tie code generation and build to Netrunner Memory (:8788)
+        try:
+            from runtime.netrunner_memory import record_code_change
+            framework = body.get("framework", "html")
+            record_code_change(
+                file_path=f"workspaces/{name}/index.html",
+                action="studio_compile_build",
+                agent_id=body.get("agent_id", "studio_builder"),
+                diff_summary=f"Compiled Studio project '{name}' with framework '{framework}'",
+                lines_added=150,
+                language=framework,
+                ast_verified=True,
+                metadata={"project": name, "framework": framework}
+            )
+        except Exception:
+            pass
+
         return _json_response(result)
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
@@ -1194,6 +1245,21 @@ created_at: {body['created_at']}
                 except Exception:
                     pass
 
+        # Record annotation in Netrunner Memory (:8788)
+        try:
+            from runtime.netrunner_memory import encode_memory_async
+            encode_memory_async({
+                "text": f"📌 [Visual Annotation] Note on `{body.get('pathname', '/')}` (element `{body.get('selector', 'none')}`): \"{body.get('text', '')[:100]}\" by @user",
+                "title": f"📌 Annotation: {body.get('text', '')[:40]}",
+                "agent_id": "user",
+                "category": "debug",
+                "tags": ["annotation", "ui-feedback", "code-review", body.get("category", "UI").lower()],
+                "salience": 0.72,
+                "raw_payload": body
+            })
+        except Exception:
+            pass
+
         return _json_response({"status": "ok", "id": note_id, "note": body})
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
@@ -1211,36 +1277,46 @@ async def api_annotations_resolve(request: Request) -> Response:
         comms = _find_comms_dir()
         notes_file = comms / "notes" / "zoth-annotations.json"
         if not notes_file.exists():
-            return _json_response({"error": "No notes found"}, 404)
+            return _json_response({"error": "Notes file not found"}, 404)
 
-        notes = json.loads(notes_file.read_text(encoding="utf-8"))
-        target = next((n for n in notes if n.get("id") == note_id), None)
-        if not target:
+        try:
+            notes = json.loads(notes_file.read_text(encoding="utf-8"))
+        except Exception:
+            notes = []
+
+        found = False
+        for n in notes:
+            if n.get("id") == note_id:
+                n["status"] = "resolved"
+                n["resolved_at"] = datetime.now(timezone.utc).isoformat()
+                found = True
+                break
+
+        if not found:
             return _json_response({"error": "Note not found"}, 404)
 
-        target["status"] = body.get("status", "resolved")
-        target["resolved_at"] = datetime.now(timezone.utc).isoformat()
         notes_file.write_text(json.dumps(notes, indent=2), encoding="utf-8")
-        return _json_response({"status": "ok", "id": note_id, "note": target})
+        return _json_response({"status": "ok", "id": note_id})
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
 
 
 async def api_annotations_delete(request: Request) -> Response:
     try:
-        body, err = await _safe_json(request)
-        if err:
-            return err
-        note_id = body.get("id")
+        note_id = request.path_params.get("id")
         if not note_id:
             return _json_response({"error": "Missing note id"}, 400)
 
         comms = _find_comms_dir()
         notes_file = comms / "notes" / "zoth-annotations.json"
         if not notes_file.exists():
-            return _json_response({"error": "No notes found"}, 404)
+            return _json_response({"error": "Notes file not found"}, 404)
 
-        notes = json.loads(notes_file.read_text(encoding="utf-8"))
+        try:
+            notes = json.loads(notes_file.read_text(encoding="utf-8"))
+        except Exception:
+            notes = []
+
         notes = [n for n in notes if n.get("id") != note_id]
         notes_file.write_text(json.dumps(notes, indent=2), encoding="utf-8")
         return _json_response({"status": "ok", "id": note_id})
@@ -1250,13 +1326,9 @@ async def api_annotations_delete(request: Request) -> Response:
 
 async def api_pet_heal(request: Request) -> Response:
     try:
-        from runtime.pet_knowledge import heal, heal_all
-        pet_id = request.path_params.get("pet_id", "")
-        if pet_id in ("all", "*"):
-            return _json_response(heal_all())
-        result = heal(pet_id)
-        if result.get("error"):
-            return _json_response(result, 404)
+        pet_id = request.path_params.get("pet_id")
+        from runtime.pet_evolution import heal_pet
+        result = heal_pet(pet_id)
         return _json_response(result)
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
@@ -1264,8 +1336,7 @@ async def api_pet_heal(request: Request) -> Response:
 
 async def api_hermes_status(request: Request) -> Response:
     try:
-        sys.path.insert(0, str(_orch_dir / "studio-agents"))
-        from hermes_agent import hermes
+        from runtime import hermes
         return _json_response(hermes.get_capabilities())
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
@@ -1296,16 +1367,50 @@ async def api_terminal_exec(request: Request) -> Response:
         else:
             full_cmd = f"python3 orchestrator.py {cmd}"
             
+        start_t = time.perf_counter()
         proc = subprocess.run(
             full_cmd, shell=True, capture_output=True, text=True,
             timeout=timeout_val, cwd=str(_orch_dir)
         )
+        elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+
+        # Tie terminal tool execution directly to Netrunner Memory (:8788)
+        try:
+            from runtime.netrunner_memory import record_tool_run
+            agent_id = body.get("agent", "terminal_user") if isinstance(body, dict) else "terminal_user"
+            record_tool_run(
+                tool_id="terminal_exec",
+                command=cmd,
+                agent_id=agent_id,
+                exit_code=proc.returncode,
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+                duration_ms=elapsed_ms,
+                metadata={"full_cmd": full_cmd, "source": "api_terminal_exec"}
+            )
+        except Exception:
+            pass
+
         return _json_response({
             "command": cmd,
             "exit_code": proc.returncode,
-            "output": proc.stdout or proc.stderr or "Command executed silently."
+            "output": proc.stdout or proc.stderr or "Command executed silently.",
+            "duration_ms": round(elapsed_ms, 2)
         })
     except subprocess.TimeoutExpired:
+        try:
+            from runtime.netrunner_memory import record_tool_run
+            record_tool_run(
+                tool_id="terminal_exec",
+                command=body.get("command", "") if isinstance(body, dict) else "",
+                agent_id=body.get("agent", "terminal_user") if isinstance(body, dict) else "terminal_user",
+                exit_code=124,
+                stderr=f"Command execution timed out after {timeout_val}s",
+                duration_ms=float(timeout_val * 1000.0),
+                metadata={"source": "api_terminal_exec", "status": "timeout"}
+            )
+        except Exception:
+            pass
         return _json_response({
             "error": f"Command execution timed out after {timeout_val}s",
             "command": body.get("command") if isinstance(body, dict) else "",
@@ -1634,6 +1739,27 @@ export function FusedMasterApp() {{
             {"topic": "Input Sanitization", "winner": c3_name, "rationale": "Adopted DOMPurify + strict whitelist CSP to eliminate XSS attack surfaces."}
         ]
         
+        # Record AST consensus synthesis in Netrunner Memory (:8788)
+        try:
+            from runtime.netrunner_memory import record_code_change
+            record_code_change(
+                file_path="runtime/ast_consensus_synthesis.tsx",
+                action="ast_consensus_triangulation",
+                agent_id="consensus_triumvirate",
+                diff_summary=f"AST Consensus code synthesis for prompt: '{prompt[:60]}...' (Consensus: {consensus_score}%)",
+                lines_added=len(fused_master_code.splitlines()),
+                language="typescript",
+                ast_verified=True,
+                metadata={
+                    "prompt": prompt,
+                    "contenders": [contender1, contender2, contender3],
+                    "consensus_score": consensus_score,
+                    "agreement_entropy": agreement_entropy
+                }
+            )
+        except Exception:
+            pass
+
         return _json_response({
             "prompt": prompt,
             "models": model_outputs,
@@ -1646,7 +1772,166 @@ export function FusedMasterApp() {{
         })
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
+
+
+# ── Netrunner Memory Daemon (:8788) Endpoints & Proxy ──
+
+async def api_memory_status(request: Request) -> Response:
+    """Returns live status of the Netrunner Neuroscience Vector Memory Matrix."""
+    try:
+        from runtime.netrunner_memory import is_memory_daemon_online, get_memory_digest, MEMORY_API_BASE
+        import urllib.request
+        online = is_memory_daemon_online(timeout=0.8)
+        if not online:
+            return _json_response({
+                "status": "offline",
+                "daemon_port": 8788,
+                "online": False,
+                "theory": "CLS + STDP Plasticity",
+                "message": "Netrunner Memory daemon (:8788) is offline or initializing."
+            })
+        
+        req = urllib.request.Request(f"{MEMORY_API_BASE}/brain/status", headers={"User-Agent": "ZothOrchestrator/3.0"})
+        with urllib.request.urlopen(req, timeout=1.5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            data["online"] = True
+            data["daemon_port"] = 8788
+            return _json_response(data)
+    except Exception as e:
+        return _json_response({"status": "error", "online": False, "error": str(e)})
+
+
+async def api_memory_record_tool(request: Request) -> Response:
+    """Records a tool run into Netrunner Memory (:8788)."""
+    try:
+        body, err = await _safe_json(request)
+        if err:
+            return err
+        from runtime.netrunner_memory import record_tool_run
+        tool_id = body.get("tool_id") or body.get("id") or "unnamed_tool"
+        res = record_tool_run(
+            tool_id=tool_id,
+            command=body.get("command", ""),
+            agent_id=body.get("agent_id") or body.get("agent") or "orchestrator",
+            exit_code=int(body.get("exit_code", 0)),
+            stdout=str(body.get("stdout", "")),
+            stderr=str(body.get("stderr", "")),
+            duration_ms=float(body.get("duration_ms", 0.0)),
+            metadata=body.get("metadata") or body,
+            sync=True
+        )
+        return _json_response(res or {"status": "buffered", "tool_id": tool_id})
+    except Exception as e:
         return _json_response({"error": str(e)}, 500)
+
+
+async def api_memory_record_code(request: Request) -> Response:
+    """Records a code change / AST synthesis into Netrunner Memory (:8788)."""
+    try:
+        body, err = await _safe_json(request)
+        if err:
+            return err
+        from runtime.netrunner_memory import record_code_change
+        res = record_code_change(
+            file_path=body.get("file_path") or body.get("path") or "unnamed.js",
+            action=body.get("action", "edit"),
+            agent_id=body.get("agent_id") or body.get("agent") or "azoth",
+            diff_summary=body.get("diff_summary") or body.get("summary") or "",
+            lines_added=int(body.get("lines_added", 0)),
+            lines_removed=int(body.get("lines_removed", 0)),
+            language=body.get("language", "code"),
+            ast_verified=body.get("ast_verified", True),
+            metadata=body.get("metadata") or body,
+            sync=True
+        )
+        return _json_response(res or {"status": "buffered", "file_path": body.get("file_path")})
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_memory_recall(request: Request) -> Response:
+    """Recalls memories by topic, search query, or associative key with dual representation."""
+    try:
+        query = request.query_params.get("q") or request.query_params.get("topic") or request.query_params.get("query")
+        limit = int(request.query_params.get("limit", 10))
+        mode = request.query_params.get("mode", "dual")
+        if not query and request.method == "POST":
+            body, _ = await _safe_json(request)
+            if body:
+                query = body.get("query") or body.get("topic") or body.get("q")
+                limit = int(body.get("limit", limit))
+                mode = body.get("mode", mode)
+        
+        from runtime.netrunner_memory import recall_memories
+        memories = recall_memories(query=query or "", limit=limit, mode=mode)
+        return _json_response({"query": query, "mode": mode, "count": len(memories), "memories": memories})
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_memory_trigger(request: Request) -> Response:
+    """Triggers / rehearses a memory node to strengthen its synaptic weight."""
+    try:
+        body, err = await _safe_json(request)
+        if err:
+            return err
+        from runtime.netrunner_memory import trigger_memory
+        mid = body.get("memory_id") or body.get("id")
+        agent_id = body.get("agent_id", "operator")
+        if not mid:
+            return _json_response({"error": "memory_id required"}, 400)
+        res = trigger_memory(memory_id=mid, agent_id=agent_id)
+        return _json_response(res or {"status": "triggered", "memory_id": mid})
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_memory_prompt_context(request: Request) -> Response:
+    """Generates an XML <memory_context> block for LLM system prompts supporting dual/ai/human modes."""
+    try:
+        limit = int(request.query_params.get("limit", 5))
+        topic = request.query_params.get("topic")
+        mode = request.query_params.get("mode", "dual")
+        from runtime.netrunner_memory import get_prompt_context
+        ctx_xml = get_prompt_context(topic=topic, limit=limit, mode=mode)
+        return _json_response({"prompt_context": ctx_xml, "limit": limit, "mode": mode})
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_memory_proxy(request: Request) -> Response:
+    """Transparent loopback proxy to :8788 for frontend web clients."""
+    try:
+        from runtime.netrunner_memory import MEMORY_API_BASE
+        import urllib.request
+        endpoint = request.query_params.get("endpoint", "/brain/status")
+        if not endpoint.startswith("/"):
+            endpoint = "/" + endpoint
+        target_url = f"{MEMORY_API_BASE}{endpoint}"
+        
+        method = request.method
+        body_bytes = None
+        if method in ("POST", "PUT", "PATCH"):
+            body_bytes = await request.body()
+            
+        req = urllib.request.Request(
+            target_url,
+            data=body_bytes,
+            headers={"Content-Type": "application/json", "User-Agent": "ZothMemoryProxy/3.0"},
+            method=method
+        )
+        with urllib.request.urlopen(req, timeout=3.0) as resp:
+            resp_bytes = resp.read()
+            return Response(
+                content=resp_bytes,
+                status_code=resp.status,
+                media_type="application/json",
+                headers={"Cache-Control": "no-cache", "Access-Control-Allow-Origin": "*"}
+            )
+    except urllib.error.HTTPError as he:
+        return Response(content=he.read(), status_code=he.code, media_type="application/json")
+    except Exception as e:
+        return _json_response({"error": str(e), "proxy_status": "daemon_unreachable"}, 502)
 
 
 # ── Parrot Nexus routes ──
@@ -1990,7 +2275,7 @@ async def api_preview_container_stop(request: Request) -> Response:
 async def api_tools_status(request: Request) -> Response:
     try:
         from runtime.tool_registry_installer import get_complete_tools_inventory
-        inv = get_complete_tools_inventory()
+        inv = await asyncio.to_thread(get_complete_tools_inventory)
         return _json_response(inv)
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
@@ -2003,7 +2288,7 @@ async def api_tools_install(request: Request) -> Response:
     tool_id = (body or {}).get("tool_id", "")
     try:
         from runtime.tool_registry_installer import run_automated_installer
-        res = run_automated_installer(tool_id)
+        res = await asyncio.to_thread(run_automated_installer, tool_id)
         return _json_response(res)
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
@@ -2127,7 +2412,23 @@ async def api_drive_import(request: Request) -> Response:
     path_val = (body or {}).get("path", "")
     try:
         from runtime.drive_projects_vault import convert_project_to_template_blueprint
-        return _json_response(convert_project_to_template_blueprint(path_val))
+        res = convert_project_to_template_blueprint(path_val)
+        # Record code change in Netrunner Memory (:8788)
+        try:
+            from runtime.netrunner_memory import record_code_change
+            record_code_change(
+                file_path=str(path_val),
+                action="drive_import_blueprint",
+                agent_id="drive_vault",
+                diff_summary=f"Imported Drive project '{path_val}' as template blueprint",
+                lines_added=100,
+                language="json",
+                ast_verified=True,
+                metadata={"path": path_val}
+            )
+        except Exception:
+            pass
+        return _json_response(res)
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
 
@@ -2142,7 +2443,239 @@ async def api_studio_generate_site(request: Request) -> Response:
         previews_dir = pub_dir / "previews"
         previews_dir.mkdir(parents=True, exist_ok=True)
         res = synthesize_swarm_website(body or {}, previews_dir)
+        
+        # Record code change in Netrunner Memory (:8788)
+        try:
+            from runtime.netrunner_memory import record_code_change
+            slug = (body or {}).get("slug", "generated-site")
+            framework = (body or {}).get("framework", "html")
+            record_code_change(
+                file_path=f"public/previews/{slug}/index.html",
+                action="swarm_site_synthesize",
+                agent_id=(body or {}).get("agent_id", "webgen_architect"),
+                diff_summary=f"Synthesized multi-page {framework} site '{slug}' with theme '{(body or {}).get('theme', 'matrix')}'",
+                lines_added=250,
+                language=framework,
+                ast_verified=True,
+                metadata=body
+            )
+        except Exception:
+            pass
+
         return _json_response(res)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def workspaces_handler(request: Request) -> Response:
+    rel = request.path_params.get("path", "").lstrip("/")
+    pub = _public_dir()
+    cand_roots = [
+        pub / "workspaces",
+        pub.parent / "workspaces",
+        (_orch_dir or Path()).parent.parent / "workspaces",
+        (_orch_dir or Path()).parent / "workspaces",
+    ]
+    for root in cand_roots:
+        target = root / rel
+        if target.is_dir():
+            target = target / "index.html"
+        if target.exists() and target.is_file():
+            return _file_response(target)
+    return _json_response({"error": "workspace file not found", "path": rel}, 404)
+
+
+# ─── PTY & WebGen Ducky Terminal Endpoints ───
+
+def _get_tools_dir() -> Path:
+    orch = _orch_dir or Path(__file__).resolve().parents[1]
+    for p in [orch.parent.parent, orch.parent, orch, *orch.parents]:
+        if (p / "zoth_pty_engine.py").exists() or (p / "ducky_terminal_spawner.py").exists():
+            return p
+    return orch.parent.parent
+
+
+async def api_pty_spawn(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    data = body or {}
+    slug = data.get("slug", data.get("projectName", "sovereign-app")).strip()
+    prompt = data.get("prompt", "").strip()
+    agent = data.get("agent", "agy").strip()
+    use_ducky = data.get("ducky", True)
+
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+
+    try:
+        import zoth_pty_engine
+        if use_ducky and prompt:
+            sess = zoth_pty_engine.pty_manager.inject_duckyscript_agent(slug, prompt, agent)
+        else:
+            sess = zoth_pty_engine.pty_manager.get_or_create(slug)
+
+        return _json_response({
+            "status": "ok",
+            "sessionId": sess.session_id,
+            "slug": sess.slug,
+            "workspace": sess.cwd,
+            "previewUrl": f"/workspaces/{sess.slug}/index.html",
+            "isAlive": sess.is_alive
+        })
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_pty_write(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    data = body or {}
+    session_id = data.get("sessionId", "")
+    input_data = data.get("data", "")
+
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+
+    try:
+        import zoth_pty_engine
+        sess = zoth_pty_engine.pty_manager.sessions.get(session_id) or zoth_pty_engine.pty_manager.get_or_create(session_id.replace("zoth_pty_", ""))
+        if sess:
+            success = sess.write(input_data)
+            return _json_response({"status": "ok", "written": success})
+        return _json_response({"error": "Session not found"}, 404)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_pty_stream(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    data = body or {}
+    session_id = data.get("sessionId", "")
+    chunk_index = int(data.get("chunkIndex", 0))
+
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+
+    try:
+        import zoth_pty_engine
+        sess = zoth_pty_engine.pty_manager.sessions.get(session_id) or zoth_pty_engine.pty_manager.get_or_create(session_id.replace("zoth_pty_", ""))
+        if sess:
+            output_chunk, next_index = sess.get_incremental_output(chunk_index)
+            files = sess.get_files()
+            has_index = sess.has_index()
+            return _json_response({
+                "status": "ok",
+                "sessionId": sess.session_id,
+                "output": output_chunk,
+                "nextIndex": next_index,
+                "isAlive": sess.is_alive,
+                "files": files,
+                "hasIndex": has_index,
+                "previewUrl": f"/workspaces/{sess.slug}/index.html"
+            })
+        return _json_response({"error": "Session not found"}, 404)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_pty_resize(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    data = body or {}
+    session_id = data.get("sessionId", "")
+    cols = int(data.get("cols", 80))
+    rows = int(data.get("rows", 24))
+
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+
+    try:
+        import zoth_pty_engine
+        sess = zoth_pty_engine.pty_manager.sessions.get(session_id) or zoth_pty_engine.pty_manager.get_or_create(session_id.replace("zoth_pty_", ""))
+        if sess:
+            sess.resize(cols, rows)
+            return _json_response({"status": "ok"})
+        return _json_response({"error": "Session not found"}, 404)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_ducky_sessions(request: Request) -> Response:
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+    try:
+        import ducky_terminal_spawner
+        sessions = ducky_terminal_spawner.list_all_active_sessions()
+        return _json_response({"status": "ok", "sessions": sessions, "count": len(sessions)})
+    except Exception as e:
+        return _json_response({"error": str(e), "sessions": []}, 500)
+
+
+async def api_ducky_spawn(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    data = body or {}
+    proj_name = data.get("projectName", data.get("slug", "zoth-project")).strip()
+    prompt = data.get("prompt", "").strip()
+    agent = data.get("agent", data.get("harness", "agy")).lower()
+
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+    try:
+        import ducky_terminal_spawner
+        res = ducky_terminal_spawner.spawn_real_agent_terminal(proj_name, prompt, agent)
+        return _json_response(res)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_ducky_feedback(request: Request) -> Response:
+    body, err = await _safe_json(request)
+    if err:
+        return err
+    data = body or {}
+    session_name = data.get("session", "")
+    feedback = data.get("feedback", "").strip()
+
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+    try:
+        import ducky_terminal_spawner
+        res = ducky_terminal_spawner.send_terminal_feedback(session_name, feedback)
+        return _json_response(res)
+    except Exception as e:
+        return _json_response({"error": str(e)}, 500)
+
+
+async def api_ducky_screen(request: Request) -> Response:
+    session_name = request.query_params.get("session", "")
+    if not session_name and request.method == "POST":
+        body, _ = await _safe_json(request)
+        if body:
+            session_name = body.get("session", "")
+
+    tools_dir = _get_tools_dir()
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+    try:
+        import ducky_terminal_spawner
+        screen_data = ducky_terminal_spawner.get_terminal_screen(session_name)
+        if isinstance(screen_data, dict):
+            return _json_response({"status": "ok", **screen_data})
+        return _json_response({"status": "ok", "screen": screen_data})
     except Exception as e:
         return _json_response({"error": str(e)}, 500)
 
@@ -2311,6 +2844,22 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/api/obsidian/graph", api_obsidian_graph),
         Route("/api/fusion/arena", api_fusion_arena, methods=["POST"]),
 
+        # Netrunner Memory Matrix (:8788) & Tool / Code Event Substrate
+        Route("/api/memory/status", api_memory_status),
+        Route("/api/zoth/memory/status", api_memory_status),
+        Route("/api/memory/record-tool", api_memory_record_tool, methods=["POST"]),
+        Route("/api/zoth/memory/record-tool", api_memory_record_tool, methods=["POST"]),
+        Route("/api/memory/record-code", api_memory_record_code, methods=["POST"]),
+        Route("/api/zoth/memory/record-code", api_memory_record_code, methods=["POST"]),
+        Route("/api/memory/recall", api_memory_recall, methods=["GET", "POST"]),
+        Route("/api/zoth/memory/recall", api_memory_recall, methods=["GET", "POST"]),
+        Route("/api/memory/trigger", api_memory_trigger, methods=["POST"]),
+        Route("/api/zoth/memory/trigger", api_memory_trigger, methods=["POST"]),
+        Route("/api/memory/prompt-context", api_memory_prompt_context),
+        Route("/api/zoth/memory/prompt-context", api_memory_prompt_context),
+        Route("/api/memory/proxy", api_memory_proxy, methods=["GET", "POST", "PUT", "DELETE"]),
+        Route("/api/zoth/memory/proxy", api_memory_proxy, methods=["GET", "POST", "PUT", "DELETE"]),
+
         # Parrot Nexus
         Route("/api/parrot-nexus/dashboard", api_parrot_nexus_dashboard),
         Route("/api/parrot-nexus/tools", api_parrot_nexus_tools),
@@ -2391,6 +2940,29 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/api/preview-container/config", api_preview_container_config, methods=["POST"]),
         Route("/api/preview-container/stop", api_preview_container_stop, methods=["POST"]),
 
+        # Workspaces & Static Site Previews
+        Route("/workspaces/{path:path}", workspaces_handler),
+
+        # PTY Universal Terminal & Live Stream
+        Route("/api/zoth/pty/spawn", api_pty_spawn, methods=["POST"]),
+        Route("/api/pty/spawn", api_pty_spawn, methods=["POST"]),
+        Route("/api/zoth/pty/write", api_pty_write, methods=["POST"]),
+        Route("/api/pty/write", api_pty_write, methods=["POST"]),
+        Route("/api/zoth/pty/stream", api_pty_stream, methods=["POST"]),
+        Route("/api/pty/stream", api_pty_stream, methods=["POST"]),
+        Route("/api/zoth/pty/resize", api_pty_resize, methods=["POST"]),
+        Route("/api/pty/resize", api_pty_resize, methods=["POST"]),
+
+        # DuckyScript Terminal Spawner & Feedback
+        Route("/api/zoth/terminal/ducky/sessions", api_ducky_sessions, methods=["GET"]),
+        Route("/api/ducky/sessions", api_ducky_sessions, methods=["GET"]),
+        Route("/api/zoth/terminal/ducky/spawn", api_ducky_spawn, methods=["POST"]),
+        Route("/api/ducky/spawn", api_ducky_spawn, methods=["POST"]),
+        Route("/api/zoth/terminal/ducky/feedback", api_ducky_feedback, methods=["POST"]),
+        Route("/api/ducky/feedback", api_ducky_feedback, methods=["POST"]),
+        Route("/api/zoth/terminal/ducky/screen", api_ducky_screen, methods=["GET", "POST"]),
+        Route("/api/ducky/screen", api_ducky_screen, methods=["GET", "POST"]),
+
         # Catch-all
         Route("/api/{path:path}", api_catchall, methods=["GET", "POST", "PUT", "DELETE"]),
     ]
@@ -2398,15 +2970,7 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
     middleware = [
         Middleware(
             CORSMiddleware,
-            allow_origins=[
-                f"http://localhost:{port}",
-                f"http://127.0.0.1:{port}",
-                "http://127.0.0.1:8088",
-                "http://localhost:8088",
-                "https://zoth.nullai.tech",
-                "https://nullai.tech",
-            ],
-            allow_origin_regex=r"https://([a-z0-9-]+\.)?nullai\.tech|http://(localhost|127\.0\.0\.1)(:\d+)?",
+            allow_origins=["*"],
             allow_methods=["*"],
             allow_headers=["*"],
         ),

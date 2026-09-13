@@ -114,9 +114,29 @@
     applyTheme(next);
   };
 
+  // Dynamic Base Path Detection for Local file:// & Web HTTP
+  function getAssetsBase() {
+    if (window.location.protocol === "file:") {
+      var scripts = document.querySelectorAll("script[src]");
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].getAttribute("src") || "";
+        if (src.indexOf("zoth-theme.js") !== -1 || src.indexOf("zoth-nav.js") !== -1) {
+          var clean = src.split("?")[0];
+          var idx = clean.lastIndexOf("/");
+          if (idx !== -1) return clean.substring(0, idx + 1);
+          return "./";
+        }
+      }
+      return "./";
+    }
+    return "/assets/";
+  }
+
   // Ensure Theme Style Sheets
-  function ensureStylesheet(id, href) {
+  function ensureStylesheet(id, relHref) {
     if (document.getElementById(id)) return;
+    var base = getAssetsBase();
+    var href = relHref.startsWith("/assets/") ? relHref.replace(/^\/assets\//, base) : relHref;
     var link = document.createElement("link");
     link.id = id;
     link.rel = "stylesheet";
@@ -132,9 +152,10 @@
     ensureStylesheet("zoth-magic-ui-css", "/assets/zoth-magic-ui.css?v=1");
     ensureStylesheet("zoth-luxury-fx-css", "/assets/zoth-luxury-fx.css?v=1");
 
+    var base = getAssetsBase();
     if (!document.querySelector('script[src*="zoth-spotlight.js"]')) {
       var spot = document.createElement("script");
-      spot.src = "/assets/zoth-spotlight.js?v=1";
+      spot.src = base + "zoth-spotlight.js?v=1";
       spot.defer = true;
       document.head.appendChild(spot);
     }
@@ -143,7 +164,7 @@
     var existing = document.querySelector('script[src*="zoth-theme-fx.js"]');
     if (existing) return;
     var script = document.createElement("script");
-    script.src = "/assets/zoth-theme-fx.js?v=7";
+    script.src = base + "zoth-theme-fx.js?v=7";
     script.async = true;
     document.head.appendChild(script);
   }

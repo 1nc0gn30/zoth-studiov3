@@ -401,10 +401,11 @@ def find_tool_binary(tool_def: dict) -> tuple[bool, str, str]:
     if not found_path:
         return False, "", "Not Detected"
 
-    # Version probe
+    # Version probe (fast non-blocking probe)
     ver = "Installed"
     try:
-        res = subprocess.run([found_path, "--version"], capture_output=True, text=True, timeout=3)
+        ver_flag = "-v" if "rizin" in found_path or "r2" in found_path else "--version"
+        res = subprocess.run([found_path, ver_flag], capture_output=True, text=True, timeout=0.3)
         out = (res.stdout or res.stderr or "").strip().split("\n")[0]
         if out:
             ver = out[:45]
@@ -413,8 +414,17 @@ def find_tool_binary(tool_def: dict) -> tuple[bool, str, str]:
 
     return True, found_path, ver
 
+_TOOLS_CACHE = None
+_TOOLS_CACHE_TIME = 0
+
 def get_complete_tools_inventory() -> dict:
-    """Return complete status and install metadata for all supported AI harnesses."""
+    """Return complete status and install metadata for all supported AI harnesses with fast caching."""
+    global _TOOLS_CACHE, _TOOLS_CACHE_TIME
+    import time
+    now = time.time()
+    if _TOOLS_CACHE is not None and (now - _TOOLS_CACHE_TIME) < 15.0:
+        return _TOOLS_CACHE
+
     host_os = detect_host_os()
     result = {
         "host_os": host_os,
@@ -455,6 +465,8 @@ def get_complete_tools_inventory() -> dict:
             "install_options": item["install"]
         })
 
+    _TOOLS_CACHE = result
+    _TOOLS_CACHE_TIME = time.time()
     return result
 
 def run_automated_installer(tool_id: str) -> dict:

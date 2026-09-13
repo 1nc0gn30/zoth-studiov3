@@ -31,6 +31,13 @@
   };
 
   function initHeroCanvas() {
+    var skipCanvas = window.matchMedia && (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(max-width: 880px)").matches ||
+      window.matchMedia("(pointer: coarse)").matches
+    );
+    if (skipCanvas) return;
+
     var heroStage = document.getElementById("hero") || document.querySelector(".hero-stage");
     var heroPanel = document.querySelector(".hero-parallax-stage") || heroStage;
     if (!heroPanel) return;
