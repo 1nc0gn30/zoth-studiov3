@@ -11,6 +11,17 @@
 (function () {
   'use strict';
 
+  // Generated sites (/workspaces) and iframe previews are standalone products.
+  // Do not inject the Zoth Studio navbar, dock, pet HUD, or workbench chrome.
+  try {
+    if (window.self !== window.top || window.frameElement) return;
+  } catch (e) {
+    return;
+  }
+  var _href = String(window.location.href || '');
+  var _path = window.location.pathname || '';
+  if (/^\/workspaces\//.test(_path) || /srcdoc/i.test(_href) || _href.indexOf('about:') === 0) return;
+
   // ── 1. Ensure Universal Dependency Stylesheets & Scripts ──
   function ensureStylesheet(id, href) {
     if (document.getElementById(id)) return;
@@ -257,8 +268,9 @@
         '  <span><strong>Zoth</strong><small>by NullAI</small></span>',
         '</a>',
         '<nav aria-label="Primary navigation" class="menu" role="navigation">',
-        '  <a class="nav-link" href="/#how-it-works">✦ How It Works</a>',
-        '  <a class="nav-link" href="/secure-comms/" style="color: var(--cyan); text-shadow: 0 0 10px rgba(0,240,255,0.4);">🔒 SimpleX Matrix</a>',
+        '  <a class="nav-link" href="/memory/" style="color: var(--cyan); text-shadow: 0 0 10px rgba(0,240,255,0.35);">🧠 Memory Whitespace</a>',
+        '  <a class="nav-link" href="/studio/math-pillars.html" style="color: #c084fc; text-shadow: 0 0 10px rgba(192,132,252,0.35);">📐 Math Pillars</a>',
+        '  <a class="nav-link" href="/secure-comms/">🔒 SimpleX Matrix</a>',
         '  <a class="nav-link" href="/studio/web3-hub.html" style="color: var(--gold); text-shadow: 0 0 10px rgba(251,191,36,0.3);">🪙 Web3</a>',
         '  <a class="nav-pill git" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">GitHub ↗</a>',
         '</nav>',
@@ -541,6 +553,8 @@
       '<!-- 🪐 Studio Workstations -->',
       '<div class="drawer-section">',
       '  <div class="drawer-heading">🪐 Workstations &amp; DAGs</div>',
+      '  <a class="drawer-link" href="/memory/"><strong>🧠 Memory Whitespace Hub</strong><small>Dual-Layer Story Digests &amp; Lucy Oracle</small></a>',
+      '  <a class="drawer-link" href="/studio/math-pillars.html"><strong>📐 AI Math Pillars &amp; Academy</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></a>',
       '  <a class="drawer-link" href="/studio/cockpit.html"><strong>🪐 The Cockpit</strong><small>21-Agent Autonomous Swarm</small></a>',
       '  <a class="drawer-link" href="/studio/consensus.html"><strong>⚔️ Consensus Arena</strong><small>3-Agent Debate &amp; AST Synthesis</small></a>',
       '  <a class="drawer-link" href="/studio/vos-sandbox.html"><strong>💻 vOS Wasm Sandbox</strong><small>Browser-Native WebContainer &amp; IDE</small></a>',
@@ -551,7 +565,6 @@
       '  <a class="drawer-link" href="/vault/"><strong>🔐 Sovereign Vault</strong><small>Argon2id Secrets &amp; Keyrings</small></a>',
       '  <a class="drawer-link" href="/secure-comms/"><strong>🔒 SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></a>',
       '  <a class="drawer-link" href="/studio/web3-hub.html"><strong>🪙 Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></a>',
-      '  <a class="drawer-link" href="/memory/"><strong>🧠 Netrunner Memory World</strong><small>Biomorphic Associative Graph</small></a>',
       '  <a class="drawer-link" href="/pets/"><strong>💎 Companion Pets 3D</strong><small>Volumetric Mascot Spirits</small></a>',
       '  <a class="drawer-link" href="/signal/"><strong>📡 Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; SSE</small></a>',
       '  <a class="drawer-link" href="/studio/"><strong>🛠️ All 14+ Studio Tools</strong><small>Master Workstation Directory</small></a>',

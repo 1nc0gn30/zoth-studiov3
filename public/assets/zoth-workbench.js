@@ -10,6 +10,13 @@
 (function () {
   'use strict';
 
+  try {
+    if (window.self !== window.top) return;
+  } catch (e) {
+    return;
+  }
+  if (/^\/workspaces\//.test(window.location.pathname || '')) return;
+
   function ensureWorkbenchCss() {
     if (!document.querySelector('link[href*="zoth-workbench.css"]')) {
       var link = document.createElement('link');

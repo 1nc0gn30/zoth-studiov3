@@ -23,7 +23,8 @@
 | **Public Hub** | `http://127.0.0.1:8088/` | Static brochures, 23+ creative suites, 3D showcases, AEO graph | Public / Tunnel Safe |
 | **Operator Deck** | `http://127.0.0.1:8484/` | Multi-model chat harness, terminal dock, swarm arbitration engine | **Loopback Only** (`127.0.0.1`) |
 | **ESP32-S3 Serial Bridge** | `http://127.0.0.1:8585/` | Hardware Web HUD, serial monitor & TTS audio server | Private Loopback |
-| **Argon2id Vault Daemon** | `http://127.0.0.1:8686/` | Hardware-isolated zero-leak key store (Rust RPC daemon) | **Zero-Leak Loopback** |
+| **Argon2id Vault Daemon** | `http://127.0.0.1:8787/` | Hardware-isolated zero-leak key store (Rust RPC daemon) | **Zero-Leak Loopback** |
+| **Cognitive Memory Daemon** | `http://127.0.0.1:8788/` | Dual-layer memory engine, STDP synaptic links & Lucy Oracle | **Private Loopback** |
 | **Local LLM (Ollama)** | `http://127.0.0.1:11434/` | Offline `zoth-micro`, Qwen 2.5 Coder, SmolLM2, Hermes 3 | Private Loopback |
 
 ---
@@ -44,14 +45,47 @@
 * `/scan`: Re-index and verify all 47+ local tool manifests (`orchestrator.py scan`).
 * `/github [repos|dispatch]`: Query GitHub Octokit REST endpoints or trigger Actions workflows.
 * `/models`: Switch neural providers (Ollama `zoth-micro`, `qwen2.5-coder:1.5b`, `smollm2:360m`, OpenAI, Groq, Cerebras).
-* `/pet <name>`: Engage specialized companion cyber pets (`azoth`, `kai`, `draco`, `ignis`, `athena`, `lycan`).
+* `/pet <name>`: Engage specialized companion cyber pets (`azoth`, `kai`, `draco`, `ignis`, `athena`, `lycan`, `lucy`).
 * `/studio [brief]`: Launch the 8-step Astro / Tailwind website generator with live preview.
 * `/who`: Query active swarm agents, project locks, and heartbeat status.
 * `/vault`: Inspect or unlock local Argon2id credentials.
 
 ---
 
-## 🤖 3. ESP32-S3 Physical Hardware Companion
+## 📐 3. AI Math Pillars & Interactive Theory Academy (`/studio/math-pillars.html`)
+
+The **Math Pillars Academy** ([`/studio/math-pillars.html`](http://127.0.0.1:8088/studio/math-pillars.html)) is an interactive mathematical visualization suite covering the fundamental principles of sovereign intelligence:
+
+1. **Linear Algebra & SVD / Eigendecompositions**:
+   - Interactive 2D/3D matrix transformation simulator with live eigenvector deformation grids and singular value spectrum plots.
+2. **High-Dimensional Probability & Information Geometry**:
+   - Fisher Information metric visualization and natural gradient descent trajectories across curved probability simplices.
+3. **Spike-Timing-Dependent Plasticity (STDP)**:
+   - Real-time simulation of Hebbian synaptic weight adaptation ($\Delta w = A_+ e^{-\Delta t/\tau_+}$) under varying pulse intervals.
+4. **Shannon Epistemic Agreement Entropy**:
+   - Multi-agent token entropy calculator showing $H(p) < 0.20\text{ bits}$ consensus threshold boundaries.
+5. **Kolmogorov-Arnold Networks (KAN)**:
+   - Visualizing learnable B-spline activation functions along edges for transparent symbolic regression.
+6. **Modern Continuous Hopfield Energy Networks**:
+   - Energy landscape surface rendering showing single-step associative recall without spurious local minima.
+
+---
+
+## 🧠 4. Sovereign Memory Whitespace & Netrunner Cyberspace (`/memory/`)
+
+The **Memory Whitespace Hub** ([`/memory/`](http://127.0.0.1:8088/memory/) and [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html)) is the dedicated sovereign cognitive space:
+
+* **Dual-Layer Architecture**:
+  - **Human Narrative Digest**: Clean, distraction-free markdown summaries designed for human strategic review, milestone tracking, and calm thinking.
+  - **Lossless AI Grounding**: Strict XML `<memory_context>` tags with raw AST diffs, terminal traces, and cryptographic hashes for zero-drift LLM recall.
+* **Lucy Netrunner Oracle**:
+  - Embodying Lucy from *Cyberpunk: Edgerunners*, this oracle navigates the 3D associative memory graph, performs Blackwall diagnostic scans, and uncovers cross-project patterns.
+* **STDP Causal Traversal**:
+  - Sub-millisecond root cause search linking historical agent actions to present outcomes via `/v1/memories/causal-path`.
+
+---
+
+## 🤖 5. ESP32-S3 Physical Hardware Companion
 
 <div align="center">
   <img src="/assets/media/cyber-esp32-companion-photoreal.jpg" width="480" style="border-radius: 12px; border: 2px solid #34d399;" />
@@ -86,52 +120,54 @@
 
 ---
 
-## 🔐 4. Zero-Knowledge BYOK Vault (`/vault/`)
+## 🔐 6. Zero-Knowledge BYOK Vault (`/vault/`)
 
-* **Rust Daemon (`:8686`)**: Encrypted using Argon2id ($m=64\text{MB}, t=3, p=4$) and XChaCha20-Poly1305.
+* **Rust Daemon (`:8787`)**: Encrypted using Argon2id ($m=64\text{MB}, t=3, p=4$) and XChaCha20-Poly1305.
 * **Zero-Leak Memory Policy**: Sensitive buffers are wrapped in Rust `Zeroize` traits and zeroed upon drop.
 * **In-Browser Web Crypto Fallback**: Uses PBKDF2 (100,000 iterations) + AES-GCM 256-bit for client-side storage.
 
 ```bash
 # Store Secret
-curl -X POST http://127.0.0.1:8686/api/vault/store \
+curl -X POST http://127.0.0.1:8787/api/vault/store \
   -H "Content-Type: application/json" \
   -d '{"key_alias":"OPENAI_API_KEY","secret_value":"sk-xxx","passphrase":"master-secret"}'
 
 # Retrieve Secret
-curl -X POST http://127.0.0.1:8686/api/vault/retrieve \
+curl -X POST http://127.0.0.1:8787/api/vault/retrieve \
   -H "Content-Type: application/json" \
   -d '{"key_alias":"OPENAI_API_KEY","passphrase":"master-secret"}'
 ```
 
 ---
 
-## 🏛️ 5. Creative & Diagnostic Web Studios (`/studio/`)
+## 🏛️ 7. Creative & Diagnostic Web Studios (`/studio/`)
 
 | Studio Suite | Endpoint Path | Role & Capabilities |
 | :--- | :--- | :--- |
 | **Master Azoth Portal** | `/zoth/` | Sacred Fibonacci token visualizer, AST code synthesis, and alchemical core. |
+| **Memory Whitespace Hub** | `/memory/` | Distraction-free sovereign cognitive space with dual-layer story digests and neural graph. |
+| **Math Pillars Academy** | `/studio/math-pillars.html` | Interactive mathematical theory academy: linear algebra, manifolds, STDP, and KAN. |
+| **Netrunner 3D Cyberspace** | `/studio/netrunner-memory.html` | AAA 3D Cyberspace world, 360° radar, AR scanner mode, stepped altars & Lucy oracle. |
 | **Nexus 3D CAD Omniverse** | `/studio/nexus-3d.html` | Three.js 3D viewport with GLTF asset loader, Wireframe/PBR modes, and HDRI skyboxes. |
 | **Consensus Arena v2** | `/studio/consensus.html` | 3-agent triangulation with Shannon entropy and Jaccard token overlap metrics. |
 | **Swarm Command Arena** | `/studio/swarm.html` | Craig Reynolds Boids 3D kinetic flocking simulation tracking agent communication vectors. |
 | **OmniPost 2.0 Video Engine**| `/studio/omnipost.html` | 60 FPS HTML5 Canvas video synthesizer, thumbnail forge, subtitle & speech narration syncer. |
 | **Vision Link Spatial HUD** | `/studio/vision-link.html` | Webcam hand gesture recognition, 3D holographic overlays, and air typing keyboard. |
-| **AI Math Observability** | `/studio/math-pillars.html` | Real-time cross-entropy loss descent, cosine learning rate scheduler, and weight convergence visualizer. |
 | **Visual DAG Agent Composer**| `/studio/agent-composer.html` | Interactive node graph editor with bezier connecting wires and JSON playbook exporter. |
 | **Edge Function Forge** | `/studio/edge-forge.html` | Serverless V8 isolate sandbox with Solana RPC connectors and waterfall telemetry. |
 | **SubSweep Recon** | `/studio/subsweep.html` | OSINT attack surface scanner, Certificate Transparency log probe, and TLS security auditor. |
 
 ---
 
-## 💛 6. Support the forge (`/pricing/`)
+## 💛 8. Support the forge (`/pricing/`)
 
-The operator OS is **$0**. Install, deck, vault, swarm, agents, and BYOK run on your hardware. Patron is optional funding. Studio is paid work. Nothing here is a SaaS seat, and the vault is never locked behind a plan.
+The operator OS is **$0**. Install, deck, vault, swarm, agents, and BYOK run on your hardware. Patron is optional funding. NullAI is paid work at nullai.tech. This product is **Zoth Studio**, not NullAI. Nothing here is a SaaS seat, and the vault is never locked behind a plan.
 
 | Door | What it is | Where |
 | :--- | :--- | :--- |
 | **Operator** | Free local OS. Primary conversion is install. | [`/#install`](/#install) |
 | **Founder Patron** | Optional funding. Keep Zoth free and sovereign. GitHub Sponsors when live. | [GitHub](https://github.com/NullAITech/zoth-studio) |
-| **NullAI Studio** | Paid services: SLA, hardware, custom foundry. | [nullai.tech](https://nullai.tech/) |
+| **NullAI** | Paid services at [nullai.tech](https://nullai.tech/): SLA, hardware, custom foundry. | [NullAI](https://nullai.tech/) |
 
 Doctrine, never-pay list (keys, inference, telemetry), and FAQ: [`/pricing/`](/pricing/).
 

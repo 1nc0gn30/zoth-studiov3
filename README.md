@@ -6,9 +6,10 @@
 
 [![Version](https://img.shields.io/badge/version-3.0.0-00f0ff?style=for-the-badge&logo=target&logoColor=white)](https://github.com/NullAITech/zoth-studio)
 [![License](https://img.shields.io/badge/license-Apache%202.0-e8c872?style=for-the-badge&logo=apache&logoColor=black)](LICENSE)
+[![Math Pillars](https://img.shields.io/badge/theory-6%20Math%20Pillars%20Academy-c084fc?style=for-the-badge&logo=wolframmathematica&logoColor=white)](http://127.0.0.1:8088/studio/math-pillars.html)
+[![Memory Whitespace](https://img.shields.io/badge/memory-Sovereign%20Whitespace-00f0ff?style=for-the-badge&logo=brainz&logoColor=white)](http://127.0.0.1:8088/memory/)
 [![Workstations](https://img.shields.io/badge/workstations-23%2B%20Sovereign%20Apps-34d399?style=for-the-badge&logo=safari&logoColor=white)](http://127.0.0.1:8088/)
-[![3D Graphics](https://img.shields.io/badge/webgl-Three.js%20%2B%20Bloom%20(60FPS)-f472b6?style=for-the-badge&logo=three.js&logoColor=white)](http://127.0.0.1:8088/studio/swarm.html)
-[![Netrunner](https://img.shields.io/badge/oracle-Lucy%20(Edgerunners)-00f0ff?style=for-the-badge&logo=matrix&logoColor=white)](http://127.0.0.1:8088/studio/netrunner-memory.html)
+[![Netrunner](https://img.shields.io/badge/oracle-Lucy%20(Edgerunners)-f472b6?style=for-the-badge&logo=matrix&logoColor=white)](http://127.0.0.1:8088/studio/netrunner-memory.html)
 
 </div>
 
@@ -16,10 +17,10 @@
 
 ## 🛡️ Overview & Scope
 
-`core-app` is the primary frontend workstation suite and Unix PTY harness for **Zoth Studio**. It provides 23+ zero-cloud, client-side web workstations serving the entire 21-agent Pantheon, WebGen autonomous code synthesis, real-time 3D spatial monitoring, and the Lucy Netrunner Memory matrix.
+`core-app` is the primary frontend workstation suite and Unix PTY harness for **Zoth Studio**. It provides 23+ zero-cloud, client-side web workstations serving the entire 21-agent Pantheon, WebGen autonomous code synthesis, real-time 3D spatial monitoring, the **AI Math Pillars Theory Academy**, and the **Lucy Netrunner Memory Whitespace Matrix**.
 
 ### What is in this directory:
-- **`public/`**: 23+ static web workstations, interactive dashboards, agent dossiers, and assets.
+- **`public/`**: 23+ static web workstations, interactive theory academies, agent dossiers, and assets.
 - **`tools/`**: Local Unix PTY engine (`pty.fork`), DuckyScript compiler, and loopback agent orchestrator (`:8484`).
 - **`public/assets/`**: Vectorized agent badges, 3D shader scripts (`zoth-world.js`, `zoth-three-orb.js`), 16-brand theme stylesheets (`zoth-theme.css`), and authentic Lucy Cyberpunk mascot assets.
 
@@ -30,14 +31,91 @@
 | Workstation | Route | Description | Tech Stack |
 | :--- | :--- | :--- | :--- |
 | **Launchpad** | [`/index.html`](http://127.0.0.1:8088/) | Flagship cockpit with live status, agent launcher, and theme switcher | Vanilla HTML5 / CSS3 / ESModules |
+| **Memory Whitespace** | [`/memory/`](http://127.0.0.1:8088/memory/) | Distraction-free sovereign cognitive space with dual-layer story digests and neural graph | Dual-Layer JSON / Obsidian Graph / SSE |
+| **Math Pillars Academy** | [`/studio/math-pillars.html`](http://127.0.0.1:8088/studio/math-pillars.html) | Interactive mathematical theory academy: linear algebra, manifolds, STDP, and KAN | KaTeX / Three.js Visualizers / Canvas Math |
+| **Netrunner Cyberspace** | [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html) | AAA 3D Cyberspace world, 360° radar, AR scanner mode, stepped altars & Lucy oracle | Three.js / Dual-Layer Memory / SpeechSynthesis |
 | **WebGen Studio** | [`/studio/webgen.html`](http://127.0.0.1:8088/studio/webgen.html) | Natural-language web foundry with live split-screen preview and PTY terminal | `xterm.js` / Three.js kinetic orb |
-| **Netrunner Memory Hub** | [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html) | AAA 3D Cyberspace world, 360° radar, AR scanner mode, stepped altars & Lucy oracle | Three.js / Dual-Layer Memory / SpeechSynthesis |
 | **3D Swarm Arena** | [`/studio/swarm.html`](http://127.0.0.1:8088/studio/swarm.html) | Tactical 3D battle radar, volumetric shields, laser weapons & 5 camera modes | WebGL / UnrealBloomPass / Web Audio |
 | **vOS Sandbox** | [`/studio/vos-sandbox.html`](http://127.0.0.1:8088/studio/vos-sandbox.html) | In-browser WebAssembly virtual OS, file explorer, and WebContainer runner | Wasm / `xterm.js` / Virtual FS |
 | **Consensus Arena v2** | [`/studio/consensus.html`](http://127.0.0.1:8088/studio/consensus.html) | 3-model prompt triangulation with Shannon Agreement Entropy ($H(p) < 0.20\text{b}$) | Mathematical Consensus / AST Fuzzer |
 | **Nexus 3D Sanctum** | [`/studio/nexus-3d.html`](http://127.0.0.1:8088/studio/nexus-3d.html) | 3D alchemical sphere with Fresnel iridescence and 10,000+ swirling nebula stars | Three.js `InstancedMesh` / OrbitControls |
 | **Agent Registry** | [`/agents/`](http://127.0.0.1:8088/agents/) | Interactive dossiers and skill matrices for all 21 Pantheon AI agents | Responsive UI / JSON Grounding |
 | **AX Specification** | [`/ax/`](http://127.0.0.1:8088/ax/) | Agent Experience and AEO Schema.org knowledge grounding layer | JSON-LD / Machine Grounding |
+
+---
+
+## 📐 The Six Mathematical Pillars of Sovereign AI
+
+Zoth Studio's multi-agent arbitration, memory indexing, and consensus engines are built on strict mathematical foundations accessible via the interactive [`/studio/math-pillars.html`](http://127.0.0.1:8088/studio/math-pillars.html) academy:
+
+### 1. Monoidal Category Theory & Sheaf Topologies
+* **Morphism Composition**: Multi-agent tool execution pipelines are modeled as morphisms $f: A \to B$ in a symmetric monoidal category $(\mathcal{C}, \otimes, I)$.
+* **Monadic Side-Effect Isolation**: Local disk modifications and terminal commands run inside an IO Monad $(M, \eta, \mu)$, guaranteeing clean rollbacks and zero untracked state mutations.
+* **Sheaf Cohomology on Knowledge Graphs**: Local consistency between disparate agent memory fragments is evaluated as sections over open coverings, resolving merge conflicts when $\check{H}^1(\mathcal{U}, \mathcal{F}) = 0$.
+
+### 2. High-Dimensional Information Geometry & Riemannian Manifolds
+* **Fisher Information Metric**: Optimization trajectories follow the Riemannian manifold $(\mathcal{M}, g)$ where the metric tensor $g_{ij}(\theta) = \mathbb{E}\left[ \frac{\partial \log p}{\partial \theta_i} \frac{\partial \log p}{\partial \theta_j} \right]$.
+* **Natural Gradient Descent**: Parameter updates move along the steepest descent direction invariant to coordinate transformations: $\tilde{\nabla} L(\theta) = g^{-1}(\theta) \nabla L(\theta)$.
+* **Hyperbolic Latent Space Embedding**: Hierarchical project and memory graphs are embedded in Poincaré disk space $\mathbb{D}^n$ with metric $ds^2 = 4 \frac{\sum dx_i^2}{(1 - \|x\|^2)^2}$, naturally avoiding exponential edge crowding.
+
+### 3. Spike-Timing-Dependent Plasticity (STDP) & Associative Hebbian Memory
+* **Synaptic Weight Dynamics**: Causal memory links between agent actions are weighted dynamically according to spike time differences $\Delta t = t_{\text{post}} - t_{\text{pre}}$:
+  $$\Delta w = \begin{cases} A_+ \exp\left(-\frac{\Delta t}{\tau_+}\right) & \text{if } \Delta t > 0 \text{ (Long-Term Potentiation / Causality)} \\ -A_- \exp\left(\frac{\Delta t}{\tau_-}\right) & \text{if } \Delta t < 0 \text{ (Long-Term Depression / Anti-Correlation)} \end{cases}$$
+* **Continuous Causal Traversal**: Enables sub-millisecond graph search for the root causes of codebase regressions via `/v1/memories/causal-path`.
+
+### 4. Shannon Agreement Entropy & Epistemic Triangulation
+* **Multi-Model Consensus Metric**: Disagreement among models (e.g. Antigravity, Grok, Hermes) is quantified over discrete AST mutation probability vectors:
+  $$H(P) = -\sum_{i=1}^N p_i \log_2 p_i$$
+* **Consensus Threshold**: When $H(P) < 0.20\text{ bits}$, epistemic consensus is reached, permitting automated code commits and zero-prompt execution.
+
+### 5. Kolmogorov-Arnold Networks (KAN) & Learnable B-Spline Activations
+* **Spline Representation Theorem**: Replaces traditional fixed-weight MLPs with univariate splines parameterized on edges:
+  $$f(x) = \sum_{q=1}^{2n+1} \Phi_q\left( \sum_{p=1}^n \phi_{q,p}(x_p) \right)$$
+* **Explainability**: Yields fully symbolic, readable mathematical equations from trained agent behavior patterns.
+
+### 6. Continuous Modern Hopfield Networks for Dense Associative Recall
+* **Energy Function**: Energy-based associative retrieval provides exponential storage capacity ($C \propto 2^{d/2}$):
+  $$E(x) = -\beta^{-1} \log \left( \sum_{i=1}^N \exp(\beta x^T x_i) \right) + \frac{1}{2} x^T x$$
+* **Sub-Millisecond Memory Recall**: Guarantees single-step convergence to exact stored episodic context without hallucinatory drift.
+
+---
+
+## 🧠 Sovereign Memory Whitespace & Dual-Layer Cognitive Stratum
+
+The **Memory Whitespace** ([`/memory/`](http://127.0.0.1:8088/memory/) and [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html)) is the cognitive centerpiece of Zoth Studio:
+
+```mermaid
+flowchart TD
+    subgraph CognitiveWhitespace["🧠 SOVEREIGN MEMORY WHITESPACE (:8788)"]
+        direction TB
+        RawInput["📥 Live Agent Sensory Stream & Terminal Executions"]
+        
+        subgraph Pipeline["⚡ DUAL-LAYER COMPRESSION & INDEXING"]
+            NarrativeEngine["📖 Human Story Synthesizer<br/>(Markdown Digest & Milestones)"]
+            LosslessEncoder["🧬 Lossless XML AI Grounding<br/>(&lt;memory_context&gt; Vector & AST)"]
+            STDPGraph["🕸️ STDP Hebbian Causal Lattice<br/>(Biomorphic Synapses)"]
+        end
+        
+        subgraph OutputSurfaces["🌌 INTERACTIVE SURFACES"]
+            HumanSurface["🧑 Human Whitespace Canvas<br/>• Structured Markdown MOCs<br/>• Distraction-free Review Queue<br/>• Audio narration & Story summaries"]
+            AISurface["🤖 Sovereign Agent Prompting<br/>• Zero-Loss In-Context Injection<br/>• Instant STDP Causal Traversal<br/>• Subconscious Precedent Recall"]
+            Cyberspace3D["🎮 Lucy 3D Cyberspace World<br/>• 360° Memory Radar & Altars<br/>• Blackwall Breach Mode<br/>• Real-time Audio Diagnostics"]
+        end
+    end
+    
+    RawInput --> Pipeline
+    NarrativeEngine --> HumanSurface
+    LosslessEncoder --> AISurface
+    STDPGraph --> Cyberspace3D
+    
+    style CognitiveWhitespace fill:#05070d,stroke:#00f0ff,stroke-width:2px,color:#fff
+    style Pipeline fill:#0c1322,stroke:#fbbf24,stroke-width:2px,color:#fff
+    style OutputSurfaces fill:#100d24,stroke:#c084fc,stroke-width:2px,color:#fff
+```
+
+* **Human Narrative Digest**: Automatically synthesizes dense multi-agent runs, terminal logs, and code patches into human-digestible prose with key milestones, decisions, and outcomes.
+* **Lossless Machine Grounding**: Retains exact AST diffs, shell outputs, and execution timestamps formatted in structured `<memory_context>` XML for deterministic retrieval.
+* **Lucy Netrunner Oracle**: Embodying Lucy from *Cyberpunk: Edgerunners*, this deep-dive oracle navigates the 3D associative memory matrix, identifying subconscious patterns and cross-session insights across the entire workspace.
 
 ---
 
@@ -102,13 +180,13 @@ Access the operator deck at [`http://127.0.0.1:8484/`](http://127.0.0.1:8484/).
 
 ## 💛 Support the forge
 
-The operator OS is **$0** — install, deck, vault, swarm, agents, and BYOK. Patron is optional. Studio is paid work. The vault is never a paywall.
+The operator OS is **$0** — install, deck, vault, swarm, agents, and BYOK. Patron is optional. NullAI is paid work at nullai.tech. This product is **Zoth Studio**. The vault is never a paywall.
 
 | Door | What it is | CTA |
 | :--- | :--- | :--- |
 | **Operator** | Free local OS. You host the workspace. | [`/#install`](https://zoth.nullai.tech/#install) |
 | **Founder Patron** | Optional funding. Keep Zoth free and sovereign. GitHub Sponsors when live. | [github.com/NullAITech/zoth-studio](https://github.com/NullAITech/zoth-studio) |
-| **NullAI Studio** | Paid services: SLA, hardware, custom foundry. Not a SaaS seat. | [nullai.tech](https://nullai.tech/) |
+| **NullAI** | Paid services: SLA, hardware, custom foundry. Not a SaaS seat. | [nullai.tech](https://nullai.tech/) |
 
 Full doctrine: [`/pricing/`](https://zoth.nullai.tech/pricing/)
 

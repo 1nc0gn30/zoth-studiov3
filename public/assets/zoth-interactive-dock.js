@@ -11,6 +11,8 @@
 
   var DOCK_TOOLS = [
     { id: 'home', icon: '⚡', label: 'Zoth Home', desc: 'Homepage & Hero Matrix', href: '/' },
+    { id: 'memory', icon: '🧠', label: 'Memory Whitespace', desc: 'Sovereign Cognitive Stratum & Lucy Cyberspace', href: '/memory/' },
+    { id: 'math', icon: '📐', label: 'Math Pillars', desc: 'AI Mathematical Fundamentals & Theory Academy', href: '/studio/math-pillars.html' },
     { id: 'cockpit', icon: '🪐', label: 'The Cockpit', desc: '21-Agent Autonomous Swarm', href: '/studio/cockpit.html' },
     { id: 'consensus', icon: '⚔️', label: 'Consensus Arena', desc: '3-Agent Debate & AST Synthesis', href: '/studio/consensus.html' },
     { id: 'vos', icon: '💻', label: 'vOS Sandbox', desc: 'WebAssembly & WebContainer IDE', href: '/studio/vos-sandbox.html' },
@@ -18,7 +20,6 @@
     { id: 'nexus3d', icon: '📐', label: 'Nexus 3D', desc: 'CAD-Grade 3D Omniverse Viewport', href: '/studio/nexus-3d.html' },
     { id: 'omnipost', icon: '🎬', label: 'OmniPost Video', desc: '60 FPS Social Video & Motion Studio', href: '/studio/omnipost.html' },
     { id: 'swarm', icon: '🌐', label: '3D Swarm Arena', desc: 'Kinetic WebGL Battle Arena', href: '/studio/swarm.html' },
-    { id: 'memory', icon: '🧠', label: 'Netrunner Memory', desc: 'Biomorphic Neural Stratum & Lucy Oracle', href: '/studio/netrunner-memory.html' },
     { id: 'vault', icon: '🔐', label: 'Sovereign Vault', desc: 'Argon2id Secrets & Keyrings', href: '/vault/' },
     { id: 'web3', icon: '🪙', label: 'Web3 Solana', desc: 'DeFi Hub, Live SOL Ticker & Matrix', href: '/studio/web3-hub.html' },
     { id: 'divider', isDivider: true },
