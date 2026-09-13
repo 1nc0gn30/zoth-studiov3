@@ -4,13 +4,14 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   build-and-release:
-    name: Build & Publish Complete Release Suite
+    name: Build & Publish Complete Release Suite (Linux, Windows, macOS, Android)
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Repository
@@ -22,14 +23,20 @@ jobs:
           toolchain: stable
           targets: x86_64-unknown-linux-gnu, x86_64-pc-windows-gnu
 
-      - name: 🛠️ Install Linux Packaging Dependencies
+      - name: ☕ Setup Java 17 for Android
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🛠️ Install Packaging Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-mingw-w64 make rsync tar zip curl
 
       - name: 🔐 Compile Rust Vault Daemons (Linux & Windows)
         run: |
-          mkdir -p dist/release/windows dist/release/linux
+          mkdir -p dist/release/windows dist/release/linux dist/release/macos dist/release/android
           
           # Linux Vault Daemon
           cd vault-daemon || cd core-app/vault-daemon
@@ -74,6 +81,30 @@ jobs:
             cp core-app/public/dist/release/windows/* dist/release/windows/ || true
           fi
 
+      - name: 🍎 Build macOS Universal Suite (.tar.gz & .zip)
+        run: |
+          cd core-app || true
+          if [ -f "scripts/build-macos-package.sh" ]; then
+            bash scripts/build-macos-package.sh || true
+          fi
+          cd ..
+          mkdir -p dist/release/macos
+          if [ -d "core-app/dist-macos" ]; then
+            cp core-app/dist-macos/* dist/release/macos/ || true
+          fi
+
+      - name: 🤖 Build Android APK (Zoth Signal Bridge)
+        run: |
+          if [ -d "zoth-signal-bridge-android" ]; then
+            cd zoth-signal-bridge-android
+            chmod +x gradlew
+            ./gradlew assembleDebug || true
+            cd ..
+            mkdir -p dist/release/android
+            if [ -f "zoth-signal-bridge-android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+              cp zoth-signal-bridge-android/app/build/outputs/apk/debug/app-debug.apk dist/release/android/zoth-signal-bridge-${{ github.ref_name }}-android.apk
+            fi
+          fi
 
       - name: 📝 Generate Comprehensive Checksums
         run: |
@@ -84,6 +115,12 @@ jobs:
           fi
           if [ -d "linux" ]; then
             cd linux && sha256sum * > SHA256SUMS.txt && cd ..
+          fi
+          if [ -d "macos" ]; then
+            cd macos && sha256sum * > SHA256SUMS.txt && cd ..
+          fi
+          if [ -d "android" ]; then
+            cd android && sha256sum * > SHA256SUMS.txt && cd ..
           fi
 
       - name: 🚀 Publish GitHub Release
@@ -105,5 +142,9 @@ jobs:
             dist/release/linux/zoth-studio_*.deb
             dist/release/linux/zoth-linux-x86_64.run
             dist/release/linux/zoth-studio-*.tar.gz
+            dist/release/macos/zoth-studio-*.tar.gz
+            dist/release/macos/zoth-studio-*.zip
+            dist/release/android/zoth-signal-bridge-*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

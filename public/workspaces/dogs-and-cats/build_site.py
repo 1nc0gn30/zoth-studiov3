@@ -1,0 +1,89 @@
+import os
+
+header_html = """<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KINDRED & PAW — The Definitive Canine & Feline Sanctuary</title>
+  <meta name="description" content="An award-winning editorial and practical sanctuary exploring the deep psychology, pros, cons, holistic nutrition, and lifelong care of dogs and cats.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e2a85c'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg>">
+</head>
+<body>
+
+  <!-- Ambient Light Atmosphere -->
+  <div class="ambient-glow">
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+  </div>
+
+  <div class="site-wrapper">
+
+    <!-- Global Header Navigation -->
+    <header class="site-header">
+      <div class="header-container">
+        <a href="#home" class="brand-logo-link route-trigger" data-route="home">
+          <!-- Custom Luxury Interlocking Dog & Cat SVG Logo -->
+          <svg class="logo-symbol" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="46" stroke="url(#goldGrad)" stroke-width="2.5" stroke-dasharray="2 3"/>
+            <path d="M28 68 C28 52, 36 42, 45 42 C48 34, 55 30, 60 30 C64 30, 68 34, 66 40 C72 42, 76 48, 76 56 C76 68, 64 74, 52 74 C40 74, 28 72, 28 68 Z" stroke="#e2a85c" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M42 38 L36 26 L46 32" stroke="#76ac92" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M58 36 L66 24 L62 34" stroke="#d97746" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="50" cy="54" r="3" fill="#e2a85c"/>
+            <defs>
+              <linearGradient id="goldGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#e2a85c"/>
+                <stop offset="0.5" stop-color="#fbe0ab"/>
+                <stop offset="1" stop-color="#d97746"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="brand-text">
+            <span class="brand-title">KINDRED & PAW</span>
+            <span class="brand-sub">Canine & Feline Sanctuary</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Items -->
+        <nav>
+          <ul class="nav-menu" id="navMenu">
+            <li><a href="#home" class="nav-link active" data-route="home">Sanctuary</a></li>
+            <li><a href="#dogs" class="nav-link" data-route="dogs">🐕 Canines</a></li>
+            <li><a href="#cats" class="nav-link" data-route="cats">🐈 Felines</a></li>
+            <li><a href="#dogs-pros-cons" class="nav-link" data-route="dogs-pros-cons">⚖️ Dog Pros/Cons</a></li>
+            <li><a href="#cats-pros-cons" class="nav-link" data-route="cats-pros-cons">⚖️ Cat Pros/Cons</a></li>
+            <li><a href="#compare" class="nav-link" data-route="compare">⚔️ Matchmaker</a></li>
+            <li><a href="#love-and-bonding" class="nav-link" data-route="love-and-bonding">❤️ Bonding</a></li>
+            <li><a href="#care-and-nutrition" class="nav-link" data-route="care-and-nutrition">🥗 Nutrition</a></li>
+            <li><a href="#health-and-safety" class="nav-link" data-route="health-and-safety">🩺 Health</a></li>
+            <li><a href="#adoption-guide" class="nav-link" data-route="adoption-guide">🏡 3-3-3 Rescue</a></li>
+            <li><a href="#cost-calculator" class="nav-link" data-route="cost-calculator">💰 Budget</a></li>
+            <li><a href="#gallery" class="nav-link" data-route="gallery">📸 Gallery</a></li>
+            <li><a href="#mythbusters" class="nav-link" data-route="mythbusters">🔍 Myths</a></li>
+          </ul>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <button class="btn-icon" id="openSearchModalBtn" title="Search guides & toxic database (Ctrl+K)">
+            🔍
+          </button>
+          <button class="btn-icon btn-sound" id="soundToggleBtn" title="Enable Calming Pet Purr Soundscape">
+            🔈
+          </button>
+          <button class="btn-icon" id="themeToggleBtn" title="Switch Theme">
+            🌙
+          </button>
+          <button class="btn-icon mobile-toggle" id="mobileNavToggle" title="Open Navigation Menu">
+            ☰
+          </button>
+        </div>
+      </div>
+    </header>
+"""
+
+with open("index.html", "w") as f:
+    f.write(header_html)
+print("Wrote header successfully")

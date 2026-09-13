@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST_DIR="$ROOT/dist-linux"
 BUILD_DIR="$(mktemp -d -t zoth-build-staging-XXXXXX)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
-VERSION="2.6.0"
+VERSION="3.0.0"
 PKG_NAME="zoth-studio"
 VARIANT="${VARIANT:-regular}"
 if [[ "$VARIANT" == "extreme" ]]; then
