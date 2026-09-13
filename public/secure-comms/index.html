@@ -129,8 +129,11 @@
         <!-- QR Display Canvas Box (Real High-Res Scannable QR) -->
         <div class="my-6 relative p-3 bg-white rounded-2xl shadow-[0_0_40px_rgba(0,240,255,0.25)] flex flex-col items-center justify-center">
           <div class="qr-scanner-line"></div>
-          <img src="/assets/media/simplex_sovereign_qr.png" alt="SimpleX Sovereign QR Code" class="w-56 h-56 block rounded-lg" id="simplex-qr-img" />
+          <img src="/assets/media/simplex_sovereign_qr.png" alt="SimpleX Sovereign QR Code" class="w-56 h-56 block rounded-lg cursor-zoom-in" id="simplex-qr-img" title="Click to expand QR code" />
           <span class="text-[11px] font-mono text-slate-600 font-bold mt-1">100% Scannable with SimpleX Chat App</span>
+          <button type="button" id="btn-expand-qr" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 font-mono text-[11px] font-bold transition-colors">
+            <span>🔍</span> Expand QR
+          </button>
         </div>
 
         <div class="w-full space-y-3">
@@ -313,6 +316,39 @@
 
   </main>
 
+  <!-- Zero-Knowledge QR Code Gateway Modal -->
+  <dialog id="qr-expand-modal" class="rounded-2xl p-0 border border-cyan-500/30 bg-transparent max-w-[92vw] backdrop:bg-black/80">
+    <div class="bg-slate-900/95 backdrop-blur-xl rounded-2xl p-6 md:p-8 w-full max-w-md text-center relative neon-border">
+      <button type="button" id="btn-close-qr-modal" aria-label="Close" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors">✕</button>
+
+      <div class="flex items-center justify-center gap-2 text-xs font-mono text-amber-400 uppercase font-bold mb-4">
+        <span>⚡</span> Sovereign QR Gateway
+      </div>
+
+      <div class="mx-auto mb-5 relative p-3 bg-white rounded-2xl shadow-[0_0_40px_rgba(0,240,255,0.25)] flex items-center justify-center w-fit">
+        <div class="qr-scanner-line"></div>
+        <img src="/assets/media/simplex_sovereign_qr.png" alt="SimpleX Sovereign QR Code (expanded)" class="w-72 h-72 block rounded-lg" id="simplex-qr-img-large" />
+      </div>
+
+      <p class="text-slate-400 text-xs leading-relaxed mb-4">
+        This link is generated locally. Zoth never transmits your contact identity to any server.
+      </p>
+
+      <div id="qr-modal-uri-box" class="bg-black/80 border border-cyan-500/40 rounded-xl p-3 font-mono text-[11px] text-cyan-300 break-all select-all mb-4">
+        https://smp5.simplex.im/i#P3-IWUiQi_4TEsLEV-69s5WXA8XO80uy/f8pIDmy7eh2tNrPR1WskgErjWE_4MN1hfLs_qEBFHKA
+      </div>
+
+      <div class="flex gap-3">
+        <button type="button" id="btn-copy-qr-modal" class="flex-1 py-3 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-extrabold font-mono text-xs rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+          <span id="qr-modal-copy-icon">🔗</span>
+          <span id="qr-modal-copy-text">Copy Contact URI</span>
+        </button>
+        <button type="button" id="btn-close-qr-modal-secondary" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs rounded-xl transition-colors">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+
   <!-- Footer -->
   <footer class="border-t border-slate-800/80 py-8 text-center font-mono text-xs text-slate-500">
     <div>ZOTH STUDIO · ZERO-KNOWLEDGE SOVEREIGN COMMUNICATIONS · NULLAI TECH</div>
@@ -460,6 +496,78 @@
     window.clearLiveChat = function() {
       liveTerminal.innerHTML = '<div class="text-slate-500 text-center py-4 font-mono text-xs">Live console cleared. Waiting for new SimpleX messages...</div>';
     };
+  </script>
+
+  <!-- Zero-Knowledge QR Gateway Modal wiring -->
+  <script>
+    (function () {
+      const modal = document.getElementById("qr-expand-modal");
+      const openTriggers = [
+        document.getElementById("btn-expand-qr"),
+        document.getElementById("simplex-qr-img")
+      ].filter(Boolean);
+      const closeBtns = [
+        document.getElementById("btn-close-qr-modal"),
+        document.getElementById("btn-close-qr-modal-secondary")
+      ].filter(Boolean);
+      const copyBtn = document.getElementById("btn-copy-qr-modal");
+      const copyIcon = document.getElementById("qr-modal-copy-icon");
+      const copyText = document.getElementById("qr-modal-copy-text");
+      const uriBox = document.getElementById("qr-modal-uri-box");
+
+      function openModal() {
+        if (modal && typeof modal.showModal === "function") {
+          modal.showModal();
+        } else if (modal) {
+          modal.setAttribute("open", "");
+        }
+      }
+      function closeModal() {
+        if (modal && typeof modal.close === "function") {
+          modal.close();
+        } else if (modal) {
+          modal.removeAttribute("open");
+        }
+      }
+
+      openTriggers.forEach((el) => el.addEventListener("click", openModal));
+      closeBtns.forEach((el) => el.addEventListener("click", closeModal));
+
+      // Backdrop click-to-close: clicking the <dialog> element itself (outside
+      // the inner card) counts as a backdrop click.
+      if (modal) {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) closeModal();
+        });
+      }
+
+      if (copyBtn && uriBox) {
+        copyBtn.addEventListener("click", () => {
+          const uri = uriBox.textContent.trim();
+          function done() {
+            if (copyText) copyText.textContent = "Copied! ✓";
+            if (copyIcon) copyIcon.textContent = "✅";
+            setTimeout(() => {
+              if (copyText) copyText.textContent = "Copy Contact URI";
+              if (copyIcon) copyIcon.textContent = "🔗";
+            }, 2500);
+          }
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(uri).then(done, () => {});
+          } else {
+            const tmp = document.createElement("textarea");
+            tmp.value = uri;
+            tmp.style.position = "fixed";
+            tmp.style.left = "-9999px";
+            document.body.appendChild(tmp);
+            tmp.focus();
+            tmp.select();
+            try { document.execCommand("copy"); done(); } catch (e) {}
+            document.body.removeChild(tmp);
+          }
+        });
+      }
+    })();
   </script>
 
 </body>

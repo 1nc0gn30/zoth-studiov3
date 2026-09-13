@@ -9,6 +9,20 @@
 (function() {
   'use strict';
 
+  function resolveAsset(url) {
+    if (!url) return url;
+    if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
+      if (window.location.pathname.indexOf('/workspaces/built-by-zoth') !== -1) {
+        return url.replace(/^\/assets\//, '../../assets/');
+      }
+      if (window.location.pathname.indexOf('/zoth-world') !== -1) {
+        return url.replace(/^\/assets\//, '../assets/');
+      }
+      return url.replace(/^\/assets\//, './assets/');
+    }
+    return url;
+  }
+
   // =========================================================================
   // 1. HERMETIC PETS & AGENTS DATA MATRIX (20 Sovereign Entities)
   // =========================================================================
@@ -424,17 +438,153 @@
     }
   };
 
-  // Dynamic Astral Modes configuration
+  // Dynamic Astral Modes & 16-Brand Themes Configuration
   const ASTRAL_MODES = {
+    dark: {
+      name: "Dark Void",
+      fog: 0x03050c,
+      bg: 0x020306,
+      lightKey: 0x00f0ff,
+      lightFill: 0x818cf8,
+      ambient: 0x050714,
+      starColor: 0x67e8f9
+    },
+    matrix: {
+      name: "Matrix CRT",
+      fog: 0x000a02,
+      bg: 0x000501,
+      lightKey: 0x00ff41,
+      lightFill: 0x10b981,
+      ambient: 0x021406,
+      starColor: 0x6ee7b7
+    },
     gold: {
       name: "Hermetic Gold",
       fog: 0x0a0704,
       bg: 0x050402,
       lightKey: 0xfbbf24,
-      lightFill: 0xd97706,
-      ambient: 0x3d2105,
+      lightFill: 0xf59e0b,
+      ambient: 0x261404,
       starColor: 0xfef08a
     },
+    synthwave: {
+      name: "Synthwave '84",
+      fog: 0x120824,
+      bg: 0x090314,
+      lightKey: 0xff2a85,
+      lightFill: 0x9d4edd,
+      ambient: 0x1e082b,
+      starColor: 0xf472b6
+    },
+    light: {
+      name: "Solar Light",
+      fog: 0xecf0f6,
+      bg: 0xf7f9fc,
+      lightKey: 0x0284c7,
+      lightFill: 0xd97706,
+      ambient: 0xdbeafe,
+      starColor: 0x38bdf8
+    },
+    google: {
+      name: "Google Material",
+      fog: 0x080c14,
+      bg: 0x04060a,
+      lightKey: 0x8ab4f8,
+      lightFill: 0xea4335,
+      ambient: 0x0d121f,
+      starColor: 0x93c5fd
+    },
+    microsoft: {
+      name: "Microsoft Fluent",
+      fog: 0x050a14,
+      bg: 0x020408,
+      lightKey: 0x0078d4,
+      lightFill: 0x00bcf2,
+      ambient: 0x061220,
+      starColor: 0x7dd3fc
+    },
+    apple: {
+      name: "Apple Cupertino",
+      fog: 0x040404,
+      bg: 0x000000,
+      lightKey: 0x0a84ff,
+      lightFill: 0x5e5ce6,
+      ambient: 0x080808,
+      starColor: 0xbae6fd
+    },
+    openai: {
+      name: "OpenAI Slate",
+      fog: 0x060f0c,
+      bg: 0x020504,
+      lightKey: 0x10a37f,
+      lightFill: 0x00d4aa,
+      ambient: 0x0a1410,
+      starColor: 0xa7f3d0
+    },
+    amazon: {
+      name: "AWS Console",
+      fog: 0x0c0803,
+      bg: 0x060401,
+      lightKey: 0xff9900,
+      lightFill: 0xec7211,
+      ambient: 0x140f06,
+      starColor: 0xfed7aa
+    },
+    anthropic: {
+      name: "Claude Editorial",
+      fog: 0x100a07,
+      bg: 0x080503,
+      lightKey: 0xd97757,
+      lightFill: 0xcc785c,
+      ambient: 0x1c120c,
+      starColor: 0xfed7aa
+    },
+    xai: {
+      name: "Grok Stark Cyber",
+      fog: 0x020a08,
+      bg: 0x000403,
+      lightKey: 0x00d4aa,
+      lightFill: 0x00f0ff,
+      ambient: 0x021410,
+      starColor: 0x6ee7b7
+    },
+    dracula: {
+      name: "Dracula Gothic",
+      fog: 0x140c20,
+      bg: 0x0a0610,
+      lightKey: 0xbd93f9,
+      lightFill: 0xff79c6,
+      ambient: 0x1a1028,
+      starColor: 0xf472b6
+    },
+    nord: {
+      name: "Nord Glacier",
+      fog: 0x081018,
+      bg: 0x04080c,
+      lightKey: 0x88c0d0,
+      lightFill: 0x81a1c1,
+      ambient: 0x0d1824,
+      starColor: 0xe5e9f0
+    },
+    solana: {
+      name: "Solana Matrix",
+      fog: 0x0e061c,
+      bg: 0x07020e,
+      lightKey: 0x14f195,
+      lightFill: 0x9945ff,
+      ambient: 0x120924,
+      starColor: 0x86efac
+    },
+    monokai: {
+      name: "Monokai Sublime",
+      fog: 0x14140a,
+      bg: 0x0a0a05,
+      lightKey: 0xa6e22e,
+      lightFill: 0xfd971f,
+      ambient: 0x1c1c10,
+      starColor: 0xfef08a
+    },
+    // Legacy / Astral Aliases
     aether: {
       name: "Cyber Aether",
       fog: 0x040814,
@@ -472,6 +622,146 @@
       starColor: 0xc7d2fe
     }
   };
+
+  // =========================================================================
+  // PROCEDURAL NORMAL MAPPING & MULTI-LAYER FRESNEL SHADER GENERATORS
+  // =========================================================================
+
+  /**
+   * Generates a 512x512 tangent-space procedural normal map with sacred geometric & cellular relief.
+   */
+  function generateProceduralNormalMap(size) {
+    size = size || 512;
+    var canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext('2d');
+    var imgData = ctx.createImageData(size, size);
+    var data = imgData.data;
+
+    var heightMap = new Float32Array(size * size);
+    for (var y = 0; y < size; y++) {
+      for (var x = 0; x < size; x++) {
+        var u = x / size;
+        var v = y / size;
+        var f1 = Math.sin(u * 28.0 * Math.PI) * Math.cos(v * 28.0 * Math.PI) * 0.4;
+        var f2 = Math.sin((u + v) * 18.0 * Math.PI) * 0.3;
+        var f3 = Math.sin(Math.sqrt((u - 0.5) * (u - 0.5) + (v - 0.5) * (v - 0.5)) * 48.0 * Math.PI) * 0.3;
+        var f4 = Math.cos(Math.atan2(v - 0.5, u - 0.5) * 8.0) * 0.2;
+        heightMap[y * size + x] = (f1 + f2 + f3 + f4) * 0.5 + 0.5;
+      }
+    }
+
+    for (var py = 0; py < size; py++) {
+      for (var px = 0; px < size; px++) {
+        var left = heightMap[py * size + ((px - 1 + size) % size)];
+        var right = heightMap[py * size + ((px + 1) % size)];
+        var up = heightMap[((py - 1 + size) % size) * size + px];
+        var down = heightMap[((py + 1) % size) * size + px];
+
+        var dx = (left - right) * 3.0;
+        var dy = (up - down) * 3.0;
+        var dz = 1.0;
+
+        var len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        var nx = (dx / len) * 0.5 + 0.5;
+        var ny = (dy / len) * 0.5 + 0.5;
+        var nz = (dz / len) * 0.5 + 0.5;
+
+        var idx = (py * size + px) * 4;
+        data[idx] = Math.floor(nx * 255);
+        data[idx + 1] = Math.floor(ny * 255);
+        data[idx + 2] = Math.floor(nz * 255);
+        data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    var texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 2);
+    return texture;
+  }
+
+  /**
+   * Creates a multi-layer Fresnel iridescence shader material for the central alchemical sphere.
+   */
+  function createIridescentSphereMaterial(normalMapTexture) {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uColorA: { value: new THREE.Color(0x00f0ff) },
+        uColorB: { value: new THREE.Color(0xfbbf24) },
+        uRimColor: { value: new THREE.Color(0xff2a85) },
+        uAudioPulse: { value: 0.0 },
+        uNormalMap: { value: normalMapTexture }
+      },
+      vertexShader: [
+        'varying vec3 vNormal;',
+        'varying vec3 vWorldPosition;',
+        'varying vec2 vUv;',
+        'varying vec3 vViewDir;',
+        '',
+        'void main() {',
+        '  vUv = uv;',
+        '  vNormal = normalize(normalMatrix * normal);',
+        '  vec4 worldPos = modelMatrix * vec4(position, 1.0);',
+        '  vWorldPosition = worldPos.xyz;',
+        '  vViewDir = normalize(cameraPosition - worldPos.xyz);',
+        '  gl_Position = projectionMatrix * viewMatrix * worldPos;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform vec3 uColorA;',
+        'uniform vec3 uColorB;',
+        'uniform vec3 uRimColor;',
+        'uniform float uAudioPulse;',
+        'uniform sampler2D uNormalMap;',
+        '',
+        'varying vec3 vNormal;',
+        'varying vec3 vWorldPosition;',
+        'varying vec2 vUv;',
+        'varying vec3 vViewDir;',
+        '',
+        'void main() {',
+        '  vec3 normal = normalize(vNormal);',
+        '  vec3 viewDir = normalize(vViewDir);',
+        '',
+        '  // Micro-facet normal perturbation from procedural normal map',
+        '  vec3 nm = texture2D(uNormalMap, vUv * 2.0 + vec2(uTime * 0.04, uTime * 0.02)).rgb * 2.0 - 1.0;',
+        '  normal = normalize(normal + nm * 0.35);',
+        '',
+        '  // Layer 1: Core Fresnel transmission',
+        '  float dotNV = max(dot(normal, viewDir), 0.0);',
+        '  float fresnel1 = pow(1.0 - dotNV, 2.2);',
+        '',
+        '  // Layer 2: Multi-layer Spectral Iridescence (Thin-film chromatic shift)',
+        '  float iridPhase = dotNV * 6.28318 + uTime * 0.9;',
+        '  vec3 spectralIrid = vec3(',
+        '    sin(iridPhase) * 0.5 + 0.5,',
+        '    sin(iridPhase + 2.094) * 0.5 + 0.5,',
+        '    sin(iridPhase + 4.188) * 0.5 + 0.5',
+        '  );',
+        '',
+        '  // Layer 3: High-frequency glancing rim highlight & audio reactivity',
+        '  float rimGlow = pow(1.0 - dotNV, 4.8) * (1.0 + uAudioPulse * 1.4);',
+        '',
+        '  // Alchemical gradient composition',
+        '  vec3 baseCore = mix(uColorA, uColorB, 0.5 + 0.5 * sin(uTime * 1.6 + vWorldPosition.y * 1.4));',
+        '  vec3 color = mix(baseCore, spectralIrid, fresnel1 * 0.65);',
+        '  color += uRimColor * rimGlow * 1.6;',
+        '  color += uColorA * fresnel1 * 0.85;',
+        '',
+        '  float alpha = clamp(0.78 + fresnel1 * 0.22 + rimGlow * 0.25, 0.0, 1.0);',
+        '  gl_FragColor = vec4(color, alpha);',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: true,
+      side: THREE.DoubleSide
+    });
+  }
 
   // =========================================================================
   // 2. GENERATIVE WEB AUDIO ALCHEMICAL SYNTHESIZER
@@ -615,24 +905,57 @@
       this.petMeshMap = new Map();
       this.interactiveObjects = [];
 
+      this.proceduralNormalMap = null;
+      this.iridescentMaterial = null;
       this.merkabahCore = null;
       this.floatingObelisks = [];
       this.energyConduits = [];
-      this.starParticles = null;
+      this.starInstancedMesh = null;
+      this.starData = null;
+      this.starCount = 12000;
       this.alchemyGlyphs = [];
 
       this.activePet = null;
       this.activeSwarm = [PETS_DATA[0], PETS_DATA[2], PETS_DATA[6]]; // Azoth, Lycan, Kai default
-      this.currentAstralMode = 'gold';
+
+      // Initial Theme Detection
+      const initTheme = (typeof window !== 'undefined' && window.getZothTheme ? window.getZothTheme() : (document.documentElement.getAttribute('data-theme') || 'dark')).toLowerCase();
+      this.currentAstralMode = ASTRAL_MODES[initTheme] ? initTheme : 'dark';
       this.cameraMode = 'orbit'; // 'orbit', 'fly', 'tour'
+
+      const initialMode = ASTRAL_MODES[this.currentAstralMode];
+      this.currentColors = {
+        bg: new THREE.Color(initialMode.bg),
+        fog: new THREE.Color(initialMode.fog),
+        ambient: new THREE.Color(initialMode.ambient),
+        key: new THREE.Color(initialMode.lightKey),
+        fill: new THREE.Color(initialMode.lightFill),
+        core: new THREE.Color(initialMode.lightKey),
+        star: new THREE.Color(initialMode.starColor)
+      };
+
+      this.targetColors = {
+        bg: new THREE.Color(initialMode.bg),
+        fog: new THREE.Color(initialMode.fog),
+        ambient: new THREE.Color(initialMode.ambient),
+        key: new THREE.Color(initialMode.lightKey),
+        fill: new THREE.Color(initialMode.lightFill),
+        core: new THREE.Color(initialMode.lightKey),
+        star: new THREE.Color(initialMode.starColor)
+      };
+
+      this.targetIridescentA = new THREE.Color(initialMode.lightKey);
+      this.targetIridescentB = new THREE.Color(initialMode.lightFill);
+      this.targetIridescentRim = new THREE.Color(initialMode.starColor);
 
       // Free roam input state
       this.keys = { w: false, a: false, s: false, d: false, q: false, e: false };
       this.flySpeed = 0.8;
 
-      // Raycaster for hover/click
+      // Raycaster for hover/click & celestial star interaction
       this.raycaster = new THREE.Raycaster();
       this.mouse = new THREE.Vector2(-999, -999);
+      this.mouseWorldPos = new THREE.Vector3(0, 3.2, 0);
       this.hoveredPet = null;
 
       // Camera animation tweening state
@@ -683,13 +1006,13 @@
         powerPreference: "high-performance"
       });
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      this.renderer.toneMappingExposure = 1.15;
+      this.renderer.toneMappingExposure = 1.18;
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-      // Orbit Controls
+      // Orbit Controls with Smooth Damping (dampingFactor: 0.05)
       if (THREE.OrbitControls) {
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
@@ -730,7 +1053,7 @@
       this.scene.add(this.lights.fill);
 
       // Merkabah Core Point Light
-      this.lights.core = new THREE.PointLight(0xfbbf24, 3.5, 35, 1.5);
+      this.lights.core = new THREE.PointLight(mode.lightKey, 3.8, 38, 1.5);
       this.lights.core.position.set(0, 3.2, 0);
       this.scene.add(this.lights.core);
     }
@@ -739,10 +1062,13 @@
     // 4. PROCEDURAL 3D ARCHITECTURE & REALM CREATION
     // =========================================================================
     buildWorld() {
+      // 0. Generate Procedural Normal Map Texture (512x512)
+      this.proceduralNormalMap = generateProceduralNormalMap(512);
+
       // 1. Central Sanctum Platform
       this.buildSanctumPlatform();
 
-      // 2. The Merkabah Energy Core & Sacred Altar
+      // 2. The Merkabah Energy Core & Sacred Iridescent Alchemical Sphere
       this.buildMerkabahCore();
 
       // 3. 6 Orbiting Obelisks
@@ -760,19 +1086,21 @@
       // 6. Energy Bridges & Teleport Rays
       this.buildEnergyConduits();
 
-      // 7. Celestial Starfield & Ascending Rune Glyphs
+      // 7. 10,000+ Instanced Celestial Particle Stars & Ascending Glyphs
       this.buildCosmicParticles();
     }
 
     buildSanctumPlatform() {
       const group = new THREE.Group();
 
-      // Central Dais Base
+      // Central Dais Base with Procedural Normal Mapping
       const daisGeo = new THREE.CylinderGeometry(16, 17.5, 2.2, 48);
       const daisMat = new THREE.MeshStandardMaterial({
         color: 0x0c0e18,
-        roughness: 0.25,
-        metalness: 0.85
+        roughness: 0.22,
+        metalness: 0.88,
+        normalMap: this.proceduralNormalMap,
+        normalScale: new THREE.Vector2(0.4, 0.4)
       });
       const dais = new THREE.Mesh(daisGeo, daisMat);
       dais.position.y = -1.1;
@@ -785,7 +1113,7 @@
         const ringMat = new THREE.MeshStandardMaterial({
           color: 0xfbbf24,
           emissive: 0xd97706,
-          emissiveIntensity: 0.6,
+          emissiveIntensity: 0.65,
           roughness: 0.1,
           metalness: 0.95
         });
@@ -800,7 +1128,9 @@
       const centerDaisMat = new THREE.MeshStandardMaterial({
         color: 0x17120a,
         roughness: 0.15,
-        metalness: 0.9
+        metalness: 0.92,
+        normalMap: this.proceduralNormalMap,
+        normalScale: new THREE.Vector2(0.5, 0.5)
       });
       const centerDais = new THREE.Mesh(centerDaisGeo, centerDaisMat);
       centerDais.position.y = 0.3;
@@ -814,40 +1144,60 @@
       const coreGroup = new THREE.Group();
       coreGroup.position.set(0, 3.2, 0);
 
-      // Merkabah (Interlocking 3D Star Tetrahedrons)
+      // 1. Central Alchemical Iridescent Sphere with Multi-Layer Fresnel & Normal Mapping
+      const sphereGeo = new THREE.SphereGeometry(1.15, 48, 48);
+      this.iridescentMaterial = createIridescentSphereMaterial(this.proceduralNormalMap);
+      const alchemicalSphere = new THREE.Mesh(sphereGeo, this.iridescentMaterial);
+      coreGroup.add(alchemicalSphere);
+
+      // 2. Interlocking Merkabah Star Tetrahedrons with normal mapping & metallic sheen
       const mat = new THREE.MeshStandardMaterial({
         color: 0xfef08a,
         emissive: 0xfbbf24,
-        emissiveIntensity: 1.2,
-        roughness: 0.1,
-        metalness: 0.9,
+        emissiveIntensity: 1.1,
+        roughness: 0.12,
+        metalness: 0.95,
+        normalMap: this.proceduralNormalMap,
+        normalScale: new THREE.Vector2(0.6, 0.6),
         wireframe: false
       });
 
-      const tetra1 = new THREE.Mesh(new THREE.TetrahedronGeometry(1.6), mat);
-      const tetra2 = new THREE.Mesh(new THREE.TetrahedronGeometry(1.6), mat);
+      const tetra1 = new THREE.Mesh(new THREE.TetrahedronGeometry(1.72), mat);
+      const tetra2 = new THREE.Mesh(new THREE.TetrahedronGeometry(1.72), mat);
       tetra2.rotation.x = Math.PI;
       tetra2.rotation.y = Math.PI / 4;
 
       coreGroup.add(tetra1);
       coreGroup.add(tetra2);
 
-      // Inner Glowing Crystal Flame (Icosahedron)
+      // 3. Inner Glowing Crystal Flame (Icosahedron)
       const flameMat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         wireframe: true
       });
-      const flame = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 1), flameMat);
+      const flame = new THREE.Mesh(new THREE.IcosahedronGeometry(0.82, 1), flameMat);
       coreGroup.add(flame);
 
-      // Orbiting Golden Rings
+      // 4. Orbiting Celestial Rings with normal detail & additive glow
       const ring1 = new THREE.Mesh(
-        new THREE.TorusGeometry(2.4, 0.04, 12, 48),
-        new THREE.MeshBasicMaterial({ color: 0xfbbf24 })
+        new THREE.TorusGeometry(2.5, 0.045, 16, 64),
+        new THREE.MeshStandardMaterial({
+          color: 0xfbbf24,
+          emissive: 0xfbbf24,
+          emissiveIntensity: 0.8,
+          roughness: 0.1,
+          metalness: 0.95
+        })
       );
       const ring2 = new THREE.Mesh(
-        new THREE.TorusGeometry(2.8, 0.04, 12, 48),
-        new THREE.MeshBasicMaterial({ color: 0x00f0ff })
+        new THREE.TorusGeometry(2.9, 0.045, 16, 64),
+        new THREE.MeshStandardMaterial({
+          color: 0x00f0ff,
+          emissive: 0x00f0ff,
+          emissiveIntensity: 0.8,
+          roughness: 0.1,
+          metalness: 0.95
+        })
       );
       ring1.rotation.x = Math.PI / 3;
       ring2.rotation.y = Math.PI / 3;
@@ -857,6 +1207,7 @@
 
       this.merkabahCore = {
         group: coreGroup,
+        alchemicalSphere,
         tetra1,
         tetra2,
         flame,
@@ -879,12 +1230,14 @@
         const group = new THREE.Group();
         group.position.set(x, 2.5, z);
 
-        // Obelisk Body (Tapered Cylinder/Pyramid)
+        // Obelisk Body (Tapered Cylinder/Pyramid) with Normal Mapping
         const bodyGeo = new THREE.CylinderGeometry(0.35, 0.65, 4.5, 4);
         const bodyMat = new THREE.MeshStandardMaterial({
           color: 0x090d1a,
-          roughness: 0.2,
-          metalness: 0.85
+          roughness: 0.18,
+          metalness: 0.88,
+          normalMap: this.proceduralNormalMap,
+          normalScale: new THREE.Vector2(0.5, 0.5)
         });
         const body = new THREE.Mesh(bodyGeo, bodyMat);
         body.castShadow = true;
@@ -895,7 +1248,7 @@
         const capMat = new THREE.MeshStandardMaterial({
           color: 0xfbbf24,
           emissive: 0xd97706,
-          emissiveIntensity: 0.9,
+          emissiveIntensity: 0.95,
           roughness: 0.1,
           metalness: 0.95
         });
@@ -928,10 +1281,12 @@
       const slabGeo = new THREE.BoxGeometry(2.4, 3.6, 0.35);
       const slabMat = new THREE.MeshStandardMaterial({
         color: 0x041c10,
-        roughness: 0.3,
-        metalness: 0.8,
+        roughness: 0.28,
+        metalness: 0.82,
         emissive: 0x064e3b,
-        emissiveIntensity: 0.3
+        emissiveIntensity: 0.35,
+        normalMap: this.proceduralNormalMap,
+        normalScale: new THREE.Vector2(0.4, 0.4)
       });
       const slab = new THREE.Mesh(slabGeo, slabMat);
       slab.castShadow = true;
@@ -1140,52 +1495,85 @@
       });
     }
 
+    // =========================================================================
+    // 10,000+ INSTANCED CELESTIAL PARTICLE STARS (SWIRLING VORTEX PHYSICS)
+    // =========================================================================
     buildCosmicParticles() {
-      // 1. Stardust Cloud
-      const count = 1200;
-      const geo = new THREE.BufferGeometry();
-      const pos = new Float32Array(count * 3);
-      const colors = new Float32Array(count * 3);
-
-      const colorHelper = new THREE.Color(ASTRAL_MODES[this.currentAstralMode].starColor);
-
-      for (let i = 0; i < count; i++) {
-        pos[i * 3] = (Math.random() - 0.5) * 260;
-        pos[i * 3 + 1] = Math.random() * 80 - 10;
-        pos[i * 3 + 2] = (Math.random() - 0.5) * 260;
-
-        colors[i * 3] = colorHelper.r;
-        colors[i * 3 + 1] = colorHelper.g;
-        colors[i * 3 + 2] = colorHelper.b;
-      }
-
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-      const mat = new THREE.PointsMaterial({
-        size: 0.45,
-        vertexColors: true,
+      const count = this.starCount; // 12,000 instances
+      const starGeo = new THREE.OctahedronGeometry(0.12, 0);
+      const starMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
         transparent: true,
-        opacity: 0.85
+        opacity: 0.88
       });
 
-      this.starParticles = new THREE.Points(geo, mat);
-      this.scene.add(this.starParticles);
+      const instMesh = new THREE.InstancedMesh(starGeo, starMat, count);
+      instMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
-      // 2. Ascending Alchemy Runes
-      for (let i = 0; i < 30; i++) {
+      this.starData = {
+        radii: new Float32Array(count),
+        speeds: new Float32Array(count),
+        angles: new Float32Array(count),
+        heights: new Float32Array(count),
+        scales: new Float32Array(count),
+        inclinations: new Float32Array(count),
+        rotSpeeds: new Float32Array(count)
+      };
+
+      const dummy = new THREE.Object3D();
+      const currentStarColor = new THREE.Color(ASTRAL_MODES[this.currentAstralMode]?.starColor || 0x67e8f9);
+
+      for (let i = 0; i < count; i++) {
+        // Galactic vortex distribution (higher density near sanctum core with extended spiral arms)
+        const rPow = Math.pow(Math.random(), 0.65);
+        const radius = 3.2 + rPow * 88.0;
+        const angle = Math.random() * Math.PI * 2;
+        // Differential orbital speed: inner stars orbit faster (Keplerian-style vortex)
+        const speed = (0.25 + (1.0 / Math.sqrt(Math.max(radius, 4.0))) * 1.8) * (0.8 + Math.random() * 0.4);
+        const height = (Math.random() - 0.5) * (8.0 + radius * 0.35) + 3.2;
+        const scale = 0.35 + Math.random() * 0.85;
+        const inclination = (Math.random() - 0.5) * 0.4;
+        const rotSpeed = (Math.random() - 0.5) * 3.0;
+
+        this.starData.radii[i] = radius;
+        this.starData.speeds[i] = speed;
+        this.starData.angles[i] = angle;
+        this.starData.heights[i] = height;
+        this.starData.scales[i] = scale;
+        this.starData.inclinations[i] = inclination;
+        this.starData.rotSpeeds[i] = rotSpeed;
+
+        // Color variation with subtle spectral drift
+        const colVariation = currentStarColor.clone();
+        colVariation.offsetHSL((Math.random() - 0.5) * 0.12, 0, (Math.random() - 0.5) * 0.2);
+        instMesh.setColorAt(i, colVariation);
+
+        dummy.position.set(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
+        dummy.scale.set(scale, scale, scale);
+        dummy.updateMatrix();
+        instMesh.setMatrixAt(i, dummy.matrix);
+      }
+
+      if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
+      instMesh.instanceMatrix.needsUpdate = true;
+
+      this.starInstancedMesh = instMesh;
+      this.scene.add(instMesh);
+
+      // Ascending Alchemy Runes
+      for (let i = 0; i < 32; i++) {
         const glyphGeo = new THREE.RingGeometry(0.2, 0.35, 6);
         const glyphMat = new THREE.MeshBasicMaterial({
           color: 0xfbbf24,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.6
+          opacity: 0.65
         });
         const glyph = new THREE.Mesh(glyphGeo, glyphMat);
         glyph.position.set(
-          (Math.random() - 0.5) * 14,
-          Math.random() * 12 + 1,
-          (Math.random() - 0.5) * 14
+          (Math.random() - 0.5) * 16,
+          Math.random() * 14 + 1,
+          (Math.random() - 0.5) * 16
         );
         glyph.rotation.x = Math.PI / 2;
         this.scene.add(glyph);
@@ -1195,6 +1583,58 @@
           rotSpeed: (Math.random() - 0.5) * 1.5
         });
       }
+    }
+
+    updateCelestialStars(elapsed, delta, audioPulse) {
+      if (!this.starInstancedMesh || !this.starData) return;
+
+      const count = this.starCount;
+      const data = this.starData;
+      const dummy = this._starDummy || (this._starDummy = new THREE.Object3D());
+      const mousePlanePos = this.mouseWorldPos || new THREE.Vector3(0, 3.2, 0);
+      const isPointerActive = (this.mouse.x !== -999 && this.mouse.y !== -999);
+
+      for (let i = 0; i < count; i++) {
+        // 1. Orbital motion with differential swirling
+        let angle = data.angles[i] + data.speeds[i] * delta * 0.45;
+        data.angles[i] = angle;
+
+        let r = data.radii[i];
+        let h = data.heights[i] + Math.sin(elapsed * 1.8 + i) * 0.4;
+        let s = data.scales[i] * (1.0 + audioPulse * 0.5);
+
+        // Compute star position in 3D
+        let x = Math.cos(angle) * r;
+        let z = Math.sin(angle) * r;
+        let y = h + Math.sin(angle + data.inclinations[i] * 4.0) * (r * 0.12);
+
+        // 2. Interactive celestial pointer swirl / gravitational vortex
+        if (isPointerActive) {
+          const dx = x - mousePlanePos.x;
+          const dz = z - mousePlanePos.z;
+          const distSq = dx * dx + dz * dz;
+          const interactionRadius = 22.0;
+          if (distSq < interactionRadius * interactionRadius) {
+            const dist = Math.sqrt(distSq);
+            const force = 1.0 - (dist / interactionRadius);
+            // Vortex swirl acceleration around pointer + radial levitation
+            const swirlAngle = Math.atan2(dz, dx) + force * 1.5;
+            x = mousePlanePos.x + Math.cos(swirlAngle) * (dist + Math.sin(elapsed * 6.0 + i) * force * 2.0);
+            z = mousePlanePos.z + Math.sin(swirlAngle) * (dist + Math.sin(elapsed * 6.0 + i) * force * 2.0);
+            y += force * 3.5;
+            s *= (1.0 + force * 0.8);
+          }
+        }
+
+        dummy.position.set(x, y, z);
+        dummy.rotation.x = elapsed * data.rotSpeeds[i];
+        dummy.rotation.y = angle;
+        dummy.scale.set(s, s, s);
+        dummy.updateMatrix();
+        this.starInstancedMesh.setMatrixAt(i, dummy.matrix);
+      }
+
+      this.starInstancedMesh.instanceMatrix.needsUpdate = true;
     }
 
     // =========================================================================
@@ -1257,7 +1697,7 @@
 
         // Load actual neon avatar texture
         if (pet.img) {
-          textureLoader.load(pet.img, (tex) => {
+          textureLoader.load(resolveAsset(pet.img), (tex) => {
             tex.colorSpace = THREE.SRGBColorSpace;
             frontMat.map = tex;
             frontMat.needsUpdate = true;
@@ -1319,11 +1759,21 @@
     initEventListeners() {
       window.addEventListener('resize', () => this.onResize());
 
-      // Mouse tracking for raycaster
+      // Mouse tracking for raycaster & celestial star vortex interaction
       window.addEventListener('mousemove', (e) => {
         this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
         this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
         this.updateHoverReticle(e);
+
+        // Compute mouse projection onto world plane (Y = 3.2)
+        if (this.camera && this.raycaster) {
+          this.raycaster.setFromCamera(this.mouse, this.camera);
+          const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -3.2);
+          const targetPoint = new THREE.Vector3();
+          if (this.raycaster.ray.intersectPlane(groundPlane, targetPoint)) {
+            this.mouseWorldPos.copy(targetPoint);
+          }
+        }
       });
 
       // Canvas click for selection
@@ -1343,6 +1793,9 @@
       if (this.radarCanvas) {
         this.radarCanvas.addEventListener('click', (e) => this.onRadarClick(e));
       }
+
+      // Dynamic Brand Theme Recalibration Event Listener
+      window.addEventListener('zoth-theme-change', (e) => this.handleThemeChange(e));
     }
 
     onResize() {
@@ -1350,7 +1803,12 @@
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    }
+
+    handleThemeChange(e) {
+      const themeId = (e && e.detail && e.detail.theme) ? e.detail.theme : (window.getZothTheme ? window.getZothTheme() : 'dark');
+      this.setAstralMode(themeId);
     }
 
     updateHoverReticle(e) {
@@ -1481,7 +1939,7 @@
           chip.className = 'pet-chip';
           chip.dataset.petId = pet.id;
           chip.innerHTML = `
-            <img src="${pet.img}" class="chip-avatar" alt="${pet.name}" onerror="this.src='/assets/pets/azoth-neon.jpg'"/>
+            <img src="${resolveAsset(pet.img)}" class="chip-avatar" alt="${pet.name}" onerror="this.src='${resolveAsset('/assets/pets/azoth-neon.jpg')}'"/>
             <div class="chip-meta">
               <span class="chip-name">${pet.name}</span>
               <span class="chip-domain">${pet.domain}</span>
@@ -1557,23 +2015,44 @@
     }
 
     setAstralMode(modeKey) {
-      const mode = ASTRAL_MODES[modeKey];
-      if (!mode) return;
+      const normalizedKey = (modeKey || 'dark').toLowerCase();
+      const mode = ASTRAL_MODES[normalizedKey] || ASTRAL_MODES.dark;
 
-      this.currentAstralMode = modeKey;
-      this.scene.background = new THREE.Color(mode.bg);
-      this.scene.fog.color.setHex(mode.fog);
+      this.currentAstralMode = normalizedKey;
 
-      this.lights.ambient.color.setHex(mode.ambient);
-      this.lights.key.color.setHex(mode.lightKey);
-      this.lights.fill.color.setHex(mode.lightFill);
+      // Update Target Colors for Smooth Lerp Transition
+      this.targetColors.bg.setHex(mode.bg);
+      this.targetColors.fog.setHex(mode.fog);
+      this.targetColors.ambient.setHex(mode.ambient);
+      this.targetColors.key.setHex(mode.lightKey);
+      this.targetColors.fill.setHex(mode.lightFill);
+      this.targetColors.core.setHex(mode.lightKey);
+      this.targetColors.star.setHex(mode.starColor);
+
+      this.targetIridescentA.setHex(mode.lightKey);
+      this.targetIridescentB.setHex(mode.lightFill);
+      this.targetIridescentRim.setHex(mode.starColor);
+
+      // Dynamically recolor celestial stars in InstancedMesh
+      if (this.starInstancedMesh && this.starData) {
+        const starTarget = new THREE.Color(mode.starColor);
+        const count = this.starCount;
+        for (let i = 0; i < count; i++) {
+          const col = starTarget.clone();
+          col.offsetHSL((Math.random() - 0.5) * 0.12, 0, (Math.random() - 0.5) * 0.2);
+          this.starInstancedMesh.setColorAt(i, col);
+        }
+        if (this.starInstancedMesh.instanceColor) {
+          this.starInstancedMesh.instanceColor.needsUpdate = true;
+        }
+      }
 
       const astralBtn = document.getElementById('btn-astral-toggle');
       if (astralBtn) {
-        astralBtn.querySelector('.hud-btn-text').textContent = mode.name;
+        astralBtn.querySelector('.hud-btn-text').textContent = mode.name || normalizedKey;
       }
 
-      this.logTerminal(`[ASTRAL] Environment shifted to ${mode.name}`);
+      this.logTerminal(`[ASTRAL] Environment shifted to ${mode.name || normalizedKey.toUpperCase()}`);
       this.audio.playChime(440, 'triangle', 0.5);
     }
 
@@ -1614,7 +2093,7 @@
       modal.innerHTML = `
         <div class="dossier-header">
           <div class="dossier-title-wrap">
-            <img src="${pet.img}" class="dossier-avatar" alt="${pet.name}" onerror="this.src='/assets/pets/azoth-neon.jpg'"/>
+            <img src="${resolveAsset(pet.img)}" class="dossier-avatar" alt="${pet.name}" onerror="this.src='${resolveAsset('/assets/pets/azoth-neon.jpg')}'"/>
             <div>
               <h2>${pet.name}</h2>
               <div class="dossier-species">${pet.species}</div>
@@ -1751,7 +2230,7 @@
             "  scan                 - Probe all 20 entities & check health scores\n" +
             "  teleport <realm>     - Jump to: sanctum, bastion, library, forge, nexus\n" +
             "  inspect <pet>        - Lock camera onto entity (e.g. 'inspect draco')\n" +
-            "  astral <mode>        - Shift sky: gold, aether, forge, emerald, void\n" +
+            "  astral <mode>        - Shift sky: dark, matrix, gold, synthwave, light, etc.\n" +
             "  audio                - Toggle alchemical ambient generative synth\n" +
             "  cam <orbit|fly|tour> - Switch camera navigation mode\n" +
             "  doctrine             - Open Hermetic Axioms grimoire\n" +
@@ -1789,7 +2268,7 @@
           if (ASTRAL_MODES[arg]) {
             this.setAstralMode(arg);
           } else {
-            this.logTerminal(`Unknown mode '${arg}'. Options: gold, aether, forge, emerald, void.`);
+            this.logTerminal(`Unknown mode '${arg}'. Options: dark, matrix, gold, synthwave, light, etc.`);
           }
           break;
 
@@ -1908,7 +2387,32 @@
       // 1. Audio-Reactive Pulse Level
       const audioPulse = this.audio.getAudioLevel();
 
-      // 2. Camera Smooth Interpolation (Tweening)
+      // 2. Smooth Brand Theme Color Transitions (Lerp)
+      const lerpSpeed = Math.min(1.0, delta * 3.4);
+      this.currentColors.bg.lerp(this.targetColors.bg, lerpSpeed);
+      this.currentColors.fog.lerp(this.targetColors.fog, lerpSpeed);
+      this.currentColors.ambient.lerp(this.targetColors.ambient, lerpSpeed);
+      this.currentColors.key.lerp(this.targetColors.key, lerpSpeed);
+      this.currentColors.fill.lerp(this.targetColors.fill, lerpSpeed);
+      this.currentColors.core.lerp(this.targetColors.core, lerpSpeed);
+
+      if (this.scene.background) this.scene.background.copy(this.currentColors.bg);
+      if (this.scene.fog) this.scene.fog.color.copy(this.currentColors.fog);
+      if (this.lights.ambient) this.lights.ambient.color.copy(this.currentColors.ambient);
+      if (this.lights.key) this.lights.key.color.copy(this.currentColors.key);
+      if (this.lights.fill) this.lights.fill.color.copy(this.currentColors.fill);
+      if (this.lights.core) this.lights.core.color.copy(this.currentColors.core);
+
+      // 3. Update Multi-layer Fresnel Iridescent Material Uniforms
+      if (this.iridescentMaterial && this.iridescentMaterial.uniforms) {
+        this.iridescentMaterial.uniforms.uTime.value = elapsed;
+        this.iridescentMaterial.uniforms.uAudioPulse.value = audioPulse;
+        this.iridescentMaterial.uniforms.uColorA.value.lerp(this.targetIridescentA, lerpSpeed);
+        this.iridescentMaterial.uniforms.uColorB.value.lerp(this.targetIridescentB, lerpSpeed);
+        this.iridescentMaterial.uniforms.uRimColor.value.lerp(this.targetIridescentRim, lerpSpeed);
+      }
+
+      // 4. Camera Smooth Interpolation (Tweening)
       if (this.camTween.active) {
         const progress = Math.min((performance.now() - this.camTween.startTime) / this.camTween.duration, 1);
         const ease = 0.5 - Math.cos(progress * Math.PI) / 2; // Smooth cosine ease
@@ -1923,7 +2427,7 @@
         }
       }
 
-      // 3. Free Roam Camera Flight (Fly Mode)
+      // 5. Free Roam Camera Flight (Fly Mode)
       if (this.cameraMode === 'fly' && !this.camTween.active) {
         const forward = new THREE.Vector3();
         this.camera.getWorldDirection(forward);
@@ -1937,12 +2441,12 @@
         if (this.keys.q) this.camera.position.y -= this.flySpeed;
       }
 
-      // 4. Update Orbit Controls
+      // 6. Update Orbit Controls (Smooth Damping: 0.05)
       if (this.controls && this.controls.enabled) {
         this.controls.update();
       }
 
-      // 5. Animate Merkabah Core
+      // 7. Animate Merkabah Core & Central Alchemical Iridescent Sphere
       if (this.merkabahCore) {
         const pulse = 1 + audioPulse * 0.4;
         this.merkabahCore.tetra1.rotation.y = elapsed * 0.5;
@@ -1950,19 +2454,24 @@
         this.merkabahCore.tetra2.rotation.y = -elapsed * 0.5;
         this.merkabahCore.tetra2.rotation.z = elapsed * 0.25;
         this.merkabahCore.flame.rotation.y = elapsed * 1.2;
+        this.merkabahCore.alchemicalSphere.rotation.y = elapsed * 0.4;
+        this.merkabahCore.alchemicalSphere.rotation.x = Math.sin(elapsed * 0.5) * 0.2;
         this.merkabahCore.group.scale.set(pulse, pulse, pulse);
 
         this.merkabahCore.ring1.rotation.z = elapsed * 0.8;
         this.merkabahCore.ring2.rotation.x = -elapsed * 0.6;
       }
 
-      // 6. Animate Floating Obelisks
+      // 8. Update 10,000+ Instanced Celestial Particle Stars with Swirl & Pointer Vortex
+      this.updateCelestialStars(elapsed, delta, audioPulse);
+
+      // 9. Animate Floating Obelisks
       this.floatingObelisks.forEach(ob => {
         ob.mesh.position.y = ob.baseY + Math.sin(elapsed * ob.speed + ob.phase) * 0.35;
         ob.mesh.rotation.y = elapsed * 0.2;
       });
 
-      // 7. Animate Ascending Runes
+      // 10. Animate Ascending Runes
       this.alchemyGlyphs.forEach(g => {
         g.mesh.position.y += g.speed * delta * 2;
         g.mesh.rotation.z += g.rotSpeed * delta;
@@ -1971,7 +2480,7 @@
         }
       });
 
-      // 8. Animate Living Pets (Breathing, Floating, Halo rotation, Look-at-camera)
+      // 11. Animate Living Pets (Breathing, Floating, Halo rotation, Look-at-camera)
       this.petMeshes.forEach(p => {
         // Floating oscillation
         p.group.position.y = p.baseY + Math.sin(elapsed * p.speed + p.phase) * 0.15;
@@ -1981,10 +2490,10 @@
         p.plaque.lookAt(this.camera.position.x, p.group.position.y + 0.5, this.camera.position.z);
       });
 
-      // 9. Update Radar Canvas
+      // 12. Update Radar Canvas
       this.drawRadar();
 
-      // 10. Render 3D Scene
+      // 13. Render 3D Scene
       this.renderer.render(this.scene, this.camera);
     }
   }

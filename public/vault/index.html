@@ -76,6 +76,40 @@
       z-index: 100000;
       outline: 2px solid #fff;
     }
+
+    /* Passphrase strength meter polish: smooth fill + color interpolation */
+    #pass-strength-bar {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      transition: width 0.4s cubic-bezier(.4,0,.2,1), background 0.5s ease;
+    }
+    .pass-strength-label {
+      display: block;
+      margin-top: 6px;
+      font-family: var(--mono, "IBM Plex Mono", monospace);
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.42);
+      transition: color 0.4s ease;
+    }
+    .pass-strength-label[data-tier="weak"] { color: #ff5c7a; }
+    .pass-strength-label[data-tier="mod"] { color: #fbbf24; }
+    .pass-strength-label[data-tier="high"] { color: #10b981; }
+    .pass-strength-label[data-tier="sovereign"] { color: #00f0ff; }
+    .pass-strength-label[data-tier="zero"] { color: rgba(255, 255, 255, 0.42); }
+
+    /* Subtle "live cryptographic status" breathing pulse for verified/secure badges */
+    @keyframes zoth-verified-pulse {
+      0%, 100% { opacity: 0.88; filter: brightness(1); }
+      50% { opacity: 1; filter: brightness(1.14); }
+    }
+    .status-chip.is-secure,
+    .airgap-badge,
+    .atc-pill {
+      animation: zoth-verified-pulse 3.4s ease-in-out infinite;
+    }
 </style>
 <!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
 <script type="application/ld+json">
@@ -698,6 +732,7 @@
 <button aria-label="Show passphrase" aria-pressed="false" class="icon-btn" id="btn-toggle-master" type="button">👁</button>
 </div>
 <div aria-hidden="true" class="strength" id="pass-strength"><i id="pass-strength-bar"></i></div>
+<span class="pass-strength-label" data-tier="zero" id="pass-strength-label">Awaiting Input</span>
 </label>
 <details class="vault-spec-fold">
 <summary>Cipher spec · entropy</summary>
@@ -1340,5 +1375,60 @@
 </footer>
 
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>
+<script>
+  // Passphrase strength LABEL polish — independent of vault.js internals,
+  // reuses the same length x charset-diversity heuristic so the tier shown
+  // here always agrees with the bar's underlying bits estimate. This does
+  // NOT alter or duplicate vault.js's own Shannon/Argon2id telemetry; it
+  // only drives the human-readable tier text under the strength bar.
+  (function () {
+    const COMMON_PASSWORDS = new Set([
+      "password", "password1", "password123", "123456", "12345678",
+      "qwerty", "letmein", "admin", "welcome", "iloveyou", "111111",
+      "abc123", "monkey", "dragon", "123456789", "trustno1"
+    ]);
+
+    function estimateBits(str) {
+      if (!str) return 0;
+      let pool = 0;
+      if (/[a-z]/.test(str)) pool += 26;
+      if (/[A-Z]/.test(str)) pool += 26;
+      if (/[0-9]/.test(str)) pool += 10;
+      if (/[^a-zA-Z0-9]/.test(str)) pool += 33;
+      if (pool === 0) pool = 1;
+      let bits = Math.round(str.length * Math.log2(pool));
+      // Penalize known-weak/common passwords regardless of raw length math —
+      // a real heuristic must not rate a dictionary password as strong.
+      if (COMMON_PASSWORDS.has(str.toLowerCase())) bits = Math.min(bits, 20);
+      return bits;
+    }
+
+    function tierFor(bits, hasInput) {
+      if (!hasInput) return { tier: "zero", label: "Awaiting Input" };
+      if (bits < 40) return { tier: "weak", label: "Weak · Base Metal" };
+      if (bits < 56) return { tier: "mod", label: "Fair · Tinctured" };
+      if (bits < 80) return { tier: "mod", label: "Good · Refined Alloy" };
+      if (bits < 128) return { tier: "high", label: "Strong · Gilded Aegis" };
+      return { tier: "sovereign", label: "Sovereign-Grade · Azoth Sealed" };
+    }
+
+    function updateStrengthLabel() {
+      const input = document.getElementById("master-pass");
+      const label = document.getElementById("pass-strength-label");
+      if (!input || !label) return;
+      const val = input.value || "";
+      const bits = estimateBits(val);
+      const { tier, label: text } = tierFor(bits, val.length > 0);
+      label.textContent = text;
+      label.setAttribute("data-tier", tier);
+    }
+
+    const masterPassEl = document.getElementById("master-pass");
+    if (masterPassEl) {
+      masterPassEl.addEventListener("input", updateStrengthLabel);
+    }
+    updateStrengthLabel();
+  })();
+</script>
 </body>
 </html>

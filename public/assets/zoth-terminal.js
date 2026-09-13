@@ -114,6 +114,31 @@
       }
     }, 150);
 
+    // ResizeObserver: re-fit whenever the container's actual box size changes,
+    // not just on a native window 'resize' event. Mobile layouts (flex/grid
+    // settling, orientation, device-frame scaling, CDP viewport overrides)
+    // can change the container's true width without ever firing 'resize',
+    // leaving xterm's internal canvas wider than the real viewport.
+    if (window.ResizeObserver) {
+      var lastW = 0, lastH = 0;
+      this.resizeObserver = new ResizeObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var cr = entries[i].contentRect;
+          if (Math.abs(cr.width - lastW) > 2 || Math.abs(cr.height - lastH) > 2) {
+            lastW = cr.width;
+            lastH = cr.height;
+            if (self.fitAddon && self.term) {
+              try {
+                self.fitAddon.fit();
+                self.sendResize(self.term.cols, self.term.rows);
+              } catch (e) {}
+            }
+          }
+        }
+      });
+      this.resizeObserver.observe(this.container);
+    }
+
     // Handle user keystrokes into PTY
     this.term.onData(function (data) {
       self.sendInput(data);

@@ -13,6 +13,7 @@
     { id: 'home', icon: '⚡', label: 'Zoth Home', desc: 'Homepage & Hero Matrix', href: '/' },
     { id: 'cockpit', icon: '🪐', label: 'The Cockpit', desc: '21-Agent Autonomous Swarm', href: '/studio/cockpit.html' },
     { id: 'consensus', icon: '⚔️', label: 'Consensus Arena', desc: '3-Agent Debate & AST Synthesis', href: '/studio/consensus.html' },
+    { id: 'vos', icon: '💻', label: 'vOS Sandbox', desc: 'WebAssembly & WebContainer IDE', href: '/studio/vos-sandbox.html' },
     { id: 'webgen', icon: '⚡', label: 'WebGen Studio', desc: 'PTY Terminal & Website Foundry', href: '/studio/webgen.html' },
     { id: 'nexus3d', icon: '📐', label: 'Nexus 3D', desc: 'CAD-Grade 3D Omniverse Viewport', href: '/studio/nexus-3d.html' },
     { id: 'omnipost', icon: '🎬', label: 'OmniPost Video', desc: '60 FPS Social Video & Motion Studio', href: '/studio/omnipost.html' },

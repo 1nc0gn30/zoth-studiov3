@@ -26,6 +26,15 @@
     // Workstations & 3D Tools
     {
       group: 'Workstations & 3D Tools',
+      id: 'vos',
+      title: '💻 vOS Sandbox & WebContainer',
+      desc: 'In-browser WebAssembly virtual OS, POSIX shell & zero-cloud compiler',
+      badge: 'vOS WASM',
+      href: '/studio/vos-sandbox.html',
+      keywords: 'vos sandbox webcontainer webassembly ide compiler react three synth shell'
+    },
+    {
+      group: 'Workstations & 3D Tools',
       id: 'webgen',
       title: '⚡ WebGen Studio',
       desc: 'Interactive PTY terminal & autonomous website builder',

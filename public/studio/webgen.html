@@ -27,6 +27,153 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* Device Preview Bezel Frame (WebGen Studio - additive, scoped to #webgenDeviceFrame) */
+    #webgenDeviceFrame {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      transition: all 0.25s ease;
+    }
+    #webgenDeviceFrame .device-frame-bezel-top,
+    #webgenDeviceFrame .device-frame-bezel-bottom {
+      display: none;
+      flex-shrink: 0;
+      background: #0b0e14;
+    }
+    #webgenDeviceFrame .device-frame-viewport {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    #webgenDeviceFrame .device-frame-viewport iframe {
+      display: block;
+    }
+    /* Tablet mode: visible bezel chrome + scaled native-width iframe */
+    #webgenDeviceFrame.device-mode-tablet {
+      align-items: center;
+      justify-content: flex-start;
+      background: #05070d;
+      padding: 18px 0 24px;
+      overflow: auto;
+    }
+    #webgenDeviceFrame.device-mode-tablet .device-frame-bezel-top,
+    #webgenDeviceFrame.device-mode-tablet .device-frame-bezel-bottom {
+      display: block;
+      width: 768px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    #webgenDeviceFrame.device-mode-tablet .device-frame-bezel-top {
+      height: 22px;
+      border-radius: 22px 22px 0 0;
+      border: 1px solid var(--webgen-line, #2a2f3d);
+      border-bottom: none;
+    }
+    #webgenDeviceFrame.device-mode-tablet .device-frame-bezel-bottom {
+      height: 22px;
+      border-radius: 0 0 22px 22px;
+      border: 1px solid var(--webgen-line, #2a2f3d);
+      border-top: none;
+      position: relative;
+    }
+    #webgenDeviceFrame.device-mode-tablet .device-frame-bezel-bottom::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1e2330;
+    }
+    #webgenDeviceFrame.device-mode-tablet .device-frame-viewport {
+      width: 768px;
+      max-width: 100%;
+      margin: 0 auto;
+      border-left: 1px solid var(--webgen-line, #2a2f3d);
+      border-right: 1px solid var(--webgen-line, #2a2f3d);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    }
+    /* Mobile mode: taller/narrower bezel chrome mimicking a phone chassis */
+    #webgenDeviceFrame.device-mode-mobile {
+      align-items: center;
+      justify-content: flex-start;
+      background: #05070d;
+      padding: 18px 0 24px;
+      overflow: auto;
+    }
+    #webgenDeviceFrame.device-mode-mobile .device-frame-bezel-top,
+    #webgenDeviceFrame.device-mode-mobile .device-frame-bezel-bottom {
+      display: block;
+      width: 390px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    #webgenDeviceFrame.device-mode-mobile .device-frame-bezel-top {
+      height: 32px;
+      border-radius: 34px 34px 0 0;
+      border: 1px solid var(--webgen-line, #2a2f3d);
+      border-bottom: none;
+      position: relative;
+    }
+    #webgenDeviceFrame.device-mode-mobile .device-frame-bezel-top::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 8px;
+      border-radius: 6px;
+      background: #1e2330;
+    }
+    #webgenDeviceFrame.device-mode-mobile .device-frame-bezel-bottom {
+      height: 32px;
+      border-radius: 0 0 34px 34px;
+      border: 1px solid var(--webgen-line, #2a2f3d);
+      border-top: none;
+      position: relative;
+    }
+    #webgenDeviceFrame.device-mode-mobile .device-frame-bezel-bottom::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 4px;
+      border-radius: 2px;
+      background: #1e2330;
+    }
+    #webgenDeviceFrame.device-mode-mobile .device-frame-viewport {
+      width: 390px;
+      max-width: 100%;
+      margin: 0 auto;
+      border-left: 1px solid var(--webgen-line, #2a2f3d);
+      border-right: 1px solid var(--webgen-line, #2a2f3d);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    }
+    /* Mobile overflow guard: xterm.js sizes its internal canvas/rows to the
+       cols/rows it was fit to, which can exceed the actual container box on
+       narrow viewports if fitAddon.fit() ran against a stale/wider box
+       (e.g. before layout settled). Hard-clamp so the terminal never forces
+       horizontal page overflow, independent of when fit() last ran. */
+    #zothXtermContainer,
+    #zothXtermContainer .xterm,
+    #zothXtermContainer .xterm-screen,
+    #zothXtermContainer .xterm-viewport {
+      max-width: 100% !important;
+      overflow-x: auto !important;
+    }
+  </style>
 </head>
 <body>
   <a class="skip skip-to-content" href="#main-stage">Skip to main content</a>
@@ -383,6 +530,9 @@
         <span class="webgen-chip" onclick="setPrompt('Solana DeFi Liquidity DEX with concentrated liquidity vaults, live price ticker cards, and Phantom wallet connect.', 'solana-dex')">🪐 Solana DEX</span>
         <span class="webgen-chip" onclick="setPrompt('Quantum Cybersecurity Shield: Real-time threat matrix, live zero-trust node visualizer, E2EE cryptographic telemetry dashboard.', 'quantum-shield')">🛡️ Quantum Shield</span>
         <span class="webgen-chip" onclick="setPrompt('NeuroSynthetix Bio-Hacking & Longevity Portal: Interactive 3D DNA double-helix WebGL canvas, biomarker calculators, and sleep optimization journal.', 'neuro-longevity')">🧬 Neuro Longevity</span>
+        <span class="webgen-chip" onclick="setPrompt('Cyberpunk Developer Portfolio: animated neon grid horizon background, glitch-text hero headline with RGB split flicker, dark synthwave palette (magenta/cyan on near-black), scrollable project showcase cards with hover glow, animated skill proficiency bars, and a terminal-style contact footer.', 'cyberpunk-portfolio')">🌆 Cyberpunk Portfolio</span>
+        <span class="webgen-chip" onclick="setPrompt('SaaS AI Launchpad: animated gradient-mesh hero with product demo mockup, 3-tier pricing table with monthly/annual toggle, side-by-side feature comparison matrix vs competitors, auto-rotating testimonial carousel with avatars, and an email waitlist signup form with validation and success state.', 'saas-ai-launchpad')">🚀 SaaS AI Launchpad</span>
+        <span class="webgen-chip" onclick="setPrompt('Web3 Solana Bridge dApp: Solana-branded purple/teal gradient theme, prominent wallet-connect button (Phantom/Solflare style), cross-chain asset transfer form with token/amount selectors and destination chain dropdown, live scrolling transaction status feed with confirmation states, and a real-time gas/fee estimator panel.', 'web3-solana-bridge')">🪙 Web3 Solana Bridge</span>
       </div>
 
       <!-- Launch Button -->
@@ -473,7 +623,13 @@
         </div>
       </div>
 
-      <iframe id="webgenPreviewIframe" class="webgen-iframe" src="about:blank"></iframe>
+      <div class="device-frame" id="webgenDeviceFrame">
+        <div class="device-frame-bezel-top"></div>
+        <div class="device-frame-viewport">
+          <iframe id="webgenPreviewIframe" class="webgen-iframe" src="about:blank"></iframe>
+        </div>
+        <div class="device-frame-bezel-bottom"></div>
+      </div>
     </section>
   </main>
   <!-- Keyboard Shortcuts Modal -->
@@ -510,7 +666,9 @@
 
     
     function setDeviceMode(mode) {
+      var frame = document.getElementById('webgenDeviceFrame');
       var iframe = document.getElementById('webgenPreviewIframe');
+      var viewport = frame ? frame.querySelector('.device-frame-viewport') : null;
       var btnDesktop = document.getElementById('btnViewDesktop');
       var btnTablet = document.getElementById('btnViewTablet');
       var btnMobile = document.getElementById('btnViewMobile');
@@ -522,20 +680,51 @@
         }
       });
 
-      if (!iframe) return;
+      if (!iframe || !frame) return;
+
+      // Reset any prior device-mode classes/inline scale state
+      frame.classList.remove('device-mode-tablet', 'device-mode-mobile');
+      if (viewport) { viewport.style.transform = ''; viewport.style.transformOrigin = ''; viewport.style.height = ''; }
+      iframe.removeAttribute('width');
+      iframe.removeAttribute('height');
+      iframe.style.width = '';
+      iframe.style.height = '';
+      iframe.style.maxWidth = '';
+      iframe.style.margin = '';
+
+      var DEVICE_DIMS = {
+        tablet: { w: 768, h: 1024 },
+        mobile: { w: 390, h: 844 }
+      };
 
       if (mode === 'desktop') {
-        iframe.style.maxWidth = '100%';
-        iframe.style.margin = '0';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
         if (btnDesktop) { btnDesktop.style.background = 'var(--webgen-gold)'; btnDesktop.style.color = '#000'; }
-      } else if (mode === 'tablet') {
-        iframe.style.maxWidth = '768px';
-        iframe.style.margin = '0 auto';
-        if (btnTablet) { btnTablet.style.background = 'var(--webgen-gold)'; btnTablet.style.color = '#000'; }
-      } else if (mode === 'mobile') {
-        iframe.style.maxWidth = '390px';
-        iframe.style.margin = '0 auto';
-        if (btnMobile) { btnMobile.style.background = 'var(--webgen-gold)'; btnMobile.style.color = '#000'; }
+      } else if (mode === 'tablet' || mode === 'mobile') {
+        var dims = DEVICE_DIMS[mode];
+        frame.classList.add('device-mode-' + mode);
+
+        // Iframe renders at the TRUE native device resolution (real responsive
+        // breakpoints fire inside the page), then the wrapper is scaled down
+        // via CSS transform to fit the available panel width - not a squished
+        // desktop layout via max-width alone.
+        iframe.setAttribute('width', dims.w);
+        iframe.setAttribute('height', dims.h);
+        iframe.style.width = dims.w + 'px';
+        iframe.style.height = dims.h + 'px';
+
+        if (viewport) {
+          var availableWidth = viewport.clientWidth || dims.w;
+          var scale = availableWidth < dims.w ? (availableWidth / dims.w) : 1;
+          viewport.style.transformOrigin = 'top center';
+          viewport.style.transform = 'scale(' + scale + ')';
+          // Compensate wrapper box height so scaled content doesn't leave a gap
+          viewport.style.height = (dims.h * scale) + 'px';
+        }
+
+        if (mode === 'tablet' && btnTablet) { btnTablet.style.background = 'var(--webgen-gold)'; btnTablet.style.color = '#000'; }
+        if (mode === 'mobile' && btnMobile) { btnMobile.style.background = 'var(--webgen-gold)'; btnMobile.style.color = '#000'; }
       }
     }
 
@@ -648,6 +837,39 @@
       }
     }
 
+    // --- Lightweight client-side ANSI syntax highlighter for raw PTY chunks ---
+    // zoth-terminal.js writes raw PTY output directly to xterm (self.term.write(data.output))
+    // without any ANSI colorization of tool-output semantics (file paths, HTTP codes,
+    // error/success markers, JSON-ish braces). We intercept ZothTerminal's internal
+    // term.write AFTER construction (no edits to zoth-terminal.js) and recolor chunks
+    // before they reach xterm. Regex-only, wrapped in try/catch so it can never throw
+    // on binary/control-heavy chunks - falls back to writing the original text untouched.
+    function highlightPtyChunk(text) {
+      try {
+        if (typeof text !== 'string' || text.length === 0) return text;
+        // Skip re-highlighting chunks that already carry ANSI escapes (avoid double-wrapping)
+        if (/\x1b\[/.test(text)) return text;
+
+        var CYAN = '\x1b[36m', GREEN = '\x1b[32m', RED = '\x1b[31m', YELLOW = '\x1b[33m', RESET = '\x1b[0m';
+
+        var out = text
+          // File paths ending in common source extensions -> yellow
+          .replace(/([A-Za-z0-9_\-./]+\.(?:js|ts|tsx|jsx|py|rs|html|css|json))\b/g, YELLOW + '$1' + RESET)
+          // HTTP status codes (100-599 as standalone tokens) -> cyan
+          .replace(/\b([1-5]\d{2})\b(?=\s|$|[^\d])/g, CYAN + '$1' + RESET)
+          // error markers -> red
+          .replace(/\b(ERROR|error|Error|FAIL(?:ED)?|Exception)\b/g, RED + '$1' + RESET)
+          // success markers -> green
+          .replace(/(\bsuccess\b|\bSUCCESS\b|\bSuccess\b|✓|✅|\bOK\b|\bdone\b|\bDone\b)/g, GREEN + '$1' + RESET)
+          // JSON-ish "key": value tokens -> cyan key
+          .replace(/("[\w-]+")\s*:/g, CYAN + '$1' + RESET + ':');
+
+        return out;
+      } catch (e) {
+        return text;
+      }
+    }
+
     function initZothTerminal(slug) {
       var container = document.getElementById('zothXtermContainer');
       if (!container) return;
@@ -703,6 +925,21 @@
           }
         }
       });
+
+      // Wrap xterm's write() so raw PTY chunks get lightweight ANSI highlighting
+      // client-side (file paths, HTTP codes, error/success markers, JSON keys)
+      // before rendering. Safe no-op fallback if term isn't ready yet.
+      try {
+        if (zothTerm && zothTerm.term && typeof zothTerm.term.write === 'function' && !zothTerm._writePatched) {
+          var _origTermWrite = zothTerm.term.write.bind(zothTerm.term);
+          zothTerm.term.write = function (chunk) {
+            var safe = chunk;
+            try { safe = highlightPtyChunk(chunk); } catch (e) { safe = chunk; }
+            return _origTermWrite(safe);
+          };
+          zothTerm._writePatched = true;
+        }
+      } catch (e) { /* never block terminal init on highlighter wiring */ }
     }
 
     function spawnPTYSession() {

@@ -443,6 +443,39 @@
       line-height: 1.35;
     }
 
+    .confidence-bar {
+      width: 100%;
+      height: 5px;
+      border-radius: 4px;
+      background: rgba(128, 128, 128, 0.18);
+      overflow: hidden;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+
+    .confidence-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      width: 0%;
+      background: var(--cyan);
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      animation: confidence-pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes confidence-pulse {
+      0%, 100% { box-shadow: 0 0 3px rgba(0, 240, 255, 0.35); }
+      50% { box-shadow: 0 0 9px rgba(0, 240, 255, 0.85); }
+    }
+
+    /* Lightweight zero-dependency syntax highlighting tokens */
+    .tok-keyword { color: var(--cyan); font-weight: 700; }
+    .tok-string { color: var(--gold, #e0a030); }
+    .tok-comment { color: var(--muted, #8a8a9a); font-style: italic; }
+    .tok-added { color: var(--emerald); }
+    .tok-removed { color: #ff6b6b; text-decoration: line-through; }
+    html[data-theme='light'] .tok-comment { color: #5a5a68; }
+    html[data-theme='light'] .tok-string { color: #a3660a; }
+
     .contender-badge {
       display: inline-block;
       margin-top: 0.6rem;
@@ -3135,6 +3168,18 @@
 <svg class="svg-glyph svg-glyph-sm" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="6" r="3"></circle><path d="M6 9v12m12-9v6m-6-6h6"></path></svg>
         DAG Dependency Engine
       </button>
+<button class="topic-btn" onclick="switchTopic('sqlwal')">
+<svg class="svg-glyph svg-glyph-sm" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+        PG vs SQLite WAL
+      </button>
+<button class="topic-btn" onclick="switchTopic('wasmast')">
+<svg class="svg-glyph svg-glyph-sm" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+        Wasm AST Optimizer
+      </button>
+<button class="topic-btn" onclick="switchTopic('ed25519secp')">
+<svg class="svg-glyph svg-glyph-sm" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect height="11" rx="2" ry="2" width="18" x="3" y="11"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Ed25519 vs Secp256k1
+      </button>
 </div>
 <!-- Live Telemetry Ticker -->
 <section class="metrics-ticker">
@@ -3485,6 +3530,7 @@
 </div>
 </div>
 <div class="contender-role">50% Stake · Cryptographic Contracts &amp; Security Gate</div>
+<div class="confidence-bar" title="Live confidence telemetry"><div class="confidence-bar-fill" id="confidence-bar-agy" style="width:50%;background:#7c9cff"></div></div>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
 <span class="contender-badge" style="background:rgba(124,156,255,0.12);color:#7c9cff;border-color:rgba(124,156,255,0.35)">50% Weight</span>
 <a href="/agents/antigravity.html" onclick="event.stopPropagation()" style="font-family:var(--font-mono);font-size:0.70rem;color:#7c9cff;text-decoration:none;display:inline-flex;align-items:center;gap:2px">
@@ -3505,6 +3551,7 @@
 </div>
 </div>
 <div class="contender-role">30% Stake · High-Throughput Stream &amp; Speed</div>
+<div class="confidence-bar" title="Live confidence telemetry"><div class="confidence-bar-fill" id="confidence-bar-grok" style="width:30%;background:#00d4aa"></div></div>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
 <span class="contender-badge" style="background:rgba(0,212,170,0.12);color:#00d4aa;border-color:rgba(0,212,170,0.35)">30% Weight</span>
 <a href="/agents/grok.html" onclick="event.stopPropagation()" style="font-family:var(--font-mono);font-size:0.70rem;color:#00d4aa;text-decoration:none;display:inline-flex;align-items:center;gap:2px">
@@ -3525,6 +3572,7 @@
 </div>
 </div>
 <div class="contender-role">20% Stake · Local Private Sandbox &amp; Schema</div>
+<div class="confidence-bar" title="Live confidence telemetry"><div class="confidence-bar-fill" id="confidence-bar-ollama" style="width:20%;background:#f59e0b"></div></div>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
 <span class="contender-badge" style="color:#f59e0b;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.35)">20% Weight</span>
 <a href="/agents/" onclick="event.stopPropagation()" style="font-family:var(--font-mono);font-size:0.70rem;color:#f59e0b;text-decoration:none;display:inline-flex;align-items:center;gap:2px">
@@ -4557,7 +4605,109 @@
           }
         },
         synthesized: `import asyncio\nfrom typing import List, Dict, Any\n\nclass SovereignDAGRunner:\n    """\n    🧩 Synthesized by Zoth Swarm: Topological Queue + Async Stage Parallelism + Schema Validation\n    """\n    def __init__(self, nodes: List[str], edges: List[tuple]):\n        self.nodes = nodes\n        self.edges = edges\n\n    def compute_execution_order(self) -> List[List[str]]:\n        in_degree = {n: 0 for n in self.nodes}\n        for u, v in self.edges:\n            in_degree[v] += 1\n        current_tier = [n for n in self.nodes if in_degree[n] == 0]\n        tiers = []\n        while current_tier:\n            tiers.append(current_tier)\n            next_tier = []\n            for curr in current_tier:\n                for u, v in self.edges:\n                    if u == curr:\n                        in_degree[v] -= 1\n                        if in_degree[v] == 0:\n                            next_tier.append(v)\n            current_tier = next_tier\n        return tiers\n\n    async def execute_playbook(self, step_executor):\n        tiers = self.compute_execution_order()\n        results = {}\n        for tier in tiers:\n            tier_tasks = [step_executor(node_id) for node_id in tier]\n            tier_results = await asyncio.gather(*tier_tasks)\n            for node_id, res in zip(tier, tier_results):\n                results[node_id] = res\n        return results`
-      }
+      },
+      'sqlwal': {
+        name: "PostgreSQL vs Embedded SQLite WAL",
+        convergence: "69.3%",
+        entropy: "1.267 bits",
+        jaccard: { ag: "69.3%", ao: "61.9%", go: "56.2%" },
+        merkle: "0x9c24a781de56",
+        proofHash: "0xc41f92e08b3a5674d10fa39c862e17904b5c283f6d19a0e7c8b9d0e1f2a3b4c5",
+        proposals: {
+          agy: `import asyncpg\nimport asyncio\n\nclass PostgresWalPool:\n    """\n    @antigravity (50%): Durable OLTP Connection Pool Invariant\n    Enforces synchronous_commit + pooled connections for replicated durability.\n    """\n    def __init__(self, dsn: str, min_size: int = 5, max_size: int = 20):\n        self.dsn = dsn\n        self.min_size = min_size\n        self.max_size = max_size\n        self.pool = None\n\n    async def connect(self):\n        self.pool = await asyncpg.create_pool(\n            dsn=self.dsn, min_size=self.min_size, max_size=self.max_size,\n            command_timeout=30\n        )\n\n    async def commit_durable(self, query: str, *args) -> str:\n        async with self.pool.acquire() as conn:\n            async with conn.transaction():\n                await conn.execute("SET synchronous_commit = on")\n                return await conn.execute(query, *args)`,
+          grok: `import sqlite3\n\nclass EmbeddedWalStore:\n    # @grok (30%): Single-File Embedded WAL Journal, Zero Network Hop\n    def __init__(self, path: str = "local.db"):\n        self.conn = sqlite3.connect(path, isolation_level=None)\n        self.conn.execute("PRAGMA journal_mode=WAL")\n        self.conn.execute("PRAGMA synchronous=NORMAL")\n        self.conn.execute("PRAGMA wal_autocheckpoint=1000")\n\n    def fast_write(self, query: str, params: tuple = ()) -> None:\n        self.conn.execute(query, params)\n\n    def checkpoint(self) -> None:\n        self.conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")`,
+          ollama: `class LocalFirstDurabilityAuditor:\n    # @ollama (20%): Local-First Durability Envelope & Replication Schema Audit\n    def __init__(self, replica_lag_ms_max: int = 250):\n        self.replica_lag_ms_max = replica_lag_ms_max\n\n    def audit_write_path(self, engine: str, wal_mode: str) -> dict:\n        return {\n            "engine": engine,\n            "wal_mode": wal_mode,\n            "schema": "zoth.durability.wal.v1",\n            "replica_lag_bound_ms": self.replica_lag_ms_max,\n            "sandboxed": True,\n            "durable_verified": wal_mode in ("WAL", "synchronous_commit")\n        }`
+        },
+        stages: {
+          thesis: {
+            title: "Stage 1: Durable OLTP Connection Pool Thesis (@antigravity 50%)",
+            status: "AST Valid · 50% Quorum Initialized",
+            desc: "@antigravity formulates the durability thesis: pooled Postgres connections with synchronous_commit guarantee replicated write-ahead-log acknowledgement before commit.",
+            code: `import asyncpg\n\nclass PostgresWalThesis:\n    # Invariant: Durability requires WAL fsync + replica ack before commit ack\n    async def commit(self, pool, query, *args):\n        async with pool.acquire() as conn:\n            async with conn.transaction():\n                await conn.execute("SET synchronous_commit = on")\n                return await conn.execute(query, *args)`
+          },
+          antithesis: {
+            title: "Stage 2: Latency & Local-First Cross-Critique (@grok 30% + @ollama 20%)",
+            status: "Dialectic Friction Identified · Shannon Entropy Peak",
+            desc: "@grok flags network round-trip latency on every pooled write; @ollama argues local-first apps need durability without any network dependency at all.",
+            code: `# Antithesis Challenge Points:\n# 1. @grok: Network round-trip to Postgres adds 2-8ms tail latency vs local file WAL.\n# 2. @ollama: Single-file SQLite has no built-in replication; local-first apps need durability without a network dependency.\n\n# Cross-Critique Proposed Struct:\ndef durability_envelope(engine, wal_mode):\n    return {\n        "engine": engine,\n        "wal_mode": wal_mode,\n        "local_first": engine == "sqlite",\n        "replicated": engine == "postgres"\n    }`
+          },
+          synthesis: {
+            title: "Stage 3: Triangulated Sovereign Durability Layer (100% Byzantine Quorum)",
+            status: "Consensus Sealed · 3/3 Nodes Concurring · H(X) Bounded",
+            desc: "Unification: dual-mode durability layer routes to pooled Postgres WAL for replicated OLTP or embedded SQLite WAL for local-first zero-network durability.",
+            code: `import sqlite3\nimport asyncpg\n\nclass SovereignDurabilityLayer:\n    """\n    🗄️ Synthesized by Zoth Swarm Byzantine Consensus Arena\n    Quorum: @antigravity (50%) + @grok (30%) + @ollama (20%)\n    Features: Pooled Postgres synchronous_commit + Embedded SQLite WAL fallback + Durability Audit\n    """\n    def __init__(self, mode: str = "postgres", dsn: str = None, local_path: str = "local.db"):\n        self.mode = mode\n        self.dsn = dsn\n        self.local_path = local_path\n        self.pool = None\n        self.sqlite_conn = None\n\n    async def init_postgres(self):\n        self.pool = await asyncpg.create_pool(dsn=self.dsn, min_size=5, max_size=20)\n\n    def init_sqlite(self):\n        self.sqlite_conn = sqlite3.connect(self.local_path, isolation_level=None)\n        self.sqlite_conn.execute("PRAGMA journal_mode=WAL")\n        self.sqlite_conn.execute("PRAGMA synchronous=NORMAL")\n\n    def audit(self) -> dict:\n        return {\n            "mode": self.mode,\n            "schema": "zoth.durability.wal.v1",\n            "durable_verified": True,\n            "sandboxed": True\n        }`
+          }
+        },
+        synthesized: `import sqlite3\nimport asyncpg\n\nclass SovereignDurabilityLayer:\n    """\n    🗄️ Synthesized by Zoth Swarm Byzantine Consensus Arena\n    Quorum: @antigravity (50%) + @grok (30%) + @ollama (20%)\n    Features: Pooled Postgres synchronous_commit + Embedded SQLite WAL fallback + Durability Audit\n    """\n    def __init__(self, mode: str = "postgres", dsn: str = None, local_path: str = "local.db"):\n        self.mode = mode\n        self.dsn = dsn\n        self.local_path = local_path\n        self.pool = None\n        self.sqlite_conn = None\n\n    async def init_postgres(self):\n        self.pool = await asyncpg.create_pool(dsn=self.dsn, min_size=5, max_size=20)\n\n    def init_sqlite(self):\n        self.sqlite_conn = sqlite3.connect(self.local_path, isolation_level=None)\n        self.sqlite_conn.execute("PRAGMA journal_mode=WAL")\n        self.sqlite_conn.execute("PRAGMA synchronous=NORMAL")\n\n    def audit(self) -> dict:\n        return {\n            "mode": self.mode,\n            "schema": "zoth.durability.wal.v1",\n            "durable_verified": True,\n            "sandboxed": True\n        }`
+      },
+      'wasmast': {
+        name: "Wasm AST Optimization",
+        convergence: "73.1%",
+        entropy: "1.058 bits",
+        jaccard: { ag: "73.1%", ao: "65.0%", go: "60.8%" },
+        merkle: "0x1d5e83af9027",
+        proofHash: "0xd792a4c1e6083f5729ab04d183ce67f0a9812b3d4e5f6a7b8c9d0e1f2a3b4c5",
+        proposals: {
+          agy: `function eliminateDeadCode(astModule) {\n  // @antigravity (50%): Invariant Reachability Gate\n  const reachable = new Set(["start", "main"]);\n  let changed = true;\n  while (changed) {\n    changed = false;\n    for (const fn of astModule.functions) {\n      if (reachable.has(fn.name)) {\n        for (const call of fn.calls) {\n          if (!reachable.has(call)) {\n            reachable.add(call);\n            changed = true;\n          }\n        }\n      }\n    }\n  }\n  astModule.functions = astModule.functions.filter(fn => reachable.has(fn.name));\n  return astModule;\n}`,
+          grok: `function inlineHotFunctions(astModule, maxInstrThreshold = 24) {\n  // @grok (30%): Aggressive Threshold-Based Inlining for Cold-Start Speed\n  for (const caller of astModule.functions) {\n    caller.body = caller.body.flatMap(instr => {\n      if (instr.op === "call") {\n        const callee = astModule.functions.find(f => f.name === instr.target);\n        if (callee && callee.instrCount <= maxInstrThreshold && !callee.recursive) {\n          return callee.body;\n        }\n      }\n      return [instr];\n    });\n  }\n  return astModule;\n}`,
+          ollama: `function auditInstructionBudget(astModule) {\n  // @ollama (20%): Local Instruction-Count Sandbox Audit & Schema\n  const counts = astModule.functions.map(fn => ({ name: fn.name, instrCount: fn.body.length }));\n  const total = counts.reduce((sum, c) => sum + c.instrCount, 0);\n  return {\n    schema: "zoth.wasm.ast.v1",\n    total_instructions: total,\n    function_breakdown: counts,\n    sandboxed: true\n  };\n}`
+        },
+        stages: {
+          thesis: {
+            title: "Stage 1: Reachability Dead Code Elimination Thesis (@antigravity 50%)",
+            status: "AST Valid · 50% Quorum Initialized",
+            desc: "@antigravity specifies a reachability-based dead code elimination invariant: only functions transitively reachable from start/main survive the AST pass.",
+            code: `function deadCodeThesis(astModule) {\n  // Invariant: Only functions reachable from start/main survive\n  const reachable = new Set(["start", "main"]);\n  return astModule.functions.filter(fn => reachable.has(fn.name));\n}`
+          },
+          antithesis: {
+            title: "Stage 2: Inlining & Instruction Budget Cross-Critique (@grok 30% + @ollama 20%)",
+            status: "Dialectic Friction Identified · Shannon Entropy Peak",
+            desc: "@grok argues pure DCE ignores cold-start call overhead and pushes threshold-based function inlining; @ollama requires an instruction-count audit budget to prevent binary bloat.",
+            code: `// Antithesis Challenge Points:\n// 1. @grok: Pure DCE ignores cold-start call overhead; small hot functions should be inlined.\n// 2. @ollama: Unbounded inlining without an instruction budget risks binary bloat and audit blindness.\n\n// Cross-Critique Proposed Struct:\nfunction budgetedInline(astModule, threshold) {\n  // Inline only under threshold instrCount, track total instructions\n  return { threshold, tracked: true };\n}`
+          },
+          synthesis: {
+            title: "Stage 3: Triangulated Sovereign Wasm Optimizer (100% Byzantine Quorum)",
+            status: "Consensus Sealed · 3/3 Nodes Concurring · H(X) Bounded",
+            desc: "Unification: reachability DCE + bounded threshold inlining + instruction-count audit schema for verified cold-start latency reduction.",
+            code: `function optimizeWasmAst(astModule, maxInlineInstr = 24) {\n  /**\n   * ⚙️ Synthesized by Zoth Swarm: Reachability DCE + Threshold Inlining + Instruction Audit\n   * Quorum: @antigravity (50%) + @grok (30%) + @ollama (20%)\n   */\n  const reachable = new Set(["start", "main"]);\n  let changed = true;\n  while (changed) {\n    changed = false;\n    for (const fn of astModule.functions) {\n      if (reachable.has(fn.name)) {\n        for (const call of fn.calls) {\n          if (!reachable.has(call)) {\n            reachable.add(call);\n            changed = true;\n          }\n        }\n      }\n    }\n  }\n  astModule.functions = astModule.functions.filter(fn => reachable.has(fn.name));\n\n  for (const caller of astModule.functions) {\n    caller.body = caller.body.flatMap(instr => {\n      if (instr.op === "call") {\n        const callee = astModule.functions.find(f => f.name === instr.target);\n        if (callee && callee.instrCount <= maxInlineInstr && !callee.recursive) {\n          return callee.body;\n        }\n      }\n      return [instr];\n    });\n  }\n\n  const totalInstr = astModule.functions.reduce((sum, fn) => sum + fn.body.length, 0);\n  return { module: astModule, schema: "zoth.wasm.ast.v1", total_instructions: totalInstr, sandboxed: true };\n}`
+          }
+        },
+        synthesized: `function optimizeWasmAst(astModule, maxInlineInstr = 24) {\n  /**\n   * ⚙️ Synthesized by Zoth Swarm: Reachability DCE + Threshold Inlining + Instruction Audit\n   * Quorum: @antigravity (50%) + @grok (30%) + @ollama (20%)\n   */\n  const reachable = new Set(["start", "main"]);\n  let changed = true;\n  while (changed) {\n    changed = false;\n    for (const fn of astModule.functions) {\n      if (reachable.has(fn.name)) {\n        for (const call of fn.calls) {\n          if (!reachable.has(call)) {\n            reachable.add(call);\n            changed = true;\n          }\n        }\n      }\n    }\n  }\n  astModule.functions = astModule.functions.filter(fn => reachable.has(fn.name));\n\n  for (const caller of astModule.functions) {\n    caller.body = caller.body.flatMap(instr => {\n      if (instr.op === "call") {\n        const callee = astModule.functions.find(f => f.name === instr.target);\n        if (callee && callee.instrCount <= maxInlineInstr && !callee.recursive) {\n          return callee.body;\n        }\n      }\n      return [instr];\n    });\n  }\n\n  const totalInstr = astModule.functions.reduce((sum, fn) => sum + fn.body.length, 0);\n  return { module: astModule, schema: "zoth.wasm.ast.v1", total_instructions: totalInstr, sandboxed: true };\n}`
+      },
+      'ed25519secp': {
+        name: "Ed25519 vs Secp256k1 Sovereign Signatures",
+        convergence: "66.7%",
+        entropy: "1.398 bits",
+        jaccard: { ag: "66.7%", ao: "59.3%", go: "54.6%" },
+        merkle: "0x6b40c9d827fa",
+        proofHash: "0xe83b05d2f7194860ab3ec59d174ef82091b4c3d5e6f7a8b9c0d1e2f3a4b5c6d7",
+        proposals: {
+          agy: `use ed25519_dalek::{Keypair, Signer, Signature};\nuse rand::rngs::OsRng;\n\n// @antigravity (50%): Deterministic EdDSA Invariant, Misuse-Resistant Signing\npub fn sign_deterministic(keypair: &Keypair, message: &[u8]) -> Signature {\n    keypair.sign(message)\n}\n\npub fn generate_ed25519_keypair() -> Keypair {\n    let mut csprng = OsRng {};\n    Keypair::generate(&mut csprng)\n}`,
+          grok: `use secp256k1::{Secp256k1, SecretKey, Message};\n\n// @grok (30%): Secp256k1 ECDSA for Bitcoin/Ethereum Tooling Compatibility\npub fn sign_ecdsa(secret: &SecretKey, msg_hash: &[u8; 32]) -> Vec<u8> {\n    let secp = Secp256k1::new();\n    let message = Message::from_slice(msg_hash).expect("32 byte hash");\n    let sig = secp.sign_ecdsa(&message, secret);\n    sig.serialize_compact().to_vec()\n}`,
+          ollama: `pub struct SovereignSigAuditMetadata {\n    // @ollama (20%): Local Signature Scheme Audit & Compatibility Schema\n    pub curve: &'static str,\n    pub deterministic: bool,\n    pub chain_compatible: bool,\n    pub sandboxed: bool,\n}\n\npub fn audit_scheme(curve: &'static str) -> SovereignSigAuditMetadata {\n    SovereignSigAuditMetadata {\n        curve,\n        deterministic: curve == "ed25519",\n        chain_compatible: curve == "secp256k1",\n        sandboxed: true,\n    }\n}`
+        },
+        stages: {
+          thesis: {
+            title: "Stage 1: Deterministic EdDSA Invariant Thesis (@antigravity 50%)",
+            status: "AST Valid · 50% Quorum Initialized",
+            desc: "@antigravity formulates the deterministic EdDSA thesis: Ed25519 signing is misuse-resistant and requires no per-signature randomness, eliminating nonce-reuse key leakage.",
+            code: `use ed25519_dalek::{Keypair, Signer};\n\npub fn sign_thesis(keypair: &Keypair, message: &[u8]) -> Vec<u8> {\n    // Invariant: EdDSA signing is deterministic, no nonce reuse risk\n    keypair.sign(message).to_bytes().to_vec()\n}`
+          },
+          antithesis: {
+            title: "Stage 2: Chain Compatibility Cross-Critique (@grok 30% + @ollama 20%)",
+            status: "Dialectic Friction Identified · Shannon Entropy Peak",
+            desc: "@grok flags that Ed25519 lacks native verification opcodes in Bitcoin/Ethereum tooling; @ollama requires exposing curve metadata so callers select the chain-compatible verifier.",
+            code: `// Antithesis Challenge Points:\n// 1. @grok: Ed25519 lacks native support in Bitcoin/Ethereum signature verification opcodes.\n// 2. @ollama: Chain compatibility requires exposing curve metadata so callers pick the right verifier.\n\n// Cross-Critique Proposed Struct:\npub struct SigChoice {\n    pub curve: &'static str,\n    pub reason: &'static str,\n}`
+          },
+          synthesis: {
+            title: "Stage 3: Triangulated Sovereign Signature Router (100% Byzantine Quorum)",
+            status: "Consensus Sealed · 3/3 Nodes Concurring · H(X) Bounded",
+            desc: "Unification: dual-curve signature router exposing both Ed25519 fast deterministic signing and Secp256k1 chain-compatible ECDSA, with an audit schema over the chosen curve.",
+            code: `use ed25519_dalek::{Keypair, Signer};\nuse secp256k1::{Secp256k1, SecretKey, Message};\n\npub struct SovereignSignatureRouter {\n    /// 🔐 Synthesized by Zoth Swarm Byzantine Consensus Arena\n    /// Quorum: @antigravity (50%) + @grok (30%) + @ollama (20%)\n    /// Routes signing to Ed25519 (fast, deterministic) or Secp256k1 (chain-compatible)\n    pub preferred_curve: &'static str,\n}\n\nimpl SovereignSignatureRouter {\n    pub fn sign_ed25519(&self, keypair: &Keypair, message: &[u8]) -> Vec<u8> {\n        keypair.sign(message).to_bytes().to_vec()\n    }\n\n    pub fn sign_secp256k1(&self, secret: &SecretKey, msg_hash: &[u8; 32]) -> Vec<u8> {\n        let secp = Secp256k1::new();\n        let message = Message::from_slice(msg_hash).expect("32 byte hash");\n        secp.sign_ecdsa(&message, secret).serialize_compact().to_vec()\n    }\n\n    pub fn audit(&self) -> (&'static str, bool) {\n        (self.preferred_curve, true)\n    }\n}`
+          }
+        },
+        synthesized: `use ed25519_dalek::{Keypair, Signer};\nuse secp256k1::{Secp256k1, SecretKey, Message};\n\npub struct SovereignSignatureRouter {\n    /// 🔐 Synthesized by Zoth Swarm Byzantine Consensus Arena\n    /// Quorum: @antigravity (50%) + @grok (30%) + @ollama (20%)\n    /// Routes signing to Ed25519 (fast, deterministic) or Secp256k1 (chain-compatible)\n    pub preferred_curve: &'static str,\n}\n\nimpl SovereignSignatureRouter {\n    pub fn sign_ed25519(&self, keypair: &Keypair, message: &[u8]) -> Vec<u8> {\n        keypair.sign(message).to_bytes().to_vec()\n    }\n\n    pub fn sign_secp256k1(&self, secret: &SecretKey, msg_hash: &[u8; 32]) -> Vec<u8> {\n        let secp = Secp256k1::new();\n        let message = Message::from_slice(msg_hash).expect("32 byte hash");\n        secp.sign_ecdsa(&message, secret).serialize_compact().to_vec()\n    }\n\n    pub fn audit(&self) -> (&'static str, bool) {\n        (self.preferred_curve, true)\n    }\n}`
+      },
     };
 
     function playSound(freq = 600) {
@@ -4660,6 +4810,72 @@
       playSound(800);
     }
 
+    function updateConfidenceBars(data) {
+      // Confidence bars derive from topic jaccard overlap scores.
+      // Mapping: data.jaccard.ag -> agy, data.jaccard.go -> grok, data.jaccard.ao -> ollama
+      if (!data || !data.jaccard) return;
+      const barAgy = document.getElementById('confidence-bar-agy');
+      const barGrok = document.getElementById('confidence-bar-grok');
+      const barOllama = document.getElementById('confidence-bar-ollama');
+      if (barAgy) barAgy.style.width = data.jaccard.ag;
+      if (barGrok) barGrok.style.width = data.jaccard.go;
+      if (barOllama) barOllama.style.width = data.jaccard.ao;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    const HIGHLIGHT_KEYWORDS = new Set([
+      'def', 'class', 'function', 'const', 'let', 'var', 'import', 'from', 'export',
+      'pub', 'use', 'impl', 'fn', 'struct', 'return', 'async', 'await', 'if', 'else',
+      'while', 'for', 'new', 'self', 'this', 'true', 'false', 'None', 'null', 'static'
+    ]);
+
+    // Zero-dependency pure-JS tokenizer/highlighter for code preview panes.
+    // Escapes HTML entities first, then wraps tokens (keywords/strings/comments) in <span> tags.
+    function highlightCode(rawCode) {
+      if (!rawCode) return '';
+      const safe = escapeHtml(rawCode);
+      const lines = safe.split('\n');
+      const highlightedLines = lines.map(line => {
+        // Comment detection (#, //, /* ... */) - highlight rest of line once found outside a string
+        let commentIdx = -1;
+        let inStr = false, strChar = '';
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (inStr) {
+            if (ch === strChar && line[i - 1] !== '\\') inStr = false;
+            continue;
+          }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = true; strChar = ch; continue; }
+          if (ch === '#') { commentIdx = i; break; }
+          if (ch === '/' && line[i + 1] === '/') { commentIdx = i; break; }
+          if (ch === '/' && line[i + 1] === '*') { commentIdx = i; break; }
+        }
+        let code = commentIdx >= 0 ? line.slice(0, commentIdx) : line;
+        const comment = commentIdx >= 0 ? line.slice(commentIdx) : '';
+
+        // String literal highlighting
+        code = code.replace(/(&quot;.*?&quot;|&#39;.*?&#39;|`[^`]*`)/g, m => `<span class="tok-string">${m}</span>`);
+
+        // Keyword highlighting (word boundaries, skip inside already-wrapped spans by using simple regex)
+        code = code.replace(/\b([A-Za-z_][A-Za-z0-9_]*)\b(?![^<]*>)/g, (m, word) => {
+          return HIGHLIGHT_KEYWORDS.has(word) ? `<span class="tok-keyword">${word}</span>` : word;
+        });
+
+        let out = code;
+        if (comment) out += `<span class="tok-comment">${comment}</span>`;
+        return out;
+      });
+      return highlightedLines.join('\n');
+    }
+
     function switchTopic(topicKey) {
       currentTopic = topicKey;
       document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
@@ -4695,7 +4911,8 @@
       document.getElementById('proof-hash-val').textContent = data.proofHash;
       document.getElementById('proof-merkle-label').textContent = `Merkle root ${data.merkle} matching local AST tree nodes.`;
 
-      document.getElementById('synthesized-code-text').textContent = data.synthesized;
+      document.getElementById('synthesized-code-text').innerHTML = highlightCode(data.synthesized);
+      updateConfidenceBars(data);
       selectContender(currentAgent);
       setDialecticStage(currentDialecticStage);
       updateShannonEntropy();
@@ -4709,8 +4926,9 @@
       if (card) card.classList.add('active');
       const topic = TOPIC_DATA[currentTopic];
       if (topic && topic.proposals && topic.proposals[agentId]) {
-        document.getElementById('contender-code-text').textContent = topic.proposals[agentId];
+        document.getElementById('contender-code-text').innerHTML = highlightCode(topic.proposals[agentId]);
       }
+      if (topic) updateConfidenceBars(topic);
 
       // Highlight SVG Topology Node
       ['agy', 'grok', 'ollama'].forEach(id => {
@@ -4761,7 +4979,7 @@
         document.getElementById('dialectic-stage-indicator').textContent = `Active: ${stageKey.toUpperCase()}`;
 
         if (stageKey === 'synthesis') {
-          document.getElementById('synthesized-code-text').textContent = stageInfo.code;
+          document.getElementById('synthesized-code-text').innerHTML = highlightCode(stageInfo.code);
           document.getElementById('entropy-value-display').textContent = "0.218 bits / 1.585 bits";
           document.getElementById('entropy-gauge-fill').style.width = "14%";
           document.getElementById('stat-entropy').textContent = "0.218 bits";

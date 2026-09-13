@@ -499,6 +499,7 @@
       '  <div class="drawer-heading">🪐 Workstations &amp; DAGs</div>',
       '  <a class="drawer-link" href="/studio/cockpit.html"><strong>🪐 The Cockpit</strong><small>21-Agent Autonomous Swarm</small></a>',
       '  <a class="drawer-link" href="/studio/consensus.html"><strong>⚔️ Consensus Arena</strong><small>3-Agent Debate &amp; AST Synthesis</small></a>',
+      '  <a class="drawer-link" href="/studio/vos-sandbox.html"><strong>💻 vOS Wasm Sandbox</strong><small>Browser-Native WebContainer &amp; IDE</small></a>',
       '  <a class="drawer-link" href="/studio/webgen.html"><strong>⚡ WebGen Studio</strong><small>PTY Terminal &amp; Website Foundry</small></a>',
       '  <a class="drawer-link" href="/studio/nexus-3d.html"><strong>📐 Nexus 3D Omniverse</strong><small>CAD Viewport &amp; AI Mesh Generator</small></a>',
       '  <a class="drawer-link" href="/studio/omnipost.html"><strong>🎬 OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></a>',

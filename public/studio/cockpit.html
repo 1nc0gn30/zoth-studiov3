@@ -202,13 +202,28 @@
           <!-- Mention & Quick Action Pills -->
           <div class="composer-mention-bar" id="composerMentionBar">
             <span class="mention-prefix">Target:</span>
-            <button class="mention-chip active" onclick="setTargetAgent('all')">🌐 All Swarm</button>
-            <button class="mention-chip" onclick="setTargetAgent('antigravity')">🪐 @antigravity</button>
-            <button class="mention-chip" onclick="setTargetAgent('hermes')">⚡ @hermes</button>
-            <button class="mention-chip" onclick="setTargetAgent('grok')">📐 @grok</button>
-            <button class="mention-chip" onclick="setTargetAgent('ghostbyte')">🔒 @ghostbyte</button>
-            <button class="mention-chip" onclick="setTargetAgent('athena')">🦉 @athena</button>
-            <button class="mention-chip" onclick="setTargetAgent('kitsune')">🦊 @kitsune</button>
+            <button class="mention-chip active" data-category="all" onclick="setTargetAgent('all')">🌐 All Swarm</button>
+            <button class="mention-chip" data-category="architects" onclick="setTargetAgent('antigravity')">🪐 @antigravity</button>
+            <button class="mention-chip" data-category="research" onclick="setTargetAgent('hermes')">⚡ @hermes</button>
+            <button class="mention-chip" data-category="research" onclick="setTargetAgent('grok')">📐 @grok</button>
+            <button class="mention-chip" data-category="media" onclick="setTargetAgent('ghostbyte')">🔒 @ghostbyte</button>
+            <button class="mention-chip" data-category="research" onclick="setTargetAgent('athena')">🦉 @athena</button>
+            <button class="mention-chip" data-category="media" onclick="setTargetAgent('kitsune')">🦊 @kitsune</button>
+          </div>
+
+          <!-- Category Filter Chips & Live Agent Search -->
+          <div class="composer-mention-bar" id="composerCategoryBar" style="margin-top:6px;">
+            <span class="mention-prefix">Category:</span>
+            <button class="mention-chip category-chip active" data-category="all" onclick="filterAgentsByCategory('all')">🌐 All</button>
+            <button class="mention-chip category-chip" data-category="engineers" onclick="filterAgentsByCategory('engineers')">🛠️ Engineers</button>
+            <button class="mention-chip category-chip" data-category="architects" onclick="filterAgentsByCategory('architects')">🪐 Architects</button>
+            <button class="mention-chip category-chip" data-category="security" onclick="filterAgentsByCategory('security')">🔒 Security</button>
+            <button class="mention-chip category-chip" data-category="media" onclick="filterAgentsByCategory('media')">🎨 Media</button>
+            <button class="mention-chip category-chip" data-category="research" onclick="filterAgentsByCategory('research')">🧠 Research</button>
+            <span class="mention-search-box" style="display:flex;align-items:center;gap:5px;margin-left:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;">
+              <i class="ph-bold ph-magnifying-glass" style="font-size:0.75rem;color:var(--cockpit-muted);"></i>
+              <input id="agent-roster-search" type="text" placeholder="Search agents…" oninput="filterAgentsByText(this.value)" style="background:transparent;border:none;outline:none;color:var(--cockpit-text,#fff);font-family:var(--font-mono);font-size:0.72rem;width:120px;" />
+            </span>
           </div>
 
           <!-- Main Input Field -->
@@ -228,6 +243,38 @@
             <span class="sep">•</span>
             <span>Loopback :8484</span>
           </div>
+
+          <!-- Local Session Telemetry Gauges (simulated client-side activity, NOT real OS metrics) -->
+          <div class="cockpit-gauge-cluster" id="cockpitGaugeCluster" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:8px 4px 2px;font-family:var(--font-mono);">
+            <div class="gauge" data-gauge="cpu" style="flex:1;min-width:140px;">
+              <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--cockpit-muted);">
+                <span><i class="ph-bold ph-cpu"></i> CPU Load</span>
+                <span id="gaugeCpuVal">--%</span>
+              </div>
+              <div style="height:6px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;margin-top:3px;">
+                <div id="gaugeCpuFill" style="height:100%;width:0%;background:linear-gradient(90deg,#00f0ff,#34d399);transition:width 0.4s;"></div>
+              </div>
+            </div>
+            <div class="gauge" data-gauge="mem" style="flex:1;min-width:140px;">
+              <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--cockpit-muted);">
+                <span><i class="ph-bold ph-hard-drives"></i> Memory Alloc</span>
+                <span id="gaugeMemVal">--%</span>
+              </div>
+              <div style="height:6px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;margin-top:3px;">
+                <div id="gaugeMemFill" style="height:100%;width:0%;background:linear-gradient(90deg,#a855f7,#00f0ff);transition:width 0.4s;"></div>
+              </div>
+            </div>
+            <div class="gauge" data-gauge="particles" style="flex:1;min-width:140px;">
+              <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--cockpit-muted);">
+                <span><i class="ph-bold ph-sparkle"></i> Active Particles</span>
+                <span id="gaugeParticlesVal">--</span>
+              </div>
+              <div style="height:6px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;margin-top:3px;">
+                <div id="gaugeParticlesFill" style="height:100%;width:0%;background:linear-gradient(90deg,#ffaa40,#00f0ff);transition:width 0.4s;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:0.6rem;color:var(--cockpit-muted);opacity:0.7;padding:0 4px;">Local session telemetry (simulated) — client-side activity only, not real OS CPU/RAM</div>
 
         </div>
       </div>
@@ -318,6 +365,72 @@
   <script src="/assets/zoth-annotator.js"></script>
 
   <script>
+    // --- Category Filtering & Live Agent Search (composable, non-destructive layer) ---
+    var __zothCurrentCategory = 'all';
+    var __zothCurrentQuery = '';
+
+    function __zothApplyAgentFilters() {
+      var cat = __zothCurrentCategory;
+      var q = (__zothCurrentQuery || '').toLowerCase().trim();
+      document.querySelectorAll('#composerMentionBar .mention-chip').forEach(function (chip) {
+        var chipCat = chip.getAttribute('data-category') || 'all';
+        var text = (chip.textContent || '').toLowerCase();
+        var catOk = (cat === 'all' || chipCat === 'all' || chipCat === cat);
+        var textOk = (q === '' || text.indexOf(q) !== -1);
+        chip.style.display = (catOk && textOk) ? '' : 'none';
+      });
+    }
+
+    function filterAgentsByCategory(category) {
+      __zothCurrentCategory = category || 'all';
+      document.querySelectorAll('#composerCategoryBar .category-chip').forEach(function (btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-category') === __zothCurrentCategory);
+      });
+      __zothApplyAgentFilters();
+    }
+
+    function filterAgentsByText(query) {
+      __zothCurrentQuery = query || '';
+      __zothApplyAgentFilters();
+    }
+
+    // --- Local Session Telemetry Gauges (SIMULATED client-side activity, not real OS metrics) ---
+    function initZothGauges() {
+      if (window.__zothGaugesInit) return;
+      window.__zothGaugesInit = true;
+
+      var cpu = 32, mem = 41, particles = 350;
+      var t = 0;
+
+      function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+      function tick() {
+        t += 1;
+        // Sine-wave-plus-noise random walk so values drift smoothly rather than jumping.
+        cpu = clamp(cpu + (Math.sin(t / 7) * 1.4) + (Math.random() - 0.5) * 3.2, 4, 96);
+        mem = clamp(mem + (Math.sin(t / 11 + 2) * 1.1) + (Math.random() - 0.5) * 2.4, 8, 92);
+        particles = clamp(particles + (Math.sin(t / 5) * 6) + (Math.random() - 0.5) * 10, 120, 620);
+
+        var cpuFill = document.getElementById('gaugeCpuFill');
+        var cpuVal = document.getElementById('gaugeCpuVal');
+        var memFill = document.getElementById('gaugeMemFill');
+        var memVal = document.getElementById('gaugeMemVal');
+        var pFill = document.getElementById('gaugeParticlesFill');
+        var pVal = document.getElementById('gaugeParticlesVal');
+
+        if (cpuFill) cpuFill.style.width = cpu.toFixed(0) + '%';
+        if (cpuVal) cpuVal.textContent = cpu.toFixed(0) + '%';
+        if (memFill) memFill.style.width = mem.toFixed(0) + '%';
+        if (memVal) memVal.textContent = mem.toFixed(0) + '%';
+        if (pFill) pFill.style.width = clamp((particles / 620) * 100, 0, 100).toFixed(0) + '%';
+        if (pVal) pVal.textContent = Math.round(particles);
+      }
+
+      tick();
+      setInterval(tick, 1200);
+    }
+    window.addEventListener('DOMContentLoaded', initZothGauges);
+
     // Cockpit Global Interactive Hotkeys
     window.addEventListener('keydown', function(e) {
       var isInput = (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');

@@ -127,6 +127,23 @@
   max-width: calc(100% - 32px);
 }
 
+/* white-space:nowrap forces the pill to measure its full unwrapped intrinsic
+   width (badge + long CTA sentence + button) BEFORE max-width can clamp it,
+   so on narrow phones (~390-430px) that intrinsic width can exceed the
+   viewport and force real horizontal page overflow even though the pill is
+   visually centered. Allow wrapping + a tighter max-width band below the
+   point where the unwrapped content stops fitting. */
+@media (max-width: 640px) {
+  .zoth-desktop-prompt-pill {
+    white-space: normal;
+    max-width: calc(100vw - 24px);
+    text-align: center;
+    border-radius: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
 .zoth-pill-badge {
   font-family: var(--font-theme-mono, monospace);
   font-size: 0.68rem;
@@ -179,14 +196,25 @@
   border-left: 1px solid var(--border-card, rgba(0, 240, 255, 0.2));
   z-index: 1000;
   transform: translateX(105%);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.28s;
   display: flex;
   flex-direction: column;
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.7);
+  /* Off-canvas fixed elements sized in vw units can still inflate the
+     layout viewport / scrollWidth in Chromium even though translateX(105%)
+     moves them fully offscreen visually (position:fixed + transform keeps
+     the untransformed box counted for overflow on some engine versions).
+     visibility:hidden while closed removes it from that overflow
+     computation entirely; the delayed transition above keeps the slide
+     animation looking identical (only becomes hidden after the transform
+     finishes, and visible again immediately when .open is added). */
+  visibility: hidden;
 }
 
 .zoth-tool-sidebar.open {
   transform: translateX(0);
+  visibility: visible;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
 }
 
 .zoth-sidebar-head {
