@@ -11,8 +11,10 @@
     this.container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
     this.options = options || {};
     this.sessionId = this.options.sessionId || 'zoth_pty_sovereign-app';
-    this.slug = this.options.slug || 'sovereign-app';
-    this.apiBase = this.options.apiBase || ((window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484');
+    var proto = (window.location.protocol === 'https:') ? 'https:' : 'http:';
+    var host = window.location.hostname;
+    var defaultBase = (!host || host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') ? 'http://127.0.0.1:8484' : (proto + '//' + host + ':8484');
+    this.apiBase = this.options.apiBase || defaultBase;
     
     this.term = null;
     this.fitAddon = null;

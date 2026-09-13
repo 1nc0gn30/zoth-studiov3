@@ -182,11 +182,29 @@
       });
     },
 
+    getAssetsBase: function () {
+      if (window.location.protocol === "file:") {
+        var scripts = document.querySelectorAll("script[src]");
+        for (var i = 0; i < scripts.length; i++) {
+          var src = scripts[i].getAttribute("src") || "";
+          if (src.indexOf("zoth-pet-hud.js") !== -1 || src.indexOf("zoth-nav.js") !== -1) {
+            var clean = src.split("?")[0];
+            var idx = clean.lastIndexOf("/");
+            if (idx !== -1) return clean.substring(0, idx + 1);
+            return "./";
+          }
+        }
+        return "./";
+      }
+      return "/assets/";
+    },
+
     ensureStylesheet: function () {
       if (!document.querySelector('link[href*="zoth-pet-hud.css"]')) {
+        var base = (window.location.protocol === "file:") ? "./" : "/assets/";
         var link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "/assets/zoth-pet-hud.css";
+        link.href = base + "zoth-pet-hud.css";
         document.head.appendChild(link);
       }
     },
@@ -201,6 +219,13 @@
           if (cb) cb();
           return;
         }
+      }
+
+      // If file protocol, skip fetch and use default Azoth
+      if (window.location.protocol === "file:") {
+        this.activePet = PETS_ROSTER[0];
+        if (cb) cb();
+        return;
       }
 
       // 2. Fetch from active_pet.json
@@ -242,6 +267,9 @@
       hud.className = this.isDocked ? "docked" : "";
 
       var pet = this.activePet;
+      var base = this.getAssetsBase();
+      var avatarUrl = pet.avatar ? (pet.avatar.startsWith("/assets/") ? pet.avatar.replace(/^\/assets\//, base) : pet.avatar) : "";
+      var fallbackMask = base + "mascot/azoth-mask.jpg";
 
       var optionsHtml = PETS_ROSTER.map(function (p) {
         var selected = p.id === pet.id ? "selected" : "";
@@ -252,7 +280,7 @@
         '<!-- Floating Master Narrator & Companion Trigger Button -->',
         '<button type="button" class="pet-hud-trigger" id="pet-hud-trigger" aria-expanded="false" aria-label="Toggle Master Narrator & Companion Panel">',
         '  <div class="pet-hud-orb">',
-        '    <img src="' + pet.avatar + '" alt="' + pet.name + '" id="pet-hud-orb-img" onerror="this.src=\'/assets/mascot/azoth-mask.jpg\'" />',
+        '    <img src="' + avatarUrl + '" alt="' + pet.name + '" id="pet-hud-orb-img" onerror="this.src=\'' + fallbackMask + '\'" />',
         '    <div class="pet-hud-pulse-ring"></div>',
         '    <div class="pet-hud-orb-status"></div>',
         '  </div>',
@@ -271,7 +299,7 @@
         '  <span class="pet-hud-speech-text">Companion online &amp; watching over session.</span>',
         '</div>',
 
-        <!-- Expanded Companion Dossier Panel (Opens on Click) -->',
+        '<!-- Expanded Companion Dossier Panel (Opens on Click) -->',
         '<div class="pet-hud-card" id="pet-hud-card" role="region" aria-label="Pet Companion Panel">',
         '  <div class="pet-hud-header">',
         '    <div class="pet-hud-title-group">',
@@ -287,7 +315,7 @@
         '  <div class="pet-hud-body">',
         '    <div class="pet-hud-hero-box">',
         '      <div class="pet-hud-hero-img-wrap">',
-        '        <img src="' + pet.avatar + '" alt="' + pet.name + '" id="pet-hud-hero-img" onerror="this.src=\'/assets/mascot/azoth-mask.jpg\'" />',
+        '        <img src="' + avatarUrl + '" alt="' + pet.name + '" id="pet-hud-hero-img" onerror="this.src=\'' + fallbackMask + '\'" />',
         '      </div>',
         '      <div class="pet-hud-hero-details">',
         '        <div class="pet-hud-hero-name" id="pet-hud-hero-name">' + pet.name + '</div>',

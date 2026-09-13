@@ -17,11 +17,29 @@
   }
   if (/^\/workspaces\//.test(window.location.pathname || '')) return;
 
+  function getAssetsBase() {
+    if (window.location.protocol === "file:") {
+      var scripts = document.querySelectorAll("script[src]");
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].getAttribute("src") || "";
+        if (src.indexOf("zoth-workbench.js") !== -1 || src.indexOf("zoth-nav.js") !== -1) {
+          var clean = src.split("?")[0];
+          var idx = clean.lastIndexOf("/");
+          if (idx !== -1) return clean.substring(0, idx + 1);
+          return "./";
+        }
+      }
+      return "./";
+    }
+    return "/assets/";
+  }
+
   function ensureWorkbenchCss() {
     if (!document.querySelector('link[href*="zoth-workbench.css"]')) {
+      var base = getAssetsBase();
       var link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = '/assets/zoth-workbench.css?v=20260829';
+      link.href = base + 'zoth-workbench.css?v=20260829';
       document.head.appendChild(link);
     }
   }

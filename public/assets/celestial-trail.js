@@ -13,6 +13,7 @@
   if (typeof window === "undefined") return;
   if (document.getElementById("celestial-cursor-canvas")) return;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) return;
 
   // Sacred Mathematical Constants
   var PHI = 1.618033988749895;              // Golden Ratio Φ

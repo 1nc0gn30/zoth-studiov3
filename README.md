@@ -1,28 +1,54 @@
 <div align="center">
 
-# <img src="public/assets/brand/zoth-golden-z-192.png" width="48" height="48" style="border-radius: 8px; vertical-align: middle; border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.35);" /> ZOTH STUDIO: CORE APP & WORKSTATION SUITE
+# <img src="public/assets/brand/zoth-golden-z-192.png" width="48" height="48" style="border-radius: 8px; vertical-align: middle; border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.35);" /> ZOTH STUDIO: CORE APP & WORKSTATION SUITE `v3.2.0`
 
 ### *Local-First Multi-Agent Browser Cockpit, Autonomous Web Foundry & 3D WebGL Omniverse*
 
-[![Version](https://img.shields.io/badge/version-3.0.0-00f0ff?style=for-the-badge&logo=target&logoColor=white)](https://github.com/NullAITech/zoth-studio)
+[![Version](https://img.shields.io/badge/version-3.2.0-00f0ff?style=for-the-badge&logo=target&logoColor=white)](https://github.com/NullAITech/zoth-studio)
 [![License](https://img.shields.io/badge/license-Apache%202.0-e8c872?style=for-the-badge&logo=apache&logoColor=black)](LICENSE)
-[![Math Pillars](https://img.shields.io/badge/theory-6%20Math%20Pillars%20Academy-c084fc?style=for-the-badge&logo=wolframmathematica&logoColor=white)](http://127.0.0.1:8088/studio/math-pillars.html)
-[![Memory Whitespace](https://img.shields.io/badge/memory-Sovereign%20Whitespace-00f0ff?style=for-the-badge&logo=brainz&logoColor=white)](http://127.0.0.1:8088/memory/)
-[![Workstations](https://img.shields.io/badge/workstations-23%2B%20Sovereign%20Apps-34d399?style=for-the-badge&logo=safari&logoColor=white)](http://127.0.0.1:8088/)
-[![Netrunner](https://img.shields.io/badge/oracle-Lucy%20(Edgerunners)-f472b6?style=for-the-badge&logo=matrix&logoColor=white)](http://127.0.0.1:8088/studio/netrunner-memory.html)
+[![CLI](https://img.shields.io/badge/cli-bin%2Fzoth%20v3.2-fbbf24?style=for-the-badge&logo=gnubash&logoColor=black)](bin/zoth)
+[![Topology](https://img.shields.io/badge/topology-12%20Tsubuyaki%20Formulas-38bdf8?style=for-the-badge&logo=wolframmathematica&logoColor=white)](public/showcase/tsubuyaki-vortex.html)
+[![Pet Dex](https://img.shields.io/badge/pet--dex-24%20Mascot%20Spirits-34d399?style=for-the-badge&logo=safari&logoColor=white)](public/pets/)
+[![Memory Whitespace](https://img.shields.io/badge/memory-Sovereign%20Whitespace-00f0ff?style=for-the-badge&logo=brainz&logoColor=white)](public/memory/)
+[![Speed](https://img.shields.io/badge/speed-Sub--5ms%20Latency-a855f7?style=for-the-badge&logo=speedtest&logoColor=white)](public/assets/zoth-speed-engine.js)
 
 </div>
 
-<p align="center"><img src="docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
+<p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
 
 ## 🛡️ Overview & Scope
 
-`core-app` is the primary frontend workstation suite and Unix PTY harness for **Zoth Studio**. It provides 23+ zero-cloud, client-side web workstations serving the entire 21-agent Pantheon, WebGen autonomous code synthesis, real-time 3D spatial monitoring, the **AI Math Pillars Theory Academy**, and the **Lucy Netrunner Memory Whitespace Matrix**.
+`core-app` is the primary frontend workstation suite, CLI execution deck, and Unix PTY harness for **Zoth Studio**. It provides 23+ zero-cloud, client-side web workstations serving the entire 21-agent Pantheon, WebGen autonomous code synthesis, real-time 3D spatial monitoring, the **AI Math Pillars Theory Academy**, the **12-Formula #つぶやきProcessing Topology Lab**, and the **Lucy Netrunner Memory Whitespace Matrix**.
 
 ### What is in this directory:
-- **`public/`**: 23+ static web workstations, interactive theory academies, agent dossiers, and assets.
+- **`bin/zoth`**: High-performance Python 3 CLI & Curses TUI (v3.2 Sovereign Master Edition) symlinked to `~/.local/bin/zoth`.
+- **`public/`**: 23+ static web workstations, interactive theory academies, 24-spirit pet dex, manga reader, and assets.
 - **`tools/`**: Local Unix PTY engine (`pty.fork`), DuckyScript compiler, and loopback agent orchestrator (`:8484`).
-- **`public/assets/`**: Vectorized agent badges, 3D shader scripts (`zoth-world.js`, `zoth-three-orb.js`), 16-brand theme stylesheets (`zoth-theme.css`), and authentic Lucy Cyberpunk mascot assets.
+- **`public/assets/`**: Vectorized agent badges, 3D shader scripts (`zoth-world.js`, `zoth-3d-logo.js`), 16-brand theme stylesheets (`zoth-theme.css`), and authentic Lucy Cyberpunk mascot assets.
+
+---
+
+## ⚡ The `zoth` CLI v3.2 Master Deck
+
+The `bin/zoth` executable is the primary command deck for controlling Zoth Studio:
+
+```bash
+zoth status                # Inspect 8-port loopback matrix and active companion
+zoth matrix                # 60 FPS cyberpunk digital rain (7 themes, 6 glyphs)
+zoth tsubuyaki render v3   # Live interactive ASCII stipple field simulation
+zoth ask "<query>"         # Query agent with vector memory recall & doc grounding
+zoth repl                  # Multi-turn REPL with /pet, /agent, /mem, /swarm commands
+zoth swarm run "<goal>"    # Execute 4-stage AST consensus pipeline
+zoth pet summon kai        # Summon active mascot spirit from 24-pet dex
+zoth pet ascii kai         # Render high-resolution animated ASCII portrait
+zoth mem graph             # Biomorphic ASCII synaptic network graph
+zoth mem beat              # Trigger STDP synaptic weight consolidation
+zoth tool list             # List all 298 registered tools
+zoth site list             # List in-house website blueprints (298+)
+zoth speed bench           # Benchmark local HTTP latency (< 5ms)
+zoth doctor                # 16-point deep diagnostics audit
+zoth tui                   # 🎛️ Launch fullscreen curses cockpit
+```
 
 ---
 
@@ -31,16 +57,72 @@
 | Workstation | Route | Description | Tech Stack |
 | :--- | :--- | :--- | :--- |
 | **Launchpad** | [`/index.html`](http://127.0.0.1:8088/) | Flagship cockpit with live status, agent launcher, and theme switcher | Vanilla HTML5 / CSS3 / ESModules |
-| **Memory Whitespace** | [`/memory/`](http://127.0.0.1:8088/memory/) | Distraction-free sovereign cognitive space with dual-layer story digests and neural graph | Dual-Layer JSON / Obsidian Graph / SSE |
-| **Math Pillars Academy** | [`/studio/math-pillars.html`](http://127.0.0.1:8088/studio/math-pillars.html) | Interactive mathematical theory academy: linear algebra, manifolds, STDP, and KAN | KaTeX / Three.js Visualizers / Canvas Math |
+| **Topology Lab** | [`/showcase/tsubuyaki-vortex.html`](http://127.0.0.1:8199/showcase/tsubuyaki-vortex.html) | 12 #つぶやきProcessing 280B mathematical formulas in 3D WebGPU & ASCII | p5.js / WebGPU / KaTeX / ASCII Shader |
+| **Pet Dex & Studio** | [`/pets/`](http://127.0.0.1:8088/pets/) | 24 Sovereign Mascot Spirits with animated 3D models, lore, and sound | Three.js / Web Audio / Sprite Canvas |
+| **Memory Whitespace** | [`/memory/`](http://127.0.0.1:8088/memory/) | Distraction-free sovereign cognitive space with dual-layer story digests | Dual-Layer JSON / Obsidian Graph / SSE |
+| **Math Pillars Academy** | [`/studio/math-pillars.html`](http://127.0.0.1:8088/studio/math-pillars.html) | Interactive mathematical theory academy: manifolds, STDP, and KAN | KaTeX / Three.js Visualizers / Canvas Math |
 | **Netrunner Cyberspace** | [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html) | AAA 3D Cyberspace world, 360° radar, AR scanner mode, stepped altars & Lucy oracle | Three.js / Dual-Layer Memory / SpeechSynthesis |
 | **WebGen Studio** | [`/studio/webgen.html`](http://127.0.0.1:8088/studio/webgen.html) | Natural-language web foundry with live split-screen preview and PTY terminal | `xterm.js` / Three.js kinetic orb |
 | **3D Swarm Arena** | [`/studio/swarm.html`](http://127.0.0.1:8088/studio/swarm.html) | Tactical 3D battle radar, volumetric shields, laser weapons & 5 camera modes | WebGL / UnrealBloomPass / Web Audio |
 | **vOS Sandbox** | [`/studio/vos-sandbox.html`](http://127.0.0.1:8088/studio/vos-sandbox.html) | In-browser WebAssembly virtual OS, file explorer, and WebContainer runner | Wasm / `xterm.js` / Virtual FS |
 | **Consensus Arena v2** | [`/studio/consensus.html`](http://127.0.0.1:8088/studio/consensus.html) | 3-model prompt triangulation with Shannon Agreement Entropy ($H(p) < 0.20\text{b}$) | Mathematical Consensus / AST Fuzzer |
 | **Nexus 3D Sanctum** | [`/studio/nexus-3d.html`](http://127.0.0.1:8088/studio/nexus-3d.html) | 3D alchemical sphere with Fresnel iridescence and 10,000+ swirling nebula stars | Three.js `InstancedMesh` / OrbitControls |
+| **AZOTH Comic Suite** | [`/comic/index.html`](http://127.0.0.1:8088/comic/) | S01E01–S01E04 manga reader with terminal audio player integration | HTML5 Canvas / Web Audio / mpv / ffplay |
 | **Agent Registry** | [`/agents/`](http://127.0.0.1:8088/agents/) | Interactive dossiers and skill matrices for all 21 Pantheon AI agents | Responsive UI / JSON Grounding |
-| **AX Specification** | [`/ax/`](http://127.0.0.1:8088/ax/) | Agent Experience and AEO Schema.org knowledge grounding layer | JSON-LD / Machine Grounding |
+| **Keymaster Vault** | [`/vault/`](http://127.0.0.1:8088/vault/) | Hardware-isolated Argon2id key enclave and secret store | Argon2id / XChaCha20-Poly1305 |
+| **SimpleX Messaging**| [`/secure-messaging/`](http://127.0.0.1:8088/secure-messaging/) | Post-quantum zero-metadata E2EE communication bridge | WebSocket / Socket :5225 / Bridge :8767 |
+
+---
+
+## 🪐 The 12 #つぶやきProcessing Creative Coding Topologies
+
+All 12 topological presets fit within 280-byte Twitter creative coding constraints:
+
+```
+  1.  v1  - Celestial Torus Vortex (Toroids, 222 B)       sin(9/k) singular harmonic ripples
+  2.  v2  - Hexa-Strand Möbius Vortex (Toroids, 245 B)    6-fold ribbon knot with d^3/9 cubic surges
+  3.  v3  - Triskelion Crystalline Knot (Toroids, 239 B)  3-lobed trifold rotation & parabolic envelope
+  4.  v4  - Hyperbolic Gyroid Mesh (Toroids, 242 B)       4-fold interwoven saddle geometry
+  5.  v5  - Folium of Descartes Loop (Algebraic, 209 B)   Classical nodal folium algebraic loop
+  6.  v6  - Acos Wave Collapse Toroid (Algebraic, 218 B)  cos(5 - acos(cos(3p))) inverse trig folding
+  7.  v7  - Polar Cassini Oval Resonator (Algebraic, 224 B) Bi-focal orbital modulation & phase shifts
+  8.  v8  - Order/Disorder Interference (Wavefield, 231 B) 2D lattice stipple with radial ripples
+  9.  v9  - Polar Modulo Lissajous (Wavefield, 228 B)     Multi-harmonic resonance rings
+  10. v10 - Clifford Strange Attractor (Wavefield, 248 B)  Fractal chaotic flow attractor basins
+  11. v11 - Logarithmic Golden Spiral (Spirals, 214 B)    1.0008^y exponential phyllotaxis
+  12. v12 - Quantum Fermat Phyllotaxis (Spirals, 238 B)   sqrt(i)*2.2 quantum spin warp modulation
+```
+
+---
+
+## 🐾 The 24 Sovereign Mascot Spirits & Pet Dex
+
+The 24 mascot familiars in `public/pets/` and `zoth pet`:
+
+- **Master Azoth** (`🔮`, Lead Core) — Hermetic Sovereign Core & Alchemical Magus
+- **Zoth** (`⚡`, Lead Core) — Local Operator Loopback Core (Zero Telemetry)
+- **Kai** (`🐱`, Build) — Site Inspector & A11y WCAG Accessibility Auditor
+- **Draco** (`🐉`, Build) — Fusion Compiler & DAG AST Synthesizer
+- **Ignis** (`🔥`, Build) — Refactor Specialist & Rust WASM Speed Booster
+- **Lycan** (`🐺`, Security) — OWASP Sentinel, AST Enforcer & Zero-Leak Perimeter
+- **Athena** (`🦉`, Knowledge) — Knowledge Graph & AEO Schema Architect
+- **Kitsune** (`🦊`, Creative) — Taste, Sacred Motion & Cyberpunk Dark Stylist
+- **Pixel-Neko** (`🐾`, Ops) — Tool Indexer & Registry Sentinel
+- **Pixel-Shiba** (`🐕`, Ops) — Vault Guardian & BYOK Enclave Familiar
+- **Radical Minion** (`👾`, Autonomy) — Hermes Execution Partner for Atomic Step Playbooks
+- **Glitchcat** (`🐱‍💻`, Creative) — RGB Glitch & Visual Chaos Familiar
+- **Circuit Pup** (`🐶`, Ops) — LED Circuit & Daemon Sniffer
+- **Terminal Ghost** (`👻`, Ops) — Phosphor Spirit & Trace Integrity Auditor
+- **Savage Codex** (`📜`, Security) — Hacker Familiar & Diff Threat Modeler
+- **AI Workbot** (`🤖`, Autonomy) — Task Checklister & Swarm Board Logger
+- **Binary** (`💾`, Knowledge) — Schema Sentinel & llms.txt Machine Grounding
+- **Aquila** (`🦅`, Edge) — Global Edge Dispatcher & WebGPU Sentinel
+- **Leviathan** (`🐋`, Knowledge) — Deep Tensor & Vector Memory Ingestor
+- **Onyx** (`💎`, Security) — Red-Team Exploit Predator & Enclave Master
+- **Chronos** (`⏳`, Build) — Temporal DAG & Git Multi-Branch Navigator
+- **Aether** (`✨`, Autonomy) — Swarm Overlord & Conductor
+- **Kraken** (`🐙`, Ops) — Deep Packet Sniffer & OSINT Ingestor
+- **Scorpius** (`🦂`, Security) — Zero-Day Memory Corruption Disassembler
 
 ---
 
@@ -48,154 +130,115 @@
 
 Zoth Studio's multi-agent arbitration, memory indexing, and consensus engines are built on strict mathematical foundations accessible via the interactive [`/studio/math-pillars.html`](http://127.0.0.1:8088/studio/math-pillars.html) academy:
 
-### 1. Monoidal Category Theory & Sheaf Topologies
-* **Morphism Composition**: Multi-agent tool execution pipelines are modeled as morphisms $f: A \to B$ in a symmetric monoidal category $(\mathcal{C}, \otimes, I)$.
-* **Monadic Side-Effect Isolation**: Local disk modifications and terminal commands run inside an IO Monad $(M, \eta, \mu)$, guaranteeing clean rollbacks and zero untracked state mutations.
-* **Sheaf Cohomology on Knowledge Graphs**: Local consistency between disparate agent memory fragments is evaluated as sections over open coverings, resolving merge conflicts when $\check{H}^1(\mathcal{U}, \mathcal{F}) = 0$.
-
-### 2. High-Dimensional Information Geometry & Riemannian Manifolds
-* **Fisher Information Metric**: Optimization trajectories follow the Riemannian manifold $(\mathcal{M}, g)$ where the metric tensor $g_{ij}(\theta) = \mathbb{E}\left[ \frac{\partial \log p}{\partial \theta_i} \frac{\partial \log p}{\partial \theta_j} \right]$.
-* **Natural Gradient Descent**: Parameter updates move along the steepest descent direction invariant to coordinate transformations: $\tilde{\nabla} L(\theta) = g^{-1}(\theta) \nabla L(\theta)$.
-* **Hyperbolic Latent Space Embedding**: Hierarchical project and memory graphs are embedded in Poincaré disk space $\mathbb{D}^n$ with metric $ds^2 = 4 \frac{\sum dx_i^2}{(1 - \|x\|^2)^2}$, naturally avoiding exponential edge crowding.
-
-### 3. Spike-Timing-Dependent Plasticity (STDP) & Associative Hebbian Memory
-* **Synaptic Weight Dynamics**: Causal memory links between agent actions are weighted dynamically according to spike time differences $\Delta t = t_{\text{post}} - t_{\text{pre}}$:
-  $$\Delta w = \begin{cases} A_+ \exp\left(-\frac{\Delta t}{\tau_+}\right) & \text{if } \Delta t > 0 \text{ (Long-Term Potentiation / Causality)} \\ -A_- \exp\left(\frac{\Delta t}{\tau_-}\right) & \text{if } \Delta t < 0 \text{ (Long-Term Depression / Anti-Correlation)} \end{cases}$$
-* **Continuous Causal Traversal**: Enables sub-millisecond graph search for the root causes of codebase regressions via `/v1/memories/causal-path`.
-
-### 4. Shannon Agreement Entropy & Epistemic Triangulation
-* **Multi-Model Consensus Metric**: Disagreement among models (e.g. Antigravity, Grok, Hermes) is quantified over discrete AST mutation probability vectors:
-  $$H(P) = -\sum_{i=1}^N p_i \log_2 p_i$$
-* **Consensus Threshold**: When $H(P) < 0.20\text{ bits}$, epistemic consensus is reached, permitting automated code commits and zero-prompt execution.
-
-### 5. Kolmogorov-Arnold Networks (KAN) & Learnable B-Spline Activations
-* **Spline Representation Theorem**: Replaces traditional fixed-weight MLPs with univariate splines parameterized on edges:
-  $$f(x) = \sum_{q=1}^{2n+1} \Phi_q\left( \sum_{p=1}^n \phi_{q,p}(x_p) \right)$$
-* **Explainability**: Yields fully symbolic, readable mathematical equations from trained agent behavior patterns.
-
-### 6. Continuous Modern Hopfield Networks for Dense Associative Recall
-* **Energy Function**: Energy-based associative retrieval provides exponential storage capacity ($C \propto 2^{d/2}$):
-  $$E(x) = -\beta^{-1} \log \left( \sum_{i=1}^N \exp(\beta x^T x_i) \right) + \frac{1}{2} x^T x$$
-* **Sub-Millisecond Memory Recall**: Guarantees single-step convergence to exact stored episodic context without hallucinatory drift.
+1. **Monoidal Category Theory & Sheaf Topologies**: Morphisms $f: A \to B$ in symmetric monoidal categories with monadic side-effect isolation and sheaf cohomology $\check{H}^1(\mathcal{U}, \mathcal{F}) = 0$.
+2. **High-Dimensional Information Geometry & Riemannian Manifolds**: Fisher information metric $g_{ij}(\theta)$ and natural gradient descent $\tilde{\nabla} L(\theta) = g^{-1}(\theta) \nabla L(\theta)$ in Poincaré hyperbolic disk space $\mathbb{D}^n$.
+3. **Spike-Timing-Dependent Plasticity (STDP)**: Hebbian synaptic weight dynamics $\Delta w = A_+ \exp(-\Delta t / \tau_+)$ for causal root-cause traversal.
+4. **Shannon Agreement Entropy & Epistemic Triangulation**: Multi-model consensus metric $H(P) = -\sum p_i \log_2 p_i < 0.20\text{ bits}$.
+5. **Kolmogorov-Arnold Networks (KAN)**: Learnable B-spline activations parameterized on graph edges $f(x) = \sum \Phi_q\left( \sum \phi_{q,p}(x_p) \right)$.
+6. **Continuous Modern Hopfield Networks**: Dense associative exponential recall $E(x) = -\beta^{-1}\log\left(\sum \exp(\beta x^T x_i)\right) + \frac{1}{2}x^T x$.
 
 ---
 
-## 🧠 Sovereign Memory Whitespace & Dual-Layer Cognitive Stratum
+## 🧠 Dual-Version Netrunner Memory Substrate (:8788)
 
-The **Memory Whitespace** ([`/memory/`](http://127.0.0.1:8088/memory/) and [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html)) is the cognitive centerpiece of Zoth Studio:
+The Netrunner Memory subsystem provides dual-version cognitive persistence across all workstations, CLI sessions, and autonomous agent loops:
 
-```mermaid
-flowchart TD
-    subgraph CognitiveWhitespace["🧠 SOVEREIGN MEMORY WHITESPACE (:8788)"]
-        direction TB
-        RawInput["📥 Live Agent Sensory Stream & Terminal Executions"]
-        
-        subgraph Pipeline["⚡ DUAL-LAYER COMPRESSION & INDEXING"]
-            NarrativeEngine["📖 Human Story Synthesizer<br/>(Markdown Digest & Milestones)"]
-            LosslessEncoder["🧬 Lossless XML AI Grounding<br/>(&lt;memory_context&gt; Vector & AST)"]
-            STDPGraph["🕸️ STDP Hebbian Causal Lattice<br/>(Biomorphic Synapses)"]
-        end
-        
-        subgraph OutputSurfaces["🌌 INTERACTIVE SURFACES"]
-            HumanSurface["🧑 Human Whitespace Canvas<br/>• Structured Markdown MOCs<br/>• Distraction-free Review Queue<br/>• Audio narration & Story summaries"]
-            AISurface["🤖 Sovereign Agent Prompting<br/>• Zero-Loss In-Context Injection<br/>• Instant STDP Causal Traversal<br/>• Subconscious Precedent Recall"]
-            Cyberspace3D["🎮 Lucy 3D Cyberspace World<br/>• 360° Memory Radar & Altars<br/>• Blackwall Breach Mode<br/>• Real-time Audio Diagnostics"]
-        end
-    end
-    
-    RawInput --> Pipeline
-    NarrativeEngine --> HumanSurface
-    LosslessEncoder --> AISurface
-    STDPGraph --> Cyberspace3D
-    
-    style CognitiveWhitespace fill:#05070d,stroke:#00f0ff,stroke-width:2px,color:#fff
-    style Pipeline fill:#0c1322,stroke:#fbbf24,stroke-width:2px,color:#fff
-    style OutputSurfaces fill:#100d24,stroke:#c084fc,stroke-width:2px,color:#fff
+### 1. Dual Data Representations
+
+```json
+{
+  "id": "mem_20260913_tool_001",
+  "topic": "Tool Execution: webgen_compiler (success)",
+  "importance": 0.85,
+  "neuromodulator": { "valence": 0.9, "arousal": 0.7, "dominance": 0.8 },
+  "human_digest": "### 📖 Tool Execution: webgen_compiler (success)\n\n**Category**: build\n**Timestamp**: 2026-09-13T19:15:00Z\n\n#### 🎯 Context & Intent\nExecuted `webgen_compiler` to compile 3-page Astro workspace.\n\n#### ⚡ Key Actions & Parameters\n- **Tool Name**: `webgen_compiler`\n- **Status**: `success`\n- **Parameters**: `{\"target\": \"workspaces/showcase\"}`\n\n#### 📊 Outcome & Output Summary\nCompiled in 1.42s with zero warnings.\n\n#### 💡 Takeaways & Future Precedents\nTool `webgen_compiler` succeeded reliably under category `build`.",
+  "ai_spectrum": {
+    "event_type": "tool_run",
+    "tool_name": "webgen_compiler",
+    "status": "success",
+    "category": "build",
+    "args": { "target": "workspaces/showcase" },
+    "exit_code": 0,
+    "input_summary": "Compile 3-page Astro workspace",
+    "output_tail": "Compiled in 1.42s with zero warnings.",
+    "output_bytes": 384,
+    "neuromodulator": { "valence": 0.9, "arousal": 0.7, "dominance": 0.8 }
+  }
+}
 ```
 
-* **Human Narrative Digest**: Automatically synthesizes dense multi-agent runs, terminal logs, and code patches into human-digestible prose with key milestones, decisions, and outcomes.
-* **Lossless Machine Grounding**: Retains exact AST diffs, shell outputs, and execution timestamps formatted in structured `<memory_context>` XML for deterministic retrieval.
-* **Lucy Netrunner Oracle**: Embodying Lucy from *Cyberpunk: Edgerunners*, this deep-dive oracle navigates the 3D associative memory matrix, identifying subconscious patterns and cross-session insights across the entire workspace.
+### 2. Client-Side JavaScript Event Bus (`public/assets/zoth-netrunner-memory.js`)
 
----
+Web workstations emit custom DOM events which are automatically bridged to the Memory Daemon (:8788):
 
-## 🌌 3D WebGL Graphics & Shader Pipeline
+```javascript
+// Record a tool execution event
+window.dispatchEvent(new CustomEvent('zoth:tool:run', {
+  detail: {
+    tool_name: 'swarm_arbitration_engine',
+    status: 'success',
+    input_summary: 'Triangulate 3-agent prompt consensus',
+    output_tail: 'Shannon entropy H(p) = 0.12 bits < 0.20 bits threshold',
+    args: { models: ['antigravity', 'hermes-3', 'grok-4.5'] }
+  }
+}));
 
-All 3D scenes in `core-app/` follow AAA WebGL engineering standards:
+// Record a codebase mutation event
+window.dispatchEvent(new CustomEvent('zoth:code:change', {
+  detail: {
+    file_path: 'public/studio/netrunner-memory.html',
+    change_type: 'modified',
+    summary: 'Added dual-version view toggle HUD and XML copy button',
+    diff_stat: '+124 -18 lines',
+    symbols: ['toggleDualViewMode', 'copyPromptContextXML']
+  }
+}));
+```
 
-1. **60 FPS Performance Capping**: Renderers automatically cap `devicePixelRatio` at `Math.min(window.devicePixelRatio || 1, 2)` to eliminate thermal throttling and GPU stutter.
-2. **ACESFilmic Tone Mapping & Unreal Bloom**: Volumetric radiance passes with threshold `0.70`, strength `0.65`, and radius `0.42` for neon luminescence.
-3. **16-Brand Theme Synchronization**: 3D scenes listen to `window.addEventListener('zoth-theme-change')` to smoothly tween lighting, particle hues, and fog colors to match the active brand aesthetic:
-   - **Dark Void**: Cyan (`#00f0ff`) & Neon Violet (`#a855f7`)
-   - **Hermetic Gold**: Pure Gold (`#fbbf24`) & Amber
-   - **Matrix Rain**: Cyber Emerald (`#34d399`) & Mint
-   - **Cyberpunk / Synthwave**: Hot Pink (`#f472b6`) & Electric Blue
+### 3. Python Orchestrator Runtime Connector (`runtime/netrunner_memory.py`)
 
----
+```python
+from runtime.netrunner_memory import NetrunnerMemoryClient, format_human_digest, format_ai_spectrum
 
-## 📂 Project Structure
+client = NetrunnerMemoryClient(base_url="http://127.0.0.1:8788")
 
-```text
-core-app/
-├── public/                            # Static Web Application Root (Served on :8088)
-│   ├── studio/                        # Workstations (WebGen, Netrunner, Swarm, vOS, Consensus)
-│   ├── agents/                        # 21 Agent profile pages and knowledge dossiers
-│   ├── assets/                        # Shared UI assets, fonts, stylesheets, and 3D scripts
-│   │   ├── brand/                     # Golden Z emblems, logos, and favicons
-│   │   ├── mascot/                    # Authentic Lucy and Pantheon mascot portraits
-│   │   ├── vendor/                    # Sovereign Three.js, OrbitControls, and Postprocessing
-│   │   ├── zoth-world.js              # 3D Alchemical sphere with 10k particle stars
-│   │   ├── zoth-three-orb.js          # Kinetic compiler loading orb
-│   │   ├── zoth-theme.css             # Universal 16-brand theme engine
-│   │   └── zoth-nav.js                # Universal persistent navigation drawer & HUD
-│   ├── ax/                            # Agent Experience (AX) specification & endpoints
-│   ├── faqs/                          # Architecture FAQ knowledge base
-│   ├── llms.txt                       # Machine-readable fact sheet for LLMs
-│   └── index.html                     # Master flagship launchpad cockpit
-├── tools/                             # PTY Orchestration & DuckyScript Spawner (:8484)
-│   └── null ai agent tools/
-│       └── local_null_ai_orchestrator/
-│           └── orchestrator.py        # Starlette/Uvicorn PTY backend daemon
-└── docs-and-architecture/             # Architectural blueprints and diagrams
+# Record tool execution
+client.record_tool_run(
+    tool_name="webgen_compiler",
+    status="success",
+    input_summary="Synthesized Astro 5 portfolio layout",
+    output_tail="Build completed in 1.2s",
+    args={"framework": "astro", "pages": 3},
+    category="build"
+)
+
+# Record code modification
+client.record_code_change(
+    file_path="public/assets/zoth-theme.css",
+    change_type="modified",
+    summary="Enhanced dark void cyan/amber contrast ratios",
+    diff_stat="+34 -12 lines",
+    symbols_modified=["--zoth-gold", "--zoth-cyan"]
+)
+
+# Ingest deterministic XML prompt context for LLMs
+prompt_xml = client.get_prompt_context(query="webgen compiler", mode="dual", limit=3)
 ```
 
 ---
 
-## 🚀 Quick Start & Development Runbook
+## 🚀 Development & Verification Loop
 
-### 1. Serve the Workstations
 ```bash
-# Serve public static assets on port 8088
-python3 -m http.server 8088 --directory public
+# 1. Run local dev server with visual annotation sync
+python3 tools/zoth_dev_server.py 8199
+
+# 2. Run deep diagnostics
+zoth doctor
+
+# 3. Benchmark sub-5ms response times
+zoth speed bench
+
+# 4. Audit 135+ HTML pages for 100% asset integrity
+zoth speed audit
 ```
-Access the cockpit at [`http://127.0.0.1:8088/`](http://127.0.0.1:8088/).
-
-### 2. Launch the PTY Orchestrator
-```bash
-python3 "tools/null ai agent tools/local_null_ai_orchestrator/orchestrator.py" serve --host 0.0.0.0 --port 8484 --public --server stdlib
-```
-Access the operator deck at [`http://127.0.0.1:8484/`](http://127.0.0.1:8484/).
-
----
-
-## 💛 Support the forge
-
-The operator OS is **$0** — install, deck, vault, swarm, agents, and BYOK. Patron is optional. NullAI is paid work at nullai.tech. This product is **Zoth Studio**. The vault is never a paywall.
-
-| Door | What it is | CTA |
-| :--- | :--- | :--- |
-| **Operator** | Free local OS. You host the workspace. | [`/#install`](https://zoth.nullai.tech/#install) |
-| **Founder Patron** | Optional funding. Keep Zoth free and sovereign. GitHub Sponsors when live. | [github.com/NullAITech/zoth-studio](https://github.com/NullAITech/zoth-studio) |
-| **NullAI** | Paid services: SLA, hardware, custom foundry. Not a SaaS seat. | [nullai.tech](https://nullai.tech/) |
-
-Full doctrine: [`/pricing/`](https://zoth.nullai.tech/pricing/)
-
----
-
-<div align="center">
-  <img src="public/assets/brand/zoth-golden-z-192.png" width="32" height="32" style="border-radius:6px; vertical-align:middle; border:1px solid #fbbf24;" />
-  <br>
-  <strong>Zoth Studio Core Architecture</strong> · Built with Sovereign Local Privacy
-</div>
-  <small>© 2026 NullAI Tech. Sovereign Open Source Architecture.</small>
-</div>

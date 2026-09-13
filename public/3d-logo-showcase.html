@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoth Studio — Interactive 3D Golden Z Emblem Engine (v2.0 Ultra)</title>
+  <link rel="stylesheet" href="/assets/zoth-theme.css?v=12">
+  <link rel="stylesheet" href="/assets/zoth-nav.css?v=12">
+  <script src="/assets/zoth-theme.js?v=12"></script>
+  <script src="/assets/vendor/three.min.js"></script>
+  <script src="/assets/vendor/OrbitControls.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'"></script>
+  <style>
+    :root {
+      --bg: #05070e;
+      --text: #f8fafc;
+      --gold: #fbbf24;
+      --cyan: #00f0ff;
+      --green: #00ff41;
+      --purple: #c084fc;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 50% 30%, #0d1527 0%, #05070e 65%, #020306 100%);
+      color: var(--text);
+      font-family: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    .stage-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 90px 20px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .hero-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+    }
+    .hero-title {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin: 0 0 10px;
+      background: linear-gradient(135deg, #ffffff 30%, #fbbf24 70%, #00f0ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: 1rem;
+      color: #94a3b8;
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* Main 3D Viewport Stage */
+    .viewport-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 760px;
+      aspect-ratio: 1 / 1;
+      max-height: 600px;
+      border-radius: 32px;
+      background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.08) 0%, rgba(0, 240, 255, 0.04) 40%, rgba(5, 7, 14, 0.95) 80%);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.85), 0 0 60px rgba(251, 191, 36, 0.2), inset 0 0 40px rgba(0, 240, 255, 0.05);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+    .viewport-wrapper:active {
+      cursor: grabbing;
+    }
+    #three-viewport {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Floating Viewport HUD Chrome */
+    .viewport-hud {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .hud-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--cyan);
+      background: rgba(5, 7, 14, 0.7);
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.05em;
+    }
+    .hud-fps {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+
+    /* Master Interactive Control Deck */
+    .control-deck {
+      margin-top: 28px;
+      width: 100%;
+      max-width: 860px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .deck-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px 20px;
+      backdrop-filter: blur(16px);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .deck-card:hover {
+      border-color: rgba(251, 191, 36, 0.3);
+      transform: translateY(-2px);
+    }
+    .deck-card-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .deck-btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .ctrl-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ctrl-btn:hover {
+      background: rgba(251, 191, 36, 0.2);
+      border-color: var(--gold);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .ctrl-btn.active {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.2));
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
+    }
+    .ctrl-btn-primary {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #000;
+      border: none;
+      font-weight: 800;
+    }
+    .ctrl-btn-primary:hover {
+      background: linear-gradient(135deg, #fde047 0%, #fbbf24 100%);
+      color: #000;
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+    }
+
+    /* Sliders */
+    .slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+    }
+    .slider-input {
+      width: 100%;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    /* Technical Spec Matrix */
+    .spec-matrix {
+      margin-top: 32px;
+      width: 100%;
+      max-width: 860px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      background: rgba(5, 7, 14, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 16px 20px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .spec-item strong {
+      color: #e2e8f0;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0f172a;
+      border: 1px solid var(--gold);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(251, 191, 36, 0.3);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- Canonical Zoth Master Topbar -->
+  <header class="bar" id="topbar" role="banner"></header>
+
+  <main class="stage-container">
+    <div class="hero-header">
+      <div class="hero-badge">⚡ Quantum GPU Shader Engine</div>
+      <h1 class="hero-title">Zoth 3D Golden Z Engine</h1>
+      <p class="hero-subtitle">
+        Dual-layer 24K Alchemical Gold PBR armor, 3-tier astrolabe gimbal mechanics, and magnetic quantum stardust vortex physics.
+      </p>
+    </div>
+
+    <div class="viewport-wrapper">
+      <div class="viewport-hud">
+        <span class="hud-tag">PBR VOLUMETRIC SHADER</span>
+        <span class="hud-tag hud-fps" id="fps-display">60.0 FPS</span>
+      </div>
+      <div id="three-viewport"></div>
+    </div>
+
+    <!-- Master Interactive Control Deck -->
+    <div class="control-deck">
+      <!-- 1. Material Presets -->
+      <div class="deck-card">
+        <div class="deck-card-title">🎨 Alchemical Materials</div>
+        <div class="deck-btn-group">
+          <button class="ctrl-btn active" data-mat="gold">✨ 24K Gold</button>
+          <button class="ctrl-btn" data-mat="obsidian">🌌 Cyber Onyx</button>
+          <button class="ctrl-btn" data-mat="matrix">📟 Matrix CRT</button>
+          <button class="ctrl-btn" data-mat="prism">💎 Solar Prism</button>
+          <button class="ctrl-btn" data-mat="damascus">⚔️ Damascus</button>
+          <button class="ctrl-btn" data-mat="claude">🏺 Terracotta</button>
+        </div>
+      </div>
+
+      <!-- 2. Kinematic Actions -->
+      <div class="deck-card">
+        <div class="deck-card-title">⚡ Kinetic Impulses</div>
+        <div class="deck-btn-group">
+          <button class="ctrl-btn active" id="btn-spin">🔄 Auto-Spin: ON</button>
+          <button class="ctrl-btn" id="btn-supernova">💥 Supernova Glint</button>
+          <button class="ctrl-btn" id="btn-wireframe">📐 Wireframe Core</button>
+          <button class="ctrl-btn" id="btn-sound">🔊 Sound FX: ON</button>
+        </div>
+      </div>
+
+      <!-- 3. Deconstruct / Explode Slider -->
+      <div class="deck-card">
+        <div class="deck-card-title">🧩 Geometric Explode Mode</div>
+        <div class="slider-wrap">
+          <div class="slider-label">
+            <span>Armor Separation</span>
+            <strong id="explode-val">0%</strong>
+          </div>
+          <input type="range" class="slider-input" id="slider-explode" min="0" max="100" value="0">
+        </div>
+      </div>
+
+      <!-- 4. 4K Studio Snapshot Export -->
+      <div class="deck-card">
+        <div class="deck-card-title">📸 High-Res Studio Capture</div>
+        <div class="deck-btn-group">
+          <button class="ctrl-btn ctrl-btn-primary" id="btn-export-png">📥 Export 4K PNG (3840×3840)</button>
+          <button class="ctrl-btn" id="btn-reset-cam">🎯 Reset Camera</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Technical Spec Matrix -->
+    <div class="spec-matrix">
+      <div class="spec-item">Geometry: <strong>Beveled Chamfer Vectors (38 Vertices)</strong></div>
+      <div class="spec-item">Core: <strong>Quantum Wireframe Plasma Lattice</strong></div>
+      <div class="spec-item">Astrolabe: <strong>3-Tier Concentric Gimbal Rings</strong></div>
+      <div class="spec-item">Particles: <strong>180-Body Vortex Field</strong></div>
+      <div class="spec-item">Shaders: <strong>MeshStandardMaterial (Metalness 0.96)</strong></div>
+      <div class="spec-item">Reflections: <strong>Procedural Equirectangular Matcap</strong></div>
+    </div>
+  </main>
+
+  <div class="toast-msg" id="toast">📸 4K Studio PNG Exported Successfully!</div>
+
+  <script src="/assets/zoth-3d-logo.js"></script>
+  <script src="/assets/zoth-nav.js" defer></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var container = document.getElementById("three-viewport");
+      if (!container) return;
+
+      var logoInstance = null;
+      var soundEnabled = true;
+
+      function setupLab() {
+        if (typeof window.Zoth3DLogo === "undefined" || typeof THREE === "undefined" || typeof THREE.OrbitControls === "undefined") {
+          setTimeout(setupLab, 50);
+          return;
+        }
+
+        var w = container.clientWidth || 600;
+        var h = container.clientHeight || 600;
+
+        logoInstance = window.Zoth3DLogo.create(container, {
+          size: w,
+          particles: 180,
+          astrolabe: true,
+          sound: soundEnabled,
+          material: "gold",
+          trackGlobalMouse: false
+        });
+
+        // Add OrbitControls to the showcase instance
+        var controls = new THREE.OrbitControls(logoInstance.camera, logoInstance.renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 2.0;
+
+        // Custom FPS Counter
+        var lastTime = performance.now();
+        var frameCount = 0;
+        var fpsElem = document.getElementById("fps-display");
+
+        function loop() {
+          requestAnimationFrame(loop);
+          controls.update();
+
+          frameCount++;
+          var now = performance.now();
+          if (now - lastTime >= 1000) {
+            var fps = (frameCount * 1000) / (now - lastTime);
+            if (fpsElem) fpsElem.textContent = fps.toFixed(1) + " FPS";
+            frameCount = 0;
+            lastTime = now;
+          }
+        }
+        loop();
+
+        // ── Button Handlers ──
+
+        // 1. Material Presets
+        document.querySelectorAll("[data-mat]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            document.querySelectorAll("[data-mat]").forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+            var mat = btn.getAttribute("data-mat");
+            logoInstance.setMaterial(mat);
+            showToast("🎨 Material Swapped: " + (window.Zoth3DLogo.materials[mat]?.name || mat));
+          });
+        });
+
+        // 2. Auto Spin
+        var spinBtn = document.getElementById("btn-spin");
+        spinBtn.addEventListener("click", function () {
+          controls.autoRotate = !controls.autoRotate;
+          spinBtn.classList.toggle("active", controls.autoRotate);
+          spinBtn.textContent = controls.autoRotate ? "🔄 Auto-Spin: ON" : "🔄 Auto-Spin: OFF";
+        });
+
+        // 3. Supernova Glint
+        var superBtn = document.getElementById("btn-supernova");
+        superBtn.addEventListener("click", function () {
+          logoInstance.triggerImpulse();
+          showToast("💥 Supernova Impulse Triggered!");
+        });
+
+        // 4. Wireframe Core
+        var wireBtn = document.getElementById("btn-wireframe");
+        wireBtn.addEventListener("click", function () {
+          var on = logoInstance.toggleWireframe();
+          wireBtn.classList.toggle("active", on);
+          showToast(on ? "📐 Wireframe Mode: Active" : "✨ Solid PBR Armor: Active");
+        });
+
+        // 5. Sound FX Toggle
+        var soundBtn = document.getElementById("btn-sound");
+        soundBtn.addEventListener("click", function () {
+          soundEnabled = !soundEnabled;
+          logoInstance.interactiveSound = soundEnabled;
+          soundBtn.classList.toggle("active", soundEnabled);
+          soundBtn.textContent = soundEnabled ? "🔊 Sound FX: ON" : "🔇 Sound FX: OFF";
+          showToast(soundEnabled ? "🔊 Resonant Audio FX Enabled" : "🔇 Audio FX Muted");
+        });
+
+        // 6. Explode Slider
+        var slider = document.getElementById("slider-explode");
+        var explodeVal = document.getElementById("explode-val");
+        slider.addEventListener("input", function (e) {
+          var val = parseFloat(e.target.value) / 100;
+          logoInstance.setExplode(val);
+          explodeVal.textContent = Math.round(val * 100) + "%";
+        });
+
+        // 7. 4K PNG Capture
+        var exportBtn = document.getElementById("btn-export-png");
+        exportBtn.addEventListener("click", function () {
+          showToast("⏳ Rendering Transparent 4K Studio Snapshot...");
+          setTimeout(function () {
+            var dataUrl = logoInstance.capturePNG(3840, 3840);
+            var a = document.createElement("a");
+            a.href = dataUrl;
+            a.download = "zoth-studio-3d-golden-z-4k.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("📸 4K Studio PNG Downloaded!");
+          }, 50);
+        });
+
+        // 8. Reset Camera
+        var resetBtn = document.getElementById("btn-reset-cam");
+        resetBtn.addEventListener("click", function () {
+          logoInstance.camera.position.set(0, 0, 8.5);
+          controls.target.set(0, 0, 0);
+          controls.update();
+        });
+
+        // Resize Listener
+        window.addEventListener("resize", function () {
+          var nw = container.clientWidth || 600;
+          var nh = container.clientHeight || 600;
+          logoInstance.camera.aspect = nw / nh;
+          logoInstance.camera.updateProjectionMatrix();
+          logoInstance.renderer.setSize(nw, nh);
+        });
+      }
+
+      setupLab();
+
+      function showToast(msg) {
+        var toast = document.getElementById("toast");
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.classList.add("show");
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(function () {
+          toast.classList.remove("show");
+        }, 2200);
+      }
+    });
+  </script>
+</body>
+</html>

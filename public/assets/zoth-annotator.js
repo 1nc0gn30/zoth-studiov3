@@ -240,9 +240,10 @@
   function initUI() {
     ensureStyles();
 
-    // 1. Floating HUD Pill
+    // 1. Floating HUD Pill (Hidden by default - annotator is triggered via navbar Annotate button / Shift+A)
     pillEl = document.createElement('div');
     pillEl.id = 'zoth-annotator-pill';
+    pillEl.style.display = 'none';
     pillEl.setAttribute('role', 'button');
     pillEl.setAttribute('title', 'Click or press Ctrl+Alt+A to annotate & review notes');
     pillEl.innerHTML = `
@@ -252,7 +253,6 @@
       <span class="za-pill-keybind">Ctrl+Alt+A</span>
     `;
     pillEl.addEventListener('click', () => toggleAnnotationMode());
-    document.body.appendChild(pillEl);
 
     // 2. Toolbar
     toolbarEl = document.createElement('div');
