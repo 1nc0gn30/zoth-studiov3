@@ -18,6 +18,7 @@
     { id: 'nexus3d', icon: '📐', label: 'Nexus 3D', desc: 'CAD-Grade 3D Omniverse Viewport', href: '/studio/nexus-3d.html' },
     { id: 'omnipost', icon: '🎬', label: 'OmniPost Video', desc: '60 FPS Social Video & Motion Studio', href: '/studio/omnipost.html' },
     { id: 'swarm', icon: '🌐', label: '3D Swarm Arena', desc: 'Kinetic WebGL Battle Arena', href: '/studio/swarm.html' },
+    { id: 'memory', icon: '🧠', label: 'Netrunner Memory', desc: 'Biomorphic Neural Stratum & Lucy Oracle', href: '/studio/netrunner-memory.html' },
     { id: 'vault', icon: '🔐', label: 'Sovereign Vault', desc: 'Argon2id Secrets & Keyrings', href: '/vault/' },
     { id: 'web3', icon: '🪙', label: 'Web3 Solana', desc: 'DeFi Hub, Live SOL Ticker & Matrix', href: '/studio/web3-hub.html' },
     { id: 'divider', isDivider: true },
