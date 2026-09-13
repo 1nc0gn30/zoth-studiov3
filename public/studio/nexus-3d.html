@@ -3264,22 +3264,54 @@
           });
         }
 
+        // Reflective Ground Shadow Plane & Grid Floor
+        const shadowPlaneGeo = new THREE.PlaneGeometry(36, 36);
+        const shadowPlaneMat = new THREE.MeshStandardMaterial({
+          color: 0x050711,
+          roughness: 0.15,
+          metalness: 0.85,
+          transparent: true,
+          opacity: 0.88
+        });
+        const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
+        shadowPlane.rotation.x = -Math.PI / 2;
+        shadowPlane.position.y = -0.015;
+        shadowPlane.receiveShadow = true;
+        scene.add(shadowPlane);
+
         // Grid & Platform
         gridHelper = new THREE.GridHelper(24, 24, 0x00e5ff, 0x1f293d);
         gridHelper.position.y = -0.01;
         scene.add(gridHelper);
 
-        // Ambient & Key Lights
-        ambLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Studio-Grade 3-Point PBR Softbox Lighting
+        ambLight = new THREE.AmbientLight(0xdbeafe, 0.85);
         scene.add(ambLight);
 
-        dirLight = new THREE.DirectionalLight(0x00e5ff, 2.0);
-        dirLight.position.set(10, 15, 10);
+        // 1. Key Softbox Light (Warm Electric Cyan)
+        dirLight = new THREE.DirectionalLight(0x00e5ff, 2.6);
+        dirLight.position.set(12, 18, 12);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.bias = -0.0001;
+        dirLight.shadow.camera.near = 1;
+        dirLight.shadow.camera.far = 60;
+        dirLight.shadow.camera.left = -12;
+        dirLight.shadow.camera.right = 12;
+        dirLight.shadow.camera.top = 12;
+        dirLight.shadow.camera.bottom = -12;
         scene.add(dirLight);
 
-        fillLight = new THREE.DirectionalLight(0xd946ef, 1.5);
-        fillLight.position.set(-10, 10, -10);
+        // 2. Fill Softbox Light (Cool Magenta / Purple)
+        fillLight = new THREE.DirectionalLight(0xd946ef, 1.8);
+        fillLight.position.set(-14, 12, -14);
         scene.add(fillLight);
+
+        // 3. Rim / Kicker Softbox Light (High-Glance Alchemical Gold)
+        const rimLight = new THREE.DirectionalLight(0xfbbf24, 2.2);
+        rimLight.position.set(0, 16, -18);
+        scene.add(rimLight);
 
         // Ambient Particle System
         initParticleSystem();

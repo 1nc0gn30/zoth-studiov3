@@ -26,16 +26,17 @@
 <!-- OpenGraph / Facebook -->
 <!-- Twitter Cards -->
 <meta content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" name="robots"/>
-<!-- Fast Local Three.js + OrbitControls (0ms load on loopback) -->
-<script defer="" src="/assets/vendor/three.min.js"></script>
-<script defer="" src="/assets/vendor/OrbitControls.js"></script>
-<script defer="" src="/assets/vendor/GLTFLoader.js"></script>
-<script>
-    if (typeof THREE === "undefined") {
-      document.write('\x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">\x3C/script>');
-      document.write('\x3Cscript src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js">\x3C/script>');
-    }
-  </script>
+<!-- Fast Local Three.js + Postprocessing + OrbitControls -->
+<script src="/assets/vendor/three.min.js"></script>
+<script src="/assets/vendor/OrbitControls.js"></script>
+<script src="/assets/vendor/GLTFLoader.js"></script>
+<script src="/assets/vendor/CopyShader.js"></script>
+<script src="/assets/vendor/Pass.js"></script>
+<script src="/assets/vendor/ShaderPass.js"></script>
+<script src="/assets/vendor/RenderPass.js"></script>
+<script src="/assets/vendor/LuminosityHighPassShader.js"></script>
+<script src="/assets/vendor/UnrealBloomPass.js"></script>
+<script src="/assets/vendor/EffectComposer.js"></script>
 <link href="/assets/zoth-annotator.css" rel="stylesheet"/>
 <style>
         .skip-to-content, .skip-link, .skip {
@@ -2763,7 +2764,47 @@
       halo.position.y = 1.35;
       group.add(halo);
 
-      return { group, frame: frameMesh, halo, ring: baseRing };
+      // 5. Volumetric Energy Shield Sphere (Pulsing Plasma Shield)
+      const shieldGeo = new THREE.SphereGeometry(1.22, 24, 18);
+      const shieldMat = new THREE.MeshStandardMaterial({
+        color: agent.color,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.28,
+        emissive: agent.color,
+        emissiveIntensity: 0.6,
+        roughness: 0.1,
+        metalness: 0.9,
+        blending: THREE.AdditiveBlending
+      });
+      const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+      shieldMesh.position.y = 1.35;
+      group.add(shieldMesh);
+
+      // 6. Kinetic Thruster Particle Ring at Base
+      const thrusterGeo = new THREE.BufferGeometry();
+      const thrusterCount = 32;
+      const thrusterPositions = new Float32Array(thrusterCount * 3);
+      for (let i = 0; i < thrusterCount; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const rad = 0.3 + Math.random() * 0.45;
+        thrusterPositions[i * 3] = Math.cos(ang) * rad;
+        thrusterPositions[i * 3 + 1] = -Math.random() * 0.5;
+        thrusterPositions[i * 3 + 2] = Math.sin(ang) * rad;
+      }
+      thrusterGeo.setAttribute('position', new THREE.BufferAttribute(thrusterPositions, 3));
+      const thrusterMat = new THREE.PointsMaterial({
+        color: agent.color,
+        size: 0.08,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending
+      });
+      const thrusterPoints = new THREE.Points(thrusterGeo, thrusterMat);
+      thrusterPoints.position.y = 0.1;
+      group.add(thrusterPoints);
+
+      return { group, frame: frameMesh, halo, ring: baseRing, shield: shieldMesh, thruster: thrusterPoints };
     }
 
     // Central Quantum Nexus Orb & Triple Gyroscope
@@ -3151,6 +3192,29 @@
       const initialTheme = (window.getZothTheme ? window.getZothTheme() : (document.documentElement.getAttribute('data-theme') || 'dark'));
       applySwarmTheme(initialTheme);
 
+      // Post-Processing Composer (UnrealBloomPass)
+      let swarmComposer = null;
+      let swarmBloomPass = null;
+      if (typeof THREE.EffectComposer === 'function' && typeof THREE.RenderPass === 'function') {
+        try {
+          swarmComposer = new THREE.EffectComposer(renderer);
+          const rp = new THREE.RenderPass(scene, camera);
+          swarmComposer.addPass(rp);
+          if (typeof THREE.UnrealBloomPass === 'function') {
+            swarmBloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(w, h), 1.25, 0.55, 0.42);
+            swarmComposer.addPass(swarmBloomPass);
+          }
+        } catch (e) {
+          swarmComposer = null;
+        }
+      }
+
+      // Dynamic Camera Tracking State
+      let activeTrackingTarget = null;
+      window.setSwarmTrackingTarget = function(vec) {
+        activeTrackingTarget = vec;
+      };
+
       // 60 FPS Render Loop with Visibility-Aware Throttling
       let isSwarmRunning = true;
       let swarmRafId = 0;
@@ -3168,7 +3232,12 @@
       function animate() {
         if (!isSwarmRunning) return;
         swarmRafId = requestAnimationFrame(animate);
-        if (controls) controls.update();
+        if (controls) {
+          if (activeTrackingTarget) {
+            controls.target.lerp(activeTrackingTarget, 0.04);
+          }
+          controls.update();
+        }
 
         const t = Date.now() * 0.001;
 
@@ -3199,6 +3268,15 @@
             m.halo.rotation.x = Math.sin(t * 2.0) * 0.2;
           }
           if (m.ring) m.ring.rotation.z += 0.02;
+          if (m.shield) {
+            m.shield.rotation.y = -t * 0.8;
+            m.shield.rotation.x = Math.sin(t * 1.5) * 0.15;
+            const pulseScale = 1.0 + Math.sin(t * 3.5 + (m.group.position.x || 0)) * 0.06;
+            m.shield.scale.set(pulseScale, pulseScale, pulseScale);
+          }
+          if (m.thruster) {
+            m.thruster.rotation.y += 0.04;
+          }
           m.group.position.y = (AGENTS[key] ? AGENTS[key].pos.y : 1.2) + Math.sin(t * 2.5 + m.group.position.x) * 0.15;
         }
 
@@ -3206,7 +3284,11 @@
           b.update(boids);
         }
 
-        renderer.render(scene, camera);
+        if (swarmComposer) {
+          swarmComposer.render();
+        } else {
+          renderer.render(scene, camera);
+        }
       }
       swarmRafId = requestAnimationFrame(animate);
 
@@ -3219,6 +3301,8 @@
           camera.aspect = width / height;
           camera.updateProjectionMatrix();
           renderer.setSize(width, height);
+          if (swarmComposer) swarmComposer.setSize(width, height);
+          if (swarmBloomPass) swarmBloomPass.setSize(width, height);
         }
       }
 
@@ -3232,19 +3316,64 @@
     function createLaserBeam(fromVec, toVec, hexColor = 0x00f0ff) {
       if (!scene || typeof THREE === 'undefined' || !fromVec || !toVec) return;
       try {
-        const p1 = (fromVec.clone ? fromVec.clone() : new THREE.Vector3(0, 0, 0)).add(new THREE.Vector3(0, 0.8, 0));
-        const p2 = (toVec.clone ? toVec.clone() : new THREE.Vector3(0, 0, 0)).add(new THREE.Vector3(0, 0.8, 0));
+        const p1 = (fromVec.clone ? fromVec.clone() : new THREE.Vector3(0, 0, 0)).add(new THREE.Vector3(0, 1.35, 0));
+        const p2 = (toVec.clone ? toVec.clone() : new THREE.Vector3(0, 0, 0)).add(new THREE.Vector3(0, 1.35, 0));
 
-        const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-        const mat = new THREE.LineBasicMaterial({ color: hexColor, linewidth: 3, transparent: true, opacity: 0.9 });
-        const line = new THREE.Line(geo, mat);
-        scene.add(line);
+        const dist = p1.distanceTo(p2);
+        const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+
+        const beamGroup = new THREE.Group();
+
+        // 1. Core Glowing Laser Cylinder
+        const coreGeo = new THREE.CylinderGeometry(0.035, 0.035, dist, 8);
+        const coreMat = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.95,
+          blending: THREE.AdditiveBlending
+        });
+        const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+        coreMesh.position.copy(mid);
+        coreMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p2.clone().sub(p1).normalize());
+        beamGroup.add(coreMesh);
+
+        // 2. Volumetric Outer Aura Cylinder
+        const auraGeo = new THREE.CylinderGeometry(0.12, 0.12, dist, 8);
+        const auraMat = new THREE.MeshBasicMaterial({
+          color: hexColor,
+          transparent: true,
+          opacity: 0.45,
+          blending: THREE.AdditiveBlending
+        });
+        const auraMesh = new THREE.Mesh(auraGeo, auraMat);
+        auraMesh.position.copy(mid);
+        auraMesh.quaternion.copy(coreMesh.quaternion);
+        beamGroup.add(auraMesh);
+
+        // 3. Impact Flare at Target
+        const flareGeo = new THREE.SphereGeometry(0.3, 12, 12);
+        const flareMat = new THREE.MeshBasicMaterial({
+          color: hexColor,
+          transparent: true,
+          opacity: 0.85,
+          blending: THREE.AdditiveBlending
+        });
+        const flare = new THREE.Mesh(flareGeo, flareMat);
+        flare.position.copy(p2);
+        beamGroup.add(flare);
+
+        scene.add(beamGroup);
+
+        // Smooth Dynamic Camera Tracking toward engaged agent
+        if (typeof window.setSwarmTrackingTarget === 'function') {
+          window.setSwarmTrackingTarget(p2.clone());
+        }
 
         playLaserSound();
 
         setTimeout(() => {
-          if (scene) scene.remove(line);
-        }, 1800);
+          if (scene) scene.remove(beamGroup);
+        }, 1200);
       } catch(e) {}
     }
 

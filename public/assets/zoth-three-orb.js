@@ -547,12 +547,27 @@
       torus.rotation.x = Math.PI / 3 + Math.sin(elapsed * 0.5) * 0.2 + physics.currentRotX * 0.5;
 
       goldRing.rotation.x = elapsed * -0.55 + physics.currentRotX * 0.7;
-      goldRing.rotation.y = Math.PI / 4 + Math.cos(elapsed * 0.4) * 0.25 + physics.currentRotY * 0.6;
+      // 2. Audio-Reactive Pulse & Breathing Modulation
+      var audioPulse = 0.0;
+      if (typeof window !== 'undefined') {
+        if (window.ZothAudioFX && typeof window.ZothAudioFX.getAudioLevel === 'function') {
+          audioPulse = window.ZothAudioFX.getAudioLevel();
+        } else if (window.zothWorldApp && window.zothWorldApp.audio && typeof window.zothWorldApp.audio.getAudioLevel === 'function') {
+          audioPulse = window.zothWorldApp.audio.getAudioLevel();
+        }
+      }
 
-      // 2. Update Fluid Plasma Shader Uniforms
+      // Floating breathing idle oscillation & scale pulse
+      var breathing = Math.sin(elapsed * 1.8) * 0.05 + audioPulse * 0.12;
+      orbGroup.position.y = breathing;
+      var currentScale = 1.0 + breathing * 0.4 + physics.inertiaSurge * 0.08;
+      orbGroup.scale.set(currentScale, currentScale, currentScale);
+
+      // 3. Update Fluid Plasma Shader Uniforms
       plasmaUniforms.uTime.value = elapsed;
       plasmaUniforms.uPointerVelocity.value = physics.pointerVelocity;
-      plasmaUniforms.uInertiaSurge.value = physics.inertiaSurge;
+      plasmaUniforms.uInertiaSurge.value = physics.inertiaSurge + audioPulse * 0.8;
+      plasmaUniforms.uFrequency.value = 2.2 + audioPulse * 1.4;
 
       // Smooth color lerping on shader uniforms & torus rings
       var lerpFactor = Math.min(delta * 4.0, 1.0);
@@ -566,15 +581,15 @@
       goldRingMat.color.lerp(targetTorusB, lerpFactor);
       goldRingMat.opacity += (targetPal.torusBOpacity - goldRingMat.opacity) * lerpFactor;
 
-      // 3. Dynamic Particle Breathing & Swirl
-      var pulse = 1.0 + Math.sin(elapsed * 2.6) * 0.05 + physics.inertiaSurge * 0.08;
+      // 4. Dynamic Particle Breathing & Swirl
+      var pulse = 1.0 + Math.sin(elapsed * 2.6) * 0.05 + physics.inertiaSurge * 0.08 + audioPulse * 0.18;
       particles.scale.set(pulse, pulse, pulse);
 
       var pPositions = particleGeo.attributes.position.array;
       for (var k = 0; k < particleCount; k++) {
-        var baseAngle = particleAngles[k] + particleSpeeds[k] * delta * (1.0 + physics.inertiaSurge * 2.0);
+        var baseAngle = particleAngles[k] + particleSpeeds[k] * delta * (1.0 + physics.inertiaSurge * 2.0 + audioPulse * 1.5);
         particleAngles[k] = baseAngle;
-        var rK = particleRadii[k] + Math.sin(elapsed * 3.0 + k) * 0.04;
+        var rK = particleRadii[k] + Math.sin(elapsed * 3.0 + k) * 0.04 + audioPulse * 0.08;
         pPositions[k * 3] = Math.cos(baseAngle) * rK;
         pPositions[k * 3 + 2] = Math.sin(baseAngle) * rK;
       }

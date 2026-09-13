@@ -1023,6 +1023,66 @@
         this.controls.target.set(0, 2, 0);
       }
 
+      // Studio-Grade Postprocessing Pipeline (UnrealBloomPass + Chromatic Aberration)
+      this.composer = null;
+      this.bloomPass = null;
+      if (typeof THREE.EffectComposer === 'function' && typeof THREE.RenderPass === 'function') {
+        try {
+          this.composer = new THREE.EffectComposer(this.renderer);
+          const renderPass = new THREE.RenderPass(this.scene, this.camera);
+          this.composer.addPass(renderPass);
+
+          if (typeof THREE.UnrealBloomPass === 'function') {
+            this.bloomPass = new THREE.UnrealBloomPass(
+              new THREE.Vector2(window.innerWidth, window.innerHeight),
+              1.15, // strength
+              0.65, // radius
+              0.38  // threshold
+            );
+            this.composer.addPass(this.bloomPass);
+          }
+
+          // Subtle Chromatic Aberration Shader Pass for cinematic cyber sheen
+          const ChromaticAberrationShader = {
+            uniforms: {
+              tDiffuse: { value: null },
+              uOffset: { value: new THREE.Vector2(0.0018, 0.0018) },
+              uDarkness: { value: 0.12 }
+            },
+            vertexShader: [
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vUv = uv;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform sampler2D tDiffuse;',
+              'uniform vec2 uOffset;',
+              'uniform float uDarkness;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vec2 distFromCenter = vUv - 0.5;',
+              '  vec2 offset = uOffset * length(distFromCenter);',
+              '  float r = texture2D(tDiffuse, vUv + offset).r;',
+              '  float g = texture2D(tDiffuse, vUv).g;',
+              '  float b = texture2D(tDiffuse, vUv - offset).b;',
+              '  float a = texture2D(tDiffuse, vUv).a;',
+              '  float vignette = 1.0 - dot(distFromCenter, distFromCenter) * uDarkness;',
+              '  gl_FragColor = vec4(vec3(r, g, b) * vignette, a);',
+              '}'
+            ].join('\n')
+          };
+          if (typeof THREE.ShaderPass === 'function') {
+            this.chromaticPass = new THREE.ShaderPass(ChromaticAberrationShader);
+            this.composer.addPass(this.chromaticPass);
+          }
+        } catch (e) {
+          console.warn("ZothWorld post-processing fallback to direct renderer:", e);
+          this.composer = null;
+        }
+      }
+
       this.setupLighting();
     }
 
@@ -1804,6 +1864,12 @@
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      if (this.composer) {
+        this.composer.setSize(window.innerWidth, window.innerHeight);
+      }
+      if (this.bloomPass) {
+        this.bloomPass.setSize(window.innerWidth, window.innerHeight);
+      }
     }
 
     handleThemeChange(e) {
@@ -1822,6 +1888,17 @@
         const hit = intersects[0].object;
         const pet = hit.userData.petData;
 
+        // Visual hover glow reaction on hit pet
+        this.petMeshes.forEach(p => {
+          if (p.id === pet.id) {
+            p.orbRing.scale.set(1.25, 1.25, 1.25);
+            p.orbRing.material.opacity = 0.95;
+          } else {
+            p.orbRing.scale.set(1.0, 1.0, 1.0);
+            p.orbRing.material.opacity = 0.65;
+          }
+        });
+
         if (this.hoveredPet !== pet) {
           this.hoveredPet = pet;
           this.audio.playChime(640, 'sine', 0.15);
@@ -1836,6 +1913,12 @@
         }
         document.body.style.cursor = 'pointer';
       } else {
+        if (this.hoveredPet) {
+          this.petMeshes.forEach(p => {
+            p.orbRing.scale.set(1.0, 1.0, 1.0);
+            p.orbRing.material.opacity = 0.75;
+          });
+        }
         this.hoveredPet = null;
         if (reticle) reticle.style.display = 'none';
         document.body.style.cursor = 'default';
@@ -2493,8 +2576,40 @@
       // 12. Update Radar Canvas
       this.drawRadar();
 
-      // 13. Render 3D Scene
-      this.renderer.render(this.scene, this.camera);
+      // 13. Render 3D Scene with Postprocessing or Direct Fallback
+      if (this.composer) {
+        this.composer.render();
+      } else if (this.renderer && this.scene && this.camera) {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    // Comprehensive WebGL lifecycle cleanup and memory disposal
+    dispose() {
+      if (this.controls) this.controls.dispose();
+      if (this.starInstancedMesh) {
+        if (this.starInstancedMesh.geometry) this.starInstancedMesh.geometry.dispose();
+        if (this.starInstancedMesh.material) this.starInstancedMesh.material.dispose();
+      }
+      this.petMeshes.forEach(p => {
+        p.group.traverse(obj => {
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) {
+            if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+            else obj.material.dispose();
+          }
+        });
+      });
+      if (this.iridescentMaterial) this.iridescentMaterial.dispose();
+      if (this.proceduralNormalMap) this.proceduralNormalMap.dispose();
+      if (this.composer) {
+        if (this.bloomPass && this.bloomPass.dispose) this.bloomPass.dispose();
+      }
+      if (this.renderer) {
+        this.renderer.dispose();
+        if (this.renderer.forceContextLoss) this.renderer.forceContextLoss();
+      }
+      if (this.audio && this.audio.stop) this.audio.stop();
     }
   }
 

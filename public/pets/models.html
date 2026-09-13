@@ -1683,10 +1683,67 @@
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     }
-    window.addEventListener("resize", handleResize, { passive: true });
-    if (window.ResizeObserver) {
-      new ResizeObserver(handleResize).observe(container);
+    // 60 FPS Master Animation & Physics Render Loop
+    const clock = new THREE.Clock();
+    let isRunning = true;
+
+    document.addEventListener("visibilitychange", () => {
+      isRunning = !document.hidden;
+      if (isRunning && clock) clock.getDelta();
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!isRunning) return;
+
+      const delta = clock.getDelta();
+      const time = clock.getElapsedTime();
+
+      // Smooth camera interpolation
+      camera.position.lerp(targetCamPos, 0.08);
+      camera.lookAt(targetLookAt);
+
+      if (petFigure && petFigure.group) {
+        // Floating breathing idle animation
+        const breathing = Math.sin(time * 2.0) * 0.04;
+        petFigure.group.position.y = breathing;
+
+        if (autoRotate && !isDragging) {
+          petFigure.group.rotation.y += 0.008;
+        }
+      }
+
+      if (petFigure && petFigure.tick) {
+        petFigure.tick(time, delta);
+      }
+
+      ring.rotation.z += 0.008;
+      drawSpectrum();
+
+      renderer.render(scene, camera);
     }
+    animate();
+
+    // Dynamic 16-Brand Theme Synchronization
+    window.addEventListener("zoth-theme-change", (e) => {
+      const themeId = (e && e.detail && e.detail.theme) ? e.detail.theme : (window.getZothTheme ? window.getZothTheme() : "dark");
+      if (themeId === "matrix") {
+        if (rimLight) rimLight.color.setHex(0x00ff66);
+        if (ring) ring.material.color.setHex(0x00ff66);
+      } else if (themeId === "gold") {
+        if (rimLight) rimLight.color.setHex(0xfbbf24);
+        if (ring) ring.material.color.setHex(0xfbbf24);
+      } else if (themeId === "synthwave") {
+        if (rimLight) rimLight.color.setHex(0xff2a85);
+        if (ring) ring.material.color.setHex(0xff2a85);
+      } else if (themeId === "light") {
+        if (rimLight) rimLight.color.setHex(0x0284c7);
+        if (ring) ring.material.color.setHex(0x0284c7);
+      } else {
+        if (rimLight) rimLight.color.setHex(0x00f0ff);
+        if (ring) ring.material.color.setHex(0x00f0ff);
+      }
+    });
 
     // Burger Drawer Toggle
     </script>
