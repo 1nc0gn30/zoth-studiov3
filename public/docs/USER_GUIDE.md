@@ -123,6 +123,20 @@ curl -X POST http://127.0.0.1:8686/api/vault/retrieve \
 
 ---
 
+## 💛 6. Support the forge (`/pricing/`)
+
+The operator OS is **$0**. Install, deck, vault, swarm, agents, and BYOK run on your hardware. Patron is optional funding. Studio is paid work. Nothing here is a SaaS seat, and the vault is never locked behind a plan.
+
+| Door | What it is | Where |
+| :--- | :--- | :--- |
+| **Operator** | Free local OS. Primary conversion is install. | [`/#install`](/#install) |
+| **Founder Patron** | Optional funding. Keep Zoth free and sovereign. GitHub Sponsors when live. | [GitHub](https://github.com/NullAITech/zoth-studio) |
+| **NullAI Studio** | Paid services: SLA, hardware, custom foundry. | [nullai.tech](https://nullai.tech/) |
+
+Doctrine, never-pay list (keys, inference, telemetry), and FAQ: [`/pricing/`](/pricing/).
+
+---
+
 <div align="center">
   <img src="/assets/mascot/azoth-mask.jpg" width="30" height="30" style="border-radius:50%; vertical-align:middle; border:1px solid #e8c872;" />
   <br>

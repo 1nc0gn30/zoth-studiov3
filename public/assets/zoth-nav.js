@@ -183,6 +183,50 @@
     });
   }
 
+  function injectSupportPatronLinks() {
+    function makeLink(kind) {
+      var a = document.createElement("a");
+      a.setAttribute("href", "/pricing/");
+      if (kind === "footer") {
+        a.className = "mega-footer-link";
+        a.innerHTML = "<span>💛</span> Support / Patron";
+      } else {
+        if (kind === "drawer") a.className = "drawer-link";
+        a.innerHTML = "<strong>💛 Support / Patron</strong><small>Keep Zoth free and sovereign</small>";
+      }
+      return a;
+    }
+
+    document.querySelectorAll("nav.menu .nav-dropdown, header.bar .nav-dropdown").forEach(function (dd) {
+      var btn = dd.querySelector(".nav-dropdown-btn");
+      if (!btn) return;
+      var label = btn.textContent || "";
+      if (label.indexOf("Docs") === -1 || label.indexOf("Vault") === -1) return;
+      var menu = dd.querySelector(".nav-dropdown-menu");
+      if (!menu || menu.querySelector('a[href="/pricing/"]')) return;
+      menu.appendChild(makeLink("dropdown"));
+    });
+
+    var drawerEl = document.getElementById("drawer") || document.querySelector("nav.drawer");
+    if (drawerEl && !drawerEl.querySelector('a[href="/pricing/"]')) {
+      var docsSection = null;
+      drawerEl.querySelectorAll(".drawer-heading").forEach(function (h) {
+        var t = h.textContent || "";
+        if (/Codex|Docs|Research|Security/.test(t)) docsSection = h.parentElement;
+      });
+      if (docsSection) docsSection.appendChild(makeLink("drawer"));
+    }
+
+    var footer = document.querySelector("footer.site");
+    if (footer && !footer.querySelector('a[href="/pricing/"]')) {
+      footer.querySelectorAll(".foot-col").forEach(function (col) {
+        var h3 = col.querySelector("h3");
+        if (!h3 || (h3.textContent || "").indexOf("Resources") === -1) return;
+        col.appendChild(makeLink("footer"));
+      });
+    }
+  }
+
   // ── 4. Main Navigation & Mobile Drawer Constructor ──
   function initUniversalNav() {
     initProgressBar();
@@ -550,6 +594,7 @@
     }
 
     drawer.innerHTML = masterDrawerHtml;
+    injectSupportPatronLinks();
 
     // Mobile Theme Live Search Filter
     var drawerThemeSearch = drawer.querySelector(".drawer-theme-search-input");

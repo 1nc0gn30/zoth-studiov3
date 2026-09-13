@@ -100,6 +100,20 @@ Access the operator deck at [`http://127.0.0.1:8484/`](http://127.0.0.1:8484/).
 
 ---
 
+## 💛 Support the forge
+
+The operator OS is **$0** — install, deck, vault, swarm, agents, and BYOK. Patron is optional. Studio is paid work. The vault is never a paywall.
+
+| Door | What it is | CTA |
+| :--- | :--- | :--- |
+| **Operator** | Free local OS. You host the workspace. | [`/#install`](https://zoth.nullai.tech/#install) |
+| **Founder Patron** | Optional funding. Keep Zoth free and sovereign. GitHub Sponsors when live. | [github.com/NullAITech/zoth-studio](https://github.com/NullAITech/zoth-studio) |
+| **NullAI Studio** | Paid services: SLA, hardware, custom foundry. Not a SaaS seat. | [nullai.tech](https://nullai.tech/) |
+
+Full doctrine: [`/pricing/`](https://zoth.nullai.tech/pricing/)
+
+---
+
 <div align="center">
   <img src="public/assets/brand/zoth-golden-z-192.png" width="32" height="32" style="border-radius:6px; vertical-align:middle; border:1px solid #fbbf24;" />
   <br>

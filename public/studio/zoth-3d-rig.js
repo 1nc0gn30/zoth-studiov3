@@ -26,27 +26,40 @@
     opts = opts || {};
     var THREE = root.THREE;
     if (!scene || !THREE) return null;
-    var radius = opts.radius || 16;
+    var maze = !!opts.maze;
+    var cell = opts.cellSize || (maze ? 340 : 16);
+    var radius = opts.radius || (maze ? cell : 16);
 
-    var hemi = new THREE.HemisphereLight(0xb7d4ff, 0x12080c, opts.hemi || 0.48);
+    var hemi = new THREE.HemisphereLight(0xb7d4ff, 0x12080c, opts.hemi || (maze ? 0.9 : 0.48));
     scene.add(hemi);
 
-    var key = new THREE.SpotLight(opts.keyColor || CYAN, opts.keyIntensity || 2.2, 90, Math.PI / 4.6, 0.42, 1.05);
-    key.position.set(9, 18, 11);
-    key.castShadow = true;
+    var key = new THREE.SpotLight(
+      opts.keyColor || CYAN,
+      opts.keyIntensity || (maze ? 2.8 : 2.2),
+      maze ? cell * 2.4 : 90,
+      maze ? Math.PI / 3.4 : Math.PI / 4.6,
+      0.42,
+      maze ? 1.05 : 1.05
+    );
+    if (maze) key.position.set(cell * 0.28, cell * 0.42, cell * 0.22);
+    else key.position.set(9, 18, 11);
+    key.castShadow = !maze;
     if (key.shadow) {
       key.shadow.mapSize.set(1024, 1024);
       key.shadow.bias = -0.00015;
     }
     scene.add(key);
     scene.add(key.target);
+    if (maze) key.target.position.set(0, opts.altarY != null ? opts.altarY : -cell * 0.35, 0);
 
-    var rim = new THREE.DirectionalLight(GOLD, opts.rimIntensity || 1.55);
-    rim.position.set(-14, 11, -18);
+    var rim = new THREE.DirectionalLight(GOLD, opts.rimIntensity || (maze ? 0.48 : 1.55));
+    if (maze) rim.position.set(-cell * 0.45, cell * 0.38, -cell * 0.55);
+    else rim.position.set(-14, 11, -18);
     scene.add(rim);
 
-    var kick = new THREE.PointLight(0x7c5cff, 0.55, 28, 2);
-    kick.position.set(0, 4.2, 0);
+    var kick = new THREE.PointLight(0x7c5cff, maze ? 1.7 : 0.55, maze ? cell * 1.15 : 28, 2);
+    if (maze) kick.position.set(0, opts.altarY != null ? opts.altarY : -cell / 2 + 72, 0);
+    else kick.position.set(0, 4.2, 0);
     scene.add(kick);
 
     var floor = null;
@@ -107,9 +120,13 @@
       }
     } catch (err) {}
 
-    if (!scene.fog) scene.fog = new THREE.FogExp2(0x05060a, 0.028);
+    if (maze) {
+      scene.fog = new THREE.FogExp2(opts.fogColor || 0x05070f, opts.fogDensity != null ? opts.fogDensity : 0.0018);
+    } else if (!scene.fog) {
+      scene.fog = new THREE.FogExp2(0x05060a, 0.028);
+    }
 
-    return { hemi: hemi, key: key, rim: rim, floor: floor, ring: ring };
+    return { hemi: hemi, key: key, rim: rim, kick: kick, floor: floor, ring: ring };
   }
 
   function introDolly(camera, controls, opts) {

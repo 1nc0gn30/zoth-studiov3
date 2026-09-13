@@ -24,7 +24,7 @@
 <script src="/assets/vendor/LuminosityHighPassShader.js"></script>
 <script src="/assets/vendor/UnrealBloomPass.js"></script>
 <script src="/assets/vendor/EffectComposer.js"></script>
-<script src="/studio/zoth-3d-rig.js?v=20260913"></script>
+<script src="/studio/zoth-3d-rig.js?v=20260913c"></script>
 <style>
 :root {
   --bg: #050508;
@@ -476,6 +476,53 @@ footer.site {
 @keyframes scannerSweep {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
+}
+body.maze-open .pet-hud-trigger,
+body.maze-open #pet-hud,
+body.maze-open #zoth-pet-hud {
+  display: none !important;
+}
+#hudCrosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1075;
+  pointer-events: none;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+#hudCrosshair .cyber-reticle {
+  width: 36px;
+  height: 36px;
+}
+#hudInteractionPill {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 28px);
+  transform: translateX(-50%);
+  z-index: 1076;
+  margin-top: 0;
+}
+#miniMapWidget {
+  position: absolute;
+  bottom: 20px;
+  left: 18px;
+  z-index: 1080;
+  width: 168px;
+  height: 168px;
+  background: rgba(8,14,24,0.9);
+  border: 1.5px solid rgba(0,240,255,0.45);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 24px rgba(0,0,0,0.8), inset 0 0 18px rgba(0,240,255,0.12);
+  overflow: hidden;
+}
+#miniMapCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 </style>
 </head>
@@ -961,28 +1008,25 @@ footer.site {
         </div>
       </div>
 
-      <!-- Center Aim Reticle & Interaction Pill -->
-      <div id="hudCrosshair" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1075;pointer-events:none;display:flex;flex-direction:column;align-items:center">
+      <!-- Center Aim Reticle (true viewport center) & Interaction Pill -->
+      <div id="hudCrosshair">
         <div class="cyber-reticle" style="position:relative;width:36px;height:36px">
-          <!-- Center Dot -->
           <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:4px;height:4px;background:#00f0ff;border-radius:50%;box-shadow:0 0 8px #00f0ff"></div>
-          <!-- Corner Brackets -->
           <div style="position:absolute;top:0;left:0;width:8px;height:8px;border-top:1.5px solid #00f0ff;border-left:1.5px solid #00f0ff"></div>
           <div style="position:absolute;top:0;right:0;width:8px;height:8px;border-top:1.5px solid #00f0ff;border-right:1.5px solid #00f0ff"></div>
           <div style="position:absolute;bottom:0;left:0;width:8px;height:8px;border-bottom:1.5px solid #00f0ff;border-left:1.5px solid #00f0ff"></div>
           <div style="position:absolute;bottom:0;right:0;width:8px;height:8px;border-bottom:1.5px solid #00f0ff;border-right:1.5px solid #00f0ff"></div>
         </div>
-        <!-- Interaction Prompt Pill -->
-        <div id="hudInteractionPill" style="display:none;margin-top:16px;background:rgba(6,11,22,0.92);border:1px solid #00f0ff;box-shadow:0 0 16px rgba(0,240,255,0.4);border-radius:6px;padding:6px 14px;font-family:var(--font-mono);font-size:11.5px;color:#fff;pointer-events:auto;cursor:pointer;animation:pulsePill 1.5s infinite" onclick="triggerDecodeCurrentRoom()">
-          <span style="background:#00f0ff;color:#000;font-weight:900;padding:2px 6px;border-radius:3px;margin-right:8px">[ E ]</span>
-          <span id="hudInteractionText" style="color:#00f0ff;font-weight:700">DECODE MEMORY SHARD</span>
-        </div>
+      </div>
+      <div id="hudInteractionPill" style="display:none;background:rgba(6,11,22,0.92);border:1px solid #00f0ff;box-shadow:0 0 16px rgba(0,240,255,0.4);border-radius:6px;padding:6px 14px;font-family:var(--font-mono);font-size:11.5px;color:#fff;pointer-events:auto;cursor:pointer;animation:pulsePill 1.5s infinite" onclick="triggerDecodeCurrentRoom()">
+        <span style="background:#00f0ff;color:#000;font-weight:900;padding:2px 6px;border-radius:3px;margin-right:8px">[ E ]</span>
+        <span id="hudInteractionText" style="color:#00f0ff;font-weight:700">DECODE MEMORY SHARD</span>
       </div>
 
-      <!-- Bottom-Left 360° Circular Cyber Radar / Mini-Map -->
-      <div id="miniMapWidget" style="position:absolute;bottom:20px;left:18px;z-index:1080;width:160px;height:160px;background:rgba(8,14,24,0.88);border:1.5px solid rgba(0,240,255,0.4);border-radius:50%;backdrop-filter:blur(10px);box-shadow:0 0 24px rgba(0,0,0,0.8), inset 0 0 18px rgba(0,240,255,0.12);overflow:hidden">
-        <canvas id="miniMapCanvas" width="160" height="160" style="width:100%;height:100%"></canvas>
-        <div style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:8px;color:#00f0ff;letter-spacing:.1em;font-weight:700;pointer-events:none">N · RADAR</div>
+      <!-- Nearby gx,gz grid minimap with player mark -->
+      <div id="miniMapWidget">
+        <canvas id="miniMapCanvas" width="168" height="168"></canvas>
+        <div style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:8px;color:#00f0ff;letter-spacing:.1em;font-weight:700;pointer-events:none">GX · GZ</div>
       </div>
 
       <!-- Netrunner AR Scanner Mode Overlay -->
@@ -2984,9 +3028,9 @@ function initThreeGraph(){
       if (typeof THREE.UnrealBloomPass !== 'undefined') {
         const bloomPass = new THREE.UnrealBloomPass(
           new THREE.Vector2(width, height),
-          1.25, // strength
-          0.38, // radius
-          0.80  // threshold
+          0.32, // strength — keep InstancedMesh cores from blooming into white rectangles
+          0.28, // radius
+          0.92  // threshold
         );
         composer.addPass(bloomPass);
         graph3D.bloomPass = bloomPass;
@@ -4168,19 +4212,40 @@ let _lucy_oracle_img = null;
   img2.onload = () => { _lucy_oracle_img = img2; };
 })();
 
+let _mazePetHudPrev = [];
+function hidePetHudForMaze(){
+  _mazePetHudPrev = [];
+  document.querySelectorAll('.pet-hud-trigger, #pet-hud, #zoth-pet-hud').forEach(el => {
+    _mazePetHudPrev.push({ el, display: el.style.display });
+    el.style.display = 'none';
+  });
+}
+function restorePetHudAfterMaze(){
+  _mazePetHudPrev.forEach(({ el, display }) => {
+    if (el) el.style.display = display || '';
+  });
+  _mazePetHudPrev = [];
+}
+
 window.enterMemoryWorld = () => {
   const overlay = document.getElementById('memoryWorld');
   if (!overlay) return;
-  if (overlay.parentElement !== document.body) document.body.appendChild(overlay);
+  document.body.appendChild(overlay);
   overlay.style.display = 'flex';
   overlay.style.zIndex = '1000001';
+  document.body.classList.add('maze-open');
   document.documentElement.style.overflow = 'hidden';
+  hidePetHudForMaze();
   if (!world3d) {
     world3d = initWorld();
   } else {
     buildMaze(world3d);
+    spawnCamAtHub(world3d, true);
   }
   world3d.running = true;
+  world3d._hideHintOnFrame = true;
+  window.world3d = world3d;
+  if (typeof dismissCodec === 'function') dismissCodec();
   resizeWorld(world3d);
   loopWorld();
 };
@@ -4188,7 +4253,9 @@ window.enterMemoryWorld = () => {
 window.exitMemoryWorld = () => {
   const overlay = document.getElementById('memoryWorld');
   if (overlay) overlay.style.display = 'none';
+  document.body.classList.remove('maze-open');
   document.documentElement.style.overflow = '';
+  restorePetHudAfterMaze();
   if (world3d) {
     world3d.running = false;
     if (document.pointerLockElement) document.exitPointerLock();
@@ -4197,6 +4264,52 @@ window.exitMemoryWorld = () => {
 
 const ROOM = 340;          // room size (walls at ±ROOM/2)
 const HALF = ROOM / 2;
+const MAZE_EYE_Y = -HALF + 78;
+
+function spawnCamAtHub(st, force){
+  if (!st || !st.rooms || !st.rooms.length) return;
+  const hub = st.rooms.reduce((best, r) => {
+    const score = (r.links && r.links.length) || 0;
+    const bestScore = (best.links && best.links.length) || 0;
+    if (score !== bestScore) return score > bestScore ? r : best;
+    const dDoors = (r.doors && r.doors.length) || 0;
+    const bDoors = (best.doors && best.doors.length) || 0;
+    return dDoors > bDoors ? r : best;
+  }, st.rooms[0]);
+  if (!hub) return;
+  const inside = (!force && st.cam && typeof roomContaining === 'function')
+    ? roomContaining(st, st.cam.x, st.cam.z)
+    : null;
+  if (inside) return;
+  const open = new Set((hub.doors || []).map(d => d.side));
+  // Prefer +Z (south) if that wall is closed; otherwise face a closed wall.
+  let yaw = 0;
+  if (!open.has('S')) yaw = 0;
+  else if (!open.has('N')) yaw = Math.PI;
+  else if (!open.has('E')) yaw = Math.PI / 2;
+  else if (!open.has('W')) yaw = -Math.PI / 2;
+  else yaw = 0;
+  const back = 78;
+  st.cam.x = hub.x - Math.sin(yaw) * back;
+  st.cam.z = hub.z - Math.cos(yaw) * back;
+  st.cam.y = 0;
+  st.yaw = yaw;
+  st.pitch = 0;
+  st.vx = 0; st.vz = 0; st.vy = 0;
+  st.currentRoom = hub;
+  if (hub.m && hub.m.id) st.lastAnnounced = hub.m.id;
+  if (st.lucyHolo) {
+    st.lucyHolo.x = hub.x + 52;
+    st.lucyHolo.z = hub.z - 38;
+    st.lucyHolo.y = -HALF + 40;
+    st.lucyHolo.alpha = 0.92;
+    st.lucyHolo.targetAlpha = 0.92;
+  }
+  if (st.ghost) {
+    st.ghost.x = hub.x + 64;
+    st.ghost.z = hub.z + 44;
+  }
+}
 
 function setMazeRenderBadge(gl){
   const badge = document.getElementById('mazeRenderBadge');
@@ -4293,8 +4406,13 @@ function getSpatialCardTexture(m) {
   ctx.lineTo(488, 58);
   ctx.stroke();
 
-  // Body text: title / summary in high legibility font
-  const rawText = m.summary || m.text || '';
+  // Body text: title / humanized headline / first sentence
+  let rawText = '';
+  if (m.title) rawText = String(m.title);
+  else {
+    try { rawText = (humanizeMemory(m) || {}).title || ''; } catch (e) { rawText = ''; }
+  }
+  if (!rawText) rawText = m.summary || m.text || '';
   const cleanText = rawText.replace(/[{}\[\]"]/g, ' ').replace(/\s+/g, ' ').trim();
   const words = cleanText.split(' ');
   const lines = [];
@@ -4340,16 +4458,21 @@ function getSpatialCardTexture(m) {
 
 function makeMazeRoomKit(floorMat, wallMat, ceilMat){
   const g = new THREE.Group();
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, ROOM), floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -HALF;
+  const WALL_T = 28;
+  const DOOR_H = 168;
+  const t = 72;
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM, 16, ROOM), floorMat);
+  floor.position.y = -HALF - 8;
   g.add(floor);
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, ROOM), ceilMat);
-  ceil.rotation.x = Math.PI / 2;
-  ceil.position.y = HALF;
+  const ceil = new THREE.Mesh(new THREE.BoxGeometry(ROOM, 12, ROOM), ceilMat);
+  ceil.position.y = HALF + 6;
   g.add(ceil);
-  const grid = new THREE.GridHelper(ROOM, 10, 0x00f0ff, 0x111c2e);
-  grid.position.y = -HALF + 0.6;
+  const grid = new THREE.GridHelper(ROOM, 12, 0x00f0ff, 0x1a3a58);
+  grid.position.y = -HALF + 0.9;
+  if (grid.material) {
+    const mats = Array.isArray(grid.material) ? grid.material : [grid.material];
+    mats.forEach(m => { m.transparent = true; m.opacity = 0.9; });
+  }
   g.add(grid);
 
   // Reflective cyber floor edge perimeter
@@ -4437,12 +4560,12 @@ function makeMazeRoomKit(floorMat, wallMat, ceilMat){
   const crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
   crystalGroup.add(crystalMesh);
 
-  const innerCoreGeo = new THREE.OctahedronGeometry(10, 0);
+  const innerCoreGeo = new THREE.OctahedronGeometry(8, 0);
   const innerCoreMat = new THREE.MeshBasicMaterial({
     color: 0xf472b6,
     wireframe: true,
     transparent: true,
-    opacity: 0.9
+    opacity: 0.7
   });
   const innerCoreMesh = new THREE.Mesh(innerCoreGeo, innerCoreMat);
   crystalGroup.add(innerCoreMesh);
@@ -4469,39 +4592,48 @@ function makeMazeRoomKit(floorMat, wallMat, ceilMat){
   g.add(billboardSprite);
 
   const walls = {};
-  const t = 88;
   const sideW = HALF - t;
   ['N','S','E','W'].forEach(side => {
     const wg = new THREE.Group();
-    const full = new THREE.Mesh(new THREE.BoxGeometry(ROOM, ROOM, 8), wallMat);
-    const left = new THREE.Mesh(new THREE.BoxGeometry(sideW, ROOM, 8), wallMat);
-    const right = new THREE.Mesh(new THREE.BoxGeometry(sideW, ROOM, 8), wallMat);
-    const lintel = new THREE.Mesh(new THREE.BoxGeometry(t * 2, ROOM - 160, 8), wallMat);
+    const full = new THREE.Mesh(new THREE.BoxGeometry(ROOM + WALL_T, ROOM, WALL_T), wallMat);
+    const left = new THREE.Mesh(new THREE.BoxGeometry(sideW, ROOM, WALL_T), wallMat);
+    const right = new THREE.Mesh(new THREE.BoxGeometry(sideW, ROOM, WALL_T), wallMat);
+    const lintel = new THREE.Mesh(new THREE.BoxGeometry(t * 2, ROOM - DOOR_H, WALL_T), wallMat);
     const glow = new THREE.Mesh(
-      new THREE.PlaneGeometry(t * 2 - 8, 150),
-      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.24, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false })
+      new THREE.PlaneGeometry(t * 2 - 8, DOOR_H - 10),
+      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false })
+    );
+    const slab = new THREE.Mesh(
+      new THREE.PlaneGeometry(t * 2 - 4, DOOR_H - 6),
+      new THREE.MeshBasicMaterial({ color: 0x071422, transparent: true, opacity: 0.62, side: THREE.DoubleSide })
     );
     const archFrame = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.BoxGeometry(t * 2, 160, 10)),
-      new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.85 })
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(t * 2, DOOR_H, WALL_T + 6)),
+      new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.95 })
     );
-    archFrame.position.set(0, -HALF + 80, 0);
+    archFrame.position.set(0, -HALF + DOOR_H / 2, 0);
+    const archGlow = new THREE.Mesh(
+      new THREE.TorusGeometry(t - 6, 3.4, 8, 22, Math.PI),
+      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.92 })
+    );
+    archGlow.position.set(0, -HALF + DOOR_H - 4, 8);
 
     left.position.x = -HALF + sideW / 2;
     right.position.x = HALF - sideW / 2;
-    lintel.position.y = HALF - (ROOM - 160) / 2;
-    glow.position.set(0, -HALF + 80, 5);
-    wg.add(full, left, right, lintel, glow, archFrame);
+    lintel.position.y = HALF - (ROOM - DOOR_H) / 2;
+    glow.position.set(0, -HALF + DOOR_H / 2, 6);
+    slab.position.set(0, -HALF + DOOR_H / 2, -WALL_T * 0.35);
+    wg.add(full, left, right, lintel, glow, slab, archFrame, archGlow);
     if (side === 'N') wg.position.z = -HALF;
     if (side === 'S') { wg.position.z = HALF; wg.rotation.y = Math.PI; }
     if (side === 'E') { wg.position.x = HALF; wg.rotation.y = Math.PI / 2; }
     if (side === 'W') { wg.position.x = -HALF; wg.rotation.y = -Math.PI / 2; }
     g.add(wg);
-    walls[side] = { full, left, right, lintel, glow, archFrame };
+    walls[side] = { full, left, right, lintel, glow, slab, archFrame, archGlow };
   });
   const neon = new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.BoxGeometry(ROOM, ROOM, ROOM)),
-    new THREE.LineBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.32 })
+    new THREE.LineBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.1 })
   );
   g.add(neon);
   return { group: g, walls, altar: altarGroup, beam: beamMesh, crystal: crystalGroup, crystalMesh, innerCore: innerCoreMesh, halo: haloMesh, billboard: billboardSprite };
@@ -4515,31 +4647,43 @@ function initWorldGL(st){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x05070f, 1);
     if (window.ZothStudio3D && ZothStudio3D.dressRenderer) ZothStudio3D.dressRenderer(renderer);
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.18;
+    if ('physicallyCorrectLights' in renderer) renderer.physicallyCorrectLights = false;
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x071018, 0.00055);
-    const camera = new THREE.PerspectiveCamera(72, 1, 2, 4200);
-    scene.add(new THREE.HemisphereLight(0xb7d4ff, 0x0a0810, 0.72));
-    const camLight = new THREE.PointLight(0x9cefff, 2.4, 900, 1.15);
+    scene.fog = new THREE.FogExp2(0x05070f, 0.0018);
+    const camera = new THREE.PerspectiveCamera(68, 1, 1, 980);
+    let mazeRig = null;
+    if (window.ZothStudio3D && ZothStudio3D.addStudioRig) {
+      mazeRig = ZothStudio3D.addStudioRig(scene, renderer, {
+        maze: true,
+        noFloor: true,
+        cellSize: ROOM,
+        fogDensity: 0.0018,
+        altarY: -HALF + 72,
+        hemi: 0.92,
+        keyIntensity: 2.6,
+        rimIntensity: 0.42
+      });
+    } else {
+      scene.add(new THREE.HemisphereLight(0xb7d4ff, 0x0a0810, 0.9));
+    }
+    const camLight = new THREE.PointLight(0xbfefff, 1.55, 420, 1.15);
     scene.add(camLight);
-    const rim = new THREE.DirectionalLight(0xfbbf24, 0.85);
-    rim.position.set(220, 480, -260);
-    scene.add(rim);
-    const fill = new THREE.PointLight(0x7c5cff, 1.1, 1400, 1.6);
-    fill.position.set(0, 120, 0);
-    scene.add(fill);
+    const altarLight = new THREE.PointLight(0x7ce7ff, 3.4, 360, 1.05);
+    altarLight.position.set(0, -HALF + 72, 0);
+    scene.add(altarLight);
     let composer = null;
     if (typeof THREE.EffectComposer !== 'undefined' && typeof THREE.RenderPass !== 'undefined') {
       composer = new THREE.EffectComposer(renderer);
       composer.addPass(new THREE.RenderPass(scene, camera));
       if (typeof THREE.UnrealBloomPass !== 'undefined') {
-        composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(800, 600), 0.65, 0.42, 0.70));
+        composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(800, 600), 0.28, 0.32, 0.86));
       }
     }
     const Phys = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
-    const floorMat = new Phys({ color: 0x101826, metalness: 0.86, roughness: 0.22, clearcoat: 0.45, envMapIntensity: 1.1 });
-    const wallMat = new Phys({ color: 0x1a2436, metalness: 0.48, roughness: 0.38, emissive: 0x0a2030, emissiveIntensity: 0.35, side: THREE.DoubleSide });
-    const ceilMat = new Phys({ color: 0x0c121c, metalness: 0.8, roughness: 0.28 });
+    const floorMat = new Phys({ color: 0x101826, metalness: 0.78, roughness: 0.28, emissive: 0x041018, emissiveIntensity: 0.45, clearcoat: 0.45, envMapIntensity: 1.1 });
+    const wallMat = new Phys({ color: 0x243044, metalness: 0.42, roughness: 0.42, emissive: 0x123048, emissiveIntensity: 0.55, side: THREE.DoubleSide });
+    const ceilMat = new Phys({ color: 0x0c121c, metalness: 0.8, roughness: 0.28, emissive: 0x060a12, emissiveIntensity: 0.25 });
     const kits = [];
     for (let i = 0; i < 49; i++) {
       const kit = makeMazeRoomKit(floorMat, wallMat, ceilMat);
@@ -4549,9 +4693,13 @@ function initWorldGL(st){
     }
     const loader = new THREE.TextureLoader();
     const lucy = new THREE.Sprite(new THREE.SpriteMaterial({ map: loader.load('/assets/lucy.png'), transparent: true, depthWrite: false }));
-    lucy.scale.set(28, 52, 1);
+    lucy.scale.set(22, 40, 1);
     lucy.visible = false;
     scene.add(lucy);
+    const roomCard = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0.96 }));
+    roomCard.scale.set(92, 46, 1);
+    roomCard.visible = false;
+    scene.add(roomCard);
     const ghost = new THREE.Sprite(new THREE.SpriteMaterial({ map: loader.load('/assets/nullai.png'), transparent: true, opacity: 0.62, depthWrite: false }));
     ghost.scale.set(22, 22, 1);
     scene.add(ghost);
@@ -4571,7 +4719,7 @@ function initWorldGL(st){
       new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.92 })
     );
     scene.add(core);
-    st.gl = { renderer, scene, camera, composer, kits, lucy, ghost, points, core, canvas: glCanvas, camLight: camLight };
+    st.gl = { renderer, scene, camera, composer, kits, lucy, ghost, points, core, canvas: glCanvas, camLight, altarLight, roomCard, rig: mazeRig };
     st.useGL = true;
     glCanvas.style.display = 'block';
     st.canvas2d = st.canvas;
@@ -4586,17 +4734,35 @@ function initWorldGL(st){
 
 function drawWorldGL(st, now){
   if (!st.gl) return;
+  if (st._hideHintOnFrame) {
+    const hint = document.getElementById('mazeHint');
+    if (hint) hint.style.display = 'none';
+    st._hideHintOnFrame = false;
+    st._mazeHintConsumed = true;
+  }
   const c = st.cam;
   const cam = st.gl.camera;
-  const eyeY = -HALF + 96 - ((c.y + 40) * 0.35);
+  const eyeY = MAZE_EYE_Y;
+  const cy = Math.cos(st.pitch), sy = Math.sin(st.pitch);
+  const fx = Math.sin(st.yaw) * cy;
+  const fz = Math.cos(st.yaw) * cy;
   cam.position.set(c.x, eyeY, c.z);
-  cam.lookAt(
-    c.x + Math.sin(st.yaw) * Math.cos(st.pitch),
-    eyeY - Math.sin(st.pitch) * 48,
-    c.z + Math.cos(st.yaw) * Math.cos(st.pitch)
-  );
+  cam.lookAt(c.x + fx * 120, eyeY - sy * 120, c.z + fz * 120);
   if (st.gl.camLight) st.gl.camLight.position.copy(cam.position);
-  const RANGE = 3;
+  const altarX = st.currentRoom ? st.currentRoom.x : c.x;
+  const altarZ = st.currentRoom ? st.currentRoom.z : c.z;
+  if (st.gl.altarLight) {
+    st.gl.altarLight.visible = true;
+    st.gl.altarLight.position.set(altarX, -HALF + 72, altarZ);
+  }
+  if (st.gl.rig) {
+    if (st.gl.rig.key) {
+      st.gl.rig.key.position.set(altarX + 70, -HALF + 150, altarZ + 48);
+      if (st.gl.rig.key.target) st.gl.rig.key.target.position.set(altarX, -HALF + 40, altarZ);
+    }
+    if (st.gl.rig.kick) st.gl.rig.kick.position.set(altarX, -HALF + 72, altarZ);
+  }
+  const RANGE = 1;
   const cgx = Math.round(c.x / ROOM), cgz = Math.round(c.z / ROOM);
   const visible = st.rooms.filter(r => Math.abs(r.gx - cgx) <= RANGE && Math.abs(r.gz - cgz) <= RANGE)
     .sort((a, b) => Math.hypot(a.gx - cgx, a.gz - cgz) - Math.hypot(b.gx - cgx, b.gz - cgz));
@@ -4631,21 +4797,7 @@ function drawWorldGL(st, now){
       kit.beam.material.color.setHex(colHex);
     }
 
-    // Spatial UI Billboard update
-    if (kit.billboard) {
-      const dist = Math.hypot(c.x - room.x, c.z - room.z);
-      if (dist < 550) {
-        kit.billboard.visible = true;
-        const tex = getSpatialCardTexture(room.m);
-        if (tex && kit.billboard.material.map !== tex) {
-          kit.billboard.material.map = tex;
-          kit.billboard.material.needsUpdate = true;
-        }
-        kit.billboard.material.opacity = Math.max(0, Math.min(0.95, (550 - dist) / 220));
-      } else {
-        kit.billboard.visible = false;
-      }
-    }
+    if (kit.billboard) kit.billboard.visible = false;
 
     const doorSides = new Set((room.doors || []).map(d => d.side));
     for (const side of ['N','S','E','W']) {
@@ -4657,24 +4809,43 @@ function drawWorldGL(st, now){
       w.lintel.visible = open;
       w.glow.visible = open;
       if (w.archFrame) w.archFrame.visible = open;
+      if (w.archGlow) w.archGlow.visible = open;
       const door = (room.doors || []).find(d => d.side === side);
+      let hasNeighbor = false;
+      if (side === 'N') hasNeighbor = !!st.roomGrid[`${room.gx},${room.gz - 1}`];
+      if (side === 'S') hasNeighbor = !!st.roomGrid[`${room.gx},${room.gz + 1}`];
+      if (side === 'E') hasNeighbor = !!st.roomGrid[`${room.gx + 1},${room.gz}`];
+      if (side === 'W') hasNeighbor = !!st.roomGrid[`${room.gx - 1},${room.gz}`];
+      if (w.slab) w.slab.visible = open && !hasNeighbor;
       if (door) {
         const portalColor = door.portal ? 0xf472b6 : 0x00f0ff;
         if (w.glow.material) w.glow.material.color.set(portalColor);
         if (w.archFrame && w.archFrame.material) w.archFrame.material.color.set(portalColor);
+        if (w.archGlow && w.archGlow.material) w.archGlow.material.color.set(portalColor);
       }
     }
   }
-  if (st.gl.core) {
+  if (st.gl.roomCard) {
     if (st.currentRoom) {
-      st.gl.core.visible = true;
-      st.gl.core.position.set(st.currentRoom.x, 10 + Math.sin(now / 900) * 10, st.currentRoom.z);
-      st.gl.core.rotation.y = now * 0.001;
-    } else st.gl.core.visible = false;
+      const tex = getSpatialCardTexture(st.currentRoom.m);
+      if (tex && st.gl.roomCard.material.map !== tex) {
+        st.gl.roomCard.material.map = tex;
+        st.gl.roomCard.material.needsUpdate = true;
+      }
+      st.gl.roomCard.position.set(c.x + fx * 90, eyeY - 16, c.z + fz * 90);
+      st.gl.roomCard.visible = true;
+      st.gl.roomCard.material.opacity = 0.96;
+    } else {
+      st.gl.roomCard.visible = false;
+    }
   }
+  if (st.gl.core) st.gl.core.visible = false;
   if (st.gl.lucy && st.lucyHolo) {
-    st.gl.lucy.visible = st.lucyHolo.alpha > 0.08;
-    st.gl.lucy.position.set(st.lucyHolo.x, -HALF + 46, st.lucyHolo.z);
+    const lx = st.lucyHolo.x, lz = st.lucyHolo.z;
+    const tooClose = Math.hypot(lx - c.x, lz - c.z) < 18;
+    st.gl.lucy.visible = !tooClose && st.lucyHolo.alpha > 0.08;
+    st.gl.lucy.scale.set(22, 40, 1);
+    st.gl.lucy.position.set(lx, -HALF + 40, lz);
     st.gl.lucy.material.opacity = Math.min(0.95, st.lucyHolo.alpha);
   }
   if (st.gl.ghost && st.ghost) {
@@ -4708,7 +4879,7 @@ function initWorld(){
   const st = {
     canvas, ctx: null, running: true, useGL: false,
     rooms: [], roomAt: {}, edges: [],
-    cam: { x: 0, y: -40, z: 0 }, keys: {}, yaw: 0, pitch: 0,
+    cam: { x: 0, y: 0, z: 0 }, keys: {}, yaw: 0, pitch: 0,
     locked: false, currentRoom: null, glitchSeed: 0,
     showMap: false,
     particles,
@@ -4721,14 +4892,7 @@ function initWorld(){
     setMazeRenderBadge(false);
   }
   buildMaze(st);
-  if (st.rooms && st.rooms.length > 0) {
-    const hub = st.rooms.reduce((a,b) => (b.links.length > a.links.length ? b : a), st.rooms[0]);
-    if (hub) {
-      st.cam = { x: hub.x, y: -40, z: hub.z };
-      st.ghost.x = hub.x; st.ghost.z = hub.z;
-      st.lucyHolo.x = hub.x; st.lucyHolo.z = hub.z;
-    }
-  }
+  spawnCamAtHub(st, true);
   bindMazeInput(st);
   resizeWorld(st);
   return st;
@@ -4883,6 +5047,7 @@ function buildMaze(st){
       r.doors.push({ side: 'S', target: startId, portal: true, label: 'neural hub' });
     }
   }
+  spawnCamAtHub(st, false);
 }
 
 function resizeWorld(st){
@@ -5028,116 +5193,54 @@ function drawMiniMap(st){
   if (!ctx) return;
   const w = canvas.width, h = canvas.height;
   const cx = w / 2, cy = h / 2;
-  const rad = w / 2 - 4;
+  const cell = 22;
+  const cgx = Math.round(st.cam.x / ROOM);
+  const cgz = Math.round(st.cam.z / ROOM);
 
   ctx.clearRect(0, 0, w, h);
-  ctx.save();
-
-  // Circular Clip
-  ctx.beginPath();
-  ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-  ctx.clip();
-
-  // Background
-  ctx.fillStyle = 'rgba(6, 11, 20, 0.95)';
+  ctx.fillStyle = 'rgba(6, 11, 20, 0.96)';
   ctx.fillRect(0, 0, w, h);
 
-  // Concentric Radar Distance Rings
-  ctx.strokeStyle = 'rgba(0, 240, 255, 0.18)';
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
   ctx.lineWidth = 1;
-  [22, 42, 60, 72].forEach(r => {
+  for (let i = -3; i <= 3; i++) {
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.moveTo(cx + i * cell, 8); ctx.lineTo(cx + i * cell, h - 8);
+    ctx.moveTo(8, cy + i * cell); ctx.lineTo(w - 8, cy + i * cell);
     ctx.stroke();
-  });
-
-  // Crosshair Axes
-  ctx.strokeStyle = 'rgba(0, 240, 255, 0.22)';
-  ctx.beginPath();
-  ctx.moveTo(cx, 4); ctx.lineTo(cx, h - 4);
-  ctx.moveTo(4, cy); ctx.lineTo(w - 4, cy);
-  ctx.stroke();
-
-  // Rotating Radar Sweep Line
-  const now = performance.now();
-  const sweepAngle = (now * 0.0022) % (Math.PI * 2);
-  const sweepGrad = ctx.createLinearGradient(cx, cy, cx + Math.cos(sweepAngle) * rad, cy + Math.sin(sweepAngle) * rad);
-  sweepGrad.addColorStop(0, 'rgba(0, 240, 255, 0.4)');
-  sweepGrad.addColorStop(1, 'rgba(0, 240, 255, 0.0)');
-  ctx.fillStyle = sweepGrad;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.arc(cx, cy, rad, sweepAngle - 0.35, sweepAngle);
-  ctx.closePath();
-  ctx.fill();
-
-  // Player Vision Cone
-  const fovWedge = 0.55;
-  const coneAngle = -st.yaw - Math.PI / 2;
-  ctx.fillStyle = 'rgba(0, 240, 255, 0.12)';
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.arc(cx, cy, 48, coneAngle - fovWedge, coneAngle + fovWedge);
-  ctx.closePath();
-  ctx.fill();
-
-  // Draw Memory Room Nodes
-  const scale = 0.07;
-  const cosY = Math.cos(-st.yaw), sinY = Math.sin(-st.yaw);
+  }
 
   for (const r of (st.rooms || [])) {
-    const dx = r.x - st.cam.x;
-    const dz = r.z - st.cam.z;
-    // Rotate relative to player yaw heading
-    const rx = dx * cosY - dz * sinY;
-    const rz = dx * sinY + dz * cosY;
-    const px = cx + rx * scale;
-    const py = cy - rz * scale;
-
-    if (Math.hypot(px - cx, py - cy) < rad - 4) {
-      const isCur = st.currentRoom === r;
-      const col = (agentColors && agentColors[r.m.agent_id]) || '#00f0ff';
-      ctx.fillStyle = col;
-      ctx.beginPath();
-      ctx.arc(px, py, isCur ? 4.5 : 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (isCur) {
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(px, py, 6.5 + Math.sin(now * 0.006) * 1.5, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    }
+    if (Math.abs(r.gx - cgx) > 3 || Math.abs(r.gz - cgz) > 3) continue;
+    const px = cx + (r.gx - cgx) * cell;
+    const py = cy + (r.gz - cgz) * cell;
+    const isCur = st.currentRoom === r;
+    ctx.fillStyle = isCur ? '#00f0ff' : ((agentColors && agentColors[r.m.agent_id]) || '#334155');
+    ctx.globalAlpha = isCur ? 0.9 : 0.55;
+    ctx.fillRect(px - 8, py - 8, 16, 16);
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = isCur ? '#ffffff' : 'rgba(0,240,255,0.35)';
+    ctx.strokeRect(px - 8, py - 8, 16, 16);
   }
 
-  // Draw Lucy Beacon Blip (Pink)
-  if (st.lucyHolo) {
-    const ldx = st.lucyHolo.x - st.cam.x;
-    const ldz = st.lucyHolo.z - st.cam.z;
-    const lrx = ldx * cosY - ldz * sinY;
-    const lrz = ldx * sinY + ldz * cosY;
-    const lpx = cx + lrx * scale;
-    const lpy = cy - lrz * scale;
-    if (Math.hypot(lpx - cx, lpy - cy) < rad - 4) {
-      ctx.fillStyle = '#f472b6';
-      ctx.beginPath();
-      ctx.arc(lpx, lpy, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#05070f';
-      ctx.font = '900 7px monospace';
-      ctx.fillText('L', lpx - 2, lpy + 2.5);
-    }
-  }
-
-  // Center Player Marker
+  const px = cx + ((st.cam.x / ROOM) - cgx) * cell;
+  const py = cy + ((st.cam.z / ROOM) - cgz) * cell;
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.rotate(st.yaw);
   ctx.fillStyle = '#fbbf24';
   ctx.beginPath();
-  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+  ctx.moveTo(0, -7);
+  ctx.lineTo(5, 6);
+  ctx.lineTo(0, 3);
+  ctx.lineTo(-5, 6);
+  ctx.closePath();
   ctx.fill();
-
   ctx.restore();
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '700 9px ui-monospace, monospace';
+  ctx.fillText(`gx ${cgx}  gz ${cgz}`, 8, h - 8);
 }
 
 function toggleScannerMode(){
@@ -5345,11 +5448,9 @@ function stepWorld(st){
     st.lucyHolo.targetAlpha = (st.lucyActive || (_oracleFlash && _oracleFlash.active)) ? 0.95 : 0.45;
     st.lucyHolo.alpha += (st.lucyHolo.targetAlpha - st.lucyHolo.alpha) * Math.min(1, dt * 4);
     if (st.currentRoom) {
-      const lRadius = 80;
-      st.lucyHolo.angle = (st.lucyHolo.angle || 0) + 0.4 * dt;
-      st.lucyHolo.x = st.currentRoom.x + Math.sin(st.lucyHolo.angle) * lRadius;
-      st.lucyHolo.z = st.currentRoom.z + Math.cos(st.lucyHolo.angle) * lRadius;
-      st.lucyHolo.y = -40 + Math.sin(performance.now() * 0.002) * 8;
+      st.lucyHolo.x = st.currentRoom.x + 52;
+      st.lucyHolo.z = st.currentRoom.z - 38;
+      st.lucyHolo.y = -HALF + 40 + Math.sin(performance.now() * 0.002) * 4;
     }
   }
 
@@ -5465,8 +5566,9 @@ async function announceRoom(m){
       avatar: "/assets/lucy.png",
       isOracle: true
     };
-    showCodecDialog(charInfo, summary);
-    speakCharacter("female", summary);
+    const line = codecHumanLine(m, summary);
+    showCodecDialog(charInfo, line, m);
+    speakCharacter("female", line);
   } else {
     const charInfo = {
       name: "GHOSTBYTE // NULL-AI QUANTUM ENTITY",
@@ -5475,8 +5577,9 @@ async function announceRoom(m){
       avatar: "/assets/nullai.png",
       isOracle: false
     };
-    showCodecDialog(charInfo, summary);
-    speakCharacter("ghost", summary);
+    const line = codecHumanLine(m, summary);
+    showCodecDialog(charInfo, line, m);
+    speakCharacter("ghost", line);
   }
 }
 
@@ -5548,10 +5651,48 @@ function speakCharacter(type, text){
 let _codecTimer = null;
 let _typewriterInterval = null;
 
-function showCodecDialog(char, fullText){
+function codecHumanLine(m, fallback){
+  const stripJunk = (s) => String(s || '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/\\n/g, ' ')
+    .replace(/[{}\[\]"]/g, ' ')
+    .replace(/\b(id|text|summary|agent_id|category|tags|topics|before|after|strength|created_at|title)\s*:/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const isJsonish = (s) => {
+    const t = String(s || '').trim();
+    return t.startsWith('{') || t.startsWith('[') || /"[a-z_]+"\s*:/.test(t);
+  };
+  const firstSentence = (s) => {
+    const t = stripJunk(s);
+    const hit = t.match(/(.+?[.!?])(?:\s|$)/);
+    return (hit ? hit[1] : t).slice(0, 240);
+  };
+  if (m) {
+    if (m.title && !isJsonish(m.title)) return firstSentence(m.title);
+    try {
+      const h = humanizeMemory(m);
+      if (h && h.title) return firstSentence(String(h.title).replace(/^[^\w#]+/, ''));
+    } catch (e) {}
+    const raw = m.summary || m.text || '';
+    if (raw && !isJsonish(raw)) return firstSentence(raw);
+  }
+  let src = fallback;
+  if (isJsonish(src)) {
+    try {
+      const j = JSON.parse(src);
+      src = j.title || j.summary || j.text || j.message || stripJunk(src);
+    } catch (e) {
+      src = stripJunk(src);
+    }
+  }
+  return firstSentence(src);
+}
+
+function showCodecDialog(char, fullText, memory){
   const el = document.getElementById('mazeSubtitle');
   if (!el) return;
-  fullText = String(fullText || '').replace(/[{}\[\]"]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 280);
+  fullText = codecHumanLine(memory || (char && char.memory), fullText);
   
   const chEl = document.getElementById('codecChannel');
   const roleEl = document.getElementById('speakerRole');
@@ -5914,6 +6055,12 @@ function drawDoorGap(ctx, st, room, door, now){
 }
 
 function drawWorld(st, now){
+  if (st._hideHintOnFrame) {
+    const hint = document.getElementById('mazeHint');
+    if (hint) hint.style.display = 'none';
+    st._hideHintOnFrame = false;
+    st._mazeHintConsumed = true;
+  }
   const ctx = st.ctx;
   const dpr = window.devicePixelRatio || 1;
   const w = st.canvas.clientWidth, h = st.canvas.clientHeight;
@@ -6415,7 +6562,7 @@ function bindMazeInput(st){
     st.locked = document.pointerLockElement === cv;
     if (!st.locked) resetKeys();
     const hint = document.getElementById('mazeHint');
-    if (hint) hint.style.display = st.locked ? 'none' : 'flex';
+    if (hint && (st.locked || st._mazeHintConsumed)) hint.style.display = 'none';
   });
 
   const sidebar = document.getElementById('mazeSidebar');
