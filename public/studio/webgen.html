@@ -904,47 +904,105 @@
       return pages;
     }
 
+    var WEBGEN_SKILL_HINTS = {
+      visual: 'Visual design: one strong hero, sparse copy, no generic card grid, high contrast.',
+      seo: 'SEO: unique title and meta description, one H1, descriptive headings, semantic HTML.',
+      a11y: 'Accessibility: labels on inputs, keyboard focus, alt text, readable contrast.',
+      motion: '3D / motion: tasteful Three.js or CSS motion only where it helps the story.',
+      business: 'Small business: hours, address, phone, services, and a clear contact action.',
+      blog: 'Blog: featured post, readable type, about blurb, simple post list.',
+      gallery: 'Photo gallery: large images, simple lightbox or grid, captions.',
+      forms: 'Forms: working name/email/message fields with basic validation, no fake backend.'
+    };
+
+    function toggleWebgenSkill(btn) {
+      if (!btn) return;
+      var on = !btn.classList.contains('is-on');
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+
+    function selectedSkills() {
+      var chips = document.querySelectorAll('#webgenSkillChips .webgen-chip.is-on');
+      var out = [];
+      chips.forEach(function (c) {
+        var key = c.getAttribute('data-skill');
+        if (key && WEBGEN_SKILL_HINTS[key]) out.push(WEBGEN_SKILL_HINTS[key]);
+      });
+      return out;
+    }
+
     var WEBGEN_STANDALONE_RULES = ' [WebGen rules: Build a standalone website in this folder. Primary file: index.html. Do not copy or link Zoth Studio hub chrome — no zoth-nav.js, zoth-nav.css, zoth-theme.js, zoth-gate.js, zoth-pet-hud, zoth-workbench, zoth-interactive-dock, header.bar, or Zoth footer. The preview must look like the user\'s own site, not the Zoth Studio website.]';
+
+    var WEBGEN_HUB_KILL = 'header.bar,#topbar,nav.drawer,#drawer,footer.site,#zothFabDock,#zothDesktopPromptPill,#zothPetHud,.zoth-interactive-dock,#zoth-page-progress,#zothToolSidebar,#zothConfigModalBackdrop,.zoth-workbench-fab,.nav-annotate-btn';
+
+    function workspacePreviewPath(urlOrSlug) {
+      if (!urlOrSlug) return '';
+      var u = String(urlOrSlug);
+      var m = u.match(/\/workspaces\/[A-Za-z0-9._-]+\/[^?#]*/);
+      if (m) return m[0];
+      if (/^[A-Za-z0-9._-]+$/.test(u)) return '/workspaces/' + u + '/index.html';
+      try {
+        var path = u.charAt(0) === '/' ? u.split('?')[0] : (new URL(u, window.location.origin)).pathname;
+        if (/^\/workspaces\//.test(path)) return path;
+      } catch (e) {}
+      return u;
+    }
 
     function stripHubChromeHtml(html) {
       if (!html) return html;
       var out = String(html);
-      out = out.replace(/<link[^>]+\/assets\/zoth-(?:nav|theme|gate|pet-hud|workbench|interactive-dock|spotlight|magic-ui|luxury-fx)[^>]*>\s*/gi, '');
-      out = out.replace(/<script[^>]+\/assets\/zoth-(?:nav|theme|gate|pet-hud|workbench|interactive-dock|spotlight)[^>]*>\s*<\/script>\s*/gi, '');
+      out = out.replace(/<link[^>]+\/assets\/zoth-[^>]*>\s*/gi, '');
+      out = out.replace(/<script[^>]+\/assets\/zoth-[^>]*>\s*<\/script>\s*/gi, '');
       out = out.replace(/<header[^>]*\bid=["']topbar["'][^>]*>[\s\S]*?<\/header>/gi, '');
       out = out.replace(/<header[^>]*class=["'][^"']*\bbar\b[^"']*["'][^>]*>[\s\S]*?<\/header>/gi, '');
       out = out.replace(/<nav[^>]*\bid=["']drawer["'][^>]*>[\s\S]*?<\/nav>/gi, '');
       out = out.replace(/<footer[^>]*class=["'][^"']*\bsite\b[^"']*["'][^>]*>[\s\S]*?<\/footer>/gi, '');
+      var guard = '<style id="webgenBarePreviewCss">' + WEBGEN_HUB_KILL + '{display:none!important}body{padding-top:0!important}</style>' +
+        '<script id="webgen-preview-guard">(function(){function wipe(){try{document.querySelectorAll("' + WEBGEN_HUB_KILL + '").forEach(function(el){el.remove()})}catch(e){}}wipe();document.addEventListener("DOMContentLoaded",wipe);try{new MutationObserver(wipe).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}})();<\/script>';
+      if (/<head[^>]*>/i.test(out)) {
+        out = out.replace(/<head([^>]*)>/i, '<head$1>' + guard);
+      } else {
+        out = guard + out;
+      }
       return out;
     }
 
     function stripHubChromeDom(doc) {
       if (!doc) return;
-      var kill = [
-        'header.bar', '#topbar', 'nav.drawer', '#drawer', 'footer.site',
-        '#zothFabDock', '#zothDesktopPromptPill', '#zothToolSidebar',
-        '#zothPetHud', '.zoth-interactive-dock', '#zoth-page-progress',
-        '.zoth-workbench-fab', '#zothConfigModalBackdrop'
-      ];
-      kill.forEach(function (sel) {
-        doc.querySelectorAll(sel).forEach(function (el) { el.remove(); });
-      });
+      try {
+        doc.querySelectorAll(WEBGEN_HUB_KILL).forEach(function (el) { el.remove(); });
+      } catch (e) {}
       var style = doc.getElementById('webgenBarePreviewCss');
       if (!style) {
         style = doc.createElement('style');
         style.id = 'webgenBarePreviewCss';
-        style.textContent = 'header.bar,#topbar,nav.drawer,#drawer,footer.site,#zothFabDock,#zothDesktopPromptPill,#zothPetHud,.zoth-interactive-dock,#zoth-page-progress{display:none!important}body{padding-top:0!important}';
+        style.textContent = WEBGEN_HUB_KILL + '{display:none!important}body{padding-top:0!important}';
         (doc.head || doc.documentElement).appendChild(style);
       }
     }
 
+    function watchPreviewChrome(iframe) {
+      if (!iframe) return;
+      iframe.onload = function () {
+        var doc = null;
+        try { doc = iframe.contentDocument; } catch (e) { return; }
+        stripHubChromeDom(doc);
+        if (!doc || !doc.documentElement) return;
+        try {
+          var obs = new MutationObserver(function () { stripHubChromeDom(doc); });
+          obs.observe(doc.documentElement, { childList: true, subtree: true });
+          setTimeout(function () { try { obs.disconnect(); } catch (e) {} }, 5000);
+        } catch (e) {}
+      };
+    }
+
     function loadBarePreview(url) {
       var iframe = document.getElementById('webgenPreviewIframe');
-      if (!iframe || !url) return;
-      var abs = url;
-      if (url.indexOf('http') !== 0) abs = window.location.origin + url;
-      var absFile = abs.split('?')[0];
-      fetch(abs, { cache: 'no-store' })
+      var path = workspacePreviewPath(url);
+      if (!iframe || !path) return;
+      var absFile = window.location.origin + path;
+      fetch(absFile, { cache: 'no-store' })
         .then(function (res) { return res.text(); })
         .then(function (html) {
           var cleaned = stripHubChromeHtml(html);
@@ -953,18 +1011,15 @@
             cleaned = cleaned.replace(/<head([^>]*)>/i, '<head$1><base href="' + base + '">');
           }
           iframe.removeAttribute('src');
+          watchPreviewChrome(iframe);
           iframe.srcdoc = cleaned;
           showWebgenEmpty(false);
-          iframe.onload = function () {
-            try { stripHubChromeDom(iframe.contentDocument); } catch (e) {}
-          };
         })
         .catch(function () {
           iframe.removeAttribute('srcdoc');
-          iframe.src = abs;
-          iframe.onload = function () {
-            try { stripHubChromeDom(iframe.contentDocument); } catch (e) {}
-          };
+          watchPreviewChrome(iframe);
+          iframe.src = absFile;
+          showWebgenEmpty(false);
         });
     }
 
@@ -1268,7 +1323,7 @@
           if (urlLabel) urlLabel.textContent = window.location.origin + previewUrl;
           if (newTabBtn) newTabBtn.href = previewUrl;
 
-          if (iframe && (iframe.src === 'about:blank' || iframe.src.indexOf('about:blank') !== -1 || iframe.getAttribute('srcdoc') || isBuilding)) {
+          if (iframe && (isBuilding || !iframe.getAttribute('srcdoc'))) {
             loadBarePreview(previewUrl);
           }
 
@@ -1309,6 +1364,10 @@
       var pages = selectedPages();
       if (pages.length) {
         fullPrompt += ' Include these pages: ' + pages.join(', ') + '.';
+      }
+      var skills = selectedSkills();
+      if (skills.length) {
+        fullPrompt += ' Use these skills: ' + skills.join(' ');
       }
       if (fullPrompt.indexOf('[WebGen rules:') === -1) {
         fullPrompt += WEBGEN_STANDALONE_RULES;
@@ -1435,7 +1494,7 @@
 
     function selectSession(sess) {
       currentSlug = sess.slug;
-      currentPreviewUrl = sess.previewUrl;
+      currentPreviewUrl = workspacePreviewPath(sess.previewUrl || sess.slug);
 
       var slugInput = document.getElementById('projNameInput');
       if (slugInput) slugInput.value = sess.slug;
@@ -1448,13 +1507,12 @@
       var sessLabel = document.getElementById('termSessionLabel');
       if (sessLabel) sessLabel.textContent = sess.slug;
 
-      var iframe = document.getElementById('webgenPreviewIframe');
       var urlLabel = document.getElementById('previewUrlLabel');
       var newTabBtn = document.getElementById('previewNewTabBtn');
 
       if (urlLabel) urlLabel.textContent = window.location.origin + currentPreviewUrl;
       if (newTabBtn) newTabBtn.href = currentPreviewUrl;
-      if (iframe && sess.hasIndex) {
+      if (currentPreviewUrl) {
         loadBarePreview(currentPreviewUrl);
         showWebgenTweak(true);
         var overlay = document.getElementById('previewLoadingOverlay');
