@@ -37,6 +37,7 @@
 <script src="/assets/vendor/LuminosityHighPassShader.js"></script>
 <script src="/assets/vendor/UnrealBloomPass.js"></script>
 <script src="/assets/vendor/EffectComposer.js"></script>
+<script src="/studio/zoth-3d-rig.js"></script>
 <link href="/assets/zoth-annotator.css" rel="stylesheet"/>
 <style>
         .skip-to-content, .skip-link, .skip {
@@ -2547,17 +2548,22 @@
         this.maxForce = 0.003;
         this.boundaryRadius = 8.5;
 
-        // Sleek 3D Delta Dart Drone Geometry
-        const geo = new THREE.ConeGeometry(0.12, 0.42, 4);
+        // Faceted dart — gold/cyan mix, physical material
+        const geo = new THREE.ConeGeometry(0.11, 0.46, 5);
         geo.rotateX(Math.PI / 2);
-        this.mat = new THREE.MeshStandardMaterial({
-          color: 0x00f0ff,
-          emissive: 0x0088cc,
-          emissiveIntensity: 0.65,
-          roughness: 0.2,
-          metalness: 0.8
+        const goldish = Math.random() > 0.72;
+        const Mat = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+        this.mat = new Mat({
+          color: goldish ? 0xc9a227 : 0x00e5ff,
+          emissive: goldish ? 0x7a5a10 : 0x006688,
+          emissiveIntensity: 0.85,
+          roughness: 0.16,
+          metalness: 0.92,
+          clearcoat: 0.55,
+          clearcoatRoughness: 0.2
         });
         this.mesh = new THREE.Mesh(geo, this.mat);
+        this.mesh.castShadow = true;
         this.mesh.position.copy(this.position);
         if (scene) scene.add(this.mesh);
       }
@@ -2811,24 +2817,28 @@
     function createQuantumNexus() {
       const group = new THREE.Group();
       // Inner glowing energy core
-      const coreGeo = new THREE.IcosahedronGeometry(0.72, 1);
-      const coreMat = new THREE.MeshStandardMaterial({
-        color: 0x00f0ff,
+      const coreGeo = new THREE.IcosahedronGeometry(0.72, 2);
+      const CoreMat = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+      const coreMat = new CoreMat({
+        color: 0xc9a227,
         emissive: 0x00e5ff,
-        emissiveIntensity: 0.85,
-        roughness: 0.1,
-        metalness: 0.9
+        emissiveIntensity: 1.15,
+        roughness: 0.08,
+        metalness: 1,
+        clearcoat: 1,
+        clearcoatRoughness: 0.08
       });
       const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      coreMesh.castShadow = true;
       group.add(coreMesh);
 
       // Outer Sacred Dodecahedron Wireframe Cage
       const cageGeo = new THREE.DodecahedronGeometry(1.15, 0);
       const cageMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
+        color: 0xc9a227,
         wireframe: true,
         transparent: true,
-        opacity: 0.65
+        opacity: 0.72
       });
       const cageMesh = new THREE.Mesh(cageGeo, cageMat);
       group.add(cageMesh);
@@ -3118,8 +3128,9 @@
       renderer.setSize(w, h);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.2;
+      renderer.toneMappingExposure = 1.12;
       renderer.shadowMap.enabled = true;
+      if (window.ZothStudio3D) window.ZothStudio3D.dressRenderer(renderer);
       container.appendChild(renderer.domElement);
 
       // OrbitControls with full touch & mouse damping support
@@ -3138,21 +3149,33 @@
       }
 
       // Lights
-      ambientLight = new THREE.AmbientLight(0x152238, 1.0);
+      ambientLight = new THREE.AmbientLight(0x152238, 0.55);
       scene.add(ambientLight);
 
-      dirLight = new THREE.DirectionalLight(0x00f0ff, 2.2);
+      dirLight = new THREE.DirectionalLight(0x00f0ff, 1.6);
       dirLight.position.set(10, 15, 10);
       dirLight.castShadow = true;
       scene.add(dirLight);
 
-      fillLight = new THREE.DirectionalLight(0x7c9cff, 1.5);
+      fillLight = new THREE.DirectionalLight(0x7c9cff, 0.9);
       fillLight.position.set(-10, 8, -10);
       scene.add(fillLight);
 
+      if (window.ZothStudio3D) {
+        window.ZothStudio3D.addStudioRig(scene, renderer, { radius: 18, hemi: 0.42, rimIntensity: 1.7 });
+        const rest = camera.position.clone();
+        window.ZothStudio3D.introDolly(camera, controls, {
+          from: new THREE.Vector3(0, 16, 24),
+          to: rest,
+          duration: 2400
+        });
+      }
+
       // Arena Ground Grid
-      gridHelper = new THREE.GridHelper(32, 32, 0x00f0ff, 0x0b1d3a);
-      gridHelper.position.y = -0.01;
+      gridHelper = new THREE.GridHelper(32, 32, 0xc9a227, 0x12141c);
+      gridHelper.position.y = 0.02;
+      gridHelper.material.transparent = true;
+      gridHelper.material.opacity = 0.35;
       scene.add(gridHelper);
 
       // Particle Field & Central Quantum Nexus Core
@@ -3201,7 +3224,7 @@
           const rp = new THREE.RenderPass(scene, camera);
           swarmComposer.addPass(rp);
           if (typeof THREE.UnrealBloomPass === 'function') {
-            swarmBloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(w, h), 1.25, 0.55, 0.42);
+            swarmBloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(w, h), 1.45, 0.62, 0.28);
             swarmComposer.addPass(swarmBloomPass);
           }
         } catch (e) {

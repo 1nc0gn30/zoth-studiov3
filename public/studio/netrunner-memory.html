@@ -24,6 +24,7 @@
 <script src="/assets/vendor/LuminosityHighPassShader.js"></script>
 <script src="/assets/vendor/UnrealBloomPass.js"></script>
 <script src="/assets/vendor/EffectComposer.js"></script>
+<script src="/studio/zoth-3d-rig.js?v=20260913"></script>
 <style>
 :root {
   --bg: #050508;
@@ -330,6 +331,92 @@ footer.site {
   font-size: 12px;
   color: var(--muted);
   font-family: var(--font-mono);
+}
+
+/* Dual-Layer Memory Architecture & View Mode Controls */
+.view-mode-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+.view-mode-btn:hover {
+  background: rgba(0, 240, 255, 0.1);
+  color: #00f0ff;
+  border-color: rgba(0, 240, 255, 0.35);
+}
+.view-mode-btn.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(168, 85, 247, 0.2));
+  border-color: #00f0ff;
+  color: #00f0ff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+}
+
+.mem-human-card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.mem-human-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}
+
+.mem-raw-card {
+  background: #05070e;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+}
+
+.mem-dual-card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 16px;
+  transition: all 0.22s ease;
+  grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+  .mem-dual-card { grid-template-columns: 1fr; }
+}
+
+.cyber-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(6, 11, 20, 0.95);
+  border: 1px solid #00f0ff;
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.2);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  animation: toastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  backdrop-filter: blur(12px);
+}
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
@@ -673,10 +760,22 @@ footer.site {
         <div id="statPersp" style="font-size:24px;font-weight:900;color:#34d399;margin-top:4px;font-family:var(--font-display)">-- VIEWS</div>
         <div style="font-size:11px;color:#64748b;margin-top:2px">Azoth • Athena • Hermes • GhostByte</div>
       </div>
-      <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(244,114,182,0.3);border-radius:12px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.4)">
-        <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-mono)">Lucy Netrunner Oracle</div>
-        <div style="font-size:18px;font-weight:900;color:#f472b6;margin-top:6px;font-family:var(--font-mono)">CODEC 141.12</div>
-        <div style="font-size:11px;color:#64748b;margin-top:2px">Trans-dimensional breach online</div>
+      <div style="background:rgba(15,23,42,0.85);border:1px solid rgba(244,114,182,0.4);border-radius:12px;padding:14px 16px;box-shadow:0 4px 20px rgba(244,114,182,0.15);display:flex;align-items:center;gap:14px">
+        <div style="position:relative;width:52px;height:52px;flex-shrink:0;border-radius:50%;border:2px solid #f472b6;overflow:hidden;box-shadow:0 0 14px rgba(244,114,182,0.5);background:#0b1320;cursor:pointer" onclick="openGameModal('lucy3d')" title="Click to open Lucy 3D Hologram">
+          <img src="/assets/lucy.png" alt="Lucy Netrunner Oracle" style="width:100%;height:100%;object-fit:cover"/>
+          <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#34d399;border-radius:50%;border:2px solid #05070f;box-shadow:0 0 6px #34d399"></span>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:11px;color:#f472b6;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-mono)">Lucy // Oracle</div>
+            <span style="font-size:9px;background:rgba(244,114,182,0.2);color:#f472b6;border:1px solid rgba(244,114,182,0.4);padding:1px 6px;border-radius:4px;font-family:var(--font-mono)">ONLINE</span>
+          </div>
+          <div style="font-size:15px;font-weight:900;color:#fff;margin-top:2px;font-family:var(--font-mono)">CODEC 141.12</div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button onclick="speakCharacter('female', 'Codec online. I am Lucy, deep netrunner oracle. Dual human story digest and raw AI context pipelines are synchronized.')" style="font-size:10px;padding:2px 8px;background:rgba(244,114,182,0.15);border:1px solid #f472b6;color:#f472b6;border-radius:4px;cursor:pointer">🔊 Voice</button>
+            <button onclick="openGameModal('lucy3d')" style="font-size:10px;padding:2px 8px;background:rgba(0,240,255,0.15);border:1px solid #00f0ff;color:#00f0ff;border-radius:4px;cursor:pointer">⬢ 3D</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -742,10 +841,11 @@ footer.site {
     </div>
 
     <!-- 3D Canvas Viewport -->
-    <div style="position:relative;width:100%;height:580px;background:#05070e;border:1px solid rgba(0,240,255,0.2);border-radius:10px;overflow:hidden;box-shadow:inset 0 0 24px rgba(0,0,0,0.8)">
+    <div style="position:relative;width:100%;height:min(68svh, 720px);min-height:560px;background:#05070e;border:1px solid rgba(0,240,255,0.2);border-radius:10px;overflow:hidden;box-shadow:inset 0 0 24px rgba(0,0,0,0.8)">
       <div id="threeGraphContainer" style="width:100%;height:100%;display:block;cursor:grab"></div>
       <canvas id="graphCanvas" width="1100" height="580" style="display:none;width:100%;height:100%;background:#0b0d14;cursor:grab"></canvas>
       <div id="graphTooltip" style="position:absolute;display:none;pointer-events:none;background:rgba(15,23,42,0.95);border:1px solid #00f0ff;border-radius:8px;padding:10px 14px;font-size:12px;max-width:360px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.7);backdrop-filter:blur(8px)"></div>
+      <div id="graphLoadHint" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;color:#00f0ff">LOADING FULL MEMORY STRATUM…</div>
     </div>
 
     <!-- Node Inspector Telemetry Deck -->
@@ -778,7 +878,11 @@ footer.site {
         <button onclick="exitMemoryWorld()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.5);color:#fca5a5;padding:5px 14px;border-radius:6px;font-family:var(--font-mono);font-size:11px;font-weight:800;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">✕ EXIT MAZE</button>
       </div>
     </div>
-    <canvas id="worldCanvas" style="flex:1;width:100%;height:100%;cursor:crosshair"></canvas>
+    <div id="worldStage" style="flex:1;position:relative;min-height:0">
+      <canvas id="worldCanvas" style="position:absolute;inset:0;width:100%;height:100%;cursor:crosshair"></canvas>
+      <canvas id="worldCanvasGL" style="display:none;position:absolute;inset:0;width:100%;height:100%;cursor:crosshair"></canvas>
+      <div id="mazeRenderBadge" style="position:absolute;left:16px;bottom:16px;z-index:1080;font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;padding:4px 8px;border-radius:4px;border:1px solid rgba(52,211,153,0.5);color:#34d399;background:rgba(5,7,15,0.72)">WEBGL FPS</div>
+    </div>
     <!-- Cyberpunk x MGS Codec Communication Terminal (Stays open until dismissed with Close [X] or [C] key) -->
     <div id="mazeSubtitle" style="display:none;position:absolute;left:50%;bottom:32px;transform:translateX(-50%);width:min(760px, 92vw);background:rgba(6,11,20,0.94);border:2px solid #00f0ff;box-shadow:0 0 28px rgba(0,240,255,0.4), inset 0 0 16px rgba(0,240,255,0.15);border-radius:8px;padding:14px 18px;color:#e6edf3;font-family:ui-monospace, monospace;z-index:1100;backdrop-filter:blur(10px)">
       <!-- Top header bar with MGS Codec freq & Cyberpunk badge & Dismiss Controls -->
@@ -859,6 +963,7 @@ footer.site {
       <div style="display:flex;align-items:center;gap:10px">
         <span style="display:inline-block;width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 10px var(--gold)"></span>
         <h2 style="font-family:var(--font-display);font-size:18px;margin:0;font-weight:800;color:#fff">MEMORY & PERSPECTIVES STUDIO</h2>
+        <span id="stratumBanner" style="font-family:var(--font-mono);font-size:11px;color:#94a3b8;letter-spacing:.06em">STRATUM: resolving…</span>
       </div>
       
       <!-- Workstation Mode Switcher Tabs -->
@@ -885,19 +990,36 @@ footer.site {
         <button class="subsystem-filter-btn" onclick="setSubsystemFilter('basal_ganglia')" id="subBtnBasal" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(255,170,64,0.1);color:#ffaa40;border:1px solid rgba(255,170,64,0.3);cursor:pointer;font-family:var(--font-mono)">⚙️ Basal Procedural (<span id="countSubBasal">0</span>)</button>
       </div>
 
+      <!-- Dual-Layer Memory Architecture Switcher Toolbar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(15,23,42,0.85);border:1px solid rgba(0,240,255,0.3);border-radius:10px;padding:8px 12px;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:800;color:var(--cyan);font-family:var(--font-mono);letter-spacing:.1em">VIEW ARCHITECTURE:</span>
+          <button id="viewBtnHuman" class="view-mode-btn active" onclick="setMemoryViewMode('human')" style="font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700">📖 Human Story Digest</button>
+          <button id="viewBtnRaw" class="view-mode-btn" onclick="setMemoryViewMode('raw')" style="font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700">🤖 Raw AI Context / JSON</button>
+          <button id="viewBtnDual" class="view-mode-btn" onclick="setMemoryViewMode('dual')" style="font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700">🧠 Dual Split View</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="copyAllVisibleAIPrompts()" style="background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.4);color:#38bdf8;font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700" title="Export all visible memories as prompt XML for Claude/GPT/Hermes">📋 Copy All as AI Context</button>
+          <button onclick="speakLucySwarmDigest()" style="background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:#f472b6;font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700" title="Lucy audio executive summary of top memories">🔊 Lucy Swarm Briefing</button>
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-        <input id="search" placeholder="🔍 Search memory keywords..." style="flex:1;min-width:220px" oninput="load()"/>
-        <select id="agentFilter" onchange="load()" style="width:auto;min-width:160px">
+        <input id="search" placeholder="🔍 Search memory keywords, topics, actions..." style="flex:1;min-width:220px" oninput="load(false)"/>
+        <select id="agentFilter" onchange="load(false)" style="width:auto;min-width:160px">
           <option value="">All Agents (Swarm)</option>
           <option value="azoth">Azoth (Lead)</option>
           <option value="athena">Athena</option>
           <option value="hermes">Hermes</option>
           <option value="draco">Draco</option>
           <option value="kitsune">Kitsune</option>
+          <option value="grok">Grok</option>
           <option value="ghostbyte">GhostByte</option>
+          <option value="netrunner">Lucy / Netrunner</option>
+          <option value="antigravity">Antigravity</option>
           <option value="zoth-docs">Zoth Docs</option>
         </select>
-        <button class="secondary" onclick="load()" style="padding:10px 16px">Refresh</button>
+        <button class="secondary" onclick="load(true)" style="padding:10px 16px">Reload All</button>
         <span class="count" id="count" style="font-family:var(--font-mono);font-size:12px;color:var(--muted)"></span>
       </div>
 
@@ -1049,14 +1171,25 @@ footer.site {
           </div>
         </div>
         <div>
-          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">MEMORY TEXT CONTENT</label>
-          <textarea id="text" rows="4" placeholder="Describe the event, discovery, or state change..." required></textarea>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">EXECUTIVE TITLE / HEADLINE (OPTIONAL - AUTO-DERIVED IF BLANK)</label>
+          <input id="memTitle" placeholder="e.g. 🛠️ Compiled sovereign Rust Argon2id memory vault daemon"/>
         </div>
         <div>
-          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">TOPIC TAGS (COMMA-SEPARATED)</label>
-          <input id="tags" placeholder="e.g. rust, threejs, memory-palace"/>
+          <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">MEMORY TEXT CONTENT (RAW AGENT TRACE / VERBATIM CONTEXT)</label>
+          <textarea id="text" rows="4" placeholder="Describe the event, code change, discovery, or state transition..." required></textarea>
         </div>
-        <button type="submit" style="background:var(--gold);color:#050508;font-weight:800;padding:12px;border-radius:8px">⚡ Save to Memory Stratum</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">TOPIC TAGS (COMMA-SEPARATED)</label>
+            <input id="tags" placeholder="e.g. rust, threejs, lucy, stdp"/>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">KEY INSIGHTS / BULLETS (OPTIONAL, PIPE | SEPARATED)</label>
+            <input id="memInsights" placeholder="e.g. Hardened crypto core | Reduced latencies by 40%"/>
+          </div>
+        </div>
+        <button type="submit" style="background:var(--gold);color:#050508;font-weight:800;padding:12px;border-radius:8px">⚡ Save to Dual Memory Stratum</button>
+        <div id="encodeStatus" style="font-size:12px;font-family:var(--font-mono);color:#94a3b8;min-height:1.2em"></div>
       </form>
     </div>
 
@@ -1066,7 +1199,8 @@ footer.site {
         <div style="font-size:13px;color:var(--cyan);font-weight:700">👁️ ATTACH MULTI-AGENT PERSPECTIVE</div>
         <div>
           <label style="font-size:11px;color:var(--muted);font-family:var(--font-mono);display:block;margin-bottom:4px">TARGET MEMORY ID</label>
-          <input id="memoryId" placeholder="Paste memory ID or click 'Perspectives' on any card" required/>
+          <input id="memoryId" list="memoryIdList" placeholder="Paste memory ID or pick from loaded stratum" required/>
+          <datalist id="memoryIdList"></datalist>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
@@ -1087,6 +1221,7 @@ footer.site {
           <input id="confidence" type="number" step="0.05" min="0" max="1" value="0.95" placeholder="0.95"/>
         </div>
         <button type="submit" style="background:var(--cyan);color:#05070f;font-weight:800;padding:12px;border-radius:8px">👁️ Attach Immutable Perspective</button>
+        <div id="perspStatus" style="font-size:12px;font-family:var(--font-mono);color:#94a3b8;min-height:1.2em"></div>
       </form>
       <div id="perspectives" style="margin-top:14px;display:grid;gap:8px"></div>
     </div>
@@ -1108,6 +1243,7 @@ footer.site {
           <input id="linkReason" placeholder="e.g. shared: rustc, 3d-matrix"/>
         </div>
         <button type="submit" style="background:var(--purple);color:#050508;font-weight:800;padding:12px;border-radius:8px">🔗 Forge Neural Link</button>
+        <div id="linkStatus" style="font-size:12px;font-family:var(--font-mono);color:#94a3b8;min-height:1.2em"></div>
       </form>
     </div>
 
@@ -1269,6 +1405,255 @@ function cleanMemoryPreview(raw){
   return s.length > 180 ? s.slice(0, 180) + '...' : s;
 }
 
+// Sovereign Swarm Agent Avatar Resolver
+function getAgentAvatar(agent_id) {
+  const a = String(agent_id || '').toLowerCase().trim();
+  if (a.includes('lucy') || a.includes('oracle') || a.includes('netrunner') || a.includes('edgerunner')) {
+    return '/assets/lucy.png';
+  }
+  if (a.includes('ghostbyte') || a.includes('ghost') || a.includes('nullai')) {
+    return '/assets/mascot/ghostbyte-avatar.jpg';
+  }
+  if (a.includes('athena')) {
+    return '/assets/mascot/azoth-athena.jpg';
+  }
+  if (a.includes('hermes')) {
+    return '/assets/mascot/azoth-hermes.jpg';
+  }
+  if (a.includes('grok')) {
+    return '/assets/mascot/azoth-grok.jpg';
+  }
+  if (a.includes('draco')) {
+    return '/assets/mascot/azoth-draco.jpg';
+  }
+  if (a.includes('kitsune')) {
+    return '/assets/mascot/azoth-kitsune.jpg';
+  }
+  if (a.includes('antigravity')) {
+    return '/assets/mascot/azoth-antigravity.jpg';
+  }
+  return '/assets/mascot/azoth-portrait.jpg';
+}
+
+// View Mode State: 'human' | 'raw' | 'dual'
+let memoryViewMode = 'human';
+try {
+  const savedMode = localStorage.getItem('zoth_memory_view_mode');
+  if (savedMode && ['human', 'raw', 'dual'].includes(savedMode)) {
+    memoryViewMode = savedMode;
+  }
+} catch(e) {}
+
+function setMemoryViewMode(mode) {
+  if (!['human', 'raw', 'dual'].includes(mode)) mode = 'human';
+  memoryViewMode = mode;
+  try { localStorage.setItem('zoth_memory_view_mode', mode); } catch(e) {}
+  
+  const bH = document.getElementById('viewBtnHuman');
+  const bR = document.getElementById('viewBtnRaw');
+  const bD = document.getElementById('viewBtnDual');
+  if (bH) bH.className = 'view-mode-btn' + (mode === 'human' ? ' active' : '');
+  if (bR) bR.className = 'view-mode-btn' + (mode === 'raw' ? ' active' : '');
+  if (bD) bD.className = 'view-mode-btn' + (mode === 'dual' ? ' active' : '');
+  
+  updateTelemetryAndUI(graphState.mems || rawAllMemories, activeStratumSource);
+}
+
+// Intelligent Memory Humanizer (Dual-Layer Synthesis)
+function humanizeMemory(m) {
+  if (!m) return { title: 'Empty Memory', takeaways: [], causalNarrative: '', speech: '', subsystem: { color: '#00f0ff', badge: 'UNKNOWN', name: 'Unknown Subsystem' }, retention: { retentionPct: 100, stabilityDays: 1, rehearsals: 0 } };
+  
+  const text = String(m.text || '').trim();
+  const agent = String(m.agent_id || 'swarm').toUpperCase();
+  const cat = String(m.category || 'general').toLowerCase();
+  const sub = getMemorySubsystem(m);
+  const ret = computeEbbinghausRetention(m);
+  
+  // 1. Executive Action Title
+  let title = m.title;
+  if (!title) {
+    let clean = text.replace(/<[^>]+>/g, ' ')
+                    .replace(/\[!\[.*?\]\(.*?\)\]\(.*?\)/g, '')
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                    .replace(/[#*`>_\|]/g, '')
+                    .replace(/\s+/g, ' ').trim();
+    clean = clean.replace(/^div align="center"/i, '').replace(/align="center"/i, '').trim();
+    
+    let firstSentence = clean.split(/[.!?]\s+/)[0] || clean;
+    if (firstSentence.length > 95) firstSentence = firstSentence.slice(0, 92) + '...';
+    
+    let icon = '⚡';
+    if (cat === 'building' || cat === 'code') icon = '🛠️';
+    else if (cat === 'planning' || cat === 'architecture') icon = '📐';
+    else if (cat === 'learning' || cat === 'research') icon = '🔬';
+    else if (cat === 'coordination' || cat === 'handoff') icon = '🤝';
+    else if (cat === 'debug' || cat === 'error' || cat === 'fix') icon = '🛡️';
+    else if (cat === 'genesis' || agent.includes('LUCY') || agent.includes('NETRUNNER')) icon = '🔮';
+    
+    title = `${icon} ${firstSentence}`;
+  }
+  
+  // 2. Key Takeaway Bullets
+  let takeaways = [];
+  if (Array.isArray(m.insights) && m.insights.length > 0) {
+    takeaways = m.insights;
+  } else {
+    const cleanPreview = cleanMemoryPreview(text);
+    takeaways.push(`<b>Core Action:</b> ${escapeHtml(cleanPreview)}`);
+    const topicsStr = (m.topics && m.topics.length) ? m.topics.slice(0, 3).join(', ') : ((m.tags && m.tags.length) ? m.tags.slice(0, 3).join(', ') : 'neural coordination');
+    takeaways.push(`<b>Cognitive Domain:</b> Encoded in ${sub.name} (${sub.badge}) addressing <i>${escapeHtml(topicsStr)}</i>.`);
+    const beforeCount = (m.before || []).length;
+    const afterCount = (m.after || []).length;
+    const totalSynapses = beforeCount + afterCount;
+    takeaways.push(`<b>Synaptic Viability:</b> ${ret.retentionPct}% retention (${ret.stabilityDays}d stability, ${totalSynapses} active causal link${totalSynapses===1?'':'s'}).`);
+  }
+  
+  // 3. Causal Narrative
+  let causalNarrative = '';
+  const pool = (rawAllMemories && rawAllMemories.length) ? rawAllMemories : (graphState.mems || []);
+  const beforeList = (m.before || []).map(b => {
+    const prevNode = pool.find(x => x.id === b.id);
+    return prevNode ? (prevNode.agent_id ? `${prevNode.agent_id.toUpperCase()}: ${cleanMemoryPreview(prevNode.text).slice(0, 32)}...` : b.id.slice(0, 8)) : b.id.slice(0, 8);
+  });
+  const afterList = (m.after || []).map(a => {
+    const nextNode = pool.find(x => x.id === a.id);
+    return nextNode ? (nextNode.agent_id ? `${nextNode.agent_id.toUpperCase()}: ${cleanMemoryPreview(nextNode.text).slice(0, 32)}...` : a.id.slice(0, 8)) : a.id.slice(0, 8);
+  });
+  
+  if (beforeList.length && afterList.length) {
+    causalNarrative = `Rooted in [${beforeList.join(', ')}] ➔ Enabled [${afterList.join(', ')}]`;
+  } else if (beforeList.length) {
+    causalNarrative = `Downstream consequence of [${beforeList.join(', ')}]`;
+  } else if (afterList.length) {
+    causalNarrative = `Foundational precedent enabling [${afterList.join(', ')}]`;
+  } else {
+    causalNarrative = `Autonomous episodic node with resonant semantic topics.`;
+  }
+  
+  // 4. Speech Narration Text
+  const cleanSnippet = cleanMemoryPreview(text).replace(/[#*`_]/g, '');
+  const speech = `Memory trace by ${agent}. ${cleanSnippet}. Recorded in ${cat}, synaptic retention is at ${ret.retentionPct} percent.`;
+  
+  return {
+    title,
+    takeaways,
+    causalNarrative,
+    speech,
+    subsystem: sub,
+    retention: ret
+  };
+}
+
+// Lossless AI Context Formatter (XML Prompt Injection Structure)
+function formatAIPromptContext(m) {
+  if (!m) return '';
+  const h = humanizeMemory(m);
+  const beforeIds = (m.before || []).map(b => b.id).join(', ');
+  const afterIds = (m.after || []).map(a => a.id).join(', ');
+  const topics = (m.topics || []).join(', ');
+  const tags = (m.tags || []).join(', ');
+  
+  return `<memory_context id="${m.id}" agent="${m.agent_id || 'system'}" category="${m.category || 'general'}" strength="${(m.strength ?? 1).toFixed(2)}" retention="${h.retention.retentionPct}%" stability="${h.retention.stabilityDays}d">
+  <headline>${h.title}</headline>
+  <verbatim_text>${m.text || ''}</verbatim_text>
+  <topics>${topics}</topics>
+  <tags>${tags}</tags>
+  <synaptic_lineage causes="${beforeIds || 'none'}" enables="${afterIds || 'none'}" />
+  <raw_json>
+${JSON.stringify(m, null, 2)}
+  </raw_json>
+</memory_context>`;
+}
+
+// Cyber Notification Toast
+function showTransientToast(msg) {
+  const existing = document.querySelector('.cyber-toast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'cyber-toast';
+  el.innerHTML = `<span>⚡</span><span>${escapeHtml(msg)}</span>`;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => el.remove(), 300);
+  }, 2800);
+}
+
+function promptCopyFallback(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showTransientToast('📋 Copied to clipboard!');
+  } catch(e) {
+    alert('Copy failed: ' + e);
+  }
+  ta.remove();
+}
+
+window.copyAIPromptContext = (id) => {
+  const m = rawAllMemories.find(x => x.id === id) || (graphState.mems || []).find(x => x.id === id);
+  if (!m) return;
+  const prompt = formatAIPromptContext(m);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(prompt).then(() => {
+      showTransientToast(`📋 Copied AI Prompt Context for [${id.slice(0,8)}]`);
+    }).catch(() => promptCopyFallback(prompt));
+  } else {
+    promptCopyFallback(prompt);
+  }
+};
+
+window.copyRawMemoryJSON = (id) => {
+  const m = rawAllMemories.find(x => x.id === id) || (graphState.mems || []).find(x => x.id === id);
+  if (!m) return;
+  const jsonStr = JSON.stringify(m, null, 2);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(jsonStr).then(() => {
+      showTransientToast(`📋 Copied Raw JSON for [${id.slice(0,8)}]`);
+    }).catch(() => promptCopyFallback(jsonStr));
+  } else {
+    promptCopyFallback(jsonStr);
+  }
+};
+
+window.copyAllVisibleAIPrompts = () => {
+  const mems = graphState.mems || rawAllMemories;
+  const blocks = mems.slice(0, 30).map(m => formatAIPromptContext(m)).join('\n\n');
+  const fullPayload = `<swarm_memory_stratum total_nodes="${mems.length}" exported_at="${new Date().toISOString()}">\n${blocks}\n</swarm_memory_stratum>`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(fullPayload).then(() => {
+      showTransientToast(`📋 Copied ${Math.min(mems.length, 30)} AI Prompt Context Blocks!`);
+    }).catch(() => promptCopyFallback(fullPayload));
+  } else {
+    promptCopyFallback(fullPayload);
+  }
+};
+
+window.speakMemory = (id) => {
+  const m = rawAllMemories.find(x => x.id === id) || (graphState.mems || []).find(x => x.id === id);
+  if (!m) return;
+  const h = humanizeMemory(m);
+  speakCharacter('female', h.speech);
+  showTransientToast(`🔊 Lucy Narrating: ${h.title}`);
+};
+
+window.speakLucySwarmDigest = () => {
+  const mems = graphState.mems || rawAllMemories;
+  if (!mems.length) return;
+  const count = mems.length;
+  const topCategories = [...new Set(mems.map(m => m.category || 'general'))].slice(0, 3).join(', ');
+  const leadAgent = mems[0]?.agent_id || 'Azoth';
+  const digest = `Netrunner Oracle codec active. Swarm stratum contains ${count} synchronized memories across ${topCategories}. Active lead thread is driven by ${leadAgent}. All causal synapses are stable.`;
+  speakCharacter('female', digest);
+  showTransientToast(`🔊 Lucy Swarm Briefing: ${count} Memories`);
+};
+
 // Built-in curated recovery seed dataset in case network is disconnected
 function getRecoverySeeds() {
   return [
@@ -1285,25 +1670,28 @@ function getRecoverySeeds() {
 
 let rawAllMemories = [];
 let activeStratumSource = "Resolving...";
+let stratumLoaded = false;
+let stratumLoadInFlight = null;
 
-async function load(forceRefresh = false){
-  const search = (document.getElementById('search')?.value || '').trim().toLowerCase();
-  const agent = (document.getElementById('agentFilter')?.value || '').trim();
-  
+function setStratumBanner(text, ok){
+  const el = document.getElementById('stratumBanner');
+  if (el) {
+    el.textContent = text;
+    el.style.color = ok === false ? '#fca5a5' : (ok ? '#34d399' : '#94a3b8');
+  }
+  const hint = document.getElementById('graphLoadHint');
+  if (hint) hint.style.display = (ok && rawAllMemories.length) ? 'none' : 'flex';
+}
+
+async function fetchFullStratum(){
   let mems = [];
   let sourceLabel = "";
-
-  // 1. Try Memory Daemon / Dev Server API endpoints
   const candidates = getApiCandidates();
   for (const base of candidates) {
     try {
-      const params = new URLSearchParams();
-      if (agent) params.set('agent_id', agent);
-      if (search) params.set('q', search);
-      const queryStr = params.toString() ? '?' + params.toString() : '';
       const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 2000);
-      const res = await fetch(`${base}/v1/memories${queryStr}`, { signal: ctrl.signal });
+      const tid = setTimeout(() => ctrl.abort(), 12000);
+      const res = await fetch(`${base}/v1/memories`, { signal: ctrl.signal, cache: 'no-store' });
       clearTimeout(tid);
       if (res.ok) {
         const data = await res.json();
@@ -1317,19 +1705,13 @@ async function load(forceRefresh = false){
     } catch (e) {}
   }
 
-  // 2. Try Static Fallback JSON files
   if (!mems.length) {
-    const staticPaths = [
-      '/data/memories.json',
-      '../data/memories.json',
-      '../../data/memories.json',
-      '/public/data/memories.json'
-    ];
+    const staticPaths = ['/data/memories.json', '../data/memories.json', '/public/data/memories.json'];
     for (const sp of staticPaths) {
       try {
         const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), 2500);
-        const res = await fetch(sp, { signal: ctrl.signal });
+        const tid = setTimeout(() => ctrl.abort(), 8000);
+        const res = await fetch(sp, { signal: ctrl.signal, cache: 'no-store' });
         clearTimeout(tid);
         if (res.ok) {
           const data = await res.json();
@@ -1343,7 +1725,6 @@ async function load(forceRefresh = false){
     }
   }
 
-  // 3. Try LocalStorage cached memories
   if (!mems.length) {
     try {
       const cached = localStorage.getItem('zoth_memories_stratum');
@@ -1357,19 +1738,34 @@ async function load(forceRefresh = false){
     } catch (e) {}
   }
 
-  // 4. Fallback to rich curated recovery seed
   if (!mems.length) {
     mems = getRecoverySeeds();
     sourceLabel = 'EMERGENCY BOOTSTRAP SEED';
-  } else if (mems.length > 5) {
-    // Cache dataset for instantaneous offline boots
-    try {
-      localStorage.setItem('zoth_memories_stratum', JSON.stringify(mems.slice(0, 1000)));
-    } catch (e) {}
+  } else if (mems.length > 5 && mems.length <= 400) {
+    try { localStorage.setItem('zoth_memories_stratum', JSON.stringify(mems)); } catch (e) {}
   }
 
-  rawAllMemories = mems;
-  activeStratumSource = sourceLabel;
+  return { mems, sourceLabel };
+}
+
+async function load(forceRefresh = false){
+  const search = (document.getElementById('search')?.value || '').trim().toLowerCase();
+  const agent = (document.getElementById('agentFilter')?.value || '').trim();
+
+  if (!stratumLoaded || forceRefresh || !rawAllMemories.length) {
+    setStratumBanner('STRATUM: fetching all memories…');
+    if (!stratumLoadInFlight || forceRefresh) {
+      stratumLoadInFlight = fetchFullStratum();
+    }
+    const pack = await stratumLoadInFlight;
+    stratumLoadInFlight = null;
+    rawAllMemories = pack.mems || [];
+    activeStratumSource = pack.sourceLabel;
+    stratumLoaded = rawAllMemories.length > 0;
+  }
+
+  const mems = rawAllMemories;
+  const sourceLabel = activeStratumSource;
 
   // Update biological brain lobe filter counts across ALL memories
   const counts = { all: mems.length, dlpfc: 0, hippocampus: 0, neocortex: 0, amygdala: 0, basal_ganglia: 0 };
@@ -1408,14 +1804,17 @@ async function load(forceRefresh = false){
   }
 
   graphState.mems = filtered;
+  graphState.allMems = mems;
+  setStratumBanner(`STRATUM: ${mems.length} loaded · ${sourceLabel}` + (filtered.length !== mems.length ? ` · ${filtered.length} shown` : ''), mems.length > 8);
+  fillMemorySelects(mems);
   updateTelemetryAndUI(filtered, sourceLabel);
   return filtered;
 }
 
 function updateTelemetryAndUI(filtered, sourceLabel) {
-  // Update Telemetry Vitals
+  const all = (rawAllMemories && rawAllMemories.length) ? rawAllMemories : filtered;
   let totalLinks = 0, totalPersp = 0;
-  filtered.forEach(m => {
+  all.forEach(m => {
     totalLinks += (m.before || []).length + (m.after || []).length;
     totalPersp += (m.perspectives || []).length;
   });
@@ -1423,45 +1822,143 @@ function updateTelemetryAndUI(filtered, sourceLabel) {
   const statMemsEl = document.getElementById('statMems');
   const statLinksEl = document.getElementById('statLinks');
   const statPerspEl = document.getElementById('statPersp');
-  if (statMemsEl) statMemsEl.textContent = filtered.length + ' NODES';
+  if (statMemsEl) statMemsEl.textContent = all.length + ' NODES';
   if (statLinksEl) statLinksEl.textContent = totalLinks + ' SYNAPSES';
   if (statPerspEl) statPerspEl.textContent = totalPersp + ' VIEWS';
 
-  const shown = filtered.slice(0, 60);
+  const shown = filtered.slice(0, 80);
   const countEl = document.getElementById('count');
-  if (countEl) countEl.textContent = filtered.length + ' memories' + (filtered.length > shown.length ? ' (showing ' + shown.length + ')' : '');
+  if (countEl) countEl.textContent = all.length + ' in stratum · ' + filtered.length + ' match' + (filtered.length > shown.length ? ' (showing ' + shown.length + ')' : '');
 
-  // Render Clean Memory Cards
+  // Render Memory Cards based on Active View Mode ('human' | 'raw' | 'dual')
   const container = document.getElementById('memories');
   if (container) {
+    if (memoryViewMode === 'dual') {
+      container.style.gridTemplateColumns = '1fr';
+    } else {
+      container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(min(100%, 360px), 1fr))';
+    }
+
     container.innerHTML = shown.map(m => {
       const sub = getMemorySubsystem(m);
       const ret = computeEbbinghausRetention(m);
       const color = sub.color || stateColor(m.agent_id);
-      const tags = (m.tags || []).slice(0, 4).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
-      const cleanText = cleanMemoryPreview(m.text);
+      const avatar = getAgentAvatar(m.agent_id);
+      const tags = (m.tags || []).slice(0, 5).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
       const linksCount = (m.before || []).length + (m.after || []).length;
       const perspCount = (m.perspectives || []).length;
+      const h = humanizeMemory(m);
+      const promptXml = formatAIPromptContext(m);
 
-      return `<div class="mem" style="background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;transition:all .2s ease" onmouseover="this.style.borderColor='${color}'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
-        <div>
-          <div class="meta" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-            <span style="color:${color};font-weight:700;letter-spacing:.05em">● ${escapeHtml((m.agent_id||'agent').toUpperCase())}</span>
-            <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.05);color:${sub.color};border:1px solid ${sub.color}40;font-family:var(--font-mono);font-weight:700">${escapeHtml(sub.badge)}</span>
+      // 1. RAW AI CONTEXT MODE
+      if (memoryViewMode === 'raw') {
+        return `<div class="mem-raw-card" style="border-color:${color}44">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="color:${color};font-weight:800;font-size:12px">&lt;memory_node: ${escapeHtml(m.id.slice(0, 10))}...&gt;</span>
+                <span style="font-size:10px;color:var(--muted)">agent=${escapeHtml(m.agent_id||'system')}</span>
+              </div>
+              <span style="font-size:10px;color:var(--gold);font-family:var(--font-mono)">strength=${(m.strength??1).toFixed(2)}</span>
+            </div>
+            <pre style="background:#020408;border:1px solid rgba(0,240,255,0.2);border-radius:6px;padding:10px;font-size:11px;color:#38bdf8;overflow-x:auto;max-height:220px;user-select:all;line-height:1.4;margin:0 0 10px">${escapeHtml(promptXml)}</pre>
           </div>
-          <div style="font-size:13px;line-height:1.55;color:#e2e8f0;font-weight:500">${escapeHtml(cleanText)}</div>
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">${linksCount} links · ${perspCount} perspectives</span>
+            <div style="display:flex;gap:6px">
+              <button onclick="copyAIPromptContext('${m.id}')" style="background:#38bdf8;color:#05070f;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;font-weight:800">📋 Copy XML</button>
+              <button onclick="copyRawMemoryJSON('${m.id}')" style="background:rgba(255,255,255,0.1);border:1px solid var(--border);color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer">📋 Copy JSON</button>
+              <button onclick="speakMemory('${m.id}')" style="background:rgba(244,114,182,0.15);border:1px solid #f472b6;color:#f472b6;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer">🔊 Speak</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      // 2. DUAL SPLIT VIEW MODE
+      if (memoryViewMode === 'dual') {
+        return `<div class="mem-dual-card" style="border-color:${color}55">
+          <!-- Left Column: Human Story Digest -->
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <img src="${avatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid ${color};box-shadow:0 0 8px ${color}55" alt="${m.agent_id}"/>
+                <span style="color:${color};font-weight:800;font-size:12px">● ${escapeHtml((m.agent_id||'agent').toUpperCase())}</span>
+                <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.05);color:${sub.color};border:1px solid ${sub.color}40;font-family:var(--font-mono);font-weight:700">${escapeHtml(sub.badge)}</span>
+              </div>
+              <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">${new Date(m.created_at || Date.now()).toLocaleDateString()}</span>
+            </div>
+
+            <div style="font-size:14px;font-weight:800;line-height:1.4;color:#f8fafc;margin-bottom:8px">${escapeHtml(h.title)}</div>
+            
+            <div style="background:rgba(0,0,0,0.25);border-radius:6px;padding:8px 10px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.04);font-size:12px;color:#cbd5e1;display:grid;gap:4px">
+              ${h.takeaways.map(t => `<div style="display:flex;gap:5px;line-height:1.4"><span style="color:${color}">●</span><span>${t}</span></div>`).join('')}
+            </div>
+
+            <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-style:italic">
+              <span style="color:var(--cyan);font-weight:700;font-style:normal">🔗 Lineage:</span> ${escapeHtml(h.causalNarrative)}
+            </div>
+
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+              <button onclick="speakMemory('${m.id}')" style="background:rgba(244,114,182,0.15);border:1px solid #f472b6;color:#f472b6;font-size:10px;padding:4px 9px;border-radius:4px;cursor:pointer">🔊 Speak (Lucy)</button>
+              <button onclick="rehearseMemoryNode('${m.id}')" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);color:var(--gold);font-size:10px;padding:4px 9px;border-radius:4px;cursor:pointer">🔄 Rehearse (+LTP)</button>
+              <button onclick="quickAddPerspective('${m.id}')" style="background:rgba(0,240,255,0.1);border:1px solid rgba(0,240,255,0.3);color:var(--cyan);font-size:10px;padding:4px 9px;border-radius:4px;cursor:pointer">+ Perspective</button>
+            </div>
+          </div>
+
+          <!-- Right Column: Raw AI Context Block -->
+          <div style="background:#040710;border:1px solid rgba(0,240,255,0.25);border-radius:8px;padding:10px;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span style="font-size:10px;font-weight:700;color:#38bdf8;font-family:var(--font-mono)">🤖 RAW PROMPT CONTEXT (XML)</span>
+                <button onclick="copyAIPromptContext('${m.id}')" style="background:#38bdf8;color:#05070f;font-size:9px;padding:2px 8px;border-radius:3px;cursor:pointer;font-weight:800">📋 Copy XML</button>
+              </div>
+              <pre style="background:#020307;border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:8px;font-size:10.5px;color:#38bdf8;overflow-x:auto;max-height:190px;user-select:all;line-height:1.4;margin:0">${escapeHtml(promptXml)}</pre>
+            </div>
+            <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted);font-family:var(--font-mono)">
+              <span>ID: ${escapeHtml(m.id.slice(0, 12))}...</span>
+              <button onclick="copyRawMemoryJSON('${m.id}')" style="background:transparent;border:1px solid var(--border);color:#94a3b8;font-size:9px;padding:2px 6px;border-radius:3px;cursor:pointer">📋 Raw JSON</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      // 3. HUMAN STORY DIGEST MODE (DEFAULT)
+      return `<div class="mem-human-card" style="border-color:${color}40" onmouseover="this.style.borderColor='${color}'" onmouseout="this.style.borderColor='${color}40'">
+        <div>
+          <!-- Header with Agent Portrait & Badge -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <img src="${avatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid ${color};box-shadow:0 0 8px ${color}55" alt="${m.agent_id}"/>
+              <span style="color:${color};font-weight:800;font-size:12px;letter-spacing:.05em">${escapeHtml((m.agent_id||'agent').toUpperCase())}</span>
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.05);color:${sub.color};border:1px solid ${sub.color}40;font-family:var(--font-mono);font-weight:700">${escapeHtml(sub.badge)}</span>
+            </div>
+            <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">${new Date(m.created_at || Date.now()).toLocaleDateString()}</span>
+          </div>
+
+          <!-- Executive Action Headline -->
+          <div style="font-size:14px;font-weight:800;line-height:1.4;color:#f8fafc;margin-bottom:8px">${escapeHtml(h.title)}</div>
           
+          <!-- Key Takeaway Bullets -->
+          <div style="background:rgba(0,0,0,0.25);border-radius:6px;padding:8px 10px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.04);font-size:12px;color:#cbd5e1;display:grid;gap:4px">
+            ${h.takeaways.map(t => `<div style="display:flex;gap:5px;line-height:1.4"><span style="color:${color}">●</span><span>${t}</span></div>`).join('')}
+          </div>
+
+          <!-- Causal Lineage Narrative -->
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;font-style:italic">
+            <span style="color:var(--cyan);font-weight:700;font-style:normal">🔗 Lineage:</span> ${escapeHtml(h.causalNarrative)}
+          </div>
+
           <!-- Ebbinghaus Retention Micro-Meter -->
-          <div style="margin-top:10px;background:rgba(0,0,0,0.3);border-radius:6px;padding:6px 8px;border:1px solid rgba(255,255,255,0.04)">
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;font-family:var(--font-mono);margin-bottom:4px">
+          <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:6px 8px;border:1px solid rgba(255,255,255,0.04)">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;font-family:var(--font-mono);margin-bottom:3px">
               <span style="color:var(--muted)">RETENTION (EBBINGHAUS):</span>
               <span style="color:${parseFloat(ret.retentionPct)>70?'#34d399':(parseFloat(ret.retentionPct)>40?'#fbbf24':'#ef4444')};font-weight:800">${ret.retentionPct}%</span>
             </div>
             <div style="width:100%;height:4px;background:#1e293b;border-radius:2px;overflow:hidden">
               <div style="width:${ret.retentionPct}%;height:100%;background:${parseFloat(ret.retentionPct)>70?'#34d399':(parseFloat(ret.retentionPct)>40?'#fbbf24':'#ef4444')}"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--font-mono)">
-              <span>Stability S: ${ret.stabilityDays}d</span>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:2px;font-family:var(--font-mono)">
+              <span>Stability: ${ret.stabilityDays}d</span>
               <span>Rehearsals: ${ret.rehearsals}</span>
             </div>
           </div>
@@ -1469,12 +1966,15 @@ function updateTelemetryAndUI(filtered, sourceLabel) {
           ${tags ? `<div class="tags" style="margin-top:8px">${tags}</div>` : ''}
         </div>
         
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center">
+        <!-- Card Actions -->
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
           <div style="font-size:11px;font-family:var(--font-mono);color:var(--muted)">
             <span style="color:var(--cyan)">${linksCount} link${linksCount===1?'':'s'}</span> · 
             <span style="color:var(--purple)">${perspCount} view${perspCount===1?'':'s'}</span>
           </div>
-          <div style="display:flex;gap:6px">
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button onclick="speakMemory('${m.id}')" style="background:rgba(244,114,182,0.15);border:1px solid #f472b6;color:#f472b6;font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer" title="Listen to Lucy narrate this memory">🔊 Listen</button>
+            <button onclick="copyAIPromptContext('${m.id}')" style="background:rgba(56,189,248,0.15);border:1px solid #38bdf8;color:#38bdf8;font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer" title="Copy AI Prompt Context XML">📋 AI Context</button>
             <button onclick="rehearseMemoryNode('${m.id}')" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);color:var(--gold);font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer" title="Rehearse synapse (STDP/LTP)">🔄 Rehearse</button>
             <button onclick="quickAddPerspective('${m.id}')" style="background:rgba(0,240,255,0.1);border:1px solid rgba(0,240,255,0.3);color:var(--cyan);font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer">+ View</button>
             <button class="secondary" onclick="loadLog('${m.id}')" style="font-size:10px;padding:3px 7px;border-radius:4px">Log</button>
@@ -1486,15 +1986,14 @@ function updateTelemetryAndUI(filtered, sourceLabel) {
     }).join('') || '<div class="empty">No memories match query.</div>';
   }
 
-  // Update 3D Graph
+  const visual = all;
   if (graph3D.active) {
     if (!graph3D.scene) initThreeGraph();
-    updateThreeGraph(filtered);
+    updateThreeGraph(visual);
   } else {
     drawGraph(filtered);
   }
 
-  // Update Memory World Maze if active
   if (world3d) {
     buildMaze(world3d);
   }
@@ -1508,29 +2007,80 @@ function quickAddPerspective(id){
     input.focus();
   }
 }
+function setTaskStatus(id, msg, ok){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = ok === false ? '#fca5a5' : (ok ? '#34d399' : '#94a3b8');
+}
+async function postJson(url, body){
+  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  let data = null;
+  try { data = await res.json(); } catch (e) { data = null; }
+  if (!res.ok) throw new Error((data && (data.error || data.status)) || ('HTTP ' + res.status));
+  return data;
+}
 document.getElementById('memoryForm').addEventListener('submit', async e => {
   e.preventDefault();
   const tags = document.getElementById('tags').value.split(',').map(x=>x.trim()).filter(Boolean);
-  const body = { agent_id: document.getElementById('agentId').value, category: document.getElementById('category').value || undefined, text: document.getElementById('text').value, tags };
-  await fetch(API + '/v1/memories/encode', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  document.getElementById('memoryForm').reset();
-  load();
+  const text = document.getElementById('text').value.trim();
+  const title = (document.getElementById('memTitle')?.value || '').trim() || undefined;
+  const insightsRaw = (document.getElementById('memInsights')?.value || '').trim();
+  const insights = insightsRaw ? insightsRaw.split('|').map(x=>x.trim()).filter(Boolean) : undefined;
+
+  if (!text) { setTaskStatus('encodeStatus', 'Memory text is required.', false); return; }
+  const body = { 
+    agent_id: document.getElementById('agentId').value || 'azoth', 
+    category: document.getElementById('category').value || undefined, 
+    title,
+    insights,
+    text, 
+    tags 
+  };
+  setTaskStatus('encodeStatus', 'Encoding into dual stratum…');
+  try {
+    const saved = await postJson(API + '/v1/memories/encode', body);
+    document.getElementById('memoryForm').reset();
+    document.getElementById('agentId').value = body.agent_id;
+    setTaskStatus('encodeStatus', 'Saved ' + (saved && saved.id ? saved.id.slice(0, 12) : 'memory') + ' · dual format verified & auto-linked.', true);
+    showTransientToast(`⚡ Encoded Dual Memory Node [${saved?.id?.slice(0,8) || 'OK'}]`);
+    stratumLoaded = false;
+    await load(true);
+  } catch (err) {
+    setTaskStatus('encodeStatus', 'Encode failed: ' + err.message, false);
+  }
 });
 document.getElementById('conversationForm').addEventListener('submit', async e => {
   e.preventDefault();
   const text = document.getElementById('conversationText').value;
   const agent_id = document.getElementById('conversationAgent').value || 'system';
-  await fetch(API + '/v1/conversations/ingest', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text, agent_id }) });
-  document.getElementById('conversationForm').reset();
-  load();
+  try {
+    const data = await postJson(API + '/v1/conversations/ingest', { text, agent_id });
+    document.getElementById('conversationForm').reset();
+    stratumLoaded = false;
+    await load(true);
+    alert('Ingested ' + (data.encoded || 0) + ' memories.');
+  } catch (err) {
+    alert('Ingest failed: ' + err.message);
+  }
 });
 document.getElementById('perspForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const memory_id = document.getElementById('memoryId').value;
+  const memory_id = document.getElementById('memoryId').value.trim();
+  if (!memory_id) { setTaskStatus('perspStatus', 'Pick a target memory first.', false); return; }
   const body = { agent_id: document.getElementById('pAgentId').value, role: document.getElementById('role').value, summary: document.getElementById('summary').value || null, confidence: document.getElementById('confidence').value ? parseFloat(document.getElementById('confidence').value) : null };
-  await fetch(API + '/v1/memories/' + encodeURIComponent(memory_id) + '/perspectives', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  document.getElementById('perspForm').reset();
-  loadPerspectives(memory_id);
+  setTaskStatus('perspStatus', 'Attaching perspective…');
+  try {
+    await postJson(API + '/v1/memories/' + encodeURIComponent(memory_id) + '/perspectives', body);
+    document.getElementById('perspForm').reset();
+    document.getElementById('memoryId').value = memory_id;
+    setTaskStatus('perspStatus', 'Perspective attached.', true);
+    loadPerspectives(memory_id);
+    stratumLoaded = false;
+    await load(true);
+  } catch (err) {
+    setTaskStatus('perspStatus', 'Perspective failed: ' + err.message, false);
+  }
 });
 document.getElementById('linkForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -1538,9 +2088,16 @@ document.getElementById('linkForm').addEventListener('submit', async e => {
   const target_id = document.getElementById('linkTarget').value;
   const direction = document.getElementById('linkDirection').value;
   const reason = document.getElementById('linkReason').value || '';
-  await fetch(API + '/v1/memories/' + encodeURIComponent(memory_id) + '/link', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ direction, target_id, reason }) });
-  document.getElementById('linkForm').reset();
-  load();
+  if (!memory_id || !target_id) { setTaskStatus('linkStatus', 'Pick both source and target memories.', false); return; }
+  setTaskStatus('linkStatus', 'Forging synapse…');
+  try {
+    await postJson(API + '/v1/memories/' + encodeURIComponent(memory_id) + '/link', { direction, target_id, reason });
+    setTaskStatus('linkStatus', 'Causal link written.', true);
+    stratumLoaded = false;
+    await load(true);
+  } catch (err) {
+    setTaskStatus('linkStatus', 'Link failed: ' + err.message, false);
+  }
 });
 window.loadPerspectives = async (id) => {
   const items = await (await fetch(API + '/v1/memories/' + encodeURIComponent(id) + '/perspectives')).json();
@@ -1578,8 +2135,8 @@ window.ingestZothDocs = async () => {
   alert('Ingested docs: ' + data.encoded);
   load();
 };
-document.getElementById('search').addEventListener('input', load);
-document.getElementById('agentFilter').addEventListener('input', load);
+document.getElementById('search').addEventListener('input', () => load(false));
+document.getElementById('agentFilter').addEventListener('change', () => load(false));
 const agentColors = {azoth:'#fbbf24',athena:'#38bdf8',antigravity:'#7c9cff',hermes:'#ffaa40',draco:'#ef4444',kitsune:'#00d4aa',grok:'#38bdf8',ollama:'#34d399'};
 let graphState = { mems: [], centers: {}, selected: null, hover: null,
   view: { x: 0, y: 0, k: 1 }, dragging: false, dragMoved: false, dragStart: null,
@@ -2205,7 +2762,7 @@ window.toggleAutoRotate = () => {
 
 window.reset3DCamera = () => {
   if (graph3D.camera && graph3D.controls) {
-    graph3D.camera.position.set(0, 0, 480);
+    graph3D.camera.position.set(0, 42, 520);
     graph3D.controls.target.set(0, 0, 0);
     graph3D.controls.update();
   }
@@ -2228,18 +2785,21 @@ function initThreeGraph(){
     scene.fog = new THREE.FogExp2(0x060912, 0.0012);
     graph3D.scene = scene;
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(55, width / height, 1, 3000);
-    camera.position.set(0, 0, 480);
+    const camera = new THREE.PerspectiveCamera(52, width / height, 0.8, 4800);
+    camera.position.set(0, 42, 520);
     graph3D.camera = camera;
 
-    // WebGL Renderer with High-DPI and Anti-Aliasing
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x060912, 1);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    if (window.ZothStudio3D && ZothStudio3D.dressRenderer) {
+      ZothStudio3D.dressRenderer(renderer);
+      renderer.toneMappingExposure = 1.18;
+    } else {
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.22;
+    }
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
     graph3D.renderer = renderer;
@@ -2274,20 +2834,41 @@ function initThreeGraph(){
       graph3D.composer = composer;
     }
 
-    // Lighting
-    const ambLight = new THREE.AmbientLight(0xffffff, 0.85);
+    if (window.ZothStudio3D && ZothStudio3D.addStudioRig) {
+      graph3D.rig = ZothStudio3D.addStudioRig(scene, renderer, {
+        noFloor: true,
+        radius: 280,
+        hemi: 0.42,
+        keyIntensity: 2.4,
+        rimIntensity: 1.7,
+      });
+    }
+    const ambLight = new THREE.AmbientLight(0xb7d4ff, 0.38);
     scene.add(ambLight);
     graph3D.ambLight = ambLight;
 
-    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.3);
-    dirLight1.position.set(200, 300, 400);
+    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.55);
+    dirLight1.position.set(220, 280, 360);
     scene.add(dirLight1);
     graph3D.dirLight1 = dirLight1;
 
-    const dirLight2 = new THREE.DirectionalLight(0xa78bfa, 0.9);
-    dirLight2.position.set(-200, -200, -300);
+    const dirLight2 = new THREE.DirectionalLight(0xfbbf24, 1.05);
+    dirLight2.position.set(-240, 120, -280);
     scene.add(dirLight2);
     graph3D.dirLight2 = dirLight2;
+
+    const fillLight = new THREE.PointLight(0x7c5cff, 1.1, 900, 2);
+    fillLight.position.set(0, 40, 0);
+    scene.add(fillLight);
+    graph3D.fillLight = fillLight;
+
+    if (window.ZothStudio3D && ZothStudio3D.introDolly) {
+      ZothStudio3D.introDolly(camera, null, {
+        from: new THREE.Vector3(80, 160, 720),
+        to: camera.position.clone(),
+        duration: 1800
+      });
+    }
 
     // Ambient 2,500 Star Tensor Dust Particle Cloud (InstancedMesh)
     const dustCount = 2500;
@@ -2343,7 +2924,7 @@ function initThreeGraph(){
     const curTheme = (window.getZothTheme ? window.getZothTheme() : (document.documentElement.getAttribute('data-theme') || 'dark'));
     applyNetrunnerTheme3D(curTheme);
 
-    // Animation Loop
+    graph3D.dummy = new THREE.Object3D();
     animateThreeGraph();
   } catch (err) {
     console.warn('[WebGL Fallback] WebGL unavailable. Switching to 2D Canvas graph:', err);
@@ -2395,35 +2976,45 @@ function resizeThreeGraph(){
   }
 }
 
-function onThreeMouseMove(e){
+function pickThreeNode(e){
   const container = document.getElementById('threeGraphContainer');
-  if (!container || !graph3D.camera) return;
+  if (!container || !graph3D.camera || !graph3D.raycaster) return null;
   const rect = container.getBoundingClientRect();
   graph3D.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   graph3D.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
   graph3D.raycaster.setFromCamera(graph3D.mouse, graph3D.camera);
-  const meshes = graph3D.nodes.map(n => n.mesh);
-  const intersects = graph3D.raycaster.intersectObjects(meshes);
+  if (graph3D.nodeMesh) {
+    const hits = graph3D.raycaster.intersectObject(graph3D.nodeMesh);
+    if (hits.length && hits[0].instanceId != null) {
+      return graph3D.nodes[hits[0].instanceId] || null;
+    }
+  }
+  const meshes = graph3D.nodes.map(n => n.mesh).filter(Boolean);
+  if (meshes.length) {
+    const hits = graph3D.raycaster.intersectObjects(meshes);
+    if (hits.length) return graph3D.nodes.find(n => n.mesh === hits[0].object) || null;
+  }
+  return null;
+}
 
-  if (intersects.length > 0) {
-    const hit = intersects[0].object;
-    const nodeObj = graph3D.nodes.find(n => n.mesh === hit);
-    if (nodeObj && nodeObj.id !== graph3D.hoveredId) {
+function onThreeMouseMove(e){
+  const container = document.getElementById('threeGraphContainer');
+  if (!container || !graph3D.camera) return;
+  const nodeObj = pickThreeNode(e);
+  if (nodeObj) {
+    if (nodeObj.id !== graph3D.hoveredId) {
       graph3D.hoveredId = nodeObj.id;
       graphState.hover = nodeObj.id;
       updateTooltip(nodeObj.id, e);
       container.style.cursor = 'pointer';
       highlight3DConnections(nodeObj.id);
     }
-  } else {
-    if (graph3D.hoveredId) {
-      graph3D.hoveredId = null;
-      graphState.hover = null;
-      hideTooltip();
-      container.style.cursor = 'grab';
-      highlight3DConnections(graphState.selected);
-    }
+  } else if (graph3D.hoveredId) {
+    graph3D.hoveredId = null;
+    graphState.hover = null;
+    hideTooltip();
+    container.style.cursor = 'grab';
+    highlight3DConnections(graphState.selected);
   }
 }
 
@@ -2432,16 +3023,20 @@ function onThreeClick(e){
     graphState.selected = graph3D.hoveredId;
     renderFocusPanel();
     highlight3DConnections(graph3D.hoveredId);
-    // Visual feedback: brief scale punch
-    const targetNode = graph3D.nodes.find(n => n.id === graph3D.hoveredId);
-    if (targetNode) {
-      targetNode.mesh.scale.set(1.8, 1.8, 1.8);
-    }
   } else {
     graphState.selected = null;
     renderFocusPanel();
     highlight3DConnections(null);
   }
+}
+
+function applyNodeInstance(n, scale){
+  if (!graph3D.nodeMesh || n.index == null || !graph3D.dummy) return;
+  graph3D.dummy.position.set(n.pos.x, n.pos.y, n.pos.z);
+  graph3D.dummy.scale.set(scale, scale, scale);
+  graph3D.dummy.rotation.set(0, 0, 0);
+  graph3D.dummy.updateMatrix();
+  graph3D.nodeMesh.setMatrixAt(n.index, graph3D.dummy.matrix);
 }
 
 function highlight3DConnections(focusId){
@@ -2451,30 +3046,45 @@ function highlight3DConnections(focusId){
     for (const c of connectionsOf(focusId)) focusSet.add(c.id);
   }
 
-  // Adjust node scale & glow
   for (const n of graph3D.nodes) {
     const isFocus = focusId && n.id === focusId;
     const isConnected = focusSet.has(n.id);
-    const targetScale = isFocus ? 1.6 : (isConnected ? 1.25 : (focusId ? 0.75 : 1.0));
-    n.mesh.scale.set(targetScale, targetScale, targetScale);
-    if (n.glowMesh) {
-      n.glowMesh.visible = !focusId || isConnected;
-      n.glowMesh.scale.set(targetScale * 1.5, targetScale * 1.5, targetScale * 1.5);
+    const targetScale = isFocus ? 1.85 : (isConnected ? 1.28 : (focusId ? 0.62 : 1.0));
+    n.scale = targetScale;
+    applyNodeInstance(n, targetScale);
+    if (graph3D.nodeMesh && graph3D.nodeMesh.setColorAt && n.color) {
+      const c = n.color.clone();
+      if (focusId && !isConnected) c.multiplyScalar(0.28);
+      else if (isFocus) c.offsetHSL(0, 0.05, 0.12);
+      graph3D.nodeMesh.setColorAt(n.index, c);
     }
   }
+  if (graph3D.nodeMesh) {
+    graph3D.nodeMesh.instanceMatrix.needsUpdate = true;
+    if (graph3D.nodeMesh.instanceColor) graph3D.nodeMesh.instanceColor.needsUpdate = true;
+  }
 
-  // Adjust link visibility / opacity
-  for (const l of graph3D.links) {
-    const isLinked = focusId && (l.srcId === focusId || l.dstId === focusId);
-    l.line.material.opacity = focusId ? (isLinked ? 0.95 : 0.08) : 0.35;
-    l.line.material.linewidth = isLinked ? 2 : 1;
+  if (graph3D.linkMesh && graph3D.linkMesh.geometry && graph3D.links.length) {
+    const colors = graph3D.linkMesh.geometry.getAttribute('color');
+    if (colors) {
+      for (let i = 0; i < graph3D.links.length; i++) {
+        const l = graph3D.links[i];
+        const isLinked = focusId && (l.srcId === focusId || l.dstId === focusId);
+        const dim = focusId ? (isLinked ? 1 : 0.12) : 0.55;
+        const col = new THREE.Color(l.color);
+        colors.setXYZ(i * 2, col.r * dim, col.g * dim, col.b * dim);
+        colors.setXYZ(i * 2 + 1, col.r * dim, col.g * dim, col.b * dim);
+      }
+      colors.needsUpdate = true;
+    }
   }
 }
 
 function updateThreeGraph(mems){
   if (!graph3D.scene || !graph3D.nodeGroup || !graph3D.linkGroup || !mems || !mems.length) return;
+  const dummy = graph3D.dummy || new THREE.Object3D();
+  graph3D.dummy = dummy;
 
-  // Clear existing 3D nodes & links
   while (graph3D.nodeGroup.children.length) {
     const obj = graph3D.nodeGroup.children[0];
     if (obj.geometry) obj.geometry.dispose();
@@ -2489,83 +3099,97 @@ function updateThreeGraph(mems){
   }
   graph3D.nodes = [];
   graph3D.links = [];
+  graph3D.nodeMesh = null;
+  graph3D.linkMesh = null;
 
-  // Compute 3D volumetric coordinates for each cluster & memory
   const layout = compute3DLayout(mems, graphState.mode);
-  const sphereGeo = new THREE.SphereGeometry(3.6, 16, 16);
-  const glowGeo = new THREE.SphereGeometry(6.2, 12, 12);
-
-  // Build high-quality 3D Node spheres
+  const placed = [];
   for (const m of mems) {
     const pos = layout.positions[m.id];
     if (!pos) continue;
-
-    const hexColor = colorFor(m);
-    const colObj = new THREE.Color(hexColor);
-
-    // Inner glossy emissive core
-    const mat = new THREE.MeshPhongMaterial({
-      color: colObj,
-      emissive: colObj,
-      emissiveIntensity: 0.65,
-      shininess: 90,
-      specular: 0xffffff
-    });
-    const mesh = new THREE.Mesh(sphereGeo, mat);
-    mesh.position.set(pos.x, pos.y, pos.z);
-
-    // Outer soft volumetric glow aura
-    const glowMat = new THREE.MeshBasicMaterial({
-      color: colObj,
-      transparent: true,
-      opacity: 0.28,
-      wireframe: true
-    });
-    const glowMesh = new THREE.Mesh(glowGeo, glowMat);
-    glowMesh.position.set(pos.x, pos.y, pos.z);
-
-    graph3D.nodeGroup.add(mesh);
-    graph3D.nodeGroup.add(glowMesh);
-
-    graph3D.nodes.push({
-      mesh,
-      glowMesh,
-      id: m.id,
-      pos,
-      color: colObj,
-      baseColor: colObj
-    });
+    const colObj = new THREE.Color(colorFor(m));
+    placed.push({ m, pos, color: colObj });
   }
+  if (!placed.length) return;
 
-  // Build glowing 3D Link lines
-  for (const m of mems) {
-    const pA = layout.positions[m.id];
+  const Phys = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+  const nodeGeo = new THREE.IcosahedronGeometry(4.2, 1);
+  const nodeMat = new Phys({
+    color: 0xffffff,
+    metalness: 0.55,
+    roughness: 0.22,
+    emissive: 0x141018,
+    emissiveIntensity: 0.55,
+    clearcoat: 0.65,
+    clearcoatRoughness: 0.18,
+    envMapIntensity: 1.25,
+    transparent: true,
+    opacity: 0.96
+  });
+  const nodeMesh = new THREE.InstancedMesh(nodeGeo, nodeMat, placed.length);
+  nodeMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  nodeMesh.frustumCulled = false;
+
+  placed.forEach((item, i) => {
+    dummy.position.set(item.pos.x, item.pos.y, item.pos.z);
+    dummy.scale.set(1, 1, 1);
+    dummy.rotation.set(0, 0, 0);
+    dummy.updateMatrix();
+    nodeMesh.setMatrixAt(i, dummy.matrix);
+    if (nodeMesh.setColorAt) nodeMesh.setColorAt(i, item.color);
+    graph3D.nodes.push({
+      id: item.m.id,
+      pos: item.pos,
+      color: item.color,
+      baseColor: item.color,
+      index: i,
+      scale: 1
+    });
+  });
+  nodeMesh.instanceMatrix.needsUpdate = true;
+  if (nodeMesh.instanceColor) nodeMesh.instanceColor.needsUpdate = true;
+  graph3D.nodeGroup.add(nodeMesh);
+  graph3D.nodeMesh = nodeMesh;
+
+  const posById = layout.positions;
+  const seen = new Set();
+  const positions = [];
+  const colors = [];
+  for (const item of placed) {
+    const m = item.m;
+    const pA = posById[m.id];
     if (!pA) continue;
-
-    // "After" and "Before" associations
-    const allLinks = [
+    const pairs = [
       ...(m.after || []).map(a => ({ target: a.id, isAfter: true })),
       ...(m.before || []).map(b => ({ target: b.id, isAfter: false }))
     ];
-
-    for (const link of allLinks) {
-      const pB = layout.positions[link.target];
+    for (const link of pairs) {
+      const pB = posById[link.target];
       if (!pB) continue;
-
-      const lineGeo = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(pA.x, pA.y, pA.z),
-        new THREE.Vector3(pB.x, pB.y, pB.z)
-      ]);
-      const lineColor = link.isAfter ? 0x00f0ff : 0xfbbf24;
-      const lineMat = new THREE.LineBasicMaterial({
-        color: lineColor,
-        transparent: true,
-        opacity: 0.35
-      });
-      const line = new THREE.Line(lineGeo, lineMat);
-      graph3D.linkGroup.add(line);
-      graph3D.links.push({ line, srcId: m.id, dstId: link.target, color: lineColor });
+      const key = [m.id, link.target].sort().join('|');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      positions.push(pA.x, pA.y, pA.z, pB.x, pB.y, pB.z);
+      const lineColor = link.isAfter ? 0x00e5ff : 0xfbbf24;
+      const col = new THREE.Color(lineColor);
+      colors.push(col.r, col.g, col.b, col.r, col.g, col.b);
+      graph3D.links.push({ srcId: m.id, dstId: link.target, color: lineColor });
     }
+  }
+  if (positions.length) {
+    const lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    lineGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    const lineMat = new THREE.LineBasicMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.42,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const linkMesh = new THREE.LineSegments(lineGeo, lineMat);
+    graph3D.linkGroup.add(linkMesh);
+    graph3D.linkMesh = linkMesh;
   }
 
   highlight3DConnections(graphState.selected);
@@ -2727,17 +3351,18 @@ function animateThreeGraph(){
     graph3D.dustMesh.rotation.x = time * 0.02;
   }
 
-  // Gentle floating oscillation + audio reaction for nodes
-  if (graph3D.nodeGroup) {
-    for (let i = 0; i < graph3D.nodes.length; i++) {
-      const n = graph3D.nodes[i];
-      if (n.glowMesh && n.glowMesh.visible) {
-        const pulse = 1.0 + (0.15 * Math.sin(time * 3 + i)) + (audioLevel * 0.45);
-        n.glowMesh.scale.set(pulse, pulse, pulse);
+  if (graph3D.nodeMesh && graph3D.nodes.length && graph3D.dummy) {
+    const focusId = graph3D.hoveredId || graphState.selected;
+    if (focusId) {
+      const n = graph3D.nodes.find(x => x.id === focusId);
+      if (n) {
+        const pulse = (n.scale || 1) * (1 + 0.08 * Math.sin(time * 5) + audioLevel * 0.2);
+        applyNodeInstance(n, pulse);
+        graph3D.nodeMesh.instanceMatrix.needsUpdate = true;
       }
-      if (n.mesh && n.mesh.material && n.mesh.material.emissiveIntensity !== undefined) {
-        n.mesh.material.emissiveIntensity = 0.55 + (audioLevel * 0.6) + 0.1 * Math.sin(time * 2 + i);
-      }
+    }
+    if (graph3D.nodeMesh.material && graph3D.nodeMesh.material.emissiveIntensity != null) {
+      graph3D.nodeMesh.material.emissiveIntensity = 0.5 + audioLevel * 0.45 + 0.08 * Math.sin(time * 2);
     }
   }
 
@@ -3089,39 +3714,123 @@ function hideTooltip(){
   if (tip) tip.style.display = 'none';
 }
 
+let focusPanelTab = 'human';
+function setFocusPanelTab(tab) {
+  focusPanelTab = tab;
+  renderFocusPanel();
+}
+
 function renderFocusPanel(){
   const panel = document.getElementById('graphFocus');
   if (!panel) return;
   const id = graphState.selected;
-  if (!id) { panel.innerHTML = '<div class="empty">Click a node to inspect its connections.</div>'; return; }
-  const m = graphState.mems.find(x => x.id === id);
-  if (!m) { panel.innerHTML = '<div class="empty">Memory not found.</div>'; return; }
+  if (!id) { 
+    panel.innerHTML = '<div class="empty">Click any node in the 3D Obsidian Graph to inspect its causal synapses and dual-layer context. Drag to rotate 3D cluster · Scroll to zoom.</div>'; 
+    return; 
+  }
+  const m = (graphState.allMems || rawAllMemories || graphState.mems).find(x => x.id === id) || (graphState.mems || []).find(x => x.id === id);
+  if (!m) { panel.innerHTML = '<div class="empty">Memory node not found in active stratum.</div>'; return; }
+  
+  const h = humanizeMemory(m);
+  const avatar = getAgentAvatar(m.agent_id);
+  const color = h.subsystem.color || stateColor(m.agent_id);
   const conns = connectionsOf(id);
+  const promptXml = formatAIPromptContext(m);
+
   panel.innerHTML = `
-    <div class="mem" style="margin-bottom:8px">
-      <div class="meta"><span>${escapeHtml(m.category || 'general')} · ${escapeHtml(m.agent_id)}</span><span>strength ${(m.strength ?? 1).toFixed(2)}</span></div>
-      <div style="margin-top:6px">${escapeHtml(m.text.slice(0, 220))}${m.text.length > 220 ? '…' : ''}</div>
-      <div style="margin-top:6px;font-size:11px;color:#8b949e">id ${id}</div>
+    <div style="background:rgba(15,23,42,0.95);border:1px solid ${color}66;border-radius:10px;padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+      <!-- Top Inspector Header with Avatar & Tab Buttons -->
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:12px;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <img src="${avatar}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${color};box-shadow:0 0 10px ${color}66" alt="${m.agent_id}"/>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-weight:800;color:${color};font-size:14px;letter-spacing:.06em">${escapeHtml((m.agent_id||'agent').toUpperCase())}</span>
+              <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,0.06);color:${h.subsystem.color};border:1px solid ${h.subsystem.color}40;font-family:var(--font-mono);font-weight:700">${escapeHtml(h.subsystem.badge)}</span>
+              <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">${escapeHtml(m.category||'general')}</span>
+            </div>
+            <div style="font-size:11px;color:#94a3b8;font-family:var(--font-mono);margin-top:2px">ID: <span style="color:#e2e8f0;user-select:all">${escapeHtml(m.id)}</span></div>
+          </div>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onclick="setFocusPanelTab('human')" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid ${focusPanelTab==='human'?color:'var(--border)'};background:${focusPanelTab==='human'?color+'22':'rgba(255,255,255,0.04)'};color:${focusPanelTab==='human'?color:'#94a3b8'};cursor:pointer;font-weight:700">📖 Human Briefing</button>
+          <button onclick="setFocusPanelTab('raw')" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid ${focusPanelTab==='raw'?color:'var(--border)'};background:${focusPanelTab==='raw'?color+'22':'rgba(255,255,255,0.04)'};color:${focusPanelTab==='raw'?color:'#94a3b8'};cursor:pointer;font-weight:700">🤖 Raw Context & Lineage</button>
+          <button onclick="speakMemory('${m.id}')" style="background:rgba(244,114,182,0.15);border:1px solid #f472b6;color:#f472b6;font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer" title="Listen to Lucy narrate this memory">🔊 Listen</button>
+        </div>
+      </div>
+      
+      <!-- Tab 1: Human Briefing -->
+      <div style="display:${focusPanelTab==='human'?'block':'none'}">
+        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.4">${escapeHtml(h.title)}</div>
+        
+        <!-- Key Takeaways -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--gold);font-family:var(--font-mono);margin-bottom:8px">KEY TAKEAWAYS & COGNITIVE IMPACT</div>
+          <div style="display:grid;gap:6px;font-size:12.5px;color:#cbd5e1;line-height:1.5">
+            ${h.takeaways.map(t => `<div style="display:flex;gap:6px"><span style="color:${color}">●</span><span>${t}</span></div>`).join('')}
+          </div>
+        </div>
+        
+        <!-- Causal Lineage Flow -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--cyan);font-family:var(--font-mono);margin-bottom:6px">CAUSAL SYNAPSES (${conns.length} LINKS)</div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">${escapeHtml(h.causalNarrative)}</div>
+          <div style="display:grid;gap:6px">
+            ${conns.map(c => {
+              const t = (graphState.allMems || rawAllMemories || graphState.mems).find(x => x.id === c.id);
+              const isBefore = c.dir === 'before';
+              return `<div style="display:flex;align-items:center;gap:8px;font-size:12px;background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:6px;border-left:3px solid ${isBefore?'#fbbf24':'#00f0ff'}">
+                <span style="font-family:var(--font-mono);font-weight:700;color:${isBefore?'#fbbf24':'#00f0ff'}">${isBefore?'⬅ CAUSED BY':'➔ ENABLES'}</span>
+                <span style="color:#e2e8f0;flex:1">${escapeHtml(t ? cleanMemoryPreview(t.text).slice(0, 90) : c.id)}</span>
+                ${c.reason ? `<span style="font-size:10px;color:var(--muted);font-style:italic">(${escapeHtml(c.reason)})</span>` : ''}
+              </div>`;
+            }).join('') || '<div style="font-size:11px;color:var(--muted)">No explicit synaptic links forged yet.</div>'}
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button onclick="rehearseMemoryNode('${m.id}')" style="background:var(--gold);color:#050508;font-size:11px;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:800">🔄 Active Rehearsal (+1 LTP Pulse)</button>
+          <button onclick="quickAddPerspective('${m.id}')" style="background:rgba(0,240,255,0.15);border:1px solid #00f0ff;color:#00f0ff;font-size:11px;padding:7px 14px;border-radius:6px;cursor:pointer">+ Attach Perspective</button>
+          <button onclick="copyAIPromptContext('${m.id}')" style="background:rgba(56,189,248,0.15);border:1px solid #38bdf8;color:#38bdf8;font-size:11px;padding:7px 14px;border-radius:6px;cursor:pointer">📋 Copy Prompt XML</button>
+        </div>
+      </div>
+      
+      <!-- Tab 2: Raw Context & Lineage -->
+      <div style="display:${focusPanelTab==='raw'?'block':'none'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:11px;font-weight:700;color:#38bdf8;font-family:var(--font-mono)">PROMPT-READY CONTEXT INJECTION BLOCK (XML)</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="copyAIPromptContext('${m.id}')" style="font-size:10px;padding:4px 10px;background:#38bdf8;color:#05070f;font-weight:800;border-radius:4px;cursor:pointer">📋 Copy XML</button>
+            <button onclick="copyRawMemoryJSON('${m.id}')" style="font-size:10px;padding:4px 10px;background:rgba(255,255,255,0.1);border:1px solid var(--border);color:#fff;border-radius:4px;cursor:pointer">📋 Copy JSON</button>
+          </div>
+        </div>
+        <pre style="background:#05070e;border:1px solid rgba(0,240,255,0.25);border-radius:8px;padding:12px;font-size:11px;font-family:var(--font-mono);color:#38bdf8;overflow-x:auto;max-height:260px;margin:0 0 12px;user-select:all;line-height:1.45">${escapeHtml(promptXml)}</pre>
+        
+        <div style="font-size:11px;font-weight:700;color:var(--gold);font-family:var(--font-mono);margin-bottom:6px">UNCOMPRESSED RAW JSON PAYLOAD</div>
+        <pre style="background:#05070e;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;font-family:var(--font-mono);color:#fde047;overflow-x:auto;max-height:220px;margin:0;user-select:all;line-height:1.45">${escapeHtml(JSON.stringify(m, null, 2))}</pre>
+      </div>
     </div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8b949e;margin-bottom:4px">${conns.length} connection(s)</div>
-    ${conns.map(c => {
-      const t = graphState.mems.find(x => x.id === c.id);
-      return `<div class="log-line"><b style="color:${c.dir === 'before' ? '#fbbf24' : '#00f0ff'}">${c.dir}</b> → ${escapeHtml(t ? (t.text.slice(0,80) + (t.text.length > 80 ? '…' : '')) : c.id.slice(0,8))}${c.reason ? ` <i>(${escapeHtml(c.reason)})</i>` : ''}</div>`;
-    }).join('') || '<div class="empty">No links yet.</div>'}`;
+  `;
 }
 
 function fillMemorySelects(mems){
-  const opts = mems.slice(0, 300).map(m => {
-    const label = (m.text.slice(0, 60) + (m.text.length > 60 ? '…' : '')) + ' [' + (m.category || 'general') + ']';
-    return `<option value="${m.id}">${escapeHtml(label)}</option>`;
+  const pool = (mems && mems.length ? mems : rawAllMemories) || [];
+  const opts = pool.slice(0, 800).map(m => {
+    const preview = cleanMemoryPreview(m.text || '').slice(0, 72);
+    const label = preview + ' [' + (m.agent_id || '?') + ' · ' + (m.category || 'general') + ']';
+    return `<option value="${escapeHtml(m.id)}">${escapeHtml(label)}</option>`;
   }).join('');
-  for (const selId of ['linkSource', 'linkTarget', 'memoryId', 'triggerId']) {
+  for (const selId of ['linkSource', 'linkTarget']) {
     const sel = document.getElementById(selId);
-    if (!sel) continue;
+    if (!sel || sel.tagName !== 'SELECT') continue;
     const current = sel.value;
-    sel.innerHTML = '<option value="">' + (selId === 'memoryId' ? 'Pick memory for perspective...' : selId === 'triggerId' ? 'Pick memory to trigger...' : 'Pick memory...') + '</option>' + opts;
+    sel.innerHTML = '<option value="">Pick memory...</option>' + opts;
     if (current) sel.value = current;
   }
+  const dl = document.getElementById('memoryIdList');
+  if (dl) dl.innerHTML = opts;
 }
 
 window.runAutoLink = async () => {
@@ -3737,7 +4446,7 @@ function showCodecDialog(char, fullText){
   if (avatarEl) {
     avatarEl.src = char.avatar;
     avatarEl.style.filter = char.isOracle ? 
-      'hue-rotate(120deg) drop-shadow(0 0 8px #f472b6) drop-shadow(0 0 16px #ffffff)' : 
+      'drop-shadow(0 0 8px #f472b6) drop-shadow(0 0 16px rgba(0,240,255,0.6))' : 
       'drop-shadow(0 0 6px #00f0ff) drop-shadow(0 0 12px #a78bfa)';
   }
   if (avatarWrap) {

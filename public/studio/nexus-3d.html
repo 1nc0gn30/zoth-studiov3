@@ -68,6 +68,7 @@
 <script src="/studio/nexus-omnipost-bridge.js?v=20260824"></script>
 <script src="/studio/nexus-3d-inspector.js?v=20260824"></script>
 <script src="/studio/nexus-3d-sky.js?v=20260824"></script>
+<script src="/studio/zoth-3d-rig.js"></script>
 <script src="/studio/nexus-3d-knowledge.js?v=20260824"></script>
 <script src="/studio/nexus-3d-worker.js?v=20260824"></script>
 <style>
@@ -3178,8 +3179,9 @@
         renderer.setSize(host.clientWidth, host.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.25;
+        renderer.toneMappingExposure = 1.18;
         renderer.shadowMap.enabled = true;
+        if (window.ZothStudio3D) window.ZothStudio3D.dressRenderer(renderer);
         host.appendChild(renderer.domElement);
 
         // OrbitControls
@@ -3313,8 +3315,42 @@
         rimLight.position.set(0, 16, -18);
         scene.add(rimLight);
 
+        if (window.Nexus3DSky && typeof window.Nexus3DSky.applyEnvironmentToScene === "function") {
+          try {
+            window.Nexus3DSky.applyEnvironmentToScene(scene, renderer, "golden-dawn-sanctum", THREE);
+            const dome = window.Nexus3DSky.createSkyDomeMesh(THREE, 380, "golden-dawn-sanctum");
+            if (dome) scene.add(dome);
+          } catch (skyErr) {
+            console.warn("Nexus sky IBL skipped", skyErr);
+          }
+        } else if (window.ZothStudio3D) {
+          window.ZothStudio3D.addStudioRig(scene, renderer, { radius: 20, floorY: -0.04, hemi: 0.35 });
+        }
+
         // Ambient Particle System
         initParticleSystem();
+
+        // Default stage piece so the viewport is never a black void
+        try {
+          const DemoMat = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+          const demo = new THREE.Mesh(
+            new THREE.TorusKnotGeometry(1.12, 0.34, 140, 28),
+            new DemoMat({
+              color: 0xc9a227,
+              metalness: 1,
+              roughness: 0.16,
+              emissive: 0x3a2a08,
+              emissiveIntensity: 0.25,
+              clearcoat: 0.9,
+              clearcoatRoughness: 0.12
+            })
+          );
+          demo.position.y = 1.45;
+          demo.castShadow = true;
+          demo.name = "zoth-default-knot";
+          scene.add(demo);
+          window.__zothNexusDemo = demo;
+        } catch (e) {}
 
         // 3D Viewport Raycaster Picking
         const raycaster = new THREE.Raycaster();

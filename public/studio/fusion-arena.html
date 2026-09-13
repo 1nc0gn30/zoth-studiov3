@@ -42,6 +42,7 @@
 <script src="/assets/vendor/LuminosityHighPassShader.js"></script>
 <script src="/assets/vendor/UnrealBloomPass.js"></script>
 <script src="/assets/vendor/EffectComposer.js"></script>
+<script src="/studio/zoth-3d-rig.js"></script>
 <style>
         .skip-to-content, .skip-link, .skip {
       position: absolute;
@@ -1363,13 +1364,16 @@
         renderer.setSize(host.clientWidth, host.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.15;
+        renderer.toneMappingExposure = 1.12;
+        if (window.ZothStudio3D) window.ZothStudio3D.dressRenderer(renderer);
         host.appendChild(renderer.domElement);
 
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 1.5;
+        controls.autoRotateSpeed = 0.55;
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
 
         // Postprocessing
         const renderPass = new THREE.RenderPass(scene, camera);
@@ -1379,12 +1383,20 @@
         composer.addPass(bloomPass);
 
         // Lighting
-        const amb = new THREE.AmbientLight(0xffffff, 0.7);
+        const amb = new THREE.AmbientLight(0xb7d4ff, 0.35);
         scene.add(amb);
 
-        const keyLight = new THREE.PointLight(0x00e5ff, 3.0, 50);
+        const keyLight = new THREE.PointLight(0x00e5ff, 2.2, 50);
         keyLight.position.set(0, 10, 0);
         scene.add(keyLight);
+
+        const goldRim = new THREE.DirectionalLight(0xc9a227, 1.7);
+        goldRim.position.set(-10, 8, -14);
+        scene.add(goldRim);
+
+        if (window.ZothStudio3D) {
+          window.ZothStudio3D.addStudioRig(scene, renderer, { radius: 14, floorY: -2.12, hemi: 0.3, rimIntensity: 1.4 });
+        }
 
         // Holographic Combat Floor
         const floorGeo = new THREE.CylinderGeometry(10, 10, 0.2, 64);

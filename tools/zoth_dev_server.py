@@ -16,6 +16,7 @@ import urllib.error
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 from datetime import datetime, timezone
+import uuid
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 PUBLIC_DIR = ROOT_DIR / "public"
@@ -76,13 +77,22 @@ def save_notes(notes: list[dict]):
     NOTES_MD.write_text("\n".join(md_lines), encoding="utf-8")
 
 def load_local_memories() -> list[dict]:
-    for candidate in [MEMORIES_LOCAL_FILE, MEMORIES_DAEMON_FILE]:
+    for candidate in [MEMORIES_DAEMON_FILE, MEMORIES_LOCAL_FILE]:
         if candidate.exists():
             try:
                 return json.loads(candidate.read_text(encoding="utf-8"))
             except Exception:
                 pass
     return []
+
+def save_local_memories(mems: list[dict]) -> None:
+    payload = json.dumps(mems, ensure_ascii=False, indent=2)
+    for candidate in [MEMORIES_DAEMON_FILE, MEMORIES_LOCAL_FILE]:
+        try:
+            candidate.parent.mkdir(parents=True, exist_ok=True)
+            candidate.write_text(payload, encoding="utf-8")
+        except Exception as e:
+            print(f"[Zoth Dev Server] Could not write {candidate}: {e}")
 
 class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -99,6 +109,56 @@ class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _encode_local(self, raw_data: bytes, ingest: bool = False):
+        try:
+            data = json.loads(raw_data.decode("utf-8") or "{}")
+        except Exception:
+            data = {}
+        mems = load_local_memories()
+        now = datetime.now(timezone.utc).isoformat()
+        encoded = []
+        lines = []
+        if ingest:
+            text = str(data.get("text") or "")
+            lines = [ln.strip() for ln in text.splitlines() if ln.strip()] or ([text] if text.strip() else [])
+        else:
+            lines = [str(data.get("text") or "").strip()]
+            if not lines[0]:
+                return self._send_json({"error": "text required"}, 400)
+        agent_id = data.get("agent_id") or "system"
+        category = data.get("category") or "general"
+        tags = data.get("tags") or [category]
+        prev_id = None
+        for line in lines:
+            m = {
+                "id": uuid.uuid4().hex,
+                "text": line,
+                "agent_id": agent_id,
+                "perspective": agent_id,
+                "category": category,
+                "topics": data.get("topics") or [t for t in str(line).lower().replace(",", " ").split() if len(t) > 3][:8],
+                "tags": tags if isinstance(tags, list) else [str(tags)],
+                "created_at": now,
+                "last_accessed": now,
+                "strength": 1.0,
+                "immutable": False,
+                "perspectives": [],
+                "before": [{"id": prev_id, "reason": "conversation_sequence", "created_at": now}] if prev_id else [],
+                "after": [],
+            }
+            if prev_id:
+                for existing in mems:
+                    if existing.get("id") == prev_id:
+                        existing.setdefault("after", []).append({"id": m["id"], "reason": "conversation_sequence", "created_at": now})
+                        break
+            mems.append(m)
+            encoded.append(m)
+            prev_id = m["id"]
+        save_local_memories(mems)
+        if ingest:
+            return self._send_json({"encoded": len(encoded), "memories": encoded, "source": "local-fallback"}, 201)
+        return self._send_json(encoded[0], 201)
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -125,7 +185,7 @@ class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
                 try:
                     target_url = f"http://127.0.0.1:8788{self.path}"
                     req = urllib.request.Request(target_url, headers={"User-Agent": "ZothDevServer/1.0"})
-                    with urllib.request.urlopen(req, timeout=1.5) as resp:
+                    with urllib.request.urlopen(req, timeout=12.0) as resp:
                         body = resp.read()
                         self.send_response(resp.status)
                         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -152,7 +212,7 @@ class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
                 try:
                     target_url = f"http://127.0.0.1:8788{self.path}"
                     req = urllib.request.Request(target_url, headers={"User-Agent": "ZothDevServer/1.0"})
-                    with urllib.request.urlopen(req, timeout=1.5) as resp:
+                    with urllib.request.urlopen(req, timeout=12.0) as resp:
                         body = resp.read()
                         self.send_response(resp.status)
                         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -243,7 +303,7 @@ class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
                         headers={"Content-Type": "application/json", "User-Agent": "ZothDevServer/1.0"},
                         method="POST"
                     )
-                    with urllib.request.urlopen(req, timeout=3.0) as resp:
+                    with urllib.request.urlopen(req, timeout=8.0) as resp:
                         resp_body = resp.read()
                         self.send_response(resp.status)
                         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -254,6 +314,8 @@ class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
                         return
                 except Exception as e:
                     print(f"[Zoth Dev Server] Memory proxy POST error: {e}")
+            if "/memories/encode" in self.path or self.path.endswith("/conversations/ingest"):
+                return self._encode_local(raw_data, ingest="/conversations/ingest" in self.path)
             return self._send_json({"error": "Memory daemon offline", "status": "offline"}, 503)
 
         self.send_error(404, "Not Found")
