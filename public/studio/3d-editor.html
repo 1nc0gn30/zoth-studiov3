@@ -46,18 +46,6 @@
 <script src="/assets/vendor/LuminosityHighPassShader.js"></script>
 <script src="/assets/vendor/UnrealBloomPass.js"></script>
 <script src="/assets/vendor/EffectComposer.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script defer="" src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="/studio/nexus-3d-generator.js?v=20260824"></script>
 <style>
         .skip-to-content, .skip-link, .skip {
@@ -1524,6 +1512,7 @@
 <!-- Nexus 3D Studio Engine Script -->
 <script>
       let scene, camera, renderer, controls, transformControls, composer, bloomPass;
+      let ambLight, dirLight, fillLight, gridHelper;
       let selectedObject = null;
       let meshList = [];
       let mixer, clock = new THREE.Clock();
@@ -1804,21 +1793,28 @@
         }
 
         // Grid & Platform
-        const grid = new THREE.GridHelper(24, 24, 0x00e5ff, 0x1f293d);
-        grid.position.y = -0.01;
-        scene.add(grid);
+        gridHelper = new THREE.GridHelper(24, 24, 0x00e5ff, 0x1f293d);
+        gridHelper.position.y = -0.01;
+        scene.add(gridHelper);
 
         // Ambient Lights
-        const amb = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(amb);
+        ambLight = new THREE.AmbientLight(0xffffff, 0.65);
+        scene.add(ambLight);
 
-        const dirLight = new THREE.DirectionalLight(0x00e5ff, 2.0);
+        dirLight = new THREE.DirectionalLight(0x00e5ff, 2.0);
         dirLight.position.set(10, 15, 10);
         scene.add(dirLight);
 
-        const fillLight = new THREE.DirectionalLight(0xd946ef, 1.5);
+        fillLight = new THREE.DirectionalLight(0xd946ef, 1.5);
         fillLight.position.set(-10, 10, -10);
         scene.add(fillLight);
+
+        // Dynamic 16-Brand Theme Synchronization
+        window.addEventListener('zoth-theme-change', (e) => {
+          const themeId = (e && e.detail && e.detail.theme) ? e.detail.theme : (window.getZothTheme ? window.getZothTheme() : 'dark');
+          applyEditorTheme3D(themeId);
+        });
+        applyEditorTheme3D(window.getZothTheme ? window.getZothTheme() : 'dark');
 
         // Ambient Particle System
         initParticleSystem();
@@ -2775,11 +2771,39 @@
         if (composer) composer.setSize(w, h);
       }
 
+      function applyEditorTheme3D(themeName) {
+        if (!scene || !renderer) return;
+        const theme = String(themeName).toLowerCase();
+
+        let fogColor = 0x020306;
+        let dirColor = 0x00e5ff;
+        let fillColor = 0xd946ef;
+
+        if (theme.includes('gold') || theme.includes('hermetic') || theme.includes('alchemy')) {
+          fogColor = 0x060502; dirColor = 0xfbbf24; fillColor = 0xf59e0b;
+        } else if (theme.includes('matrix') || theme.includes('terminal') || theme.includes('emerald')) {
+          fogColor = 0x010803; dirColor = 0x00ff66; fillColor = 0x10b981;
+        } else if (theme.includes('synthwave') || theme.includes('cyberpunk') || theme.includes('neon')) {
+          fogColor = 0x08020b; dirColor = 0xff007a; fillColor = 0x00f0ff;
+        } else if (theme.includes('light')) {
+          fogColor = 0xe2e8f0; dirColor = 0x0284c7; fillColor = 0x7c3aed;
+        }
+
+        if (scene.fog) scene.fog.color.setHex(fogColor);
+        if (dirLight) dirLight.color.setHex(dirColor);
+        if (fillLight) fillLight.color.setHex(fillColor);
+      }
+
       function animate() {
         requestAnimationFrame(animate);
         const dt = clock.getDelta();
         const t = clock.getElapsedTime();
         if (mixer) mixer.update(dt);
+
+        // Web Audio pulse for audio-reactive mesh and particle breathing
+        const audioLevel = (window.ZothAudioFX && typeof window.ZothAudioFX.getAudioLevel === 'function') 
+          ? window.ZothAudioFX.getAudioLevel() 
+          : 0;
 
         // Tick companion procedural aura rings, gaze and floating levitation
         petFigures.forEach(fig => {
@@ -2791,7 +2815,7 @@
           const pos = particleGeo.attributes.position ? particleGeo.attributes.position.array : null;
           const vel = particleGeo.userData.velocities;
           const type = particleGeo.userData.type || '';
-          const speed = particleGeo.userData.speed || 0.4;
+          const speed = (particleGeo.userData.speed || 0.4) + (audioLevel * 0.8);
 
           if (pos && vel && (type.includes('bubble') || type.includes('ember') || type.includes('spark') || type.includes('spore'))) {
             const count = pos.length / 3;
@@ -2807,12 +2831,16 @@
             }
             particleGeo.attributes.position.needsUpdate = true;
           } else if (particleSystem) {
-            particleSystem.rotation.y += 0.001 * speed;
+            particleSystem.rotation.y += (0.001 * speed) + (audioLevel * 0.005);
           }
         }
 
-        controls.update();
-        composer.render();
+        if (controls) controls.update();
+        if (composer) {
+          composer.render();
+        } else if (renderer && scene && camera) {
+          renderer.render(scene, camera);
+        }
       }
 
       window.onload = initNexus3D;

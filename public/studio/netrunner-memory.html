@@ -14,9 +14,16 @@
 <link href="/assets/zoth-tailwind-magic.css" rel="stylesheet"/>
 <script src="/assets/zoth-theme.js?v=11"></script>
 <script src="/assets/zoth-nav.js?v=11" defer></script>
-<!-- Three.js + OrbitControls for 3D Obsidian Graph View -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<!-- Three.js + Postprocessing + Controls (Local Sovereign Vendor) -->
+<script src="/assets/vendor/three.min.js"></script>
+<script src="/assets/vendor/OrbitControls.js"></script>
+<script src="/assets/vendor/CopyShader.js"></script>
+<script src="/assets/vendor/Pass.js"></script>
+<script src="/assets/vendor/ShaderPass.js"></script>
+<script src="/assets/vendor/RenderPass.js"></script>
+<script src="/assets/vendor/LuminosityHighPassShader.js"></script>
+<script src="/assets/vendor/UnrealBloomPass.js"></script>
+<script src="/assets/vendor/EffectComposer.js"></script>
 <style>
 :root {
   --bg: #050508;
@@ -2149,8 +2156,14 @@ let graph3D = {
   camera: null,
   renderer: null,
   controls: null,
+  composer: null,
+  bloomPass: null,
   nodeGroup: null,
   linkGroup: null,
+  dustMesh: null,
+  ambLight: null,
+  dirLight1: null,
+  dirLight2: null,
   nodes: [], // { mesh, glowMesh, id, pos, color }
   links: [], // { line, srcId, dstId, color }
   raycaster: null,
@@ -2225,6 +2238,8 @@ function initThreeGraph(){
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x060912, 1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
     graph3D.renderer = renderer;
@@ -2241,15 +2256,67 @@ function initThreeGraph(){
       graph3D.controls = controls;
     }
 
+    // Sovereign Post-Processing Bloom Pipeline
+    if (typeof THREE.EffectComposer !== 'undefined' && typeof THREE.RenderPass !== 'undefined') {
+      const composer = new THREE.EffectComposer(renderer);
+      const renderPass = new THREE.RenderPass(scene, camera);
+      composer.addPass(renderPass);
+      if (typeof THREE.UnrealBloomPass !== 'undefined') {
+        const bloomPass = new THREE.UnrealBloomPass(
+          new THREE.Vector2(width, height),
+          1.15, // strength
+          0.38, // radius
+          0.82  // threshold
+        );
+        composer.addPass(bloomPass);
+        graph3D.bloomPass = bloomPass;
+      }
+      graph3D.composer = composer;
+    }
+
     // Lighting
-    const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.85);
     scene.add(ambLight);
-    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.2);
+    graph3D.ambLight = ambLight;
+
+    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.3);
     dirLight1.position.set(200, 300, 400);
     scene.add(dirLight1);
-    const dirLight2 = new THREE.DirectionalLight(0xa78bfa, 0.8);
+    graph3D.dirLight1 = dirLight1;
+
+    const dirLight2 = new THREE.DirectionalLight(0xa78bfa, 0.9);
     dirLight2.position.set(-200, -200, -300);
     scene.add(dirLight2);
+    graph3D.dirLight2 = dirLight2;
+
+    // Ambient 2,500 Star Tensor Dust Particle Cloud (InstancedMesh)
+    const dustCount = 2500;
+    const dustGeo = new THREE.SphereGeometry(0.8, 6, 6);
+    const dustMat = new THREE.MeshBasicMaterial({
+      color: 0x00f0ff,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending
+    });
+    const dustMesh = new THREE.InstancedMesh(dustGeo, dustMat, dustCount);
+    const dummy = new THREE.Object3D();
+    for (let i = 0; i < dustCount; i++) {
+      const rad = 150 + Math.random() * 450;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      dummy.position.set(
+        rad * Math.sin(phi) * Math.cos(theta),
+        rad * Math.sin(phi) * Math.sin(theta) * 0.7,
+        rad * Math.cos(phi)
+      );
+      const s = 0.4 + Math.random() * 0.9;
+      dummy.scale.set(s, s, s);
+      dummy.updateMatrix();
+      dustMesh.setMatrixAt(i, dummy.matrix);
+    }
+    dustMesh.instanceMatrix.needsUpdate = true;
+    scene.add(dustMesh);
+    graph3D.dustMesh = dustMesh;
 
     // Groups
     graph3D.nodeGroup = new THREE.Group();
@@ -2268,12 +2335,51 @@ function initThreeGraph(){
     dom.addEventListener('click', onThreeClick);
     window.addEventListener('resize', resizeThreeGraph);
 
+    // 16-Brand Theme Synchronization
+    window.addEventListener('zoth-theme-change', (e) => {
+      const theme = (e && e.detail && e.detail.theme) ? e.detail.theme : (window.getZothTheme ? window.getZothTheme() : 'dark');
+      applyNetrunnerTheme3D(theme);
+    });
+    const curTheme = (window.getZothTheme ? window.getZothTheme() : (document.documentElement.getAttribute('data-theme') || 'dark'));
+    applyNetrunnerTheme3D(curTheme);
+
     // Animation Loop
     animateThreeGraph();
   } catch (err) {
     console.warn('[WebGL Fallback] WebGL unavailable. Switching to 2D Canvas graph:', err);
     window.toggleGraph3D();
   }
+}
+
+function applyNetrunnerTheme3D(themeName) {
+  if (!graph3D.scene || !graph3D.renderer) return;
+  const theme = String(themeName).toLowerCase();
+  
+  let clearColor = 0x060912;
+  let fogColor = 0x060912;
+  let light1Color = 0x00f0ff;
+  let light2Color = 0xa78bfa;
+  let dustColor = 0x00f0ff;
+
+  if (theme.includes('gold') || theme.includes('hermetic') || theme.includes('alchemy')) {
+    clearColor = 0x070603; fogColor = 0x070603;
+    light1Color = 0xfbbf24; light2Color = 0xf59e0b; dustColor = 0xfbbf24;
+  } else if (theme.includes('matrix') || theme.includes('terminal') || theme.includes('emerald')) {
+    clearColor = 0x020804; fogColor = 0x020804;
+    light1Color = 0x00ff66; light2Color = 0x10b981; dustColor = 0x00ff66;
+  } else if (theme.includes('synthwave') || theme.includes('cyberpunk') || theme.includes('neon')) {
+    clearColor = 0x09030c; fogColor = 0x09030c;
+    light1Color = 0xff007a; light2Color = 0x00f0ff; dustColor = 0xff007a;
+  } else if (theme.includes('light')) {
+    clearColor = 0xe2e8f0; fogColor = 0xe2e8f0;
+    light1Color = 0x0284c7; light2Color = 0x7c3aed; dustColor = 0x0284c7;
+  }
+
+  graph3D.renderer.setClearColor(clearColor, 1);
+  if (graph3D.scene.fog) graph3D.scene.fog.color.setHex(fogColor);
+  if (graph3D.dirLight1) graph3D.dirLight1.color.setHex(light1Color);
+  if (graph3D.dirLight2) graph3D.dirLight2.color.setHex(light2Color);
+  if (graph3D.dustMesh && graph3D.dustMesh.material) graph3D.dustMesh.material.color.setHex(dustColor);
 }
 
 function resizeThreeGraph(){
@@ -2284,6 +2390,9 @@ function resizeThreeGraph(){
   graph3D.camera.aspect = width / height;
   graph3D.camera.updateProjectionMatrix();
   graph3D.renderer.setSize(width, height);
+  if (graph3D.composer) {
+    graph3D.composer.setSize(width, height);
+  }
 }
 
 function onThreeMouseMove(e){
@@ -2605,19 +2714,39 @@ function animateThreeGraph(){
     graph3D.controls.update();
   }
 
-  // Gentle floating oscillation for nodes
   const time = performance.now() * 0.0015;
+
+  // Web Audio Pulse level for dynamic sound-reactive node breathing
+  const audioLevel = (window.ZothAudioFX && typeof window.ZothAudioFX.getAudioLevel === 'function') 
+    ? window.ZothAudioFX.getAudioLevel() 
+    : 0;
+
+  // Orbit ambient dust mesh slowly
+  if (graph3D.dustMesh) {
+    graph3D.dustMesh.rotation.y = time * 0.05;
+    graph3D.dustMesh.rotation.x = time * 0.02;
+  }
+
+  // Gentle floating oscillation + audio reaction for nodes
   if (graph3D.nodeGroup) {
     for (let i = 0; i < graph3D.nodes.length; i++) {
       const n = graph3D.nodes[i];
       if (n.glowMesh && n.glowMesh.visible) {
-        const pulse = 1.0 + 0.15 * Math.sin(time * 3 + i);
+        const pulse = 1.0 + (0.15 * Math.sin(time * 3 + i)) + (audioLevel * 0.45);
         n.glowMesh.scale.set(pulse, pulse, pulse);
+      }
+      if (n.mesh && n.mesh.material && n.mesh.material.emissiveIntensity !== undefined) {
+        n.mesh.material.emissiveIntensity = 0.55 + (audioLevel * 0.6) + 0.1 * Math.sin(time * 2 + i);
       }
     }
   }
 
-  graph3D.renderer.render(graph3D.scene, graph3D.camera);
+  // Render via Sovereign Bloom Composer if available, otherwise direct WebGL
+  if (graph3D.composer) {
+    graph3D.composer.render();
+  } else {
+    graph3D.renderer.render(graph3D.scene, graph3D.camera);
+  }
 }
 
 function computeLayout(mems, mode){

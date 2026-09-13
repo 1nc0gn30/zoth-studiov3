@@ -34,8 +34,16 @@
 <link href="/assets/zoth-mobile.css" rel="stylesheet"/>
 <link href="/assets/zoth-workbench.css" rel="stylesheet"/>
 <link href="/assets/zoth-annotator.css" rel="stylesheet"/>
-<!-- Three.js (Local Sovereign Vendor) -->
-<script defer="" src="/assets/vendor/three.min.js"></script>
+<!-- Three.js + Postprocessing + Controls (Local Sovereign Vendor) -->
+<script src="/assets/vendor/three.min.js"></script>
+<script src="/assets/vendor/OrbitControls.js"></script>
+<script src="/assets/vendor/CopyShader.js"></script>
+<script src="/assets/vendor/Pass.js"></script>
+<script src="/assets/vendor/ShaderPass.js"></script>
+<script src="/assets/vendor/RenderPass.js"></script>
+<script src="/assets/vendor/LuminosityHighPassShader.js"></script>
+<script src="/assets/vendor/UnrealBloomPass.js"></script>
+<script src="/assets/vendor/EffectComposer.js"></script>
 <style>
     html, body {
       width: 100%;
@@ -1510,6 +1518,23 @@
     renderer.toneMappingExposure = 1.25;
     container.appendChild(renderer.domElement);
 
+    // Sovereign Bloom Post-Processing
+    let composer = null, bloomPass = null;
+    if (typeof THREE.EffectComposer !== 'undefined' && typeof THREE.RenderPass !== 'undefined') {
+      composer = new THREE.EffectComposer(renderer);
+      const renderPass = new THREE.RenderPass(scene, camera);
+      composer.addPass(renderPass);
+      if (typeof THREE.UnrealBloomPass !== 'undefined') {
+        bloomPass = new THREE.UnrealBloomPass(
+          new THREE.Vector2(window.innerWidth, window.innerHeight),
+          1.15, // strength
+          0.38, // radius
+          0.82  // threshold
+        );
+        composer.addPass(bloomPass);
+      }
+    }
+
     // Initial Camera Position
     const targetCamPos = new THREE.Vector3(0, 0.5, 4.2);
     const targetLookAt = new THREE.Vector3(0, 0, 0);
@@ -1536,6 +1561,30 @@
     const grid = new THREE.GridHelper(16, 16, 0x00f0ff, 0x141b30);
     grid.position.y = -1.2;
     scene.add(grid);
+
+    // Dynamic 16-Brand Theme Synchronization
+    window.addEventListener('zoth-theme-change', (e) => {
+      const themeId = (e && e.detail && e.detail.theme) ? e.detail.theme : (window.getZothTheme ? window.getZothTheme() : 'dark');
+      applyPetStudioTheme(themeId);
+    });
+
+    function applyPetStudioTheme(themeId) {
+      const t = String(themeId).toLowerCase();
+      if (t.includes('gold') || t.includes('hermetic') || t.includes('alchemy')) {
+        goldFill.color.setHex(0xfbbf24);
+        grid.material.color.setHex(0xfbbf24);
+      } else if (t.includes('matrix') || t.includes('terminal') || t.includes('emerald')) {
+        rimLight.color.setHex(0x00ff66);
+        grid.material.color.setHex(0x00ff66);
+      } else if (t.includes('synthwave') || t.includes('cyberpunk') || t.includes('neon')) {
+        rimLight.color.setHex(0xff007a);
+        grid.material.color.setHex(0x00f0ff);
+      } else if (t.includes('light')) {
+        ambientLight.color.setHex(0xffffff);
+        grid.material.color.setHex(0x0284c7);
+      }
+    }
+    applyPetStudioTheme(window.getZothTheme ? window.getZothTheme() : 'dark');
 
     // Orbit Ring
     const ringGeo = new THREE.RingGeometry(1.6, 2.0, 64);
@@ -2140,7 +2189,11 @@
       ring.rotation.z += 0.005;
       drawSpectrum();
 
-      renderer.render(scene, camera);
+      if (composer) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
     }
     animate();
 
@@ -2150,6 +2203,7 @@
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      if (composer) composer.setSize(window.innerWidth, window.innerHeight);
     });
 
     // Integrate Custom Pets on Load in pet-studio

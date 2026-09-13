@@ -959,20 +959,39 @@ export function createPetFigure(THREE, arg1, arg2 = {}) {
       const speed = vibeData.speed || 1.0;
       const energy = vibeData.energy || 0.6;
 
+      // Web Audio sound-reactive pulse
+      const audioPulse = (typeof window !== 'undefined' && window.ZothAudioFX && typeof window.ZothAudioFX.getAudioLevel === 'function')
+        ? window.ZothAudioFX.getAudioLevel()
+        : 0;
+
       // Smooth gaze interpolation
       currentTiltX += (targetTiltX - currentTiltX) * 0.1;
       currentTiltY += (targetTiltY - currentTiltY) * 0.1;
 
       root.rotation.x = currentTiltX + Math.sin(time * 1.5 * speed) * 0.03 * energy;
       root.rotation.z = Math.cos(time * 1.2 * speed) * 0.02 * energy;
-      root.position.y = 0.98 + Math.sin(time * 1.8 * speed) * 0.08 * energy;
+      root.position.y = 0.98 + (Math.sin(time * 1.8 * speed) * 0.08 * energy) + (audioPulse * 0.12);
 
-      if (ring1) ring1.rotation.z = time * 0.65 * speed;
-      if (ring2) ring2.rotation.x = time * -0.45 * speed;
-      if (particles) particles.rotation.y = time * 0.28 * speed;
+      if (frontMat && frontMat.emissiveIntensity !== undefined) {
+        frontMat.emissiveIntensity = 0.45 + (audioPulse * 0.55) + 0.05 * Math.sin(time * 2);
+      }
+
+      if (ring1) {
+        ring1.rotation.z = time * (0.65 * speed + audioPulse * 0.8);
+        const r1Scale = 1.0 + audioPulse * 0.18;
+        ring1.scale.set(r1Scale, r1Scale, r1Scale);
+      }
+      if (ring2) {
+        ring2.rotation.x = time * (-0.45 * speed - audioPulse * 0.6);
+        const r2Scale = 1.0 + audioPulse * 0.15;
+        ring2.scale.set(r2Scale, r2Scale, r2Scale);
+      }
+      if (particles) {
+        particles.rotation.y = time * (0.28 * speed + audioPulse * 0.6);
+      }
 
       if (scanBeam) {
-        scanBeam.position.y = Math.sin(time * 2.8) * height * 0.5;
+        scanBeam.position.y = Math.sin(time * (2.8 + audioPulse * 3.0)) * height * 0.5;
       }
     },
     update(time, vibeData = TASK_VIBES[currentVibe] || TASK_VIBES.idle) {
