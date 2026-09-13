@@ -129,7 +129,16 @@
     ensureStylesheet("zoth-theme-fx-css", "/assets/zoth-theme-fx.css?v=7");
     ensureStylesheet("zoth-theme-light-css", "/assets/zoth-theme-light.css?v=7");
     ensureStylesheet("zoth-theme-transformer-css", "/assets/zoth-theme-transformer.css?v=7");
-    
+    ensureStylesheet("zoth-magic-ui-css", "/assets/zoth-magic-ui.css?v=1");
+    ensureStylesheet("zoth-luxury-fx-css", "/assets/zoth-luxury-fx.css?v=1");
+
+    if (!document.querySelector('script[src*="zoth-spotlight.js"]')) {
+      var spot = document.createElement("script");
+      spot.src = "/assets/zoth-spotlight.js?v=1";
+      spot.defer = true;
+      document.head.appendChild(spot);
+    }
+
     if (window.ZothThemeFx) return;
     var existing = document.querySelector('script[src*="zoth-theme-fx.js"]');
     if (existing) return;

@@ -27,6 +27,7 @@
   ensureStylesheet("zoth-theme-light-css", "/assets/zoth-theme-light.css?v=11");
   ensureStylesheet("zoth-nav-css", "/assets/zoth-nav.css?v=11");
   ensureStylesheet("zoth-magic-ui-css", "/assets/zoth-magic-ui.css?v=11");
+  ensureStylesheet("zoth-luxury-fx-css", "/assets/zoth-luxury-fx.css?v=11");
   ensureStylesheet("zoth-interactive-dock-css", "/assets/zoth-interactive-dock.css?v=11");
 
   if (!window.setZothTheme && !document.querySelector('script[src*="zoth-theme.js"]')) {
