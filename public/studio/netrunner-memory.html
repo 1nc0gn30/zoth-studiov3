@@ -2187,7 +2187,8 @@ function nodeAt(x, y){
 }
 
 function connectionsOf(id){
-  const m = graphState.mems.find(x => x.id === id);
+  const pool = rawAllMemories.length ? rawAllMemories : (graphState.allMems || graphState.mems);
+  const m = pool.find(x => x.id === id);
   if (!m) return [];
   return [
     ...(m.before||[]).map(b => ({ dir: 'before', id: b.id, reason: b.reason || '' })),
@@ -3699,7 +3700,7 @@ function updateTooltip(id, ev){
   const tip = document.getElementById('graphTooltip');
   if (!tip) return;
   if (!id) { hideTooltip(); return; }
-  const m = graphState.mems.find(x => x.id === id);
+  const m = (rawAllMemories.length ? rawAllMemories : graphState.mems).find(x => x.id === id);
   if (!m) { hideTooltip(); return; }
   const n = connectionsOf(id).length;
   tip.innerHTML = `<b style="color:${agentColors[m.agent_id] || '#00f0ff'}">${escapeHtml(m.agent_id)}</b> · ${escapeHtml(m.category || 'general')} · ${n} link(s)<br/>${escapeHtml(m.text.slice(0,140))}${m.text.length>140?'…':''}`;
@@ -3896,9 +3897,192 @@ window.exitMemoryWorld = () => {
 const ROOM = 340;          // room size (walls at ±ROOM/2)
 const HALF = ROOM / 2;
 
+function setMazeRenderBadge(gl){
+  const badge = document.getElementById('mazeRenderBadge');
+  if (!badge) return;
+  badge.textContent = gl ? 'WEBGL FPS' : 'CANVAS 2D';
+  badge.style.color = gl ? '#34d399' : '#fbbf24';
+  badge.style.borderColor = gl ? 'rgba(52,211,153,0.5)' : 'rgba(251,191,36,0.5)';
+}
+
+function makeMazeRoomKit(floorMat, wallMat, ceilMat){
+  const g = new THREE.Group();
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, ROOM), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -HALF;
+  g.add(floor);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, ROOM), ceilMat);
+  ceil.rotation.x = Math.PI / 2;
+  ceil.position.y = HALF;
+  g.add(ceil);
+  const grid = new THREE.GridHelper(ROOM, 8, 0x12304a, 0x0b1a28);
+  grid.position.y = -HALF + 0.6;
+  g.add(grid);
+  const walls = {};
+  const t = 88;
+  const sideW = HALF - t;
+  ['N','S','E','W'].forEach(side => {
+    const wg = new THREE.Group();
+    const full = new THREE.Mesh(new THREE.BoxGeometry(ROOM, ROOM, 8), wallMat);
+    const left = new THREE.Mesh(new THREE.BoxGeometry(sideW, ROOM, 8), wallMat);
+    const right = new THREE.Mesh(new THREE.BoxGeometry(sideW, ROOM, 8), wallMat);
+    const lintel = new THREE.Mesh(new THREE.BoxGeometry(t * 2, ROOM - 160, 8), wallMat);
+    const glow = new THREE.Mesh(
+      new THREE.PlaneGeometry(t * 2 - 8, 150),
+      new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false })
+    );
+    left.position.x = -HALF + sideW / 2;
+    right.position.x = HALF - sideW / 2;
+    lintel.position.y = HALF - (ROOM - 160) / 2;
+    glow.position.set(0, -HALF + 80, 5);
+    wg.add(full, left, right, lintel, glow);
+    if (side === 'N') wg.position.z = -HALF;
+    if (side === 'S') { wg.position.z = HALF; wg.rotation.y = Math.PI; }
+    if (side === 'E') { wg.position.x = HALF; wg.rotation.y = Math.PI / 2; }
+    if (side === 'W') { wg.position.x = -HALF; wg.rotation.y = -Math.PI / 2; }
+    g.add(wg);
+    walls[side] = { full, left, right, lintel, glow };
+  });
+  const neon = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(ROOM, ROOM, ROOM)),
+    new THREE.LineBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.28 })
+  );
+  g.add(neon);
+  return { group: g, walls };
+}
+
+function initWorldGL(st){
+  const glCanvas = document.getElementById('worldCanvasGL');
+  if (!glCanvas || typeof THREE === 'undefined') return false;
+  try {
+    const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x05070f, 1);
+    if (window.ZothStudio3D && ZothStudio3D.dressRenderer) ZothStudio3D.dressRenderer(renderer);
+    renderer.toneMappingExposure = 1.05;
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x05070f, 0.00105);
+    const camera = new THREE.PerspectiveCamera(72, 1, 2, 3200);
+    if (window.ZothStudio3D && ZothStudio3D.addStudioRig) {
+      ZothStudio3D.addStudioRig(scene, renderer, { radius: 48, floorY: -HALF, hemi: 0.32, keyIntensity: 1.8, rimIntensity: 1.25 });
+    } else {
+      scene.add(new THREE.HemisphereLight(0x88bbff, 0x08060a, 0.55));
+      const key = new THREE.SpotLight(0x00e5ff, 2.1, 1200, Math.PI / 5, 0.45, 1);
+      key.position.set(60, 140, 80);
+      scene.add(key);
+    }
+    let composer = null;
+    if (typeof THREE.EffectComposer !== 'undefined' && typeof THREE.RenderPass !== 'undefined') {
+      composer = new THREE.EffectComposer(renderer);
+      composer.addPass(new THREE.RenderPass(scene, camera));
+      if (typeof THREE.UnrealBloomPass !== 'undefined') {
+        composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(800, 600), 0.55, 0.42, 0.72));
+      }
+    }
+    const Phys = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+    const floorMat = new Phys({ color: 0x0a1018, metalness: 0.92, roughness: 0.16, clearcoat: 0.55, envMapIntensity: 1.2 });
+    const wallMat = new Phys({ color: 0x121a28, metalness: 0.62, roughness: 0.32, emissive: 0x041018, emissiveIntensity: 0.22, side: THREE.DoubleSide });
+    const ceilMat = new Phys({ color: 0x070b12, metalness: 0.88, roughness: 0.22 });
+    const kits = [];
+    for (let i = 0; i < 49; i++) {
+      const kit = makeMazeRoomKit(floorMat, wallMat, ceilMat);
+      kit.group.visible = false;
+      scene.add(kit.group);
+      kits.push(kit);
+    }
+    const loader = new THREE.TextureLoader();
+    const lucy = new THREE.Sprite(new THREE.SpriteMaterial({ map: loader.load('/assets/lucy.png'), transparent: true, depthWrite: false }));
+    lucy.scale.set(72, 118, 1);
+    scene.add(lucy);
+    const ghost = new THREE.Sprite(new THREE.SpriteMaterial({ map: loader.load('/assets/nullai.png'), transparent: true, opacity: 0.72, depthWrite: false }));
+    ghost.scale.set(54, 54, 1);
+    scene.add(ghost);
+    const pCount = 420;
+    const pPos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount; i++) {
+      pPos[i * 3] = (Math.random() - 0.5) * 2200;
+      pPos[i * 3 + 1] = (Math.random() - 0.5) * ROOM;
+      pPos[i * 3 + 2] = (Math.random() - 0.5) * 2200;
+    }
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    const points = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x00f0ff, size: 2.4, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+    scene.add(points);
+    const core = new THREE.Mesh(
+      new THREE.OctahedronGeometry(30, 0),
+      new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.92 })
+    );
+    scene.add(core);
+    st.gl = { renderer, scene, camera, composer, kits, lucy, ghost, points, core, canvas: glCanvas };
+    st.useGL = true;
+    glCanvas.style.display = 'block';
+    st.canvas2d = st.canvas;
+    st.canvas = glCanvas;
+    setMazeRenderBadge(true);
+    return true;
+  } catch (err) {
+    console.warn('[Maze WebGL] falling back to canvas 2D', err);
+    return false;
+  }
+}
+
+function drawWorldGL(st, now){
+  if (!st.gl) return;
+  const c = st.cam;
+  const cam = st.gl.camera;
+  cam.position.set(c.x, -c.y, c.z);
+  cam.lookAt(
+    c.x + Math.sin(st.yaw) * Math.cos(st.pitch),
+    -c.y - Math.sin(st.pitch),
+    c.z + Math.cos(st.yaw) * Math.cos(st.pitch)
+  );
+  const RANGE = 3;
+  const cgx = Math.round(c.x / ROOM), cgz = Math.round(c.z / ROOM);
+  const visible = st.rooms.filter(r => Math.abs(r.gx - cgx) <= RANGE && Math.abs(r.gz - cgz) <= RANGE)
+    .sort((a, b) => Math.hypot(a.gx - cgx, a.gz - cgz) - Math.hypot(b.gx - cgx, b.gz - cgz));
+  const kits = st.gl.kits;
+  for (let i = 0; i < kits.length; i++) {
+    const kit = kits[i];
+    const room = visible[i];
+    if (!room) { kit.group.visible = false; continue; }
+    kit.group.visible = true;
+    kit.group.position.set(room.x, 0, room.z);
+    const doorSides = new Set((room.doors || []).map(d => d.side));
+    for (const side of ['N','S','E','W']) {
+      const w = kit.walls[side];
+      const open = doorSides.has(side);
+      w.full.visible = !open;
+      w.left.visible = open;
+      w.right.visible = open;
+      w.lintel.visible = open;
+      w.glow.visible = open;
+      const door = (room.doors || []).find(d => d.side === side);
+      if (door && w.glow.material) w.glow.material.color.set(door.portal ? 0xf472b6 : 0x00f0ff);
+    }
+  }
+  if (st.gl.core) {
+    if (st.currentRoom) {
+      st.gl.core.visible = true;
+      st.gl.core.position.set(st.currentRoom.x, 10 + Math.sin(now / 900) * 10, st.currentRoom.z);
+      st.gl.core.rotation.y = now * 0.001;
+    } else st.gl.core.visible = false;
+  }
+  if (st.gl.lucy && st.lucyHolo) {
+    st.gl.lucy.visible = st.lucyHolo.alpha > 0.02;
+    st.gl.lucy.position.set(st.lucyHolo.x, -st.lucyHolo.y, st.lucyHolo.z);
+    st.gl.lucy.material.opacity = st.lucyHolo.alpha;
+  }
+  if (st.gl.ghost && st.ghost) {
+    st.gl.ghost.position.set(st.ghost.x, -st.ghost.y, st.ghost.z);
+    st.gl.ghost.material.opacity = st.ghost.alpha;
+  }
+  updateMazeHud(st);
+  if (st.gl.composer) st.gl.composer.render();
+  else st.gl.renderer.render(st.gl.scene, st.gl.camera);
+}
+
 function initWorld(){
   const canvas = document.getElementById('worldCanvas');
-  const ctx = canvas.getContext('2d');
   
   // Cybernetic ambient dust motes
   const particles = [];
@@ -3917,7 +4101,7 @@ function initWorld(){
   }
 
   const st = {
-    canvas, ctx, running: true,
+    canvas, ctx: null, running: true, useGL: false,
     rooms: [], roomAt: {}, edges: [],
     cam: { x: 0, y: -40, z: 0 }, keys: {}, yaw: 0, pitch: 0,
     locked: false, currentRoom: null, glitchSeed: 0,
@@ -3926,6 +4110,11 @@ function initWorld(){
     ghost: { x: 0, y: -50, z: 0, radius: 90, pulse: 0, phase: 0, alpha: 0.5, speed: 0.0009, dir: 1, angle: 0 },
     lucyHolo: { x: 0, y: -45, z: 0, alpha: 0.0, targetAlpha: 0.0, angle: 0 }
   };
+  if (!initWorldGL(st)) {
+    st.ctx = canvas.getContext('2d');
+    st.useGL = false;
+    setMazeRenderBadge(false);
+  }
   buildMaze(st);
   if (st.rooms && st.rooms.length > 0) {
     const hub = st.rooms.reduce((a,b) => (b.links.length > a.links.length ? b : a), st.rooms[0]);
@@ -3946,8 +4135,7 @@ function buildMaze(st){
   st.roomAt = {};
   st.roomGrid = {};
 
-  // Grid placement: Layout ALL memories in the database as an expansive Cyberpunk Megacity
-  let mems = graphState.mems && graphState.mems.length ? graphState.mems : [];
+  let mems = (rawAllMemories && rawAllMemories.length) ? rawAllMemories : (graphState.allMems || graphState.mems || []);
   if (!mems.length) {
     mems = getRecoverySeeds();
   }
@@ -4072,8 +4260,8 @@ function buildMaze(st){
       { id: "realm-gate", name: "Trans-Dimensional Gate", type: "gate", modelId: "7920a3125baf4655a6b2a29c0bec2c3b", prompt: "You Are Now Entering Portal", color: "#f472b6" },
       { id: "realm-mountain", name: "Snowy Mountain Peak", type: "mountain", modelId: "6bb4c86e088c42b083e95089c9e88d8b", prompt: "Alpine Glacial Summit", color: "#60a5fa" }
     ];
-    if (mems.indexOf(m) % 4 === 0) {
-      const realm = EXOTIC_REALMS[(mems.indexOf(m) / 4) % EXOTIC_REALMS.length];
+    if (mems.indexOf(m) < 8 && mems.indexOf(m) % 2 === 0) {
+      const realm = EXOTIC_REALMS[(mems.indexOf(m) / 2) % EXOTIC_REALMS.length];
       r.doors.push({
         side: ['N','E','S','W'][Math.abs(hashStr(m.id + realm.id)) % 4],
         target: realm.id,
@@ -4093,6 +4281,16 @@ function buildMaze(st){
 }
 
 function resizeWorld(st){
+  if (st.useGL && st.gl) {
+    const canvas = st.gl.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(1, rect.width), h = Math.max(1, rect.height);
+    st.gl.renderer.setSize(w, h, false);
+    st.gl.camera.aspect = w / h;
+    st.gl.camera.updateProjectionMatrix();
+    if (st.gl.composer) st.gl.composer.setSize(w, h);
+    return;
+  }
   const dpr = window.devicePixelRatio || 1;
   const rect = st.canvas.getBoundingClientRect();
   st.canvas.width = Math.round(rect.width * dpr);
@@ -4124,10 +4322,19 @@ function project(st, x, y, z){
   return { sx: w/2 + x1 * f, sy: h/2 + y2 * f, scale: f / w, depth: z2 };
 }
 
+function updateMazeHud(st){
+  const hudCoordsEl = document.getElementById('hudCoords');
+  if (!hudCoordsEl) return;
+  const c = st.cam;
+  const sprintTag = (st.keys['ShiftLeft'] || st.keys['ShiftRight'] || st.keys['Shift'] || st.keys['shift']) ? ' · SPRINT' : '';
+  hudCoordsEl.textContent = `X: ${Math.round(c.x)} | Z: ${Math.round(c.z)} · ${st.rooms.length} NODES${sprintTag}`;
+}
+
 function loopWorld(){
   if (!world3d || !world3d.running) return;
   stepWorld(world3d);
-  drawWorld(world3d, performance.now());
+  if (world3d.useGL) drawWorldGL(world3d, performance.now());
+  else drawWorld(world3d, performance.now());
   requestAnimationFrame(loopWorld);
 }
 
@@ -4920,12 +5127,7 @@ function drawWorld(st, now){
     drawRoomPanel(ctx, st, cr, w, h);
   }
 
-  // Update Top HUD coordinates & sector status
-  const hudCoordsEl = document.getElementById('hudCoords');
-  if (hudCoordsEl) {
-    const sprintTag = (st.keys['ShiftLeft'] || st.keys['ShiftRight'] || st.keys['Shift'] || st.keys['shift']) ? ' · SPRINT' : '';
-    hudCoordsEl.textContent = `X: ${Math.round(c.x)} | Z: ${Math.round(c.z)} · ${st.rooms.length} NODES${sprintTag}`;
-  }
+  updateMazeHud(st);
 
 
   // ---- Ambient Cybernetic Dust Particles ----
