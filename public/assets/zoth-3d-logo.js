@@ -25,11 +25,25 @@
   }
 
   // ── Three.js Loader with Multi-Source & CDN Fallback ──
+  // Single-flight guard: each Zoth3DLogo instance used to call loadThree()
+  // independently, so two instances injected three.min.js TWICE. That logs
+  // "Multiple instances of Three.js being imported" and breaks THREE.*
+  // instanceof checks. Queue every caller behind one shared injection.
+  var threePending = null;
+
   function loadThree(callback) {
     if (global.THREE) {
       callback(global.THREE);
       return;
     }
+
+    if (threePending) {
+      threePending.push(callback);
+      return;
+    }
+
+    threePending = [callback];
+    var pending = threePending;
 
     var candidateUrls = [
       '/assets/vendor/three.min.js',
@@ -40,13 +54,35 @@
     ];
 
     var idx = 0;
+
+    function flush() {
+      if (threePending === pending) {
+        threePending = null;
+      }
+      for (var i = 0; i < pending.length; i++) {
+        try {
+          pending[i](global.THREE);
+        } catch (e) {
+          console.warn('[Zoth3DLogo] Three.js ready callback failed:', e);
+        }
+      }
+      pending.length = 0;
+    }
+
+    function giveUp() {
+      if (threePending === pending) {
+        threePending = null;
+      }
+      console.warn('[Zoth3DLogo] Could not load Three.js; keeping 2D fallback.');
+    }
+
     function tryNext() {
       if (global.THREE) {
-        callback(global.THREE);
+        flush();
         return;
       }
       if (idx >= candidateUrls.length) {
-        console.warn('[Zoth3DLogo] Could not load Three.js; keeping 2D fallback.');
+        giveUp();
         return;
       }
       var url = candidateUrls[idx++];
@@ -54,7 +90,7 @@
       script.src = url;
       script.onload = function () {
         if (global.THREE) {
-          callback(global.THREE);
+          flush();
         } else {
           tryNext();
         }

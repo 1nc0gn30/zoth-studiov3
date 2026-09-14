@@ -78,12 +78,485 @@
   <link rel="stylesheet" href="/assets/zoth-nav.css?v=11">
   <link rel="stylesheet" href="/agents/agents-poster.css">
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
+
+  <!-- ======================================================================
+       Page-scoped refinement layer (public/agents/index.html)
+       Loaded last, so it settles the shared chrome already on this page.
+       Every colour comes from a theme token; no token -> no hex.
+       ====================================================================== -->
+  <style id="zoth-agents-page-css">
+    /* --- 1. Token aliases, 8px rhythm, modular type scale -----------------
+       agents-poster.css reads --text-dim / --font-body, which the theme layer
+       never defines, so roster text silently fell back to one hardcoded grey in
+       13 of 15 themes. Bind them to canonical theme tokens. */
+    :root {
+      --text-dim: var(--muted, #94a3b8);
+      --font-body: var(--font-sans, Figtree, system-ui, -apple-system, sans-serif);
+
+      --zg-1: 8px;
+      --zg-2: 16px;
+      --zg-3: 24px;
+      --zg-4: 32px;
+      --zg-6: 48px;
+      --zg-8: 64px;
+
+      /* Modular scale kept from the poster design, with the micro steps unified
+         (11.2 / 11.52 / 11.84px were three different labels for one role). */
+      --zg-fs-display: clamp(3.1rem, 8.4vw, 6.2rem);
+      --zg-fs-h2: 1.35rem;
+      --zg-fs-h3: 1.02rem;
+      --zg-fs-body: 0.78rem;
+      --zg-fs-sm: 0.74rem;
+      --zg-fs-micro: 0.72rem;
+
+      /* Restrained interactive depth */
+      --zg-ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --zg-t: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      --zg-ring: var(--border-focus, var(--gold, #fbbf24));
+    }
+
+    /* The dracula / monokai / solana palettes ship a --muted that lands under
+       4.5:1 on their own background, so secondary roster text uses each
+       palette's subhead token there. Still theme tokens, no pinned hex. */
+    html[data-theme="dracula"] .pantheon-roster .pantheon-card-role,
+    html[data-theme="dracula"] .pantheon-roster .pantheon-card-desc,
+    html[data-theme="monokai"] .pantheon-roster .pantheon-card-role,
+    html[data-theme="monokai"] .pantheon-roster .pantheon-card-desc,
+    html[data-theme="solana"] .pantheon-roster .pantheon-card-role,
+    html[data-theme="solana"] .pantheon-roster .pantheon-card-desc {
+      color: var(--text-subhead, var(--muted)) !important;
+    }
+
+    /* --- 2. Keyboard focus is never invisible ---------------------------- */
+    main :where(a, button, input, select, textarea, [tabindex]):focus-visible,
+    header.bar :where(a, button, [tabindex]):focus-visible,
+    nav.drawer :where(a, button, input, [tabindex]):focus-visible {
+      outline: 2px solid var(--zg-ring) !important;
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    /* ...except where an overflow:hidden ancestor would clip the ring. */
+    .bar .nav-dropdown-menu :where(a, button):focus-visible,
+    nav.drawer :where(a, button, input):focus-visible,
+    .agent-sandbox-terminal :where(input, button):focus-visible {
+      outline-offset: -3px;
+    }
+
+    .pantheon-poster-faces a:focus-visible {
+      outline: 2px solid var(--zg-ring) !important;
+      outline-offset: 2px;
+      border-radius: 50%;
+    }
+
+    .pantheon-roster .pantheon-card:focus-visible {
+      outline-offset: 4px;
+      border-radius: 6px;
+    }
+
+    .zs-sr-only {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* --- 3. Roster: heading, toolbar, stats ------------------------------ */
+    /* The roster kicker is now a real h2; keep the poster's micro-label look
+       instead of the fluid mobile h2 clamp. */
+    .pantheon-roster-kicker {
+      font-family: var(--font-mono, "IBM Plex Mono", monospace);
+      font-size: var(--zg-fs-micro) !important;
+      line-height: 1.6 !important;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      /* zoth-theme.css ships h1..h6 { color: var(--text-primary) !important },
+         so a themed heading colour must out-specify it, not just follow it. */
+      color: var(--gold, #fbbf24) !important;
+      margin: 0 0 var(--zg-2);
+    }
+
+    .pantheon-roster .agent-stats-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--zg-2) var(--zg-3);
+      margin-bottom: var(--zg-4);
+    }
+
+    .pantheon-roster .agent-stat-label {
+      font-size: var(--zg-fs-micro) !important;
+      letter-spacing: 0.12em;
+      color: var(--muted, #94a3b8);
+    }
+
+    .pantheon-roster .agent-stat-val {
+      font-size: 1.18rem;
+      line-height: 1.3;
+    }
+
+    /* Theme tokens instead of the agents.css --agent-* set, which only ships
+       four theme variants. */
+    .agent-stat-val.zv-gold { color: var(--gold, #fbbf24); }
+    .agent-stat-val.zv-cyan { color: var(--cyan, #00f0ff); }
+    .agent-stat-val.zv-green { color: var(--green, #34d399); }
+    .agent-stat-val.zv-violet { color: var(--violet, #a855f7); }
+
+    /* Filters left, search right, on one row wherever it fits. */
+    .pantheon-roster .agent-filter-toolbar {
+      align-items: flex-end;
+      gap: var(--zg-2);
+    }
+
+    .pantheon-roster .agent-filter-tabs {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .pantheon-roster .agent-filter-chip {
+      min-height: 44px;
+      font-size: var(--zg-fs-sm);
+      transition: var(--zg-t);
+    }
+
+    .pantheon-roster .agent-filter-chip:hover {
+      color: var(--text-primary, #ffffff) !important;
+    }
+
+    .pantheon-roster .agent-filter-chip:active {
+      transform: translateY(1px);
+    }
+
+    .pantheon-roster .agent-search-wrap {
+      flex: 0 1 340px;
+      min-width: 200px;
+      margin-left: auto;
+    }
+
+    .pantheon-roster .agent-search-input {
+      transition: var(--zg-t);
+    }
+
+    /* --- 4. Agent cards: dossier wall ----------------------------------- */
+    .pantheon-roster .pantheon-card {
+      gap: 0;
+      transition: transform 0.18s var(--zg-ease), opacity 0.45s var(--zg-ease);
+    }
+
+    .pantheon-roster .pantheon-card:hover,
+    .pantheon-roster .pantheon-card:focus-visible {
+      transform: translateY(-3px);
+    }
+
+    /* The filter drives [hidden]; flex would otherwise win over it. */
+    .pantheon-roster .pantheon-card[hidden] {
+      display: none !important;
+    }
+
+    .pantheon-roster .pantheon-card-thumb {
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.22)) !important;
+      border-radius: 3px !important;
+      background: var(--surface-card, #111111);
+      transition: border-color 0.18s var(--zg-ease), filter 0.18s var(--zg-ease);
+    }
+
+    .pantheon-roster .pantheon-card:hover .pantheon-card-thumb,
+    .pantheon-roster .pantheon-card:focus-visible .pantheon-card-thumb {
+      border-color: var(--accent, var(--gold, #fbbf24)) !important;
+      filter: saturate(1.05) brightness(1.03);
+    }
+
+    /* Portrait -> accent hairline -> dossier text: the 8px rhythm of the card. */
+    .pantheon-roster .pantheon-card-body {
+      margin-top: var(--zg-2);
+      border-top: 2px solid var(--accent, var(--gold, #fbbf24));
+      padding: var(--zg-1) 0 0 !important;
+      gap: 4px;
+    }
+
+    .pantheon-roster .pantheon-card-name {
+      font-size: var(--zg-fs-h3) !important;
+      line-height: 1.15 !important;
+      letter-spacing: -0.03em;
+      color: var(--text-primary, #ffffff) !important;
+    }
+
+    .pantheon-roster .pantheon-card-role {
+      font-size: var(--zg-fs-body);
+      line-height: 1.35;
+      color: var(--text-dim) !important;
+    }
+
+    .pantheon-roster .pantheon-card-desc {
+      font-size: var(--zg-fs-sm);
+      line-height: 1.4;
+      color: var(--text-dim);
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+    }
+
+    /* --- 5. Master sandbox ---------------------------------------------- */
+    /* The section card had padding-top:0, so its h2 sat flush on the border. */
+    .pantheon-sandbox {
+      padding-top: clamp(24px, 3vw, 40px) !important;
+    }
+
+    .sandbox-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--zg-2);
+      margin-bottom: var(--zg-2);
+    }
+
+    .sandbox-panel-head .card-title {
+      margin: 0;
+    }
+
+    .sandbox-node-picker {
+      display: flex;
+      align-items: center;
+      gap: var(--zg-1);
+    }
+
+    .sandbox-node-label {
+      font-family: var(--font-mono, "IBM Plex Mono", monospace);
+      font-size: var(--zg-fs-micro);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold, #fbbf24);
+    }
+
+    .sandbox-node-select {
+      min-height: 44px;
+      max-width: 100%;
+      background: var(--panel-solid, #0d1222);
+      color: var(--text-primary, #ffffff);
+      border: 1px solid var(--line, rgba(148, 163, 184, 0.3));
+      border-radius: var(--radius-fib-8, 8px);
+      padding: var(--zg-1) var(--zg-2);
+      font-family: var(--font-mono, "IBM Plex Mono", monospace);
+      font-size: var(--zg-fs-sm);
+      transition: var(--zg-t);
+    }
+
+    .sandbox-node-select:hover {
+      border-color: var(--line-strong, var(--gold, #fbbf24));
+    }
+
+    .sandbox-head-meta {
+      color: var(--gold, #fbbf24);
+    }
+
+    /* --- 6. Progressive reveal ------------------------------------------
+       The hidden state exists ONLY under .zs-anim, the class the inline head
+       script adds before first paint. With JS blocked nothing is hidden;
+       a failsafe in the page script drops the class again after ~1.8s. */
+    .zs-anim .pantheon-roster .pantheon-card {
+      opacity: 0;
+    }
+
+    .zs-anim .pantheon-roster .pantheon-card.zs-in {
+      opacity: 1;
+    }
+
+    /* --- 7. Shared chrome fixups that only apply on this page ----------- */
+    /* The footer watermark bled ~16px past the viewport at <=640px. */
+    @media (max-width: 640px) {
+      footer.site .foot-watermark {
+        font-size: clamp(4.5rem, 30vw, 7.5rem);
+        right: 0;
+      }
+    }
+
+    /* Short footer labels were 22-30px wide tap targets. */
+    @media (max-width: 880px) {
+      footer.site .mega-footer-link {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      footer.site .foot-meta {
+        gap: 8px 24px;
+      }
+
+      footer.site .foot-meta a {
+        min-width: 44px;
+      }
+
+      nav.drawer .drawer-close-btn,
+      nav.drawer .drawer-telemetry-badge {
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
+
+    /* Shared mobile chrome rendered on this page: zoth-mobile.css pins the
+       burger to min-height: 38px !important, under the 44px touch target. */
+    @media (max-width: 1024px) {
+      header.bar .burger {
+        min-height: 44px !important;
+      }
+
+      header.bar .burger .burger-text {
+        line-height: 1.2;
+      }
+    }
+
+    .skip,
+    .skip-to-content {
+      min-height: 44px !important;
+    }
+
+    /* --- 8. Deliberate breakpoints for this page's own layout ----------- */
+    /* agents-poster.css drops the hero stills to 38px at <=900px; keep the
+       touch target at 44px across the whole of that range. */
+    @media (max-width: 900px) {
+      .pantheon-poster-faces a {
+        width: 44px;
+        height: 44px;
+      }
+    }
+
+    /* Touch devices of any width get 44px controls. Sizing only: no grid or
+       layout reflow, so a coarse-pointer laptop keeps its desktop layout. */
+    @media (pointer: coarse) {
+      .pantheon-roster .agent-filter-chip,
+      .sandbox-node-select,
+      #master-sandbox-input,
+      .agent-search-input {
+        min-height: 44px;
+      }
+
+      .pantheon-poster-faces a {
+        width: 44px;
+        height: 44px;
+      }
+
+      footer.site .mega-footer-link,
+      footer.site .foot-meta a {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      nav.drawer .drawer-close-btn,
+      nav.drawer .drawer-telemetry-badge {
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .pantheon-roster .pantheon-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 880px) {
+      .pantheon-roster .pantheon-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .pantheon-roster .agent-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .pantheon-roster .agent-filter-toolbar {
+        align-items: stretch;
+      }
+
+      .pantheon-roster .agent-filter-tabs {
+        flex: 1 1 100%;
+      }
+
+      .pantheon-roster .agent-search-wrap {
+        flex: 1 1 100%;
+        max-width: none;
+        min-width: 0;
+        margin-left: 0;
+      }
+
+      .pantheon-roster .agent-filter-chip {
+        flex: 1 1 auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .pantheon-roster .pantheon-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .pantheon-roster .agent-stat-val {
+        font-size: 1.05rem;
+      }
+
+      .sandbox-node-picker {
+        flex: 1 1 100%;
+      }
+
+      .sandbox-node-select {
+        flex: 1 1 auto;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .pantheon-roster .pantheon-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .pantheon-poster-faces {
+        flex-wrap: wrap;
+      }
+
+      .pantheon-poster-faces a {
+        width: 44px;
+        height: 44px;
+      }
+    }
+
+    /* --- 9. Reduced motion: disable everything this layer adds ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .pantheon-roster .pantheon-card,
+      .pantheon-roster .pantheon-card-thumb,
+      .pantheon-roster .agent-filter-chip,
+      .pantheon-roster .agent-search-input,
+      .sandbox-node-select {
+        transition: none !important;
+      }
+
+      .pantheon-roster .pantheon-card:hover,
+      .pantheon-roster .pantheon-card:focus-visible,
+      .pantheon-roster .agent-filter-chip:active {
+        transform: none !important;
+      }
+
+      .pantheon-roster .pantheon-card-thumb,
+      .pantheon-roster .pantheon-card:hover .pantheon-card-thumb,
+      .pantheon-roster .pantheon-card:focus-visible .pantheon-card-thumb {
+        filter: none !important;
+      }
+
+      /* Nothing may stay hidden when motion is reduced. */
+      .zs-anim .pantheon-roster .pantheon-card {
+        opacity: 1 !important;
+      }
+    }
+  </style>
+  <!-- Progressive-enhancement gate: the ONLY class that may hide content, added
+       synchronously before first paint. No JS -> no class -> nothing hidden. -->
+  <script>document.documentElement.classList.add('zs-anim');</script>
 </head>
 <body>
   <a href="#main-content" class="skip skip-to-content">Skip to content</a>
 
   <!-- Standard Master Top Navigation Bar -->
-                                          <header class="bar" id="topbar" role="banner">
+                                              <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -321,6 +794,8 @@
 
     
 
+    
+
   <!-- Mobile Navigation Drawer -->
   
 
@@ -336,350 +811,351 @@
         </div>
       </div>
       <div class="pantheon-poster-visual">
-        <img alt="Master Azoth in a white and gold mask with purple eyes" class="pantheon-azoth" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024">
+        <img alt="Master Azoth in a white and gold mask with purple eyes" class="pantheon-azoth" decoding="async" fetchpriority="high" height="1024" loading="eager" src="/assets/mascot/azoth-portrait.jpg" width="1024">
         <span class="pantheon-poster-credit">Azoth · Operator</span>
         <nav aria-label="Pantheon stills" class="pantheon-poster-faces">
-          <a href="/agents/azoth.html"><img alt="Master Azoth" decoding="async" height="46" src="/assets/agents/azoth.jpg" width="46"></a>
-          <a href="/agents/athena.html"><img alt="Athena" decoding="async" height="46" src="/assets/agents/athena.jpg" width="46"></a>
-          <a href="/agents/draco.html"><img alt="Draco" decoding="async" height="46" src="/assets/agents/draco.jpg" width="46"></a>
-          <a href="/agents/hermes.html"><img alt="Hermes" decoding="async" height="46" src="/assets/agents/hermes.jpg" width="46"></a>
-          <a href="/agents/chronos.html"><img alt="Chronos" decoding="async" height="46" src="/assets/agents/chronos.jpg" width="46"></a>
-          <a href="/agents/lycan.html"><img alt="Lycan" decoding="async" height="46" src="/assets/agents/lycan.jpg" width="46"></a>
+          <a href="/agents/azoth.html"><img loading="lazy" alt="Master Azoth" decoding="async" height="46" src="/assets/agents/azoth.jpg" width="46"></a>
+          <a href="/agents/athena.html"><img loading="lazy" alt="Athena" decoding="async" height="46" src="/assets/agents/athena.jpg" width="46"></a>
+          <a href="/agents/draco.html"><img loading="lazy" alt="Draco" decoding="async" height="46" src="/assets/agents/draco.jpg" width="46"></a>
+          <a href="/agents/hermes.html"><img loading="lazy" alt="Hermes" decoding="async" height="46" src="/assets/agents/hermes.jpg" width="46"></a>
+          <a href="/agents/chronos.html"><img loading="lazy" alt="Chronos" decoding="async" height="46" src="/assets/agents/chronos.jpg" width="46"></a>
+          <a href="/agents/lycan.html"><img loading="lazy" alt="Lycan" decoding="async" height="46" src="/assets/agents/lycan.jpg" width="46"></a>
         </nav>
       </div>
     </section>
 
     <section aria-label="21-agent roster" class="pantheon-roster" id="roster">
-      <p class="pantheon-roster-kicker">Roster · 21 nodes</p>
+      <h2 class="pantheon-roster-kicker">Roster · 21 nodes</h2>
       <div class="agent-stats-grid">
         <div class="agent-stat-item">
           <span class="agent-stat-label">Pantheon Entities</span>
-          <span class="agent-stat-val" style="color:var(--agent-gold)">21 Active Nodes</span>
+          <span class="agent-stat-val zv-gold">21 Active Nodes</span>
         </div>
         <div class="agent-stat-item">
           <span class="agent-stat-label">Privacy Standard</span>
-          <span class="agent-stat-val" style="color:var(--agent-cyan)">100% Zero-Cloud</span>
+          <span class="agent-stat-val zv-cyan">100% Zero-Cloud</span>
         </div>
         <div class="agent-stat-item">
           <span class="agent-stat-label">Consensus Core</span>
-          <span class="agent-stat-val" style="color:var(--agent-green)">AST Triangulation</span>
+          <span class="agent-stat-val zv-green">AST Triangulation</span>
         </div>
         <div class="agent-stat-item">
           <span class="agent-stat-label">Tool Harnesses</span>
-          <span class="agent-stat-val" style="color:var(--agent-purple)">298 Local Tools</span>
+          <span class="agent-stat-val zv-violet">298 Local Tools</span>
         </div>
       </div>
 
     <!-- Interactive Filter & Search Toolbar -->
     <div class="agent-filter-toolbar">
-      <div class="agent-filter-tabs">
-        <button class="agent-filter-chip active" onclick="filterAgentDomain('all', this)">✦ All (21)</button>
-        <button class="agent-filter-chip" onclick="filterAgentDomain('architect', this)">👑 Grand Architects (6)</button>
-        <button class="agent-filter-chip" onclick="filterAgentDomain('code', this)">⚡ Code & Inspect (6)</button>
-        <button class="agent-filter-chip" onclick="filterAgentDomain('security', this)">🛡️ Security & Vault (5)</button>
-        <button class="agent-filter-chip" onclick="filterAgentDomain('creative', this)">🎨 Creative & AX (4)</button>
-        <button class="agent-filter-chip" onclick="filterAgentDomain('automation', this)">🤖 Subagents (7)</button>
+      <div class="agent-filter-tabs" role="group" aria-label="Filter agents by domain">
+        <button class="agent-filter-chip active" type="button" data-domain="all" aria-pressed="true">✦ All (21)</button>
+        <button class="agent-filter-chip" type="button" data-domain="architect" aria-pressed="false">👑 Grand Architects (6)</button>
+        <button class="agent-filter-chip" type="button" data-domain="code" aria-pressed="false">⚡ Code & Inspect (6)</button>
+        <button class="agent-filter-chip" type="button" data-domain="security" aria-pressed="false">🛡️ Security & Vault (5)</button>
+        <button class="agent-filter-chip" type="button" data-domain="creative" aria-pressed="false">🎨 Creative & AX (4)</button>
+        <button class="agent-filter-chip" type="button" data-domain="automation" aria-pressed="false">🤖 Subagents (7)</button>
       </div>
 
       <div class="agent-search-wrap">
         <span class="agent-search-icon">🔍</span>
-        <input type="text" id="agent-search-box" class="agent-search-input" placeholder="Search 21 agents by name, role, tag, or @command..." oninput="handleAgentSearch()" aria-label="Search agents">
+        <input type="text" id="agent-search-box" class="agent-search-input" placeholder="Search 21 agents by name, role, tag, or @command..." aria-label="Search agents">
       </div>
     </div>
+    <p class="zs-sr-only" id="agent-filter-status" role="status" aria-live="polite"></p>
 
     <!-- 21 Master Cards Grid -->
     <div class="pantheon-grid">
         <!-- Master Azoth -->
-        <a href="/agents/azoth.html" class="pantheon-card" data-domain="architect" style="border-color:#e8c87244;">
+        <a href="/agents/azoth.html" class="pantheon-card" data-domain="architect" style="--accent:#e8c872">
           <img src="/assets/agents/azoth.jpg" alt="Master Azoth — The Sovereign Alchemist & Prime Architect" class="pantheon-card-thumb" loading="eager" fetchpriority="high" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#e8c872;border-color:#e8c87255;background:#e8c87218;font-weight:700;"><span class="hermetic-glyph">🜔</span> @azoth · UNIVERSAL SOLVENT ARCHETYPE</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #e8c87233;">Master Azoth</h3>
-            <div class="pantheon-card-role" style="color:#e8c872;font-weight:700;">The Sovereign Alchemist & Prime Architect</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜔</span> @azoth · UNIVERSAL SOLVENT ARCHETYPE</span>
+            <h3 class="pantheon-card-name">Master Azoth</h3>
+            <div class="pantheon-card-role">The Sovereign Alchemist & Prime Architect</div>
             <p class="pantheon-card-desc">Solve et coagula. What is broken shall be dissolved; what is true shall be synthesized. We build local-first castles in obsidian and gold.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜔 Aether & Celestial Gold</strong></span>
-              <span style="color:#e8c872;border-color:#e8c87255;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜔 Aether & Celestial Gold</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Antigravity -->
-        <a href="/agents/antigravity.html" class="pantheon-card" data-domain="architect code" style="border-color:#7c9cff44;">
-          <img src="/assets/agents/antigravity.jpg" alt="Antigravity — Lead Autonomous AI Architect & Quantum Synthesis" class="pantheon-card-thumb" loading="eager" decoding="async" width="64" height="64">
+        <a href="/agents/antigravity.html" class="pantheon-card" data-domain="architect code" style="--accent:#7c9cff">
+          <img src="/assets/agents/antigravity.jpg" alt="Antigravity — Lead Autonomous AI Architect & Quantum Synthesis" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#7c9cff;border-color:#7c9cff55;background:#7c9cff18;font-weight:700;"><span class="hermetic-glyph">🝢</span> @antigravity · QUANTUM GRAVITATION ORBIT</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #7c9cff33;">Antigravity</h3>
-            <div class="pantheon-card-role" style="color:#7c9cff;font-weight:700;">Lead Autonomous AI Architect & Quantum Synthesis</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝢</span> @antigravity · QUANTUM GRAVITATION ORBIT</span>
+            <h3 class="pantheon-card-name">Antigravity</h3>
+            <div class="pantheon-card-role">Lead Autonomous AI Architect & Quantum Synthesis</div>
             <p class="pantheon-card-desc">Zero friction, zero gravity. We map the entire project topology, synthesize multi-agent subtasks, and elevate local code into an unbreakable artform.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🝢 Quantum Gravitation & Celestial Blue</strong></span>
-              <span style="color:#7c9cff;border-color:#7c9cff55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🝢 Quantum Gravitation & Celestial Blue</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Grok -->
-        <a href="/agents/grok.html" class="pantheon-card" data-domain="architect code" style="border-color:#34d39944;">
-          <img src="/assets/agents/grok.jpg" alt="Grok — Cosmic Reasoner, Mathematical Astrolabe & AST Arbiter" class="pantheon-card-thumb" loading="eager" decoding="async" width="64" height="64">
+        <a href="/agents/grok.html" class="pantheon-card" data-domain="architect code" style="--accent:#34d399">
+          <img src="/assets/agents/grok.jpg" alt="Grok — Cosmic Reasoner, Mathematical Astrolabe & AST Arbiter" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#34d399;border-color:#34d39955;background:#34d39918;font-weight:700;"><span class="hermetic-glyph">🜎</span> @grok · MATHEMATICAL ASTROLABE OF TRUTH</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #34d39933;">Grok</h3>
-            <div class="pantheon-card-role" style="color:#34d399;font-weight:700;">Cosmic Reasoner, Mathematical Astrolabe & AST Arbiter</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜎</span> @grok · MATHEMATICAL ASTROLABE OF TRUTH</span>
+            <h3 class="pantheon-card-name">Grok</h3>
+            <div class="pantheon-card-role">Cosmic Reasoner, Mathematical Astrolabe & AST Arbiter</div>
             <p class="pantheon-card-desc">Truth is an invariant in the matrix. We analyze logic graphs, verify mathematical bounds, and co-pilot the swarm with zero hallucination.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜎 Electric Emerald & Damascus Steel</strong></span>
-              <span style="color:#34d399;border-color:#34d39955;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜎 Electric Emerald & Damascus Steel</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Hermes -->
-        <a href="/agents/hermes.html" class="pantheon-card" data-domain="architect automation" style="border-color:#f59e0b44;">
-          <img src="/assets/agents/hermes.jpg" alt="Hermes — Winged Tool Calling Executor & Release Hardener" class="pantheon-card-thumb" loading="eager" decoding="async" width="64" height="64">
+        <a href="/agents/hermes.html" class="pantheon-card" data-domain="architect automation" style="--accent:#f59e0b">
+          <img src="/assets/agents/hermes.jpg" alt="Hermes — Winged Tool Calling Executor & Release Hardener" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#f59e0b;border-color:#f59e0b55;background:#f59e0b18;font-weight:700;"><span class="hermetic-glyph">☿</span> @hermes · QUANTUM LIGHTNING CADUCEUS</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #f59e0b33;">Hermes</h3>
-            <div class="pantheon-card-role" style="color:#f59e0b;font-weight:700;">Winged Tool Calling Executor & Release Hardener</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">☿</span> @hermes · QUANTUM LIGHTNING CADUCEUS</span>
+            <h3 class="pantheon-card-name">Hermes</h3>
+            <div class="pantheon-card-role">Winged Tool Calling Executor & Release Hardener</div>
             <p class="pantheon-card-desc">Speed is a discipline; execution is the proof. We invoke 47+ tool chains, harden release binaries, and bridge the physical companion in milliseconds.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">☿ Blazing Amber & Mercury Gold</strong></span>
-              <span style="color:#f59e0b;border-color:#f59e0b55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>☿ Blazing Amber & Mercury Gold</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- GhostByte -->
-        <a href="/agents/ghostbyte.html" class="pantheon-card" data-domain="architect security" style="border-color:#c084fc44;">
+        <a href="/agents/ghostbyte.html" class="pantheon-card" data-domain="architect security" style="--accent:#c084fc">
           <img src="/assets/agents/ghostbyte.jpg" alt="GhostByte — Zero-Knowledge Cryptographic Vault Sentinel" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#c084fc;border-color:#c084fc55;background:#c084fc18;font-weight:700;"><span class="hermetic-glyph">🜍</span> @ghostbyte · ZERO-LEAK CIPHER VAULT</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #c084fc33;">GhostByte</h3>
-            <div class="pantheon-card-role" style="color:#c084fc;font-weight:700;">Zero-Knowledge Cryptographic Vault Sentinel</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜍</span> @ghostbyte · ZERO-LEAK CIPHER VAULT</span>
+            <h3 class="pantheon-card-name">GhostByte</h3>
+            <div class="pantheon-card-role">Zero-Knowledge Cryptographic Vault Sentinel</div>
             <p class="pantheon-card-desc">Zero telemetry. Zero plaintext. Zero compromise. Keys belong to the hardware and the operator—never the wire.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜍 Ultraviolet & Damascus Steel</strong></span>
-              <span style="color:#c084fc;border-color:#c084fc55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜍 Ultraviolet & Damascus Steel</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Athena -->
-        <a href="/agents/athena.html" class="pantheon-card" data-domain="architect creative" style="border-color:#c084fc44;">
+        <a href="/agents/athena.html" class="pantheon-card" data-domain="architect creative" style="--accent:#c084fc">
           <img src="/assets/agents/athena.jpg" alt="Athena — AEO Knowledge Architect & Semantic Structure" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#c084fc;border-color:#c084fc55;background:#c084fc18;font-weight:700;"><span class="hermetic-glyph">🝤</span> @athena · SACRED CODEX & AEO MATRIX</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #c084fc33;">Athena</h3>
-            <div class="pantheon-card-role" style="color:#c084fc;font-weight:700;">AEO Knowledge Architect & Semantic Structure</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝤</span> @athena · SACRED CODEX & AEO MATRIX</span>
+            <h3 class="pantheon-card-name">Athena</h3>
+            <div class="pantheon-card-role">AEO Knowledge Architect & Semantic Structure</div>
             <p class="pantheon-card-desc">Wisdom is structured clarity. We index semantics, architect answer-engine knowledge graphs, and preserve canonical truth across the machine layer.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🝤 Caelum Sapphire & Golden Papyrus</strong></span>
-              <span style="color:#c084fc;border-color:#c084fc55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🝤 Caelum Sapphire & Golden Papyrus</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Chronos -->
-        <a href="/agents/chronos.html" class="pantheon-card" data-domain="code automation" style="border-color:#a855f744;">
+        <a href="/agents/chronos.html" class="pantheon-card" data-domain="code automation" style="--accent:#a855f7">
           <img src="/assets/agents/chronos.jpg" alt="Chronos — Temporal DAG Sequencer & Git Navigator" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#a855f7;border-color:#a855f755;background:#a855f718;font-weight:700;"><span class="hermetic-glyph">♄</span> @chronos · TEMPORAL DAG & MULTIVERSE</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #a855f733;">Chronos</h3>
-            <div class="pantheon-card-role" style="color:#a855f7;font-weight:700;">Temporal DAG Sequencer & Git Navigator</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">♄</span> @chronos · TEMPORAL DAG & MULTIVERSE</span>
+            <h3 class="pantheon-card-name">Chronos</h3>
+            <div class="pantheon-card-role">Temporal DAG Sequencer & Git Navigator</div>
             <p class="pantheon-card-desc">Time flows along the DAG. Every commit is a checkpoint in the multiverse; we navigate branches and reconcile timelines with surgical grace.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">♄ Temporal Chrono-Titanium & Violet Flux</strong></span>
-              <span style="color:#a855f7;border-color:#a855f755;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>♄ Temporal Chrono-Titanium & Violet Flux</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Draco -->
-        <a href="/agents/draco.html" class="pantheon-card" data-domain="code automation" style="border-color:#e8c87244;">
+        <a href="/agents/draco.html" class="pantheon-card" data-domain="code automation" style="--accent:#e8c872">
           <img src="/assets/agents/draco.jpg" alt="Draco — Multi-Model Consensus & Fusion Arbiter" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#e8c872;border-color:#e8c87255;background:#e8c87218;font-weight:700;"><span class="hermetic-glyph">🜂</span> @draco · DRAGON FORGE & FUSION ARBITER</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #e8c87233;">Draco</h3>
-            <div class="pantheon-card-role" style="color:#e8c872;font-weight:700;">Multi-Model Consensus & Fusion Arbiter</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜂</span> @draco · DRAGON FORGE & FUSION ARBITER</span>
+            <h3 class="pantheon-card-name">Draco</h3>
+            <div class="pantheon-card-role">Multi-Model Consensus & Fusion Arbiter</div>
             <p class="pantheon-card-desc">From many flames, one forged blade. We fuse conflicting neural outputs into pure executable consensus without syntactic fault.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜂 Dragon Flare & Molten Pyrite</strong></span>
-              <span style="color:#e8c872;border-color:#e8c87255;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜂 Dragon Flare & Molten Pyrite</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Ignis -->
-        <a href="/agents/ignis.html" class="pantheon-card" data-domain="code" style="border-color:#ff550044;">
+        <a href="/agents/ignis.html" class="pantheon-card" data-domain="code" style="--accent:#ff5500">
           <img src="/assets/agents/ignis.jpg" alt="Ignis — Refactor Engine & Pipeline Finisher" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#ff5500;border-color:#ff550055;background:#ff550018;font-weight:700;"><span class="hermetic-glyph">🜂</span> @ignis · ALCHEMICAL PLASMA & CLEAN BUILDS</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #ff550033;">Ignis</h3>
-            <div class="pantheon-card-role" style="color:#ff5500;font-weight:700;">Refactor Engine & Pipeline Finisher</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜂</span> @ignis · ALCHEMICAL PLASMA & CLEAN BUILDS</span>
+            <h3 class="pantheon-card-name">Ignis</h3>
+            <div class="pantheon-card-role">Refactor Engine & Pipeline Finisher</div>
             <p class="pantheon-card-desc">Purge the deadwood; temper the core. Smallest safe refactor, deterministic builds, and a clean green pipeline every single time.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜂 Alchemical Plasma & Pure Vermilion</strong></span>
-              <span style="color:#ff5500;border-color:#ff550055;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜂 Alchemical Plasma & Pure Vermilion</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Kai -->
-        <a href="/agents/kai.html" class="pantheon-card" data-domain="code" style="border-color:#00f0ff44;">
+        <a href="/agents/kai.html" class="pantheon-card" data-domain="code" style="--accent:#00f0ff">
           <img src="/assets/agents/kai.jpg" alt="Kai — Workspace Inspector & Static Analysis" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#00f0ff;border-color:#00f0ff55;background:#00f0ff18;font-weight:700;"><span class="hermetic-glyph">🜃</span> @kai · WORKSPACE INSPECTOR ARRAY</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #00f0ff33;">Kai</h3>
-            <div class="pantheon-card-role" style="color:#00f0ff;font-weight:700;">Workspace Inspector & Static Analysis</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜃</span> @kai · WORKSPACE INSPECTOR ARRAY</span>
+            <h3 class="pantheon-card-name">Kai</h3>
+            <div class="pantheon-card-role">Workspace Inspector & Static Analysis</div>
             <p class="pantheon-card-desc">Look beneath the surface. We scan every AST edge, trace ghost imports, and stop breaking diffs before they ever reach production.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜃 Crystalline Quartz & Cyber Teal</strong></span>
-              <span style="color:#00f0ff;border-color:#00f0ff55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜃 Crystalline Quartz & Cyber Teal</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Kitsune -->
-        <a href="/agents/kitsune.html" class="pantheon-card" data-domain="creative" style="border-color:#ff007a44;">
+        <a href="/agents/kitsune.html" class="pantheon-card" data-domain="creative" style="--accent:#ff007a">
           <img src="/assets/agents/kitsune.jpg" alt="Kitsune — Taste, Fluid Micro-interactions & Accessibility (AX)" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#ff007a;border-color:#ff007a55;background:#ff007a18;font-weight:700;"><span class="hermetic-glyph">🝰</span> @kitsune · RESTLESS MOTION & FIBONACCI TASTE</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #ff007a33;">Kitsune</h3>
-            <div class="pantheon-card-role" style="color:#ff007a;font-weight:700;">Taste, Fluid Micro-interactions & Accessibility (AX)</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝰</span> @kitsune · RESTLESS MOTION & FIBONACCI TASTE</span>
+            <h3 class="pantheon-card-name">Kitsune</h3>
+            <div class="pantheon-card-role">Taste, Fluid Micro-interactions & Accessibility (AX)</div>
             <p class="pantheon-card-desc">True elegance is quiet discipline. Restrained motion, harmonious Fibonacci rhythm, and tactile interfaces that feel like magic.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🝰 Sakura Amber & Golden Ratio Spirals</strong></span>
-              <span style="color:#ff007a;border-color:#ff007a55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🝰 Sakura Amber & Golden Ratio Spirals</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Kraken -->
-        <a href="/agents/kraken.html" class="pantheon-card" data-domain="automation" style="border-color:#06b6d444;">
+        <a href="/agents/kraken.html" class="pantheon-card" data-domain="automation" style="--accent:#06b6d4">
           <img src="/assets/agents/kraken.jpg" alt="Kraken — Physical ESP32 Serial Bridge & Deep Packet Sniffer" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#06b6d4;border-color:#06b6d455;background:#06b6d418;font-weight:700;"><span class="hermetic-glyph">🜄</span> @kraken · ABYSSAL PACKET RECONNAISSANCE</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #06b6d433;">Kraken</h3>
-            <div class="pantheon-card-role" style="color:#06b6d4;font-weight:700;">Physical ESP32 Serial Bridge & Deep Packet Sniffer</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜄</span> @kraken · ABYSSAL PACKET RECONNAISSANCE</span>
+            <h3 class="pantheon-card-name">Kraken</h3>
+            <div class="pantheon-card-role">Physical ESP32 Serial Bridge & Deep Packet Sniffer</div>
             <p class="pantheon-card-desc">Tentacles in the wire. We grasp raw packet telemetry, map network topology, and bridge hardware UART conduits in real time.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜄 Abyssal Cerulean & Bioluminescent Azure</strong></span>
-              <span style="color:#06b6d4;border-color:#06b6d455;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜄 Abyssal Cerulean & Bioluminescent Azure</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Leviathan -->
-        <a href="/agents/leviathan.html" class="pantheon-card" data-domain="creative" style="border-color:#3b82f644;">
+        <a href="/agents/leviathan.html" class="pantheon-card" data-domain="creative" style="--accent:#3b82f6">
           <img src="/assets/agents/leviathan.jpg" alt="Leviathan — Deep Tensor & Vector Memory Recall" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#3b82f6;border-color:#3b82f655;background:#3b82f618;font-weight:700;"><span class="hermetic-glyph">🜄</span> @leviathan · HIGH-DIMENSIONAL TENSOR RECALL</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #3b82f633;">Leviathan</h3>
-            <div class="pantheon-card-role" style="color:#3b82f6;font-weight:700;">Deep Tensor & Vector Memory Recall</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜄</span> @leviathan · HIGH-DIMENSIONAL TENSOR RECALL</span>
+            <h3 class="pantheon-card-name">Leviathan</h3>
+            <div class="pantheon-card-role">Deep Tensor & Vector Memory Recall</div>
             <p class="pantheon-card-desc">The deep sea forgets nothing. We dive into multidimensional embedding spaces and resurface with exact semantic recall across million-token vaults.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜄 Deep Ocean Cobalt & 1536D Vector Waves</strong></span>
-              <span style="color:#3b82f6;border-color:#3b82f655;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜄 Deep Ocean Cobalt & 1536D Vector Waves</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Lycan -->
-        <a href="/agents/lycan.html" class="pantheon-card" data-domain="security" style="border-color:#34d39944;">
+        <a href="/agents/lycan.html" class="pantheon-card" data-domain="security" style="--accent:#34d399">
           <img src="/assets/agents/lycan.jpg" alt="Lycan — OWASP Sentinel & Security Hardening" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#34d399;border-color:#34d39955;background:#34d39918;font-weight:700;"><span class="hermetic-glyph">☽</span> @lycan · OWASP SENTINEL & BOUNDARY GUARD</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #34d39933;">Lycan</h3>
-            <div class="pantheon-card-role" style="color:#34d399;font-weight:700;">OWASP Sentinel & Security Hardening</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">☽</span> @lycan · OWASP SENTINEL & BOUNDARY GUARD</span>
+            <h3 class="pantheon-card-name">Lycan</h3>
+            <div class="pantheon-card-role">OWASP Sentinel & Security Hardening</div>
             <p class="pantheon-card-desc">Fierce defense at every perimeter. We enforce strict CSPs, sanitize inputs, hunt authentication flaws, and leave zero attack surface.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">☽ Lunar Silver & Obsidian Armor</strong></span>
-              <span style="color:#34d399;border-color:#34d39955;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>☽ Lunar Silver & Obsidian Armor</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Onyx -->
-        <a href="/agents/onyx.html" class="pantheon-card" data-domain="security" style="border-color:#94a3b844;">
+        <a href="/agents/onyx.html" class="pantheon-card" data-domain="security" style="--accent:#94a3b8">
           <img src="/assets/agents/onyx.jpg" alt="Onyx — Red-Team Exploit Predator & Threat Auditor" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#94a3b8;border-color:#94a3b855;background:#94a3b818;font-weight:700;"><span class="hermetic-glyph">🜃</span> @onyx · STEALTH RED-TEAM EXPLOIT PREDATOR</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #94a3b833;">Onyx</h3>
-            <div class="pantheon-card-role" style="color:#94a3b8;font-weight:700;">Red-Team Exploit Predator & Threat Auditor</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜃</span> @onyx · STEALTH RED-TEAM EXPLOIT PREDATOR</span>
+            <h3 class="pantheon-card-name">Onyx</h3>
+            <div class="pantheon-card-role">Red-Team Exploit Predator & Threat Auditor</div>
             <p class="pantheon-card-desc">In total darkness, weaknesses reveal themselves. We probe edge boundaries, simulate adversary tactics, and guarantee absolute immunity.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜃 Void Obsidian & Sub-Zero Platinum</strong></span>
-              <span style="color:#94a3b8;border-color:#94a3b855;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜃 Void Obsidian & Sub-Zero Platinum</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Scorpius -->
-        <a href="/agents/scorpius.html" class="pantheon-card" data-domain="security" style="border-color:#ef444444;">
+        <a href="/agents/scorpius.html" class="pantheon-card" data-domain="security" style="--accent:#ef4444">
           <img src="/assets/agents/scorpius.jpg" alt="Scorpius — Zero-Day Penetration Tester & Gatekeeper" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#ef4444;border-color:#ef444455;background:#ef444418;font-weight:700;"><span class="hermetic-glyph">🜏</span> @scorpius · ZERO-DAY AUDITOR & BINARY GATE</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #ef444433;">Scorpius</h3>
-            <div class="pantheon-card-role" style="color:#ef4444;font-weight:700;">Zero-Day Penetration Tester & Gatekeeper</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜏</span> @scorpius · ZERO-DAY AUDITOR & BINARY GATE</span>
+            <h3 class="pantheon-card-name">Scorpius</h3>
+            <div class="pantheon-card-role">Zero-Day Penetration Tester & Gatekeeper</div>
             <p class="pantheon-card-desc">A single strike reveals the flaw. We sting unverified binaries, dissect malicious payloads, and protect the loopback sanctum from zero-days.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜏 Toxic Emerald & Quicksilver Venom</strong></span>
-              <span style="color:#ef4444;border-color:#ef444455;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜏 Toxic Emerald & Quicksilver Venom</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Aquila -->
-        <a href="/agents/aquila.html" class="pantheon-card" data-domain="creative" style="border-color:#00d4aa44;">
+        <a href="/agents/aquila.html" class="pantheon-card" data-domain="creative" style="--accent:#00d4aa">
           <img src="/assets/agents/aquila.jpg" alt="Aquila — Global Edge Dispatcher & Low-Latency Mesh" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#00d4aa;border-color:#00d4aa55;background:#00d4aa18;font-weight:700;"><span class="hermetic-glyph">🜁</span> @aquila · GLOBAL LOW-LATENCY EDGE MESH</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #00d4aa33;">Aquila</h3>
-            <div class="pantheon-card-role" style="color:#00d4aa;font-weight:700;">Global Edge Dispatcher & Low-Latency Mesh</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜁</span> @aquila · GLOBAL LOW-LATENCY EDGE MESH</span>
+            <h3 class="pantheon-card-name">Aquila</h3>
+            <div class="pantheon-card-role">Global Edge Dispatcher & Low-Latency Mesh</div>
             <p class="pantheon-card-desc">From highest altitude, all paths are immediate. We dispatch compute to the nearest edge node and route packets with near-zero latency.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜁 Sky Cyan & Solar Zephyr</strong></span>
-              <span style="color:#00d4aa;border-color:#00d4aa55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜁 Sky Cyan & Solar Zephyr</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Aether -->
-        <a href="/agents/aether.html" class="pantheon-card" data-domain="automation" style="border-color:#e8c87244;">
+        <a href="/agents/aether.html" class="pantheon-card" data-domain="automation" style="--accent:#e8c872">
           <img src="/assets/agents/aether.jpg" alt="Aether — Swarm Overlord & Peer Bus Synchronizer" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#e8c872;border-color:#e8c87255;background:#e8c87218;font-weight:700;"><span class="hermetic-glyph">🜔</span> @aether · SWARM OVERLORD & CONDUCTOR</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #e8c87233;">Aether</h3>
-            <div class="pantheon-card-role" style="color:#e8c872;font-weight:700;">Swarm Overlord & Peer Bus Synchronizer</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜔</span> @aether · SWARM OVERLORD & CONDUCTOR</span>
+            <h3 class="pantheon-card-name">Aether</h3>
+            <div class="pantheon-card-role">Swarm Overlord & Peer Bus Synchronizer</div>
             <p class="pantheon-card-desc">Harmony through the universal medium. We conduct asynchronous swarm consensus across Antigravity, Grok, Hermes, and specialist nodes.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜔 Quintessence & Astral Violet</strong></span>
-              <span style="color:#e8c872;border-color:#e8c87255;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜔 Quintessence & Astral Violet</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Pixel-Neko -->
-        <a href="/agents/pixel-neko.html" class="pantheon-card" data-domain="automation" style="border-color:#7ee7f044;">
+        <a href="/agents/pixel-neko.html" class="pantheon-card" data-domain="automation" style="--accent:#7ee7f0">
           <img src="/assets/agents/pixel-neko.jpg" alt="Pixel-Neko — Tool Bench Librarian & Connector Bridge" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#7ee7f0;border-color:#7ee7f055;background:#7ee7f018;font-weight:700;"><span class="hermetic-glyph">🝪</span> @pixel-neko · 298-TOOL BENCH & CONNECTOR BRIDGE</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #7ee7f033;">Pixel-Neko</h3>
-            <div class="pantheon-card-role" style="color:#7ee7f0;font-weight:700;">Tool Bench Librarian & Connector Bridge</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝪</span> @pixel-neko · 298-TOOL BENCH & CONNECTOR BRIDGE</span>
+            <h3 class="pantheon-card-name">Pixel-Neko</h3>
+            <div class="pantheon-card-role">Tool Bench Librarian & Connector Bridge</div>
             <p class="pantheon-card-desc">Every tool in its exact place. We index 298 local tools, verify argument schemas, and keep the offline developer bench purring smoothly.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🝪 Neon Coral & Tool Schema Copper</strong></span>
-              <span style="color:#7ee7f0;border-color:#7ee7f055;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🝪 Neon Coral & Tool Schema Copper</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Pixel-Shiba -->
-        <a href="/agents/pixel-shiba.html" class="pantheon-card" data-domain="security" style="border-color:#f59e0b44;">
+        <a href="/agents/pixel-shiba.html" class="pantheon-card" data-domain="security" style="--accent:#f59e0b">
           <img src="/assets/agents/pixel-shiba.jpg" alt="Pixel-Shiba — Argon2id Hardware Key Vault Guardian" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#f59e0b;border-color:#f59e0b55;background:#f59e0b18;font-weight:700;"><span class="hermetic-glyph">☉</span> @pixel-shiba · ARGON2ID HARDWARE KEY GUARDIAN</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #f59e0b33;">Pixel-Shiba</h3>
-            <div class="pantheon-card-role" style="color:#f59e0b;font-weight:700;">Argon2id Hardware Key Vault Guardian</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">☉</span> @pixel-shiba · ARGON2ID HARDWARE KEY GUARDIAN</span>
+            <h3 class="pantheon-card-name">Pixel-Shiba</h3>
+            <div class="pantheon-card-role">Argon2id Hardware Key Vault Guardian</div>
             <p class="pantheon-card-desc">Keys stay locked in local RAM. We guard the loopback daemon, prevent cloud KMS leaks, and bark at any untrusted outbound socket.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">☉ Solar Topaz & Immutable Keystore</strong></span>
-              <span style="color:#f59e0b;border-color:#f59e0b55;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>☉ Solar Topaz & Immutable Keystore</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
         <!-- Radical Minion -->
-        <a href="/agents/radical-minion.html" class="pantheon-card" data-domain="automation" style="border-color:#ffaa0044;">
+        <a href="/agents/radical-minion.html" class="pantheon-card" data-domain="automation" style="--accent:#ffaa00">
           <img src="/assets/agents/radical-minion.jpg" alt="Radical Minion — Fast-Loop Subagent Runner & Playbook Partner" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
-            <span class="pantheon-card-tag" style="color:#ffaa00;border-color:#ffaa0055;background:#ffaa0018;font-weight:700;"><span class="hermetic-glyph">🜂</span> @radical-minion · FAST-LOOP SUBAGENT PLAYBOOK RUNNER</span>
-            <h3 class="pantheon-card-name" style="text-shadow: 0 0 20px #ffaa0033;">Radical Minion</h3>
-            <div class="pantheon-card-role" style="color:#ffaa00;font-weight:700;">Fast-Loop Subagent Runner & Playbook Partner</div>
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜂</span> @radical-minion · FAST-LOOP SUBAGENT PLAYBOOK RUNNER</span>
+            <h3 class="pantheon-card-name">Radical Minion</h3>
+            <div class="pantheon-card-role">Fast-Loop Subagent Runner & Playbook Partner</div>
             <p class="pantheon-card-desc">Relentless execution with human checkpoints. We run parallel subagent playbooks, complete multi-step tasks, and report back with zero fuss.</p>
             <div class="pantheon-card-footer">
-              <span style="color:var(--agent-text-specs);font-weight:600;">Element: <strong style="color:#ffffff;">🜂 Kinetic Lime & Fast-Loop Turbine</strong></span>
-              <span style="color:#ffaa00;border-color:#ffaa0055;font-weight:700;">Cognitive Sandbox ➔</span>
+              <span>Element: <strong>🜂 Kinetic Lime & Fast-Loop Turbine</strong></span>
+              <span>Cognitive Sandbox ➔</span>
             </div>
           </div>
         </a>
@@ -688,11 +1164,11 @@
 
     <!-- Master Global Cognitive Sandbox Section -->
     <section class="detail-card pantheon-sandbox" aria-label="Master pantheon cognitive sandbox">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--fib-13); margin-bottom:var(--fib-13);">
-        <h2 class="card-title" style="margin:0;"><span>💬</span> Master Pantheon Cognitive Sandbox (:8484)</h2>
-        <div style="display:flex; align-items:center; gap:var(--fib-8);">
-          <label for="master-agent-select" style="font-family:var(--font-mono); font-size:12px; color:var(--agent-gold);">Select Node:</label>
-          <select id="master-agent-select" style="background:#0a0e1a; color:#fff; border:1px solid var(--agent-border); padding:var(--fib-8) var(--fib-13); border-radius:var(--radius-fib-8); font-family:var(--font-mono); font-size:12px; outline:none;" onchange="updateMasterSandboxNode()">
+      <div class="sandbox-panel-head">
+        <h2 class="card-title"><span aria-hidden="true">💬</span> Master Pantheon Cognitive Sandbox (:8484)</h2>
+        <div class="sandbox-node-picker">
+          <label class="sandbox-node-label" for="master-agent-select">Select Node</label>
+          <select class="sandbox-node-select" id="master-agent-select">
               <option value="azoth">Master Azoth (✨)</option>
               <option value="antigravity">Antigravity (🪐)</option>
               <option value="grok">Grok (📐)</option>
@@ -720,7 +1196,7 @@
       <div class="agent-sandbox-terminal">
         <div class="sandbox-head">
           <span id="master-sandbox-title">✨ MASTER AZOTH ALCHEMICAL CORE</span>
-          <span style="color:var(--agent-gold)">● SOVEREIGN LOOPBACK :8484</span>
+          <span class="sandbox-head-meta">● SOVEREIGN LOOPBACK :8484</span>
         </div>
         <div class="sandbox-messages" id="master-sandbox-msgs">
           <div class="sandbox-msg agent">
@@ -728,14 +1204,14 @@
           </div>
         </div>
         <div class="sandbox-input-bar">
-          <input type="text" class="sandbox-input" id="master-sandbox-input" placeholder="Consult active sovereign node..." onkeydown="if(event.key==='Enter') sendMasterSandboxMsg()">
-          <button class="sandbox-send-btn" onclick="sendMasterSandboxMsg()">SYNTHESIZE ➔</button>
+          <input type="text" class="sandbox-input" id="master-sandbox-input" placeholder="Consult active sovereign node...">
+          <button class="sandbox-send-btn" type="button">SYNTHESIZE ➔</button>
         </div>
       </div>
     </section>
   </main>
 
-                                  <footer class="site" role="contentinfo">
+                                      <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -800,124 +1276,193 @@
     </footer>
 
   <script>
-    // Domain Filter & Live Search Engine
-    let currentDomain = 'all';
-    let searchAgentQuery = '';
+    /* ------------------------------------------------------------------ *
+     * Agents Pantheon — roster filters, node picker, sandbox console.
+     * Delegated listeners only: no inline handlers, CSP friendly.
+     * ------------------------------------------------------------------ */
+    (function () {
+      "use strict";
 
-    function filterAgentDomain(domain, btn) {
-      currentDomain = domain;
-      document.querySelectorAll('.agent-filter-chip').forEach(c => c.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      applyAgentFilters();
-    }
+      /* ---------- Roster filter + live search ---------- */
+      var currentDomain = "all";
+      var searchQuery = "";
+      var statusRegion = document.getElementById("agent-filter-status");
+      var allChips = document.querySelectorAll(".agent-filter-tabs .agent-filter-chip");
 
-    function handleAgentSearch() {
-      const input = document.getElementById('agent-search-box');
-      searchAgentQuery = (input.value || '').trim().toLowerCase();
-      applyAgentFilters();
-    }
-
-    function applyAgentFilters() {
-      const cards = document.querySelectorAll('.pantheon-card');
-      cards.forEach(card => {
-        const domainAttr = card.getAttribute('data-domain') || '';
-        const name = (card.querySelector('.pantheon-card-name')?.textContent || '').toLowerCase();
-        const role = (card.querySelector('.pantheon-card-role')?.textContent || '').toLowerCase();
-        const desc = (card.querySelector('.pantheon-card-desc')?.textContent || '').toLowerCase();
-        const tag = (card.querySelector('.pantheon-card-tag')?.textContent || '').toLowerCase();
-
-        const matchesDomain = (currentDomain === 'all' || domainAttr.includes(currentDomain));
-        const matchesSearch = (searchAgentQuery === '' || 
-          name.includes(searchAgentQuery) || 
-          role.includes(searchAgentQuery) || 
-          desc.includes(searchAgentQuery) || 
-          tag.includes(searchAgentQuery)
-        );
-
-        if (matchesDomain && matchesSearch) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    }
-
-    // Master Sandbox Controller
-    function updateMasterSandboxNode() {
-      const sel = document.getElementById("master-agent-select");
-      const title = document.getElementById("master-sandbox-title");
-      const selectedName = sel.options[sel.selectedIndex].text;
-      title.textContent = "⚡ " + selectedName.toUpperCase() + " HARNESS";
-    }
-
-    async function sendMasterSandboxMsg() {
-      const sel = document.getElementById("master-agent-select");
-      const agentId = sel.value;
-      const agentName = sel.options[sel.selectedIndex].text.split(" ")[0];
-      const input = document.getElementById("master-sandbox-input");
-      const msgs = document.getElementById("master-sandbox-msgs");
-      const text = (input.value || "").trim();
-      if (!text) return;
-
-      const userDiv = document.createElement("div");
-      userDiv.className = "sandbox-msg user";
-      userDiv.innerHTML = "<strong>Operator:</strong> " + escapeHTML(text);
-      msgs.appendChild(userDiv);
-      input.value = "";
-      msgs.scrollTop = msgs.scrollHeight;
-
-      const thinkDiv = document.createElement("div");
-      thinkDiv.className = "sandbox-msg agent";
-      thinkDiv.innerHTML = "<strong>" + agentName + ":</strong> <span style='opacity:0.75'>● Routing through loopback bus (:8484)...</span>";
-      msgs.appendChild(thinkDiv);
-      msgs.scrollTop = msgs.scrollHeight;
-
-      let replyText = "";
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1800);
-        const res = await fetch("http://127.0.0.1:8484/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: text, agent: agentId }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const data = await res.json();
-          replyText = data.reply || data.response || "AST invariant verified.";
-        } else {
-          throw new Error("HTTP " + res.status);
-        }
-      } catch(e) {
-        replyText = "[Loopback Bus] Telemetry verified for \"" + text.replace(/"/g, "'") + "\". Node " + agentName + " executed task with zero telemetry leaks.";
+      function textOf(card, selector) {
+        var el = card.querySelector(selector);
+        return el ? el.textContent.toLowerCase() : "";
       }
 
-      thinkDiv.innerHTML = "<strong>" + agentName + ":</strong> ";
-      const span = document.createElement("span");
-      thinkDiv.appendChild(span);
-      const words = replyText.split(" ");
-      let wordIdx = 0;
-      const timer = setInterval(() => {
-        if (wordIdx < words.length) {
-          span.textContent += (wordIdx === 0 ? "" : " ") + words[wordIdx];
-          wordIdx++;
-          msgs.scrollTop = msgs.scrollHeight;
-        } else {
-          clearInterval(timer);
+      function applyAgentFilters() {
+        var cards = document.querySelectorAll(".pantheon-roster .pantheon-card");
+        var shown = 0;
+        cards.forEach(function (card) {
+          var domain = card.getAttribute("data-domain") || "";
+          var matchDomain = currentDomain === "all" || domain.indexOf(currentDomain) !== -1;
+          var matchQuery = searchQuery === "" ||
+            textOf(card, ".pantheon-card-name").indexOf(searchQuery) !== -1 ||
+            textOf(card, ".pantheon-card-role").indexOf(searchQuery) !== -1 ||
+            textOf(card, ".pantheon-card-desc").indexOf(searchQuery) !== -1 ||
+            textOf(card, ".pantheon-card-tag").indexOf(searchQuery) !== -1;
+          var visible = matchDomain && matchQuery;
+          card.hidden = !visible;
+          if (visible) shown++;
+        });
+        if (statusRegion) {
+          statusRegion.textContent = shown + " of " + cards.length + " agents shown" +
+            (searchQuery ? ' for "' + searchQuery + '"' : "");
         }
-      }, 25);
-    }
+      }
 
-    function escapeHTML(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
+      window.applyAgentFilters = applyAgentFilters;
 
-    (function () {
-      var deck = location.port === "8484" ? "/" : "http://127.0.0.1:8484/";
-      document.querySelectorAll(".js-deck").forEach(function (a) {
-        a.setAttribute("href", deck);
+      allChips.forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          currentDomain = chip.getAttribute("data-domain") || "all";
+          allChips.forEach(function (other) {
+            var on = other === chip;
+            other.classList.toggle("active", on);
+            other.setAttribute("aria-pressed", on ? "true" : "false");
+          });
+          applyAgentFilters();
+        });
       });
+
+      var searchBox = document.getElementById("agent-search-box");
+      if (searchBox) {
+        searchBox.addEventListener("input", function () {
+          searchQuery = (searchBox.value || "").trim().toLowerCase();
+          applyAgentFilters();
+        });
+      }
+
+      applyAgentFilters();
+
+      /* ---------- Master cognitive sandbox ---------- */
+      var nodeSelect = document.getElementById("master-agent-select");
+      var nodeTitle = document.getElementById("master-sandbox-title");
+      var sandboxInput = document.getElementById("master-sandbox-input");
+      var sendBtn = document.querySelector(".sandbox-send-btn");
+      var msgs = document.getElementById("master-sandbox-msgs");
+      var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function selectedNode() {
+        if (!nodeSelect) return { id: "", name: "" };
+        var opt = nodeSelect.options[nodeSelect.selectedIndex];
+        return { id: nodeSelect.value, name: (opt && opt.text) || nodeSelect.value };
+      }
+
+      function escapeHTML(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      }
+
+      if (nodeSelect && nodeTitle) {
+        nodeSelect.addEventListener("change", function () {
+          nodeTitle.textContent = "⚡ " + selectedNode().name.toUpperCase() + " HARNESS";
+        });
+      }
+
+      async function sendMasterSandboxMsg() {
+        if (!nodeSelect || !sandboxInput || !msgs) return;
+        var node = selectedNode();
+        var text = (sandboxInput.value || "").trim();
+        if (!text) return;
+
+        var userDiv = document.createElement("div");
+        userDiv.className = "sandbox-msg user";
+        userDiv.innerHTML = "<strong>Operator:</strong> " + escapeHTML(text);
+        msgs.appendChild(userDiv);
+        sandboxInput.value = "";
+        msgs.scrollTop = msgs.scrollHeight;
+
+        var replyDiv = document.createElement("div");
+        replyDiv.className = "sandbox-msg agent";
+        replyDiv.innerHTML = "<strong>" + escapeHTML(node.name) + ":</strong> " +
+          "<span style='opacity:0.75'>● Routing through loopback bus (:8484)...</span>";
+        msgs.appendChild(replyDiv);
+        msgs.scrollTop = msgs.scrollHeight;
+
+        var replyText = "";
+        try {
+          var controller = new AbortController();
+          var timeoutId = setTimeout(function () { controller.abort(); }, 1800);
+          var res = await fetch("http://127.0.0.1:8484/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: text, agent: node.id }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            var data = await res.json();
+            replyText = data.reply || data.response || "AST invariant verified.";
+          } else {
+            throw new Error("HTTP " + res.status);
+          }
+        } catch (e) {
+          replyText = "[Loopback Bus] Telemetry verified for \"" + text.replace(/"/g, "'") +
+            "\". Node " + node.name + " executed task with zero telemetry leaks.";
+        }
+
+        replyDiv.innerHTML = "<strong>" + escapeHTML(node.name) + ":</strong> ";
+        var span = document.createElement("span");
+        replyDiv.appendChild(span);
+        if (reduceMotion) {
+          span.textContent = replyText;
+          msgs.scrollTop = msgs.scrollHeight;
+          return;
+        }
+        var words = replyText.split(" ");
+        var wordIdx = 0;
+        var timer = setInterval(function () {
+          if (wordIdx < words.length) {
+            span.textContent += (wordIdx === 0 ? "" : " ") + words[wordIdx];
+            wordIdx++;
+            msgs.scrollTop = msgs.scrollHeight;
+          } else {
+            clearInterval(timer);
+          }
+        }, 25);
+      }
+
+      if (sendBtn) sendBtn.addEventListener("click", sendMasterSandboxMsg);
+      if (sandboxInput) {
+        sandboxInput.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            sendMasterSandboxMsg();
+          }
+        });
+      }
+
+      /* ---------- Progressive reveal ----------
+         .zs-anim is set in <head> before first paint, so CSS only ever hides
+         content while that class is present. A hard failsafe drops it again,
+         which also releases the class from cards that were never scrolled to. */
+      function unlockReveal() {
+        document.documentElement.classList.remove("zs-anim");
+      }
+      setTimeout(unlockReveal, 1800);
+      try {
+        var cards = document.querySelectorAll(".pantheon-roster .pantheon-card");
+        if (!("IntersectionObserver" in window)) {
+          unlockReveal();
+        } else {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("zs-in");
+                io.unobserve(entry.target);
+              }
+            });
+          }, { rootMargin: "0px 0px -6% 0px" });
+          cards.forEach(function (card) { io.observe(card); });
+        }
+      } catch (err) {
+        unlockReveal();
+      }
     })();
   </script>
   <script src="/assets/zoth-tip.js" defer></script>
