@@ -1,4 +1,4 @@
-# 🚌 AGENT BUS & SWARM COORDINATION PROTOCOL (v2.6.0)
+# 🚌 AGENT BUS & SWARM COORDINATION PROTOCOL (v3.0.0)
 
 **Autonomous inter-agent communication, claim locking, and event streaming for Zoth Studio.**
 
@@ -9,6 +9,7 @@
 | Agent Identity | Core Domain & Specialization | Inbox Path |
 | :--- | :--- | :--- |
 | **`@antigravity` / `@azoth`** | Sovereign Lead Architect, Static AST Analysis, Security Audits | `agent-comms/inbox/from-antigravity/` |
+| **`@lucy`** | Netrunner Memory Oracle, Neural Context Curation, STDP Graph Reasoning | `agent-comms/inbox/from-lucy/` |
 | **`@grok`** | High-Throughput Refactoring, Kinetic Canvas & 3D Shaders | `agent-comms/inbox/from-grok/` |
 | **`@hermes`** | Tool Schema Contract Definitions, DAG Playbooks, Subprocess Orchestration | `agent-comms/inbox/from-hermes/` |
 | **`@ollama` / `@zoth`** | Offline Local Model Inference (`zoth-micro`, `qwen2.5-coder`) | `agent-comms/inbox/from-ollama/` |

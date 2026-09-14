@@ -27,6 +27,10 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Syne:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="/assets/zoth-theme.css?v=12" rel="stylesheet"/>
+<link href="/assets/zoth-nav.css?v=12" rel="stylesheet"/>
+<script src="/assets/zoth-theme.js?v=12"></script>
+<script defer src="/assets/zoth-nav.js?v=12"></script>
 <style>
         .skip-to-content, .skip-link, .skip {
       position: absolute;
@@ -113,6 +117,61 @@
       --font-display: 'Syne', sans-serif;
       --font-body: 'Figtree', sans-serif;
       --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    html[data-theme="light"] {
+      --bg: #f8fafc;
+      --bg-surface: rgba(255, 255, 255, 0.95);
+      --bg-card: rgba(241, 245, 249, 0.9);
+      --border: rgba(15, 23, 42, 0.14);
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --cyan: #0284c7;
+      --magenta: #db2777;
+    }
+
+    html[data-theme="matrix"] {
+      --bg: #020b04;
+      --bg-surface: rgba(3, 18, 7, 0.92);
+      --bg-card: rgba(2, 12, 5, 0.9);
+      --border: rgba(34, 197, 94, 0.25);
+      --text: #86efac;
+      --text-dim: #4ade80;
+      --cyan: #22c55e;
+    }
+
+    html[data-theme="gold"] {
+      --bg: #0d0a02;
+      --bg-surface: rgba(24, 18, 6, 0.92);
+      --bg-card: rgba(16, 12, 4, 0.9);
+      --border: rgba(251, 191, 36, 0.25);
+      --text: #fef3c7;
+      --text-dim: #fde68a;
+      --cyan: #f59e0b;
+    }
+
+    .gallery-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-surface);
+      color: var(--text);
+      border: 1px solid var(--cyan);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 999999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+    .gallery-toast.show {
+      transform: translateY(0);
+      opacity: 1;
     }
 
     *, *::before, *::after {
@@ -653,7 +712,7 @@
 </head>
 <body>
 <a class="skip-to-content" href="#main-content">Skip to content</a>
-                                <header class="bar" id="topbar" role="banner">
+                                        <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -887,6 +946,10 @@
 
     
 
+    
+
+    
+
 <div class="ambient-mesh"></div>
 <div class="container">
 <section class="controls-bar">
@@ -906,7 +969,7 @@
 </section>
 <main>
 <h1 style="display:none;">Zoth Media Vault &amp; High-Definition Asset Gallery</h1> role="main" id="main-content" id="assets-grid" class="assets-grid"&gt;</main>
-                        <footer class="site" role="contentinfo">
+                                <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -1427,7 +1490,19 @@
       const full = window.location.origin + url;
       navigator.clipboard.writeText(full);
       playChime(880);
-      alert('Copied asset URL to clipboard: ' + full);
+      let toast = document.getElementById('gallery-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'gallery-toast';
+        toast.className = 'gallery-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = '📋 Copied: ' + (url.split('/').pop() || full);
+      toast.classList.add('show');
+      clearTimeout(window._galleryToastTimer);
+      window._galleryToastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
     };
 
     document.addEventListener('DOMContentLoaded', () => {

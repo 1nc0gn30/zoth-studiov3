@@ -1376,7 +1376,7 @@
 </head>
 <body class="deck-page omni-page" data-guide="This forge is a look.|Publishing stays on the local deck.|Install, then cut the post here." data-kicker="OmniPost · preview" data-lede="The forge is a look. Publishing stays on the local deck." data-title="Make the post on this box">
 <a class="skip-link" href="#main-content">Skip to main content</a>
-                                <header class="bar" id="topbar" role="banner">
+                                        <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -1595,6 +1595,10 @@
         <a class="drawer-pill-link" href="/downloads/zoth-studio-android.apk">📱 Download Android App (.apk)</a>
       </div>
     </nav>
+
+    
+
+    
 
     
 
@@ -2723,7 +2727,7 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
 </section>
 </div>
 </main>
-                        <footer class="site" role="contentinfo">
+                                <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -4191,7 +4195,10 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
           const quoteEl = document.getElementById('agent-dossier-quote');
           const draftBtn = document.getElementById('btn-agent-draft');
 
-          if (avatar) avatar.src = agent.avatar;
+          if (avatar) {
+            avatar.src = agent.avatar;
+            avatar.dataset.agent = key;
+          }
           if (nameEl) nameEl.textContent = agent.name;
           if (badgeEl) badgeEl.textContent = agent.badge;
           if (quoteEl) quoteEl.textContent = '"' + agent.quote + '"';
@@ -4200,7 +4207,10 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
           // Update Mobile Bar Agent info
           const mobAvatar = document.getElementById('mobile-bar-agent-avatar');
           const mobName = document.getElementById('mobile-bar-agent-name');
-          if (mobAvatar) mobAvatar.src = agent.avatar;
+          if (mobAvatar) {
+            mobAvatar.src = agent.avatar;
+            mobAvatar.dataset.agent = key;
+          }
           if (mobName) mobName.textContent = agent.name;
 
           // Auto-sync tone dropdown if available
@@ -4466,18 +4476,17 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
           return [];
         }
 
-        // Swarm Orchestrator Broadcast Helper (:8484)
+        // Swarm Orchestrator Broadcast Helper (BroadcastChannel + LocalStorage Bus)
         async function broadcastToSwarm(action, payload) {
           try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 800);
-            await fetch('http://127.0.0.1:8484/api/swarm', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: action, payload: payload, agent: activeAgentKey }),
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
+            if (typeof BroadcastChannel !== 'undefined') {
+              const bc = new BroadcastChannel('zoth_swarm_bus');
+              bc.postMessage({ action: action, payload: payload, agent: activeAgentKey, timestamp: Date.now() });
+              setTimeout(() => { try { bc.close(); } catch(e){} }, 500);
+            }
+            try {
+              localStorage.setItem('zoth_latest_swarm_directive', JSON.stringify({ action: action, payload: payload, agent: activeAgentKey, time: new Date().toISOString() }));
+            } catch(e) {}
           } catch(e) {}
         }
 
@@ -6401,6 +6410,8 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
           { agentKey: 'lycan', persona: 'Lycan', category: 'Red Team Warning', hook: "Red team audit complete: zero cloud key leakage, loopback fortified, memory zeroization certified." }
         ];
 
+        let currentRenderedHooks = [];
+
         window.renderHooks = function(filterVal = 'all') {
           const grid = document.getElementById('hooks-grid');
           if (!grid) return;
@@ -6408,6 +6419,8 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
           const list = (filterVal === 'all')
             ? sampleHooks
             : sampleHooks.filter(h => h.agentKey === filterVal || h.category === filterVal);
+
+          currentRenderedHooks = list;
 
           list.forEach((h, idx) => {
             const agent = PANTHEON_AGENTS[h.agentKey] || PANTHEON_AGENTS.azoth;
@@ -6421,6 +6434,8 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
             card.style.flexDirection = 'column';
             card.style.gap = '10px';
 
+            const safeHookText = h.hook.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
             card.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.72rem; color:var(--omni-cyan);">
                 <div style="display:flex; align-items:center; gap:6px;">
@@ -6429,16 +6444,30 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
                 </div>
                 <span class="pill" style="font-size:0.65rem; border-color:rgba(0,240,255,0.3); color:var(--omni-cyan);">VIRAL SCORE: 98.4</span>
               </div>
-              <div style="font-size:0.92rem; font-weight:600; line-height:1.45; color: var(--text-primary); flex:1;">"${h.hook}"</div>
+              <div style="font-size:0.92rem; font-weight:600; line-height:1.45; color: var(--text-primary); flex:1;">"${safeHookText}"</div>
               <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
-                <button class="btn-omni btn-primary btn-sm" onclick="injectHookToRepurposer(${JSON.stringify(h.hook)}, '${h.agentKey}')">⚡ Inject to Editor</button>
-                <button class="btn-omni btn-secondary btn-sm" onclick="copyHookToClipboard(this, ${JSON.stringify(h.hook)})">📋 Copy Hook</button>
-                <button class="btn-omni btn-secondary btn-sm" onclick="injectHookToShorts(${JSON.stringify(h.hook)})">🎬 Video Script</button>
-                <button class="btn-omni btn-secondary btn-sm" onclick="injectHookToThumb(${JSON.stringify(h.hook)})">🎨 Thumbnail</button>
+                <button class="btn-omni btn-primary btn-sm btn-hook-inject" onclick="handleHookAction('inject', ${idx})">⚡ Inject to Editor</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="handleHookAction('copy', ${idx}, this)">📋 Copy Hook</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="handleHookAction('shorts', ${idx})">🎬 Video Script</button>
+                <button class="btn-omni btn-secondary btn-sm" onclick="handleHookAction('thumb', ${idx})">🎨 Thumbnail</button>
               </div>
             `;
             grid.appendChild(card);
           });
+        };
+
+        window.handleHookAction = function(action, idx, btn) {
+          const h = currentRenderedHooks[idx];
+          if (!h) return;
+          if (action === 'inject') {
+            injectHookToRepurposer(h.hook, h.agentKey);
+          } else if (action === 'copy') {
+            copyHookToClipboard(btn, h.hook);
+          } else if (action === 'shorts') {
+            injectHookToShorts(h.hook);
+          } else if (action === 'thumb') {
+            injectHookToThumb(h.hook);
+          }
         };
 
         window.filterHooksCategory = function(cat) {

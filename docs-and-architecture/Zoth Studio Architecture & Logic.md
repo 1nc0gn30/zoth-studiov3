@@ -1,16 +1,16 @@
 ---
 type: architecture_plan
-title: Zoth Studio Architecture & Logic Blueprint (v2.6.0)
+title: Zoth Studio Architecture & Logic Blueprint (v3.2.0)
 status: active
-tags: #architecture #logic #ai-harness #3d-cad #hardware-companion #vault
-last_updated: 2026-08-23
+tags: #architecture #logic #ai-harness #3d-cad #hardware-companion #vault #netrunner-memory #tsubuyaki #pet-dex #cli
+last_updated: 2026-09-13
 ---
 
 <div align="center">
 
-# <img src="../core-app/public/assets/mascot/azoth-mask.jpg" width="40" height="40" style="border-radius: 50%; vertical-align: middle; border: 2px solid #e8c872; box-shadow: 0 0 15px rgba(232,200,114,0.6);" /> 🏗️ Zoth Studio Architecture & Logic Blueprint (v2.6.0)
+# <img src="../core-app/public/assets/brand/zoth-golden-z-192.png" width="40" height="40" style="border-radius: 8px; vertical-align: middle; border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 0 15px rgba(232,200,114,0.6);" /> 🏗️ Zoth Studio Architecture & Logic Blueprint (v3.2.0)
 
-### *Technical Specification: Multi-Agent Consensus, Three.js CAD Viewport, ESP32-S3 Serial Protocols & Argon2id BYOK Vault*
+### *Technical Specification: Multi-Agent Consensus, 3D Cyberspace Engine, 12-Formula Topologies, 24 Mascot Spirits, STDP Memory & Argon2id Vault*
 
 <br>
 
@@ -28,66 +28,88 @@ Zoth Studio utilizes a four-tier sovereign architecture designed for high-concur
 
 ```mermaid
 flowchart TB
-    subgraph Layer1["🛡️ 1. OPERATOR INTERFACE & EMBEDDED HARDWARE AIRGAP"]
+    subgraph Layer1["🛡️ 1. OPERATOR INTERFACE & COMMAND DECK"]
         direction LR
-        UI["🎛️ Zoth Command Deck (:8484)<br/>Loopback Operator Auth"]
-        Hub["🌐 Public Studio Hub (:8088)<br/>23+ Web Workstations"]
+        CLI["💻 zoth CLI v3.2 & Curses TUI<br/>60 FPS Matrix Rain & Pet Dex"]
+        UI["🎛️ Zoth Command Deck (:8484, :8199)<br/>PTY Terminal & Task Dispatch"]
+        Hub["🌐 Public Studio Hub (:8088)<br/>23+ Web Workstations & 3D Matrix"]
         HW["📟 ESP32-S3 Companion (:8585)<br/>ST7789 TFT · ES8311 I2S Audio"]
+        SX["🔒 SimpleX E2EE Comms (:8767 / :5225)<br/>Zero-Metadata P2P Sockets"]
     end
 
-    subgraph Layer2["🔮 2. AGENT HARNESS & SACRED GEOMETRY ARBITRATION (Φ)"]
+    subgraph Layer2["🔮 2. AGENT HARNESS & CONSENSUS DAG ARBITRATION"]
         direction TB
         MO["⚡ Swarm Router & Dispatcher"]
         
-        subgraph AgentMesh["Autonomous Agent Mesh"]
+        subgraph AgentMesh["Autonomous Agent Mesh (21 Agents)"]
             AZ["🔮 @azoth Sovereign Lead"]
+            LU["🌌 @lucy Netrunner Oracle"]
             AG["🛡️ @antigravity Pair Programmer"]
             GK["⚡ @grok Kinetic Core"]
             HA["📜 @hermes Tool Caller"]
-            OL["🧠 @ollama (zoth-micro)"]
+            DR["🐉 @draco Fusion Compiler"]
+            LY["🐺 @lycan Security Sentinel"]
+            AT["🦉 @athena Logic Verifier"]
+            OL["🧠 @ollama (Local GGUF)"]
         end
 
-        SE["⚔️ Shannon Consensus Arbiter<br/>H(S) = -∑ p_i log2(p_i) ≥ 0.80"]
+        SE["⚔️ Shannon Consensus Arbiter<br/>H(S) = -∑ p_i log2(p_i) < 0.20b"]
     end
 
-    subgraph Layer3["⚙️ 3. SOVEREIGN ENGINE SUITES & VAULT"]
+    subgraph Layer3["⚙️ 3. SOVEREIGN ENGINE SUITES & DAEMONS"]
         direction LR
-        CAD["🧊 Nexus 3D CAD (Three.js)"]
-        OP["🎥 OmniPost 2.0 (60FPS Engine)"]
-        VT["🔐 Argon2id Key Vault (:8686)<br/>m=64MB, t=3, p=4 · Zeroize"]
-        LLM["🧠 Ollama Local AI (1.5B)"]
+        MEM["🧠 Memory Daemon (:8788)<br/>Dual-Layer Human/AI & STDP"]
+        TOP["🪐 Topology Engine<br/>12 #つぶやきProcessing Formulas"]
+        PET["🐾 24 Mascot Spirits Dex<br/>ASCII Sprites & Soul Lore"]
+        CAD["🧊 Nexus 3D & Swarm Arena<br/>Three.js 60 FPS WebGL"]
+        VT["🔐 Argon2id Key Vault (:8787)<br/>m=64MB, t=3, p=4 · Zeroize"]
+        VOS["💻 vOS Wasm Sandbox<br/>Browser-Native VFS & Runtime"]
     end
 
-    subgraph Layer4["💾 4. LOCAL REPOSITORIES & HARDWARE BUS"]
+    subgraph Layer4["💾 4. LOCAL STORAGE & BUS INFRASTRUCTURE"]
         direction LR
         DRV["📁 Standalone Drive (/zoth-studio)"]
         OBS["📚 Obsidian Vector Matrix"]
         SER["📟 /dev/ttyACM0 Serial Bus"]
     end
 
+    CLI --> MO
     UI --> MO
     HW --> MO
+    SX --> MO
     MO --> AZ
+    MO --> LU
     MO --> AG
     MO --> GK
     MO --> HA
+    MO --> DR
+    MO --> LY
+    MO --> AT
     MO --> OL
 
     AZ --> SE
+    LU --> SE
     AG --> SE
     GK --> SE
     HA --> SE
+    DR --> SE
+    LY --> SE
+    AT --> SE
     OL --> SE
 
+    SE --> MEM
+    SE --> TOP
+    SE --> PET
     SE --> CAD
-    SE --> OP
     SE --> VT
-    SE --> LLM
+    SE --> VOS
 
+    MEM --> DRV
+    TOP --> DRV
+    PET --> DRV
     CAD --> DRV
-    OP --> DRV
     VT --> DRV
-    LLM --> DRV
+    VOS --> DRV
     DRV --> OBS
     HW --> SER
 
@@ -95,18 +117,6 @@ flowchart TB
     style Layer2 fill:#181005,stroke:#fbbf24,stroke-width:2px,color:#fef3c7
     style Layer3 fill:#100926,stroke:#a855f7,stroke-width:2px,color:#f3e8ff
     style Layer4 fill:#051e18,stroke:#10b981,stroke-width:2px,color:#d1fae5
-
-    style UI fill:#0369a1,stroke:#38bdf8,stroke-width:2px,color:#fff
-    style Hub fill:#0e7490,stroke:#22d3ee,stroke-width:2px,color:#fff
-    style HW fill:#047857,stroke:#34d399,stroke-width:2px,color:#fff
-    style MO fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#fff
-    style AZ fill:#78350f,stroke:#fbbf24,stroke-width:2px,color:#fff
-    style AG fill:#1e293b,stroke:#60a5fa,stroke-width:2px,color:#fff
-    style GK fill:#082f49,stroke:#00f0ff,stroke-width:2px,color:#fff
-    style HA fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#fff
-    style OL fill:#064e3b,stroke:#4ade80,stroke-width:2px,color:#fff
-    style SE fill:#854d0e,stroke:#fde047,stroke-width:2px,color:#fff
-    style VT fill:#831843,stroke:#f472b6,stroke-width:2px,color:#fff
 ```
 
 <p align="center"><img src="assets/zoth-cyber-divider.svg" width="100%" /></p>
@@ -115,22 +125,41 @@ flowchart TB
 
 ### Consensus Loop & Mathematical Formulation:
 1. **Multi-Agent Prompt Ingestion**: Operator prompt is broadcast to peer models.
-2. **Token Overlap & Shannon Agreement Entropy**:
+2. **Shannon Agreement Entropy**:
    $$\mathcal{H}(S) = -\sum_{i=1}^n p_i \log_2(p_i)$$
-   Measures divergence across proposed implementation plans.
-3. **Consensus Arbiter**: If agreement score $\ge 0.80$, synthesizes a single unified action ticket; if conflict arises, flags divergence points for operator review.
-4. **Self-Correction & Build Validation**: Pre-validates syntax, runs automated endpoint tests, and audits security headers before final write.
+   Measures divergence across proposed AST modification plans.
+3. **Consensus Arbiter**: When $\mathcal{H}(S) < 0.20\text{ bits}$, synthesizes a single unified action plan; if conflicts emerge, flags divergence points for operator review.
+4. **Self-Correction & AST Validation**: Draco and Lycan compile AST invariants and audit OWASP security bounds before executing code writes.
 
 ---
 
-## 📟 2. ESP32-S3 Hardware Companion Protocol
+## 🪐 2. #つぶやきProcessing 12-Formula Topology Engine
+* **280-Byte Tweetable Constraints**: Formulated in pure golfed JavaScript and rendered in terminal ASCII via `zoth tsubuyaki render` and in 3D WebGPU via [`/showcase/tsubuyaki-vortex.html`](http://127.0.0.1:8199/showcase/tsubuyaki-vortex.html).
+* **Mathematical Families**: Toroids (`v1`–`v4`), Algebraic Curves (`v5`–`v7`), Wavefields (`v8`–`v10`), and Spirals (`v11`–`v12`).
+
+---
+
+## 🐾 3. 24 Sovereign Mascot Spirits & Pet Dex System
+* **Alchemical Companions**: 24 familiars binding domain expertise across Lead Core, Build, Security, Knowledge, Ops, Creative, Edge, and Autonomy.
+* **CLI Interactivity**: Real-time multi-frame ASCII sprite animation (`zoth pet ascii`), companion status and tamagotchi interaction (`zoth pet play`), and session binding (`zoth pet summon`).
+
+---
+
+## 🧠 4. Cognitive Memory & Netrunner Cyberspace Engine (`:8788`)
+* **Dual-Layer Architecture**: Narrative human story digest for clean operator review alongside lossless raw payload XML block for direct AI context injection.
+* **STDP Hebbian Graph Traversal**: Bidirectional `before_ids` and `after_ids` synaptic links calculate weighted temporal causality for deep multi-hop reasoning.
+* **First-Person 3D Video Game Matrix**: Stepped hexagonal altars, faceted iridescent shards, Lucy (Cyberpunk: Edgerunners) oracle billboard, 360° circular radar, and `[TAB]` AR scanner mode.
+
+---
+
+## 📟 5. ESP32-S3 Hardware Companion Protocol (`:8585`)
 * **Serial Baud**: `115200` baud over USB `/dev/ttyACM0`
 * **JSON State Machine**: Bi-directional asynchronous packets syncing companion mood, CPU load, active agent, and button triggers.
-* **Audio Synthesis**: Local TTS bridge (`tts_bridge.py`) converting agent messages to speech streamed via ES8311 I2S PA amplifier.
+* **Audio Synthesis**: Local TTS bridge converting agent messages to speech streamed via ES8311 I2S PA amplifier.
 
 ---
 
-## 🔐 3. Rust Argon2id BYOK Key Vault Logic
+## 🔐 6. Rust Argon2id BYOK Key Vault Logic (`:8787`)
 * **Parameters**: Argon2id memory cost $m=64\text{MB}$, iterations $t=3$, parallelism $p=4$.
 * **Cipher**: XChaCha20-Poly1305 with 256-bit key and 192-bit nonce.
 * **Buffer Sanitization**: Rust `zeroize` guarantees private key buffers in RAM are overwritten with zeroes upon scope termination.
@@ -138,7 +167,7 @@ flowchart TB
 ---
 
 <div align="center">
-  <img src="../core-app/public/assets/mascot/azoth-mask.jpg" width="30" height="30" style="border-radius:50%; vertical-align:middle; border:1px solid #e8c872;" />
+  <img src="../core-app/public/assets/brand/zoth-golden-z-192.png" width="30" height="30" style="border-radius:6px; vertical-align:middle; border:1px solid #e8c872;" />
   <br>
-  <strong>Zoth Studio Architecture & Logic</strong> · Licensed under Apache License 2.0
+  <strong>Zoth Studio Architecture & Logic Committee</strong> · Licensed under MIT / Apache-2.0
 </div>

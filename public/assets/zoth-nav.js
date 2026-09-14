@@ -1365,6 +1365,15 @@
       }
     });
 
+    // Universal Tactile UI Audio Delegator for all workstations & buttons
+    document.addEventListener("click", function(e) {
+      if (!window.ZothAudioFX || !window.ZothAudioFX.isEnabled()) return;
+      var interactive = e.target.closest("button, .btn, .webgen-chip, .strength-opt, .pill-btn, .tab-btn, .theme-btn, .filter-chip, [role='button'], .hud-modal-btn");
+      if (interactive && !e.target.closest(".nav-btn, .theme-card-row, .drawer-theme-btn, #nav-sound-toggle, #drawer-sound-toggle, .nav-pet-pill")) {
+        window.ZothAudioFX.playClick(680, 0.04, "sine");
+      }
+    }, true);
+
     // Listen for theme changes
     window.addEventListener("zoth-theme-change", function(e) {
       if (e && e.detail && e.detail.themeObj) {

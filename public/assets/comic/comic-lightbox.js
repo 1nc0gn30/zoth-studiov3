@@ -1274,6 +1274,9 @@
       // Ignore input elements
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
       const key = e.key;
 
       switch (key) {

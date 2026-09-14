@@ -312,7 +312,7 @@ if __name__ == "__main__":
               <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:1.15rem;">${tool.icon || '⚡'}</span>
                 <div>
-                  <strong style="font-size:0.82rem;color:#f1f5f9;">${escapeHtml(tool.name)}</strong>
+                  <strong style="font-size:0.82rem;color:var(--cockpit-text, #f8fafc);">${escapeHtml(tool.name)}</strong>
                   <small style="display:block;color:var(--cockpit-muted);font-size:0.68rem;">${escapeHtml(tool.category || 'AI Harness')}</small>
                 </div>
               </div>
@@ -803,7 +803,7 @@ if __name__ == "__main__":
         <p style="margin:0 0 10px;font-size:0.86rem;line-height:1.55;">
           ${backendAzothText ? escapeHtml(backendAzothText) : `I have synthesized the collective proposals across all active squads for <em>"${escapeHtml(prompt)}"</em>.`}
         </p>
-        <div style="background:rgba(0,0,0,0.4);border-radius:8px;padding:10px 14px;font-size:0.82rem;font-family:var(--cockpit-font-mono);line-height:1.6;color:#cbd5e1;">
+        <div style="background:rgba(0,0,0,0.4);border-radius:8px;padding:10px 14px;font-size:0.82rem;font-family:var(--cockpit-font-mono);line-height:1.6;color:var(--cockpit-text, #f8fafc);">
           ${actionableTakeaway}
         </div>
       </div>

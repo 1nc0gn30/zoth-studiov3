@@ -30,28 +30,113 @@
 
 ## ⚡ The `zoth` CLI v3.2 Master Deck
 
-The `bin/zoth` executable is the primary command deck for controlling Zoth Studio:
+The `bin/zoth` executable is the primary sovereign command deck for controlling Zoth Studio:
 
 ```bash
-zoth status                # Inspect 8-port loopback matrix and active companion
-zoth watch                 # ⚡ Real-time terminal live telemetry dashboard & stream
-zoth sync                  # 🔄 Synchronize universal master navbar across 117+ pages
-zoth matrix                # 60 FPS cyberpunk digital rain (7 themes, 6 glyphs)
-zoth tsubuyaki render v3   # Live interactive ASCII stipple field simulation
-zoth ask "<query>"         # Query agent with vector memory recall & doc grounding
-zoth repl                  # Multi-turn REPL with /pet, /agent, /mem, /swarm commands
-zoth swarm run "<goal>"    # Execute 4-stage AST consensus pipeline
-zoth pet summon kai        # Summon active mascot spirit from 24-pet dex
-zoth pet ascii kai         # Render high-resolution animated ASCII portrait
-zoth mem graph             # Biomorphic ASCII synaptic network graph
-zoth mem beat              # Trigger STDP synaptic weight consolidation
-zoth tool list             # List all 298 registered tools
-zoth site list             # List in-house website blueprints (298+)
-zoth speed audit           # Verify 100% asset integrity & zero broken links across 136 pages
-zoth speed bench           # Benchmark local HTTP latency (< 5ms)
-zoth doctor                # 16-point deep diagnostics audit
-zoth tui                   # 🎛️ Launch fullscreen curses cockpit
+# 🛰️ System, Lifecycle & Live Telemetry
+zoth status                         # Inspect 8-port loopback matrix, memory, and companion
+zoth watch [-i 1.0]                 # ⚡ Real-time terminal live telemetry stream
+zoth serve [port]                   # 🚀 Launch unified Zoth Dev Server (:8199)
+zoth start / stop                   # 🔄 Lifecycle management for all background daemons
+zoth sync                           # 🔄 Synchronize universal master navbar across 117+ pages
+zoth speed audit                    # 🔍 136-page asset integrity & broken link scanner
+zoth speed bench                    # ⚡ Benchmark local HTTP response latency (< 5ms)
+zoth doctor                         # 🩺 16-point deep system & environment audit
+zoth tui                            # 🎛️ Launch fullscreen curses terminal cockpit (v3.1)
+zoth completion [bash|zsh|fish]     # ⚡ Generate shell tab autocompletion script
+zoth update                         # 🔄 Self-update Zoth Studio & refresh binaries
+
+# 🤖 Autonomous AI Agents & Swarm DAG
+zoth ask "<query>"                  # Query AI agent with vector memory recall & doc grounding
+zoth repl                           # Multi-turn REPL with /pet, /agent, /mem, /swarm commands
+zoth swarm run "<goal>"             # Execute 4-stage AST consensus pipeline (H < 0.20b)
+zoth agent list / show <name>       # ⚡ Inspect 21 Sovereign Pantheon AI Agents
+zoth pet summon <name>              # 🐾 Summon and bind active mascot spirit (24 Pet Dex)
+zoth pet ascii <name>               # 🐾 Render high-resolution animated ASCII sprite
+zoth pet play <name>                # 🐾 Interactive companion tamagotchi & mood status
+
+# 🧠 Cognitive Vector Memory Matrix (:8788)
+zoth mem status                     # Inspect CLS + STDP biomorphic brain metrics
+zoth mem search "<query>"           # Semantic memory recall with full spectrum AI telemetry
+zoth mem store "<text>"             # Store a memory engram into associative vector matrix
+zoth mem record-tool <tool_id>      # Record tool execution telemetry into Netrunner memory
+zoth mem record-code <file_path>    # Record verified AST code mutation into memory matrix
+zoth mem prompt-context             # Emit deterministic XML <memory_context> for LLM prompts
+zoth mem graph                      # Biomorphic ASCII synaptic network graph
+zoth mem beat                       # Trigger STDP synaptic weight consolidation
+zoth mem web                        # Launch 3D Volumetric Memory Maze in browser
+
+# 💬 Sovereign Comms & Security
+zoth simplex status                 # 💬 Post-Quantum SimpleX E2EE Comms Bridge (:5225/:8767)
+zoth simplex send "<text>"          # Send encrypted zero-metadata message over socket stream
+zoth vault status                   # 🔐 BYOK Argon2id Keymaster Vault status (:8787)
+zoth bus status / emit <event>      # 🌐 Local IPC Swarm Bus event emitter and claim status
+zoth note list / add "<text>"       # 📌 Visual canvas annotations & task board manager
+
+# 🪐 Creative Coding, Topologies & Media
+zoth matrix                         # 🟢 60 FPS cyberpunk digital rain (7 themes, 6 glyph sets)
+zoth tsubuyaki list                 # 🪐 Explore 12 #つぶやきProcessing formulas
+zoth tsubuyaki render v3            # ✦ Live interactive ASCII stipple field simulation
+zoth site list / export <tpl>       # 🎨 In-house website blueprints (298+ templates)
+zoth tool list / run <tool>         # 🛠️ Sovereign tool runners & orchestrator engine
+zoth comic list / play <ep>         # 📖 AZOTH manga reader & terminal audio player
+zoth audio list / play <id>         # 🎵 Play manga narration tracks and Web Audio SFX
 ```
+
+---
+
+## 🌐 Sovereign Port Topology Matrix
+
+All services execute strictly on local loopback with zero external cloud telemetry:
+
+| Port | Service Name | Protocol / Binding | Core Functionality |
+|:---:|---|---|---|
+| **`:8199`** | **Zoth Dev Server** | `HTTP / SSE` (`127.0.0.1`) | Primary development server, visual notes proxy, and memory gateway (`zoth serve`). |
+| **`:8484`** | **Master Orchestrator Deck** | `REST / PTY / Token Auth` (`127.0.0.1`) | Sovereign operator command deck, PTY terminal streaming, tool execution, and agent task dispatch. |
+| **`:8088`** | **Zoth Studio Hub** | `HTTP / SSE / WebGL` (`0.0.0.0` / `127.0.0.1`) | Production-grade 23+ web workstations, AEO schema grounding, 3D WebGL scenes, and AZOTH manga reader. |
+| **`:8788`** | **Cognitive Memory Daemon** | `REST / SSE / Vector Graph` (`127.0.0.1`) | Dual-layer human/AI memory matrix, STDP Hebbian graph traversal, and Lucy 3D cyberspace engine. |
+| **`:5225`** | **SimpleX WebSocket Relay** | `WebSocket JSON-RPC` (`127.0.0.1`) | Post-quantum encrypted socket stream for mobile/desktop asynchronous agent coordination. |
+| **`:8767`** | **SimpleX E2EE Web Bridge** | `HTTP REST / Proxy` (`127.0.0.1`) | HTTP loopback bridge interfacing web workstations with the SimpleX chat network. |
+| **`:11434`** | **Ollama Local AI Server** | `REST Tensor Pipe` (`127.0.0.1`) | Private offline LLM inference (`zoth-micro`, `qwen2.5-coder`, `hermes-3`). |
+| *`:8787`* | **Rust Argon2id Key Vault** | `Argon2id + XChaCha20` (`127.0.0.1`) | Hardware-isolated BYOK key storage with memory zeroization on drop. |
+| *`:8585`* | **ESP32-S3 Hardware Bridge** | `Serial JSON` (`/dev/ttyACM0`) | Physical companion bridge for ST7789 IPS display and ES8311 I2S audio TTS. |
+
+---
+
+## 🎨 16-Brand Visual Identity Themes (`zoth-theme.js`)
+
+Zoth Studio includes 16 switchable brand archetypes with `localStorage` persistence, custom Web Audio synthesizer chimes, and full WCAG AA contrast compliance:
+
+| Category | Theme ID | Display Name | Emoji | Primary Accent | Background Token | Archetype Identity |
+|---|---|---|:---:|:---:|:---:|---|
+| **✦ Studio Originals** | `dark` | **Dark Void** | 🌙 | `#00f0ff` | `#05060a` | Zoth Cyber HUD & Electric Cyan (Default) |
+| | `light` | **Solar Light** | ☀️ | `#0a2540` | `#f7f9fc` | High-contrast Swiss Precision & Pure Alabaster (100% WCAG AA) |
+| | `matrix` | **Matrix CRT** | 📟 | `#00ff41` | `#000a00` | Phosphor Green Terminal & Digital Rain |
+| | `gold` | **Hermetic Gold** | ⚗️ | `#fbbf24` | `#050300` | 24K Alchemical Obsidian & Golden Ratio $\Phi$ |
+| **🌐 Frontier AI & Tech** | `google` | **Google Material** | 🌐 | `#8ab4f8` | `#121212` | Material You, Gemini 4-Color & 28px Curves |
+| | `microsoft` | **Microsoft Fluent** | 🪟 | `#0078d4` | `#0a0d14` | Fluent 2, Mica Glass & Windows 11 Specular Glow |
+| | `apple` | **Apple Cupertino** | 🍎 | `#0a84ff` | `#000000` | Cupertino HIG, VisionOS Glass & Deep OLED |
+| | `openai` | **OpenAI Slate** | ✨ | `#10a37f` | `#0d0d0d` | ChatGPT Minimalist Zinc & Emerald Mint |
+| | `amazon` | **AWS Console** | ☁️ | `#ff9900` | `#0b131e` | AWS Squid-Ink Navy, Amber Sparks & Telemetry |
+| | `anthropic` | **Claude Editorial**| 🏺 | `#d97757` | `#141210` | Terracotta Obsidian, Literary Serif & Warmth |
+| | `xai` | **Grok Stark Cyber** | ⚡ | `#00d4aa` | `#000000` | xAI Pitch Black & 2px Brutalist Mint Wireframes |
+| **⚡ Developer Archetypes**| `dracula` | **Dracula Gothic** | 🧛 | `#bd93f9` | `#282a36` | Gothic Vampire Slate & Neon Pink/Purple |
+| | `nord` | **Nord Glacier** | ❄️ | `#88c0d0` | `#2e3440` | Arctic Scandinavian Frost & Clean Polar Slate |
+| | `synthwave` | **Synthwave '84** | 🌴 | `#ff2a85` | `#1a102f` | 80s Outrun Neon Sunset & Retrowave Grid |
+| | `solana` | **Solana Matrix** | 🪙 | `#14f195` | `#120924` | Web3 Concentrated Liquidity & Purple/Mint |
+| | `monokai` | **Monokai Sublime**| 🔥 | `#a6e22e` | `#272822` | Hacker Sublime Syntax Charcoal & Acid Lime |
+
+---
+
+## ⌨️ Global Keyboard Shortcuts
+
+| Shortcut | Alternative | Action / Target Subsystem | Handler File |
+|---|---|---|---|
+| **`Ctrl + K`** | `Cmd + K` | **Global Command Palette**: Instant modal search to teleport across all 23+ workstations, launch tools, filter agents, and trigger actions. | `public/assets/zoth-workbench.js`<br>`public/assets/zoth-nav.js` |
+| **`Shift + T`** | Topbar Theme Button | **Cycle 16 Themes**: Instantly rotates through all 16 brand identity themes in sequence with Web Audio chime feedback. | `public/assets/zoth-theme.js` |
+| **`Shift + A`** | `Ctrl + Alt + A` | **Toggle Visual Annotator**: Injects and toggles the canvas annotation overlay, pin drop mode, and developer task drawer. | `public/assets/zoth-annotator.js`<br>`public/assets/zoth-nav.js` |
+| **`?`** | `Shift + /` | **Hotkeys Modal**: Displays the floating help dialog listing all interactive navigation shortcuts and operational hotkeys. | `public/assets/zoth-nav.js` |
+| **`Escape`** | — | **Close Modal / Palette**: Dismisses any active command palette, tool sidebar, configuration modal, or theme popover. | `public/assets/zoth-workbench.js`<br>`public/assets/zoth-nav.js` |
 
 ---
 

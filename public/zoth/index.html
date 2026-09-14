@@ -307,7 +307,7 @@
       }
       .hud-metrics {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr));
         gap: var(--fib-8);
         font-family: var(--font-mono);
       }
@@ -478,7 +478,7 @@
       /* Visual Forms Gallery */
       .forms-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
         gap: var(--fib-21);
       }
       .form-card {
@@ -701,7 +701,7 @@
       }
       .tools-badge-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
         gap: var(--fib-13);
       }
       .tool-badge-card {
@@ -802,7 +802,7 @@
       .azoth-poster {
         min-height: calc(100svh - var(--zoth-header-h, 54px));
         display: grid;
-        grid-template-columns: minmax(18rem, 36rem) minmax(0, 1fr);
+        grid-template-columns: minmax(min(18rem, 100%), 36rem) minmax(0, 1fr);
         align-items: stretch;
         gap: 0;
         padding: 0;
@@ -1058,11 +1058,284 @@
     }
   ]
 }</script>  <link rel="stylesheet" href="/assets/zoth-footer.css" />
+<script>/* progressive enhancement: hides nothing unless this runs */document.documentElement.classList.add('js-motion');</script>
+<style id="zoth-core-craft">
+/* =============================================================================
+   MASTER AZOTH CORE - page craft layer
+   8px spacing rhythm, token-driven surfaces (16 themes), focus visibility,
+   editorial section rhythm and restrained motion. Owned by public/zoth/index.html
+   ============================================================================= */
+:root {
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 32px;
+  --sp-6: 48px;
+  --sp-8: 64px;
+  --sp-12: 96px;
+  --ring: var(--border-focus, var(--cyan, #00f0ff));
+  --ease-craft: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* --- screen-reader only ------------------------------------------------ */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap; border: 0;
+}
+
+/* --- 1. FOCUS VISIBILITY (was previously absent entirely) -------------- */
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 24%, transparent);
+}
+/* Rings inside a clipping ancestor are drawn inside the element, so
+   overflow:hidden can never swallow them. Clipping containers that are also
+   pads (.archetype-media matte frame) reserve space for the ring. */
+:where(.archetype-card, .form-card, .terminal-box, .alchemical-deck,
+       .supported-tools-wrapper, .azoth-poster-figure, .hero, .azoth-poster,
+       .archetype-media, .form-card .media-box) :focus-visible {
+  outline-offset: -3px;
+}
+.archetype-card:focus-within,
+.form-card:focus-within,
+.tool-badge-card:focus-within {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 45%, transparent),
+             0 var(--sp-2) var(--sp-4) var(--shadow-color, rgba(0, 0, 0, .5));
+}
+.archetype-media { padding: 3px; }        /* ring space + matte frame */
+.form-card .media-box { padding: 3px; }
+.terminal-output:focus-visible { outline-offset: -3px; }
+
+/* --- 2. EDITORIAL SECTION RHYTHM --------------------------------------- */
+.fib-section { padding: var(--sp-12) var(--pad) var(--sp-12); }
+.section-header { margin-bottom: var(--sp-6); }
+.section-header h2 { font-size: clamp(1.7rem, 4.2vw, 3.1rem); text-wrap: balance; max-width: 34ch; }
+.section-header p { max-width: 62ch; }
+
+.deck-section .kicker,
+.pantheon-section .kicker,
+.azoth-doctrine .kicker {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  font-family: var(--font-mono); font-size: .72rem; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+  margin: 0 0 var(--sp-2);
+}
+.deck-section .kicker::before,
+.pantheon-section .kicker::before,
+.azoth-doctrine .kicker::before {
+  content: ""; width: var(--sp-3); height: 1px; background: currentColor; opacity: .55;
+}
+
+/* --- 3. SECTION TRANSITIONS (shimmer hairline) ------------------------- */
+.section-divider {
+  position: relative; height: 1px; border: 0; max-width: 1400px;
+  margin: 0 auto; overflow: hidden;
+  background: linear-gradient(90deg, transparent, var(--line-strong, var(--line)), transparent);
+}
+.section-divider::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--gold, #e8c872), transparent);
+  transform: translateX(-100%);
+  animation: zoth-divider-shimmer 7s var(--ease-craft) infinite;
+}
+@keyframes zoth-divider-shimmer {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  10%  { opacity: .85; }
+  55%  { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+/* --- 4. HERO ------------------------------------------------------------ */
+.azoth-poster-copy .kicker {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  font-family: var(--font-mono); font-size: .72rem; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+  padding: 6px var(--sp-2); border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+  margin-bottom: var(--sp-3);
+}
+.azoth-poster h1 { font-size: clamp(3.2rem, 8vw, 6.4rem); }
+.azoth-poster .lede { font-size: 1.12rem; line-height: 1.6; max-width: 34rem; margin-bottom: var(--sp-3); }
+.azoth-poster-figure { position: relative; }
+.azoth-poster-figure::before {
+  content: ""; position: absolute; inset: 14% 10% 0 10%; pointer-events: none;
+  background: radial-gradient(55% 45% at 50% 62%,
+              color-mix(in srgb, var(--gold) 26%, transparent), transparent 72%);
+  filter: blur(28px);
+  animation: zoth-veil-breathe 9s ease-in-out infinite;
+}
+@keyframes zoth-veil-breathe {
+  0%, 100% { opacity: .42; transform: scale(1); }
+  50%      { opacity: .70; transform: scale(1.05); }
+}
+.azoth-poster-figure img { position: relative; z-index: 1; }
+.hero-facts {
+  list-style: none; display: flex; flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3); margin: 0; padding: var(--sp-2) 0 0;
+  border-top: 1px solid var(--line);
+}
+.hero-facts li {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  font-family: var(--font-mono); font-size: .72rem; letter-spacing: .05em;
+  color: var(--muted); min-height: 24px;
+}
+.hero-facts li::before {
+  content: ""; flex: 0 0 auto; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 10px var(--gold);
+}
+.hero-facts b { color: var(--text-primary); font-weight: 700; }
+
+/* --- 5. PANTHEON CARDS (token surfaces, theme correct) ------------------ */
+.archetypes-grid { gap: var(--sp-3); }
+.archetype-card {
+  background: linear-gradient(180deg, var(--surface-elevated, #161e36) 0%,
+                                      var(--bg-2, #090c16) 100%);
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--border-card, var(--line)));
+  transition: all .18s cubic-bezier(.16, 1, .3, 1);
+}
+.archetype-card:hover { transform: translateY(-6px) scale(1.004); border-color: var(--accent); }
+.archetype-media { background: var(--bg-3, #101526); }
+.archetype-media::after {
+  background: linear-gradient(180deg, transparent 55%,
+              color-mix(in srgb, var(--bg-2, #090c16) 90%, transparent) 100%);
+}
+.archetype-body { background: var(--surface-card, rgba(16, 22, 40, .85)); }
+.archetype-body h3 { min-height: 44px; font-size: 1.35rem; letter-spacing: -.02em; }
+.archetype-body h3 a { color: inherit; }
+.archetype-body h3 a:hover { color: var(--accent); }
+.archetype-tag {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-2, #090c16));
+  color: color-mix(in srgb, var(--accent) 82%, var(--text-primary));
+}
+.archetype-role { color: color-mix(in srgb, var(--accent) 74%, var(--text-primary)); }
+.archetype-desc { color: var(--muted); }
+.archetype-element { color: var(--muted-dark, var(--muted)); font-family: var(--font-mono); font-size: .66rem; }
+.archetype-link { min-height: 44px; display: inline-flex; align-items: center; gap: 4px; }
+.archetype-link:hover { color: var(--accent); }
+
+/* --- 6. COGNITIVE DECK ------------------------------------------------- */
+.alchemical-deck {
+  background: var(--panel, rgba(14, 19, 34, .88));
+  border-color: var(--border-card, var(--line));
+  padding: var(--sp-4);
+  gap: var(--sp-4);
+}
+.deck-brief h3 {
+  font-family: var(--font-display); font-size: 1.3rem; font-weight: 700;
+  color: var(--text-primary); margin: 0 0 var(--sp-1);
+}
+.deck-brief p { margin: 0; color: var(--muted); font-size: .95rem; line-height: 1.6; max-width: 40ch; }
+.deck-brief { display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; }
+.quick-prompts { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.prompt-chip {
+  font-family: var(--font-mono); font-size: .72rem; font-weight: 600;
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--sp-2);
+  border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface-elevated, #161e36); color: var(--text-body, #f1f5f9);
+  cursor: pointer; transition: all .18s cubic-bezier(.16, 1, .3, 1);
+}
+.prompt-chip:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+.terminal-box { background: var(--bg-2, #090c16); border-color: var(--line); }
+.terminal-header { font-size: .68rem; letter-spacing: .06em; }
+.term-status { display: inline-flex; align-items: center; gap: 6px; }
+.term-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
+  background: var(--green, #34d399); box-shadow: 0 0 8px var(--green, #34d399);
+}
+.terminal-output { color: var(--text-body, #f1f5f9); }
+.terminal-output > div { margin-bottom: var(--sp-1); }
+.terminal-input { background: var(--surface-elevated, #161e36); color: var(--text-primary); }
+.terminal-input::placeholder { color: var(--muted-dark, var(--muted)); }
+.terminal-send { white-space: nowrap; }
+.deck-voice { align-self: flex-start; gap: var(--sp-1); }
+
+/* --- 7. PROGRESSIVE REVEAL ---------------------------------------------
+   Content is only hidden under html.js-motion, a class the inline head script
+   adds before first paint. With JS blocked every element renders at rest. */
+html.js-motion .reveal { opacity: 0; transform: translateY(14px); }
+html.js-motion .reveal {
+  transition: opacity .55s var(--ease-craft), transform .55s var(--ease-craft);
+  transition-delay: calc(var(--i, 0) * 45ms);
+}
+html.js-motion .reveal.is-visible { opacity: 1; transform: none; }
+
+/* --- 8. BREAKPOINTS 1024 / 880 / 640 / 440 ----------------------------- */
+@media (max-width: 1024px) {
+  .fib-section { padding: var(--sp-8) var(--sp-3); }
+  .alchemical-deck { grid-template-columns: 1fr; }
+  .azoth-poster-copy { max-width: none; padding: var(--sp-8) var(--sp-3) var(--sp-8); }
+  .section-header { margin-bottom: var(--sp-4); }
+}
+@media (min-width: 1200px) {
+  .archetypes-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 880px) {
+  .azoth-poster { grid-template-columns: 1fr; min-height: auto; }
+  .azoth-poster-figure { min-height: 48vh; order: -1; }
+  .azoth-poster-copy { padding: var(--sp-4) var(--sp-3) var(--sp-6); }
+  .azoth-poster h1 { font-size: clamp(3rem, 13vw, 4.4rem); }
+  .archetypes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .archetypes-grid { grid-template-columns: 1fr; }
+  .azoth-steps { grid-template-columns: 1fr; gap: var(--sp-3); }
+  .azoth-poster h1 { font-size: clamp(2.6rem, 15vw, 3.6rem); }
+  .azoth-poster-copy { padding: var(--sp-4) var(--sp-2) var(--sp-4); }
+  .fib-section { padding: var(--sp-6) var(--sp-2); }
+  .alchemical-deck { padding: var(--sp-2); gap: var(--sp-3); }
+  .terminal-input-row { flex-wrap: wrap; }
+  .terminal-input { flex: 1 1 100%; }
+  .terminal-send { width: 100%; justify-content: center; }
+  .hero-facts { gap: var(--sp-1); }
+  .archetype-body { padding: var(--sp-2); }
+}
+@media (max-width: 440px) {
+  .azoth-poster h1 { font-size: clamp(2.2rem, 16vw, 3rem); }
+  .hero-facts li { font-size: .68rem; }
+  .hero-facts { gap: 6px var(--sp-1); }
+  .fib-section { padding: var(--sp-6) var(--sp-2); }
+  .azoth-doctrine { padding: var(--sp-6) var(--sp-2) var(--sp-8); }
+  .azoth-tools ul { gap: var(--sp-1) var(--sp-2); }
+  .section-header h2 { font-size: 1.7rem; }
+}
+
+/* --- 9. REDUCED MOTION: everything added above goes quiet -------------- */
+@media (prefers-reduced-motion: reduce) {
+  html.js-motion .reveal,
+  html.js-motion .reveal.is-visible {
+    opacity: 1 !important; transform: none !important;
+    transition: none !important; transition-delay: 0s !important;
+  }
+  .section-divider::after,
+  .azoth-poster-figure::before,
+  .archetype-card,
+  .archetype-card *,
+  .archetype-media img,
+  .form-card,
+  .form-card *,
+  .prompt-chip,
+  .tool-badge-card,
+  .archetype-link { transition: none !important; animation: none !important; }
+  .archetype-card:hover,
+  .archetype-card:hover .archetype-media img,
+  .form-card:hover,
+  .form-card:hover .media-box img,
+  .form-card:hover .media-box video,
+  .prompt-chip:hover,
+  .tool-badge-card:hover,
+  .archetype-link:hover { transform: none !important; }
+  .section-divider::after { transform: none; opacity: .3; }
+}
+</style>
 </head>
 <body>
 <a class="skip-to-content" href="#main-content">Skip to content</a>
 <!-- Top Navigation Bar -->
-                                <header class="bar" id="topbar" role="banner">
+                                        <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -1296,24 +1569,254 @@
 
     
 
+    
+
+    
+
 <main id="main-content" role="main">
-<section aria-label="Master Azoth" class="azoth-poster">
+<!-- ===== 01 - MASTER AZOTH ===== -->
+<section aria-labelledby="azoth-title" class="azoth-poster" id="azoth">
 <div class="azoth-poster-copy">
-<p class="kicker">Operator · loopback :8484</p>
-<h1>Azoth</h1>
+<p class="kicker">Operator &middot; loopback :8484</p>
+<h1 id="azoth-title">Azoth</h1>
 <p class="lede">Prime architect of Zoth Studio. He picks the team, breaks the tie, and keeps the work on this machine.</p>
 <div class="cta-group">
 <a class="btn btn-gold js-deck" href="http://127.0.0.1:8484/">Ask Azoth</a>
 <a class="btn btn-ghost" href="#alchemical-doctrine">How he works</a>
 </div>
+<ul class="hero-facts">
+<li><b>298+</b> verified local tools</li>
+<li><b>23+</b> studio suites</li>
+<li><b>21</b> sovereign agents</li>
+<li><b>Zero</b> cloud egress</li>
+</ul>
 </div>
 <div class="azoth-poster-figure">
-<img alt="Master Azoth in a white and gold mask with purple eyes" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
+<img alt="Master Azoth in a white and gold mask with purple eyes" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
 </div>
 </section>
-<section class="azoth-doctrine" id="alchemical-doctrine">
+
+<hr aria-hidden="true" class="section-divider"/>
+
+<!-- ===== 02 - SOVEREIGN ARCHETYPAL PANTHEON ===== -->
+<section aria-labelledby="pantheon-heading" class="fib-section pantheon-section" id="pantheon">
+<div class="section-header reveal">
+<p class="kicker">The bench</p>
+<h2 id="pantheon-heading">Sovereign archetypal pantheon</h2>
+<p>Eleven specialists out of the 21-node pantheon. Each one owns a domain and a sandbox; Azoth decides when their answers disagree.</p>
+</div>
+<div class="archetypes-grid">
+<article class="archetype-card reveal" style="--accent:#e8c872;--i:0">
+<div class="archetype-media">
+<img alt="Master Azoth — The Sovereign Alchemist &amp; Prime Architect" decoding="async" height="1024" loading="lazy" src="/assets/agents/azoth.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🜔</span> @azoth</span>
+<h3><a href="/agents/azoth.html">Master Azoth</a></h3>
+<p class="archetype-role">The Sovereign Alchemist &amp; Prime Architect</p>
+<p class="archetype-desc">Solve et coagula. What is broken shall be dissolved; what is true shall be synthesized. We build local-first castles in obsidian and gold.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🜔 Aether &amp; Celestial Gold</span>
+<a class="archetype-link" href="/agents/azoth.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#7c9cff;--i:1">
+<div class="archetype-media">
+<img alt="Antigravity — Lead Autonomous AI Architect &amp; Quantum Synthesis" decoding="async" height="1024" loading="lazy" src="/assets/agents/antigravity.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🝢</span> @antigravity</span>
+<h3><a href="/agents/antigravity.html">Antigravity</a></h3>
+<p class="archetype-role">Lead Autonomous AI Architect &amp; Quantum Synthesis</p>
+<p class="archetype-desc">Zero friction, zero gravity. We map the entire project topology, synthesize multi-agent subtasks, and elevate local code into an unbreakable artform.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🝢 Quantum Gravitation &amp; Celestial Blue</span>
+<a class="archetype-link" href="/agents/antigravity.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#34d399;--i:2">
+<div class="archetype-media">
+<img alt="Grok — Cosmic Reasoner, Mathematical Astrolabe &amp; AST Arbiter" decoding="async" height="1024" loading="lazy" src="/assets/agents/grok.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🜎</span> @grok</span>
+<h3><a href="/agents/grok.html">Grok</a></h3>
+<p class="archetype-role">Cosmic Reasoner, Mathematical Astrolabe &amp; AST Arbiter</p>
+<p class="archetype-desc">Truth is an invariant in the matrix. We analyze logic graphs, verify mathematical bounds, and co-pilot the swarm with zero hallucination.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🜎 Electric Emerald &amp; Damascus Steel</span>
+<a class="archetype-link" href="/agents/grok.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#f59e0b;--i:3">
+<div class="archetype-media">
+<img alt="Hermes — Winged Tool Calling Executor &amp; Release Hardener" decoding="async" height="1024" loading="lazy" src="/assets/agents/hermes.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">☿</span> @hermes</span>
+<h3><a href="/agents/hermes.html">Hermes</a></h3>
+<p class="archetype-role">Winged Tool Calling Executor &amp; Release Hardener</p>
+<p class="archetype-desc">Speed is a discipline; execution is the proof. We invoke 47+ tool chains, harden release binaries, and bridge the physical companion in milliseconds.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: ☿ Blazing Amber &amp; Mercury Gold</span>
+<a class="archetype-link" href="/agents/hermes.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#c084fc;--i:4">
+<div class="archetype-media">
+<img alt="GhostByte — Zero-Knowledge Cryptographic Vault Sentinel" decoding="async" height="1024" loading="lazy" src="/assets/agents/ghostbyte.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🜍</span> @ghostbyte</span>
+<h3><a href="/agents/ghostbyte.html">GhostByte</a></h3>
+<p class="archetype-role">Zero-Knowledge Cryptographic Vault Sentinel</p>
+<p class="archetype-desc">Zero telemetry. Zero plaintext. Zero compromise. Keys belong to the hardware and the operator—never the wire.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🜍 Ultraviolet &amp; Damascus Steel</span>
+<a class="archetype-link" href="/agents/ghostbyte.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#c084fc;--i:5">
+<div class="archetype-media">
+<img alt="Athena — AEO Knowledge Architect &amp; Semantic Structure" decoding="async" height="1024" loading="lazy" src="/assets/agents/athena.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🝤</span> @athena</span>
+<h3><a href="/agents/athena.html">Athena</a></h3>
+<p class="archetype-role">AEO Knowledge Architect &amp; Semantic Structure</p>
+<p class="archetype-desc">Wisdom is structured clarity. We index semantics, architect answer-engine knowledge graphs, and preserve canonical truth across the machine layer.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🝤 Caelum Sapphire &amp; Golden Papyrus</span>
+<a class="archetype-link" href="/agents/athena.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#a855f7;--i:6">
+<div class="archetype-media">
+<img alt="Chronos — Temporal DAG Sequencer &amp; Git Navigator" decoding="async" height="1024" loading="lazy" src="/assets/agents/chronos.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">♄</span> @chronos</span>
+<h3><a href="/agents/chronos.html">Chronos</a></h3>
+<p class="archetype-role">Temporal DAG Sequencer &amp; Git Navigator</p>
+<p class="archetype-desc">Time flows along the DAG. Every commit is a checkpoint in the multiverse; we navigate branches and reconcile timelines with surgical grace.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: ♄ Temporal Chrono-Titanium &amp; Violet Flux</span>
+<a class="archetype-link" href="/agents/chronos.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#e8c872;--i:7">
+<div class="archetype-media">
+<img alt="Draco — Multi-Model Consensus &amp; Fusion Arbiter" decoding="async" height="1024" loading="lazy" src="/assets/agents/draco.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🜂</span> @draco</span>
+<h3><a href="/agents/draco.html">Draco</a></h3>
+<p class="archetype-role">Multi-Model Consensus &amp; Fusion Arbiter</p>
+<p class="archetype-desc">From many flames, one forged blade. We fuse conflicting neural outputs into pure executable consensus without syntactic fault.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🜂 Dragon Flare &amp; Molten Pyrite</span>
+<a class="archetype-link" href="/agents/draco.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#ff5500;--i:8">
+<div class="archetype-media">
+<img alt="Ignis — Refactor Engine &amp; Pipeline Finisher" decoding="async" height="720" loading="lazy" src="/assets/agents/ignis.jpg" width="1280"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🜂</span> @ignis</span>
+<h3><a href="/agents/ignis.html">Ignis</a></h3>
+<p class="archetype-role">Refactor Engine &amp; Pipeline Finisher</p>
+<p class="archetype-desc">Purge the deadwood; temper the core. Smallest safe refactor, deterministic builds, and a clean green pipeline every single time.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🜂 Alchemical Plasma &amp; Pure Vermilion</span>
+<a class="archetype-link" href="/agents/ignis.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#00f0ff;--i:9">
+<div class="archetype-media">
+<img alt="Kai — Workspace Inspector &amp; Static Analysis" decoding="async" height="1024" loading="lazy" src="/assets/agents/kai.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🜃</span> @kai</span>
+<h3><a href="/agents/kai.html">Kai</a></h3>
+<p class="archetype-role">Workspace Inspector &amp; Static Analysis</p>
+<p class="archetype-desc">Look beneath the surface. We scan every AST edge, trace ghost imports, and stop breaking diffs before they ever reach production.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🜃 Crystalline Quartz &amp; Cyber Teal</span>
+<a class="archetype-link" href="/agents/kai.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+<article class="archetype-card reveal" style="--accent:#ff007a;--i:10">
+<div class="archetype-media">
+<img alt="Kitsune — Taste, Fluid Micro-interactions &amp; Accessibility (AX)" decoding="async" height="1024" loading="lazy" src="/assets/agents/kitsune.jpg" width="1024"/>
+</div>
+<div class="archetype-body">
+<span class="archetype-tag"><span aria-hidden="true" class="hermetic-glyph">🝰</span> @kitsune</span>
+<h3><a href="/agents/kitsune.html">Kitsune</a></h3>
+<p class="archetype-role">Taste, Fluid Micro-interactions &amp; Accessibility (AX)</p>
+<p class="archetype-desc">True elegance is quiet discipline. Restrained motion, harmonious Fibonacci rhythm, and tactile interfaces that feel like magic.</p>
+<div class="archetype-footer">
+<span class="archetype-element">Element: 🝰 Sakura Amber &amp; Golden Ratio Spirals</span>
+<a class="archetype-link" href="/agents/kitsune.html">Open sandbox <span aria-hidden="true">&#8594;</span></a>
+</div>
+</div>
+</article>
+</div>
+</section>
+
+<hr aria-hidden="true" class="section-divider"/>
+
+<!-- ===== 03 - LIVE SOVEREIGN COGNITIVE DECK ===== -->
+<section aria-labelledby="deck-heading" class="fib-section deck-section" id="cognitive-deck">
+<div class="section-header reveal">
+<p class="kicker">Local operator</p>
+<h2 id="deck-heading">Live sovereign cognitive deck</h2>
+<p>Ask on the loopback. The answer comes back from the operator core on this machine, and nothing leaves the box.</p>
+</div>
+<div class="alchemical-deck reveal">
+<div class="deck-brief">
+<h3>Query Master Azoth</h3>
+<p>Type a question the way you would say it out loud. The deck routes it through the local arbitration kernel and prints the synthesis.</p>
+<div class="quick-prompts">
+<button class="prompt-chip" onclick="sendPrompt('How does the local architecture work?')" type="button">Architecture</button>
+<button class="prompt-chip" onclick="sendPrompt('Where do my keys live?')" type="button">Key safety</button>
+<button class="prompt-chip" onclick="sendPrompt('Can you build a 3d shader scene?')" type="button">3D &amp; shaders</button>
+</div>
+<button class="btn btn-ghost deck-voice" onclick="speakAzothAxiom()" type="button"><span aria-hidden="true">&#128266;</span> Hear the axiom</button>
+</div>
+<div class="terminal-box">
+<div class="terminal-header">
+<span>azoth@sov-loopback :8484</span>
+<span class="term-status"><span aria-hidden="true" class="term-dot"></span> preview mode &middot; no network egress</span>
+</div>
+<div aria-live="polite" class="terminal-output" id="terminalOutput" role="log" tabindex="0">
+<div>Sovereign deck ready. Preview mode: this panel answers from a canned local script, and no request ever leaves this machine.</div>
+</div>
+<form class="terminal-input-row" onsubmit="event.preventDefault(); runConsole();">
+<label class="sr-only" for="termInput">Ask Master Azoth</label>
+<input autocomplete="off" class="terminal-input" id="termInput" placeholder="Ask about architecture, keys, or shaders&hellip;" type="text"/>
+<button class="btn btn-gold terminal-send" type="submit">Synthesize</button>
+</form>
+</div>
+</div>
+</section>
+
+<hr aria-hidden="true" class="section-divider"/>
+
+<!-- ===== 04 - HOW HE WORKS (copy unchanged) ===== -->
+<section aria-labelledby="doctrine-heading" class="azoth-doctrine" id="alchemical-doctrine">
 <p class="kicker">How he works</p>
-<h2>Four moves. One machine.</h2>
+<h2 id="doctrine-heading">Four moves. One machine.</h2>
 <ol class="azoth-steps">
 <li>
 <span aria-hidden="true" class="n">01</span>
@@ -1347,17 +1850,17 @@
 <div class="azoth-tools">
 <h3>Runs on</h3>
 <ul>
-<li><img alt="" height="28" src="/assets/logos/python.svg" width="28"/> Python</li>
-<li><img alt="" height="28" src="/assets/logos/rust.svg" width="28"/> Rust</li>
-<li><img alt="" height="28" src="/assets/logos/docker.svg" width="28"/> Docker</li>
-<li><img alt="" height="28" src="/assets/logos/webgl.svg" width="28"/> WebGL</li>
-<li><img alt="" height="28" src="/assets/logos/webcodecs.svg" width="28"/> WebCodecs</li>
-<li><img alt="" height="28" src="/assets/logos/ollama.svg" width="28"/> Ollama</li>
+<li><img alt="" decoding="async" height="28" loading="lazy" src="/assets/logos/python.svg" width="28"/> Python</li>
+<li><img alt="" decoding="async" height="28" loading="lazy" src="/assets/logos/rust.svg" width="28"/> Rust</li>
+<li><img alt="" decoding="async" height="28" loading="lazy" src="/assets/logos/docker.svg" width="28"/> Docker</li>
+<li><img alt="" decoding="async" height="28" loading="lazy" src="/assets/logos/webgl.svg" width="28"/> WebGL</li>
+<li><img alt="" decoding="async" height="28" loading="lazy" src="/assets/logos/webcodecs.svg" width="28"/> WebCodecs</li>
+<li><img alt="" decoding="async" height="28" loading="lazy" src="/assets/logos/ollama.svg" width="28"/> Ollama</li>
 </ul>
 </div>
 </section>
 </main>
-                        <footer class="site" role="contentinfo">
+                                <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -1495,6 +1998,26 @@
 
 
     </script>
+<script>
+/* Progressive reveal: only elements inside html.js-motion can be hidden, and a
+   timer guarantees everything becomes visible even if the observer never fires. */
+(function () {
+  var els = document.querySelectorAll('.reveal');
+  var show = function (el) { el.classList.add('is-visible'); };
+  if (!('IntersectionObserver' in window)) { Array.prototype.forEach.call(els, show); return; }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { show(e.target); io.unobserve(e.target); }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  Array.prototype.forEach.call(els, function (el) { io.observe(el); });
+  window.setTimeout(function () {
+    Array.prototype.forEach.call(els, function (el) {
+      if (!el.classList.contains('is-visible')) { show(el); io.unobserve(el); }
+    });
+  }, 1500);
+})();
+</script>
 <script src="/assets/zoth-tip.js"></script>
 <script src="/assets/zoth-gate.js"></script>
 <script src="/assets/zoth-guide.js"></script>

@@ -30,7 +30,7 @@ No keys on public wire  attention scaling math  9 specialized mascot spirits  re
 
 1. **Local-First Sovereignty (The Loopback Doctrine)**: Operator deck, terminals, tool runs, and credentials stay bound to `127.0.0.1:8484` and encrypted with Argon2id + XChaCha20-Poly1305. The public hub never proxies secrets.
 2. **Mathematical Observability (The AI Math Pillars)**: Real-time telemetry revealing the physics of every run—attention matrices ($\text{softmax}(QK^T/\sqrt{d_k})V$), cross-entropy loss gradients, and Shannon entropy uncertainty.
-3. **Cybernetic Multi-Agent Collaboration**: Antigravity, Grok, Hermes, and local Ollama nodes collaborating asynchronously over a local Swarm Bus (`:8989`).
+3. **Cybernetic Multi-Agent Collaboration**: Antigravity, Grok, Hermes, and local Ollama nodes collaborating asynchronously over a local Swarm Bus (`:8484`).
 4. **Pragmatic Craftsmanship (Not Hype Vibe)**: Code and tools that execute real workflows on Parrot OS / Linux.
 
 ---
