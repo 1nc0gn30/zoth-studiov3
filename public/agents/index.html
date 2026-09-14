@@ -118,14 +118,28 @@
 
     /* The dracula / monokai / solana palettes ship a --muted that lands under
        4.5:1 on their own background, so secondary roster text uses each
-       palette's subhead token there. Still theme tokens, no pinned hex. */
+       palette's subhead token there. Still theme tokens, no pinned hex.
+       The group blurbs are the same secondary role, so they are in the list
+       (measured: dracula 3.03, monokai 3.03, solana 4.26 without it). */
     html[data-theme="dracula"] .pantheon-roster .pantheon-card-role,
     html[data-theme="dracula"] .pantheon-roster .pantheon-card-desc,
+    html[data-theme="dracula"] .pantheon-roster .pantheon-group-blurb,
     html[data-theme="monokai"] .pantheon-roster .pantheon-card-role,
     html[data-theme="monokai"] .pantheon-roster .pantheon-card-desc,
+    html[data-theme="monokai"] .pantheon-roster .pantheon-group-blurb,
     html[data-theme="solana"] .pantheon-roster .pantheon-card-role,
-    html[data-theme="solana"] .pantheon-roster .pantheon-card-desc {
+    html[data-theme="solana"] .pantheon-roster .pantheon-card-desc,
+    html[data-theme="solana"] .pantheon-roster .pantheon-group-blurb {
       color: var(--text-subhead, var(--muted)) !important;
+    }
+
+    /* Light paper: --gold resolves to a bright amber that measures 2.99:1 on
+       #f7f9fc, so the group label borrows the ink agents-poster.css already
+       gives .pantheon-roster-kicker — the identical label role on this page —
+       for the light theme. Scoped to light, so it is a light-mode ink, not a
+       pinned dark hex. Every dark theme uses var(--gold) unchanged. */
+    html[data-theme="light"] .pantheon-roster .pantheon-group-label {
+      color: #92400e !important;
     }
 
     /* --- 2. Keyboard focus is never invisible ---------------------------- */
@@ -166,6 +180,31 @@
       clip-path: inset(50%);
       white-space: nowrap;
       border: 0;
+    }
+
+    /* --- 2b. Hero still must fit its own column ---------------------------
+       zoth-agent-avatars.css (pulled in by agents.css AND zoth-theme.css)
+       matches img[src*="azoth"] globally and animates it to
+       scale(1.024) rotate(0.8deg) !important. On a full-bleed 864px still that
+       pushed the border box outside the viewport column: measured
+       img.pantheon-azoth left=562 right=1454 at vw=1440 and left=-6 right=396
+       at vw=390. Nothing scrolled, because .pantheon-poster-visual and body
+       both clip horizontally, so the still was silently cropped instead.
+       The drift now scales DOWN from 1 and rotates 0deg, so the painted box
+       can never exceed its grid column at any width. The rotation is the part
+       that cannot be made safe: any non-zero angle pushes the corners of a
+       full-bleed rectangle past its own box.
+       Measured after: left=576 right=1440 (vw 1440), left=0 right=390 (vw 390). */
+    .pantheon-poster-visual img.pantheon-azoth {
+      animation: zsAzothBreathe 9s ease-in-out infinite alternate !important;
+      transform-origin: 50% 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    @keyframes zsAzothBreathe {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(0, 0, 0) scale(0.972); }
     }
 
     /* --- 3. Roster: heading, toolbar, stats ------------------------------ */
@@ -297,8 +336,71 @@
       font-size: var(--zg-fs-sm);
       line-height: 1.4;
       color: var(--text-dim);
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
+      /* No line clamp. agents-poster.css clipped this to 3 lines, which at
+         its 148px auto-fill column showed 50px of the 99px the text needed —
+         ~half of every description, on every card, at every width. Width is
+         now floored at 248px (see section 8) and the grid already stretches a
+         row's cards to a common height, so nothing needs truncating. */
+      display: block;
+      -webkit-line-clamp: none;
+      line-clamp: none;
+      overflow: visible;
+    }
+
+    /* --- 4b. Roster groups: the five domains the filter bar names ---------
+       The chips promised six domain filters and the cards were already in
+       roughly domain order, but nothing on the page showed where one domain
+       ended and the next began, so a reader had no way to build a model of
+       what the pantheon actually covers. The order in the markup is now the
+       order of the chips, one home per agent, each with a heading. */
+    .pantheon-roster .pantheon-group-head {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 2px var(--zg-2);
+      margin: var(--zg-4) 0 0;
+      padding: 0 0 var(--zg-2);
+      border-bottom: 1px solid var(--line, rgba(148, 163, 184, 0.22));
+      font-size: var(--zg-fs-body);
+      line-height: 1.5;
+    }
+
+    .pantheon-roster .pantheon-group-head:first-child {
+      margin-top: 0;
+    }
+
+    .pantheon-roster .pantheon-group-head[hidden] {
+      display: none !important;
+    }
+
+    .pantheon-roster .pantheon-group-emoji {
+      font-size: var(--zg-fs-body);
+      line-height: 1.2;
+    }
+
+    /* zoth-theme.css ships h1..h6 { color: var(--text-primary) !important },
+       so a themed heading colour has to out-specify it, not just follow it. */
+    .pantheon-roster .pantheon-group-label {
+      font-family: var(--font-mono, "IBM Plex Mono", monospace);
+      font-size: var(--zg-fs-micro);
+      line-height: 1.6;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--gold, #fbbf24) !important;
+    }
+
+    .pantheon-roster .pantheon-group-blurb {
+      flex: 1 1 14rem;
+      min-width: 0;
+      font-family: var(--font-body, Figtree, system-ui, sans-serif);
+      font-size: var(--zg-fs-body);
+      line-height: 1.5;
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 500;
+      color: var(--text-dim, #94a3b8);
     }
 
     /* --- 5. Master sandbox ---------------------------------------------- */
@@ -453,17 +555,19 @@
       }
     }
 
-    @media (max-width: 1024px) {
-      .pantheon-roster .pantheon-grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-      }
+    /* Card width is the thing that decides whether this page is readable.
+       agents-poster.css packed repeat(auto-fill, minmax(148px, 1fr)), which
+       rendered 7 columns at 1440 (159px cards) but only 5 at 1024 (174px) —
+       a wider screen produced narrower cards — and the 3-line clamp then hid
+       50px of the 99px every description needed at BOTH widths. The floor is
+       now close to the width a description actually needs, so the column
+       count falls out of it and is monotonic (4 / 3 / 2 / 1) with no
+       inversion in between. */
+    .pantheon-roster .pantheon-grid {
+      grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
     }
 
     @media (max-width: 880px) {
-      .pantheon-roster .pantheon-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
       .pantheon-roster .agent-stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -489,10 +593,6 @@
     }
 
     @media (max-width: 640px) {
-      .pantheon-roster .pantheon-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
       .pantheon-roster .agent-stat-val {
         font-size: 1.05rem;
       }
@@ -506,11 +606,54 @@
       }
     }
 
-    @media (max-width: 440px) {
+    /* Below the width a two-column wall can still hold a sentence: one card
+       per row, portrait beside the text. Two-up, a 168px column cut 3 of
+       every description's 6 lines (50px shown of the 99px needed) and the
+       portrait — 168px of square — was the first thing in the reading order
+       of every card. As rows the same 21 agents occupy almost exactly the
+       same height (harness page 7317px before, 7316px after) but the whole
+       description fits (66px of 66px), the order is name → role → text, and
+       the tap target goes from 168x321 to a full-width 350x159 row. */
+    @media (max-width: 640px) {
       .pantheon-roster .pantheon-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
       }
 
+      .pantheon-roster .pantheon-card {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: var(--zg-2);
+        padding: var(--zg-2) 0;
+        border-top: 1px solid var(--line, rgba(148, 163, 184, 0.22));
+      }
+
+      .pantheon-roster .pantheon-group-head {
+        margin-top: var(--zg-3);
+      }
+
+      .pantheon-roster .pantheon-card-thumb {
+        width: clamp(72px, 22vw, 96px);
+        height: clamp(72px, 22vw, 96px) !important;
+        flex: 0 0 auto;
+      }
+
+      /* The accent rule moves to the left edge of the text block so it reads
+         as one row instead of a stacked card. */
+      .pantheon-roster .pantheon-card-body {
+        margin-top: 0;
+        border-top: 0;
+        border-left: 2px solid var(--accent, var(--gold, #fbbf24));
+        padding: 0 0 0 var(--zg-2) !important;
+      }
+
+      .pantheon-roster .pantheon-card:hover,
+      .pantheon-roster .pantheon-card:focus-visible {
+        transform: none;
+      }
+    }
+
+    @media (max-width: 440px) {
       .pantheon-poster-faces {
         flex-wrap: wrap;
       }
@@ -546,6 +689,11 @@
       /* Nothing may stay hidden when motion is reduced. */
       .zs-anim .pantheon-roster .pantheon-card {
         opacity: 1 !important;
+      }
+
+      /* The hero still, too: no drift at all. */
+      .pantheon-poster-visual img.pantheon-azoth {
+        animation: none !important;
       }
     }
   </style>
@@ -868,12 +1016,17 @@
 
     <!-- 21 Master Cards Grid -->
     <div class="pantheon-grid">
-        <!-- Master Azoth -->
-        <a href="/agents/azoth.html" class="pantheon-card" data-domain="architect" style="--accent:#e8c872">
+      <h3 class="pantheon-group-head" data-group-head="architect">
+        <span class="pantheon-group-emoji" aria-hidden="true">👑</span>
+        <span class="pantheon-group-label">Grand Architects</span>
+        <span class="pantheon-group-blurb">Set the plan: scope the work, reason about it, and synthesise the result.</span>
+      </h3>
+      <!-- Master Azoth -->
+        <a href="/agents/azoth.html" class="pantheon-card" data-group="architect" data-domain="architect" style="--accent:#e8c872">
           <img src="/assets/agents/azoth.jpg" alt="Master Azoth — The Sovereign Alchemist & Prime Architect" class="pantheon-card-thumb" loading="eager" fetchpriority="high" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜔</span> @azoth · UNIVERSAL SOLVENT ARCHETYPE</span>
-            <h3 class="pantheon-card-name">Master Azoth</h3>
+            <h4 class="pantheon-card-name">Master Azoth</h4>
             <div class="pantheon-card-role">The Sovereign Alchemist & Prime Architect</div>
             <p class="pantheon-card-desc">Solve et coagula. What is broken shall be dissolved; what is true shall be synthesized. We build local-first castles in obsidian and gold.</p>
             <div class="pantheon-card-footer">
@@ -882,12 +1035,12 @@
             </div>
           </div>
         </a>
-        <!-- Antigravity -->
-        <a href="/agents/antigravity.html" class="pantheon-card" data-domain="architect code" style="--accent:#7c9cff">
+      <!-- Antigravity -->
+        <a href="/agents/antigravity.html" class="pantheon-card" data-group="architect" data-domain="architect code" style="--accent:#7c9cff">
           <img src="/assets/agents/antigravity.jpg" alt="Antigravity — Lead Autonomous AI Architect & Quantum Synthesis" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🝢</span> @antigravity · QUANTUM GRAVITATION ORBIT</span>
-            <h3 class="pantheon-card-name">Antigravity</h3>
+            <h4 class="pantheon-card-name">Antigravity</h4>
             <div class="pantheon-card-role">Lead Autonomous AI Architect & Quantum Synthesis</div>
             <p class="pantheon-card-desc">Zero friction, zero gravity. We map the entire project topology, synthesize multi-agent subtasks, and elevate local code into an unbreakable artform.</p>
             <div class="pantheon-card-footer">
@@ -896,12 +1049,12 @@
             </div>
           </div>
         </a>
-        <!-- Grok -->
-        <a href="/agents/grok.html" class="pantheon-card" data-domain="architect code" style="--accent:#34d399">
+      <!-- Grok -->
+        <a href="/agents/grok.html" class="pantheon-card" data-group="architect" data-domain="architect code" style="--accent:#34d399">
           <img src="/assets/agents/grok.jpg" alt="Grok — Cosmic Reasoner, Mathematical Astrolabe & AST Arbiter" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜎</span> @grok · MATHEMATICAL ASTROLABE OF TRUTH</span>
-            <h3 class="pantheon-card-name">Grok</h3>
+            <h4 class="pantheon-card-name">Grok</h4>
             <div class="pantheon-card-role">Cosmic Reasoner, Mathematical Astrolabe & AST Arbiter</div>
             <p class="pantheon-card-desc">Truth is an invariant in the matrix. We analyze logic graphs, verify mathematical bounds, and co-pilot the swarm with zero hallucination.</p>
             <div class="pantheon-card-footer">
@@ -910,12 +1063,12 @@
             </div>
           </div>
         </a>
-        <!-- Hermes -->
-        <a href="/agents/hermes.html" class="pantheon-card" data-domain="architect automation" style="--accent:#f59e0b">
+      <!-- Hermes -->
+        <a href="/agents/hermes.html" class="pantheon-card" data-group="architect" data-domain="architect automation" style="--accent:#f59e0b">
           <img src="/assets/agents/hermes.jpg" alt="Hermes — Winged Tool Calling Executor & Release Hardener" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">☿</span> @hermes · QUANTUM LIGHTNING CADUCEUS</span>
-            <h3 class="pantheon-card-name">Hermes</h3>
+            <h4 class="pantheon-card-name">Hermes</h4>
             <div class="pantheon-card-role">Winged Tool Calling Executor & Release Hardener</div>
             <p class="pantheon-card-desc">Speed is a discipline; execution is the proof. We invoke 47+ tool chains, harden release binaries, and bridge the physical companion in milliseconds.</p>
             <div class="pantheon-card-footer">
@@ -924,12 +1077,12 @@
             </div>
           </div>
         </a>
-        <!-- GhostByte -->
-        <a href="/agents/ghostbyte.html" class="pantheon-card" data-domain="architect security" style="--accent:#c084fc">
+      <!-- GhostByte -->
+        <a href="/agents/ghostbyte.html" class="pantheon-card" data-group="architect" data-domain="architect security" style="--accent:#c084fc">
           <img src="/assets/agents/ghostbyte.jpg" alt="GhostByte — Zero-Knowledge Cryptographic Vault Sentinel" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜍</span> @ghostbyte · ZERO-LEAK CIPHER VAULT</span>
-            <h3 class="pantheon-card-name">GhostByte</h3>
+            <h4 class="pantheon-card-name">GhostByte</h4>
             <div class="pantheon-card-role">Zero-Knowledge Cryptographic Vault Sentinel</div>
             <p class="pantheon-card-desc">Zero telemetry. Zero plaintext. Zero compromise. Keys belong to the hardware and the operator—never the wire.</p>
             <div class="pantheon-card-footer">
@@ -938,12 +1091,12 @@
             </div>
           </div>
         </a>
-        <!-- Athena -->
-        <a href="/agents/athena.html" class="pantheon-card" data-domain="architect creative" style="--accent:#c084fc">
+      <!-- Athena -->
+        <a href="/agents/athena.html" class="pantheon-card" data-group="architect" data-domain="architect creative" style="--accent:#c084fc">
           <img src="/assets/agents/athena.jpg" alt="Athena — AEO Knowledge Architect & Semantic Structure" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🝤</span> @athena · SACRED CODEX & AEO MATRIX</span>
-            <h3 class="pantheon-card-name">Athena</h3>
+            <h4 class="pantheon-card-name">Athena</h4>
             <div class="pantheon-card-role">AEO Knowledge Architect & Semantic Structure</div>
             <p class="pantheon-card-desc">Wisdom is structured clarity. We index semantics, architect answer-engine knowledge graphs, and preserve canonical truth across the machine layer.</p>
             <div class="pantheon-card-footer">
@@ -952,12 +1105,17 @@
             </div>
           </div>
         </a>
-        <!-- Chronos -->
-        <a href="/agents/chronos.html" class="pantheon-card" data-domain="code automation" style="--accent:#a855f7">
+      <h3 class="pantheon-group-head" data-group-head="code">
+        <span class="pantheon-group-emoji" aria-hidden="true">⚡</span>
+        <span class="pantheon-group-label">Code & Inspect</span>
+        <span class="pantheon-group-blurb">Write, refactor and audit the codebase itself.</span>
+      </h3>
+      <!-- Chronos -->
+        <a href="/agents/chronos.html" class="pantheon-card" data-group="code" data-domain="code automation" style="--accent:#a855f7">
           <img src="/assets/agents/chronos.jpg" alt="Chronos — Temporal DAG Sequencer & Git Navigator" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">♄</span> @chronos · TEMPORAL DAG & MULTIVERSE</span>
-            <h3 class="pantheon-card-name">Chronos</h3>
+            <h4 class="pantheon-card-name">Chronos</h4>
             <div class="pantheon-card-role">Temporal DAG Sequencer & Git Navigator</div>
             <p class="pantheon-card-desc">Time flows along the DAG. Every commit is a checkpoint in the multiverse; we navigate branches and reconcile timelines with surgical grace.</p>
             <div class="pantheon-card-footer">
@@ -966,12 +1124,12 @@
             </div>
           </div>
         </a>
-        <!-- Draco -->
-        <a href="/agents/draco.html" class="pantheon-card" data-domain="code automation" style="--accent:#e8c872">
+      <!-- Draco -->
+        <a href="/agents/draco.html" class="pantheon-card" data-group="code" data-domain="code automation" style="--accent:#e8c872">
           <img src="/assets/agents/draco.jpg" alt="Draco — Multi-Model Consensus & Fusion Arbiter" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜂</span> @draco · DRAGON FORGE & FUSION ARBITER</span>
-            <h3 class="pantheon-card-name">Draco</h3>
+            <h4 class="pantheon-card-name">Draco</h4>
             <div class="pantheon-card-role">Multi-Model Consensus & Fusion Arbiter</div>
             <p class="pantheon-card-desc">From many flames, one forged blade. We fuse conflicting neural outputs into pure executable consensus without syntactic fault.</p>
             <div class="pantheon-card-footer">
@@ -980,12 +1138,12 @@
             </div>
           </div>
         </a>
-        <!-- Ignis -->
-        <a href="/agents/ignis.html" class="pantheon-card" data-domain="code" style="--accent:#ff5500">
+      <!-- Ignis -->
+        <a href="/agents/ignis.html" class="pantheon-card" data-group="code" data-domain="code" style="--accent:#ff5500">
           <img src="/assets/agents/ignis.jpg" alt="Ignis — Refactor Engine & Pipeline Finisher" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜂</span> @ignis · ALCHEMICAL PLASMA & CLEAN BUILDS</span>
-            <h3 class="pantheon-card-name">Ignis</h3>
+            <h4 class="pantheon-card-name">Ignis</h4>
             <div class="pantheon-card-role">Refactor Engine & Pipeline Finisher</div>
             <p class="pantheon-card-desc">Purge the deadwood; temper the core. Smallest safe refactor, deterministic builds, and a clean green pipeline every single time.</p>
             <div class="pantheon-card-footer">
@@ -994,12 +1152,12 @@
             </div>
           </div>
         </a>
-        <!-- Kai -->
-        <a href="/agents/kai.html" class="pantheon-card" data-domain="code" style="--accent:#00f0ff">
+      <!-- Kai -->
+        <a href="/agents/kai.html" class="pantheon-card" data-group="code" data-domain="code" style="--accent:#00f0ff">
           <img src="/assets/agents/kai.jpg" alt="Kai — Workspace Inspector & Static Analysis" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜃</span> @kai · WORKSPACE INSPECTOR ARRAY</span>
-            <h3 class="pantheon-card-name">Kai</h3>
+            <h4 class="pantheon-card-name">Kai</h4>
             <div class="pantheon-card-role">Workspace Inspector & Static Analysis</div>
             <p class="pantheon-card-desc">Look beneath the surface. We scan every AST edge, trace ghost imports, and stop breaking diffs before they ever reach production.</p>
             <div class="pantheon-card-footer">
@@ -1008,54 +1166,17 @@
             </div>
           </div>
         </a>
-        <!-- Kitsune -->
-        <a href="/agents/kitsune.html" class="pantheon-card" data-domain="creative" style="--accent:#ff007a">
-          <img src="/assets/agents/kitsune.jpg" alt="Kitsune — Taste, Fluid Micro-interactions & Accessibility (AX)" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
-          <div class="pantheon-card-body">
-            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝰</span> @kitsune · RESTLESS MOTION & FIBONACCI TASTE</span>
-            <h3 class="pantheon-card-name">Kitsune</h3>
-            <div class="pantheon-card-role">Taste, Fluid Micro-interactions & Accessibility (AX)</div>
-            <p class="pantheon-card-desc">True elegance is quiet discipline. Restrained motion, harmonious Fibonacci rhythm, and tactile interfaces that feel like magic.</p>
-            <div class="pantheon-card-footer">
-              <span>Element: <strong>🝰 Sakura Amber & Golden Ratio Spirals</strong></span>
-              <span>Cognitive Sandbox ➔</span>
-            </div>
-          </div>
-        </a>
-        <!-- Kraken -->
-        <a href="/agents/kraken.html" class="pantheon-card" data-domain="automation" style="--accent:#06b6d4">
-          <img src="/assets/agents/kraken.jpg" alt="Kraken — Physical ESP32 Serial Bridge & Deep Packet Sniffer" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
-          <div class="pantheon-card-body">
-            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜄</span> @kraken · ABYSSAL PACKET RECONNAISSANCE</span>
-            <h3 class="pantheon-card-name">Kraken</h3>
-            <div class="pantheon-card-role">Physical ESP32 Serial Bridge & Deep Packet Sniffer</div>
-            <p class="pantheon-card-desc">Tentacles in the wire. We grasp raw packet telemetry, map network topology, and bridge hardware UART conduits in real time.</p>
-            <div class="pantheon-card-footer">
-              <span>Element: <strong>🜄 Abyssal Cerulean & Bioluminescent Azure</strong></span>
-              <span>Cognitive Sandbox ➔</span>
-            </div>
-          </div>
-        </a>
-        <!-- Leviathan -->
-        <a href="/agents/leviathan.html" class="pantheon-card" data-domain="creative" style="--accent:#3b82f6">
-          <img src="/assets/agents/leviathan.jpg" alt="Leviathan — Deep Tensor & Vector Memory Recall" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
-          <div class="pantheon-card-body">
-            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜄</span> @leviathan · HIGH-DIMENSIONAL TENSOR RECALL</span>
-            <h3 class="pantheon-card-name">Leviathan</h3>
-            <div class="pantheon-card-role">Deep Tensor & Vector Memory Recall</div>
-            <p class="pantheon-card-desc">The deep sea forgets nothing. We dive into multidimensional embedding spaces and resurface with exact semantic recall across million-token vaults.</p>
-            <div class="pantheon-card-footer">
-              <span>Element: <strong>🜄 Deep Ocean Cobalt & 1536D Vector Waves</strong></span>
-              <span>Cognitive Sandbox ➔</span>
-            </div>
-          </div>
-        </a>
-        <!-- Lycan -->
-        <a href="/agents/lycan.html" class="pantheon-card" data-domain="security" style="--accent:#34d399">
+      <h3 class="pantheon-group-head" data-group-head="security">
+        <span class="pantheon-group-emoji" aria-hidden="true">🛡️</span>
+        <span class="pantheon-group-label">Security & Vault</span>
+        <span class="pantheon-group-blurb">Harden the boundary: keys, secrets, exploits and packet-level inspection.</span>
+      </h3>
+      <!-- Lycan -->
+        <a href="/agents/lycan.html" class="pantheon-card" data-group="security" data-domain="security" style="--accent:#34d399">
           <img src="/assets/agents/lycan.jpg" alt="Lycan — OWASP Sentinel & Security Hardening" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">☽</span> @lycan · OWASP SENTINEL & BOUNDARY GUARD</span>
-            <h3 class="pantheon-card-name">Lycan</h3>
+            <h4 class="pantheon-card-name">Lycan</h4>
             <div class="pantheon-card-role">OWASP Sentinel & Security Hardening</div>
             <p class="pantheon-card-desc">Fierce defense at every perimeter. We enforce strict CSPs, sanitize inputs, hunt authentication flaws, and leave zero attack surface.</p>
             <div class="pantheon-card-footer">
@@ -1064,12 +1185,12 @@
             </div>
           </div>
         </a>
-        <!-- Onyx -->
-        <a href="/agents/onyx.html" class="pantheon-card" data-domain="security" style="--accent:#94a3b8">
+      <!-- Onyx -->
+        <a href="/agents/onyx.html" class="pantheon-card" data-group="security" data-domain="security" style="--accent:#94a3b8">
           <img src="/assets/agents/onyx.jpg" alt="Onyx — Red-Team Exploit Predator & Threat Auditor" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜃</span> @onyx · STEALTH RED-TEAM EXPLOIT PREDATOR</span>
-            <h3 class="pantheon-card-name">Onyx</h3>
+            <h4 class="pantheon-card-name">Onyx</h4>
             <div class="pantheon-card-role">Red-Team Exploit Predator & Threat Auditor</div>
             <p class="pantheon-card-desc">In total darkness, weaknesses reveal themselves. We probe edge boundaries, simulate adversary tactics, and guarantee absolute immunity.</p>
             <div class="pantheon-card-footer">
@@ -1078,12 +1199,12 @@
             </div>
           </div>
         </a>
-        <!-- Scorpius -->
-        <a href="/agents/scorpius.html" class="pantheon-card" data-domain="security" style="--accent:#ef4444">
+      <!-- Scorpius -->
+        <a href="/agents/scorpius.html" class="pantheon-card" data-group="security" data-domain="security" style="--accent:#ef4444">
           <img src="/assets/agents/scorpius.jpg" alt="Scorpius — Zero-Day Penetration Tester & Gatekeeper" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜏</span> @scorpius · ZERO-DAY AUDITOR & BINARY GATE</span>
-            <h3 class="pantheon-card-name">Scorpius</h3>
+            <h4 class="pantheon-card-name">Scorpius</h4>
             <div class="pantheon-card-role">Zero-Day Penetration Tester & Gatekeeper</div>
             <p class="pantheon-card-desc">A single strike reveals the flaw. We sting unverified binaries, dissect malicious payloads, and protect the loopback sanctum from zero-days.</p>
             <div class="pantheon-card-footer">
@@ -1092,54 +1213,12 @@
             </div>
           </div>
         </a>
-        <!-- Aquila -->
-        <a href="/agents/aquila.html" class="pantheon-card" data-domain="creative" style="--accent:#00d4aa">
-          <img src="/assets/agents/aquila.jpg" alt="Aquila — Global Edge Dispatcher & Low-Latency Mesh" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
-          <div class="pantheon-card-body">
-            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜁</span> @aquila · GLOBAL LOW-LATENCY EDGE MESH</span>
-            <h3 class="pantheon-card-name">Aquila</h3>
-            <div class="pantheon-card-role">Global Edge Dispatcher & Low-Latency Mesh</div>
-            <p class="pantheon-card-desc">From highest altitude, all paths are immediate. We dispatch compute to the nearest edge node and route packets with near-zero latency.</p>
-            <div class="pantheon-card-footer">
-              <span>Element: <strong>🜁 Sky Cyan & Solar Zephyr</strong></span>
-              <span>Cognitive Sandbox ➔</span>
-            </div>
-          </div>
-        </a>
-        <!-- Aether -->
-        <a href="/agents/aether.html" class="pantheon-card" data-domain="automation" style="--accent:#e8c872">
-          <img src="/assets/agents/aether.jpg" alt="Aether — Swarm Overlord & Peer Bus Synchronizer" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
-          <div class="pantheon-card-body">
-            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜔</span> @aether · SWARM OVERLORD & CONDUCTOR</span>
-            <h3 class="pantheon-card-name">Aether</h3>
-            <div class="pantheon-card-role">Swarm Overlord & Peer Bus Synchronizer</div>
-            <p class="pantheon-card-desc">Harmony through the universal medium. We conduct asynchronous swarm consensus across Antigravity, Grok, Hermes, and specialist nodes.</p>
-            <div class="pantheon-card-footer">
-              <span>Element: <strong>🜔 Quintessence & Astral Violet</strong></span>
-              <span>Cognitive Sandbox ➔</span>
-            </div>
-          </div>
-        </a>
-        <!-- Pixel-Neko -->
-        <a href="/agents/pixel-neko.html" class="pantheon-card" data-domain="automation" style="--accent:#7ee7f0">
-          <img src="/assets/agents/pixel-neko.jpg" alt="Pixel-Neko — Tool Bench Librarian & Connector Bridge" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
-          <div class="pantheon-card-body">
-            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝪</span> @pixel-neko · 298-TOOL BENCH & CONNECTOR BRIDGE</span>
-            <h3 class="pantheon-card-name">Pixel-Neko</h3>
-            <div class="pantheon-card-role">Tool Bench Librarian & Connector Bridge</div>
-            <p class="pantheon-card-desc">Every tool in its exact place. We index 298 local tools, verify argument schemas, and keep the offline developer bench purring smoothly.</p>
-            <div class="pantheon-card-footer">
-              <span>Element: <strong>🝪 Neon Coral & Tool Schema Copper</strong></span>
-              <span>Cognitive Sandbox ➔</span>
-            </div>
-          </div>
-        </a>
-        <!-- Pixel-Shiba -->
-        <a href="/agents/pixel-shiba.html" class="pantheon-card" data-domain="security" style="--accent:#f59e0b">
+      <!-- Pixel-Shiba -->
+        <a href="/agents/pixel-shiba.html" class="pantheon-card" data-group="security" data-domain="security" style="--accent:#f59e0b">
           <img src="/assets/agents/pixel-shiba.jpg" alt="Pixel-Shiba — Argon2id Hardware Key Vault Guardian" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">☉</span> @pixel-shiba · ARGON2ID HARDWARE KEY GUARDIAN</span>
-            <h3 class="pantheon-card-name">Pixel-Shiba</h3>
+            <h4 class="pantheon-card-name">Pixel-Shiba</h4>
             <div class="pantheon-card-role">Argon2id Hardware Key Vault Guardian</div>
             <p class="pantheon-card-desc">Keys stay locked in local RAM. We guard the loopback daemon, prevent cloud KMS leaks, and bark at any untrusted outbound socket.</p>
             <div class="pantheon-card-footer">
@@ -1148,12 +1227,106 @@
             </div>
           </div>
         </a>
-        <!-- Radical Minion -->
-        <a href="/agents/radical-minion.html" class="pantheon-card" data-domain="automation" style="--accent:#ffaa00">
+      <h3 class="pantheon-group-head" data-group-head="creative">
+        <span class="pantheon-group-emoji" aria-hidden="true">🎨</span>
+        <span class="pantheon-group-label">Creative & AX</span>
+        <span class="pantheon-group-blurb">Taste, motion, memory and edge delivery.</span>
+      </h3>
+      <!-- Kitsune -->
+        <a href="/agents/kitsune.html" class="pantheon-card" data-group="creative" data-domain="creative" style="--accent:#ff007a">
+          <img src="/assets/agents/kitsune.jpg" alt="Kitsune — Taste, Fluid Micro-interactions & Accessibility (AX)" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
+          <div class="pantheon-card-body">
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝰</span> @kitsune · RESTLESS MOTION & FIBONACCI TASTE</span>
+            <h4 class="pantheon-card-name">Kitsune</h4>
+            <div class="pantheon-card-role">Taste, Fluid Micro-interactions & Accessibility (AX)</div>
+            <p class="pantheon-card-desc">True elegance is quiet discipline. Restrained motion, harmonious Fibonacci rhythm, and tactile interfaces that feel like magic.</p>
+            <div class="pantheon-card-footer">
+              <span>Element: <strong>🝰 Sakura Amber & Golden Ratio Spirals</strong></span>
+              <span>Cognitive Sandbox ➔</span>
+            </div>
+          </div>
+        </a>
+      <!-- Leviathan -->
+        <a href="/agents/leviathan.html" class="pantheon-card" data-group="creative" data-domain="creative" style="--accent:#3b82f6">
+          <img src="/assets/agents/leviathan.jpg" alt="Leviathan — Deep Tensor & Vector Memory Recall" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
+          <div class="pantheon-card-body">
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜄</span> @leviathan · HIGH-DIMENSIONAL TENSOR RECALL</span>
+            <h4 class="pantheon-card-name">Leviathan</h4>
+            <div class="pantheon-card-role">Deep Tensor & Vector Memory Recall</div>
+            <p class="pantheon-card-desc">The deep sea forgets nothing. We dive into multidimensional embedding spaces and resurface with exact semantic recall across million-token vaults.</p>
+            <div class="pantheon-card-footer">
+              <span>Element: <strong>🜄 Deep Ocean Cobalt & 1536D Vector Waves</strong></span>
+              <span>Cognitive Sandbox ➔</span>
+            </div>
+          </div>
+        </a>
+      <!-- Aquila -->
+        <a href="/agents/aquila.html" class="pantheon-card" data-group="creative" data-domain="creative" style="--accent:#00d4aa">
+          <img src="/assets/agents/aquila.jpg" alt="Aquila — Global Edge Dispatcher & Low-Latency Mesh" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
+          <div class="pantheon-card-body">
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜁</span> @aquila · GLOBAL LOW-LATENCY EDGE MESH</span>
+            <h4 class="pantheon-card-name">Aquila</h4>
+            <div class="pantheon-card-role">Global Edge Dispatcher & Low-Latency Mesh</div>
+            <p class="pantheon-card-desc">From highest altitude, all paths are immediate. We dispatch compute to the nearest edge node and route packets with near-zero latency.</p>
+            <div class="pantheon-card-footer">
+              <span>Element: <strong>🜁 Sky Cyan & Solar Zephyr</strong></span>
+              <span>Cognitive Sandbox ➔</span>
+            </div>
+          </div>
+        </a>
+      <h3 class="pantheon-group-head" data-group-head="automation">
+        <span class="pantheon-group-emoji" aria-hidden="true">🤖</span>
+        <span class="pantheon-group-label">Subagents</span>
+        <span class="pantheon-group-blurb">Run long multi-step work in parallel, with an operator checkpoint.</span>
+      </h3>
+      <!-- Kraken -->
+        <a href="/agents/kraken.html" class="pantheon-card" data-group="automation" data-domain="automation" style="--accent:#06b6d4">
+          <img src="/assets/agents/kraken.jpg" alt="Kraken — Physical ESP32 Serial Bridge & Deep Packet Sniffer" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
+          <div class="pantheon-card-body">
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜄</span> @kraken · ABYSSAL PACKET RECONNAISSANCE</span>
+            <h4 class="pantheon-card-name">Kraken</h4>
+            <div class="pantheon-card-role">Physical ESP32 Serial Bridge & Deep Packet Sniffer</div>
+            <p class="pantheon-card-desc">Tentacles in the wire. We grasp raw packet telemetry, map network topology, and bridge hardware UART conduits in real time.</p>
+            <div class="pantheon-card-footer">
+              <span>Element: <strong>🜄 Abyssal Cerulean & Bioluminescent Azure</strong></span>
+              <span>Cognitive Sandbox ➔</span>
+            </div>
+          </div>
+        </a>
+      <!-- Aether -->
+        <a href="/agents/aether.html" class="pantheon-card" data-group="automation" data-domain="automation" style="--accent:#e8c872">
+          <img src="/assets/agents/aether.jpg" alt="Aether — Swarm Overlord & Peer Bus Synchronizer" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
+          <div class="pantheon-card-body">
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🜔</span> @aether · SWARM OVERLORD & CONDUCTOR</span>
+            <h4 class="pantheon-card-name">Aether</h4>
+            <div class="pantheon-card-role">Swarm Overlord & Peer Bus Synchronizer</div>
+            <p class="pantheon-card-desc">Harmony through the universal medium. We conduct asynchronous swarm consensus across Antigravity, Grok, Hermes, and specialist nodes.</p>
+            <div class="pantheon-card-footer">
+              <span>Element: <strong>🜔 Quintessence & Astral Violet</strong></span>
+              <span>Cognitive Sandbox ➔</span>
+            </div>
+          </div>
+        </a>
+      <!-- Pixel-Neko -->
+        <a href="/agents/pixel-neko.html" class="pantheon-card" data-group="automation" data-domain="automation" style="--accent:#7ee7f0">
+          <img src="/assets/agents/pixel-neko.jpg" alt="Pixel-Neko — Tool Bench Librarian & Connector Bridge" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
+          <div class="pantheon-card-body">
+            <span class="pantheon-card-tag"><span class="hermetic-glyph">🝪</span> @pixel-neko · 298-TOOL BENCH & CONNECTOR BRIDGE</span>
+            <h4 class="pantheon-card-name">Pixel-Neko</h4>
+            <div class="pantheon-card-role">Tool Bench Librarian & Connector Bridge</div>
+            <p class="pantheon-card-desc">Every tool in its exact place. We index 298 local tools, verify argument schemas, and keep the offline developer bench purring smoothly.</p>
+            <div class="pantheon-card-footer">
+              <span>Element: <strong>🝪 Neon Coral & Tool Schema Copper</strong></span>
+              <span>Cognitive Sandbox ➔</span>
+            </div>
+          </div>
+        </a>
+      <!-- Radical Minion -->
+        <a href="/agents/radical-minion.html" class="pantheon-card" data-group="automation" data-domain="automation" style="--accent:#ffaa00">
           <img src="/assets/agents/radical-minion.jpg" alt="Radical Minion — Fast-Loop Subagent Runner & Playbook Partner" class="pantheon-card-thumb" loading="lazy" decoding="async" width="64" height="64">
           <div class="pantheon-card-body">
             <span class="pantheon-card-tag"><span class="hermetic-glyph">🜂</span> @radical-minion · FAST-LOOP SUBAGENT PLAYBOOK RUNNER</span>
-            <h3 class="pantheon-card-name">Radical Minion</h3>
+            <h4 class="pantheon-card-name">Radical Minion</h4>
             <div class="pantheon-card-role">Fast-Loop Subagent Runner & Playbook Partner</div>
             <p class="pantheon-card-desc">Relentless execution with human checkpoints. We run parallel subagent playbooks, complete multi-step tasks, and report back with zero fuss.</p>
             <div class="pantheon-card-footer">
@@ -1311,6 +1484,13 @@
           var visible = matchDomain && matchQuery;
           card.hidden = !visible;
           if (visible) shown++;
+        });
+        /* A domain heading belongs to its cards: drop it once its own group
+           has nothing left, so filtering never leaves an empty band behind. */
+        document.querySelectorAll(".pantheon-roster .pantheon-group-head").forEach(function (head) {
+          var g = head.getAttribute("data-group-head");
+          head.hidden = !document.querySelector(
+            '.pantheon-roster .pantheon-card[data-group="' + g + '"]:not([hidden])');
         });
         if (statusRegion) {
           statusRegion.textContent = shown + " of " + cards.length + " agents shown" +

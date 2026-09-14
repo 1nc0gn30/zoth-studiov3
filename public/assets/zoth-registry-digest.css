@@ -1,0 +1,405 @@
+/* ==========================================================================
+   ZOTH STUDIO — /registry/ human-digest layer  (page-scoped)
+   Loaded last in the /registry/ <head>, after registry-poster.css, so it can
+   correct it. Every colour is a zoth-theme.css token (--panel, --line, --gold,
+   --text-*, --muted, --border-focus, --bg-2 ...), which are re-declared for all
+   16 data-theme archetypes (dark, light, matrix, gold, google, microsoft, apple,
+   openai, amazon, anthropic, xai, dracula, nord, synthwave, solana, monokai).
+   Hexes appear only as var() fallbacks for a hypothetical theme that omits a
+   token — every one of the 16 shipped themes declares all of them (checked),
+   and the light theme in particular is verified, not just the dark one.
+   Deliberate breakpoints: 900px (the poster's own breakpoint) and 480px.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Hero portrait overflow
+   zoth-agent-avatars.css animates every `img[alt*="Azoth"]` with
+   rotate(0.8deg) scale(1.024). On the full-bleed hero portrait that grows the
+   box ~2.4% — past the viewport edge at 390 / 1024 / 1440 — and the poster's
+   overflow:hidden silently clipped it. Kill the geometry change on this one
+   image only (the scale was imperceptible; the parent was cropping it anyway).
+   -------------------------------------------------------------------------- */
+.registry-poster-visual img.registry-azoth {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   1b. Scroll container
+   registry-poster.css sets `html, body { overflow-x: hidden; overflow-y: auto }`,
+   which makes <body> a scroll container. A scroll-container ancestor silently
+   disables position:sticky for everything below it (its scrollport never
+   moves), so the filter bar would scroll away. The viewport already clips x
+   via the propagated root overflow, so hand scrolling back to the viewport.
+   -------------------------------------------------------------------------- */
+html body {
+  overflow: visible !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. Anchor landings + section head
+   The topbar is position:fixed, so every in-page jump needs to clear it, plus
+   the sticky filter bar that now sits under it.
+   -------------------------------------------------------------------------- */
+.registry-fleet {
+  /* The section head sits above the sticky bar in flow, so a jump here only
+     has to clear the fixed topbar. */
+  scroll-margin-top: calc(var(--zoth-header-h, 54px) + 16px);
+}
+.reg-group {
+  /* Group jumps are made from the sticky bar itself, so they must clear it. */
+  scroll-margin-top: var(--reg-anchor-offset, 268px);
+}
+
+:root {
+  /* fixed header (54) + the sticky filter bar (≈204px wrapped chips on
+     desktop) + a little air, so a jumped-to group is never hidden behind
+     the bar it was reached from. */
+  --reg-anchor-offset: 268px;
+}
+
+.registry-fleet-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 0 0 10px;
+}
+
+.registry-fleet-heading {
+  margin: 0;
+  font-family: var(--font-display, "Syne", system-ui, sans-serif);
+  font-size: clamp(1.3rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text-primary, #fff);
+}
+
+/* Empty search state (built by JS, so nothing is hidden pre-paint) */
+.reg-empty {
+  margin: 24px 0;
+  padding: 16px 18px;
+  border: 1px dashed var(--line, rgba(255, 255, 255, 0.16));
+  border-radius: 12px;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--muted, #94a3b8);
+}
+.reg-empty[hidden] {
+  display: none !important;
+}
+
+/* Expand/collapse-all is an enhancement: it is only revealed by the
+   synchronous <head> script that also builds the groups (html.reg-js), so it
+   can never appear as a dead control. */
+.reg-toggle-all {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-subhead, var(--muted, #94a3b8));
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+html.reg-js .reg-toggle-all {
+  display: inline-flex;
+}
+.reg-toggle-all:hover {
+  color: var(--text-primary, #fff);
+  border-color: var(--gold, #fbbf24);
+}
+.reg-toggle-all:focus-visible,
+.registry-fleet .cats button:focus-visible,
+.reg-group-summary:focus-visible,
+.registry-fleet #q:focus-visible {
+  outline: 2px solid var(--border-focus, var(--accent, #00f0ff));
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Sticky filter/search bar — the navigation aid for the 298-row wall
+   -------------------------------------------------------------------------- */
+.reg-sticky {
+  position: sticky;
+  top: var(--zoth-header-h, 54px);
+  z-index: 20;
+  /* full-bleed inside the section so content does not slide past its gutters */
+  margin: 0 calc(-1 * clamp(20px, 4vw, 48px)) 4px;
+  padding: 0 clamp(20px, 4vw, 48px) 6px;
+  background: var(--panel, rgba(9, 13, 26, 0.9));
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.reg-meta-label {
+  color: var(--muted, #94a3b8);
+}
+
+.registry-fleet .cats button {
+  min-height: 44px;
+}
+
+/* --------------------------------------------------------------------------
+   4. Collapsible category groups (progressive disclosure)
+   `#fleet` keeps .registry-grid for the inner grids' auto-fill columns but is
+   itself a stack of <details>. Nothing is hidden before paint: the groups only
+   exist once JS has built them, and no content is display:none'd by CSS.
+   -------------------------------------------------------------------------- */
+.registry-grid.reg-groups {
+  display: block;
+}
+
+.reg-group {
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+}
+.reg-group[hidden] {
+  display: none !important;
+}
+
+.reg-group-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 4px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.reg-group-summary::-webkit-details-marker {
+  display: none;
+}
+.reg-group-summary::marker {
+  content: "";
+}
+
+.reg-group-num {
+  flex: 0 0 auto;
+  min-width: 2.2ch;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  /* --gold only clears 3:1 on the light theme's white panel, so the ordinal
+     uses the theme's subhead token; the accent stays on the chevron. */
+  color: var(--text-subhead, var(--muted, #94a3b8));
+}
+
+.reg-group-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-display, "Syne", system-ui, sans-serif);
+  font-size: clamp(1.02rem, 1.5vw, 1.22rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary, #fff);
+  overflow-wrap: anywhere;
+}
+
+.reg-group-count {
+  flex: 0 0 auto;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--text-subhead, var(--muted, #94a3b8));
+  white-space: nowrap;
+}
+
+.reg-group-chev {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  color: var(--gold, #fbbf24);
+  transition: transform 0.18s ease;
+}
+.reg-group[open] .reg-group-chev {
+  transform: rotate(180deg);
+}
+.reg-group-summary:hover .reg-group-name {
+  color: var(--gold, #fbbf24);
+}
+
+.reg-group-grid {
+  padding: 10px 0 30px;
+}
+.reg-group-grid .fleet-card {
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. No-JS fallback index (native <noscript>: nothing is hidden pre-paint)
+   -------------------------------------------------------------------------- */
+.reg-noscript {
+  margin: 8px 0 40px;
+  padding: 18px 20px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--bg-2, transparent);
+  color: var(--text-body, #f1f5f9);
+}
+.reg-noscript p {
+  margin: 0 0 12px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.reg-noscript ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+.reg-noscript li {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.8rem;
+  line-height: 1.8;
+  color: var(--text-subhead, var(--muted, #cbd5e1));
+}
+.reg-noscript a {
+  color: var(--gold, #fbbf24);
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   6. Mobile reading order for the poster
+   registry-poster.css pushed the portrait above the copy (order:-1) on phones,
+   so a first-time visitor got 439px of image before the word "Registry".
+   Text first, image after, and sized so nothing leaves the viewport.
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .registry-poster-visual {
+    order: 0;
+    min-height: 0;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    max-height: 46vh;
+  }
+  .registry-poster-copy {
+    padding: 20px 20px 14px;
+  }
+  .registry-poster .lede {
+    max-width: none;
+  }
+
+  /* Chips become one swipeable row instead of a 322px-tall wrapped block, so
+     the sticky bar stays a bar. */
+  .registry-fleet .cats {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+  }
+  .registry-fleet .cats::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* registry-poster.css gives .seek `flex: 1 1 220px`; inside the toolbar's
+     column layout that becomes a 220px-tall basis, so the search box grew to
+     220px tall and pushed the whole sticky bar to 350px. Pin it to its box. */
+  .registry-fleet .seek {
+    flex: 0 0 auto;
+    min-height: 44px;
+  }
+  .registry-fleet .registry-fleet-toolbar {
+    gap: 8px;
+    padding-bottom: 10px;
+    margin-bottom: 6px;
+  }
+  .registry-fleet .reg-meta {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .reg-sticky {
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 4px;
+  }
+  .registry-fleet-head {
+    margin-bottom: 8px;
+  }
+  .reg-group-summary {
+    min-height: 60px;
+    gap: 10px;
+  }
+  .reg-group-count {
+    font-size: 0.68rem;
+  }
+
+  :root {
+    /* header 54 + the compact sticky bar (meta + search + chip row) */
+    --reg-anchor-offset: 210px;
+  }
+
+  /* Mobile tap targets: 44x44 minimum. Padding + equal negative margin grows
+     the hit box without moving the labels. */
+  #burger {
+    min-height: 44px !important;
+  }
+  a.skip-to-content,
+  a.skip-to-content:focus {
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .reg-noscript a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .mega-footer-link,
+  .foot-meta a {
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 8px;
+    margin-inline: -8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reg-group-num {
+    min-width: 0;
+  }
+  .reg-group-name {
+    font-size: 1rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  .reg-group-chev,
+  .reg-toggle-all,
+  .registry-fleet .cats button,
+  .fleet-card,
+  .registry-card {
+    transition: none !important;
+  }
+  .reg-group[open] .reg-group-chev {
+    transform: none;
+  }
+}

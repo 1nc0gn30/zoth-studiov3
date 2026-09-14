@@ -46,6 +46,11 @@
 <link href="/assets/zoth-nav.css?v=11" rel="stylesheet"/>
 <link href="/registry/registry-poster.css?v=5" rel="stylesheet"/>
 <script src="/assets/zoth-theme.js?v=11"></script>
+<script>
+  /* Synchronous, pre-paint enhancement flag: nothing is hidden by CSS before
+     this class exists, so the page degrades to fully-visible markup with JS off. */
+  document.documentElement.classList.add("reg-js");
+</script>
 <style>
         .skip-to-content, .skip-link, .skip {
       position: absolute;
@@ -325,6 +330,7 @@
   ]
 }</script>
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
+  <link href="/assets/zoth-registry-digest.css?v=1" rel="stylesheet"/>
 </head>
 <body>
 <a class="skip-to-content" href="#main-content">Skip to content</a>
@@ -586,10 +592,38 @@
 <span class="registry-poster-credit">Azoth · Operator</span>
 </div>
 </section>
-<section aria-label="Fleet manifests" class="hud registry-fleet" id="fleet-list">
-<p class="registry-fleet-kicker">Manifests</p>
+<section aria-labelledby="fleet-heading" class="hud registry-fleet" id="fleet-list">
+<p class="registry-fleet-kicker">Directory</p>
+<div class="registry-fleet-head">
+<h2 class="registry-fleet-heading" id="fleet-heading">Browse the tool index</h2>
+<button aria-expanded="false" class="reg-toggle-all" id="reg-toggle-all" title="Opens every category — long page on small screens" type="button">Expand all</button>
+</div>
+<noscript>
+<div class="reg-noscript">
+<p><strong>The sortable, searchable index needs JavaScript.</strong> The registry snapshot is static data — here it is as a category index, and the raw file is public:</p>
+<ul>
+<li>Web Apps &amp; SaaS — 75 tools</li>
+<li>Client Services — 52 tools</li>
+<li>Creative &amp; Media — 51 tools</li>
+<li>AI Agents &amp; LLM — 26 tools</li>
+<li>Learning &amp; Courses — 19 tools</li>
+<li>Netlify &amp; Creator Tools — 16 tools</li>
+<li>Portfolio &amp; Agency — 16 tools</li>
+<li>Automation &amp; Tools — 14 tools</li>
+<li>Security Operations &amp; OSINT — 9 tools</li>
+<li>Games &amp; Experiments — 8 tools</li>
+<li>Python Tools — 7 tools</li>
+<li>Crypto &amp; Web3 — 3 tools</li>
+<li>Rust Projects — 1 tool</li>
+<li>Workspaces — 1 tool</li>
+</ul>
+<p><a href="/registry/tools.json">Download the full snapshot (tools.json, 298 tools)</a></p>
+</div>
+</noscript>
+<div class="reg-sticky" id="reg-sticky">
 <div class="registry-fleet-toolbar">
 <div class="reg-meta">
+<span class="reg-meta-label">Tools shown</span>
 <span id="fleet-count">—</span>
 <span id="count">—</span>
 <span class="src" id="src">snapshot</span>
@@ -599,7 +633,8 @@
 </div>
 </div>
 <div aria-label="Categories" class="cats" id="cats" role="tablist"></div>
-<div class="registry-grid" id="fleet"></div>
+</div>
+<div class="registry-grid reg-groups" id="fleet"></div>
 </section>
 <canvas aria-hidden="true" aria-label="3D tool registry wall" id="gl"></canvas>
 <div aria-hidden="true" id="veil"></div>
@@ -638,6 +673,9 @@
   var catsEl = document.getElementById("cats");
   var qEl = document.getElementById("q");
   var countEl = document.getElementById("fleet-count") || document.getElementById("count");
+  var toggleEl = document.getElementById("reg-toggle-all");
+  var groups = [];
+  var emptyEl = null;
 
   function setText(id, value) {
     var n = document.getElementById(id);
@@ -680,20 +718,65 @@
   }
 
   function applyFilter() {
-    if (!grid) return;
+    if (!grid) return 0;
     var q = ((qEl && qEl.value) || "").trim().toLowerCase();
     var filter = activeCat();
     var shown = 0;
-    var cards = grid.querySelectorAll(".fleet-card");
-    for (var i = 0; i < cards.length; i++) {
-      var card = cards[i];
-      var hay = card.getAttribute("data-hay") || "";
-      var cat = card.getAttribute("data-cat") || "";
-      var ok = (!q || hay.indexOf(q) !== -1) && catMatch(cat, filter);
-      card.hidden = !ok;
-      if (ok) shown += 1;
+    for (var g = 0; g < groups.length; g++) {
+      var grp = groups[g];
+      var cards = grp.grid.querySelectorAll(".fleet-card");
+      var hits = 0;
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var hay = card.getAttribute("data-hay") || "";
+        var cat = card.getAttribute("data-cat") || "";
+        var ok = (!q || hay.indexOf(q) !== -1) && catMatch(cat, filter);
+        card.hidden = !ok;
+        if (ok) hits += 1;
+      }
+      grp.shown = hits;
+      grp.el.hidden = hits === 0;
+      grp.countEl.textContent = hits === grp.total
+        ? grp.total + (grp.total === 1 ? " tool" : " tools")
+        : hits + " of " + grp.total;
+      /* A search must reveal what it matched — never hide results behind a
+         collapsed group. */
+      if (q && hits) grp.el.open = true;
+      shown += hits;
     }
     if (countEl) countEl.textContent = shown + " / " + tools.length;
+    if (emptyEl) emptyEl.hidden = shown !== 0;
+    syncToggle();
+    return shown;
+  }
+
+  /* Used when a category chip is chosen: filter, open that group, bring it
+     into view (the sticky bar's scroll-margin keeps it clear of the header). */
+  function focusFilter() {
+    applyFilter();
+    var filter = activeCat();
+    if (!filter || filter === "all") return;
+    for (var i = 0; i < groups.length; i++) {
+      var grp = groups[i];
+      if (!grp.el.hidden && catMatch(grp.cat, filter)) {
+        grp.el.open = true;
+        if (grp.el.scrollIntoView) grp.el.scrollIntoView({ block: "start" });
+        break;
+      }
+    }
+  }
+
+  function allOpen() {
+    if (!groups.length) return false;
+    for (var i = 0; i < groups.length; i++) if (!groups[i].el.open) return false;
+    return true;
+  }
+
+  function syncToggle() {
+    if (!toggleEl) return;
+    var open = allOpen();
+    toggleEl.textContent = open ? "Collapse all" : "Expand all";
+    toggleEl.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
   function paintCats(list) {
@@ -723,42 +806,109 @@
   function render(list) {
     if (!grid) return;
     tools = list || [];
-    var frag = document.createDocumentFragment();
+
+    var byCat = {};
+    var order = [];
     tools.forEach(function (t) {
-      var card = document.createElement("button");
-      card.type = "button";
-      card.className = "fleet-card registry-card registry-item";
-      card.setAttribute("data-id", t.id || "");
-      card.setAttribute("data-cat", t.category || "");
-      card.setAttribute("data-hay", (
-        (t.name || "") + " " + (t.description || "") + " " + (t.category || "") + " " +
-        ((t.tags || []).join(" ")) + " " + (t.id || "")
-      ).toLowerCase());
-      var cat = document.createElement("p");
-      cat.className = "fleet-card-cat";
-      cat.textContent = t.category || "Other";
-      var h3 = document.createElement("h3");
-      h3.textContent = t.name || t.id || "Untitled";
-      var p = document.createElement("p");
-      p.textContent = t.description || "";
-      card.appendChild(cat);
-      card.appendChild(h3);
-      card.appendChild(p);
-      card.addEventListener("click", function () { openInspect(t); });
-      frag.appendChild(card);
+      var c = t.category || "Other";
+      if (!byCat[c]) { byCat[c] = []; order.push(c); }
+      byCat[c].push(t);
     });
+    order.sort(function (a, b) { return byCat[b].length - byCat[a].length; });
+
+    var frag = document.createDocumentFragment();
+    groups = [];
+    order.forEach(function (cat, idx) {
+      var det = document.createElement("details");
+      det.className = "reg-group";
+      det.id = "reg-" + cat.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+      det.setAttribute("data-cat", cat);
+
+      var sum = document.createElement("summary");
+      sum.className = "reg-group-summary";
+      var num = document.createElement("span");
+      num.className = "reg-group-num";
+      num.textContent = (idx + 1 < 10 ? "0" : "") + (idx + 1);
+      var nm = document.createElement("span");
+      nm.className = "reg-group-name";
+      nm.textContent = cat;
+      var cnt = document.createElement("span");
+      cnt.className = "reg-group-count";
+      var total = byCat[cat].length;
+      cnt.textContent = total + (total === 1 ? " tool" : " tools");
+      var chev = document.createElement("span");
+      chev.className = "reg-group-chev";
+      chev.setAttribute("aria-hidden", "true");
+      chev.textContent = "▾";
+      sum.appendChild(num);
+      sum.appendChild(nm);
+      sum.appendChild(cnt);
+      sum.appendChild(chev);
+
+      var inner = document.createElement("div");
+      inner.className = "registry-grid reg-group-grid";
+      byCat[cat].forEach(function (t) {
+        var card = document.createElement("button");
+        card.type = "button";
+        card.className = "fleet-card registry-card registry-item";
+        card.setAttribute("data-id", t.id || "");
+        card.setAttribute("data-cat", t.category || "");
+        card.setAttribute("data-hay", (
+          (t.name || "") + " " + (t.description || "") + " " + (t.category || "") + " " +
+          ((t.tags || []).join(" ")) + " " + (t.id || "")
+        ).toLowerCase());
+        var c = document.createElement("p");
+        c.className = "fleet-card-cat";
+        c.textContent = t.category || "Other";
+        var h3 = document.createElement("h3");
+        h3.textContent = t.name || t.id || "Untitled";
+        var p = document.createElement("p");
+        p.textContent = t.description || "";
+        card.appendChild(c);
+        card.appendChild(h3);
+        card.appendChild(p);
+        card.addEventListener("click", function () { openInspect(t); });
+        inner.appendChild(card);
+      });
+
+      det.appendChild(sum);
+      det.appendChild(inner);
+      frag.appendChild(det);
+      groups.push({ cat: cat, el: det, grid: inner, countEl: cnt, total: total, shown: total });
+    });
+
     grid.replaceChildren(frag);
+
+    emptyEl = document.createElement("p");
+    emptyEl.className = "reg-empty";
+    emptyEl.hidden = true;
+    emptyEl.textContent = "No tools match that search. Clear the search box or pick another category.";
+    grid.appendChild(emptyEl);
+
     if (countEl) countEl.textContent = tools.length + " / " + tools.length;
     paintCats(tools);
     applyFilter();
   }
 
+  if (toggleEl) {
+    toggleEl.addEventListener("click", function () {
+      var target = !allOpen();
+      for (var i = 0; i < groups.length; i++) groups[i].el.open = target;
+      syncToggle();
+    });
+  }
+  if (grid) grid.addEventListener("toggle", syncToggle, true);
+
   if (qEl) qEl.addEventListener("input", applyFilter);
   if (catsEl) {
     catsEl.addEventListener("click", function (e) {
-      var btn = e.target.closest("button");
-      if (!btn || !catsEl.contains(btn)) return;
-      if (btn.hasAttribute("data-cat") && !btn.getAttribute("data-bound-by-registry")) {
+      /* NB: registry.js re-renders the chips inside its own click handler, so
+         by the time this delegated handler runs the clicked button is already
+         detached — never gate the work on catsEl.contains(btn). */
+      var btn = e.target && e.target.closest ? e.target.closest("button") : null;
+      if (!btn) return;
+      if (btn.hasAttribute("data-cat") && !btn.getAttribute("data-bound-by-registry") &&
+          catsEl.contains(btn)) {
         var buttons = catsEl.querySelectorAll("button");
         for (var i = 0; i < buttons.length; i++) {
           var on = buttons[i] === btn;
@@ -766,7 +916,7 @@
           buttons[i].setAttribute("aria-selected", on ? "true" : "false");
         }
       }
-      setTimeout(applyFilter, 0);
+      setTimeout(focusFilter, 0);
     });
   }
 
