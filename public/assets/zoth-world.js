@@ -2022,7 +2022,7 @@
           chip.className = 'pet-chip';
           chip.dataset.petId = pet.id;
           chip.innerHTML = `
-            <img src="${resolveAsset(pet.img)}" class="chip-avatar" alt="${pet.name}" onerror="this.src='${resolveAsset('/assets/pets/azoth-neon.jpg')}'"/>
+            <img src="${resolveAsset(pet.img)}" class="chip-avatar" width="28" height="28" loading="lazy" decoding="async" alt="${pet.name}" onerror="this.src='${resolveAsset('/assets/pets/azoth-neon.jpg')}'"/>
             <div class="chip-meta">
               <span class="chip-name">${pet.name}</span>
               <span class="chip-domain">${pet.domain}</span>
@@ -2176,7 +2176,7 @@
       modal.innerHTML = `
         <div class="dossier-header">
           <div class="dossier-title-wrap">
-            <img src="${resolveAsset(pet.img)}" class="dossier-avatar" alt="${pet.name}" onerror="this.src='${resolveAsset('/assets/pets/azoth-neon.jpg')}'"/>
+            <img src="${resolveAsset(pet.img)}" class="dossier-avatar" width="52" height="52" loading="lazy" decoding="async" alt="${pet.name}" onerror="this.src='${resolveAsset('/assets/pets/azoth-neon.jpg')}'"/>
             <div>
               <h2>${pet.name}</h2>
               <div class="dossier-species">${pet.species}</div>
@@ -2254,7 +2254,7 @@
         const slot = document.createElement('div');
         slot.className = 'swarm-slot filled';
         slot.innerHTML = `
-          <img src="${pet.img}" alt="${pet.name}" onerror="this.src='/assets/pets/azoth-neon.jpg'"/>
+          <img src="${pet.img}" loading="lazy" decoding="async" alt="${pet.name}" onerror="this.src='/assets/pets/azoth-neon.jpg'"/>
           <span>${pet.name}</span>
         `;
         slot.addEventListener('click', () => this.inspectPet(pet));

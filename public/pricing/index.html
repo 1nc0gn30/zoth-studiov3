@@ -79,7 +79,7 @@
       },
       "speakable": {
         "@type": "SpeakableSpecification",
-        "cssSelector": ["h1", ".kicker", ".lede", ".tier-card h2", ".never-pay h2", ".faq-item summary"]
+        "cssSelector": ["h1", ".kicker", ".lede", ".tier-card h3", ".funds-card h3", ".never-pay h2", ".faq-item summary"]
       },
       "breadcrumb": {
         "@type": "BreadcrumbList",
@@ -185,11 +185,343 @@
   ]
 }
 </script>
+<style id="pricing-elevate">
+/* ==========================================================================
+   Support / Patron — elevation layer (loaded after pricing-poster.css).
+   Everything below reads from theme tokens, so it holds in all 16
+   <html data-theme> values instead of hard-coding one palette.
+   ========================================================================== */
+
+/* --- Progressive motion -------------------------------------------------
+   The hidden state is added by JS in <head>, BEFORE first paint, and only
+   when IntersectionObserver exists and reduced motion is not requested.
+   With JS off — or with prefers-reduced-motion — nothing is ever hidden. */
+.js-reveal-ready .reveal { opacity: 0; transform: translate3d(0, 14px, 0); }
+.js-reveal-ready .reveal.is-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity .55s cubic-bezier(.22, .61, .36, 1),
+              transform .55s cubic-bezier(.22, .61, .36, 1);
+}
+
+/* --- Focus rings --------------------------------------------------------
+   Every keyboard-reachable control gets a ring. Controls that live inside an
+   overflow:hidden ancestor also get an INSET ring, so the indicator can never
+   be clipped away by that ancestor. */
+main#main-content a:focus-visible,
+main#main-content summary:focus-visible,
+main#main-content button:focus-visible {
+  outline: 3px solid var(--border-focus, var(--cyan, #00f0ff));
+  outline-offset: 3px;
+}
+.pricing-poster a:focus-visible,
+.pricing-poster button:focus-visible,
+.btn:focus-visible {
+  outline: 3px solid var(--border-focus, var(--cyan, #00f0ff));
+  outline-offset: 2px;
+  box-shadow: inset 0 0 0 3px var(--border-focus, var(--cyan, #00f0ff));
+}
+/* The hero button row sits inside an overflow:hidden poster, and later-injected
+   theme stylesheets target .btn-gold:focus-visible with a dark currentColor
+   outline. Force a two-tone ring (white INSET + accent OUTSET) so the indicator
+   is unmistakable on a gold pill AND survives the clipped ancestor. */
+.pricing-poster a:focus-visible,
+.pricing-poster button:focus-visible,
+main#main-content .btn:focus-visible,
+.btn:focus-visible {
+  outline: 3px solid var(--border-focus, var(--cyan, #00f0ff)) !important;
+  outline-color: var(--border-focus, var(--cyan, #00f0ff)) !important;
+  outline-offset: 3px !important;
+  /* Dual INSET ring (dark outer, light inner) so the indicator is legible on
+     a gold pill, a white pill and a dark ghost pill alike, and survives the
+     overflow:hidden poster ancestor that would clip an outset-only ring. */
+  box-shadow: inset 0 0 0 3px #000000, inset 0 0 0 6px #ffffff !important;
+}
+.btn:focus:not(:focus-visible) { outline: none !important; }
+/* A runtime-injected theme sheet re-asserts `outline-color: currentColor` on
+   gold pills, which paints the ring near-black on a dark card. Out-specify it
+   so every button uses the theme accent, not its own label colour. */
+html body main#main-content a.btn-gold:focus-visible,
+html body main#main-content a.btn-ghost:focus-visible,
+html body main#main-content .tier-card a.btn:focus-visible,
+html body main#main-content .closing-actions a.btn:focus-visible {
+  outline-color: var(--border-focus, var(--cyan, #00f0ff)) !important;
+}
+.faq-item summary:focus-visible {
+  outline: 3px solid var(--border-focus, var(--cyan, #00f0ff));
+  outline-offset: 2px;
+}
+
+/* --- Hero lede emphasis + trust strip ---------------------------------- */
+.pricing-poster .lede-em { color: var(--gold, #fbbf24); font-weight: 700; }
+.trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-subhead, var(--muted, #94a3b8));
+}
+.trust-strip li { display: inline-flex; align-items: center; gap: 7px; }
+.trust-strip li::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold, #fbbf24);
+}
+
+/* --- Receipts row: real, checkable destinations only ------------------- */
+.receipts { width: 100%; max-width: 72rem; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); box-sizing: border-box; }
+.receipts-list { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.receipts-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line, rgba(255, 255, 255, .12));
+  border-radius: 999px;
+  background: var(--surface-card, transparent);
+  color: var(--text-subhead, var(--muted, #94a3b8));
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: .74rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  transition: color .2s ease, border-color .2s ease;
+}
+.receipts-list a:hover { color: var(--gold, #fbbf24); border-color: var(--gold, #fbbf24); }
+
+/* --- What your support funds ------------------------------------------ */
+.funds { width: 100%; max-width: 72rem; margin: 0 auto; padding: 24px clamp(20px, 4vw, 48px) 8px; box-sizing: border-box; }
+.funds h2 {
+  margin: 0 0 10px;
+  font-family: var(--font-display, "Syne", sans-serif);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  color: var(--text-primary, #fff6dc);
+}
+.funds-grid { display: grid; grid-template-columns: repeat(2, minmax(min(100%, 280px), 1fr)); gap: 18px; }
+.funds-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 22px;
+  border: 1px solid var(--border-card, var(--line, rgba(255, 255, 255, .12)));
+  border-radius: 16px;
+  background: var(--surface-card, rgba(16, 20, 34, .55));
+}
+.funds-icon { font-size: 1.25rem; line-height: 1; }
+.funds-card h3 {
+  margin: 0;
+  font-family: var(--font-display, "Syne", sans-serif);
+  font-size: 1.14rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text-primary, #fff6dc);
+}
+.funds-card p { margin: 0; color: var(--text-subhead, var(--muted, #94a3b8)); font-size: .96rem; line-height: 1.6; }
+.funds-card code {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: .88em;
+  color: var(--gold, #fbbf24);
+}
+.funds-card a.funds-link {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--gold, #fbbf24);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.funds-card a.funds-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.funds-downloads { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 0; padding: 0; list-style: none; }
+.funds-downloads a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line, rgba(255, 255, 255, .12));
+  border-radius: 8px;
+  background: var(--surface-elevated, transparent);
+  color: var(--text-subhead, var(--muted, #94a3b8));
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: .74rem;
+  letter-spacing: .04em;
+  transition: color .2s ease, border-color .2s ease;
+}
+.funds-downloads a:hover { color: var(--gold, #fbbf24); border-color: var(--gold, #fbbf24); }
+.funds-foot {
+  margin: 20px 0 0;
+  max-width: 46rem;
+  color: var(--text-subhead, var(--muted, #94a3b8));
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.funds-foot-cta { margin: 14px 0 0; }
+
+/* --- Closing ask ------------------------------------------------------- */
+.closing { width: 100%; max-width: 46rem; margin: 0 auto; padding: 8px clamp(20px, 4vw, 48px) 96px; box-sizing: border-box; }
+.closing-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px 26px;
+  border: 1px solid var(--line-strong, var(--line, rgba(255, 255, 255, .14)));
+  border-radius: 18px;
+  background: var(--surface-highlight, var(--surface-card, transparent));
+}
+.closing h2 {
+  margin: 0;
+  font-family: var(--font-display, "Syne", sans-serif);
+  font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  color: var(--text-primary, #fff6dc);
+}
+.closing p { margin: 0; color: var(--text-subhead, var(--muted, #94a3b8)); font-size: 1.02rem; line-height: 1.6; }
+.closing-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2px; }
+
+/* --- FAQ: real 44px hit areas, no inline-link tap traps ---------------- */
+.faq-cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: -6px 0 22px; }
+.faq-list-foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line, rgba(255, 255, 255, .12));
+  border-radius: 999px;
+}
+.faq-list-foot a:hover { text-decoration: none; border-color: var(--gold, #fbbf24); }
+
+/* --- Verdict-proof secondary text -------------------------------------
+   Later-injected theme sheets (zoth-theme-*.css, zoth-luxury-fx.css …) add
+   bare `p` / `a` colour rules that out-rank component selectors in some
+   themes, leaving secondary text at ~1.5:1. Re-assert the theme's own body
+   token at ID-level specificity so legibility holds in all 16 themes. */
+html body main#main-content .pricing-poster .lede,
+html body main#main-content .section-lede,
+html body main#main-content .trust-strip,
+html body main#main-content .tier-copy,
+html body main#main-content .tier-list li,
+html body main#main-content .funds-foot,
+html body main#main-content .funds-card p,
+html body main#main-content .never-card p,
+html body main#main-content .faq-item p,
+html body main#main-content .closing p,
+html body main#main-content .receipts-list a,
+html body main#main-content .funds-downloads a {
+  color: var(--text-body, var(--muted, #94a3b8)) !important;
+}
+html body main#main-content .pricing-poster h1,
+html body main#main-content .pricing-tiers h2,
+html body main#main-content .funds h2,
+html body main#main-content .never-pay h2,
+html body main#main-content .closing h2,
+html body main#main-content .tier-card h3,
+html body main#main-content .funds-card h3,
+html body main#main-content .never-card h3 {
+  color: var(--text-primary, #fff6dc) !important;
+}
+
+/* --- Light theme: the gold pill keeps a dark-brown fill, so its label must
+   be light; the ghost pill is white-on-white without this. */
+html.light main#main-content .btn-gold,
+html.light .pricing-poster .btn-gold {
+  background: #92400e !important;
+  color: #ffffff !important;
+}
+html.light main#main-content .btn-ghost,
+html.light .pricing-poster .btn-ghost {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: rgba(17, 24, 39, .18) !important;
+}
+html.light main#main-content .btn-ghost:hover,
+html.light .pricing-poster .btn-ghost:hover {
+  color: #92400e !important;
+  border-color: #92400e !important;
+}
+
+/* --- Breakpoints: deliberate 1024 / 880 / 640 / 440 -------------------- */
+@media (max-width: 1024px) {
+  .funds-grid { gap: 14px; }
+  .tier-grid, .never-grid { gap: 16px; }
+}
+
+@media (max-width: 880px) {
+  .funds-grid { grid-template-columns: minmax(min(100%, 280px), 1fr); }
+  .closing { padding-bottom: 72px; }
+  /* Enlarge footer hit areas without moving the rendered text.
+     Markup is untouched — this is presentation only. */
+  footer.site .foot-col a,
+  footer.site .foot-meta a { padding-left: 12px; padding-right: 12px; margin-left: -12px; }
+}
+
+@media (max-width: 640px) {
+  .pricing-poster-copy { padding: 16px 18px 26px; }
+  .pricing-poster-actions { width: 100%; }
+  .pricing-poster-actions .btn { flex: 1 1 100%; }
+  .trust-strip { font-size: .66rem; gap: 2px 12px; }
+  .receipts-list a { flex: 1 1 100%; justify-content: center; }
+  .closing-inner { padding: 22px 18px; }
+  .closing-actions .btn,
+  .faq-cta-row .btn { flex: 1 1 100%; }
+  .closing { padding-bottom: 56px; }
+}
+
+@media (max-width: 440px) {
+  .pricing-poster h1 { font-size: clamp(1.85rem, 9.4vw, 2.4rem) !important; }
+  .pricing-poster .lede { font-size: .96rem; }
+  .funds-card { padding: 20px 16px; }
+  .funds-downloads a { flex: 1 1 100%; justify-content: center; }
+  .tier-card, .never-card { padding: 22px 18px 20px; }
+  .faq-list { padding-left: 18px; padding-right: 18px; }
+}
+
+/* Accessibility helper for the FAQ heading (keeps the kicker look) */
+.faq-list-kicker { display: block; }
+
+/* --- Reduced motion ---------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal-ready .reveal,
+  .js-reveal-ready .reveal.is-in {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .btn, .receipts-list a, .funds-downloads a { transition: none !important; }
+  .btn:hover { transform: none; }
+}
+</style>
+<script>
+/* Reveal-motion gate — runs in <head>, before first paint.
+   If anything is off (no IntersectionObserver, reduced motion, JS error)
+   the class is never added and every .reveal element renders visible. */
+(function () {
+  try {
+    if (!("IntersectionObserver" in window)) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    document.documentElement.classList.add("js-reveal-ready");
+  } catch (e) { /* fail open: content stays visible */ }
+})();
+</script>
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
 </head>
 <body>
 <a class="skip skip-to-content" href="#main-content">Skip to main content</a>
-                                            <header class="bar" id="topbar" role="banner">
+                                                <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -429,20 +761,29 @@
 
     
 
+    
+
 <div aria-hidden="true" class="progress" id="progress"></div>
 <main id="main-content" role="main" tabindex="-1">
-<section aria-label="Support the forge" class="pricing-poster">
+
+<section aria-labelledby="hero-h1" class="pricing-poster">
 <div class="pricing-poster-copy">
 <p class="kicker">Support · sovereign</p>
-<h1>The OS is free. The forge is optional.</h1>
-<p class="lede">Install the Zoth Studio operator OS for $0 — deck, vault, swarm, agents, BYOK. Patron is optional funding. NullAI is paid work at nullai.tech: SLA, hardware, custom foundry. Primary conversion stays install.</p>
+<h1 id="hero-h1">The OS is free. The forge is optional.</h1>
+<p class="lede">Zoth Studio installs on your own machine for <strong class="lede-em">$0</strong> — no account, no subscription, no telemetry. If it earns its place in your work, you can fund the people building it. That is the whole ask.</p>
 <div class="pricing-poster-actions">
-<a class="btn btn-gold" href="/#install">Install locally</a>
-<a class="btn btn-ghost" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Keep Zoth free and sovereign</a>
+<a class="btn btn-gold" href="/#install">Install locally — $0</a>
+<a class="btn btn-ghost" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Support the forge ↗</a>
 </div>
+<ul aria-label="Terms of the offer" class="trust-strip">
+<li>MIT licensed</li>
+<li>No account</li>
+<li>No telemetry</li>
+<li>Your keys, your vault</li>
+</ul>
 </div>
 <div class="pricing-poster-figure">
-<img alt="Master Azoth in a white and gold mask with purple eyes" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
+<img alt="Master Azoth in a white and gold mask with purple eyes" decoding="async" fetchpriority="high" height="1024" loading="eager" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
 <span class="pricing-poster-credit">Azoth · Operator</span>
 </div>
 </section>
@@ -450,13 +791,13 @@
 <section aria-labelledby="tiers-heading" class="pricing-tiers" id="tiers">
 <p class="section-kicker">Three doors</p>
 <h2 id="tiers-heading">Operator. Patron. NullAI.</h2>
-<p class="section-lede">The vault is never a paywall. You do not buy a seat to run Zoth.</p>
-<div class="tier-grid">
+<p class="section-lede">The vault is never a paywall, and you do not buy a seat to run Zoth. Only one of these three doors is a purchase — and it is the one you can ignore.</p>
+<div class="tier-grid reveal">
 <article class="tier-card tier-operator">
-<p class="tier-eyebrow">Primary</p>
-<h2>Operator</h2>
-<p class="tier-price">$0</p>
-<p class="tier-copy">Install, deck, vault, swarm, agents, BYOK. The studio OS runs on your hardware. You host the workspace.</p>
+<p class="tier-eyebrow">Primary · $0</p>
+<h3>Operator</h3>
+<p class="tier-price">Free</p>
+<p class="tier-copy">Install, deck, vault, swarm, agents, BYOK. The studio OS runs on your hardware and you host the workspace. Nothing here expires.</p>
 <ul class="tier-list">
 <li>Local operator deck</li>
 <li>Argon2id vault on loopback</li>
@@ -466,23 +807,23 @@
 <a class="btn btn-gold" href="/#install">Install locally</a>
 </article>
 <article class="tier-card tier-patron">
-<p class="tier-eyebrow">Optional</p>
-<h2>Founder Patron</h2>
-<p class="tier-price">Funding</p>
-<p class="tier-copy">Keep Zoth free and sovereign. Patron is a second door — GitHub Sponsors when live. Not a license key.</p>
+<p class="tier-eyebrow">Optional · funding</p>
+<h3>Founder Patron</h3>
+<p class="tier-price">Name your own</p>
+<p class="tier-copy">Fund the open forge if it is useful to you. Patron is funding, not a license key — there is no tier list, no set amount, and no waiting list.</p>
 <ul class="tier-list">
 <li>Funds the open forge</li>
 <li>Does not unlock the vault</li>
 <li>Does not buy a cloud seat</li>
 <li>Install stays $0</li>
 </ul>
-<a class="btn btn-ghost" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Support on GitHub ↗</a>
+<a class="btn btn-ghost" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Fund on GitHub ↗</a>
 </article>
 <article class="tier-card tier-studio">
-<p class="tier-eyebrow">Services</p>
-<h2>NullAI</h2>
-<p class="tier-price">Paid work</p>
-<p class="tier-copy">SLA, hardware, and custom foundry. Professional services — not a SaaS subscription and not a vault lock.</p>
+<p class="tier-eyebrow">Services · paid</p>
+<h3>NullAI</h3>
+<p class="tier-price">Quoted per engagement</p>
+<p class="tier-copy">SLA, hardware, and custom foundry work. Professional services — not a SaaS subscription and not a vault lock.</p>
 <ul class="tier-list">
 <li>SLA and operator support</li>
 <li>Hardware companions</li>
@@ -494,7 +835,57 @@
 </div>
 </section>
 
-<section aria-labelledby="never-pay-heading" class="never-pay" id="never-pay">
+<section aria-labelledby="funds-heading" class="funds reveal" id="funds">
+<p class="section-kicker">Where it goes</p>
+<h2 id="funds-heading">What your support funds</h2>
+<p class="section-lede">Zoth is funded by the people who use it, not by investors or a subscription. Support pays for the work that has no other sponsor.</p>
+<div class="funds-grid">
+<article class="funds-card">
+<span aria-hidden="true" class="funds-icon">📦</span>
+<h3>Releases that keep shipping</h3>
+<p>Packaged builds are cut, checksummed and republished every version, so the install keeps working on the machine you actually own.</p>
+<ul class="funds-downloads">
+<li><a href="/dist-linux/zoth-studio_2.6.0_all.deb">Linux .deb</a></li>
+<li><a href="/dist-linux/Zoth_Studio-v2.6.0-x86_64.AppImage">Linux AppImage</a></li>
+<li><a href="/dist-windows/zoth-studio-v2.6.0-windows-x86_64.zip">Windows .zip</a></li>
+<li><a href="/downloads/zoth-studio-android.apk">Android .apk</a></li>
+</ul>
+</article>
+<article class="funds-card">
+<span aria-hidden="true" class="funds-icon">⚡</span>
+<h3>The swarm, maintained</h3>
+<p>The 21-agent pantheon, the 3-agent consensus arena, and the local orchestration that runs them without a cloud round-trip.</p>
+<a class="funds-link" href="/agents/">See the pantheon →</a>
+</article>
+<article class="funds-card">
+<span aria-hidden="true" class="funds-icon">🔐</span>
+<h3>The vault stays free</h3>
+<p>Argon2id secrets on loopback, a local memory graph, and bring-your-own-key inference. Support keeps these out of a paywall — they ship as the <code>zoth-vault-daemon</code>.</p>
+<a class="funds-link" href="/vault/">Open the vault docs →</a>
+</article>
+<article class="funds-card">
+<span aria-hidden="true" class="funds-icon">📚</span>
+<h3>Docs a stranger can follow</h3>
+<p>Install scripts, port topology and troubleshooting, plus machine-readable <code>llms.txt</code> so agents and humans can both get unstuck without a support contract.</p>
+<a class="funds-link" href="/docs/">Read the docs →</a>
+</article>
+</div>
+<p class="funds-foot">No amount is required, and no amount unlocks anything. If Zoth is useful to you, funding is simply how it survives.</p>
+<p class="funds-foot-cta"><a class="btn btn-ghost" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Fund development on GitHub ↗</a></p>
+</section>
+
+<div class="receipts reveal">
+<p class="section-kicker">Receipts</p>
+<ul class="receipts-list">
+<li><a href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Source repository ↗</a></li>
+<li><a href="https://github.com/NullAITech/zoth-studio/releases" rel="noopener noreferrer" target="_blank">Published releases ↗</a></li>
+<li><a href="/dist/release/SHA256SUMS.txt">SHA256 checksums</a></li>
+<li><a href="/dist/release/RELEASE_NOTES.md">Release notes</a></li>
+<li><a href="https://github.com/NullAITech/zoth-studio/commits/main" rel="noopener noreferrer" target="_blank">Commit history ↗</a></li>
+</ul>
+</div>
+
+<section aria-labelledby="never-pay-heading" class="never-pay reveal" id="never-pay">
 <p class="section-kicker">Doctrine</p>
 <h2 id="never-pay-heading">What you never pay Zoth for</h2>
 <div class="never-grid">
@@ -513,30 +904,45 @@
 </div>
 </section>
 
-<section aria-label="Support questions" class="faq-list" id="questions">
-<p class="faq-list-kicker">Answers</p>
+<section aria-labelledby="faq-heading" class="faq-list" id="questions">
+<h2 class="faq-list-kicker" id="faq-heading">Answers</h2>
 <div class="faq-stack">
 <details class="faq-item" name="faq">
 <summary>Do I have to pay to use Zoth?</summary>
-<p>No. The operator OS is $0. Install, deck, vault, swarm, agents, and BYOK run on your machine. Primary conversion is <a href="/#install">install</a>.</p>
+<p>No. The operator OS is $0. Install, deck, vault, swarm, agents and BYOK all run on your machine, and you host the workspace. If anyone ever asks you to pay for a seat, that is not this product.</p>
+<p class="faq-cta-row"><a class="btn btn-gold" href="/#install">Install locally — $0</a></p>
 </details>
 <details class="faq-item" name="faq">
 <summary>How do I support Zoth?</summary>
-<p>Optional Founder Patron funding keeps Zoth free and sovereign. GitHub Sponsors when live. NullAI is a separate door for paid services — SLA, hardware, custom foundry.</p>
+<p>Optional Founder Patron funding keeps Zoth free and sovereign — GitHub Sponsors when it goes live. NullAI is a separate door for paid services: SLA, hardware, custom foundry.</p>
+<p class="faq-cta-row"><a class="btn btn-ghost" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Fund on GitHub ↗</a></p>
 </details>
 <details class="faq-item" name="faq">
 <summary>What is NullAI?</summary>
-<p>This product is <strong>Zoth Studio</strong>. <a href="https://nullai.tech/" rel="noopener noreferrer" target="_blank">NullAI</a> (nullai.tech) is paid professional services: SLA, hardware, and custom foundry. It is not a SaaS seat and does not lock the vault.</p>
+<p>This product is <strong>Zoth Studio</strong>. NullAI (nullai.tech) is paid professional services: SLA, hardware, and custom foundry. It is not a SaaS seat and it does not lock the vault.</p>
+<p class="faq-cta-row"><a class="btn btn-ghost" href="https://nullai.tech/" rel="noopener noreferrer" target="_blank">NullAI ↗</a></p>
 </details>
 <details class="faq-item" name="faq">
 <summary>Does Patron unlock features or the vault?</summary>
-<p>No. Patron is funding, not a license key. The vault, keys, and operator surface stay yours whether you fund or not.</p>
+<p>No. Patron is funding, not a license key. The vault, keys and operator surface stay yours whether you fund or not — and there is no amount that changes that.</p>
 </details>
 </div>
 <p class="faq-list-foot"><a href="/">← Back to Hub</a></p>
 </section>
+
+<section aria-labelledby="closing-heading" class="closing reveal">
+<div class="closing-inner">
+<h2 id="closing-heading">Start with the free door.</h2>
+<p>Install it, use it offline, and decide later whether the forge is worth funding. Nothing is gated behind this decision.</p>
+<div class="closing-actions">
+<a class="btn btn-gold" href="/#install">Install locally — $0</a>
+<a class="btn btn-ghost" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank">Support the forge ↗</a>
+</div>
+</div>
+</section>
+
 </main>
-                                    <footer class="site" role="contentinfo">
+                                        <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -623,6 +1029,29 @@
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Progressive reveal: the "hidden" state was already applied in <head>
+    // (js-reveal-ready) before first paint. If it is not present, nothing is
+    // hidden and this block does nothing at all.
+    if (document.documentElement.classList.contains("js-reveal-ready")) {
+      var revealEls = document.querySelectorAll(".reveal");
+      if (revealEls.length) {
+        var showAll = function () {
+          for (var i = 0; i < revealEls.length; i++) revealEls[i].classList.add("is-in");
+        };
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (en.isIntersecting) {
+              en.target.classList.add("is-in");
+              io.unobserve(en.target);
+            }
+          });
+        }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+        for (var k = 0; k < revealEls.length; k++) io.observe(revealEls[k]);
+        // Hard guarantee: content is never left invisible.
+        window.setTimeout(showAll, 2000);
+      }
+    }
   })();
 </script>
 <script defer="" src="/assets/zoth-tip.js"></script>

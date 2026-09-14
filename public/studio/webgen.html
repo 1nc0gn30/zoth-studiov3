@@ -14,6 +14,7 @@
   <link as="image" fetchpriority="high" href="/assets/mascot/azoth-portrait.jpg" rel="preload"/>
   <link rel="stylesheet" href="/assets/zoth-theme.css?v=11" />
   <script src="/assets/zoth-theme.js?v=11"></script>
+  <link rel="stylesheet" href="/assets/zoth-agent-avatars.css" />
   <link rel="stylesheet" href="/assets/zoth-webgen-poster.css?v=20260913h" />
   <link rel="stylesheet" href="/assets/zoth-nav.css?v=12" />
   <link rel="stylesheet" href="/assets/zoth-tailwind-magic.css" />
@@ -46,7 +47,7 @@
     #webgenDeviceFrame .device-frame-bezel-bottom {
       display: none;
       flex-shrink: 0;
-      background: #0b0e14;
+      background: var(--surface2, #0b0e14);
     }
     #webgenDeviceFrame .device-frame-viewport {
       flex: 1;
@@ -62,7 +63,7 @@
     #webgenDeviceFrame.device-mode-tablet {
       align-items: center;
       justify-content: flex-start;
-      background: #05070d;
+      background: var(--webgen-bg, #05070d);
       padding: 18px 0 24px;
       overflow: auto;
     }
@@ -109,7 +110,7 @@
     #webgenDeviceFrame.device-mode-mobile {
       align-items: center;
       justify-content: flex-start;
-      background: #05070d;
+      background: var(--webgen-bg, #05070d);
       padding: 18px 0 24px;
       overflow: auto;
     }
@@ -176,6 +177,87 @@
       max-width: 100% !important;
       overflow-x: auto !important;
     }
+
+    /* URL Pill and preview label truncation */
+    .webgen-url-pill {
+      min-width: 0 !important;
+      max-width: 100%;
+    }
+    #previewUrlLabel {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      display: inline-block;
+    }
+
+    /* Modal theme styling */
+    .webgen-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+    .webgen-modal-card {
+      background: var(--webgen-surface, #080c18);
+      border: 1px solid var(--webgen-gold, #fbbf24);
+      border-radius: 16px;
+      max-width: 500px;
+      width: 90%;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      font-family: var(--font-sans);
+      color: var(--webgen-text, #ffffff);
+    }
+    .webgen-hotkey-cell {
+      background: var(--surface2, rgba(255,255,255,0.04));
+      border: 1px solid var(--webgen-line, rgba(255,255,255,0.08));
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    /* Responsive Viewport Overrides */
+    @media (max-width: 960px) {
+      .webgen-poster {
+        grid-template-columns: 1fr !important;
+        min-height: auto;
+      }
+      .webgen-poster-visual {
+        min-height: 240px;
+      }
+      .webgen-hero-stage {
+        grid-template-columns: 1fr !important;
+      }
+    }
+    @media (max-width: 640px) {
+      .webgen-preview-header {
+        padding: 8px 10px;
+      }
+      .webgen-field-row {
+        grid-template-columns: 1fr !important;
+      }
+      .webgen-modal-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+    @media (max-width: 420px) {
+      .webgen-poster-copy {
+        padding: 24px 16px !important;
+      }
+      .webgen-console-card {
+        padding: 16px 12px !important;
+      }
+      .webgen-preview-header {
+        gap: 6px;
+      }
+    }
   </style>
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
 </head>
@@ -183,7 +265,7 @@
   <a class="skip skip-to-content" href="#main-content">Skip to main content</a>
   
   <!-- Master Topbar (Matching index.html & Zoth Hubs) -->
-                                              <header class="bar" id="topbar" role="banner">
+                                                  <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -423,6 +505,8 @@
 
     
 
+    
+
   <!-- Mobile Drawer -->
   
 
@@ -438,7 +522,7 @@
         </div>
       </div>
       <div class="webgen-poster-visual">
-        <img alt="Master Azoth in a white and gold mask with purple eyes" class="webgen-poster-azoth" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
+        <img alt="Master Azoth in a white and gold mask with purple eyes" class="webgen-poster-azoth agent-avatar-pingpong" data-agent="azoth" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
         <span class="webgen-poster-credit">Azoth · Operator</span>
       </div>
     </section>
@@ -668,7 +752,7 @@
     </section>
     </div>
   </main>
-                                    <footer class="site" role="contentinfo">
+                                        <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -732,19 +816,19 @@
       </div>
     </footer>
   <!-- Keyboard Shortcuts Modal -->
-  <div id="hotkeysModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;backdrop-filter:blur(8px);align-items:center;justify-content:center;">
-    <div style="background:var(--webgen-surface);border:1px solid var(--webgen-gold);border-radius:16px;max-width:500px;width:90%;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,0.8);font-family:var(--font-sans);">
+  <div id="hotkeysModal" class="webgen-modal-overlay">
+    <div class="webgen-modal-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <h3 style="margin:0;font-family:var(--font-display);font-size:1.3rem;color:var(--webgen-gold);">Keyboard shortcuts</h3>
         <button onclick="toggleHotkeysModal()" style="background:none;border:none;color:var(--webgen-mute);font-size:1.4rem;cursor:pointer;">✕</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-family:var(--font-mono);font-size:0.8rem;">
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;"><strong style="color:var(--webgen-cyan);">Ctrl + Enter</strong><br/><span style="color:var(--webgen-mute);">Build this site</span></div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;"><strong style="color:var(--webgen-cyan);">Ctrl + R</strong><br/><span style="color:var(--webgen-mute);">Reload Preview</span></div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;"><strong style="color:var(--webgen-cyan);">Alt + 1 / 2 / 3</strong><br/><span style="color:var(--webgen-mute);">Desktop/Tab/Mobile</span></div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;"><strong style="color:var(--webgen-cyan);">Shift + T</strong><br/><span style="color:var(--webgen-mute);">Cycle Theme</span></div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;"><strong style="color:var(--webgen-cyan);">?</strong><br/><span style="color:var(--webgen-mute);">Toggle This Modal</span></div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;"><strong style="color:var(--webgen-cyan);">Esc</strong><br/><span style="color:var(--webgen-mute);">Close Modals / Overlays</span></div>
+      <div class="webgen-modal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-family:var(--font-mono);font-size:0.8rem;">
+        <div class="webgen-hotkey-cell"><strong style="color:var(--webgen-cyan);">Ctrl + Enter</strong><br/><span style="color:var(--webgen-mute);">Build this site</span></div>
+        <div class="webgen-hotkey-cell"><strong style="color:var(--webgen-cyan);">Ctrl + R</strong><br/><span style="color:var(--webgen-mute);">Reload Preview</span></div>
+        <div class="webgen-hotkey-cell"><strong style="color:var(--webgen-cyan);">Alt + 1 / 2 / 3</strong><br/><span style="color:var(--webgen-mute);">Desktop/Tab/Mobile</span></div>
+        <div class="webgen-hotkey-cell"><strong style="color:var(--webgen-cyan);">Shift + T</strong><br/><span style="color:var(--webgen-mute);">Cycle Theme</span></div>
+        <div class="webgen-hotkey-cell"><strong style="color:var(--webgen-cyan);">?</strong><br/><span style="color:var(--webgen-mute);">Toggle This Modal</span></div>
+        <div class="webgen-hotkey-cell"><strong style="color:var(--webgen-cyan);">Esc</strong><br/><span style="color:var(--webgen-mute);">Close Modals / Overlays</span></div>
       </div>
     </div>
   </div>

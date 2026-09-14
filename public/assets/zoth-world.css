@@ -1,73 +1,157 @@
 /* ==========================================================================
-   ZOTH WORLD — The Hermetic Cyber-Sanctum & Pet Multiverse
-   Glassmorphic HUD, Sacred Alchemical Theme & Cyberpunk Hologram Styling
+   ZOTH WORLD — The Hermetic Cyber-Sanctum (flagship 3D sanctum HUD)
+   Full-viewport WebGL scene + tactical HUD.
+
+   Architecture
+     1. Token bridge  — every legacy local var is re-pointed at the 16-theme
+                        design tokens so the HUD is correct in dark/light/
+                        matrix/gold/synthwave/nord/dracula/monokai/openai/
+                        anthropic/google/apple/microsoft/amazon/xai.
+     2. Scene + HUD shell  (100dvh stage, scrims so text survives a busy frame)
+     3. Panels (radar / swarm / camera / hero caption)
+     4. Bottom bar (realm selector, entity carousel, action controls)
+     5. Dialogs (dossier, TTY shell, grimoire)
+     6. Colophon (the site footer injected after <main>, revealed below the world)
+     7. Focus, scroll affordances, motion policy, responsive
    ========================================================================== */
 
+/* ==========================================================================
+   1. TOKEN BRIDGE — legacy names -> theme tokens (16 themes)
+   ========================================================================== */
 :root {
-  --bg-deep: #030408;
-  --bg-translucent: rgba(5, 7, 15, 0.78);
-  --bg-card: rgba(10, 15, 30, 0.82);
-  --bg-card-hover: rgba(18, 25, 48, 0.92);
-  
-  --gold-primary: #fbbf24;
-  --gold-glow: rgba(251, 191, 36, 0.45);
-  --gold-dim: #b45309;
-  
-  --cyan-primary: #00f0ff;
-  --cyan-glow: rgba(0, 240, 255, 0.45);
-  --cyan-dim: #0284c7;
-  
-  --purple-primary: #a855f7;
-  --purple-glow: rgba(168, 85, 247, 0.45);
-  
-  --emerald-primary: #10b981;
-  --emerald-glow: rgba(16, 185, 129, 0.45);
-  
-  --crimson-primary: #f43f5e;
-  --crimson-glow: rgba(244, 63, 94, 0.45);
+  /* Local geometry / rhythm (8px base unit) */
+  --world-header-h: var(--zoth-header-h, 54px);
+  --world-gap: 8px;
+  --world-gap-2: 16px;
+  --world-radius: 14px;
+  --world-panel-blur: 18px;
+  --world-control-h: 44px;
+  --world-max-w: 1280px;
+  --world-scrim: 0.94;
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  
-  --border-subtle: rgba(255, 255, 255, 0.12);
+  /* Legacy palette aliases (kept: referenced by inline styles + zoth-world.js) */
+  --bg-deep: var(--bg, #05060a);
+  --bg-translucent: var(--panel, rgba(14, 19, 34, 0.88));
+  --bg-card: var(--glass-panel-bg, var(--panel, rgba(9, 13, 26, 0.82)));
+  --bg-card-hover: var(--surface-elevated, rgba(31, 42, 76, 0.92));
+
+  --gold-primary: var(--gold, #fbbf24);
+  --gold-primary: var(--world-gold);
+  --gold-glow: rgba(251, 191, 36, 0.35);
+  --gold-glow: color-mix(in srgb, var(--gold, #fbbf24) 38%, transparent);
+  --gold-dim: var(--gold, #b45309);
+
+  --cyan-primary: var(--cyan, #00f0ff);
+  --cyan-primary: var(--world-cyan);
+  --cyan-glow: var(--accent-glow, rgba(0, 240, 255, 0.35));
+  --cyan-dim: var(--cyan-soft, #0284c7);
+
+  --purple-primary: var(--violet, #a855f7);
+  --purple-glow: rgba(168, 85, 247, 0.35);
+
+  --emerald-primary: var(--green, #34d399);
+  --emerald-primary: color-mix(in srgb, var(--green, #34d399) 70%, var(--text-primary, #f8fafc));
+  --emerald-glow: rgba(16, 185, 129, 0.35);
+
+  --crimson-primary: var(--magenta, #f43f5e);
+  --crimson-glow: rgba(244, 63, 94, 0.35);
+
+  --text-main: var(--text-primary, #f8fafc);
+  --text-muted: var(--text-subhead, var(--muted, #94a3b8));
+  --text-muted: color-mix(in srgb, var(--text-subhead, var(--muted, #94a3b8)) 84%, var(--text-primary, #f8fafc));
+  --text-dim: var(--muted, #64748b);
+  --text-dim: color-mix(in srgb, var(--muted, #64748b) 68%, var(--text-primary, #f8fafc));
+
+  /* Glass surface: derived from the theme's SOLID panel colour so every theme
+     gets a legible, predictable scrim over the moving 3D scene (some themes
+     ship --glass-panel-bg / --panel at only 0.82 opacity, which is not enough
+     over a blown-out frame). */
+  --world-surface: var(--panel-solid, var(--surface-elevated, #0d1222));
+  --world-surface: color-mix(in srgb, var(--panel-solid, var(--surface-elevated, #0d1222)) 94%, transparent);
+
+  /* Accent labels are lifted toward the theme's text colour: keeps the hue,
+     guarantees contrast in all 16 palettes (several use dark or dim accents). */
+  --world-cyan: var(--cyan, #00f0ff);
+  --world-cyan: color-mix(in srgb, var(--cyan, #00f0ff) 68%, var(--text-primary, #f8fafc));
+  --world-gold: var(--gold, #fbbf24);
+  --world-gold: color-mix(in srgb, var(--gold, #fbbf24) 68%, var(--text-primary, #f8fafc));
+
+  --border-subtle: var(--line, rgba(255, 255, 255, 0.12));
   --border-gold: rgba(251, 191, 36, 0.35);
+  --border-gold: color-mix(in srgb, var(--gold, #fbbf24) 35%, transparent);
   --border-cyan: rgba(0, 240, 255, 0.35);
-  
-  --font-display: 'Syne', system-ui, -apple-system, sans-serif;
+  --border-cyan: color-mix(in srgb, var(--cyan, #00f0ff) 35%, transparent);
+
+  --font-display: var(--font-display, 'Syne', system-ui, sans-serif);
   --font-serif: 'Fraunces', Georgia, serif;
-  --font-body: 'Figtree', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --font-body: var(--font-sans, 'Figtree', system-ui, sans-serif);
+  --font-mono: var(--font-mono, 'IBM Plex Mono', monospace);
 
   --phi: 1.618;
 }
 
+/* Light theme: accents need a deeper ink mix to clear 4.5:1 against white glass. */
+html[data-theme="light"] {
+  --world-gold: color-mix(in srgb, var(--gold, #f56300) 58%, var(--text-primary, #111827));
+  --world-cyan: color-mix(in srgb, var(--cyan, #0071e3) 62%, var(--text-primary, #111827));
+}
+
+/* ==========================================================================
+   2. SCENE + HUD SHELL
+   ========================================================================== */
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+* {
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html {
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: color-mix(in srgb, var(--cyan, #00f0ff) 30%, transparent) var(--bg-2, #090c16);
+}
+
+body {
+  width: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: visible;
   background-color: var(--bg-deep);
   color: var(--text-main);
   font-family: var(--font-body);
   user-select: none;
   -webkit-user-select: none;
-  padding-top: 0 !important;
+  padding-top: 0 !important; /* the world owns the full viewport; nav floats over it */
 }
 
-/* 3D Canvas Viewport */
+/* Text the visitor may legitimately want to copy stays selectable. */
+.tactical-center,
+#dossier-modal,
+#grimoire-modal,
+#terminal-window,
+body > footer.site {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* 3D canvas viewport — pinned behind the document so the world never scrolls away */
 #viewport-container {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 0;
   cursor: grab;
+  touch-action: none;
 }
 #viewport-container:active {
   cursor: grabbing;
@@ -76,218 +160,245 @@ html, body {
   width: 100%;
   height: 100%;
   display: block;
+  outline: none;
 }
 
-/* Skip link for Accessibility */
+/* Skip link */
 .skip-link {
   position: absolute;
-  top: -60px;
+  top: -80px;
   left: 16px;
-  background: var(--gold-primary);
-  color: #050508;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  background: var(--gold, #fbbf24);
+  color: var(--text-on-accent, #050508);
   font-family: var(--font-mono);
+  font-size: 0.82rem;
   font-weight: 700;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
   z-index: 99999;
   transition: top 0.2s ease;
   text-decoration: none;
+  pointer-events: none;
 }
-.skip-link:focus {
-  top: 16px;
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: calc(var(--world-header-h) + 8px);
+  pointer-events: auto;
+  outline: 2px solid var(--border-focus, #00f0ff);
+  outline-offset: 2px;
 }
 
-/* Master HUD Overlay */
+/* Master HUD overlay — exactly one viewport tall, then the colophon below */
 #hud-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: 100dvh;
   z-index: 10;
   pointer-events: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  isolation: isolate;
 }
 
-/* Top Glass Navigation Bar */
-.hud-topbar {
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  background: linear-gradient(180deg, rgba(5, 7, 15, 0.92) 0%, rgba(5, 7, 15, 0.4) 80%, transparent 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
-  gap: 16px;
+/* Scrim: keeps HUD type legible no matter how busy the frame behind it is. */
+#hud-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--bg, #05060a) 72%, transparent) 0%,
+      color-mix(in srgb, var(--bg, #05060a) 26%, transparent) 14%,
+      transparent 30%),
+    linear-gradient(0deg,
+      color-mix(in srgb, var(--bg, #05060a) 80%, transparent) 0%,
+      color-mix(in srgb, var(--bg, #05060a) 34%, transparent) 18%,
+      transparent 38%);
 }
 
-.brand-badge {
+/* ==========================================================================
+   2b. BOOT VEIL — gated on html.world-js so a JS-less render shows the HUD
+   ========================================================================== */
+.world-boot {
+  display: none;
+}
+.world-js .world-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--cyan, #00f0ff) 10%, transparent), transparent 62%),
+    var(--bg, #05060a);
+  transition: opacity 0.55s ease, visibility 0.55s ease;
+}
+.world-boot.is-gone {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.world-boot-core {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: var(--text-main);
-  transition: transform 0.2s ease;
+  gap: var(--world-gap-2);
+  padding: 0 24px;
+  text-align: center;
 }
-.brand-badge:hover {
-  transform: translateY(-1px);
-}
-.brand-seal {
-  width: 38px;
-  height: 38px;
+.world-boot-seal {
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  border: 1.5px solid var(--gold-primary);
-  box-shadow: 0 0 14px var(--gold-glow);
-  background: #090d1a;
-  object-fit: cover;
+  border: 1.5px solid color-mix(in srgb, var(--gold, #fbbf24) 55%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--gold, #fbbf24) 26%, transparent);
+  background:
+    conic-gradient(from 0deg,
+      transparent 0deg 250deg,
+      color-mix(in srgb, var(--gold, #fbbf24) 65%, transparent) 300deg,
+      transparent 360deg);
+  animation: world-seal 2.4s linear infinite;
 }
-.brand-info h1 {
+@keyframes world-seal {
+  to { transform: rotate(360deg); }
+}
+.world-boot-title {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  background: linear-gradient(135deg, #ffffff 0%, #fbbf24 60%, #d97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.brand-info .tagline {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--cyan-primary);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: var(--text-primary);
 }
-
-/* Topbar Realm Quick Teleporters */
-.realm-pills {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(10, 16, 32, 0.65);
-  padding: 4px 6px;
-  border-radius: 30px;
-  border: 1px solid var(--border-subtle);
-}
-.realm-pill {
-  background: transparent;
-  border: none;
+.world-boot-status {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.realm-pill:hover {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.08);
+.world-boot-bar {
+  display: block;
+  width: min(220px, 60vw);
+  height: 3px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
-.realm-pill.active {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(217, 119, 6, 0.15) 100%);
-  color: var(--gold-primary);
-  border: 1px solid var(--border-gold);
-  box-shadow: 0 0 12px var(--gold-glow);
+.world-boot-bar-fill {
+  display: block;
+  height: 100%;
+  width: 38%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--cyan, #00f0ff), var(--gold, #fbbf24));
+  animation: world-sweep 1.25s ease-in-out infinite;
 }
-
-/* Action Controls (Audio, Astral Mode, Camera, Terminal, Grimoire) */
-.hud-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.hud-btn {
-  background: rgba(12, 18, 38, 0.8);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-main);
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
-}
-.hud-btn:hover {
-  background: rgba(24, 36, 72, 0.9);
-  border-color: var(--cyan-primary);
-  color: var(--cyan-primary);
-  box-shadow: 0 0 10px var(--cyan-glow);
-  transform: translateY(-1px);
-}
-.hud-btn.active {
-  background: rgba(251, 191, 36, 0.2);
-  border-color: var(--gold-primary);
-  color: var(--gold-primary);
-  box-shadow: 0 0 12px var(--gold-glow);
-}
-.hud-btn-icon {
-  font-size: 0.95rem;
+@keyframes world-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
 }
 
-/* Left & Right Tactical Panels */
+/* ==========================================================================
+   3. MID STAGE — radar / hero caption / camera modes
+   ========================================================================== */
 .hud-mid {
   display: flex;
-  justify-content: space-between;
+  flex: 1 1 auto;
   align-items: flex-start;
-  padding: 0 24px;
-  flex: 1;
+  justify-content: space-between;
+  gap: var(--world-gap-2);
+  min-height: 0;
+  padding: calc(var(--world-header-h) + 10px) 24px 0;
   pointer-events: none;
 }
 
-/* Left Side: Live Swarm Radar & Compass */
-.tactical-left {
+/* Shared panel surface: near-opaque theme glass + blur = legible over moving 3D. */
+.radar-panel,
+.swarm-triad-panel,
+.camera-modes-card,
+.tactical-center,
+.realm-selector,
+.pet-chip,
+.hud-btn {
+  background: var(--panel-solid, var(--bg-2, #0d1222));
+  background: var(--world-surface);
+  border: 1px solid var(--glass-panel-border, var(--border-subtle));
+  backdrop-filter: blur(var(--world-panel-blur)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--world-panel-blur)) saturate(1.4);
+  box-shadow:
+    0 22px 50px -26px var(--shadow-color, rgba(0, 0, 0, 0.75)),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 9%, transparent);
+  border-radius: var(--world-radius);
+  color: var(--text-body, var(--text-main));
+  min-width: 0;
+}
+
+/* Surfaces that must not inherit the shared border (they own their accent). */
+.radar-panel { border-color: var(--border-cyan); }
+.swarm-triad-panel { border-color: var(--border-gold); }
+.realm-selector { border: 1px solid var(--border-subtle); border-radius: 999px; }
+.pet-chip { border: 1px solid var(--border-card, var(--border-subtle)); border-radius: 999px; }
+.hud-btn { border: 1px solid var(--border-card, var(--border-subtle)); border-radius: 10px; }
+
+.tactical-left,
+.tactical-right {
   pointer-events: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 12px;
+  min-width: 0;
+  margin-top: 0;
 }
-.radar-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-cyan);
-  border-radius: 12px;
-  padding: 14px;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 16px rgba(0, 240, 255, 0.08);
+.tactical-left {
+  flex: 0 0 auto;
   width: 220px;
+}
+.tactical-right {
+  flex: 0 0 auto;
+  align-items: flex-end;
+}
+
+.radar-panel {
+  padding: 12px;
+  width: 100%;
+  border-color: var(--border-cyan);
 }
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: var(--world-gap);
+  margin-bottom: var(--world-gap);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--cyan-primary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .radar-canvas-wrap {
   position: relative;
-  width: 190px;
-  height: 190px;
+  width: 100%;
+  max-width: 190px;
+  aspect-ratio: 1 / 1;
   margin: 0 auto;
   border-radius: 50%;
-  border: 1.5px solid rgba(0, 240, 255, 0.4);
-  box-shadow: 0 0 18px rgba(0, 240, 255, 0.2);
-  background: radial-gradient(circle, rgba(0, 40, 60, 0.6) 0%, rgba(2, 6, 14, 0.95) 100%);
+  border: 1.5px solid var(--border-cyan);
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--cyan, #00f0ff) 16%, transparent);
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--cyan, #00f0ff) 12%, transparent) 0%, transparent 72%),
+    color-mix(in srgb, var(--bg, #05060a) 88%, transparent);
   overflow: hidden;
   cursor: crosshair;
 }
@@ -303,55 +414,60 @@ html, body {
   width: 100%;
   height: 100%;
   transform-origin: top left;
-  background: conic-gradient(from 0deg, rgba(0, 240, 255, 0.35) 0deg, transparent 60deg, transparent 360deg);
+  background: conic-gradient(from 0deg,
+    color-mix(in srgb, var(--cyan, #00f0ff) 34%, transparent) 0deg,
+    transparent 60deg,
+    transparent 360deg);
   animation: sweep 4s linear infinite;
   pointer-events: none;
 }
 @keyframes sweep {
-  0% { transform: rotate(0deg); }
+  0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 .radar-coords {
-  margin-top: 8px;
+  margin-top: var(--world-gap);
   font-family: var(--font-mono);
   font-size: 0.68rem;
   color: var(--text-muted);
   display: flex;
   justify-content: space-between;
+  gap: var(--world-gap);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-/* Active Swarm Triad Slot bar */
 .swarm-triad-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-gold);
-  border-radius: 12px;
   padding: 12px;
-  backdrop-filter: blur(14px);
-  width: 220px;
+  width: 100%;
+  border-color: var(--border-gold);
 }
 .swarm-slots {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--world-gap);
+  min-width: 0;
 }
 .swarm-slot {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   height: 56px;
-  border-radius: 8px;
-  border: 1px dashed rgba(251, 191, 36, 0.4);
-  background: rgba(15, 20, 36, 0.6);
+  border-radius: 10px;
+  border: 1px dashed var(--border-gold);
+  background: color-mix(in srgb, var(--bg, #05060a) 55%, transparent);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
   overflow: hidden;
+  color: inherit;
+  font: inherit;
 }
 .swarm-slot:hover {
   border-color: var(--gold-primary);
-  background: rgba(251, 191, 36, 0.12);
+  background: color-mix(in srgb, var(--gold, #fbbf24) 14%, transparent);
 }
 .swarm-slot img {
   width: 32px;
@@ -362,190 +478,475 @@ html, body {
 .swarm-slot span {
   font-family: var(--font-mono);
   font-size: 0.62rem;
-  color: var(--text-dim);
-  margin-top: 2px;
+  color: var(--text-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .swarm-slot.filled span {
   color: var(--gold-primary);
   font-weight: 700;
 }
 
-/* Right Side: Quick Camera Modes */
-.tactical-right {
+/* Hero caption — the page's own description; static, no JS required. */
+.tactical-center {
   pointer-events: auto;
+  flex: 0 1 460px;
+  margin: 0 auto;
+  padding: var(--world-gap-2);
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-  margin-top: 12px;
+  align-items: center;
+  gap: var(--world-gap);
+  text-align: center;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.camera-modes-card {
-  background: var(--bg-card);
+.world-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--world-gap);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan-primary);
+}
+.world-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald-primary);
+  box-shadow: 0 0 8px var(--emerald-glow);
+  animation: world-pulse 2.4s ease-in-out infinite;
+  flex: 0 0 auto;
+}
+@keyframes world-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.78); }
+}
+.world-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.2vw, 2.35rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.world-lede {
+  max-width: 42ch;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.world-hints {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 10px;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+.world-hints li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.world-hints kbd {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 8px;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+.world-caption-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--world-gap) var(--world-gap-2);
+  width: 100%;
+  padding-top: var(--world-gap);
+  border-top: 1px solid var(--border-subtle);
+}
+.world-colophon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--world-control-h);
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.world-colophon-link:hover {
+  border-color: var(--cyan-primary);
+  color: var(--cyan-primary);
+  background: color-mix(in srgb, var(--cyan, #00f0ff) 10%, transparent);
+}
+.world-stat {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* Caption steps back once the visitor starts driving the world. */
+.world-js.world-active .tactical-center {
+  opacity: 0.42;
+  transform: translateY(-4px);
+}
+.tactical-center:hover,
+.tactical-center:focus-within {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Camera modes */
+.camera-modes-card {
+  padding: var(--world-gap);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  backdrop-filter: blur(12px);
+  width: max-content;
+  max-width: 100%;
 }
 .cam-btn {
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--world-gap);
+  min-height: var(--world-control-h);
+  padding: 0 12px;
   border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  padding: 6px 12px;
-  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .cam-btn:hover {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 9%, transparent);
 }
 .cam-btn.active {
-  background: rgba(0, 240, 255, 0.15);
-  border-color: var(--cyan-primary);
+  background: color-mix(in srgb, var(--cyan, #00f0ff) 16%, transparent);
+  border-color: var(--border-cyan);
   color: var(--cyan-primary);
 }
 
-/* Bottom HUD: Pet Carousel & Hermetic Doctrine Bar */
+/* ==========================================================================
+   4. BOTTOM BAR — realms, entity carousel, action controls
+   ========================================================================== */
 .hud-bottombar {
   pointer-events: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 24px 16px;
-  background: linear-gradient(0deg, rgba(5, 7, 15, 0.95) 0%, rgba(5, 7, 15, 0.5) 75%, transparent 100%);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
   gap: 10px;
+  width: 100%;
+  padding: 10px 24px calc(14px + env(safe-area-inset-bottom, 0px));
+  background:
+    linear-gradient(0deg,
+      color-mix(in srgb, var(--bg, #05060a) 96%, transparent) 0%,
+      color-mix(in srgb, var(--bg, #05060a) 78%, transparent) 62%,
+      transparent 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border-subtle);
 }
 
-/* Scrollable Pet Entity Roster */
-.pet-roster-wrap {
-  width: 100%;
-  max-width: 1280px;
+/* Realm quick-selectors — one row on desktop, snap-scrolling rail when narrow */
+.realm-selector {
   display: flex;
   align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: 999px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--gold, #fbbf24) 45%, transparent) transparent;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%);
+}
+.realm-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--world-control-h);
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  scroll-snap-align: center;
+  transition: background 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease, border-color 0.25s ease;
+}
+.realm-pill:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+.realm-pill.active {
+  background: color-mix(in srgb, var(--gold, #fbbf24) 20%, transparent);
+  border-color: var(--border-gold);
+  color: var(--gold-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold, #fbbf24) 22%, transparent);
+}
+
+/* Entity carousel */
+#pet-roster {
+  width: 100%;
+  max-width: var(--world-max-w);
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
   gap: 10px;
   overflow-x: auto;
-  padding: 6px 4px 8px;
+  overflow-y: hidden;
+  padding: 6px 14px 10px;
+  scroll-snap-type: x proximity;
   scrollbar-width: thin;
-  scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+  scrollbar-color: color-mix(in srgb, var(--gold, #fbbf24) 40%, transparent) transparent;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 26px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 26px), transparent 100%);
+  overscroll-behavior-x: contain;
 }
-.pet-roster-wrap::-webkit-scrollbar {
-  height: 4px;
+#pet-roster::-webkit-scrollbar,
+.realm-selector::-webkit-scrollbar,
+.terminal-body::-webkit-scrollbar,
+#dossier-modal::-webkit-scrollbar,
+#grimoire-modal::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
 }
-.pet-roster-wrap::-webkit-scrollbar-thumb {
-  background: rgba(251, 191, 36, 0.3);
-  border-radius: 4px;
+#pet-roster::-webkit-scrollbar-track,
+.realm-selector::-webkit-scrollbar-track,
+.terminal-body::-webkit-scrollbar-track,
+#dossier-modal::-webkit-scrollbar-track,
+#grimoire-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+#pet-roster::-webkit-scrollbar-thumb,
+.realm-selector::-webkit-scrollbar-thumb,
+.terminal-body::-webkit-scrollbar-thumb,
+#dossier-modal::-webkit-scrollbar-thumb,
+#grimoire-modal::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--gold, #fbbf24) 40%, transparent);
+  border-radius: 999px;
+}
+#pet-roster::-webkit-scrollbar-thumb:hover,
+.realm-selector::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--gold, #fbbf24) 70%, transparent);
 }
 
 .pet-chip {
-  flex-shrink: 0;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  padding: 6px 12px;
-  border-radius: 24px;
+  min-height: var(--world-control-h);
+  padding: 6px 14px 6px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-card, var(--border-subtle));
+  background: var(--world-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  scroll-snap-align: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background 0.25s ease;
 }
 .pet-chip:hover {
   background: var(--bg-card-hover);
   border-color: var(--gold-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px var(--gold-glow);
 }
 .pet-chip.selected {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(16, 24, 48, 0.9) 100%);
   border-color: var(--gold-primary);
-  box-shadow: 0 0 16px var(--gold-glow);
+  background: color-mix(in srgb, var(--gold, #fbbf24) 18%, var(--world-surface));
+  box-shadow: 0 0 18px -4px var(--gold-glow);
 }
 .chip-avatar {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-subtle);
+  flex: 0 0 auto;
 }
 .chip-meta {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 .chip-name {
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--text-primary);
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .chip-domain {
   font-family: var(--font-mono);
   font-size: 0.62rem;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
   text-transform: uppercase;
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Bottom Status Ticker */
-.hud-status-bar {
+/* Action controls — left group / right group flank the centre dock */
+.bottom-controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--world-gap);
   width: 100%;
-  max-width: 1280px;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  max-width: var(--world-max-w);
+  min-width: 0;
 }
-.status-left {
-  display: flex;
+
+.btn-group-left,
+.btn-group-right {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--world-gap);
+  min-width: 0;
 }
-.pulse-indicator {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--emerald-primary);
-  box-shadow: 0 0 8px var(--emerald-glow);
-  animation: pulse 2s infinite ease-in-out;
+.btn-group-right {
+  justify-content: flex-end;
 }
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
+/* Desktop: the bottom strip is owned by the global chrome (companion HUD
+   bottom-left, floating dock bottom-centre, back-to-top bottom-right), so the
+   bottom bar reserves that band and the action cluster lives in the right-hand
+   control column (the page script moves it there on wide screens). */
+@media (min-width: 901px) {
+  .hud-bottombar {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+  .tactical-right {
+    align-items: stretch;
+  }
+  .tactical-right .bottom-controls {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: var(--world-gap);
+    width: 100%;
+    max-width: none;
+  }
+  .tactical-right .btn-group-left,
+  .tactical-right .btn-group-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--world-gap);
+    width: 100%;
+  }
+  .tactical-right .hud-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+.hud-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--world-gap);
+  min-height: var(--world-control-h);
+  padding: 0 14px;
+  border: 1px solid var(--border-card, var(--border-subtle));
+  border-radius: 10px;
+  background: var(--world-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.hud-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-cyan);
+  color: var(--cyan-primary);
+  transform: translateY(-1px);
+}
+.hud-btn.active {
+  border-color: var(--border-gold);
+  background: color-mix(in srgb, var(--gold, #fbbf24) 18%, transparent);
+  color: var(--gold-primary);
+}
+.hud-btn-icon {
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 /* ==========================================================================
-   INTERACTIVE FLOATING HERMETIC DOSSIER MODAL
+   5. DIALOGS — dossier, TTY shell, grimoire
    ========================================================================== */
 #dossier-modal {
   position: absolute;
   top: 50%;
   right: 28px;
   transform: translateY(-50%) translateX(20px);
-  width: 360px;
+  width: min(360px, calc(100vw - 32px));
   max-height: 86vh;
-  background: rgba(8, 12, 26, 0.94);
-  border: 1.5px solid var(--gold-primary);
-  border-radius: 16px;
   padding: 20px;
+  border: 1.5px solid color-mix(in srgb, var(--gold, #fbbf24) 60%, transparent);
+  border-radius: 16px;
+  background: var(--panel-solid, var(--bg-card));
   backdrop-filter: blur(20px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px var(--gold-glow);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 26px 60px -30px var(--shadow-color, rgba(0, 0, 0, 0.8)),
+    0 0 26px -8px var(--gold-glow);
   z-index: 50;
   pointer-events: auto;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
-  color: var(--text-main);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--gold, #fbbf24) 40%, transparent) transparent;
+  color: var(--text-body);
+  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
 }
 #dossier-modal.active {
   opacity: 1;
@@ -556,164 +957,172 @@ html, body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-  padding-bottom: 14px;
-  margin-bottom: 14px;
+  gap: var(--world-gap-2);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
 }
 .dossier-title-wrap {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 .dossier-avatar {
   width: 52px;
   height: 52px;
   border-radius: 12px;
-  border: 1.5px solid var(--gold-primary);
-  box-shadow: 0 0 16px var(--gold-glow);
+  border: 1.5px solid color-mix(in srgb, var(--gold, #fbbf24) 60%, transparent);
+  box-shadow: 0 0 16px -2px var(--gold-glow);
   object-fit: cover;
+  flex: 0 0 auto;
 }
 .dossier-title-wrap h2 {
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: var(--gold-primary);
+  overflow-wrap: anywhere;
 }
 .dossier-species {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--cyan-primary);
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 .close-modal-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--world-control-h);
+  height: var(--world-control-h);
+  border: 1px solid transparent;
+  border-radius: 10px;
   background: transparent;
-  border: none;
   color: var(--text-muted);
-  font-size: 1.4rem;
-  cursor: pointer;
-  padding: 4px;
+  font-size: 1.35rem;
   line-height: 1;
-  transition: color 0.2s;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 .close-modal-btn:hover {
   color: var(--crimson-primary);
+  background: color-mix(in srgb, var(--crimson-primary) 14%, transparent);
 }
 
 .dossier-stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+  gap: var(--world-gap);
+  margin-bottom: 12px;
 }
 .stat-box {
-  background: rgba(15, 22, 42, 0.7);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  min-width: 0;
   padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg, #05060a) 45%, transparent);
 }
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--text-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 .stat-value {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--text-primary);
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
-
 .dossier-quote-box {
-  background: rgba(251, 191, 36, 0.08);
-  border-left: 3px solid var(--gold-primary);
   padding: 10px 12px;
-  border-radius: 4px;
-  margin-bottom: 14px;
+  border-left: 3px solid var(--gold-primary);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--gold, #fbbf24) 9%, transparent);
+  margin-bottom: 12px;
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 0.84rem;
-  line-height: 1.4;
-  color: #fef08a;
+  line-height: 1.45;
+  color: var(--text-body);
+  overflow-wrap: anywhere;
 }
-
 .dossier-desc {
   font-size: 0.82rem;
   line-height: 1.5;
   color: var(--text-muted);
   margin-bottom: 16px;
+  overflow-wrap: anywhere;
 }
-
 .dossier-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--world-gap);
 }
-.dossier-btn-primary {
-  background: linear-gradient(135deg, var(--gold-primary) 0%, #d97706 100%);
-  color: #050508;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 0.8rem;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
+.dossier-btn-primary,
+.dossier-btn-secondary {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 16px var(--gold-glow);
-  transition: all 0.2s ease;
+  gap: var(--world-gap);
+  min-height: var(--world-control-h);
+  padding: 0 12px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.dossier-btn-primary {
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--gold, #fbbf24) 0%, color-mix(in srgb, var(--gold, #fbbf24) 55%, #7c2d12) 100%);
+  color: var(--text-on-accent, #050508);
+  box-shadow: 0 6px 18px -8px var(--gold-glow);
 }
 .dossier-btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--gold-glow);
+  box-shadow: 0 10px 24px -8px var(--gold-glow);
 }
 .dossier-btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-main);
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
   border: 1px solid var(--border-subtle);
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  color: var(--text-primary);
 }
 .dossier-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: var(--cyan-primary);
+  border-color: var(--border-cyan);
   color: var(--cyan-primary);
 }
 
-/* ==========================================================================
-   INTERACTIVE HERMETIC TERMINAL SHELL
-   ========================================================================== */
+/* Hermetic terminal shell */
 #terminal-window {
   position: absolute;
-  bottom: 110px;
+  bottom: 118px;
   left: 28px;
-  width: 440px;
-  height: 280px;
-  background: rgba(4, 7, 16, 0.95);
-  border: 1px solid var(--cyan-primary);
-  border-radius: 12px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px var(--cyan-glow);
-  backdrop-filter: blur(16px);
-  z-index: 45;
-  pointer-events: auto;
+  width: min(440px, calc(100vw - 32px));
+  height: min(280px, 42vh);
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--border-cyan);
+  border-radius: 12px;
+  background: var(--panel-solid, var(--bg-card));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 26px 60px -30px var(--shadow-color, rgba(0, 0, 0, 0.85)),
+    0 0 22px -6px var(--cyan-glow);
+  z-index: 45;
+  pointer-events: auto;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(20px);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(16px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
 }
 #terminal-window.active {
   opacity: 1;
@@ -724,89 +1133,105 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--world-gap);
   padding: 8px 12px;
-  background: rgba(0, 240, 255, 0.1);
-  border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+  border-bottom: 1px solid var(--border-cyan);
+  background: color-mix(in srgb, var(--cyan, #00f0ff) 10%, transparent);
 }
 .terminal-title {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--cyan-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--world-gap);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--cyan-primary);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .terminal-controls {
   display: flex;
   gap: 6px;
+  flex: 0 0 auto;
 }
 .term-dot {
-  width: 10px;
-  height: 10px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   cursor: pointer;
+  border: none;
+  display: inline-block;
 }
-.term-dot.close { background: #ef4444; }
-.term-dot.min { background: #f59e0b; }
-.term-dot.max { background: #10b981; }
-
+.term-dot.close { background: color-mix(in srgb, var(--magenta, #ef4444) 85%, transparent); }
+.term-dot.min   { background: color-mix(in srgb, var(--gold, #f59e0b) 85%, transparent); }
+.term-dot.max   { background: color-mix(in srgb, var(--green, #10b981) 85%, transparent); }
 .terminal-body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 12px;
   overflow-y: auto;
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  color: #a5f3fc;
-  line-height: 1.45;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--cyan, #00f0ff) 40%, transparent) transparent;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-body);
+  overflow-wrap: anywhere;
 }
 .terminal-input-line {
   display: flex;
   align-items: center;
+  gap: var(--world-gap);
   padding: 8px 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg, #05060a) 70%, transparent);
 }
 .term-prompt {
-  color: var(--gold-primary);
+  flex: 0 0 auto;
   font-family: var(--font-mono);
+  font-size: 0.74rem;
   font-weight: 700;
-  font-size: 0.78rem;
-  margin-right: 8px;
+  color: var(--gold-primary);
 }
 #term-input {
-  flex: 1;
-  background: transparent;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 32px;
   border: none;
-  outline: none;
+  background: transparent;
+  color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: #ffffff;
+  font-size: 0.76rem;
+  outline: none;
 }
 
-/* ==========================================================================
-   HERMETIC GRIMOIRE & DOCTRINE MODAL
-   ========================================================================== */
+/* Grimoire */
 #grimoire-modal {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
+  transform: translate(-50%, -50%) scale(0.97);
   width: min(720px, 92vw);
   max-height: 85vh;
-  background: rgba(6, 8, 18, 0.96);
-  border: 1.5px solid var(--gold-primary);
+  padding: 24px;
+  border: 1.5px solid color-mix(in srgb, var(--gold, #fbbf24) 55%, transparent);
   border-radius: 16px;
-  padding: 28px;
+  background: var(--panel-solid, var(--bg-card));
   backdrop-filter: blur(24px);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9), 0 0 32px var(--gold-glow);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 30px 70px -34px var(--shadow-color, rgba(0, 0, 0, 0.9)),
+    0 0 32px -10px var(--gold-glow);
   z-index: 60;
   pointer-events: auto;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--gold, #fbbf24) 40%, transparent) transparent;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
 }
 #grimoire-modal.active {
   opacity: 1;
@@ -815,92 +1240,377 @@ html, body {
 }
 .grimoire-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
-  padding-bottom: 16px;
-  margin-bottom: 20px;
+  gap: var(--world-gap-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold, #fbbf24) 30%, transparent);
+  padding-bottom: 14px;
+  margin-bottom: 16px;
 }
 .grimoire-header h2 {
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  background: linear-gradient(135deg, #ffffff 0%, #fbbf24 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+#grimoire-modal > p {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  overflow-wrap: anywhere;
 }
 .laws-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
-  margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 12px;
+  margin-top: var(--world-gap-2);
 }
 .law-card {
-  background: rgba(12, 18, 36, 0.7);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  min-width: 0;
   padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg, #05060a) 48%, transparent);
 }
 .law-card h3 {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: 0.98rem;
+  font-weight: 600;
   color: var(--gold-primary);
   margin-bottom: 6px;
+  overflow-wrap: anywhere;
 }
 .law-card p {
   font-size: 0.78rem;
+  line-height: 1.5;
   color: var(--text-muted);
-  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
-/* Reticle Tooltip in 3D Space */
+/* 3D hover reticle */
 #hover-reticle {
   position: absolute;
-  pointer-events: none;
-  z-index: 25;
-  transform: translate(-50%, -100%);
-  background: rgba(6, 10, 24, 0.9);
-  border: 1px solid var(--gold-primary);
-  box-shadow: 0 0 16px var(--gold-glow);
-  padding: 6px 12px;
-  border-radius: 8px;
   display: none;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--gold, #fbbf24) 60%, transparent);
+  border-radius: 10px;
+  background: var(--panel-solid, var(--bg-card));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 26px -14px var(--gold-glow);
+  z-index: 25;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  max-width: min(280px, 80vw);
 }
 #hover-reticle .reticle-name {
   font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--gold-primary);
+  overflow-wrap: anywhere;
 }
 #hover-reticle .reticle-role {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   color: var(--cyan-primary);
+  overflow-wrap: anywhere;
 }
 
-/* Responsive Breakpoints */
-@media (max-width: 900px) {
-  .hud-topbar {
-    padding: 10px 16px;
+/* ==========================================================================
+   6. COLOPHON — the site footer is injected after <main>; keep it out of the
+      scene, give it an anchor target, and make its target sizes thumb-legal.
+   ========================================================================== */
+body > footer.site,
+body > .zoth-mega-footer {
+  position: relative;
+  z-index: 3;
+  margin-top: 100vh;
+  margin-top: 100dvh;
+  scroll-margin-top: calc(var(--world-header-h) + 12px);
+}
+
+/* ==========================================================================
+   7. FOCUS, MOTION POLICY, RESPONSIVE
+   ========================================================================== */
+
+/* Keyboard focus: visible over any frame, and legible even when an
+   overflow:hidden ancestor would clip an outer ring — so every focusable HUD
+   control also gets an inset ring. */
+#hud-overlay a:focus-visible,
+#hud-overlay button:focus-visible,
+#hud-overlay [tabindex]:focus-visible,
+#hud-overlay input:focus-visible,
+#dossier-modal a:focus-visible,
+#dossier-modal button:focus-visible,
+#terminal-window input:focus-visible,
+#grimoire-modal button:focus-visible,
+.skip-link:focus-visible,
+.skip-link:focus {
+  outline: 2px solid var(--border-focus, #00f0ff);
+  outline-offset: 2px;
+  box-shadow:
+    inset 0 0 0 2px var(--border-focus, #00f0ff),
+    0 0 0 4px color-mix(in srgb, var(--border-focus, #00f0ff) 26%, transparent);
+  border-radius: inherit;
+  scroll-margin-inline: 12px;
+  scroll-margin-block: 12px;
+}
+/* Inside scrollers, keep the focused chip clear of the masked edge. */
+#pet-roster > *:focus-visible,
+.realm-selector > *:focus-visible {
+  scroll-margin-inline: 20px;
+}
+
+/* JS-off fallback: show the grimoire as a plain section instead of a void. */
+@media (scripting: none) {
+  #grimoire-modal {
+    position: static;
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    width: auto;
+    max-height: none;
+    margin: 0 auto 32px;
+    box-shadow: none;
   }
-  .realm-pills {
+  #grimoire-modal .close-modal-btn {
     display: none;
+  }
+  .world-colophon-link {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .radar-sweep {
+    animation: none !important;
+    opacity: 0.5;
+  }
+  .world-boot-seal,
+  .world-live-dot {
+    animation: none !important;
+  }
+  .world-boot-bar-fill {
+    animation: none !important;
+    width: 100%;
+  }
+  .world-js.world-active .tactical-center {
+    transform: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .tactical-center {
+    flex-basis: 400px;
+  }
+  .world-lede {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --world-control-h: 44px;
+  }
+  .hud-mid {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: calc(var(--world-header-h) + 8px) 16px 0;
   }
   .tactical-left {
-    display: none;
+    display: none; /* radar + swarm triad collapse away on small screens */
+  }
+  .tactical-center {
+    order: 1;
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 420px;
+    padding: 12px;
+  }
+  .world-lede {
+    font-size: 0.78rem;
+    max-width: 34ch;
+  }
+  .world-hints li {
+    font-size: 0.64rem;
+  }
+  .tactical-right {
+    order: 2;
+    align-items: center;
+    width: 100%;
+  }
+  .camera-modes-card {
+    flex-direction: row;
+    width: 100%;
+    max-width: 420px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .cam-btn {
+    padding: 0 6px;
+    font-size: 0.68rem;
+    justify-content: center;
+    gap: 5px;
+    min-width: 0;
+  }
+  .cam-btn span {
+    font-size: 0.85rem;
+  }
+  .hud-bottombar {
+    padding: 8px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 8px;
+  }
+  .realm-selector {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  #pet-roster {
+    padding: 6px 12px 10px;
+  }
+  .bottom-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  /* Reserve the bottom strip the global chrome owns (companion HUD bottom-left,
+     back-to-top bottom-right) so no control is buried under it. */
+  .hud-bottombar {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+  .btn-group-left,
+  .btn-group-right {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+  .hud-btn {
+    width: 100%;
+    padding: 0 8px;
+    font-size: 0.7rem;
   }
   #dossier-modal {
-    right: 12px;
-    left: 12px;
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
     width: auto;
-    max-height: 75vh;
+    max-height: 72vh;
+    border-radius: 16px 16px 0 0;
+    transform: translateY(24px);
+  }
+  #dossier-modal.active {
+    transform: translateY(0);
   }
   #terminal-window {
     left: 12px;
     right: 12px;
+    bottom: calc(var(--world-header-h) + 70px);
     width: auto;
+    height: min(300px, 44vh);
+  }
+  #grimoire-modal {
+    padding: 18px;
+    max-height: 78vh;
+  }
+  body > footer.site,
+  body > .zoth-mega-footer {
+    z-index: 3;
+  }
+}
+
+@media (max-width: 900px) {
+  .world-title {
+    font-size: 1.5rem;
+  }
+  .world-hints {
+    font-size: 0.62rem;
+    gap: 4px 8px;
+  }
+  .world-caption-actions {
+    gap: var(--world-gap);
+  }
+  .world-colophon-link {
+    min-height: 44px;
+  }
+  .term-dot {
+    width: 24px;
+    height: 24px;
+  }
+  /* Colophon links are bare words: enlarge the hit box without reflowing them. */
+  body > footer.site a,
+  body > .zoth-mega-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    min-width: 44px;
+    padding-inline: 6px;
+    margin-inline: -6px;
+  }
+}
+
+/* Short viewports (small laptops): keep the HUD inside the fold. */
+@media (max-height: 620px) {
+  .radar-canvas-wrap {
+    max-width: 132px;
+  }
+  .world-lede,
+  .world-hints {
+    display: none;
+  }
+  .hud-bottombar {
+    gap: 6px;
+    padding-block: 6px 8px;
+  }
+  #pet-roster {
+    padding-block: 4px 6px;
+  }
+}
+
+/* Landscape phones (very short viewports): fewer surfaces, no reserved strip —
+   the global chrome already owns the bottom of every page at this size. */
+@media (max-height: 520px) {
+  .world-eyebrow,
+  .world-lede,
+  .world-hints,
+  .world-stat,
+  #pet-roster {
+    display: none;
+  }
+  .tactical-center {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    gap: 8px 14px;
+  }
+  .world-title {
+    font-size: 1.2rem;
+  }
+  .world-caption-actions {
+    width: auto;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .hud-bottombar {
+    padding-block: 6px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .realm-selector {
+    padding: 2px;
   }
 }

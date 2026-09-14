@@ -783,6 +783,63 @@
       background: #010204; object-fit: cover;
     }
 
+    /* ── Visual UI Inspection Canvas & Toolbar ── */
+    .ctx-inspector-bar {
+      position: absolute;
+      top: 10px; left: 10px; right: 10px;
+      z-index: 25;
+      display: none;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      background: rgba(4, 6, 14, 0.94);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.22);
+      border-radius: 12px;
+      padding: 8px 12px;
+      backdrop-filter: blur(16px);
+    }
+    .hud-inspector-detail-card {
+      position: absolute;
+      bottom: 40px; right: 12px;
+      z-index: 26;
+      background: rgba(3, 5, 12, 0.96);
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 24px var(--cyan-glow);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 260px;
+      max-width: 360px;
+      backdrop-filter: blur(16px);
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+    }
+    .dropzone-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      background: rgba(0, 240, 255, 0.12);
+      border: 3px dashed var(--cyan);
+      border-radius: 16px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-shadow: 0 0 16px var(--cyan-glow);
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+    .dropzone-overlay.drag-active {
+      display: flex;
+    }
+
     .hud-viewport-footer {
       position: absolute;
       bottom: 8px; left: 10px; right: 10px;
@@ -1099,7 +1156,7 @@
 </head>
 <body>
 <a class="skip-to-content" href="#main-content">Skip to content</a>
-                                            <header class="bar" id="topbar" role="banner">
+                                                <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -1339,6 +1396,8 @@
 
     
 
+    
+
 <!-- Magic UI Ambient Stardust & Meteor Canvas -->
 <canvas id="ambient-star-canvas"></canvas>
 <!-- Dwell Radial Hover-to-Click Laser Cursor -->
@@ -1363,7 +1422,8 @@
 </div>
 <!-- Magic UI Iridescent Segmented Mode Selector Bar -->
 <div class="mode-tabs-bar">
-<button class="mode-tab-btn active" id="tab-mode-portal" onclick="setHudMode('portal')">🪟 3D Portal</button>
+<button class="mode-tab-btn active" id="tab-mode-inspector" onclick="setHudMode('inspector')">🖼️ Visual Inspector</button>
+<button class="mode-tab-btn" id="tab-mode-portal" onclick="setHudMode('portal')">🪟 3D Portal</button>
 <button class="mode-tab-btn" id="tab-mode-mascot" onclick="setHudMode('mascot')">🐾 Seraph Mascot</button>
 <button class="mode-tab-btn" id="tab-mode-drums" onclick="setHudMode('drums')">⚡ 528Hz Beats</button>
 <button class="mode-tab-btn" id="tab-mode-airdraw" onclick="setHudMode('airdraw')">✨ Transmute ROI</button>
@@ -1395,10 +1455,74 @@
 <div class="hud-gesture-charge-pill" id="gestureChargePill">
 <span id="chargePillIcon" style="font-size:1.15rem;">✌️</span>
 <span id="chargePillLabel">HOLD GESTURE TO TRANSMUTE...</span>
-<span id="chargePillProgress" style="color:var(--gold); font-weight:700;">[░░░░] 0%</span>
 </div>
-<!-- 1. Filter Strip (Visible in Portal Mode) -->
-<div class="ctx-filter-bar" id="ctxFilterBar">
+        <!-- 0. Visual Inspection Stage Bar (Visible in Inspector Mode) -->
+        <input type="file" id="vision-file-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event)"/>
+        <div class="dropzone-overlay" id="dropzoneOverlay">
+          <span>📥 DROP SCREENSHOT OR UI IMAGE HERE</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Supports PNG, JPG, WebP, SVG &amp; Clipboard Paste (Ctrl+V)</span>
+        </div>
+
+        <div class="ctx-inspector-bar" id="ctxInspectorBar" style="display:flex;">
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; width:100%;">
+            <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--cyan); font-weight:700;">UI SAMPLES:</span>
+            <button class="filter-chip active" id="btn-sample-dashboard" onclick="loadSampleImage('dashboard', this)">🖼️ Zoth Dashboard</button>
+            <button class="filter-chip" id="btn-sample-ecommerce" onclick="loadSampleImage('ecommerce', this)">🛒 E-Commerce App</button>
+            <button class="filter-chip" id="btn-sample-terminal" onclick="loadSampleImage('terminal', this)">🐲 Hermes Terminal</button>
+            <button class="filter-chip" onclick="document.getElementById('vision-file-input').click()" style="border-color:var(--emerald); color:var(--emerald);">📁 Upload Image</button>
+
+            <!-- Zoom & Pan Toolbar -->
+            <div style="display:inline-flex; align-items:center; gap:4px; margin-left:auto;">
+              <button class="filter-chip" onclick="adjustZoom(-0.25)" title="Zoom Out">🔍 -</button>
+              <span id="zoom-level-badge" style="font-family:var(--font-mono); font-size:0.70rem; color:var(--gold); font-weight:700; min-width:42px; text-align:center;">100%</span>
+              <button class="filter-chip" onclick="adjustZoom(0.25)" title="Zoom In">🔍 +</button>
+              <button class="filter-chip" onclick="resetZoom()" title="Reset Fit">Fit</button>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; width:100%; margin-top:4px; padding-top:4px; border-top:1px solid rgba(255,255,255,0.06);">
+            <!-- Overlays -->
+            <button class="filter-chip" id="btn-toggle-grid" onclick="toggleGrid8pt(this)">📐 8pt Grid: OFF</button>
+            <button class="filter-chip active" id="btn-toggle-ocr" onclick="toggleOcrBoxes(this)">📝 OCR Boxes: ON</button>
+            <button class="filter-chip" id="btn-toggle-heatmap" onclick="toggleTokenHeatmap(this)">🔥 ViT Heatmap: OFF</button>
+
+            <!-- Class Filter Chips -->
+            <span style="font-family:var(--font-mono); font-size:0.65rem; color:var(--text-muted); margin-left:6px;">CLASSES:</span>
+            <button class="filter-chip class-chip active" data-filter="all" onclick="setClassFilter('all', this)">All</button>
+            <button class="filter-chip class-chip" data-filter="button" onclick="setClassFilter('button', this)">Button</button>
+            <button class="filter-chip class-chip" data-filter="input" onclick="setClassFilter('input', this)">Input</button>
+            <button class="filter-chip class-chip" data-filter="header" onclick="setClassFilter('header', this)">Header</button>
+            <button class="filter-chip class-chip" data-filter="modal" onclick="setClassFilter('modal', this)">Modal</button>
+            <button class="filter-chip class-chip" data-filter="nav" onclick="setClassFilter('nav', this)">Nav</button>
+            <button class="filter-chip class-chip" data-filter="text" onclick="setClassFilter('text', this)">Text</button>
+          </div>
+        </div>
+
+        <!-- Floating Hit-Test Inspector Detail Card -->
+        <div class="hud-inspector-detail-card" id="hudInspectorDetailCard">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:4px;">
+            <span style="color:var(--cyan); font-weight:700;">🎯 HIT INSPECTOR</span>
+            <span id="insp-eyedropper-preview" style="display:inline-flex; align-items:center; gap:4px; font-size:0.65rem; color:var(--gold);">
+              <span id="eyedropper-swatch" style="width:10px; height:10px; border-radius:2px; background:#00f0ff; border:1px solid #fff;"></span>
+              <span id="eyedropper-hex">#00F0FF</span>
+            </span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:2px;">
+            <span>Class: <strong id="insp-hit-class" style="color:var(--gold);">Button</strong></span>
+            <span id="insp-hit-conf" style="color:var(--emerald); font-weight:700;">98.4%</span>
+          </div>
+          <div>Normalized [ymin, xmin, ymax, xmax]:</div>
+          <code id="insp-hit-norm" style="color:var(--purple); background:rgba(0,0,0,0.4); padding:2px 4px; border-radius:4px; font-size:0.65rem;">[120, 450, 180, 600]</code>
+          <div style="display:flex; justify-content:space-between; margin-top:2px;">
+            <span>Pixel Rect: <strong id="insp-hit-pixel" style="color:var(--text-primary);">x: 576, y: 86, w: 192, h: 43</strong></span>
+          </div>
+          <div style="border-top:1px solid var(--line); padding-top:4px; margin-top:2px; font-size:0.65rem; color:var(--text-muted);">
+            Tokens: <strong id="insp-hit-tokens" style="color:var(--cyan);">16 ViT Patches (14x14) · 1 Gemini Tile (258 tok)</strong>
+          </div>
+        </div>
+
+        <!-- 1. Filter Strip (Visible in Portal Mode) -->
+        <div class="ctx-filter-bar" id="ctxFilterBar">
 <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--gold); font-weight:700;">TRANSMUTATION FX:</span>
 <button class="filter-chip active" onclick="setShaderFilter('gold_dust', this)">💛 Hermetic Gold Dust</button>
 <button class="filter-chip" onclick="setShaderFilter('datamosh', this)">💥 Datamosh Macroblock</button>
@@ -1663,7 +1787,7 @@
 </aside>
 </main>
 <!-- Footer -->
-                                    <footer class="site" role="contentinfo">
+                                        <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -1813,10 +1937,30 @@
       const sliderDwellTime = document.getElementById('sliderDwellTime');
       const sliderBpm = document.getElementById('sliderBpm');
 
-      // 9 Divine Modes
-      const STUDIO_MODES = ['portal', 'mascot', 'drums', 'airdraw', 'spawner', 'ruler', 'telemetry', 'visor', 'voice'];
-      let currentHudMode = 'portal';
+      // 10 Divine Modes
+      const STUDIO_MODES = ['inspector', 'portal', 'mascot', 'drums', 'airdraw', 'spawner', 'ruler', 'telemetry', 'visor', 'voice'];
+      let currentHudMode = 'inspector';
       let activeVoiceAgent = 'azoth';
+      let currentPerfProfile = 'turbo';
+
+      // ── VISUAL UI INSPECTION CANVAS STATE ──
+      const ctxInspectorBar = document.getElementById('ctxInspectorBar');
+      const dropzoneOverlay = document.getElementById('dropzoneOverlay');
+      const hudInspectorDetailCard = document.getElementById('hudInspectorDetailCard');
+      const zoomLevelBadge = document.getElementById('zoom-level-badge');
+
+      let inspectorImage = null;
+      let inspectorZoom = 1.0;
+      let inspectorPan = { x: 0, y: 0 };
+      let isInspectorDragging = false;
+      let inspectorDragStart = { x: 0, y: 0 };
+      let showGrid8pt = false;
+      let showOcrBoxes = true;
+      let showTokenHeatmap = false;
+      let activeClassFilter = 'all';
+      let detectedBoundingBoxes = [];
+      let hoveredDetectedBox = null;
+      let currentSampleKey = 'dashboard';
 
       // ── DWELL HOVER-TO-CLICK ENGINE STATE ──
       let currentHoveredEl = null;
@@ -1947,6 +2091,94 @@
         });
       }
 
+      // ── Hardware GPU Shader Filter Mapping ──
+      window.getGpuFilterForShader = function(name) {
+        switch(name) {
+          case 'gold_dust': return 'sepia(0.6) saturate(1.8) brightness(1.1) hue-rotate(5deg)';
+          case 'azoth_violet': return 'hue-rotate(240deg) saturate(2.0) contrast(1.2)';
+          case 'datamosh': return 'contrast(1.6) saturate(2.2) invert(0.15)';
+          case 'sobel_cyber': return 'contrast(2.0) brightness(1.2) hue-rotate(180deg)';
+          case 'matrix_rain': return 'hue-rotate(90deg) saturate(3.0) contrast(1.5) brightness(0.9)';
+          case 'anaglyph_3d': return 'contrast(1.3) drop-shadow(4px 0 0 red) drop-shadow(-4px 0 0 cyan)';
+          case 'flir_thermal': return 'invert(1) hue-rotate(180deg) saturate(3.0) contrast(2)';
+          case 'crt_phosphor': return 'contrast(1.4) brightness(1.1) sepia(0.4) saturate(1.4)';
+          case 'vhs_tear': return 'contrast(1.5) hue-rotate(30deg) saturate(1.8)';
+          case 'synthwave': return 'hue-rotate(290deg) saturate(2.2) contrast(1.3)';
+          case 'night_nvg': return 'sepia(1) hue-rotate(90deg) saturate(4.0) brightness(1.2)';
+          case 'expressionist_noir': return 'grayscale(1) contrast(2.2) brightness(0.9)';
+          case 'silenthill_fog': return 'grayscale(0.7) blur(1px) contrast(0.8) brightness(1.2)';
+          case 'sincity_red': return 'grayscale(0.9) contrast(1.8)';
+          case 'gothic_dither': return 'grayscale(1) contrast(3.0)';
+          default: return 'none';
+        }
+      };
+
+      // ── 3D Portal Canvas Renderer ──
+      window.draw3DPortal = function(p) {
+        if (!p || typeof p.cx !== 'number') return;
+        ctx.save();
+        ctx.translate(p.cx, p.cy);
+        ctx.rotate(p.roll || 0);
+
+        ctx.beginPath();
+        ctx.ellipse(0, 0, (p.width || 400) / 2, (p.height || 300) / 2, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(232, 200, 114, 0.75)';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#e8c872';
+        ctx.shadowBlur = 15;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(0, 0, ((p.width || 400) / 2) * 0.85, ((p.height || 300) / 2) * 0.85, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-20, 0); ctx.lineTo(20, 0);
+        ctx.moveTo(0, -20); ctx.lineTo(0, 20);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
+      };
+
+      // ── Performance Profile Tuning ──
+      window.setPerfProfile = function(profile, btn) {
+        currentPerfProfile = profile;
+        document.querySelectorAll('#pane-tuning .filter-chip').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        const smoothing = document.getElementById('sliderSmoothing');
+        if (profile === 'turbo') {
+          if (smoothing) smoothing.value = 30;
+          setElText('hud-status-indicator', '● TURBO 60FPS (LITE)');
+        } else {
+          if (smoothing) smoothing.value = 60;
+          setElText('hud-status-indicator', '● STUDIO DUAL-HAND (FULL)');
+        }
+        if (handsEngine) {
+          const isTurbo = (profile === 'turbo');
+          handsEngine.setOptions({
+            maxNumHands: isTurbo ? 1 : 2,
+            modelComplexity: isTurbo ? 0 : 1,
+            minDetectionConfidence: 0.35,
+            minTrackingConfidence: 0.35
+          });
+        }
+      };
+
+      window.toggleSimMode = function() {
+        if (!isSimRunning) activateSim();
+        else deactivateSim();
+      };
+
+      window.switchHudMode = function(mode) {
+        window.setHudMode(mode);
+      };
+
       // ── Mode Switching ──
       window.setHudMode = function(mode) {
         currentHudMode = mode;
@@ -1955,6 +2187,8 @@
         if (btn) btn.classList.add('active');
 
         // Hide all context bars
+        if (ctxInspectorBar) ctxInspectorBar.style.display = 'none';
+        if (hudInspectorDetailCard) hudInspectorDetailCard.style.display = 'none';
         if (ctxFilterBar) ctxFilterBar.style.display = 'none';
         if (ctxMascotBar) ctxMascotBar.style.display = 'none';
         if (ctxDrumBar) ctxDrumBar.style.display = 'none';
@@ -1967,7 +2201,13 @@
         if (roiAnalysisCard) roiAnalysisCard.style.display = 'none';
 
         // Show active context bar
-        if (mode === 'portal' && ctxFilterBar) ctxFilterBar.style.display = 'flex';
+        if (mode === 'inspector') {
+          if (ctxInspectorBar) ctxInspectorBar.style.display = 'flex';
+          if (hudInspectorDetailCard) hudInspectorDetailCard.style.display = 'flex';
+          if (!inspectorImage) loadSampleImage('dashboard');
+          if (!animLoopId) mainFrameLoop();
+        }
+        else if (mode === 'portal' && ctxFilterBar) ctxFilterBar.style.display = 'flex';
         else if (mode === 'mascot' && ctxMascotBar) ctxMascotBar.style.display = 'flex';
         else if (mode === 'drums' && ctxDrumBar) ctxDrumBar.style.display = 'flex';
         else if (mode === 'airdraw' && ctxAirDrawBar) ctxAirDrawBar.style.display = 'flex';
@@ -1989,6 +2229,659 @@
         const nextMode = STUDIO_MODES[(idx + 1) % STUDIO_MODES.length];
         setHudMode(nextMode);
       };
+
+      // ── Visual UI Inspector Engine & Sample Mockups ──
+      function createSampleCanvas(type) {
+        const off = document.createElement('canvas');
+        off.width = 1280;
+        off.height = 720;
+        const octx = off.getContext('2d');
+
+        octx.fillStyle = '#05070f';
+        octx.fillRect(0, 0, 1280, 720);
+
+        if (type === 'dashboard') {
+          octx.fillStyle = 'rgba(10, 14, 26, 0.9)';
+          octx.fillRect(0, 0, 1280, 56);
+          octx.strokeStyle = 'rgba(255,255,255,0.08)';
+          octx.lineWidth = 1;
+          octx.strokeRect(0, 0, 1280, 56);
+
+          octx.fillStyle = '#fbbf24';
+          octx.font = 'bold 16px Syne, sans-serif';
+          octx.fillText('⚡ ZOTH STUDIO FOUNDRY', 24, 34);
+
+          octx.font = '13px Figtree, sans-serif';
+          octx.fillStyle = '#94a3b8';
+          octx.fillText('Workstations', 260, 34);
+          octx.fillStyle = '#00f0ff';
+          octx.fillText('Agent Composer', 370, 34);
+          octx.fillStyle = '#94a3b8';
+          octx.fillText('Consensus Arena', 490, 34);
+          octx.fillText('Vision Link', 620, 34);
+
+          octx.fillStyle = 'rgba(255,255,255,0.06)';
+          octx.fillRect(760, 12, 280, 32);
+          octx.strokeStyle = 'rgba(255,255,255,0.1)';
+          octx.strokeRect(760, 12, 280, 32);
+          octx.fillStyle = '#64748b';
+          octx.fillText('🔍 Search pantheon agents & AST tools...', 774, 32);
+
+          octx.fillStyle = 'rgba(232, 200, 114, 0.2)';
+          octx.fillRect(1060, 12, 190, 32);
+          octx.strokeStyle = '#e8c872';
+          octx.strokeRect(1060, 12, 190, 32);
+          octx.fillStyle = '#fef08a';
+          octx.font = 'bold 12px IBM Plex Mono, monospace';
+          octx.fillText('● SOVEREIGN OPERATOR', 1076, 32);
+
+          const stats = [
+            { label: 'SOVEREIGN AGENTS', val: '21 ACTIVE', col: '#e8c872', sub: 'Zero Telemetry' },
+            { label: 'AST INVARIANT PASS', val: '100% VALID', col: '#10b981', sub: '0 Violations' },
+            { label: 'SHANNON ENTROPY', val: 'H = 1.48', col: '#00f0ff', sub: 'Bits / Char' },
+            { label: 'GPU PIPELINE', val: '60.0 FPS', col: '#c084fc', sub: 'WebGL 528Hz' }
+          ];
+          stats.forEach((s, idx) => {
+            const cx = 24 + idx * 314;
+            octx.fillStyle = 'rgba(10, 14, 26, 0.8)';
+            octx.fillRect(cx, 76, 300, 96);
+            octx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            octx.strokeRect(cx, 76, 300, 96);
+
+            octx.fillStyle = '#94a3b8';
+            octx.font = 'bold 11px IBM Plex Mono, monospace';
+            octx.fillText(s.label, cx + 16, 102);
+
+            octx.fillStyle = s.col;
+            octx.font = 'bold 22px Syne, sans-serif';
+            octx.fillText(s.val, cx + 16, 134);
+
+            octx.fillStyle = '#64748b';
+            octx.font = '11px Figtree, sans-serif';
+            octx.fillText(s.sub, cx + 16, 156);
+          });
+
+          octx.fillStyle = 'rgba(10, 14, 26, 0.8)';
+          octx.fillRect(24, 192, 780, 360);
+          octx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+          octx.strokeRect(24, 192, 780, 360);
+
+          octx.fillStyle = '#ffffff';
+          octx.font = 'bold 15px Syne, sans-serif';
+          octx.fillText('Multi-Agent DAG Execution Cascade', 44, 226);
+
+          const nodes = [
+            { title: 'Master Azoth Orchestrator', x: 60, y: 260, agent: '@azoth', col: '#e8c872' },
+            { title: 'Antigravity Architect', x: 300, y: 240, agent: '@antigravity', col: '#00f0ff' },
+            { title: 'Grok Packager', x: 300, y: 380, agent: '@grok', col: '#ff007a' },
+            { title: 'Hermes Planner', x: 560, y: 310, agent: '@hermes', col: '#10b981' }
+          ];
+          nodes.forEach(n => {
+            octx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+            octx.fillRect(n.x, n.y, 200, 70);
+            octx.strokeStyle = n.col;
+            octx.lineWidth = 2;
+            octx.strokeRect(n.x, n.y, 200, 70);
+            octx.fillStyle = '#ffffff';
+            octx.font = 'bold 12px Figtree, sans-serif';
+            octx.fillText(n.title, n.x + 12, n.y + 26);
+            octx.fillStyle = n.col;
+            octx.font = '11px IBM Plex Mono, monospace';
+            octx.fillText(n.agent, n.x + 12, n.y + 48);
+          });
+
+          octx.fillStyle = 'rgba(10, 14, 26, 0.8)';
+          octx.fillRect(820, 192, 436, 360);
+          octx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+          octx.strokeRect(820, 192, 436, 360);
+
+          octx.fillStyle = '#ffffff';
+          octx.font = 'bold 15px Syne, sans-serif';
+          octx.fillText('Swarm Consensus Arena', 840, 226);
+
+          const ranks = [
+            { name: 'Azoth (Lead Sovereign)', score: '99.8% AST', col: '#e8c872' },
+            { name: 'Antigravity (Architect)', score: '99.4% AST', col: '#00f0ff' },
+            { name: 'Grok (Packager)', score: '98.9% AST', col: '#ff007a' },
+            { name: 'Hermes (Validator)', score: '98.7% AST', col: '#10b981' }
+          ];
+          ranks.forEach((r, idx) => {
+            const ry = 250 + idx * 64;
+            octx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            octx.fillRect(840, ry, 396, 52);
+            octx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+            octx.strokeRect(840, ry, 396, 52);
+            octx.fillStyle = '#ffffff';
+            octx.font = '13px Figtree, sans-serif';
+            octx.fillText(r.name, 856, ry + 30);
+            octx.fillStyle = r.col;
+            octx.font = 'bold 12px IBM Plex Mono, monospace';
+            octx.fillText(r.score, 1140, ry + 30);
+          });
+
+          octx.fillStyle = 'rgba(10, 14, 26, 0.9)';
+          octx.fillRect(24, 570, 1232, 126);
+          octx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+          octx.strokeRect(24, 570, 1232, 126);
+
+          octx.fillStyle = '#ffffff';
+          octx.font = 'bold 14px Syne, sans-serif';
+          octx.fillText('Workflow Action Triggers & Local Memory Link', 44, 604);
+
+          octx.fillStyle = '#10b981';
+          octx.fillRect(44, 626, 180, 44);
+          octx.fillStyle = '#030306';
+          octx.font = 'bold 13px Figtree, sans-serif';
+          octx.fillText('▶ Run Full Pipeline', 68, 653);
+
+          octx.fillStyle = '#00f0ff';
+          octx.fillRect(240, 626, 180, 44);
+          octx.fillStyle = '#030306';
+          octx.fillText('🔬 Inspect AST Schema', 260, 653);
+
+          octx.fillStyle = 'rgba(255,255,255,0.08)';
+          octx.fillRect(436, 626, 180, 44);
+          octx.strokeStyle = '#e8c872';
+          octx.strokeRect(436, 626, 180, 44);
+          octx.fillStyle = '#e8c872';
+          octx.fillText('💾 Export YAML Spec', 460, 653);
+        } else if (type === 'ecommerce') {
+          octx.fillStyle = 'rgba(10, 14, 26, 0.9)';
+          octx.fillRect(0, 0, 1280, 64);
+          octx.fillStyle = '#fbbf24';
+          octx.font = 'bold 18px Syne, sans-serif';
+          octx.fillText('🛍️ ZOTH NEURAL HARDWARE STORE', 32, 40);
+
+          octx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+          octx.fillRect(100, 100, 1080, 520);
+          octx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
+          octx.strokeRect(100, 100, 1080, 520);
+
+          octx.fillStyle = 'rgba(0, 240, 255, 0.08)';
+          octx.fillRect(140, 140, 420, 440);
+          octx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
+          octx.strokeRect(140, 140, 420, 440);
+          octx.fillStyle = '#00f0ff';
+          octx.font = 'bold 36px Syne, sans-serif';
+          octx.fillText('⚡ NPU-70B', 240, 360);
+
+          octx.fillStyle = '#ffffff';
+          octx.font = 'bold 28px Syne, sans-serif';
+          octx.fillText('Hermetic Sovereign Workstation DevKit', 600, 180);
+
+          octx.fillStyle = '#fbbf24';
+          octx.font = '16px IBM Plex Mono, monospace';
+          octx.fillText('★★★★★  5.0 (1,248 Verified Engineers)', 600, 216);
+
+          octx.fillStyle = '#10b981';
+          octx.font = 'bold 32px IBM Plex Mono, monospace';
+          octx.fillText('$2,499.00 USD', 600, 270);
+
+          octx.fillStyle = '#94a3b8';
+          octx.font = '14px Figtree, sans-serif';
+          octx.fillText('Dual Apple M-Ultra / Linux RT-Kernel Neural Matrix Accelerator.', 600, 310);
+          octx.fillText('Guaranteed zero telemetry, offline Argon2id hardware key vault.', 600, 334);
+
+          octx.fillStyle = '#10b981';
+          octx.fillRect(600, 400, 240, 56);
+          octx.fillStyle = '#030306';
+          octx.font = 'bold 16px Figtree, sans-serif';
+          octx.fillText('🛒 Buy DevKit Now', 648, 435);
+
+          octx.fillStyle = 'rgba(255,255,255,0.06)';
+          octx.fillRect(860, 400, 200, 56);
+          octx.strokeStyle = '#e8c872';
+          octx.strokeRect(860, 400, 200, 56);
+          octx.fillStyle = '#e8c872';
+          octx.fillText('📖 View Specs', 910, 435);
+        } else {
+          octx.fillStyle = '#030408';
+          octx.fillRect(0, 0, 1280, 720);
+
+          octx.fillStyle = '#0f172a';
+          octx.fillRect(40, 40, 1200, 40);
+          octx.fillStyle = '#ef4444'; octx.beginPath(); octx.arc(64, 60, 6, 0, Math.PI*2); octx.fill();
+          octx.fillStyle = '#fbbf24'; octx.beginPath(); octx.arc(84, 60, 6, 0, Math.PI*2); octx.fill();
+          octx.fillStyle = '#10b981'; octx.beginPath(); octx.arc(104, 60, 6, 0, Math.PI*2); octx.fill();
+
+          octx.fillStyle = '#94a3b8';
+          octx.font = '13px IBM Plex Mono, monospace';
+          octx.fillText('zoth-agent-runner@sovereign-node: ~/core-app (hermes-3-70b)', 130, 65);
+
+          octx.fillStyle = '#05070f';
+          octx.fillRect(40, 80, 1200, 600);
+          octx.strokeStyle = 'rgba(255,255,255,0.08)';
+          octx.strokeRect(40, 80, 1200, 600);
+
+          octx.fillStyle = '#10b981';
+          octx.font = '14px IBM Plex Mono, monospace';
+          octx.fillText('>>> agy run-pipeline --spec=dag_orchestrator.yaml --verify-ast --port=8484', 70, 130);
+
+          octx.fillStyle = '#00f0ff';
+          octx.fillText('⚡ [DAG_ORCHESTRATOR] Initializing 21-Agent sovereign pantheon...', 70, 170);
+          octx.fillText('✔ [HERMES_GATE] AST invariant verified. Zero telemetry detected.', 70, 200);
+          octx.fillText('✔ [AZOTH_CORE] Memory daemon synchronized on 127.0.0.1:8788.', 70, 230);
+
+          octx.fillStyle = '#fbbf24';
+          octx.fillText('<ast_payload>', 70, 280);
+          octx.fillStyle = '#ffffff';
+          octx.fillText('  "pipeline_status": "ONLINE",', 70, 310);
+          octx.fillText('  "invariants_checked": 4,', 70, 340);
+          octx.fillText('  "shannon_entropy": 1.48,', 70, 370);
+          octx.fillText('  "active_nodes": ["azoth", "antigravity", "grok", "hermes"]', 70, 400);
+          octx.fillStyle = '#fbbf24';
+          octx.fillText('</ast_payload>', 70, 430);
+
+          octx.fillStyle = '#10b981';
+          octx.fillText('🟢 Workstation standing by. All invariants 100% compliant.', 70, 480);
+        }
+
+        return off;
+      }
+
+      function generateBoundingBoxesForType(type, imgW, imgH) {
+        if (type === 'dashboard') {
+          return [
+            { id: 'b1', class: 'nav', label: 'Top Navigation Header', confidence: 0.99, boxNorm: [0, 0, 77, 1000], color: '#00f0ff' },
+            { id: 'b2', class: 'input', label: 'Search Input', confidence: 0.96, boxNorm: [16, 593, 61, 812], color: '#fbbf24' },
+            { id: 'b3', class: 'badge', label: 'Operator Badge', confidence: 0.98, boxNorm: [16, 828, 61, 976], color: '#e8c872' },
+            { id: 'b4', class: 'badge', label: 'Agents Metric Card', confidence: 0.97, boxNorm: [105, 18, 238, 253], color: '#e8c872' },
+            { id: 'b5', class: 'badge', label: 'AST Pass Metric Card', confidence: 0.99, boxNorm: [105, 264, 238, 498], color: '#10b981' },
+            { id: 'b6', class: 'badge', label: 'Entropy Metric Card', confidence: 0.98, boxNorm: [105, 509, 238, 743], color: '#00f0ff' },
+            { id: 'b7', class: 'badge', label: 'GPU Pipeline Metric', confidence: 0.96, boxNorm: [105, 754, 238, 988], color: '#c084fc' },
+            { id: 'b8', class: 'modal', label: 'DAG Execution Graph Widget', confidence: 0.98, boxNorm: [266, 18, 766, 628], color: '#00f0ff' },
+            { id: 'b9', class: 'modal', label: 'Consensus Arena Widget', confidence: 0.97, boxNorm: [266, 640, 766, 981], color: '#fbbf24' },
+            { id: 'b10', class: 'button', label: 'Run Full Pipeline CTA', confidence: 0.99, boxNorm: [869, 34, 930, 175], color: '#10b981' },
+            { id: 'b11', class: 'button', label: 'Inspect AST Button', confidence: 0.98, boxNorm: [869, 187, 930, 328], color: '#00f0ff' },
+            { id: 'b12', class: 'button', label: 'Export YAML Spec Button', confidence: 0.97, boxNorm: [869, 340, 930, 481], color: '#e8c872' }
+          ];
+        } else if (type === 'ecommerce') {
+          return [
+            { id: 'e1', class: 'header', label: 'Store Header', confidence: 0.99, boxNorm: [0, 0, 88, 1000], color: '#00f0ff' },
+            { id: 'e2', class: 'modal', label: 'Product Hero Card', confidence: 0.98, boxNorm: [138, 78, 861, 921], color: '#fbbf24' },
+            { id: 'e3', class: 'modal', label: 'Product Image Viewport', confidence: 0.99, boxNorm: [194, 109, 805, 437], color: '#00f0ff' },
+            { id: 'e4', class: 'text', label: 'Product Title Heading', confidence: 0.98, boxNorm: [208, 468, 263, 859], color: '#ffffff' },
+            { id: 'e5', class: 'badge', label: 'Price Badge ($2,499.00)', confidence: 0.99, boxNorm: [333, 468, 402, 687], color: '#10b981' },
+            { id: 'e6', class: 'button', label: 'Buy DevKit Primary CTA', confidence: 0.99, boxNorm: [555, 468, 633, 656], color: '#10b981' },
+            { id: 'e7', class: 'button', label: 'View Specs Button', confidence: 0.97, boxNorm: [555, 671, 633, 828], color: '#e8c872' }
+          ];
+        } else {
+          return [
+            { id: 't1', class: 'header', label: 'Terminal Chrome Bar', confidence: 0.99, boxNorm: [55, 31, 111, 968], color: '#00f0ff' },
+            { id: 't2', class: 'modal', label: 'Terminal Execution Stage', confidence: 0.98, boxNorm: [111, 31, 944, 968], color: '#10b981' },
+            { id: 't3', class: 'input', label: 'Command Prompt String', confidence: 0.99, boxNorm: [152, 54, 194, 859], color: '#00f0ff' },
+            { id: 't4', class: 'text', label: 'AST Payload Block', confidence: 0.99, boxNorm: [361, 54, 625, 781], color: '#fbbf24' }
+          ];
+        }
+      }
+
+      function computeBoxesPixelAndTokens(boxes, imgW, imgH) {
+        return boxes.map(b => {
+          const ymin = (b.boxNorm[0] / 1000) * imgH;
+          const xmin = (b.boxNorm[1] / 1000) * imgW;
+          const ymax = (b.boxNorm[2] / 1000) * imgH;
+          const xmax = (b.boxNorm[3] / 1000) * imgW;
+          const w = xmax - xmin;
+          const h = ymax - ymin;
+          const vitTokens = Math.ceil(w / 14) * Math.ceil(h / 14);
+          const geminiTiles = Math.ceil(w / 768) * Math.ceil(h / 768);
+          return {
+            ...b,
+            boxPx: { x: xmin, y: ymin, w, h },
+            vitTokens,
+            geminiTiles
+          };
+        });
+      }
+
+      window.loadSampleImage = function(key, btn) {
+        window.currentSampleType = key;
+        document.querySelectorAll('.ctx-inspector-bar .filter-chip').forEach(b => {
+          if (b.id && b.id.startsWith('btn-sample-')) b.classList.remove('active');
+        });
+        if (btn) btn.classList.add('active');
+        else {
+          const b = document.getElementById(`btn-sample-${key}`);
+          if (b) b.classList.add('active');
+        }
+
+        inspectorImage = createSampleCanvas(key);
+        const rawBoxes = generateBoundingBoxesForType(key, inspectorImage.width, inspectorImage.height);
+        detectedBoundingBoxes = computeBoxesPixelAndTokens(rawBoxes, inspectorImage.width, inspectorImage.height);
+        window.detectedBoundingBoxes = detectedBoundingBoxes;
+        inspectorZoom = 1.0;
+        inspectorPan = { x: 0, y: 0 };
+        if (zoomLevelBadge) zoomLevelBadge.textContent = '100%';
+        hoveredDetectedBox = null;
+        if (detectedBoundingBoxes.length > 0) {
+          const first = detectedBoundingBoxes[0];
+          setElText('insp-hit-class', `${first.label}`);
+          setElText('insp-hit-conf', `${(first.confidence * 100).toFixed(1)}%`);
+          setElText('insp-hit-norm', `[${first.boxNorm.join(', ')}]`);
+          setElText('insp-hit-pixel', `x: ${Math.round(first.boxPx.x)}, y: ${Math.round(first.boxPx.y)}, w: ${Math.round(first.boxPx.w)}, h: ${Math.round(first.boxPx.h)}`);
+          setElText('insp-hit-tokens', `${first.vitTokens} ViT Patches (14x14) · ${first.geminiTiles} Tile (${first.geminiTiles * 258} tok)`);
+        }
+        logEvent(`Loaded Visual UI Sample: [${key.toUpperCase()}] (${detectedBoundingBoxes.length} Bounding Boxes)`, "#00f0ff");
+      };
+
+      window.handleImageUpload = function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        loadImageFromFile(file);
+      };
+
+      function loadImageFromFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const img = new Image();
+          img.onload = function() {
+            inspectorImage = img;
+            const rawBoxes = [
+              { id: 'c1', class: 'header', label: 'Header Region', confidence: 0.98, boxNorm: [0, 0, 120, 1000], color: '#00f0ff' },
+              { id: 'c2', class: 'modal', label: 'Primary Content View', confidence: 0.97, boxNorm: [140, 50, 850, 950], color: '#fbbf24' },
+              { id: 'c3', class: 'button', label: 'Action CTA', confidence: 0.99, boxNorm: [880, 350, 960, 650], color: '#10b981' }
+            ];
+            detectedBoundingBoxes = computeBoxesPixelAndTokens(rawBoxes, img.width, img.height);
+            inspectorZoom = 1.0;
+            inspectorPan = { x: 0, y: 0 };
+            if (zoomLevelBadge) zoomLevelBadge.textContent = '100%';
+            logEvent(`Uploaded Custom UI Screenshot: ${file.name} (${img.width}x${img.height})`, "#10b981");
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      window.adjustZoom = function(delta) {
+        inspectorZoom = Math.max(0.25, Math.min(4.0, inspectorZoom + delta));
+        if (zoomLevelBadge) zoomLevelBadge.textContent = `${Math.round(inspectorZoom * 100)}%`;
+      };
+
+      window.resetZoom = function() {
+        inspectorZoom = 1.0;
+        inspectorPan = { x: 0, y: 0 };
+        if (zoomLevelBadge) zoomLevelBadge.textContent = '100%';
+      };
+
+      window.toggleGrid8pt = function(btn) {
+        showGrid8pt = !showGrid8pt;
+        if (btn) {
+          btn.textContent = showGrid8pt ? '📐 8pt Grid: ON' : '📐 8pt Grid: OFF';
+          btn.classList.toggle('active', showGrid8pt);
+        }
+      };
+
+      window.toggleOcrBoxes = function(btn) {
+        showOcrBoxes = !showOcrBoxes;
+        if (btn) {
+          btn.textContent = showOcrBoxes ? '📝 OCR Boxes: ON' : '📝 OCR Boxes: OFF';
+          btn.classList.toggle('active', showOcrBoxes);
+        }
+      };
+
+      window.toggleTokenHeatmap = function(btn) {
+        showTokenHeatmap = !showTokenHeatmap;
+        if (btn) {
+          btn.textContent = showTokenHeatmap ? '🔥 ViT Heatmap: ON' : '🔥 ViT Heatmap: OFF';
+          btn.classList.toggle('active', showTokenHeatmap);
+        }
+      };
+
+      window.setClassFilter = function(cls, btn) {
+        activeClassFilter = cls;
+        document.querySelectorAll('#ctxInspectorBar .filter-chip').forEach(b => {
+          const txt = b.textContent.toLowerCase();
+          if (['all', 'button', 'input', 'header', 'modal', 'nav', 'text'].includes(txt)) {
+            b.classList.remove('active');
+          }
+        });
+        if (btn) btn.classList.add('active');
+        hoveredDetectedBox = null;
+      };
+
+      function screenToImageCoords(screenX, screenY) {
+        if (!inspectorImage) return null;
+        const rect = canvas.getBoundingClientRect();
+        const canvasX = ((screenX - rect.left) / rect.width) * canvas.width;
+        const canvasY = ((screenY - rect.top) / rect.height) * canvas.height;
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const unscaledX = (canvasX - cx - inspectorPan.x) / inspectorZoom + cx;
+        const unscaledY = (canvasY - cy - inspectorPan.y) / inspectorZoom + cy;
+
+        const imgX = (canvas.width - inspectorImage.width) / 2;
+        const imgY = (canvas.height - inspectorImage.height) / 2;
+
+        const imageX = unscaledX - imgX;
+        const imageY = unscaledY - imgY;
+
+        return {
+          canvasX, canvasY,
+          imageX, imageY,
+          inImage: (imageX >= 0 && imageX <= inspectorImage.width && imageY >= 0 && imageY <= inspectorImage.height)
+        };
+      }
+
+      function renderVisualInspector() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawCyberGrid();
+
+        if (!inspectorImage) return;
+
+        ctx.save();
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        ctx.translate(cx + inspectorPan.x, cy + inspectorPan.y);
+        ctx.scale(inspectorZoom, inspectorZoom);
+        ctx.translate(-cx, -cy);
+
+        const imgX = (canvas.width - inspectorImage.width) / 2;
+        const imgY = (canvas.height - inspectorImage.height) / 2;
+        ctx.drawImage(inspectorImage, imgX, imgY);
+
+        // 1. 8pt Grid Overlay
+        if (showGrid8pt) {
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.15)';
+          ctx.lineWidth = 1;
+          const step = 8;
+          for (let x = imgX; x <= imgX + inspectorImage.width; x += step) {
+            ctx.beginPath();
+            ctx.moveTo(x, imgY);
+            ctx.lineTo(x, imgY + inspectorImage.height);
+            ctx.stroke();
+          }
+          for (let y = imgY; y <= imgY + inspectorImage.height; y += step) {
+            ctx.beginPath();
+            ctx.moveTo(imgX, y);
+            ctx.lineTo(imgX + inspectorImage.width, y);
+            ctx.stroke();
+          }
+        }
+
+        // 2. ViT Token Density Heatmap
+        if (showTokenHeatmap) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          detectedBoundingBoxes.forEach(b => {
+            const bx = imgX + b.boxPx.x + b.boxPx.w / 2;
+            const by = imgY + b.boxPx.y + b.boxPx.h / 2;
+            const radius = Math.max(40, Math.max(b.boxPx.w, b.boxPx.h) * 0.75);
+            const grad = ctx.createRadialGradient(bx, by, 0, bx, by, radius);
+            grad.addColorStop(0, 'rgba(255, 0, 122, 0.45)');
+            grad.addColorStop(0.5, 'rgba(232, 200, 114, 0.25)');
+            grad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(bx, by, radius, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.restore();
+        }
+
+        // 3. OCR Bounding Boxes
+        if (showOcrBoxes) {
+          const visibleBoxes = detectedBoundingBoxes.filter(b => activeClassFilter === 'all' || b.class === activeClassFilter);
+          visibleBoxes.forEach(b => {
+            const bx = imgX + b.boxPx.x;
+            const by = imgY + b.boxPx.y;
+            const bw = b.boxPx.w;
+            const bh = b.boxPx.h;
+            const isHovered = (hoveredDetectedBox && hoveredDetectedBox.id === b.id);
+
+            ctx.save();
+            ctx.fillStyle = isHovered ? 'rgba(0, 240, 255, 0.22)' : 'rgba(0, 240, 255, 0.06)';
+            ctx.fillRect(bx, by, bw, bh);
+
+            ctx.strokeStyle = isHovered ? '#e8c872' : (b.color || '#00f0ff');
+            ctx.lineWidth = isHovered ? 2.5 : 1.5;
+            if (isHovered) {
+              ctx.shadowColor = '#e8c872';
+              ctx.shadowBlur = 12;
+            }
+            ctx.strokeRect(bx, by, bw, bh);
+
+            // Corner brackets
+            const cornerLen = Math.min(10, Math.min(bw, bh) / 3);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = isHovered ? '#ffffff' : (b.color || '#00f0ff');
+            ctx.beginPath(); ctx.moveTo(bx, by + cornerLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cornerLen, by); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx + bw - cornerLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cornerLen); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx, by + bh - cornerLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cornerLen, by + bh); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx + bw - cornerLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + cornerLen); ctx.stroke();
+
+            // Label tag
+            const tagText = `${b.label} (${(b.confidence * 100).toFixed(1)}%)`;
+            ctx.font = 'bold 11px IBM Plex Mono, monospace';
+            const textMetrics = ctx.measureText(tagText);
+            const tagW = textMetrics.width + 10;
+            const tagH = 16;
+            const tagY = Math.max(imgY, by - tagH - 2);
+
+            ctx.fillStyle = isHovered ? '#e8c872' : 'rgba(4, 6, 14, 0.9)';
+            ctx.fillRect(bx, tagY, tagW, tagH);
+            ctx.strokeStyle = isHovered ? '#ffffff' : (b.color || '#00f0ff');
+            ctx.lineWidth = 1;
+            ctx.strokeRect(bx, tagY, tagW, tagH);
+
+            ctx.fillStyle = isHovered ? '#030306' : '#ffffff';
+            ctx.fillText(tagText, bx + 5, tagY + 12);
+
+            ctx.restore();
+          });
+        }
+
+        ctx.restore();
+      }
+
+      // Drag & Drop
+      if (viewportWrap) {
+        viewportWrap.addEventListener('dragenter', (e) => {
+          e.preventDefault();
+          if (dropzoneOverlay) dropzoneOverlay.classList.add('drag-active');
+        });
+        viewportWrap.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          if (dropzoneOverlay) dropzoneOverlay.classList.add('drag-active');
+        });
+        viewportWrap.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          if (dropzoneOverlay) dropzoneOverlay.classList.remove('drag-active');
+        });
+        viewportWrap.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (dropzoneOverlay) dropzoneOverlay.classList.remove('drag-active');
+          const file = e.dataTransfer.files && e.dataTransfer.files[0];
+          if (file && file.type.startsWith('image/')) {
+            setHudMode('inspector');
+            loadImageFromFile(file);
+          }
+        });
+      }
+
+      // Clipboard Paste
+      window.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData))?.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile();
+            if (file) {
+              setHudMode('inspector');
+              loadImageFromFile(file);
+              logEvent("Pasted screenshot from clipboard into Vision Inspector.", "#00f0ff");
+              break;
+            }
+          }
+        }
+      });
+
+      // Canvas Mouse Hit Testing & Pan/Zoom
+      canvas.addEventListener('mousemove', (e) => {
+        if (currentHudMode !== 'inspector') return;
+        const coords = screenToImageCoords(e.clientX, e.clientY);
+        if (!coords) return;
+
+        if (isInspectorDragging) {
+          inspectorPan.x += (e.clientX - inspectorDragStart.x);
+          inspectorPan.y += (e.clientY - inspectorDragStart.y);
+          inspectorDragStart = { x: e.clientX, y: e.clientY };
+          return;
+        }
+
+        if (coords.inImage) {
+          const visibleBoxes = detectedBoundingBoxes.filter(b => activeClassFilter === 'all' || b.class === activeClassFilter);
+          let matchedBox = null;
+          for (let i = visibleBoxes.length - 1; i >= 0; i--) {
+            const b = visibleBoxes[i];
+            if (coords.imageX >= b.boxPx.x && coords.imageX <= b.boxPx.x + b.boxPx.w &&
+                coords.imageY >= b.boxPx.y && coords.imageY <= b.boxPx.y + b.boxPx.h) {
+              matchedBox = b;
+              break;
+            }
+          }
+
+          hoveredDetectedBox = matchedBox;
+          if (matchedBox) {
+            if (hudInspectorDetailCard) hudInspectorDetailCard.style.display = 'flex';
+            setElText('insp-hit-class', `${matchedBox.label}`);
+            setElText('insp-hit-conf', `${(matchedBox.confidence * 100).toFixed(1)}%`);
+            setElText('insp-hit-norm', `[${matchedBox.boxNorm.join(', ')}]`);
+            setElText('insp-hit-pixel', `x: ${Math.round(matchedBox.boxPx.x)}, y: ${Math.round(matchedBox.boxPx.y)}, w: ${Math.round(matchedBox.boxPx.w)}, h: ${Math.round(matchedBox.boxPx.h)}`);
+            setElText('insp-hit-tokens', `${matchedBox.vitTokens} ViT Patches (14x14) · ${matchedBox.geminiTiles} Tile (${matchedBox.geminiTiles * 258} tok)`);
+          }
+
+          try {
+            const pixelData = ctx.getImageData(Math.round(coords.canvasX), Math.round(coords.canvasY), 1, 1).data;
+            const hex = '#' + ((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase();
+            const eyedropperSwatch = document.getElementById('eyedropper-swatch');
+            const eyedropperHex = document.getElementById('eyedropper-hex');
+            if (eyedropperSwatch) eyedropperSwatch.style.backgroundColor = hex;
+            if (eyedropperHex) eyedropperHex.textContent = hex;
+          } catch(err) {}
+        } else {
+          hoveredDetectedBox = null;
+        }
+      });
+
+      canvas.addEventListener('mousedown', (e) => {
+        if (currentHudMode !== 'inspector') return;
+        if (e.button === 0 || e.button === 1) {
+          isInspectorDragging = true;
+          inspectorDragStart = { x: e.clientX, y: e.clientY };
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        isInspectorDragging = false;
+      });
+
+      canvas.addEventListener('wheel', (e) => {
+        if (currentHudMode !== 'inspector') return;
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.15 : -0.15;
+        adjustZoom(delta);
+      }, { passive: false });
 
       // ── Sidebar Tabs ──
       window.setSidebarTab = function(tabName, btn) {
@@ -2870,33 +3763,36 @@
       }
       connectLiveSwarmStream();
 
-      // Poll Daemon Health Status with GET (no 501 HEAD error)
+      // Poll Daemon Health Status with GET (resilient check)
       async function pollDaemonConstellation() {
         const currentHost = window.location.hostname || '127.0.0.1';
         const nodes = [
-          { name: 'HUB (:8088)', url: `http://${currentHost}:8088/`, elId: 'node-hub' },
-          { name: 'DECK (:8484)', url: `http://${currentHost}:8484/`, elId: 'node-deck' },
-          { name: 'SECURE (:8443)', url: `https://${currentHost}:8443/`, elId: 'node-sig' },
-          { name: 'AI CORE (:11434)', url: `http://${currentHost}:11434/api/version`, elId: 'node-ai' }
+          { name: 'HUB (:8088)', url: `${window.location.origin}/`, elId: 'node-hub', probe: true },
+          { name: 'MEMORY (:8788)', url: `http://${currentHost}:8788/health`, elId: 'node-deck', probe: true },
+          { name: 'SECURE (:8443)', url: `https://${currentHost}:8443/`, elId: 'node-sig', probe: false },
+          { name: 'AI CORE (:11434)', url: `http://${currentHost}:11434/api/version`, elId: 'node-ai', probe: false }
         ];
 
         for (const n of nodes) {
+          const el = document.getElementById(n.elId);
+          if (!n.probe) {
+            if (el) el.innerHTML = `<span>${n.name}</span> <strong style="color:var(--gold);">STANDBY</strong>`;
+            continue;
+          }
           try {
             const start = performance.now();
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const timeoutId = setTimeout(() => controller.abort(), 1200);
             await fetch(n.url, { method: 'GET', mode: 'no-cors', signal: controller.signal });
             clearTimeout(timeoutId);
             const lat = Math.round(performance.now() - start);
-            const el = document.getElementById(n.elId);
             if (el) el.innerHTML = `<span>${n.name}</span> <strong style="color:var(--emerald);">${lat}ms OK</strong>`;
           } catch(e) {
-            const el = document.getElementById(n.elId);
             if (el) el.innerHTML = `<span>${n.name}</span> <strong style="color:var(--gold);">STANDBY</strong>`;
           }
         }
       }
-      setInterval(pollDaemonConstellation, 10000);
+      setInterval(pollDaemonConstellation, 15000);
       pollDaemonConstellation();
 
       // ── PINCH-GRAB-AND-THROW 3D PHYSICS ENGINE ──
@@ -3110,7 +4006,6 @@
       let latestRawLandmarks = [];
       let lastLandmarkRecvTime = 0;
       let isMediaPipeBusy = false;
-      let currentPerfProfile = 'turbo'; // 'turbo' (1-hand lite) or 'studio' (2-hand)
 
       const sliderSmoothing = document.getElementById('sliderSmoothing');
 
@@ -3308,7 +4203,10 @@
 
       // ── HIGH-PERFORMANCE 60/120 FPS ASYNC RENDER LOOP ──
       function mainFrameLoop() {
-        if (!isCamRunning && !isSimRunning) return;
+        if (!isCamRunning && !isSimRunning && currentHudMode !== 'inspector') {
+          animLoopId = null;
+          return;
+        }
 
         frameCount++;
         const now = performance.now();
@@ -3318,7 +4216,9 @@
           lastFpsTime = now;
         }
 
-        if (isCamRunning && video.readyState >= 2) {
+        if (currentHudMode === 'inspector') {
+          renderVisualInspector();
+        } else if (isCamRunning && video.readyState >= 2) {
           ctx.save();
           ctx.scale(-1, 1);
 
@@ -3519,8 +4419,9 @@
           statusIndicator.textContent = '● SOLFEGGIO 528HZ';
           statusIndicator.style.color = 'var(--gold)';
         }
-        if (!isSimRunning) {
+        if (!isSimRunning && currentHudMode !== 'inspector') {
           if (animLoopId) cancelAnimationFrame(animLoopId);
+          animLoopId = null;
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           setElText('points-val', "0 ATTUNED");
         }
@@ -3585,9 +4486,14 @@
           statusIndicator.style.color = 'var(--gold)';
         }
         if (laserCursor) laserCursor.style.display = 'none';
-        if (!animLoopId) cancelAnimationFrame(animLoopId);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        setElText('points-val', "0 ATTUNED");
+        if (!isCamRunning && currentHudMode !== 'inspector') {
+          if (animLoopId) {
+            cancelAnimationFrame(animLoopId);
+            animLoopId = null;
+          }
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          setElText('points-val', "0 ATTUNED");
+        }
       }
 
       function logEvent(msg, color="#e8c872") {
@@ -3661,14 +4567,18 @@
           if (typeof toggleSimMode === 'function') toggleSimMode();
         }
 
-        // 2. '1', '2', '3', '4' => Switch Vision HUD Modes
-        if (!isInput && e.key >= '1' && e.key <= '4') {
-          const modes = ['sacred', 'spatial', 'airdraw', 'portal'];
-          const idx = parseInt(e.key, 10) - 1;
+        // 2. '1', '2', '3', '4', '0' => Switch Vision HUD Modes
+        if (!isInput && e.key >= '0' && e.key <= '9') {
+          const modes = ['inspector', 'sacred', 'spatial', 'airdraw', 'portal', 'mascot', 'drums', 'spawner', 'ruler', 'telemetry'];
+          const idx = parseInt(e.key, 10);
           if (modes[idx] && typeof switchHudMode === 'function') {
             e.preventDefault();
             switchHudMode(modes[idx]);
           }
+        }
+        if (!isInput && (e.key === 'i' || e.key === 'I')) {
+          e.preventDefault();
+          if (typeof switchHudMode === 'function') switchHudMode('inspector');
         }
 
         // 3. 'L' or 'l' => Download Vision Logs
@@ -3679,6 +4589,13 @@
       });
 
       drawCyberGrid();
+      // Initialize default mode to Multimodal Visual Inspector
+      if (typeof setHudMode === 'function') {
+        setHudMode('inspector');
+      } else {
+        loadSampleImage('dashboard');
+        if (!animLoopId) mainFrameLoop();
+      }
     })();
   </script>
 <script defer="" src="/assets/zoth-tip.js"></script>

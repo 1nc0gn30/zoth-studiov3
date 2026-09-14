@@ -669,6 +669,7 @@
 }
   </script>
   <link href="/assets/zoth-theme.css?v=11" rel="stylesheet"/>
+  <link href="/assets/zoth-agent-avatars.css" rel="stylesheet"/>
   <link href="/assets/zoth-tailwind-magic.css" rel="stylesheet"/>
   <script src="/assets/zoth-theme.js?v=11"></script>
   <link href="/assets/zoth-nav.css?v=11" rel="stylesheet"/>
@@ -755,7 +756,7 @@
 </head>
 <body class="edge-page" data-guide="Isolate handlers run locally.|Low latency V8 engine.|Watch the live 60 FPS demo below." data-kicker="Edge Forge · Preview" data-lede="Build and simulate ultra-low latency V8 isolate handlers with zero cloud lag. Watch the 60 FPS live demo below or install Zoth Studio to run it on your machine." data-title="Edge Function Forge &amp; V8 Studio">
 <a class="skip-to-content" href="#main-content">Skip to content</a>
-                                            <header class="bar" id="topbar" role="banner">
+                                                <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -995,6 +996,8 @@
 
     
 
+    
+
 <main id="main-content" role="main">
 <section aria-label="Edge Forge" class="edge-poster">
 <div class="edge-poster-copy">
@@ -1007,7 +1010,7 @@
 </div>
 </div>
 <div class="edge-poster-visual">
-<img alt="Master Azoth in a white and gold mask with purple eyes" class="edge-poster-azoth" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
+<img alt="Master Azoth in a white and gold mask with purple eyes" class="edge-poster-azoth avatar-live-azoth" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
 <span class="edge-poster-credit">Azoth · Operator</span>
 </div>
 </section>
@@ -1033,9 +1036,17 @@
 <!-- Left: Code Editor & Execution -->
 <section class="forge-card forge-panel mobile-active" id="pane-forge-editor">
 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-<div style="display:flex; align-items:center; gap:8px;">
+<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
 <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Template Library</span>
 <span class="chip" style="font-size:0.65rem; background:rgba(0,240,255,0.1); border-color:var(--edge-cyan); color:var(--edge-cyan);">V8 Engine 2026</span>
+<span class="agent-chip" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,240,255,0.08); border:1px solid rgba(0,240,255,0.25); border-radius:999px; padding:3px 10px;">
+<img alt="Master Azoth" class="avatar-live-azoth" height="18" src="/assets/mascot/azoth-bust.jpg" style="border-radius:50%; object-fit:cover;" width="18"/>
+<strong style="color:var(--edge-cyan); font-family:var(--font-mono); font-size:0.72rem;">@Azoth Core</strong>
+</span>
+<span class="agent-chip" style="display:inline-flex; align-items:center; gap:6px; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:999px; padding:3px 10px;">
+<img alt="Kai Sentinel" class="avatar-live-kai" height="18" src="/assets/mascot/azoth-solon.jpg" style="border-radius:50%; object-fit:cover;" width="18"/>
+<strong style="color:var(--edge-emerald); font-family:var(--font-mono); font-size:0.72rem;">@Kai Bytecode</strong>
+</span>
 </div>
 <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--edge-emerald);">● Zero-Cloud Isolate Sandbox Active</span>
 </div>
@@ -1070,7 +1081,7 @@
 <option value="PUT">PUT</option>
 <option value="DELETE">DELETE</option>
 </select>
-<input id="req-path" placeholder="/path/to/resource" style="flex:1; min-height:38px; min-width:200px;" type="text" value="/api/v1/auth/verify?cluster=IAD1"/>
+<input id="req-path" placeholder="/path/to/resource" style="flex:1 1 180px; min-height:38px; min-width:0; width:100%;" type="text" value="/api/v1/auth/verify?cluster=IAD1"/>
 </div>
 <div>
 <textarea id="req-body" placeholder='{ "message": "hello edge", "client_id": "zoth_987" }' rows="2" style="min-height:55px; font-size:0.75rem;"></textarea>
@@ -1152,7 +1163,7 @@
 </div>
 </div>
 </main>
-                                    <footer class="site" role="contentinfo">
+                                        <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -1319,51 +1330,67 @@
 
       function loadTemplate(key) {
         document.querySelectorAll('.tpl-btn').forEach(b => b.classList.remove('active'));
-        const activeBtn = Array.from(document.querySelectorAll('.tpl-btn')).find(b => b.getAttribute('onclick').includes(key));
+        const activeBtn = Array.from(document.querySelectorAll('.tpl-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(key));
         if (activeBtn) activeBtn.classList.add('active');
 
-        document.getElementById('edge-code-area').value = TEMPLATES[key] || TEMPLATES.ratelimit;
-        updateCharCount();
+        const codeArea = document.getElementById('edge-code-area');
+        if (codeArea) {
+          codeArea.value = TEMPLATES[key] || TEMPLATES.ratelimit;
+          updateCharCount();
+        }
       }
 
       function updateCharCount() {
-        const text = document.getElementById('edge-code-area').value;
+        const codeArea = document.getElementById('edge-code-area');
+        const countEl = document.getElementById('editor-char-count');
+        if (!codeArea || !countEl) return;
+        const text = codeArea.value || '';
         const lines = text.split('\n').length;
-        document.getElementById('editor-char-count').textContent = `${text.length} chars · ${lines} lines`;
+        countEl.textContent = `${text.length} chars · ${lines} lines`;
       }
 
       function deployToEdge() {
         const msg = document.getElementById('deploy-msg');
+        if (!msg) return;
         msg.textContent = 'Compiling V8 bytecode across 8 edge nodes...';
         setTimeout(() => {
           msg.textContent = '✓ Deployed to 8 Global Edge Clusters in 48ms!';
-          setTimeout(() => { msg.textContent = ''; }, 3500);
+          setTimeout(() => { if (msg) msg.textContent = ''; }, 3500);
         }, 400);
       }
 
       function runDryRunTest() {
         const log = document.getElementById('test-output-log');
         const badge = document.getElementById('test-status-badge');
-        const method = document.getElementById('req-method').value;
-        const path = document.getElementById('req-path').value;
+        const method = (document.getElementById('req-method') && document.getElementById('req-method').value) || 'POST';
+        const path = (document.getElementById('req-path') && document.getElementById('req-path').value) || '/api/v1/auth/verify?cluster=IAD1';
         
-        badge.textContent = 'Executing V8 Isolate...';
-        badge.style.color = 'var(--edge-gold)';
+        if (badge) {
+          badge.textContent = 'Executing V8 Isolate...';
+          badge.style.color = 'var(--edge-gold)';
+        }
 
         const start = performance.now();
         setTimeout(() => {
           const elapsed = (Math.random() * 0.8 + 0.9).toFixed(2);
           const dnsTime = (Math.random() * 0.2 + 0.1).toFixed(2);
           const tlsTime = (Math.random() * 0.3 + 0.2).toFixed(2);
-          const v8Time = (elapsed - dnsTime - tlsTime).toFixed(2);
+          const v8Time = Math.max(0.1, (elapsed - dnsTime - tlsTime)).toFixed(2);
 
-          document.getElementById('waterfall-ttfb').textContent = elapsed + 'ms';
-          document.getElementById('wf-dns-val').textContent = dnsTime + 'ms';
-          document.getElementById('wf-tls-val').textContent = tlsTime + 'ms';
-          document.getElementById('wf-v8-val').textContent = v8Time + 'ms';
+          const ttfbEl = document.getElementById('waterfall-ttfb');
+          const dnsEl = document.getElementById('wf-dns-val');
+          const tlsEl = document.getElementById('wf-tls-val');
+          const v8El = document.getElementById('wf-v8-val');
 
-          badge.textContent = `HTTP 200 OK · ${elapsed}ms`;
-          badge.style.color = 'var(--edge-emerald)';
+          if (ttfbEl) ttfbEl.textContent = elapsed + 'ms';
+          if (dnsEl) dnsEl.textContent = dnsTime + 'ms';
+          if (tlsEl) tlsEl.textContent = tlsTime + 'ms';
+          if (v8El) v8El.textContent = v8Time + 'ms';
+
+          if (badge) {
+            badge.textContent = `HTTP 200 OK · ${elapsed}ms`;
+            badge.style.color = 'var(--edge-emerald)';
+          }
 
           const sampleResponse = {
             status: 'ok',
@@ -1384,20 +1411,28 @@
             timestamp: new Date().toISOString()
           };
 
-          log.textContent = JSON.stringify(sampleResponse, null, 2);
+          if (log) log.textContent = JSON.stringify(sampleResponse, null, 2);
         }, 180);
       }
 
       function copyEdgeCurl() {
-        const method = document.getElementById('req-method').value;
-        const path = document.getElementById('req-path').value;
+        const method = (document.getElementById('req-method') && document.getElementById('req-method').value) || 'POST';
+        const path = (document.getElementById('req-path') && document.getElementById('req-path').value) || '/api/v1/auth/verify?cluster=IAD1';
         const curl = `curl -X ${method} http://127.0.0.1:8484${path} \\\n  -H "Authorization: Bearer sk_zoth_sovereign" \\\n  -H "Content-Type: application/json"`;
-        navigator.clipboard.writeText(curl);
-        alert('cURL command copied to clipboard!');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(curl).then(() => {
+            alert('cURL command copied to clipboard!');
+          }).catch(() => {
+            prompt('Copy cURL command:', curl);
+          });
+        } else {
+          prompt('Copy cURL command:', curl);
+        }
       }
 
       function exportTypeScript() {
-        const code = document.getElementById('edge-code-area').value;
+        const codeArea = document.getElementById('edge-code-area');
+        const code = codeArea ? codeArea.value : '';
         const blob = new Blob([code], { type: 'text/typescript' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

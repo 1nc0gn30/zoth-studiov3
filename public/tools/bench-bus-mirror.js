@@ -1,12 +1,7 @@
-// Zoth Studio — Tool Bench -> Swarm Bus (:8989) Mirror (Hermes lane)
+// Zoth Studio — Tool Bench -> Swarm Bus Mirror (Local-First BroadcastChannel + Optional :8989)
 //
-// Forwards zoth:tool-bench CustomEvents to the live local swarm bus daemon at
-// http://127.0.0.1:8989/messages (the real channel antigravity's Swarm Arena
-// uses — same POST {from,to,msg} protocol). Fail-soft: if :8989 is down or the
-// POST throws, it is swallowed and a local console note is emitted instead. No
-// secrets are forwarded (only public event metadata + a compact status line).
-//
-// Compatible with browser (ESM global) and Node (CommonJS).
+// Broadcasts zoth:tool-bench events across tabs via native BroadcastChannel('zoth_swarm_bus')
+// and optionally mirrors to http://127.0.0.1:8989 when enabled. 100% fail-soft & local-first.
 
 (function (root, factory) {
   if (typeof module === "object" && module.exports) {
@@ -19,15 +14,21 @@
 
   var SWARM_URL = "http://127.0.0.1:8989";
   var FROM = "hermes";
-  var TO = "all";            // swarm-wide broadcast (antigravity reads :8989)
-  var ENABLED = true;
-  var LAST_OK = null;       // last successful POST timestamp
+  var TO = "all";
+  var ENABLED = false; // local-first broadcast channel by default
+  var LAST_OK = null;
   var FAILS = 0;
+  var busChannel = null;
+
+  if (typeof BroadcastChannel !== "undefined") {
+    try {
+      busChannel = new BroadcastChannel("zoth_swarm_bus");
+    } catch (e) {}
+  }
 
   function setEnabled(v) { ENABLED = !!v; }
   function status() { return { enabled: ENABLED, last_ok: LAST_OK, fails: FAILS, target: SWARM_URL }; }
 
-  // Turn an event detail into a human + machine readable swarm message.
   function toMessage(detail) {
     detail = detail || {};
     var ev = detail.event || "event";
@@ -51,10 +52,14 @@
     return { from: FROM, to: TO, msg: "[tool-bench] " + id + " :: " + line, payload: payload };
   }
 
-  // POST one event to :8989. Returns a promise resolving to {ok, status}.
   async function post(detail) {
-    if (!ENABLED) return { ok: false, reason: "disabled" };
     var body = toMessage(detail);
+    if (busChannel) {
+      try {
+        busChannel.postMessage(body);
+      } catch (err) {}
+    }
+    if (!ENABLED) return { ok: true, channel: "broadcast_channel", status: 200 };
     try {
       var res = await fetch(SWARM_URL + "/messages", {
         method: "POST",
@@ -70,11 +75,10 @@
       return { ok: false, reason: "status_" + res.status };
     } catch (e) {
       FAILS++;
-      return { ok: false, reason: "network:" + e.message };
+      return { ok: false, reason: "offline" };
     }
   }
 
-  // Attach a listener that forwards every zoth:tool-bench event to :8989.
   function attach() {
     if (typeof window === "undefined" || !window.addEventListener) return false;
     window.addEventListener("zoth:tool-bench", function (e) {
@@ -83,14 +87,12 @@
     return true;
   }
 
-  // One-shot heartbeat so the swarm bus shows Hermes active in the tooling lane.
   async function heartbeat(toolCount, assertionCount) {
     return post({
       event: "heartbeat",
       id: "tool-bench",
       code: "sync",
       ts: new Date().toISOString(),
-      // extra context carried via msg line
       _note: ("tools=" + (toolCount || 0) + " tests=" + (assertionCount || 0)),
     });
   }

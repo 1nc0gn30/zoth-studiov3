@@ -2763,6 +2763,8 @@ def create_app(handler_class, host: str, port: int, api_token: str | None,
         Route("/agents/{path:path}", public_page),
         Route("/styles.css", public_page),
         Route("/styles/{path:path}", public_page),
+        Route("/data", public_page),
+        Route("/data/{path:path}", public_page),
         Route("/site.js", public_page),
 
         # Health & Status & Preflight

@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
+  <!-- Progressive enhancement gate: the boot veil is only ever shown when JS is
+       running, so a JS-less render shows the HUD and hero caption, never a void. -->
+  <script>document.documentElement.classList.add('world-js');</script>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
   <title>ZOTH WORLD — The Hermetic Cyber-Sanctum &amp; Sovereign Pet Multiverse</title>
   
@@ -75,8 +78,19 @@
 </head>
 <body>
 
+  <!-- First-paint boot veil (JS-gated: html.world-js). Fades out once the WebGL
+       sanctum has produced its first frames, or on a hard safety timeout. -->
+  <div id="world-boot" class="world-boot" aria-hidden="true">
+    <div class="world-boot-core">
+      <span class="world-boot-seal"></span>
+      <p class="world-boot-title">Zoth World</p>
+      <p class="world-boot-status">Waking the hermetic sanctum…</p>
+      <span class="world-boot-bar"><span class="world-boot-bar-fill"></span></span>
+    </div>
+  </div>
+
   <!-- Accessible Skip Link -->
-  <a href="#hud-overlay" class="skip-link">Skip to World Operator Controls</a>
+  <a href="#world-intro" class="skip-link">Skip to Zoth World introduction &amp; controls</a>
 
   <!-- 3D Canvas Viewport Container -->
   <div id="viewport-container" role="region" aria-label="3D Interactive Zoth World Canvas">
@@ -93,7 +107,7 @@
   <main id="hud-overlay">
 
     <!-- Topbar Navigation -->
-                                                <header class="bar" id="topbar" role="banner">
+                                                    <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -333,6 +347,8 @@
 
     
 
+    
+
     <!-- Mid Floating Tactical Panels -->
     <div class="hud-mid">
       <!-- Left: Tactical Radar & Active Companion Triad -->
@@ -362,6 +378,30 @@
           </div>
         </div>
       </div>
+
+      <!-- Centre: static world hero + operating hints (rendered without JS so the
+           sanctum always describes itself instead of showing an empty void) -->
+      <section class="tactical-center" id="world-intro" tabindex="-1" aria-labelledby="world-title">
+        <p class="world-eyebrow">
+          <span class="world-live-dot" aria-hidden="true"></span>
+          Sovereign 3D Sanctum · Local Loopback
+        </p>
+        <h1 class="world-title" id="world-title">Zoth World</h1>
+        <p class="world-lede">
+          A living hermetic multiverse: autonomous AI companions orbiting five alchemical
+          realms, rendered locally in your browser with zero telemetry.
+        </p>
+        <ul class="world-hints">
+          <li><kbd>Drag</kbd> orbit the sanctum</li>
+          <li><kbd>Scroll</kbd> zoom the realm</li>
+          <li><kbd>Click</kbd> an entity for its dossier</li>
+          <li><kbd>Realm</kbd> pills teleport below</li>
+        </ul>
+        <div class="world-caption-actions">
+          <a class="world-colophon-link" href="#world-colophon">Read the colophon ▾</a>
+          <span class="world-stat">20 entities · 5 realms · 0 telemetry</span>
+        </div>
+      </section>
 
       <!-- Right: Camera Modes Deck -->
       <div class="tactical-right">
@@ -495,6 +535,234 @@
 
   <!-- Core JavaScript Engine -->
   <script src="/assets/zoth-world.js"></script>
+
+  <!-- Progressive enhancement (optional): boot-veil timing, colophon anchor, and
+       the prefers-reduced-motion scene freeze. The page is fully readable without it. -->
+  <script>
+  (function () {
+    'use strict';
+    var doc = document.documentElement;
+    var mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    function reduced() { return !!(mq && mq.matches); }
+    function afterPaint(fn) {
+      if (!window.requestAnimationFrame) { setTimeout(fn, 16); return; }
+      requestAnimationFrame(function () { requestAnimationFrame(fn); });
+    }
+
+    try {
+      /* 1. Boot veil — retire it on the first real WebGL frames, with a hard
+            safety timeout so a stalled context can never leave a black screen. */
+      var veil = document.getElementById('world-boot');
+      function retireBoot() {
+        if (!veil || veil.classList.contains('is-gone')) return;
+        veil.classList.add('is-gone');
+        setTimeout(function () {
+          if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
+        }, reduced() ? 0 : 700);
+      }
+      var polls = 0;
+      var poll = setInterval(function () {
+        polls += 1;
+        var app = window.zothWorldApp;
+        if (app && app.renderer && app.scene) {
+          clearInterval(poll);
+          if (reduced()) { afterPaint(retireBoot); }
+          else { setTimeout(function () { afterPaint(retireBoot); }, 500); }
+        } else if (polls > 130) {
+          clearInterval(poll);
+          afterPaint(retireBoot);
+        }
+      }, 100);
+      setTimeout(retireBoot, 8000);
+
+      /* 2. Colophon anchor — the site footer is injected after the page's main
+            landmark (often after this script runs), so tag it when it appears. */
+      function tagColophon() {
+        var f = document.querySelector('body > footer.site, body > .zoth-mega-footer');
+        if (f && !f.id) f.id = 'world-colophon';
+        return f;
+      }
+      tagColophon();
+      if (window.MutationObserver) {
+        var mo = new MutationObserver(function () { if (tagColophon()) mo.disconnect(); });
+        mo.observe(document.body, { childList: true });
+        setTimeout(function () { mo.disconnect(); }, 20000);
+      }
+      var colophonLink = document.querySelector('.world-colophon-link');
+      /* Instant scroll: this page runs a heavy WebGL loop, and a smooth scroll
+         animation is unreliable (and low-value) next to it. */
+      function revealColophon() {
+        var target = document.getElementById('world-colophon') || tagColophon();
+        if (!target || !target.scrollIntoView) return null;
+        target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        return target;
+      }
+      if (colophonLink) {
+        colophonLink.addEventListener('click', function (ev) {
+          if (!revealColophon()) return;
+          ev.preventDefault();
+        });
+      }
+      /* Keyboard users must never focus a link they cannot see. */
+      document.addEventListener('focusin', function (ev) {
+        var target = document.getElementById('world-colophon');
+        if (!target || !target.contains(ev.target)) return;
+        var r = ev.target.getBoundingClientRect();
+        if (r.top < 0 || r.bottom > window.innerHeight) {
+          ev.target.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
+      });
+
+      /* 2b. The entity carousel and swarm slots are click-driven elements with
+             no button semantics. Give them button semantics and keyboard
+             activation (Enter / Space). */
+      function a11yify(root, sel) {
+        if (!root) return;
+        root.querySelectorAll(sel).forEach(function (el) {
+          if (el.dataset.worldKeyed === '1') return;
+          el.dataset.worldKeyed = '1';
+          el.setAttribute('tabindex', '0');
+          el.setAttribute('role', 'button');
+          el.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+              ev.preventDefault();
+              el.click();
+            }
+          });
+        });
+      }
+      function keyRoster() {
+        a11yify(document.getElementById('pet-roster'), '.pet-chip');
+        a11yify(document.getElementById('swarm-slots-container'), '.swarm-slot');
+      }
+      keyRoster();
+      if (window.MutationObserver) {
+        ['pet-roster', 'swarm-slots-container'].forEach(function (id) {
+          var host = document.getElementById(id);
+          if (!host) return;
+          new MutationObserver(keyRoster).observe(host, { childList: true });
+        });
+      }
+
+      /* 3. prefers-reduced-motion — freeze idle camera/ambient motion (orbital
+            swirl, drifting obelisks, breathing companions) while user-driven
+            orbit / zoom / dossier controls keep working. */
+      function freezeScene() {
+        var app = window.zothWorldApp;
+        if (!app || !app.clock || app.clock.__worldFrozen) return;
+        var clock = app.clock;
+        clock.__worldFrozen = true;
+        var t0 = clock.getElapsedTime();
+        var realDelta = clock.getDelta ? clock.getDelta.bind(clock) : null;
+        clock.getElapsedTime = function () { return t0; };
+        clock.getDelta = function () { return 0; };
+        if (app.controls) {
+          app.controls.autoRotate = false;
+          if (typeof app.controls.autoRotateSpeed === 'number') app.controls.autoRotateSpeed = 0;
+        }
+        /* Theme changes still need a little delta so scene colours converge. */
+        window.addEventListener('zoth-theme-change', function () {
+          var until = Date.now() + 900;
+          clock.getDelta = function () {
+            return (Date.now() < until && realDelta) ? realDelta() : 0;
+          };
+        });
+      }
+      if (reduced()) {
+        var fp = setInterval(function () {
+          if (window.zothWorldApp) { clearInterval(fp); freezeScene(); }
+        }, 100);
+        setTimeout(function () { clearInterval(fp); freezeScene(); }, 20000);
+      }
+      if (mq) {
+        var onMotionPref = function () { if (reduced()) freezeScene(); };
+        if (mq.addEventListener) mq.addEventListener('change', onMotionPref);
+        else if (mq.addListener) mq.addListener(onMotionPref);
+      }
+
+      /* 4. Step the hero caption back once the visitor starts driving the world. */
+      var armed = false;
+      function markActive() {
+        if (armed) return;
+        armed = true;
+        doc.classList.add('world-active');
+        ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (t) {
+          window.removeEventListener(t, markActive);
+        });
+      }
+      ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (t) {
+        window.addEventListener(t, markActive, { passive: true });
+      });
+
+      /* 5. Repairs for the shared world engine (zoth-world.js is not ours to edit):
+            the realm rail offers Crypt / Grove / Citadel, which the engine's
+            destination table does not define, so those three pills silently did
+            nothing. Alias them onto the nearest real destination. */
+      var REALM_ALIAS = { crypt: 'library', grove: 'bastion', citadel: 'forge' };
+      document.querySelectorAll('.realm-pill').forEach(function (pill) {
+        var alias = REALM_ALIAS[pill.dataset.realm];
+        if (alias) pill.dataset.realm = alias;
+      });
+
+      /* The engine toggles .active on the rail without syncing aria-selected. */
+      var rail = document.querySelector('.realm-selector');
+      if (rail) {
+        var syncSelected = function () {
+          rail.querySelectorAll('.realm-pill').forEach(function (p) {
+            var v = p.classList.contains('active') ? 'true' : 'false';
+            if (p.getAttribute('aria-selected') !== v) p.setAttribute('aria-selected', v);
+          });
+        };
+        syncSelected();
+        if (window.MutationObserver) {
+          new MutationObserver(syncSelected).observe(rail, {
+            attributes: true, subtree: true, attributeFilter: ['class']
+          });
+        }
+      }
+
+      /* The engine updates the sky label through .hud-btn-text, which the button
+         markup never contained — clicking it threw. Wrap the trailing label in
+         the span the engine expects. */
+      var astralBtn = document.getElementById('btn-astral-toggle');
+      if (astralBtn && !astralBtn.querySelector('.hud-btn-text')) {
+        var labelNode = null;
+        Array.prototype.slice.call(astralBtn.childNodes).forEach(function (n) {
+          if (n.nodeType === 3 && n.nodeValue && n.nodeValue.trim()) labelNode = n;
+        });
+        if (labelNode) {
+          var labelSpan = document.createElement('span');
+          labelSpan.className = 'hud-btn-text';
+          labelSpan.textContent = labelNode.nodeValue.trim();
+          astralBtn.replaceChild(labelSpan, labelNode);
+        }
+      }
+
+      /* 6. Desktop arrangement: the bottom strip of the viewport belongs to the
+            site chrome (companion HUD bottom-left, floating dock bottom-centre,
+            back-to-top bottom-right), which would bury these action buttons.
+            On wide screens they join the right-hand control column; on narrow
+            ones they stay in the bottom bar, clear of that chrome. */
+      var actions = document.querySelector('#hud-bottombar .bottom-controls');
+      var rightColumn = document.querySelector('.hud-mid .tactical-right');
+      var actionsHome = actions ? actions.parentNode : null;
+      var actionsNext = actions ? actions.nextSibling : null;
+      function placeActions() {
+        if (!actions || !rightColumn || !actionsHome) return;
+        var wide = window.matchMedia ? window.matchMedia('(min-width: 901px)').matches : false;
+        if (wide && actions.parentNode !== rightColumn) {
+          rightColumn.appendChild(actions);
+        } else if (!wide && actions.parentNode !== actionsHome) {
+          actionsHome.insertBefore(actions, actionsNext);
+        }
+      }
+      placeActions();
+      window.addEventListener('resize', placeActions);
+    } catch (err) {
+      if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
+    }
+  })();
+  </script>
 
 </body>
 </html>

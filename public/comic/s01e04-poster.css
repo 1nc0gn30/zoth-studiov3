@@ -2583,3 +2583,810 @@ html[data-theme="matrix"] .ep-poster h1 {
     min-height: 44px;
   }
 }
+
+/* ========================================================================== */
+/* AZOTH S01E04: DYNAMIC MANGA / WEBTOON READER FX & STAGE STYLES            */
+/* ========================================================================== */
+
+/* Sticky Reading Progress Top Bar */
+.reading-progress-dock {
+  position: fixed;
+  top: var(--zoth-header-h, 54px);
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 998;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.reading-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--cyan, #00f0ff), var(--violet, #a855f7), var(--gold, #fbbf24));
+  box-shadow: 0 0 10px var(--cyan, #00f0ff);
+  transition: width 0.1s linear;
+}
+
+.reading-hud-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.72rem;
+  color: var(--muted, #94a3b8);
+}
+
+.reading-hud-bar strong {
+  color: var(--gold, #fbbf24);
+}
+
+/* Reader Mode Toggle Buttons */
+.dock-mode-toggle {
+  display: inline-flex;
+  background: color-mix(in srgb, var(--panel, #0a0e1c) 90%, transparent);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  border-radius: 999px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.mode-btn {
+  background: transparent;
+  border: 0;
+  color: var(--muted, #94a3b8);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mode-btn:hover {
+  color: var(--text-primary, #fff);
+}
+
+.mode-btn.active,
+.mode-btn[aria-pressed="true"] {
+  background: linear-gradient(135deg, var(--cyan, #00f0ff), var(--violet, #a855f7));
+  color: #050508;
+  box-shadow: 0 2px 12px rgba(0, 240, 255, 0.35);
+}
+
+/* Floating Vertical Mini-Map Rail */
+.panel-rail-nav {
+  position: fixed;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 990;
+  padding: 10px 6px;
+  background: rgba(5, 5, 8, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 999px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.rail-dot-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.rail-dot-btn:hover,
+.rail-dot-btn:focus-visible {
+  background: var(--cyan, #00f0ff);
+  transform: scale(1.3);
+}
+
+.rail-dot-btn.active {
+  background: var(--gold, #fbbf24);
+  box-shadow: 0 0 10px var(--gold, #fbbf24);
+  transform: scale(1.4);
+  border-color: #fff;
+}
+
+.rail-dot-tooltip {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0a0e1c;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.18));
+  color: #fff;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.68rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.rail-dot-btn:hover .rail-dot-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-4px);
+}
+
+@media (max-width: 1024px) {
+  .panel-rail-nav {
+    display: none;
+  }
+}
+
+/* 3D Parallax Tilt Card FX */
+.panel-card {
+  perspective: 1200px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  scroll-margin-top: calc(var(--zoth-header-h, 54px) + 24px);
+}
+
+.panel-card.active-reading {
+  border-color: var(--cyan, #00f0ff) !important;
+  box-shadow: 0 12px 40px rgba(0, 240, 255, 0.15) !important;
+}
+
+.panel-media-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out;
+  cursor: grab;
+}
+
+.panel-media-wrap:active {
+  cursor: grabbing;
+}
+
+.tilt-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(255, 255, 255, 0.25) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  mix-blend-mode: overlay;
+  z-index: 5;
+}
+
+.panel-media-wrap:hover .tilt-glare {
+  opacity: 1;
+}
+
+/* Holographic SFX Callouts */
+.sfx-callout-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.sfx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(10, 14, 28, 0.75);
+  border: 1px solid var(--line, rgba(0, 240, 255, 0.25));
+  color: var(--cyan, #00f0ff);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sfx-chip:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--cyan, #00f0ff);
+  color: #fff;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 240, 255, 0.3);
+}
+
+.sfx-chip.sfx-gold {
+  border-color: rgba(251, 191, 36, 0.3);
+  color: var(--gold, #fbbf24);
+}
+
+.sfx-chip.sfx-gold:hover {
+  background: rgba(251, 191, 36, 0.18);
+  border-color: var(--gold, #fbbf24);
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.35);
+}
+
+.sfx-chip.sfx-purple {
+  border-color: rgba(168, 85, 247, 0.3);
+  color: var(--violet, #a855f7);
+}
+
+.sfx-chip.sfx-purple:hover {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: var(--violet, #a855f7);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35);
+}
+
+.sfx-burst {
+  animation: sfxShockwave 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes sfxShockwave {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.18); filter: brightness(1.8) drop-shadow(0 0 12px var(--cyan, #00f0ff)); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Glowing Cyberpunk Dialogue Balloons */
+.dialogue-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.dialog-balloon {
+  display: flex;
+  gap: 12px;
+  background: rgba(7, 18, 42, 0.7);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-left: 3px solid var(--cyan, #00f0ff);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.dialog-balloon:hover {
+  background: rgba(7, 18, 42, 0.95);
+  border-color: var(--cyan, #00f0ff);
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.12);
+}
+
+.dialog-balloon.speaker-azoth {
+  border-left-color: var(--gold, #fbbf24);
+}
+
+.dialog-balloon.speaker-leviathan {
+  border-left-color: var(--violet, #a855f7);
+}
+
+.dialog-balloon.speaker-kraken {
+  border-left-color: var(--cyan, #00f0ff);
+}
+
+.dialog-balloon.speaker-antigravity {
+  border-left-color: #34d399;
+}
+
+.dialog-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid var(--line, rgba(255, 255, 255, 0.2));
+}
+
+.dialog-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.dialog-speaker-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.dialog-speaker-name {
+  font-family: var(--font-display, "Syne", sans-serif);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-primary, #fff);
+}
+
+.dialog-role-tag {
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.64rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dialog-text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-subhead, #cbd5e1);
+  margin: 0;
+  font-style: italic;
+}
+
+.dialog-text strong {
+  color: var(--text-primary, #fff);
+  font-style: normal;
+}
+
+.dialog-voice-btn {
+  background: transparent;
+  border: 0;
+  color: var(--muted, #94a3b8);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.dialog-voice-btn:hover {
+  color: var(--gold, #fbbf24);
+  background: rgba(251, 191, 36, 0.15);
+}
+
+/* Panel Actions Bar */
+.panel-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.btn-snapshot-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  color: var(--text-primary, #fff);
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-snapshot-card:hover {
+  background: rgba(251, 191, 36, 0.15);
+  border-color: var(--gold, #fbbf24);
+  color: var(--gold, #fbbf24);
+}
+
+/* CINEMATIC STAGE FOCUS MODE */
+body.view-stage .panel-card {
+  display: none !important;
+}
+
+body.view-stage .panel-card.stage-active {
+  display: block !important;
+  animation: stageFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes stageFadeIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.stage-controller-deck {
+  display: none;
+  background: var(--panel, rgba(10, 14, 28, 0.95));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  border-radius: 20px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+body.view-stage .stage-controller-deck {
+  display: block;
+}
+
+.stage-deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stage-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-nav-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  color: #fff;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-nav-btn:hover:not(:disabled) {
+  background: var(--cyan, #00f0ff);
+  color: #050508;
+  border-color: var(--cyan, #00f0ff);
+}
+
+.stage-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stage-filmstrip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.stage-thumb {
+  width: 90px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.stage-thumb:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.stage-thumb.active {
+  opacity: 1;
+  border-color: var(--gold, #fbbf24);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+}
+
+.stage-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stage-thumb-label {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.58rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* 1-CLICK QUOTE SNAPSHOT CARD MODAL */
+.snapshot-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 4, 8, 0.85);
+  backdrop-filter: blur(16px);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.snapshot-modal-backdrop.is-open {
+  display: flex;
+  opacity: 1;
+}
+
+.snapshot-modal-box {
+  background: #070a14;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 20px;
+  max-width: 640px;
+  width: 100%;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(251, 191, 36, 0.15);
+  padding: 24px;
+  position: relative;
+  transform: translateY(12px) scale(0.97);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.snapshot-modal-backdrop.is-open .snapshot-modal-box {
+  transform: translateY(0) scale(1);
+}
+
+.snapshot-card-preview {
+  background: linear-gradient(145deg, #0a0f24, #04060d);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.snapshot-card-preview::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 80% 20%, rgba(0, 240, 255, 0.08), transparent 50%),
+              radial-gradient(circle at 20% 80%, rgba(251, 191, 36, 0.08), transparent 50%);
+  pointer-events: none;
+}
+
+.snapshot-brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 10px;
+}
+
+.snapshot-quote-text {
+  font-family: var(--font-display, "Syne", serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fff;
+  margin: 0 0 16px;
+}
+
+.snapshot-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.72rem;
+  color: var(--muted, #94a3b8);
+}
+
+.snapshot-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ========================================================================== */
+/* THEME HARMONY OVERRIDES (Solar Light, Matrix CRT, Hermetic Gold)          */
+/* ========================================================================== */
+
+/* Solar Light Theme Overrides */
+html[data-theme="light"] body {
+  background: #f7f9fc !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .ep-poster,
+html[data-theme="light"] .saga-hero,
+html[data-theme="light"] .azoth-poster {
+  background: #f1f5f9 !important;
+}
+
+html[data-theme="light"] .ep-poster h1,
+html[data-theme="light"] .saga-hero h1,
+html[data-theme="light"] .azoth-poster h1 {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html[data-theme="light"] .ep-poster .lede,
+html[data-theme="light"] .teaser-synopsis {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .panel-card {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .panel-card.active-reading {
+  border-color: #0284c7 !important;
+  box-shadow: 0 8px 30px rgba(2, 132, 199, 0.15) !important;
+}
+
+html[data-theme="light"] .panel-title,
+html[data-theme="light"] .section-title,
+html[data-theme="light"] .char-card h3 {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html[data-theme="light"] .panel-script,
+html[data-theme="light"] .char-desc {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .dialog-balloon {
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .dialog-speaker-name {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .dialog-text {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .sfx-chip {
+  background: #e2e8f0 !important;
+  color: #0369a1 !important;
+  border-color: rgba(3, 105, 161, 0.3) !important;
+}
+
+html[data-theme="light"] .comic-control-dock,
+html[data-theme="light"] .character-roster-section,
+html[data-theme="light"] .hadal-visualizer-section,
+html[data-theme="light"] .soundboard-card,
+html[data-theme="light"] .trailer-box,
+html[data-theme="light"] .stage-controller-deck {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .telemetry-badge,
+html[data-theme="light"] .hadal-telemetry-card {
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .hadal-telemetry-value {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .btn-sfx-drop {
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .btn-sfx-drop:hover {
+  background: #e0f2fe !important;
+  border-color: #0284c7 !important;
+}
+
+html[data-theme="light"] .sfx-name {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sfx-caption {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .dock-mode-toggle {
+  background: #e2e8f0 !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+html[data-theme="light"] .mode-btn {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .mode-btn.active {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7, #7c3aed) !important;
+}
+
+/* Matrix Theme Overrides */
+html[data-theme="matrix"] body {
+  background: #020b05 !important;
+  color: #bbf7d0 !important;
+  font-family: var(--font-theme-mono, "Share Tech Mono", monospace) !important;
+}
+
+html[data-theme="matrix"] .panel-card,
+html[data-theme="matrix"] .comic-control-dock,
+html[data-theme="matrix"] .character-roster-section,
+html[data-theme="matrix"] .hadal-visualizer-section,
+html[data-theme="matrix"] .soundboard-card {
+  background: rgba(2, 20, 10, 0.92) !important;
+  border-color: rgba(0, 255, 102, 0.3) !important;
+}
+
+html[data-theme="matrix"] .panel-title,
+html[data-theme="matrix"] .section-title,
+html[data-theme="matrix"] h1,
+html[data-theme="matrix"] h2,
+html[data-theme="matrix"] h3 {
+  color: #00ff66 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.5) !important;
+  -webkit-text-fill-color: #00ff66 !important;
+}
+
+html[data-theme="matrix"] .dialog-balloon {
+  background: rgba(0, 30, 15, 0.8) !important;
+  border-color: rgba(0, 255, 102, 0.35) !important;
+  border-left-color: #00ff66 !important;
+}
+
+html[data-theme="matrix"] .sfx-chip {
+  background: rgba(0, 40, 20, 0.9) !important;
+  color: #00ff66 !important;
+  border-color: #00ff66 !important;
+}
+
+/* Hermetic Gold Theme Overrides */
+html[data-theme="gold"] body {
+  background: #090602 !important;
+  color: #fef3c7 !important;
+}
+
+html[data-theme="gold"] .panel-card,
+html[data-theme="gold"] .comic-control-dock,
+html[data-theme="gold"] .character-roster-section,
+html[data-theme="gold"] .soundboard-card {
+  background: rgba(18, 12, 4, 0.92) !important;
+  border-color: rgba(251, 191, 36, 0.35) !important;
+}
+
+html[data-theme="gold"] .panel-card.active-reading {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2) !important;
+}
+
+html[data-theme="gold"] .panel-title,
+html[data-theme="gold"] .section-title,
+html[data-theme="gold"] h1,
+html[data-theme="gold"] h2,
+html[data-theme="gold"] h3 {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 14px rgba(251, 191, 36, 0.4) !important;
+  -webkit-text-fill-color: #fbbf24 !important;
+}
