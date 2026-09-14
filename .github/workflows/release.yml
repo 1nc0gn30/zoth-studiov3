@@ -100,17 +100,16 @@ jobs:
       - name: 🔐 Compile Rust Vault Daemons (Linux & Windows)
         run: |
           set -euo pipefail
-          cd vault-daemon
-          cargo build --release --target x86_64-unknown-linux-gnu
-          cargo build --release --target x86_64-pc-windows-gnu
-          cp target/x86_64-unknown-linux-gnu/release/zoth-vault-daemon ../dist/release/zoth-vault-daemon-linux-x86_64
-          chmod +x ../dist/release/zoth-vault-daemon-linux-x86_64
-          cp target/x86_64-pc-windows-gnu/release/zoth-vault-daemon.exe ../dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
-          cd ../dist/release
-          tar -czf "zoth-vault-daemon-v${ZOTH_VERSION}-linux-x86_64.tar.gz" zoth-vault-daemon-linux-x86_64
-          cd windows
-          zip -q "zoth-vault-daemon-v${ZOTH_VERSION}-windows-x86_64.zip" zoth-vault-daemon-windows-x86_64.exe
-          cd ../..
+          # Build by explicit manifest path instead of `cd`-ing, so the working
+          # directory can never drift and break later relative paths.
+          rustup target add x86_64-unknown-linux-gnu x86_64-pc-windows-gnu
+          cargo build --release --manifest-path vault-daemon/Cargo.toml --target x86_64-unknown-linux-gnu
+          cargo build --release --manifest-path vault-daemon/Cargo.toml --target x86_64-pc-windows-gnu
+          cp vault-daemon/target/x86_64-unknown-linux-gnu/release/zoth-vault-daemon dist/release/zoth-vault-daemon-linux-x86_64
+          chmod +x dist/release/zoth-vault-daemon-linux-x86_64
+          cp vault-daemon/target/x86_64-pc-windows-gnu/release/zoth-vault-daemon.exe dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
+          tar -czf "dist/release/zoth-vault-daemon-v${ZOTH_VERSION}-linux-x86_64.tar.gz" -C dist/release zoth-vault-daemon-linux-x86_64
+          zip -q -j "dist/release/windows/zoth-vault-daemon-v${ZOTH_VERSION}-windows-x86_64.zip" dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
           ls -lh dist/release dist/release/windows
 
       - name: 🐧 Build Full Linux Suite (.deb, .tar.gz, .run, AppImage)

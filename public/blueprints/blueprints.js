@@ -686,7 +686,7 @@ const DIAGRAM_NODES_DATA = {
     badge: "TIER 1 · ZERO-LEAK",
     category: "Zero-Leak Key Store",
     layer: "Tier 1: Hardware-Isolated Key Vault",
-    port: "127.0.0.1:8686 (Loopback Only)",
+    port: "127.0.0.1:8787 (Loopback Only)",
     metric: "Argon2id (m=64MB, t=3, p=4)",
     protocol: "XChaCha20-Poly1305 + Rust Zeroize",
     security: "Zero-Leak Hardware Loopback · Keyring dropped on scope exit",
@@ -844,7 +844,7 @@ const DIAGRAM_NODES_DATA = {
     badge: "STAGE 4 · CRYPTO NOTARY",
     category: "Cryptographic Sealer",
     layer: "Stage 4: Cryptographic Notary",
-    port: "Argon2id Vault RPC Gate (:8686)",
+    port: "Argon2id Vault RPC Gate (:8787)",
     metric: "SHA-256 Task Hash · XChaCha20 Sig",
     protocol: "Zero-Leak Key Signing Protocol",
     security: "Immutable Build Ledger & Audit Trail",
@@ -978,7 +978,7 @@ const DIAGRAM_NODES_DATA = {
     badge: "TRIAD 3 · MEMORY KEYRING",
     category: "Cryptographic Keyring",
     layer: "Inner Golden Triad Point 3",
-    port: "127.0.0.1:8686",
+    port: "127.0.0.1:8787",
     metric: "Argon2id (m=64MB, t=3, p=4)",
     protocol: "XChaCha20-Poly1305 Secure Key Store",
     security: "RAM Sanitization with Rust Zeroize",
@@ -1035,7 +1035,7 @@ function renderSovereignAirgapSVG() {
       <g id="node-group-vault" class="svg-interactive-node ${selectedDiagramNodeId === 'vault' ? 'is-selected' : ''}" onclick="selectDiagramNode('vault')">
         <rect x="50" y="50" width="240" height="130" rx="12" fill="url(#grad-tier-deck)" stroke="rgba(245, 158, 11, 0.4)" stroke-width="1.5" class="node-gold-bg" />
         <rect x="50" y="50" width="240" height="28" rx="12" fill="rgba(245, 158, 11, 0.15)" />
-        <text x="65" y="70" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="700">🔒 TIER 1: KEY VAULT (:8686)</text>
+        <text x="65" y="70" fill="#fbbf24" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="700">🔒 TIER 1: KEY VAULT (:8787)</text>
         <text x="65" y="105" fill="#ffffff" font-family="'Syne', sans-serif" font-size="14" font-weight="700">Rust Argon2id BYOK</text>
         <text x="65" y="125" fill="#94a3b8" font-family="'IBM Plex Mono', monospace" font-size="11">XChaCha20-Poly1305 AEAD</text>
         <text x="65" y="145" fill="#38bdf8" font-family="'IBM Plex Mono', monospace" font-size="10">● Zeroize Buffer Barrier</text>
@@ -1103,7 +1103,7 @@ function renderSovereignAirgapSVG() {
       </g>
 
       <!-- Connecting Corridors & Animated Data Flowpaths -->
-      <!-- Vault (:8686) -> Deck (:8484) -->
+      <!-- Vault (:8787) -> Deck (:8484) -->
       <path d="M 290 115 C 320 115, 320 200, 350 200" fill="none" stroke="#fbbf24" stroke-width="2" class="${pulseClassGold}" />
       <circle cx="320" cy="155" r="4" fill="#fbbf24" class="dag-pulse-dot-gold" style="display: ${dotDisplay};" />
 

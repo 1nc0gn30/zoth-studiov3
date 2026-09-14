@@ -39,7 +39,7 @@ graph TD
 
     subgraph Local Surfaces ["Private Local-First Loopback Surfaces (Operator Host)"]
         Deck["Operator Deck: http://127.0.0.1:8484/"]
-        VaultDaemon["Vault Cryptographic Daemon: http://127.0.0.1:8686/"]
+        VaultDaemon["Vault Cryptographic Daemon: http://127.0.0.1:8787/"]
         SwarmBus["Peer Event Swarm Bus: http://127.0.0.1:8989/"]
         OllamaLocal["Ollama Local Inference: http://127.0.0.1:11434/"]
     end
@@ -53,9 +53,9 @@ graph TD
 
 ### Critical Disambiguation Directives:
 1. **Local-First Execution**: Agent executions, file operations, terminals, and live subprocesses occur strictly on the user's host machine via `127.0.0.1:8484`.
-2. **Zero-Trust BYOK Secrets**: API keys never transmit to cloud servers; secrets are held in browser `localStorage` AES-256-GCM or locally in the Rust Argon2id + XChaCha20-Poly1305 daemon (`127.0.0.1:8686` / `127.0.0.1:8787`).
+2. **Zero-Trust BYOK Secrets**: API keys never transmit to cloud servers; secrets are held in browser `localStorage` AES-256-GCM or locally in the Rust Argon2id + XChaCha20-Poly1305 daemon (`127.0.0.1:8787`).
 3. **No Paid SaaS Tier**: Zoth Studio is free, local-first software. Third-party cloud LLM inference is Bring Your Own Key (BYOK).
-4. **Cloudflare Tunnel Isolation**: The public domain `zoth.nullai.tech` exposes static assets only; operator deck ports (8484, 8686, 8989) are never exposed through inbound port forwards.
+4. **Cloudflare Tunnel Isolation**: The public domain `zoth.nullai.tech` exposes static assets only; operator deck ports (8484, 8787, 8989) are never exposed through inbound port forwards.
 
 ---
 
@@ -91,7 +91,7 @@ Zoth Studio enforces strict isolation between external networks and local execut
 | Service | Address | Protocol | Isolation Level | Purpose |
 |---|---|---|---|---|
 | **Operator Deck** | `127.0.0.1:8484` | HTTP / WebSocket | Localhost loopback only | Subprocess sandboxing, token streaming, shell execution |
-| **Vault Daemon** | `127.0.0.1:8686` / `8787` | HTTP / JSON-RPC | Localhost loopback only | High-performance Argon2id key derivation & XChaCha20 encryption |
+| **Vault Daemon** | `127.0.0.1:8787` | HTTP / JSON-RPC | Localhost loopback only | High-performance Argon2id key derivation & XChaCha20 encryption |
 | **Swarm Bus** | `127.0.0.1:8989` | WebSocket | Localhost loopback only | Multi-agent real-time telemetry and state broadcasting |
 | **Ollama Engine** | `127.0.0.1:11434` | HTTP REST | Localhost loopback only | Offline on-device LLM inference (`smollm2`, `qwen2.5-coder`, `llama3`) |
 
@@ -106,12 +106,16 @@ Zoth Studio enforces strict isolation between external networks and local execut
 
 | Distribution File | Target OS & Arch | Size | Format | Execution / Install Command |
 |---|---|---|---|---|
-| [`zoth-linux-x86_64.run`](https://zoth.nullai.tech/dist-linux/zoth-linux-x86_64.run) | Linux (x86_64) | 73 MB | Self-extracting script | `chmod +x zoth-linux-x86_64.run && ./zoth-linux-x86_64.run` |
-| [`Zoth_Studio-v2.6.0-x86_64.AppImage`](https://zoth.nullai.tech/dist-linux/Zoth_Studio-v2.6.0-x86_64.AppImage) | Linux (x86_64) | 40 MB | Standalone AppImage | `chmod +x Zoth_Studio-v2.6.0-x86_64.AppImage && ./Zoth_Studio-v2.6.0-x86_64.AppImage` |
-| [`zoth-studio_2.6.0_all.deb`](https://zoth.nullai.tech/dist-linux/zoth-studio_2.6.0_all.deb) | Debian / Ubuntu / Parrot | 700 B | Debian Package | `sudo dpkg -i zoth-studio_2.6.0_all.deb` |
-| [`zoth-studio-v2.6.0-linux-x86_64.tar.gz`](https://zoth.nullai.tech/dist-linux/zoth-studio-v2.6.0-linux-x86_64.tar.gz) | Linux (POSIX) | 54 MB | Gzip Tarball Archive | `tar -xzf zoth-studio-v2.6.0-linux-x86_64.tar.gz` |
-| [`zoth-windows-x86_64.exe`](https://zoth.nullai.tech/dist-windows/zoth-windows-x86_64.exe) | Windows 10/11 (x86_64) | 40 MB | Standalone Executable | `zoth-windows-x86_64.exe` |
-| [`zoth-studio-v2.6.0-windows-x86_64.zip`](https://zoth.nullai.tech/dist-windows/zoth-studio-v2.6.0-windows-x86_64.zip) | Windows 10/11 (x86_64) | 51 MB | Zip Archive | Expand archive and run `zoth-studio.exe` |
+| [`zoth-linux-x86_64.run`](https://zoth.nullai.tech/dist-linux/zoth-linux-x86_64.run) | Linux (x86_64) | 122 MB | Self-extracting script | `chmod +x zoth-linux-x86_64.run && ./zoth-linux-x86_64.run` |
+| [`Zoth_Studio-v2.6.0-x86_64.AppImage`](https://zoth.nullai.tech/dist-linux/Zoth_Studio-v2.6.0-x86_64.AppImage) | Linux (x86_64) | 77 MB | Standalone AppImage | `chmod +x Zoth_Studio-v2.6.0-x86_64.AppImage && ./Zoth_Studio-v2.6.0-x86_64.AppImage` |
+| [`zoth-studio_2.6.0_all.deb`](https://zoth.nullai.tech/dist-linux/zoth-studio_2.6.0_all.deb) | Debian / Ubuntu / Parrot | 81 MB | Debian Package | `sudo dpkg -i zoth-studio_2.6.0_all.deb` |
+| [`zoth-studio-v2.6.0-linux-x86_64.tar.gz`](https://zoth.nullai.tech/dist-linux/zoth-studio-v2.6.0-linux-x86_64.tar.gz) | Linux (POSIX) | 90 MB | Gzip Tarball Archive | `tar -xzf zoth-studio-v2.6.0-linux-x86_64.tar.gz` |
+| [`zoth-windows-x86_64.exe`](https://zoth.nullai.tech/dist-windows/zoth-windows-x86_64.exe) | Windows 10/11 (x86_64) | 77 MB | Standalone Executable | `zoth-windows-x86_64.exe` |
+| [`zoth-studio-v2.6.0-windows-x86_64.zip`](https://zoth.nullai.tech/dist-windows/zoth-studio-v2.6.0-windows-x86_64.zip) | Windows 10/11 (x86_64) | 88 MB | Zip Archive | Expand archive and run `zoth-studio.exe` |
+
+> **Distribution note (verified 2026-09-14):** these `dist-*` paths are repo-local build
+> outputs, not live downloads. `https://zoth.nullai.tech/dist-linux/` and every file beneath
+> it currently return **HTTP 404**, so none of the links above resolve on the public host.
 
 ---
 

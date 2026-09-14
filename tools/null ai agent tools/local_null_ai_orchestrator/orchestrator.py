@@ -394,9 +394,10 @@ def load_registry() -> dict[str, Any]:
 def find_tool(tool_id: str) -> dict[str, Any]:
     registry = load_registry()
     matches = [
-        t for t in registry.get("tools", [])
-        if t.get("id") == tool_id or t.get("name").lower() == tool_id.lower()
-        or t.get("relative_path", "").endswith(tool_id)
+        t for t in registry.get("tools", []) if isinstance(t, dict)
+        and (t.get("id") == tool_id
+             or ((t.get("name") or "").lower() == tool_id.lower())
+             or t.get("relative_path", "").endswith(tool_id))
     ]
     if not matches:
         raise SystemExit(f"Tool not found: {tool_id}. Run `list` to see available tools.")
@@ -483,9 +484,45 @@ def command_show(args: argparse.Namespace) -> int:
             print(f"  {name}: {cmd}")
     return 0
 
-def command_doctor(_args: argparse.Namespace) -> int:
+def command_doctor(args: argparse.Namespace) -> int:
+    from runtime.deps import format_report, probe
+
+    data = probe()
+    registry = load_registry()
+    tools = registry.get("tools", [])
+    missing_rt = sum(1 for t in tools if not t.get("runtimes"))
+    ready = bool(data.get("ready"))
+    version = sys.version.split()[0]
+
+    if getattr(args, "json", False):
+        payload = {
+            "ok": ready,
+            "python": version,
+            "platform": sys.platform,
+            "cwd": str(Path.cwd()),
+            "orch_dir": str(ORCH_DIR),
+            "workspace": str(WORKSPACE_ROOT),
+            "registry_path": str(REGISTRY_PATH),
+            "registry_exists": REGISTRY_PATH.exists(),
+            "tools": {
+                "registered": len(tools),
+                "needs_cfg": missing_rt,
+                "tool_count": registry.get("tool_count", 0),
+                "template_count": registry.get("template_count", 0),
+                "catalog_count": registry.get("catalog_count", len(tools)),
+            },
+            "deps": {
+                "ready": ready,
+                "missing_count": data.get("missing", 0),
+                "missing": [i["id"] for i in data.get("items", []) if not i["ok"]],
+                "items": data.get("items", []),
+            },
+        }
+        print(json.dumps(payload, indent=2, default=str))
+        return 0 if ready else 2
+
     print("── System Check ────────────────────────────")
-    print(f"  Python:     {sys.version.split()[0]}")
+    print(f"  Python:     {version}")
     print(f"  Platform:   {sys.platform}")
     print(f"  CWD:        {Path.cwd()}")
     print(f"  ORCH_DIR:   {ORCH_DIR}")
@@ -493,17 +530,12 @@ def command_doctor(_args: argparse.Namespace) -> int:
     print(f"  Registry:   {'✓ exists' if REGISTRY_PATH.exists() else '✗ missing'}")
     print()
 
-    from runtime.deps import format_report, probe
-    data = probe()
     print(format_report(data))
     print()
 
-    registry = load_registry()
-    tools = registry.get("tools", [])
     print(f"  Tools:      {len(tools)} registered")
-    missing_rt = sum(1 for t in tools if not t.get("runtimes"))
     print(f"  Needs cfg:  {missing_rt} tools")
-    return 0 if data.get("ready") else 2
+    return 0 if ready else 2
 
 
 def command_deps(args: argparse.Namespace) -> int:
@@ -520,6 +552,89 @@ def command_deps(args: argparse.Namespace) -> int:
     else:
         print(format_report(data))
     return 0 if data.get("ready") else 2
+
+def _registry_load_raw() -> dict[str, Any]:
+    """Load the registry file directly (no annotation/auto-rescan)."""
+    return load_json(REGISTRY_PATH, {})
+
+
+def _registry_reconcile() -> dict[str, Any]:
+    """Return a dict with the repaired registry plus a change summary.
+
+    Skips malformed (non-dict) entries, drops entries whose `path` no longer
+    exists on disk (stale), and repairs entries missing a `name` from their id.
+    Does NOT write anything — the caller decides whether to persist.
+    """
+    raw = _registry_load_raw()
+    tools_in = raw.get("tools") or []
+    kept: list[dict[str, Any]] = []
+    removed: list[dict[str, Any]] = []
+    malformed = 0
+    name_fixed = 0
+
+    for entry in tools_in:
+        if not isinstance(entry, dict):
+            malformed += 1
+            removed.append({"id": "(malformed)", "reason": "not a dict entry"})
+            continue
+        item = dict(entry)
+        p = item.get("path") or ""
+        if not p or not Path(p).exists():
+            removed.append({"id": item.get("id", "?"), "reason": f"path missing on disk: {p}"})
+            continue
+        if not item.get("name"):
+            item["name"] = item.get("id", item.get("relative_path", "?"))
+            name_fixed += 1
+        kept.append(item)
+
+    repaired = dict(raw)
+    repaired["tools"] = kept
+    repaired["tool_count"] = len(kept)
+    repaired["generated_at"] = datetime.now(timezone.utc).isoformat()
+    summary = {
+        "before": len(tools_in),
+        "after": len(kept),
+        "stale_removed": len(removed) - malformed,
+        "malformed_skipped": malformed,
+        "names_fixed": name_fixed,
+        "removed": removed[:200],
+    }
+    return {"registry": repaired, "summary": summary}
+
+
+def command_registry(args: argparse.Namespace) -> int:
+    """`registry stats` (dry) and `registry repair` (default dry-run, --confirm to write)."""
+    if getattr(args, "action", None) == "stats":
+        raw = _registry_load_raw()
+        tools = [t for t in (raw.get("tools") or []) if isinstance(t, dict)]
+        stale = [t for t in tools if not (t.get("path") and Path(t.get("path", "")).exists())]
+        noname = [t for t in tools if not t.get("name")]
+        print(f"  Registry:   {REGISTRY_PATH}")
+        print(f"  Exists:     {REGISTRY_PATH.exists()}")
+        print(f"  Entries:    {len(raw.get('tools') or [])}")
+        print(f"  Valid dicts:{len(tools)}")
+        print(f"  Stale:      {len(stale)}  (path missing on disk)")
+        print(f"  No name:    {len(noname)}")
+        return 0
+
+    # repair
+    res = _registry_reconcile()
+    summary = res["summary"]
+    print(f"Registry: {REGISTRY_PATH}")
+    print(f"  Entries:    {summary['before']} → {summary['after']}")
+    print(f"  Stale removed:      {summary['stale_removed']}")
+    print(f"  Malformed skipped:  {summary['malformed_skipped']}")
+    print(f"  Names repaired:     {summary['names_fixed']}")
+    if summary["removed"]:
+        print("\n  Would remove:")
+        for r in summary["removed"]:
+            print(f"    - {r['id']}  ({r['reason']})")
+    if getattr(args, "confirm", False):
+        write_json(REGISTRY_PATH, res["registry"])
+        print(f"\nRepaired: registry rewritten to {REGISTRY_PATH}")
+    else:
+        print("\nDry-run: pass --confirm to rewrite the registry.")
+    return 0
 
 def command_dashboard(_args: argparse.Namespace) -> int:
     registry = load_registry()
@@ -3725,7 +3840,15 @@ def main():
     p_show.set_defaults(func=command_show)
 
     p_doctor = sub.add_parser("doctor", help="System health check")
+    p_doctor.add_argument("--json", action="store_true", help="Machine-readable JSON output")
     p_doctor.set_defaults(func=command_doctor)
+
+    p_reg = sub.add_parser("registry", help="Inspect / repair the local registry")
+    p_reg.add_argument("action", choices=["stats", "repair"],
+                       help="stats: dry inspection; repair: reconcile stale/malformed entries")
+    p_reg.add_argument("--confirm", action="store_true",
+                       help="Actually rewrite the registry (default: dry-run)")
+    p_reg.set_defaults(func=command_registry)
 
     p_deps = sub.add_parser("deps", help="List / install Zoth runtime dependencies")
     p_deps.add_argument("--install", action="store_true", help="pip-install required Python modules")

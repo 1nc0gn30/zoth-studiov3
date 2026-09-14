@@ -121,6 +121,8 @@ def annotate_registry(registry: dict[str, Any]) -> dict[str, Any]:
     n_tool = 0
     n_template = 0
     for raw in registry.get("tools") or []:
+        if not isinstance(raw, dict):
+            continue
         item = dict(raw)
         kind = classify_entry(item)
         item["kind"] = kind

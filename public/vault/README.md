@@ -21,7 +21,7 @@
 
 This is the interactive client-side 3D WebGL interface for managing **API keys and sensitive tokens** within the Zoth Studio ecosystem. It visually represents keys as category-colored shards floating inside a glass cube.
 
-By design, this frontend executes **strictly in the browser** and connects exclusively to the local Rust-based Vault Daemon at `http://127.0.0.1:8686`. 
+By design, this frontend executes **strictly in the browser** and connects exclusively to the local Rust-based Vault Daemon at `http://127.0.0.1:8787`. 
 
 ## ✨ Key Capabilities
 
@@ -45,9 +45,9 @@ By design, this frontend executes **strictly in the browser** and connects exclu
 
 ## 🚀 Setup & Linking
 
-The UI auto-detects `http://127.0.0.1:8686`. Ensure the daemon is running before interacting:
+The UI auto-detects `http://127.0.0.1:8787`. Ensure the daemon is running before interacting:
 
 ```bash
 cd ../../../vault-daemon
-cargo run --release -- --port 8686
+cargo run --release -- --port 8787
 ```
