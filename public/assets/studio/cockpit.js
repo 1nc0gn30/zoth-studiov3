@@ -261,30 +261,55 @@ if __name__ == "__main__":
     const listEl = document.getElementById('hudAIToolsList');
     if (!listEl) return;
 
-    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--cockpit-muted);font-size:0.8rem;"><span class="pulse-dot" style="display:inline-block;margin-right:6px;"></span> Probing local PATH, binaries, and daemon ports (:11434, :8484, :8787)...</div>';
+    // Source: the static registry endpoint this hub actually serves
+    // (/api/tools.json, built by scripts/generate-tools-json.py). The old
+    // target -- http://127.0.0.1:8484/api/tools/status -- is a loopback
+    // orchestrator that cannot answer for a static host, so every load paid a
+    // failed request and a console error. A live daemon is consulted only when
+    // the host opts in through window.ZOTH_TOOLS_LIVE_API.
+    const liveApi = typeof window.ZOTH_TOOLS_LIVE_API === 'string' ? window.ZOTH_TOOLS_LIVE_API.replace(/\/+$/, '') : '';
+    const sourceLabel = liveApi ? 'live daemon' : 'static registry';
+
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--cockpit-muted);font-size:0.8rem;"><span class="pulse-dot" style="display:inline-block;margin-right:6px;"></span> Reading the tools registry (static endpoint /api/tools.json)...</div>';
+
+    const REGISTRY_ICON = {
+      'Web Apps & SaaS': '🛰️', 'Client Services': '🤝', 'Creative & Media': '🎛️',
+      'AI Agents & LLM': '🧠', 'Learning & Courses': '📚', 'Portfolio & Agency': '🗂️',
+      'Netlify & Creator Tools': '⚡', 'Automation & Tools': '⚙️',
+      'Security Operations & OSINT': '🛡️', 'Games & Experiments': '🎮',
+      'Python Tools': '🐍', 'Crypto & Web3': '⛓️', 'Workspaces': '🏗️', 'Rust Projects': '🦀'
+    };
 
     try {
-      const res = await fetch('http://127.0.0.1:8484/api/tools/status');
-      if (res.ok) {
-        const data = await res.json();
-        renderAIToolsList(data);
-        return;
-      }
+      const url = liveApi ? `${liveApi}/api/tools/status` : '/api/tools.json';
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`registry endpoint returned HTTP ${res.status}`);
+      const data = await res.json();
+      renderAIToolsList({
+        host_os: data.host_os || null,
+        source: sourceLabel,
+        tools: (data.tools || []).map(t => ({
+          id: t.id,
+          name: t.name || t.id,
+          category: t.category || 'Registry entry',
+          desc: t.description || '',
+          icon: REGISTRY_ICON[t.category] || '📦',
+          // Registry entries are repo projects, not host binaries: `installed`
+          // stays null unless a real probe (live daemon) actually answered.
+          installed: typeof t.installed === 'boolean' ? t.installed : null,
+          version: t.version || '',
+          path: t.relative_path || t.path || ''
+        }))
+      });
     } catch (e) {
-      // Offline fallback
+      // Honest empty state: report the failure, invent nothing.
+      renderAIToolsList({
+        host_os: null,
+        source: 'unavailable',
+        tools: [],
+        error: e && e.message ? e.message : 'tools registry unreachable'
+      });
     }
-
-    // Fallback UI
-    renderAIToolsList({
-      host_os: 'linux',
-      tools: [
-        { id: 'antigravity', name: 'Google Antigravity CLI', installed: true, version: 'agy 2.4.1', path: '/home/neo/.local/bin/agy', icon: '🐺', category: 'Security & Architecture' },
-        { id: 'hermes', name: 'Hermes Agent & ACP', installed: true, version: 'hermes 0.9.4', path: '/home/neo/.local/bin/hermes', icon: '🐲', category: 'JSON Schemas & Tools' },
-        { id: 'ollama', name: 'Ollama Local Engine', installed: true, running: true, version: 'ollama 0.5.11', path: '/usr/local/bin/ollama', icon: '🦙', category: 'Local Inference' },
-        { id: 'codex', name: 'Codex CLI', installed: true, version: 'codex 1.2.0', path: '/usr/bin/codex', icon: '🤖', category: 'Production Architect' },
-        { id: 'openclaw', name: 'OpenCode / OpenClaw', installed: true, version: 'openclaw 0.8.2', path: '/usr/bin/openclaw', icon: '🧩', category: 'Fullstack Agent Harness' }
-      ]
-    });
   };
 
   function renderAIToolsList(data) {
@@ -292,22 +317,34 @@ if __name__ == "__main__":
     if (!listEl) return;
 
     const tools = data.tools || [];
-    const installedCount = tools.filter(t => t.installed).length;
+    const installedCount = tools.filter(t => t.installed === true).length;
+    const probed = tools.filter(t => typeof t.installed === 'boolean').length;
+    const source = data.source || 'static registry';
+    const fleetLine = probed
+      ? `${installedCount} of ${probed} host binaries detected`
+      : `${tools.length} registry ${tools.length === 1 ? 'entry' : 'entries'}`;
+    const emptyNote = tools.length ? '' : `
+      <div role="status" style="background:rgba(244,63,94,0.06);border:1px solid rgba(244,63,94,0.25);border-radius:10px;padding:12px;font-size:0.75rem;color:var(--cockpit-muted);line-height:1.55;">
+        <strong style="color:var(--cockpit-text,#f8fafc);display:block;margin-bottom:4px;">No tool data available</strong>
+        ${escapeHtml(data.error || 'The static registry endpoint (/api/tools.json) could not be read, and no live orchestrator is configured on this host.')}
+        <span style="display:block;margin-top:6px;">Nothing is inferred or shown as installed. Rebuild the endpoint with <code>python3 scripts/generate-tools-json.py</code>.</span>
+      </div>`;
 
     listEl.innerHTML = `
       <div style="background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.2);border-radius:10px;padding:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
         <div>
           <strong style="color:var(--cockpit-cyan);font-size:0.85rem;">Local AI Fleet Health</strong>
-          <small style="display:block;color:var(--cockpit-muted);font-size:0.7rem;">${installedCount} of ${tools.length} Tools Detected · Self-Healing Ready</small>
+          <small style="display:block;color:var(--cockpit-muted);font-size:0.7rem;">${fleetLine} · source: ${escapeHtml(source)}</small>
         </div>
-        <span style="font-family:var(--cockpit-font-mono);font-size:0.8rem;color:${installedCount > 0 ? '#34d399' : '#f43f5e'};font-weight:700;">
-          ${installedCount > 0 ? '● ONLINE' : '○ OFFLINE'}
+        <span style="font-family:var(--cockpit-font-mono);font-size:0.8rem;color:${installedCount > 0 ? '#34d399' : tools.length ? '#94a3b8' : '#f43f5e'};font-weight:700;">
+          ${installedCount > 0 ? '● ONLINE' : tools.length ? '◌ REGISTRY ONLY' : '○ OFFLINE'}
         </span>
       </div>
+      ${emptyNote}
 
       <div style="display:flex;flex-direction:column;gap:8px;">
         ${tools.map(tool => `
-          <div class="ai-tool-card" style="background:rgba(255,255,255,0.02);border:1px solid ${tool.installed ? 'rgba(52,211,153,0.3)' : 'var(--cockpit-border)'};border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;">
+          <div class="ai-tool-card" style="background:rgba(255,255,255,0.02);border:1px solid ${tool.installed === true ? 'rgba(52,211,153,0.3)' : 'var(--cockpit-border)'};border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:1.15rem;">${tool.icon || '⚡'}</span>
@@ -316,19 +353,21 @@ if __name__ == "__main__":
                   <small style="display:block;color:var(--cockpit-muted);font-size:0.68rem;">${escapeHtml(tool.category || 'AI Harness')}</small>
                 </div>
               </div>
-              <span style="font-size:0.7rem;font-family:var(--cockpit-font-mono);padding:2px 8px;border-radius:6px;background:${tool.installed ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.05)'};color:${tool.installed ? '#34d399' : '#94a3b8'};font-weight:700;">
-                ${tool.installed ? (tool.running ? '⚡ ACTIVE (:11434)' : '✔ INSTALLED') : '○ NOT DETECTED'}
+              <span style="font-size:0.7rem;font-family:var(--cockpit-font-mono);padding:2px 8px;border-radius:6px;background:${tool.installed === true ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.05)'};color:${tool.installed === true ? '#34d399' : '#94a3b8'};font-weight:700;">
+                ${tool.installed === true ? (tool.running ? '⚡ ACTIVE' : '✔ INSTALLED') : tool.installed === false ? '○ NOT DETECTED' : '📦 REGISTRY'}
               </span>
             </div>
 
             <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:6px;margin-top:2px;">
-              <span style="font-family:var(--cockpit-font-mono);font-size:0.68rem;color:var(--cockpit-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;" title="${escapeHtml(tool.path || 'Not found in PATH')}">
-                ${tool.installed ? escapeHtml(tool.path) : 'Executable not found in PATH'}
+              <span style="font-family:var(--cockpit-font-mono);font-size:0.68rem;color:var(--cockpit-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;" title="${escapeHtml(tool.path || 'No local path recorded')}">
+                ${tool.installed === true ? escapeHtml(tool.path) : tool.installed === false ? 'Executable not found in PATH' : escapeHtml(tool.path || 'Repository project — no host binary claimed')}
               </span>
-              ${!tool.installed ? `
+              ${tool.installed === false ? `
                 <button class="mention-chip" style="font-size:0.65rem;background:rgba(0,240,255,0.12);color:var(--cockpit-cyan);border-color:rgba(0,240,255,0.3);" onclick="installAITool('${tool.id}')">1-Click Install</button>
-              ` : `
+              ` : tool.installed === true ? `
                 <span style="color:#34d399;font-size:0.68rem;font-family:var(--cockpit-font-mono);">${escapeHtml(tool.version || 'Ready')}</span>
+              ` : `
+                <span style="color:var(--cockpit-muted);font-size:0.68rem;font-family:var(--cockpit-font-mono);">not probed on this host</span>
               `}
             </div>
           </div>
@@ -338,6 +377,21 @@ if __name__ == "__main__":
   }
 
   window.installAITool = async function (toolId) {
+    // A static hub has no installer: say so instead of POSTing to a loopback
+    // daemon that cannot be listening (that only produced a console error).
+    const liveApi = typeof window.ZOTH_TOOLS_LIVE_API === 'string' ? window.ZOTH_TOOLS_LIVE_API.replace(/\/+$/, '') : '';
+    if (!liveApi) {
+      appendCockpitMessage({
+        isUser: false,
+        author: 'Hermes',
+        role: 'Tool Automation Runner',
+        avatar: '⚡',
+        color: '#f59e0b',
+        text: `No orchestrator is configured on this host, so there is nothing to run for <code>${escapeHtml(toolId)}</code>. This cockpit is served as static files; start the local daemon and expose it via <code>window.ZOTH_TOOLS_LIVE_API</code> to enable 1-click installs.`
+      });
+      return;
+    }
+
     appendCockpitMessage({
       isUser: false,
       author: 'Hermes',
@@ -348,7 +402,7 @@ if __name__ == "__main__":
     });
 
     try {
-      const res = await fetch('http://127.0.0.1:8484/api/tools/install', {
+      const res = await fetch(`${liveApi}/api/tools/install`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tool_id: toolId })
