@@ -34,6 +34,8 @@ The `bin/zoth` executable is the primary command deck for controlling Zoth Studi
 
 ```bash
 zoth status                # Inspect 8-port loopback matrix and active companion
+zoth watch                 # ⚡ Real-time terminal live telemetry dashboard & stream
+zoth sync                  # 🔄 Synchronize universal master navbar across 117+ pages
 zoth matrix                # 60 FPS cyberpunk digital rain (7 themes, 6 glyphs)
 zoth tsubuyaki render v3   # Live interactive ASCII stipple field simulation
 zoth ask "<query>"         # Query agent with vector memory recall & doc grounding
@@ -45,10 +47,24 @@ zoth mem graph             # Biomorphic ASCII synaptic network graph
 zoth mem beat              # Trigger STDP synaptic weight consolidation
 zoth tool list             # List all 298 registered tools
 zoth site list             # List in-house website blueprints (298+)
+zoth speed audit           # Verify 100% asset integrity & zero broken links across 136 pages
 zoth speed bench           # Benchmark local HTTP latency (< 5ms)
 zoth doctor                # 16-point deep diagnostics audit
 zoth tui                   # 🎛️ Launch fullscreen curses cockpit
 ```
+
+---
+
+## 🧭 Master Universal Navigation Engine (v12.0)
+
+Every page across Zoth Studio features a sovereign, high-end floating glassmorphic dock:
+- **Liquid Magnetic Capsule & Spotlight Physics**: Tracks mouse cursor (`--nav-mouse-x`), smoothly moving a rounded pill behind hovered navigation items with spring easing and active-route memory.
+- **Real-Time Reading Scroll Progress Line**: An ultra-thin neon indicator anchored beneath the topbar border that dynamically fills from `0%` to `100%` scroll depth across documentation, whitepapers, and comic issues.
+- **Active Companion Spirit Quick Pill**: Displays the bound mascot companion from the 24-Spirit Pet Dex (e.g. `🐾 Azoth 🔮`) with one-click HUD summon and procedural audio feedback.
+- **Inline Route Breadcrumb Teleport**: Dynamic situational route breadcrumbs (e.g. `ZOTH / STUDIO / VOS SANDBOX`) on desktop displays.
+- **16-Brand Visual Identity Studio**: Live searchable theme popover and mobile drawer grid with categorized filtering (**✦ Originals**, **🌐 Frontier AI**, **⚡ Developer Archetypes**) and Web Audio sound synthesizer chimes.
+- **100% WCAG AA High Contrast**: Dedicated Solar Light mode, Matrix CRT phosphor, and Hermetic Gold tokens ensuring crisp readability across all archetypes.
+- **Zero-Break Viewport Scaling**: Responsive collapsing from ultra-wide 4K monitors down to 320px mobile screens with safe-area insets (`env(safe-area-inset-top)`).
 
 ---
 

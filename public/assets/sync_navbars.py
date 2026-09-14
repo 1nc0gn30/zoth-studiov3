@@ -1,7 +1,25 @@
 import re
 from pathlib import Path
 
-public_dir = Path("/media/neo/f2fdda77-178b-4603-ae80-c7aa4cd97908/zoth-studio/core-app/public")
+SCRIPT_DIR = Path(__file__).resolve().parent
+PUBLIC_DIR = SCRIPT_DIR.parent if SCRIPT_DIR.name == "assets" else SCRIPT_DIR
+
+# Full-viewport apps that must NOT have the static mega-footer injected
+NO_FOOTER_PAGES = {
+    "zoth-world.html",
+    "studio/vos-sandbox.html",
+    "studio/cockpit.html",
+    "article/index.html", # Redirect stub
+}
+
+# Directories to skip
+EXCLUDE_DIRS = (
+    "previews/",
+    "workspaces/",
+    "open-source-library",
+    "templates-source",
+    "cloned-projects",
+)
 
 MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
@@ -26,12 +44,13 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
             <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
           </button>
           <div class="nav-dropdown-menu">
-            <a href="/zoth/"><strong>🔮 Master Azoth Core</strong><small>Sovereign Alchemical AI Core & Synthesis</small></a>
-            <a href="/agents/"><strong>⚡ 21-Agent Pantheon</strong><small>Autonomous Model Archetypes & Sandboxes</small></a>
-            <a href="/studio/consensus.html"><strong>⚔️ Consensus Battle Arena</strong><small>3-Agent Triangulation & AST Synthesis</small></a>
-            <a href="/studio/swarm.html"><strong>🌐 3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></a>
-            <a href="/memory/"><strong>🧠 Memory Whitespace</strong><small>Biomorphic Associative Graph & Lucy Oracle</small></a>
-            <a href="/zoth-world.html"><strong>🌌 Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm & Multiverse</small></a>
+            <div class="nav-dropdown-header"><span>🔮 CORE AI ARCHITECTURE</span><span class="nav-item-badge">6 NODES</span></div>
+            <a href="/zoth/"><span class="nav-item-icon-box">🔮</span><div class="nav-item-body"><strong>Master Azoth Core</strong><small>Sovereign Alchemical AI Core & Synthesis</small></div><span class="nav-item-badge">CORE</span></a>
+            <a href="/agents/"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>21-Agent Pantheon</strong><small>Autonomous Model Archetypes & Sandboxes</small></div><span class="nav-item-badge">21 AGENTS</span></a>
+            <a href="/studio/consensus.html"><span class="nav-item-icon-box">⚔️</span><div class="nav-item-body"><strong>Consensus Battle Arena</strong><small>3-Agent Triangulation & AST Synthesis</small></div><span class="nav-item-badge">AST</span></a>
+            <a href="/studio/swarm.html"><span class="nav-item-icon-box">🌐</span><div class="nav-item-body"><strong>3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></div><span class="nav-item-badge">3D GPU</span></a>
+            <a href="/memory/"><span class="nav-item-icon-box">🧠</span><div class="nav-item-body"><strong>Memory Whitespace</strong><small>Biomorphic Associative Graph & Lucy Oracle</small></div><span class="nav-item-badge">VECTOR</span></a>
+            <a href="/zoth-world.html"><span class="nav-item-icon-box">🌌</span><div class="nav-item-body"><strong>Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm & Multiverse</small></div><span class="nav-item-badge">3D</span></a>
           </div>
         </div>
 
@@ -42,17 +61,18 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
             <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
           </button>
           <div class="nav-dropdown-menu nav-dropdown-mega">
-            <a href="/studio/cockpit.html"><strong>🪐 The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></a>
-            <a href="/studio/webgen.html"><strong>⚡ WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></a>
-            <a href="/studio/vos-sandbox.html"><strong>💻 vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></a>
-            <a href="/studio/nexus-3d.html"><strong>📐 Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></a>
-            <a href="/studio/omnipost.html"><strong>🎬 OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></a>
-            <a href="/studio/math-pillars.html"><strong>📐 AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></a>
-            <a href="/secure-comms/"><strong>🔒 SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></a>
-            <a href="/signal/"><strong>📡 Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></a>
-            <a href="/studio/web3-hub.html"><strong>🪙 Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></a>
-            <a href="/pets/"><strong>💎 Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></a>
-            <a href="/studio/"><strong>🛠️ Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></a>
+            <div class="nav-dropdown-header"><span>🪐 14+ STUDIO WORKSTATIONS</span><span class="nav-item-badge">LOCAL DAGS</span></div>
+            <a href="/studio/cockpit.html"><span class="nav-item-icon-box">🪐</span><div class="nav-item-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>
+            <a href="/studio/webgen.html"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>
+            <a href="/studio/vos-sandbox.html"><span class="nav-item-icon-box">💻</span><div class="nav-item-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>
+            <a href="/studio/nexus-3d.html"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></div><span class="nav-item-badge">CAD</span></a>
+            <a href="/studio/omnipost.html"><span class="nav-item-icon-box">🎬</span><div class="nav-item-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>
+            <a href="/studio/math-pillars.html"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></div><span class="nav-item-badge">MATH</span></a>
+            <a href="/secure-comms/"><span class="nav-item-icon-box">🔒</span><div class="nav-item-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>
+            <a href="/signal/"><span class="nav-item-icon-box">📡</span><div class="nav-item-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>
+            <a href="/studio/web3-hub.html"><span class="nav-item-icon-box">🪙</span><div class="nav-item-body"><strong>Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>
+            <a href="/pets/"><span class="nav-item-icon-box">💎</span><div class="nav-item-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>
+            <a href="/studio/"><span class="nav-item-icon-box">🛠️</span><div class="nav-item-body"><strong>Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>
           </div>
         </div>
 
@@ -63,12 +83,13 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
             <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
           </button>
           <div class="nav-dropdown-menu">
-            <a href="/comic/"><strong>🎨 AZOTH Anime Comic</strong><small>Season 1 Ep 1: Genesis in Silicon Rain (Audio)</small></a>
-            <a href="/social/"><strong>🌌 Community Social Wall</strong><small>Builder Dispatches & Showcase Transmissions</small></a>
-            <a href="/articles/"><strong>📜 Engineering Whitepapers</strong><small>Architectural Deep-Dives & Benchmarks</small></a>
-            <a href="/article/"><strong>🔮 Sovereign AI Manifesto</strong><small>Multi-Agent Consensus & Philosophical Vision</small></a>
-            <a href="/ai-webgpu.html"><strong>⚡ WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></a>
-            <a href="/adytum/"><strong>🏛️ Adytum Sanctum</strong><small>Offline Hardware Gateway & Cryptography</small></a>
+            <div class="nav-dropdown-header"><span>🌌 UNIVERSE &amp; PUBLICATIONS</span><span class="nav-item-badge">STORIES</span></div>
+            <a href="/comic/"><span class="nav-item-icon-box">🎨</span><div class="nav-item-body"><strong>AZOTH Anime Comic</strong><small>Season 1 Ep 1: Genesis in Silicon Rain (Audio)</small></div><span class="nav-item-badge">AUDIO</span></a>
+            <a href="/social/"><span class="nav-item-icon-box">🌌</span><div class="nav-item-body"><strong>Community Social Wall</strong><small>Builder Dispatches & Showcase Transmissions</small></div><span class="nav-item-badge">LIVE</span></a>
+            <a href="/articles/"><span class="nav-item-icon-box">📜</span><div class="nav-item-body"><strong>Engineering Whitepapers</strong><small>Architectural Deep-Dives & Benchmarks</small></div><span class="nav-item-badge">RESEARCH</span></a>
+            <a href="/article/"><span class="nav-item-icon-box">🔮</span><div class="nav-item-body"><strong>Sovereign AI Manifesto</strong><small>Multi-Agent Consensus & Philosophical Vision</small></div><span class="nav-item-badge">VISION</span></a>
+            <a href="/ai-webgpu.html"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></div><span class="nav-item-badge">WEBGPU</span></a>
+            <a href="/adytum/"><span class="nav-item-icon-box">🏛️</span><div class="nav-item-body"><strong>Adytum Sanctum</strong><small>Offline Hardware Gateway & Cryptography</small></div><span class="nav-item-badge">SANCTUM</span></a>
           </div>
         </div>
 
@@ -79,16 +100,21 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
             <svg class="dropdown-chevron" fill="none" height="6" viewBox="0 0 10 6" width="10"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
           </button>
           <div class="nav-dropdown-menu">
-            <a href="/docs/"><strong>📚 Master Documentation</strong><small>Port Topology, 1-Click Install Scripts & API Guide</small></a>
-            <a href="/vault/"><strong>🔐 Sovereign Vault</strong><small>Argon2id Secrets, Tokens & Keyrings</small></a>
-            <a href="/pricing/"><strong>💛 Support / Patron</strong><small>Keep Zoth Free, Open Source & Sovereign</small></a>
-            <a href="/faq.html"><strong>❓ FAQ & Troubleshooting</strong><small>Hardware Requirements, Ports & Diagnostics</small></a>
+            <div class="nav-dropdown-header"><span>📚 DOCUMENTATION &amp; SECURITY</span><span class="nav-item-badge">SPECS</span></div>
+            <a href="/docs/"><span class="nav-item-icon-box">📚</span><div class="nav-item-body"><strong>Master Documentation</strong><small>Port Topology, 1-Click Install Scripts & API Guide</small></div><span class="nav-item-badge">DOCS</span></a>
+            <a href="/vault/"><span class="nav-item-icon-box">🔐</span><div class="nav-item-body"><strong>Sovereign Vault</strong><small>Argon2id Secrets, Tokens & Keyrings</small></div><span class="nav-item-badge">ARGON2</span></a>
+            <a href="/pricing/"><span class="nav-item-icon-box">💛</span><div class="nav-item-body"><strong>Support / Patron</strong><small>Keep Zoth Free, Open Source & Sovereign</small></div><span class="nav-item-badge">PATRON</span></a>
+            <a href="/faq.html"><span class="nav-item-icon-box">❓</span><div class="nav-item-body"><strong>FAQ & Troubleshooting</strong><small>Hardware Requirements, Ports & Diagnostics</small></div><span class="nav-item-badge">FAQ</span></a>
           </div>
         </div>
 
         <!-- ⚡ Action Pills -->
         <button type="button" class="nav-pill nav-telemetry-pill" title="View Live Studio Telemetry & Background Daemons" aria-label="Studio Telemetry Status">
           <span class="tel-dot online"></span><span class="tel-text">6/6 DAEMONS</span>
+        </button>
+
+        <button type="button" class="nav-pill nav-pet-pill" title="Active Companion Spirit: Azoth (Click to Summon / Switch Mascot)" aria-label="Active Companion Spirit">
+          <span class="pet-emoji">🔮</span><span class="pet-name">Azoth</span>
         </button>
 
         <a class="nav-pill nav-deck-pill js-deck" href="http://127.0.0.1:8484/" title="Open Local Operator Deck (:8484)">
@@ -121,6 +147,7 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
         <span class="burger-lines"><span class="b-line b-1"></span><span class="b-line b-2"></span><span class="b-line b-3"></span></span>
         <span class="burger-text">Menu</span>
       </button>
+      <div class="zoth-scroll-progress" id="zoth-scroll-progress"></div>
     </header>
 
     <nav class="drawer" id="drawer" aria-label="Universal Mobile Navigation" role="navigation">
@@ -145,52 +172,66 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
         </div>
       </div>
 
+      <div class="drawer-section drawer-theme-section">
+        <div class="drawer-heading">🎨 Visual Theme (16 Archetypes)</div>
+        <div class="drawer-search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="drawer-theme-search-input" placeholder="Search 16 themes..." autocomplete="off" />
+        </div>
+        <div class="theme-filter-chips drawer-filter-chips">
+          <button type="button" class="theme-chip-btn active" data-drawer-cat="all">All (16)</button>
+          <button type="button" class="theme-chip-btn" data-drawer-cat="studio originals">Originals</button>
+          <button type="button" class="theme-chip-btn" data-drawer-cat="frontier ai & tech">Frontier</button>
+          <button type="button" class="theme-chip-btn" data-drawer-cat="developer archetypes">Dev</button>
+        </div>
+      </div>
+
       <div class="drawer-section">
         <div class="drawer-heading">✦ Featured</div>
-        <a class="drawer-link drawer-hero-link" href="/#for-everyone"><strong>✦ For You (No-Code Showcases)</strong><small>How Non-Tech Founders, Creators & Teams Use Zoth</small></a>
+        <a class="drawer-link drawer-hero-link" href="/#for-everyone"><span class="d-link-icon">✦</span><div class="d-link-body"><strong>For You (No-Code Showcases)</strong><small>How Non-Tech Founders, Creators & Teams Use Zoth</small></div><span class="nav-item-badge">SHOWCASE</span></a>
       </div>
 
       <div class="drawer-section">
         <div class="drawer-heading">🔮 Core AI & Pantheon</div>
-        <a class="drawer-link" href="/zoth/"><strong>🔮 Master Azoth Core</strong><small>Sovereign Alchemical AI Core & Synthesis</small></a>
-        <a class="drawer-link" href="/agents/"><strong>⚡ 21-Agent Pantheon</strong><small>Autonomous Model Archetypes & Sandboxes</small></a>
-        <a class="drawer-link" href="/studio/consensus.html"><strong>⚔️ Consensus Battle Arena</strong><small>3-Agent Triangulation & AST Synthesis</small></a>
-        <a class="drawer-link" href="/studio/swarm.html"><strong>🌐 3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></a>
-        <a class="drawer-link" href="/memory/"><strong>🧠 Memory Whitespace</strong><small>Biomorphic Associative Graph & Lucy Oracle</small></a>
-        <a class="drawer-link" href="/zoth-world.html"><strong>🌌 Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm & Multiverse</small></a>
+        <a class="drawer-link" href="/zoth/"><span class="d-link-icon">🔮</span><div class="d-link-body"><strong>Master Azoth Core</strong><small>Sovereign Alchemical AI Core & Synthesis</small></div><span class="nav-item-badge">CORE</span></a>
+        <a class="drawer-link" href="/agents/"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>21-Agent Pantheon</strong><small>Autonomous Model Archetypes & Sandboxes</small></div><span class="nav-item-badge">21 AGENTS</span></a>
+        <a class="drawer-link" href="/studio/consensus.html"><span class="d-link-icon">⚔️</span><div class="d-link-body"><strong>Consensus Battle Arena</strong><small>3-Agent Triangulation & AST Synthesis</small></div><span class="nav-item-badge">AST</span></a>
+        <a class="drawer-link" href="/studio/swarm.html"><span class="d-link-icon">🌐</span><div class="d-link-body"><strong>3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></div><span class="nav-item-badge">3D GPU</span></a>
+        <a class="drawer-link" href="/memory/"><span class="d-link-icon">🧠</span><div class="d-link-body"><strong>Memory Whitespace</strong><small>Biomorphic Associative Graph & Lucy Oracle</small></div><span class="nav-item-badge">VECTOR</span></a>
+        <a class="drawer-link" href="/zoth-world.html"><span class="d-link-icon">🌌</span><div class="d-link-body"><strong>Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm & Multiverse</small></div><span class="nav-item-badge">3D</span></a>
       </div>
 
       <div class="drawer-section">
         <div class="drawer-heading">🪐 Workstations & DAGs</div>
-        <a class="drawer-link" href="/studio/cockpit.html"><strong>🪐 The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></a>
-        <a class="drawer-link" href="/studio/webgen.html"><strong>⚡ WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></a>
-        <a class="drawer-link" href="/studio/vos-sandbox.html"><strong>💻 vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></a>
-        <a class="drawer-link" href="/studio/nexus-3d.html"><strong>📐 Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></a>
-        <a class="drawer-link" href="/studio/omnipost.html"><strong>🎬 OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></a>
-        <a class="drawer-link" href="/studio/math-pillars.html"><strong>📐 AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></a>
-        <a class="drawer-link" href="/secure-comms/"><strong>🔒 SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></a>
-        <a class="drawer-link" href="/signal/"><strong>📡 Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></a>
-        <a class="drawer-link" href="/studio/web3-hub.html"><strong>🪙 Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></a>
-        <a class="drawer-link" href="/pets/"><strong>💎 Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></a>
-        <a class="drawer-link" href="/studio/"><strong>🛠️ Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></a>
+        <a class="drawer-link" href="/studio/cockpit.html"><span class="d-link-icon">🪐</span><div class="d-link-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>
+        <a class="drawer-link" href="/studio/webgen.html"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>
+        <a class="drawer-link" href="/studio/vos-sandbox.html"><span class="d-link-icon">💻</span><div class="d-link-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>
+        <a class="drawer-link" href="/studio/nexus-3d.html"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></div><span class="nav-item-badge">CAD</span></a>
+        <a class="drawer-link" href="/studio/omnipost.html"><span class="d-link-icon">🎬</span><div class="d-link-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>
+        <a class="drawer-link" href="/studio/math-pillars.html"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></div><span class="nav-item-badge">MATH</span></a>
+        <a class="drawer-link" href="/secure-comms/"><span class="d-link-icon">🔒</span><div class="d-link-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>
+        <a class="drawer-link" href="/signal/"><span class="d-link-icon">📡</span><div class="d-link-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>
+        <a class="drawer-link" href="/studio/web3-hub.html"><span class="d-link-icon">🪙</span><div class="d-link-body"><strong>Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>
+        <a class="drawer-link" href="/pets/"><span class="d-link-icon">💎</span><div class="d-link-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>
+        <a class="drawer-link" href="/studio/"><span class="d-link-icon">🛠️</span><div class="d-link-body"><strong>Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>
       </div>
 
       <div class="drawer-section">
         <div class="drawer-heading">📜 Universe & Research</div>
-        <a class="drawer-link" href="/comic/"><strong>🎨 AZOTH Anime Comic Series</strong><small>Season 1 Ep 1: Genesis in Silicon Rain</small></a>
-        <a class="drawer-link" href="/social/"><strong>🌌 Community Social Wall</strong><small>Builder Dispatches & Showcase Transmissions</small></a>
-        <a class="drawer-link" href="/articles/"><strong>📜 Engineering Whitepapers</strong><small>Architectural Deep-Dives & Benchmarks</small></a>
-        <a class="drawer-link" href="/article/"><strong>🔮 Sovereign AI Manifesto</strong><small>Multi-Agent Consensus & Philosophical Vision</small></a>
-        <a class="drawer-link" href="/ai-webgpu.html"><strong>⚡ WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></a>
-        <a class="drawer-link" href="/adytum/"><strong>🏛️ Adytum Sanctum</strong><small>Offline Hardware Gateway & Cryptography</small></a>
+        <a class="drawer-link" href="/comic/"><span class="d-link-icon">🎨</span><div class="d-link-body"><strong>AZOTH Anime Comic Series</strong><small>Season 1 Ep 1: Genesis in Silicon Rain</small></div><span class="nav-item-badge">AUDIO</span></a>
+        <a class="drawer-link" href="/social/"><span class="d-link-icon">🌌</span><div class="d-link-body"><strong>Community Social Wall</strong><small>Builder Dispatches & Showcase Transmissions</small></div><span class="nav-item-badge">LIVE</span></a>
+        <a class="drawer-link" href="/articles/"><span class="d-link-icon">📜</span><div class="d-link-body"><strong>Engineering Whitepapers</strong><small>Architectural Deep-Dives & Benchmarks</small></div><span class="nav-item-badge">RESEARCH</span></a>
+        <a class="drawer-link" href="/article/"><span class="d-link-icon">🔮</span><div class="d-link-body"><strong>Sovereign AI Manifesto</strong><small>Multi-Agent Consensus & Philosophical Vision</small></div><span class="nav-item-badge">VISION</span></a>
+        <a class="drawer-link" href="/ai-webgpu.html"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></div><span class="nav-item-badge">WEBGPU</span></a>
+        <a class="drawer-link" href="/adytum/"><span class="d-link-icon">🏛️</span><div class="d-link-body"><strong>Adytum Sanctum</strong><small>Offline Hardware Gateway & Cryptography</small></div><span class="nav-item-badge">SANCTUM</span></a>
       </div>
 
       <div class="drawer-section">
         <div class="drawer-heading">📚 Docs & Security</div>
-        <a class="drawer-link" href="/docs/"><strong>📚 Complete Documentation</strong><small>Port Topology, 1-Click Install Scripts & API</small></a>
-        <a class="drawer-link" href="/vault/"><strong>🔐 Sovereign Vault</strong><small>Argon2id Secrets, Tokens & Keyrings</small></a>
-        <a class="drawer-link" href="/pricing/"><strong>💛 Support / Patron</strong><small>Keep Zoth Free, Open Source & Sovereign</small></a>
-        <a class="drawer-link" href="/faq.html"><strong>❓ FAQ & Troubleshooting</strong><small>Hardware Requirements, Ports & Diagnostics</small></a>
+        <a class="drawer-link" href="/docs/"><span class="d-link-icon">📚</span><div class="d-link-body"><strong>Complete Documentation</strong><small>Port Topology, 1-Click Install Scripts & API</small></div><span class="nav-item-badge">DOCS</span></a>
+        <a class="drawer-link" href="/vault/"><span class="d-link-icon">🔐</span><div class="d-link-body"><strong>Sovereign Vault</strong><small>Argon2id Secrets, Tokens & Keyrings</small></div><span class="nav-item-badge">ARGON2</span></a>
+        <a class="drawer-link" href="/pricing/"><span class="nav-item-icon-box">💛</span><div class="nav-item-body"><strong>Support / Patron</strong><small>Keep Zoth Free, Open Source & Sovereign</small></div><span class="nav-item-badge">PATRON</span></a>
+        <a class="drawer-link" href="/faq.html"><span class="d-link-icon">❓</span><div class="d-link-body"><strong>FAQ & Troubleshooting</strong><small>Hardware Requirements, Ports & Diagnostics</small></div><span class="nav-item-badge">FAQ</span></a>
       </div>
 
       <div class="drawer-section drawer-footer-section">
@@ -264,12 +305,12 @@ MASTER_FOOTER = """    <footer class="site" role="contentinfo">
       </div>
     </footer>"""
 
-print("Synchronizing unified master navbar & master footer across all public website pages...")
+print(f"Scanning and synchronizing navigation across pages in {PUBLIC_DIR}...")
 count = 0
 
-for html_file in sorted(public_dir.rglob("*.html")):
-    rel_path = str(html_file.relative_to(public_dir))
-    if rel_path.startswith("previews/") or rel_path.startswith("workspaces/") or "open-source-library" in rel_path or "templates-source" in rel_path or "cloned-projects" in rel_path:
+for html_file in sorted(PUBLIC_DIR.rglob("*.html")):
+    rel_path = str(html_file.relative_to(PUBLIC_DIR))
+    if any(rel_path.startswith(ex) or ex in rel_path for ex in EXCLUDE_DIRS):
         continue
 
     content = html_file.read_text(encoding="utf-8", errors="ignore")
@@ -277,17 +318,22 @@ for html_file in sorted(public_dir.rglob("*.html")):
     # 1. Ensure CSS & JS are in head / body
     if "/assets/zoth-nav.css" not in content:
         content = content.replace("</head>", '  <link rel="stylesheet" href="/assets/zoth-nav.css" />\n</head>')
-    if "/assets/zoth-footer.css" not in content:
+    if rel_path not in NO_FOOTER_PAGES and "/assets/zoth-footer.css" not in content:
         content = content.replace("</head>", '  <link rel="stylesheet" href="/assets/zoth-footer.css" />\n</head>')
     if "/assets/zoth-nav.js" not in content:
         content = content.replace("</body>", '  <script src="/assets/zoth-nav.js" defer></script>\n</body>')
 
     # 2. Check if page already has header or if we should replace/insert it
-    if "<header" in content:
+    if '<header class="bar"' in content or '<header id="topbar"' in content:
+        content = re.sub(r'<header[^>]*class="bar"[\s\S]*?</header>', "<!-- HEADER_PLACEHOLDER -->", content, count=1)
+        content = re.sub(r'<header[^>]*id="topbar"[\s\S]*?</header>', "<!-- HEADER_PLACEHOLDER -->", content, count=1)
+        content = re.sub(r'<nav[^>]*id=["\']drawer["\'][\s\S]*?</nav>', "", content)
+        content = re.sub(r'<nav[^>]*class=["\']drawer["\'][\s\S]*?</nav>', "", content)
+        content = content.replace("<!-- HEADER_PLACEHOLDER -->", MASTER_HEADER)
+    elif "<header" in content and rel_path not in NO_FOOTER_PAGES:
         content = re.sub(r"<header[\s\S]*?</header>", "<!-- HEADER_PLACEHOLDER -->", content, count=1)
-        # Clean out any old separate drawer
-        content = re.sub(r"<nav[^>]*id=[\"']drawer[\"'][\s\S]*?</nav>", "", content, count=1)
-        content = re.sub(r"<nav[^>]*class=[\"']drawer[\"'][\s\S]*?</nav>", "", content, count=1)
+        content = re.sub(r'<nav[^>]*id=["\']drawer["\'][\s\S]*?</nav>', "", content)
+        content = re.sub(r'<nav[^>]*class=["\']drawer["\'][\s\S]*?</nav>', "", content)
         content = content.replace("<!-- HEADER_PLACEHOLDER -->", MASTER_HEADER)
     else:
         # Insert right after skip link or body start
@@ -296,13 +342,14 @@ for html_file in sorted(public_dir.rglob("*.html")):
         elif '<body' in content:
             content = re.sub(r'(<body[^>]*>)', r'\1\n' + MASTER_HEADER, content, count=1)
 
-    # 3. Synchronize Master Footer
-    if "<footer" in content:
-        content = re.sub(r"<footer[\s\S]*?</footer>", MASTER_FOOTER, content, count=1)
-    else:
-        content = content.replace("</body>", MASTER_FOOTER + "\n</body>")
+    # 3. Synchronize Master Footer on scrollable content pages
+    if rel_path not in NO_FOOTER_PAGES:
+        if '<footer class="site"' in content:
+            content = re.sub(r'<footer class="site"[\s\S]*?</footer>', MASTER_FOOTER, content, count=1)
+        elif "<footer" not in content:
+            content = content.replace("</body>", MASTER_FOOTER + "\n</body>")
 
     html_file.write_text(content, encoding="utf-8")
     count += 1
 
-print(f"Successfully synchronized master navbar & footer across {count} pages!")
+print(f"Successfully verified & synchronized master navbar & footer across {count} pages!")

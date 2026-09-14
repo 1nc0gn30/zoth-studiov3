@@ -205,7 +205,7 @@
     if (drawerGrid) {
       drawerGrid.innerHTML = THEMES.map(function (t) {
         var isActive = t.id === curTheme;
-        return '<button class="drawer-theme-btn' + (isActive ? ' active' : '') + '" data-theme-id="' + t.id + '" type="button" aria-pressed="' + isActive + '"><span class="d-swatch" style="background:' + t.accent + '"></span><span class="d-emoji">' + t.emoji + '</span><span class="d-label">' + t.label + '</span></button>';
+        return '<button class="drawer-theme-btn' + (isActive ? ' active' : '') + '" data-theme-id="' + t.id + '" data-theme-label="' + t.label.toLowerCase() + '" data-theme-cat="' + t.category.toLowerCase() + '" type="button" aria-pressed="' + isActive + '"><span class="d-swatch" style="background:' + t.accent + '"></span><span class="d-emoji">' + t.emoji + '</span><span class="d-label">' + t.label + '</span></button>';
       }).join("");
     }
 
