@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST_DIR="$ROOT/dist-macos"
 BUILD_DIR="$(mktemp -d -t zoth-mac-staging-XXXXXX)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
-VERSION="3.0.0"
+VERSION="${ZOTH_VERSION:-3.0.0}"
 PKG_NAME="zoth-studio"
 VARIANT="${VARIANT:-regular}"
 if [[ "$VARIANT" == "extreme" ]]; then
@@ -33,8 +33,15 @@ echo "============================================================"
 echo "📦 Step 1: Compiling React Dashboard..."
 ORCH_DIR="$ROOT/tools/null ai agent tools/local_null_ai_orchestrator"
 if [[ -f "$ORCH_DIR/dashboard/package.json" ]]; then
-  (cd "$ORCH_DIR/dashboard" && npm run build)
-  echo "✓ React dashboard compiled into $ORCH_DIR/dashboard/dist"
+  if [[ ! -d "$ORCH_DIR/dashboard/node_modules" ]]; then
+    echo "  ↳ installing dashboard dependencies..."
+    (cd "$ORCH_DIR/dashboard" && (npm ci --no-audit --no-fund || npm install --no-audit --no-fund)) || true
+  fi
+  if (cd "$ORCH_DIR/dashboard" && npm run build); then
+    echo "✓ React dashboard compiled into $ORCH_DIR/dashboard/dist"
+  else
+    echo "⚠ dashboard build unavailable — shipping orchestrator without prebuilt dashboard."
+  fi
 fi
 
 mkdir -p "$DIST_DIR"
@@ -49,7 +56,11 @@ rsync -a --exclude-from="$IGNORE_FILE" "$ROOT/public/" "$STAGE/public/"
 # Copy orchestrator & runtime with the variant ignore list
 rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/runtime" "$STAGE/orchestrator/"
 rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/orchestrator.py" "$STAGE/orchestrator/"
-rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/registry.local.json" "$STAGE/orchestrator/"
+if [[ -f "$ORCH_DIR/registry.local.json" ]]; then
+  rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/registry.local.json" "$STAGE/orchestrator/"
+else
+  echo "⚠ registry.local.json absent — orchestrator self-generates it on first 'scan'."
+fi
 rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/playbooks" "$STAGE/orchestrator/"
 if [[ -d "$ORCH_DIR/dashboard/dist" ]]; then
   rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/dashboard/dist/" "$STAGE/orchestrator/dashboard/"

@@ -1,13 +1,29 @@
 name: 🚀 Publish Sovereign Release Binaries
 
+# Triggered by any `v*` tag push. Publishes a titled + described GitHub Release
+# carrying the full artifact suite (Linux, Windows, macOS, Android APK).
+#
+# IMPORTANT: on GitHub the repository root IS core-app/. Never prefix paths
+# with `core-app/` here — doing so makes every packaging step silently no-op
+# (which is why releases before v6.7.0 shipped vault-daemon binaries only).
+
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (no leading v). Used only when not run from a tag.'
+        required: false
+        default: '0.0.0-dev'
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-and-release:
@@ -16,6 +32,32 @@ jobs:
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
+
+      - name: 🏷️ Resolve Version
+        id: v
+        run: |
+          set -euo pipefail
+          RAW="${{ github.ref_name }}"
+          if [[ "$RAW" =~ ^v[0-9] ]]; then
+            VER="${RAW#v}"
+          else
+            VER="${{ inputs.version }}"
+          fi
+          [[ -z "$VER" ]] && VER="0.0.0-dev"
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "ZOTH_VERSION=$VER" >> "$GITHUB_ENV"
+          if [[ ! "$RAW" =~ ^v[0-9] ]]; then
+            echo "TAG_REF=false" >> "$GITHUB_ENV"
+          else
+            echo "TAG_REF=true" >> "$GITHUB_ENV"
+          fi
+          # Tags like v6.7.0-rc1 publish as GitHub pre-releases.
+          if [[ "$RAW" == *-* ]]; then
+            echo "PRERELEASE=true" >> "$GITHUB_ENV"
+          else
+            echo "PRERELEASE=false" >> "$GITHUB_ENV"
+          fi
+          echo "Resolved version: $VER (ref: $RAW)"
 
       - name: 🦀 Setup Rust Toolchain & MinGW
         uses: dtolnay/rust-toolchain@stable
@@ -29,122 +71,139 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: 🛠️ Install Packaging Dependencies
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y gcc-mingw-w64 make rsync tar zip curl
+          sudo apt-get install -y gcc-mingw-w64 make rsync tar zip curl fakeroot dpkg-dev file
+
+      - name: 📁 Prepare Release Staging Tree & Validate Manifests
+        run: |
+          set -euo pipefail
+          mkdir -p dist/release/linux dist/release/windows dist/release/macos dist/release/android
+          # The packaging scripts rsync with --exclude-from=<manifest>; these
+          # files are build inputs and must stay tracked in git.
+          for f in .buildignore .buildignore.extreme; do
+            if [[ -f "$f" ]]; then
+              echo "✓ build manifest present: $f"
+            else
+              echo "❌ MISSING BUILD MANIFEST: $f (scripts/build-*-package.sh will fail)"
+              exit 1
+            fi
+          done
 
       - name: 🔐 Compile Rust Vault Daemons (Linux & Windows)
         run: |
-          mkdir -p dist/release/windows dist/release/linux dist/release/macos dist/release/android
-          
-          # Linux Vault Daemon
-          cd vault-daemon || cd core-app/vault-daemon
+          set -euo pipefail
+          cd vault-daemon
           cargo build --release --target x86_64-unknown-linux-gnu
+          cargo build --release --target x86_64-pc-windows-gnu
           cp target/x86_64-unknown-linux-gnu/release/zoth-vault-daemon ../dist/release/zoth-vault-daemon-linux-x86_64
           chmod +x ../dist/release/zoth-vault-daemon-linux-x86_64
-          
-          # Windows Vault Daemon
-          cargo build --release --target x86_64-pc-windows-gnu
           cp target/x86_64-pc-windows-gnu/release/zoth-vault-daemon.exe ../dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
-          
           cd ../dist/release
-          tar -czvf zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz zoth-vault-daemon-linux-x86_64
+          tar -czf "zoth-vault-daemon-v${ZOTH_VERSION}-linux-x86_64.tar.gz" zoth-vault-daemon-linux-x86_64
           cd windows
-          zip zoth-vault-daemon-${{ github.ref_name }}-windows-x86_64.zip zoth-vault-daemon-windows-x86_64.exe
+          zip -q "zoth-vault-daemon-v${ZOTH_VERSION}-windows-x86_64.zip" zoth-vault-daemon-windows-x86_64.exe
           cd ../..
+          ls -lh dist/release dist/release/windows
 
-      - name: 🐧 Build Full Linux Suite (.deb, .tar.gz, .run)
+      - name: 🐧 Build Full Linux Suite (.deb, .tar.gz, .run, AppImage)
         run: |
-          cd core-app || true
-          if [ -f "scripts/build-linux-packages.sh" ]; then
-            bash scripts/build-linux-packages.sh || true
-          fi
-          cd ..
-          mkdir -p dist/release/linux
-          if [ -d "core-app/dist-linux" ]; then
-            cp core-app/dist-linux/* dist/release/linux/ || true
-          fi
+          set -euo pipefail
+          bash scripts/build-linux-packages.sh
+          echo "--- dist-linux ---"
+          ls -lh dist-linux
+          cp -v dist-linux/* dist/release/linux/
 
       - name: 🪟 Build Windows Suite (Portable ZIP & Launcher)
         run: |
-          cd core-app || true
-          if [ -f "scripts/build-windows-package.sh" ]; then
-            bash scripts/build-windows-package.sh || true
-          fi
-          cd ..
-          mkdir -p dist/release/windows
-          if [ -d "core-app/dist-windows" ]; then
-            cp core-app/dist-windows/* dist/release/windows/ || true
-          fi
-          if [ -d "core-app/public/dist/release/windows" ]; then
-            cp core-app/public/dist/release/windows/* dist/release/windows/ || true
-          fi
+          set -euo pipefail
+          bash scripts/build-windows-package.sh
+          echo "--- dist-windows ---"
+          ls -lh dist-windows
+          cp -v dist-windows/* dist/release/windows/
 
       - name: 🍎 Build macOS Universal Suite (.tar.gz & .zip)
         run: |
-          cd core-app || true
-          if [ -f "scripts/build-macos-package.sh" ]; then
-            bash scripts/build-macos-package.sh || true
-          fi
-          cd ..
-          mkdir -p dist/release/macos
-          if [ -d "core-app/dist-macos" ]; then
-            cp core-app/dist-macos/* dist/release/macos/ || true
-          fi
+          set -euo pipefail
+          bash scripts/build-macos-package.sh
+          echo "--- dist-macos ---"
+          ls -lh dist-macos
+          cp -v dist-macos/* dist/release/macos/
 
       - name: 🤖 Build Android APK (Zoth Signal Bridge)
         run: |
-          if [ -d "zoth-signal-bridge-android" ]; then
-            cd zoth-signal-bridge-android
-            chmod +x gradlew
-            ./gradlew assembleDebug || true
-            cd ..
-            mkdir -p dist/release/android
-            if [ -f "zoth-signal-bridge-android/app/build/outputs/apk/debug/app-debug.apk" ]; then
-              cp zoth-signal-bridge-android/app/build/outputs/apk/debug/app-debug.apk dist/release/android/zoth-signal-bridge-${{ github.ref_name }}-android.apk
-            fi
+          set -euo pipefail
+          if [[ ! -d zoth-signal-bridge-android ]]; then
+            echo "❌ Android project missing at zoth-signal-bridge-android/"
+            exit 1
           fi
+          cd zoth-signal-bridge-android
+          chmod +x gradlew
+          # AGP auto-provisions a missing compileSdk from the preinstalled SDK.
+          ./gradlew --no-daemon --stacktrace assembleDebug
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK" || { echo "❌ Gradle completed but no APK at $APK"; exit 1; }
+          cp "$APK" "../dist/release/android/zoth-signal-bridge-${ZOTH_VERSION}-android.apk"
+          ls -lh ../dist/release/android/
+
+      - name: 🔎 Verify Artifact Suite Is Non-Empty
+        run: |
+          set -euo pipefail
+          echo "=== dist/release tree ==="
+          find dist/release -type f | sort
+          fail=0
+          for d in linux windows macos android; do
+            n=$(find "dist/release/$d" -type f | wc -l)
+            echo "  $d: $n file(s)"
+            if [[ "$n" -eq 0 ]]; then
+              echo "❌ No artifacts produced for '$d' — the corresponding build step failed silently."
+              fail=1
+            fi
+          done
+          [[ "$fail" -eq 0 ]] || exit 1
 
       - name: 📝 Generate Comprehensive Checksums
         run: |
+          set -euo pipefail
           cd dist/release
-          sha256sum zoth-vault-daemon* > SHA256SUMS.txt || true
-          if [ -d "windows" ]; then
-            cd windows && sha256sum * > SHA256SUMS.txt && cd ..
-          fi
-          if [ -d "linux" ]; then
-            cd linux && sha256sum * > SHA256SUMS.txt && cd ..
-          fi
-          if [ -d "macos" ]; then
-            cd macos && sha256sum * > SHA256SUMS.txt && cd ..
-          fi
-          if [ -d "android" ]; then
-            cd android && sha256sum * > SHA256SUMS.txt && cd ..
-          fi
+          rm -f SHA256SUMS.txt
+          find . -type f ! -name 'SHA256SUMS.txt' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > SHA256SUMS.txt
+          echo "--- SHA256SUMS.txt ---"
+          cat SHA256SUMS.txt
+
+      - name: 📤 Upload Build Artifacts (retained even for non-tag runs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: zoth-studio-release-suite
+          path: dist/release/**
+          retention-days: 14
+          if-no-files-found: error
 
       - name: 🚀 Publish GitHub Release
+        if: env.TAG_REF == 'true'
         uses: softprops/action-gh-release@v2
         with:
           name: "Zoth Studio ${{ github.ref_name }} — Sovereign Multi-Agent Workstation"
-          body_path: core-app/public/dist/release/RELEASE_NOTES.md
+          body_path: RELEASE_NOTES.md
           draft: false
-          prerelease: false
+          prerelease: ${{ env.PRERELEASE == 'true' }}
+          fail_on_unmatched_files: false
           files: |
             dist/release/zoth-vault-daemon-linux-x86_64
-            dist/release/zoth-vault-daemon-${{ github.ref_name }}-linux-x86_64.tar.gz
+            dist/release/*.tar.gz
             dist/release/SHA256SUMS.txt
-            dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
-            dist/release/windows/zoth-vault-daemon-${{ github.ref_name }}-windows-x86_64.zip
-            dist/release/windows/zoth-windows-x86_64.exe
-            dist/release/windows/zoth-studio-*.zip
-            dist/release/linux/Zoth_Studio-*.AppImage
-            dist/release/linux/zoth-studio_*.deb
-            dist/release/linux/zoth-linux-x86_64.run
-            dist/release/linux/zoth-studio-*.tar.gz
-            dist/release/macos/zoth-studio-*.tar.gz
-            dist/release/macos/zoth-studio-*.zip
-            dist/release/android/zoth-signal-bridge-*.apk
+            dist/release/linux/*
+            dist/release/windows/*
+            dist/release/macos/*
+            dist/release/android/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

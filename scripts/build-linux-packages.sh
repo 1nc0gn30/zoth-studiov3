@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST_DIR="$ROOT/dist-linux"
 BUILD_DIR="$(mktemp -d -t zoth-build-staging-XXXXXX)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
-VERSION="3.0.0"
+VERSION="${ZOTH_VERSION:-3.0.0}"
 PKG_NAME="zoth-studio"
 VARIANT="${VARIANT:-regular}"
 if [[ "$VARIANT" == "extreme" ]]; then
@@ -33,8 +33,15 @@ echo "============================================================"
 echo "📦 Step 1: Compiling React Dashboard..."
 ORCH_DIR="$ROOT/tools/null ai agent tools/local_null_ai_orchestrator"
 if [[ -f "$ORCH_DIR/dashboard/package.json" ]]; then
-  (cd "$ORCH_DIR/dashboard" && npm run build)
-  echo "✓ React dashboard compiled into $ORCH_DIR/dashboard/dist"
+  if [[ ! -d "$ORCH_DIR/dashboard/node_modules" ]]; then
+    echo "  ↳ installing dashboard dependencies..."
+    (cd "$ORCH_DIR/dashboard" && (npm ci --no-audit --no-fund || npm install --no-audit --no-fund)) || true
+  fi
+  if (cd "$ORCH_DIR/dashboard" && npm run build); then
+    echo "✓ React dashboard compiled into $ORCH_DIR/dashboard/dist"
+  else
+    echo "⚠ dashboard build unavailable — shipping orchestrator without prebuilt dashboard."
+  fi
 fi
 
 # Clean output directories
@@ -63,9 +70,17 @@ rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/config" "$STAGE/usr/lib/$PKG_N
 rsync -a --exclude-from="$IGNORE_FILE" "$ORCH_DIR/pets" "$STAGE/usr/lib/$PKG_NAME/orchestrator/"
 
 mkdir -p "$STAGE/usr/lib/$PKG_NAME/orchestrator/dashboard_dist"
-rsync -a "$ORCH_DIR/dashboard/dist/" "$STAGE/usr/lib/$PKG_NAME/orchestrator/dashboard_dist/"
+if [[ -d "$ORCH_DIR/dashboard/dist" ]]; then
+  rsync -a "$ORCH_DIR/dashboard/dist/" "$STAGE/usr/lib/$PKG_NAME/orchestrator/dashboard_dist/"
+else
+  echo "⚠ no dashboard/dist — omitting prebuilt dashboard payload."
+fi
 cp "$ORCH_DIR/orchestrator.py" "$STAGE/usr/lib/$PKG_NAME/orchestrator/"
-cp "$ORCH_DIR/registry.local.json" "$STAGE/usr/lib/$PKG_NAME/orchestrator/"
+if [[ -f "$ORCH_DIR/registry.local.json" ]]; then
+  cp "$ORCH_DIR/registry.local.json" "$STAGE/usr/lib/$PKG_NAME/orchestrator/"
+else
+  echo "⚠ registry.local.json absent — orchestrator self-generates it on first 'scan'."
+fi
 cp "$ORCH_DIR/requirements.txt" "$STAGE/usr/lib/$PKG_NAME/orchestrator/"
 cp "$ORCH_DIR/HOWTO.md" "$STAGE/usr/lib/$PKG_NAME/orchestrator/"
 
