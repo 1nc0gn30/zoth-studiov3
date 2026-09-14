@@ -83,6 +83,29 @@ zoth comic list / play <ep>         # 📖 AZOTH manga reader & terminal audio p
 zoth audio list / play <id>         # 🎵 Play manga narration tracks and Web Audio SFX
 ```
 
+### 🛠️ Orchestrator Engine (`orchestrator.py`)
+
+The tool-registry engine behind `zoth tool`. Run it directly from
+`tools/null ai agent tools/local_null_ai_orchestrator/`:
+
+```bash
+python3 orchestrator.py doctor             # 🩺 Human-readable health + dependency audit
+python3 orchestrator.py doctor --json      # 🤖 Machine-readable health (exit 0 ready / 2 deps missing)
+python3 orchestrator.py list [--summary]   # 📋 List registered tools, optionally as category bars
+python3 orchestrator.py show <tool_id>     # 🔍 Inspect a single tool's metadata
+python3 orchestrator.py scan               # 🔄 Rescan the workspace and rewrite the registry
+python3 orchestrator.py registry stats     # 📊 Registry health: entries, stale paths, unnamed
+python3 orchestrator.py registry repair    # 🧹 Reconcile stale/malformed entries (dry-run; --confirm to write)
+python3 orchestrator.py run <tool> "<cmd>" [--confirm]   # ▶️ Execute (dry-run unless --confirm)
+```
+
+Commands that mutate state default to dry-run and require `--confirm`.
+
+The public hub also serves a publish-safe projection of this registry at
+`/api/tools.json` (absolute local paths and credential-shaped strings are
+stripped at generation time). Regenerate with
+`python3 scripts/generate-tools-json.py`.
+
 ---
 
 ## 🌐 Sovereign Port Topology Matrix
