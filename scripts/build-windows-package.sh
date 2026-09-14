@@ -71,6 +71,8 @@ fi
 find "$STAGE" -type f \( -name "*.html" -o -name "*.json" -o -name "*.js" -o -name "*.md" -o -name "*.txt" -o -name "*.xml" -o -name "*.py" -o -name "*.bat" -o -name "*.cmd" -o -name "*.ps1" \) -exec sed -i \
   -e 's|./[^"'\'' ]*|orchestrator|g' \
   -e 's|~/[^"'\'' ]*|orchestrator|g' \
+  -e 's|/media/neo[^ "]*|orchestrator|g' \
+  -e 's|/home/neo[^ "]*|orchestrator|g' \
   -e 's|neal@nullai\.tech|team@nullai.tech|g' \
   -e 's|Zoth Studio Team|NullAI Team|g' \
   -e 's|DemoAgentOrg|NullAI-Studio|g' \
@@ -102,10 +104,15 @@ if [[ -n "$KEY_MATCHES" ]]; then
 fi
 
 # Scan for PERSONAL INFO about Zoth Studio Team (must never ship in either variant)
-PII_PATTERNS=("Zoth Studio Team" "neal@nullai.tech" "nullai.tech" "DemoAgentOrg" "." "~" "nullai")
+# Only precise personal identifiers belong here. The previous list also
+# contained "." and "~" as FIXED-string patterns, which match virtually
+# every file in the payload and made this gate abort every build
+# unconditionally. Bare branding ("nullai") is published on purpose and
+# is not a personal identifier, so it is not fatal.
+PII_PATTERNS=("Zoth Studio Team" "neal@nullai.tech" "DemoAgentOrg" "/media/neo" "/home/neo")
 PII_MATCHES=""
 for pat in "${PII_PATTERNS[@]}"; do
-  hit=$(grep -rn -F -- "$pat" "$STAGE" 2>/dev/null | grep -v node_modules || true)
+  hit=$(grep -rn -I -F -- "$pat" "$STAGE" 2>/dev/null | grep -v node_modules || true)
   if [[ -n "$hit" ]]; then
     PII_MATCHES+=$'\n'"$hit"
   fi
