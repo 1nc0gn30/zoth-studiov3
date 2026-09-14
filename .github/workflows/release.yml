@@ -6,6 +6,10 @@ name: 🚀 Publish Sovereign Release Binaries
 # IMPORTANT: on GitHub the repository root IS core-app/. Never prefix paths
 # with `core-app/` here — doing so makes every packaging step silently no-op
 # (which is why releases before v6.7.0 shipped vault-daemon binaries only).
+#
+# Each packaging step tees its output to /tmp/*.log; on any failure the job
+# opens a GitHub issue containing the log tails, because action logs are only
+# readable with authentication.
 
 on:
   push:
@@ -20,6 +24,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -81,13 +86,23 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y gcc-mingw-w64 make rsync tar zip curl fakeroot dpkg-dev file squashfs-tools p7zip-full
+          echo "--- tool availability ---"
+          for t in dpkg-deb mksquashfs zip tar rsync; do
+            printf '%-14s %s\n' "$t" "$(command -v "$t" || echo MISSING)"
+          done
+          for t in 7z 7zz 7za 7zr; do
+            printf '%-14s %s\n' "$t" "$(command -v "$t" || echo MISSING)"
+          done
+          # 7z is the Windows SFX packer; the packager degrades to ZIP if absent,
+          # but install it explicitly so the .exe is produced when possible.
+          if ! command -v 7z >/dev/null 2>&1 && ! command -v 7zz >/dev/null 2>&1; then
+            sudo apt-get install -y 7zip || echo "⚠ 7zip unavailable; Windows SFX will fall back to ZIP"
+          fi
 
       - name: 📁 Prepare Release Staging Tree & Validate Manifests
         run: |
           set -euo pipefail
           mkdir -p dist/release/linux dist/release/windows dist/release/macos dist/release/android
-          # The packaging scripts rsync with --exclude-from=<manifest>; these
-          # files are build inputs and must stay tracked in git.
           for f in .buildignore .buildignore.extreme; do
             if [[ -f "$f" ]]; then
               echo "✓ build manifest present: $f"
@@ -103,8 +118,8 @@ jobs:
           # Build by explicit manifest path instead of `cd`-ing, so the working
           # directory can never drift and break later relative paths.
           rustup target add x86_64-unknown-linux-gnu x86_64-pc-windows-gnu
-          cargo build --release --manifest-path vault-daemon/Cargo.toml --target x86_64-unknown-linux-gnu
-          cargo build --release --manifest-path vault-daemon/Cargo.toml --target x86_64-pc-windows-gnu
+          cargo build --release --manifest-path vault-daemon/Cargo.toml --target x86_64-unknown-linux-gnu 2>&1 | tee /tmp/vault-linux.log
+          cargo build --release --manifest-path vault-daemon/Cargo.toml --target x86_64-pc-windows-gnu 2>&1 | tee /tmp/vault-windows.log
           cp vault-daemon/target/x86_64-unknown-linux-gnu/release/zoth-vault-daemon dist/release/zoth-vault-daemon-linux-x86_64
           chmod +x dist/release/zoth-vault-daemon-linux-x86_64
           cp vault-daemon/target/x86_64-pc-windows-gnu/release/zoth-vault-daemon.exe dist/release/windows/zoth-vault-daemon-windows-x86_64.exe
@@ -115,7 +130,7 @@ jobs:
       - name: 🐧 Build Full Linux Suite (.deb, .tar.gz, .run, AppImage)
         run: |
           set -euo pipefail
-          bash scripts/build-linux-packages.sh
+          bash scripts/build-linux-packages.sh 2>&1 | tee /tmp/build-linux.log
           echo "--- dist-linux ---"
           ls -lh dist-linux
           cp -v dist-linux/* dist/release/linux/
@@ -123,7 +138,7 @@ jobs:
       - name: 🪟 Build Windows Suite (Portable ZIP & Launcher)
         run: |
           set -euo pipefail
-          bash scripts/build-windows-package.sh
+          bash scripts/build-windows-package.sh 2>&1 | tee /tmp/build-windows.log
           echo "--- dist-windows ---"
           ls -lh dist-windows
           cp -v dist-windows/* dist/release/windows/
@@ -131,7 +146,7 @@ jobs:
       - name: 🍎 Build macOS Universal Suite (.tar.gz & .zip)
         run: |
           set -euo pipefail
-          bash scripts/build-macos-package.sh
+          bash scripts/build-macos-package.sh 2>&1 | tee /tmp/build-macos.log
           echo "--- dist-macos ---"
           ls -lh dist-macos
           cp -v dist-macos/* dist/release/macos/
@@ -146,7 +161,7 @@ jobs:
           cd zoth-signal-bridge-android
           chmod +x gradlew
           # AGP auto-provisions a missing compileSdk from the preinstalled SDK.
-          ./gradlew --no-daemon --stacktrace assembleDebug
+          ./gradlew --no-daemon --stacktrace assembleDebug 2>&1 | tee /tmp/build-android.log
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -f "$APK" || { echo "❌ Gradle completed but no APK at $APK"; exit 1; }
           cp "$APK" "../dist/release/android/zoth-signal-bridge-${ZOTH_VERSION}-android.apk"
@@ -206,3 +221,35 @@ jobs:
             dist/release/android/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Action logs require authentication, so a failed release is otherwise
+      # invisible to anyone without repo access. On failure, open an issue
+      # containing the tail of every build log.
+      - name: 🩺 Report Build Failure (issue with log tails)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          OUT=/tmp/release-failure.md
+          {
+            echo "Release build failed for \`${{ github.ref_name }}\`."
+            echo ""
+            echo "Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo ""
+            for f in vault-linux vault-windows build-linux build-windows build-macos build-android; do
+              echo "### $f"
+              echo ""
+              echo '```'
+              if [[ -f "/tmp/$f.log" ]]; then
+                tail -c 6000 "/tmp/$f.log"
+              else
+                echo "(step did not run / no log captured)"
+              fi
+              echo '```'
+              echo ""
+            done
+          } > "$OUT"
+          gh issue create \
+            --title "🚨 Release build failed: ${{ github.ref_name }} (${{ github.run_id }})" \
+            --body-file "$OUT" || echo "⚠ could not open the diagnostic issue"

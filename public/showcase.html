@@ -36,6 +36,136 @@
 <link href="/assets/zoth-nav.css?v=11" rel="stylesheet"/>
 <link href="/assets/zoth-showcase-poster.css" rel="stylesheet"/>
 <link href="/assets/zoth-mobile.css" rel="stylesheet"/>
+<style>
+/* ── Page-scoped Showcase fixes ────────────────────────────────────────────
+   Scoped to this page only. Deliberately NOT touching shared assets
+   (zoth-agent-avatars.css, zoth-footer.css, zoth-showcase-poster.css). */
+/* The shared shell never resets the UA default body margin (8px). On this
+   full-bleed page it pushes main 8px past the right edge at widths <1440
+   (overflowX reads +8px at 1024; body overflow-x:hidden clips it silently).
+   The fixed header is unaffected by body margin. Reset it here. */
+body { margin: 0 !important; }
+/* (1) Hero poster still: the shared avatar layer animates every
+   img[src*="azoth"] / img[alt*="Azoth"] with scale(1.024) rotate(0.8deg)
+   !important. At avatar size that is correct; on a full-bleed poster it
+   pushes the still ~14px outside the column, and because body has
+   overflow-x:hidden the crop is silent (overflowX reports 0px before/after).
+   Neutralize the drift ONLY on the hero poster image. */
+.showcase-poster-figure img.showcase-hero-img {
+  animation: none !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto;
+}
+
+/* (3) Footer link hit areas >=44px on every theme. The shared footer uses
+   width:fit-content on links, so short labels ("FAQ","Docs") collapse to a
+   sub-44px tap box. Widen the hit box here, not in the shared file. */
+footer.site .mega-footer-link,
+footer.site .foot-meta a {
+  min-width: 44px;
+}
+footer.site .foot-meta a {
+  justify-content: center;
+}
+
+/* Page-owned dismiss/skip controls get a >=44px hit area too. */
+.skip-link,
+.skip-to-content,
+.skip,
+.insight-close {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Page jump-navigation for scanning the long collection */
+.showcase-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 1440px;
+  margin: var(--fib-21, 21px) auto 0;
+  padding: 0 var(--fib-21, 21px);
+  box-sizing: border-box;
+}
+.showcase-jump a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(255,255,255,0.12));
+  background: color-mix(in srgb, var(--panel, rgba(10,14,26,0.88)) 90%, transparent);
+  color: var(--text-primary, #fff);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+.showcase-jump a:hover,
+.showcase-jump a:focus-visible {
+  border-color: var(--gold, #fbbf24);
+  color: var(--gold, #fbbf24);
+}
+
+/* Suite-directory filter: hidden until JS is proven running (progressive
+   enhancement). Without JS every card stays visible. */
+.js-enh .suite-filter { display: flex; }
+.suite-filter {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 var(--fib-21, 21px);
+}
+.suite-filter-input {
+  flex: 1 1 240px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line, rgba(255,255,255,0.12));
+  background: var(--panel, rgba(10,14,26,0.92));
+  color: var(--text-primary, #fff);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.88rem;
+  box-sizing: border-box;
+}
+.suite-filter-input::placeholder { color: var(--muted, #94a3b8); }
+.suite-filter-count {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.76rem;
+  color: var(--muted, #94a3b8);
+  white-space: nowrap;
+}
+.suite-card.filter-hidden { display: none; }
+
+/* Theme-correct light variant for the added control */
+html[data-theme="light"] .suite-filter-input {
+  background: #ffffff; color: #111827; border-color: rgba(17,24,39,0.16);
+}
+html[data-theme="light"] .showcase-jump a {
+  background: #ffffff; color: #111827; border-color: rgba(17,24,39,0.12);
+}
+
+/* Reduced-motion: any transition this page adds is disabled. */
+@media (prefers-reduced-motion: reduce) {
+  .showcase-poster-figure img.showcase-hero-img,
+  .showcase-jump a,
+  .suite-filter-input,
+  .suite-card {
+    transition: none !important;
+    animation: none !important;
+  }
+  .showcase-jump a:hover,
+  .showcase-jump a:focus-visible {
+    transform: none;
+  }
+}
+</style>
+<script>document.documentElement.classList.add('js-enh');</script>
 <!-- Local High-Speed Vendor 3D Engine with CDN Fallback -->
 <script defer src="/assets/vendor/three.min.js"></script>
 <script defer src="/assets/vendor/OrbitControls.js"></script>
@@ -456,10 +586,18 @@
 </div>
 </div>
 <div class="showcase-poster-figure">
-<img alt="Master Azoth in a white and gold mask with purple eyes" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
+<img alt="Master Azoth in a white and gold mask with purple eyes" class="showcase-hero-img" decoding="async" fetchpriority="high" height="1024" src="/assets/mascot/azoth-portrait.jpg" width="1024"/>
 <span class="showcase-poster-credit">Azoth · Exhibition</span>
 </div>
 </section>
+<nav aria-label="On this page" class="showcase-jump">
+<a href="#look-inside">Omniverse 3D</a>
+<a href="#3d-vault">Model Vault</a>
+<a href="#shaders">GLSL Shaders</a>
+<a href="#video-overlay">Video Studio</a>
+<a href="#suite-directory">23 Suites</a>
+<a href="#branding">Branding</a>
+</nav>
 <!-- Mobile-Only Desktop Insight Tooltip / Banner -->
 <div style="max-width: 1440px; margin: 0 auto; padding: var(--fib-13, 13px) var(--fib-21, 21px) 0;">
 <div class="mobile-desktop-insight" role="note">
@@ -743,6 +881,10 @@
 <span class="tag">Omniverse Navigation</span>
 <h2>All 23 Zoth Studio Suites &amp; Engines</h2>
 <p>Direct deep links to every sovereign tool, CAD engine, multi-agent arbitration room, and telemetry console.</p>
+</div>
+<div aria-label="Filter studio suites" class="suite-filter" role="search">
+<input aria-label="Filter studio suites by name, tag or technology" class="suite-filter-input" id="suite-filter-input" type="search" placeholder="Filter suites by name, tag or technology…"/>
+<span aria-live="polite" class="suite-filter-count" id="suite-filter-count">23 / 23</span>
 </div>
 <div class="suite-grid">
 <!-- Suite 1: Nexus 3D -->
@@ -1833,6 +1975,31 @@
         loop();
       }
     </script>
+<script>
+/* Suite-directory live filter — progressive enhancement. Runs only when JS
+   is available (html.js-enh gates the control's visibility in CSS); with JS
+   disabled every card remains visible and the control is hidden. */
+(function () {
+  var input = document.getElementById('suite-filter-input');
+  var count = document.getElementById('suite-filter-count');
+  if (!input) return;
+  var grid = document.querySelector('#suite-directory .suite-grid');
+  if (!grid) return;
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.suite-card'));
+  if (!cards.length) return;
+  function applyFilter() {
+    var q = (input.value || '').trim().toLowerCase();
+    var shown = 0;
+    cards.forEach(function (c) {
+      var show = !q || (c.textContent || '').toLowerCase().indexOf(q) !== -1;
+      c.classList.toggle('filter-hidden', !show);
+      if (show) shown++;
+    });
+    if (count) count.textContent = shown + ' / ' + cards.length;
+  }
+  input.addEventListener('input', applyFilter);
+})();
+</script>
 <script src="/assets/celestial-trail.js"></script>
 <script src="/assets/zoth-gate.js"></script>
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>

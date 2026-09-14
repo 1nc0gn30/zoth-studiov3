@@ -210,10 +210,14 @@
 /* ══ Zoth Docs — reading experience & a11y wave 2 (page-local, cascade-last) ══ */
 body.docs-page { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
-/* Anchor jumps clear the sticky topbar on this 20k+px manual */
+/* Anchor jumps clear the sticky topbar on this 20k+px manual.
+   html{scroll-padding-top} in zoth-nav.css already reserves
+   --zoth-header-h + 16px, so the old 70px here double-counted it and every
+   /docs/ jump landed with 140px of the previous chapter above the heading
+   (measured). 12px keeps a clean 28px gap under the fixed bar. */
 .doc-section,
 .docs-content [id],
-.docs-hero { scroll-margin-top: calc(var(--zoth-header-h, 54px) + 16px); }
+.docs-hero { scroll-margin-top: 12px; }
 
 /* ── Focus visibility — survives overflow:hidden ancestors ── */
 :focus-visible { outline: 2px solid var(--docs-gold, var(--gold, #e8c872)); outline-offset: 3px; }
@@ -314,7 +318,198 @@ html[data-theme="light"] .docs-nav a.is-active { color: #111827 !important; bord
     scroll-behavior: auto !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   nav-1 · The hero still is a poster, not an avatar.
+   public/assets/zoth-agent-avatars.css animates every img[src*="azoth"] /
+   img[alt*="Azoth"] with scale(1.024) rotate(0.8deg) !important. That is
+   correct at avatar size, but on this full-bleed hero it pushed the image
+   ~12px past the right edge at 1440 (700..1452) and ~6px past both edges at
+   390 (-6..396), and body{overflow-x:hidden} swallowed the crop silently
+   (overflowX reads 0 before and after). Fixed here, page-scoped, exactly as
+   /agents/ and /registry/ do — the shared stylesheet keeps animating the 21
+   per-agent avatars, /studio/ and /comic/.
+   ══════════════════════════════════════════════════════════════════════════ */
+.docs-hero-azoth img,
+.docs-hero-azoth img[src*="azoth"],
+.docs-hero-azoth img[alt*="Azoth"] {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   nav-2 · Table of contents.
+   JS present  → the index collapses behind the ≥52px toggle on small screens
+                 (html.js.toc-collapsed), matching the pre-existing drawer.
+   JS absent   → html never gets .js, the toggle is hidden as a dead control
+                 and the full index stays on the page, in document order.
+   ══════════════════════════════════════════════════════════════════════════ */
+html:not(.js) .docs-toc-toggle { display: none !important; }
+
+@media (max-width: 1080px) {
+  html.js .docs-toc-toggle { display: flex !important; }
+  /* No JS → the index is plain page content: full height, no inner scroll. */
+  html:not(.js) .docs-nav {
+    display: flex !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  html.toc-collapsed .docs-nav { display: none !important; }
+  html.toc-collapsed .docs-nav.is-open { display: flex !important; }
+  /* The open index is a long list — cap it and let it scroll on its own. */
+  .docs-nav.is-open { overflow-y: auto; max-height: 74vh !important; }
+  .docs-nav-group-title:first-of-type { margin-top: 4px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   nav-3 · Back-to-top affordance. Deliberate breakpoint: shown only where the
+   index is not a sticky column (≤1080px). Pure anchor (#top is the browser's
+   own fragment for the document top), so it works with JS disabled.
+   ══════════════════════════════════════════════════════════════════════════ */
+.docs-top-link {
+  position: fixed;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border: 1px solid var(--docs-line-strong);
+  border-radius: 999px;
+  background: var(--docs-code);
+  color: var(--docs-gold);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.38);
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.docs-top-link .docs-top-link-text {
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+}
+.docs-top-link:hover,
+.docs-top-link:focus-visible { border-color: var(--docs-gold); color: var(--docs-gold); }
+html[data-theme="light"] .docs-top-link {
+  background: #ffffff;
+  color: #92400e;
+  border-color: rgba(17, 24, 39, 0.18);
+  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.14);
+}
+@media (max-width: 1080px) { .docs-top-link { display: flex; } }
+
+/* Clearance so the floating control never sits on top of a footer link. */
+@media (max-width: 1080px) {
+  body.docs-page > footer.site { padding-bottom: calc(58px + env(safe-area-inset-bottom)); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   nav-4 · ≥44×44 hit areas for the sub-44px footer links at 390px
+   (a.mega-footer-link 27x44 'FAQ', foot-meta 'Docs' 29x44, 'FAQ' 22x44).
+   Width-only fix; the underline pseudo-element and text alignment are
+   untouched because padding is left alone.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1080px) {
+  body.docs-page footer.site .mega-footer-link,
+  body.docs-page footer.site .foot-meta a {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   nav-5 · Degraded-JS safety: the section filter must never be able to leave
+   the page with hidden chapters that the reader cannot bring back. The filter
+   only ever hides a section when the reader has typed something, and the
+   no-match note below makes that state explicit rather than silent.
+   ══════════════════════════════════════════════════════════════════════════ */
+.docs-filter-count {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--docs-faint);
+}
+.docs-filter-none {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--docs-gold);
+}
+/* While a filter is hiding chapters the notice rides under the fixed header,
+   and the reader can always undo it from the field in the index. */
+.docs-filter-count:not([hidden]),
+.docs-filter-none:not([hidden]) {
+  position: sticky;
+  top: calc(var(--zoth-header-h, 54px) + 4px);
+  z-index: 30;
+  background: var(--docs-bg);
+  padding: 6px 0;
+}
+html[data-theme="light"] .docs-filter-count { color: #6b7280; }
+html[data-theme="light"] .docs-filter-none { color: #92400e; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   nav-6 · ≥44×44 hit areas for the page's own controls at 390px. The shared
+   zoth-mobile.css pins button:not(…) to min-height:44px but leaves width, so
+   the burger was a 78×38 pill (it filled the 38px content box of the fixed
+   54px bar). 44px still sits inside the 54px bar with nothing clipped, so the
+   header height variable is deliberately left alone.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px), (pointer: coarse) {
+  body.docs-page .burger {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+  body.docs-page .mobile-desktop-insight .insight-close {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  body.docs-page .skip-to-content,
+  body.docs-page .skip-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  body.docs-page .docs-toc-toggle { min-height: 52px !important; }
+}
+
+/* The index is a drawer (not a sidebar) at ≤1080px, so its rows are controls:
+   44px tall there, while the desktop column keeps the compact 36px rhythm. */
+@media (max-width: 1080px) {
+  .docs-nav a {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
 </style>
+<script>
+/* Progressive-enhancement flag for the docs index. Runs before first paint so
+   the collapsed state never flashes. With JS disabled this class is never
+   added: the toggle stays hidden and the whole index stays on the page. */
+(function () {
+  var d = document.documentElement;
+  d.classList.add('js');
+  try {
+    var mq = window.matchMedia('(max-width: 1080px)');
+    var sync = function () { d.classList.toggle('toc-collapsed', mq.matches); };
+    sync();
+    if (mq.addEventListener) { mq.addEventListener('change', sync); }
+    else if (mq.addListener) { mq.addListener(sync); }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body class="deck-page docs-page" data-kicker="Docs · preview" data-lede="Install, ports, and how the deck binds. Full tools stay local." data-title="Operator notes for this box">
 <a class="skip-link skip-to-content" href="#main-content">Skip to content</a>
@@ -569,6 +764,7 @@ html[data-theme="light"] .docs-nav a.is-active { color: #111827 !important; bord
 <p class="docs-hero-lede">Install, ports, 47 tools, and how the swarm binds. Full tools stay local.</p>
 <div class="docs-hero-actions">
 <a class="docs-cta" href="#topology">Read topology</a>
+<a class="docs-cta-ghost" href="#install-linux">1-click install</a>
 <a class="docs-cta-ghost js-deck" href="http://127.0.0.1:8484/">Open the deck</a>
 </div>
 </div>
@@ -578,44 +774,46 @@ html[data-theme="light"] .docs-nav a.is-active { color: #111827 !important; bord
 </div>
 </section>
 <div class="docs-layout">
-<!-- Mobile Collapsible TOC Drawer Trigger -->
+<!-- Mobile TOC disclosure. Without JS the index below simply stays on the page
+     (html never gets .js), so the manual is navigable either way. -->
 <button aria-controls="docsNav" aria-expanded="false" class="docs-toc-toggle" id="docsTocToggle" type="button">
-<span>📑 Table of Contents (12 Topics)</span>
-<span id="docsTocArrow">▾</span>
+<span id="docsTocLabel">📑 Table of Contents · 20 sections</span>
+<span aria-hidden="true" id="docsTocArrow">▾</span>
 </button>
-<!-- Sidebar Navigation -->
+<!-- Sidebar Navigation — one entry per heading the document actually has, in
+     document order. Every href below resolves to an id on this page. -->
 <nav aria-label="Documentation Index" class="docs-nav" id="docsNav">
 <div class="docs-search-box">
-<span class="docs-search-icon">🔍</span>
-<input class="docs-search-input" id="docs-filter" placeholder="Search 47 tools &amp; guides..." type="text"/>
+<span aria-hidden="true" class="docs-search-icon">🔍</span>
+<input aria-label="Filter sections and tool entries on this page" class="docs-search-input" id="docs-filter" placeholder="Filter sections &amp; tools…" type="text"/>
 </div>
-<div class="docs-nav-group-title">1. Architecture &amp; Topology</div>
-<a class="active" href="#topology"><span>🌐</span> System Topology &amp; Ports</a>
-<a href="#operator-deck"><span>💬</span> Operator Deck &amp; Ergonomics</a>
-<a href="#cli-cockpit"><span>⌨️</span> CLI &amp; Terminal Cockpit</a>
-<div class="docs-nav-group-title">2. Sovereign Tool Arsenal</div>
-<a href="#tools-arsenal"><span>🛠️</span> 47-Tool Directory &amp; CLI</a>
-<div class="docs-nav-group-title">3. Multi-Agent Swarm Bus</div>
-<a href="#swarm-bus"><span>📡</span> 3-Agent Swarm Bus Protocol</a>
-<a href="#consensus-engine"><span>⚖️</span> Consensus &amp; Shannon Entropy</a>
-<div class="docs-nav-group-title">4. Hardware Cryptography</div>
-<a href="#argon2id-vault"><span>🔒</span> Argon2id Vault Daemon (:8787)</a>
-<a href="#vault-api"><span>🔑</span> Vault Daemon REST Endpoints</a>
-<div class="docs-nav-group-title">5. Physical Hardware &amp; Pets</div>
-<a href="#hardware-companion"><span>📟</span> ESP32-S3 Companion Hub</a>
-<a href="#pets-roster"><span>🐾</span> 24 Companion Roster</a>
-<a href="#visual-gallery"><span>📸</span> Interface Mockups &amp; HUD</a>
-<div class="docs-nav-group-title">6. Studio Power Suites</div>
-<a href="#math-pillars"><span>📐</span> AI Math Observability &amp; Tensor Theory</a>
-<a href="#omnipost"><span>🚀</span> OmniPost 60 FPS Video Studio</a>
-<a href="#subsweep"><span>🔍</span> SubSweep Passive OSINT Recon</a>
-<a href="#site-generator"><span>⚡</span> WebGen Studio API Contract</a>
-<a href="#azoth-core"><span>🔮</span> Master Azoth Core Architecture</a>
-<a href="#agents"><span>⚡</span> 21-Agent Pantheon Dossiers</a>
-<div class="docs-nav-group-title">7. 1-Click Installers &amp; Releases</div>
-<a href="#install-linux"><span>🐧</span> Linux 1-Click &amp; Packages</a>
-<a href="#install-windows"><span>🪟</span> Windows 1-Click &amp; Executable</a>
-<a href="#privacy-gate"><span>🛡️</span> Zero-Leak Build Gate</a>
+<div class="docs-nav-group-title">Overview</div>
+<a href="#methodology"><span aria-hidden="true">⚗</span> Methodology: The 4 Transmutation Rites</a>
+<a href="#companion-spirits"><span aria-hidden="true">🐾</span> Companion Spirits &amp; Hardware Telemetry</a>
+<div class="docs-nav-group-title">Chapters 1–2.6 · Local surfaces</div>
+<a href="#topology"><span aria-hidden="true">🌐</span> 1. System Topology &amp; Port Architecture</a>
+<a href="#operator-deck"><span aria-hidden="true">💬</span> 2. Operator Deck &amp; Keyboard Ergonomics</a>
+<a href="#cli-cockpit"><span aria-hidden="true">⌨️</span> 2.5 Sovereign CLI &amp; Terminal Cockpit</a>
+<a href="#x-connector"><span aria-hidden="true">𝕏</span> 2.6 Sovereign X Connector &amp; Dispatch</a>
+<div class="docs-nav-group-title">Chapter 3 · Tool arsenal</div>
+<a href="#tools-arsenal"><span aria-hidden="true">🛠️</span> 3. The 47-Tool Sovereign Arsenal</a>
+<div class="docs-nav-group-title">Chapter 4 · Swarm bus</div>
+<a href="#swarm-bus"><span aria-hidden="true">📡</span> 4. The 3-Agent Swarm Bus Protocol</a>
+<a href="#consensus-engine"><span aria-hidden="true">⚖️</span> Consensus Arbitration &amp; Shannon Entropy</a>
+<div class="docs-nav-group-title">Chapter 5 · Hardware cryptography</div>
+<a href="#argon2id-vault"><span aria-hidden="true">🔒</span> 5. Argon2id Vault Daemon Manual (:8787)</a>
+<a href="#vault-api"><span aria-hidden="true">🔑</span> Daemon REST Endpoints</a>
+<div class="docs-nav-group-title">Chapter 6 · Installers &amp; releases</div>
+<a href="#install-linux"><span aria-hidden="true">🐧</span> 6. Linux 1-Click Installation &amp; Packaging</a>
+<a href="#install-windows"><span aria-hidden="true">🪟</span> Windows 1-Click Installation &amp; Packaging</a>
+<a href="#privacy-gate"><span aria-hidden="true">🛡️</span> Automated Pre-Build Privacy Gate</a>
+<div class="docs-nav-group-title">Chapters 7–12 · Studio suites &amp; pantheon</div>
+<a href="#math-pillars"><span aria-hidden="true">📐</span> 7. AI Math Observability &amp; Tensor Theory</a>
+<a href="#omnipost"><span aria-hidden="true">🚀</span> 8. OmniPost 60 FPS Video Studio</a>
+<a href="#subsweep"><span aria-hidden="true">🔍</span> 9. SubSweep Passive OSINT Recon</a>
+<a href="#site-generator"><span aria-hidden="true">⚡</span> 10. Autonomous WebGen Studio API Contract</a>
+<a href="#azoth-core"><span aria-hidden="true">🔮</span> 11. Master Azoth Core Architecture</a>
+<a href="#agents"><span aria-hidden="true">⚡</span> 12. 21-Agent Sovereign Pantheon Dossiers</a>
 </nav>
 <!-- Main Docs Content -->
 <div class="docs-content">
@@ -628,6 +826,10 @@ html[data-theme="light"] .docs-nav a.is-active { color: #111827 !important; bord
 </div>
 <button aria-label="Dismiss insight" class="insight-close" onclick="this.parentElement.style.display='none'" type="button">✕</button>
 </div>
+<!-- Filter feedback: the section filter can hide whole chapters, so the reader
+     is told how many are hidden and how to bring them back. Hidden (and inert)
+     until the reader actually types, and JS-only by design. -->
+<p aria-live="polite" class="docs-filter-count" hidden="hidden" id="docsFilterStatus"></p>
 <!-- Chapter 1: System Topology -->
 <section class="doc-section" id="methodology">
 <h2>Methodology: The 4 Transmutation Rites</h2>
@@ -2016,6 +2218,9 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
 </div>
 </div>
 </main>
+<!-- Back-to-top affordance: plain fragment link, so it survives JS being off.
+     Shown ≤1080px, where the index is not a sticky column. -->
+<a aria-label="Back to top of this documentation page" class="docs-top-link" href="#top"><span aria-hidden="true">↑</span><span aria-hidden="true" class="docs-top-link-text">TOP</span></a>
                                         <footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
@@ -2108,15 +2313,39 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
 
       // Filter search
       const filterInput = document.getElementById('docs-filter');
+
+      // Filters can hide whole chapters; say so instead of failing silently.
+      function updateFilterStatus(q, shownSections, totalSections, shownTools, totalTools) {
+        const el = document.getElementById('docsFilterStatus');
+        if (!el) return;
+        if (!q) {
+          el.hidden = true;
+          el.textContent = '';
+          el.className = 'docs-filter-count';
+          return;
+        }
+        el.hidden = false;
+        if (shownSections === 0 && shownTools === 0) {
+          el.className = 'docs-filter-none';
+          el.textContent = 'Nothing on this page matches “' + q + '”. Clear the field to restore all ' + totalSections + ' chapters and ' + totalTools + ' tools.';
+        } else {
+          el.className = 'docs-filter-count';
+          el.textContent = 'Filter “' + q + '” hiding ' + (totalSections - shownSections) + ' of ' + totalSections + ' chapters and ' + (totalTools - shownTools) + ' of ' + totalTools + ' tools. Clear the field to restore everything.';
+        }
+      }
+
       if (filterInput) {
         filterInput.addEventListener('input', (e) => {
           const q = e.target.value.toLowerCase().trim();
-          
+          let shownTools = 0;
+          let shownSections = 0;
+
           // Filter tool cards
           const toolCards = document.querySelectorAll('.tool-item-card');
           toolCards.forEach(card => {
             if (!q || card.innerText.toLowerCase().includes(q)) {
               card.style.display = 'flex';
+              shownTools++;
             } else {
               card.style.display = 'none';
             }
@@ -2127,10 +2356,13 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
           sections.forEach(sec => {
             if (!q || sec.innerText.toLowerCase().includes(q)) {
               sec.style.display = 'block';
+              shownSections++;
             } else {
               sec.style.display = 'none';
             }
           });
+
+          updateFilterStatus(q, shownSections, sections.length, shownTools, toolCards.length);
         });
       }
 
@@ -2240,7 +2472,12 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
       for (var i = 0; i < links.length; i++) {
         var on = links[i].getAttribute('href') === '#' + id;
         links[i].classList.toggle('is-active', on);
-        if (on) links[i].classList.remove('active');
+        if (on) {
+          links[i].classList.remove('active');
+          links[i].setAttribute('aria-current', 'location');
+        } else {
+          links[i].removeAttribute('aria-current');
+        }
       }
     }
     var ticking = false;

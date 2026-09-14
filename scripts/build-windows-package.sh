@@ -317,16 +317,30 @@ echo "✓ Generated: $WIN_ZIP"
 echo "🚀 Step 6: Building Windows Self-Extracting Executable (zoth-windows-x86_64.exe)..."
 WIN_EXE="$DIST_DIR/zoth-windows-x86_64.exe"
 WIN_7Z="$BUILD_DIR/payload.7z"
-(cd "$BUILD_DIR" && 7z a -t7z -mx=9 "$WIN_7Z" "zoth-studio-v$VERSION-windows" >/dev/null)
 
-if [[ -f "/usr/lib/7zip/7zCon.sfx" ]]; then
-  cat /usr/lib/7zip/7zCon.sfx "$WIN_7Z" > "$WIN_EXE"
+# 7z is not guaranteed on every runner (Ubuntu 24.04 moved p7zip-full to a
+# transitional package, and the binary may be 7z / 7zz / 7za / 7zr). Resolve
+# whichever is actually present and degrade to the portable ZIP if none is,
+# rather than failing the whole release over a secondary artifact.
+SEVENZ=""
+for cand in 7z 7zz 7za 7zr; do
+  if command -v "$cand" >/dev/null 2>&1; then SEVENZ="$cand"; break; fi
+done
+
+SFX_STUB=""
+for stub in /usr/lib/7zip/7zCon.sfx /usr/lib/p7zip/7zCon.sfx; do
+  if [[ -f "$stub" ]]; then SFX_STUB="$stub"; break; fi
+done
+
+if [[ -n "$SEVENZ" ]] && (cd "$BUILD_DIR" && "$SEVENZ" a -t7z -mx=7 "$WIN_7Z" "zoth-studio-v$VERSION-windows" >/dev/null) && [[ -n "$SFX_STUB" ]]; then
+  cat "$SFX_STUB" "$WIN_7Z" > "$WIN_EXE"
   chmod +x "$WIN_EXE"
-  echo "✓ Generated: $WIN_EXE (Self-Extracting 7z Windows Executable)"
+  echo "✓ Generated: $WIN_EXE (Self-Extracting 7z Windows Executable via $SEVENZ)"
 else
-  # Fallback to copy zip
+  echo "⚠ No usable 7z/SFX stub on this runner (sevenz='${SEVENZ:-none}', stub='${SFX_STUB:-none}')"
+  echo "  → shipping the portable ZIP as the Windows artifact instead."
   cp "$WIN_ZIP" "$DIST_DIR/zoth-windows-package.zip"
-  echo "✓ Generated Windows Package in $DIST_DIR"
+  echo "✓ Generated: $DIST_DIR/zoth-windows-package.zip"
 fi
 
 echo "============================================================"
