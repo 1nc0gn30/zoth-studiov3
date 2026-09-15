@@ -25,12 +25,15 @@
 <script src="/assets/vendor/UnrealBloomPass.js"></script>
 <script src="/assets/vendor/EffectComposer.js"></script>
 <script src="/studio/zoth-3d-rig.js?v=20260913c"></script>
+<script src="/assets/zoth-netrunner-scene.js?v=2"></script>
 <style>
 :root {
   --bg: #050508;
   --surface: #0b0f19;
   --surface-2: #121826;
+  --surface-elevated: #1a2236;
   --border: #1e293b;
+  --border-strong: rgba(255, 255, 255, 0.16);
   --text: #f1f5f9;
   --text-primary: #f8fafc;
   --text-subhead: #94a3b8;
@@ -47,6 +50,92 @@
   --font-sans: "Figtree", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
+
+html[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-elevated: #ffffff;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text: #0f172a;
+  --text-primary: #020617;
+  --text-subhead: #334155;
+  --muted: #64748b;
+  --gold: #d97706;
+  --gold-glow: rgba(217, 119, 6, 0.2);
+  --cyan: #0284c7;
+  --cyan-glow: rgba(2, 132, 199, 0.2);
+  --pink: #db2777;
+  --pink-glow: rgba(219, 39, 119, 0.2);
+  --purple: #9333ea;
+  --green: #059669;
+}
+
+html[data-theme="matrix"] {
+  --bg: #020702;
+  --surface: #041204;
+  --surface-2: #082008;
+  --surface-elevated: #0d2e0d;
+  --border: #005511;
+  --border-strong: #00aa33;
+  --text: #a3e635;
+  --text-primary: #4ade80;
+  --text-subhead: #86efac;
+  --muted: #4ade8099;
+  --gold: #84cc16;
+  --gold-glow: rgba(132, 204, 22, 0.4);
+  --cyan: #00ff66;
+  --cyan-glow: rgba(0, 255, 102, 0.4);
+  --pink: #22c55e;
+  --purple: #16a34a;
+  --green: #00ff66;
+}
+
+.nr-graph-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, transparent 40%, rgba(0, 0, 0, 0.42) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.28));
+  z-index: 2;
+}
+html[data-theme="light"] .nr-graph-stage::after,
+html[data-theme="paper"] .nr-graph-stage::after,
+html[data-theme="snow"] .nr-graph-stage::after,
+html[data-theme="ivory"] .nr-graph-stage::after {
+  background: radial-gradient(ellipse 70% 55% at 50% 42%, transparent 48%, rgba(15, 23, 42, 0.12) 100%);
+}
+.nr-graph-stage::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--accent, #00f0ff) 28%, transparent);
+  z-index: 3;
+}
+html[data-theme="gold"] {
+  --bg: #090803;
+  --surface: #141106;
+  --surface-2: #1e1909;
+  --surface-elevated: #28210c;
+  --border: #3d3214;
+  --border-strong: #614f1f;
+  --text: #fef08a;
+  --text-primary: #fffbeb;
+  --text-subhead: #fde047;
+  --muted: #ca8a04;
+  --gold: #fbbf24;
+  --gold-glow: rgba(251, 191, 36, 0.4);
+  --cyan: #facc15;
+  --cyan-glow: rgba(250, 204, 21, 0.4);
+  --pink: #f59e0b;
+  --purple: #eab308;
+  --green: #eab308;
+}
+
 * { box-sizing: border-box; }
 html, body {
   margin: 0;
@@ -71,6 +160,54 @@ html, body {
   background: radial-gradient(circle at 18% 35%, rgba(0, 240, 255, 0.08), transparent 55%),
               radial-gradient(circle at 82% 65%, rgba(244, 114, 182, 0.08), transparent 55%), #05050a;
 }
+
+html[data-theme="light"] .lucy-poster,
+html[data-theme="light"] .azoth-poster {
+  background: radial-gradient(circle at 18% 35%, rgba(2, 132, 199, 0.08), transparent 55%),
+              radial-gradient(circle at 82% 65%, rgba(219, 39, 119, 0.08), transparent 55%), #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+html[data-theme="light"] .lucy-poster h1,
+html[data-theme="light"] .azoth-poster h1 {
+  background: linear-gradient(135deg, #0f172a 25%, #0284c7 65%, #db2777 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html[data-theme="light"] .lucy-poster .lede,
+html[data-theme="light"] .azoth-poster .lede {
+  color: #334155;
+}
+html[data-theme="light"] .lucy-poster-figure,
+html[data-theme="light"] .azoth-poster-figure {
+  background: radial-gradient(circle at 50% 60%, rgba(219, 39, 119, 0.06), transparent 70%), #f1f5f9;
+}
+html[data-theme="light"] .lucy-poster-figure::after,
+html[data-theme="light"] .azoth-poster-figure::after {
+  background: linear-gradient(90deg, #f8fafc 0%, transparent 35%, transparent 65%, #f8fafc 100%),
+              linear-gradient(180deg, transparent 60%, #f8fafc 100%);
+}
+html[data-theme="light"] .mem-human-card,
+html[data-theme="light"] .mem-dual-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+html[data-theme="light"] .mem-raw-card {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+html[data-theme="light"] .persp {
+  background: #f8fafc;
+  border-left-color: #0284c7;
+}
+html[data-theme="light"] .persp-body {
+  color: #334155;
+}
+html[data-theme="light"] .scene {
+  background: #f1f5f9;
+  border-left-color: #cbd5e1;
+}
+
 .lucy-poster-copy, .azoth-poster-copy {
   padding: clamp(32px, 5vw, 64px) clamp(24px, 4vw, 56px);
   display: flex;
@@ -195,8 +332,8 @@ html, body {
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
+  border-radius: 16px;
+  padding: clamp(28px, 3.2vw, 36px);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 .grid {
@@ -899,7 +1036,7 @@ body.maze-open #zoth-pet-hud {
     </div>
 
     <!-- 3D Canvas Viewport -->
-    <div style="position:relative;width:100%;height:min(68svh, 720px);min-height:560px;background:#05070e;border:1px solid rgba(0,240,255,0.2);border-radius:10px;overflow:hidden;box-shadow:inset 0 0 24px rgba(0,0,0,0.8)">
+    <div class="nr-graph-stage" style="position:relative;width:100%;height:min(72svh, 780px);min-height:580px;background:var(--bg, #05070e);border:1px solid var(--line, rgba(0,240,255,0.2));border-radius:var(--theme-radius, 10px);overflow:hidden;box-shadow:inset 0 0 48px var(--shadow-color, rgba(0,0,0,0.8)), 0 0 32px var(--accent-glow, rgba(0,240,255,0.12))">
       <div id="threeGraphContainer" style="width:100%;height:100%;display:block;cursor:grab"></div>
       <canvas id="graphCanvas" width="1100" height="580" style="display:none;width:100%;height:100%;background:#0b0d14;cursor:grab"></canvas>
       <div id="graphTooltip" style="position:absolute;display:none;pointer-events:none;background:rgba(15,23,42,0.95);border:1px solid #00f0ff;border-radius:8px;padding:10px 14px;font-size:12px;max-width:360px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.7);backdrop-filter:blur(8px)"></div>
@@ -1098,13 +1235,13 @@ body.maze-open #zoth-pet-hud {
       
       <!-- Workstation Mode Switcher Tabs -->
       <div style="display:flex;gap:6px;background:rgba(0,0,0,0.4);padding:4px;border-radius:10px;border:1px solid var(--border);flex-wrap:wrap">
-        <button id="tabBtnExplore" class="workstation-tab active" onclick="switchWorkstationTab('explore')" style="background:var(--gold);color:#050508;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer">📂 Browse Ledger</button>
-        <button id="tabBtnBrainLab" class="workstation-tab" onclick="switchWorkstationTab('brainLab')" style="background:transparent;color:#00f0ff;border:1px solid rgba(0,240,255,0.4);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer">🧠 Brain Dynamics Lab</button>
-        <button id="tabBtnAstDiff" class="workstation-tab" onclick="switchWorkstationTab('astDiff')" style="background:transparent;color:#c084fc;border:1px solid rgba(192,132,252,0.4);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer">🔄 AST Transition Inspector</button>
-        <button id="tabBtnEncode" class="workstation-tab" onclick="switchWorkstationTab('encode')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">+ Encode Memory</button>
-        <button id="tabBtnPersp" class="workstation-tab" onclick="switchWorkstationTab('perspectives')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">👁️ Add Perspective</button>
-        <button id="tabBtnLink" class="workstation-tab" onclick="switchWorkstationTab('link')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">🔗 Causal Synapse</button>
-        <button id="tabBtnOps" class="workstation-tab" onclick="switchWorkstationTab('ops')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">⚙️ Swarm Tools</button>
+        <button id="tabBtnExplore" class="workstation-tab active" onclick="switchWorkstationTab('explore')" style="background:var(--gold);color:#050508;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg><span>Browse Ledger</span></button>
+        <button id="tabBtnBrainLab" class="workstation-tab" onclick="switchWorkstationTab('brainLab')" style="background:transparent;color:#00f0ff;border:1px solid rgba(0,240,255,0.4);border-radius:6px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04Z"/></svg><span>Brain Dynamics Lab</span></button>
+        <button id="tabBtnAstDiff" class="workstation-tab" onclick="switchWorkstationTab('astDiff')" style="background:transparent;color:#c084fc;border:1px solid rgba(192,132,252,0.4);border-radius:6px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>AST Transition Inspector</span></button>
+        <button id="tabBtnEncode" class="workstation-tab" onclick="switchWorkstationTab('encode')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>Encode Memory</span></button>
+        <button id="tabBtnPersp" class="workstation-tab" onclick="switchWorkstationTab('perspectives')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><span>Add Perspective</span></button>
+        <button id="tabBtnLink" class="workstation-tab" onclick="switchWorkstationTab('link')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Causal Synapse</span></button>
+        <button id="tabBtnOps" class="workstation-tab" onclick="switchWorkstationTab('ops')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Swarm Tools</span></button>
       </div>
     </div>
 
@@ -1129,9 +1266,11 @@ body.maze-open #zoth-pet-hud {
           <button id="viewBtnRaw" class="view-mode-btn" onclick="setMemoryViewMode('raw')" style="font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700">🤖 Raw AI Context / JSON</button>
           <button id="viewBtnDual" class="view-mode-btn" onclick="setMemoryViewMode('dual')" style="font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700">🧠 Dual Split View</button>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button onclick="copyAllVisibleAIPrompts()" style="background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.4);color:#38bdf8;font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700" title="Export all visible memories as prompt XML for Claude/GPT/Hermes">📋 Copy All as AI Context</button>
-          <button onclick="speakLucySwarmDigest()" style="background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:#f472b6;font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700" title="Lucy audio executive summary of top memories">🔊 Lucy Swarm Briefing</button>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <button onclick="openTopicRecallPrompt()" style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);color:var(--gold);font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:5px" title="Query daemon /v1/memories/recall by topic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Topic Recall (:8788)</span></button>
+          <button onclick="purgeMemoryCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:5px" title="Purge local cache and request daemon memory consolidation beat"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg><span>Purge Cache</span></button>
+          <button onclick="copyAllVisibleAIPrompts()" style="background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.4);color:#38bdf8;font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:5px" title="Export all visible memories as prompt XML for Claude/GPT/Hermes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copy AI Context</span></button>
+          <button onclick="speakLucySwarmDigest()" style="background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:#f472b6;font-size:11px;padding:5px 12px;border-radius:6px;font-family:var(--font-mono);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:5px" title="Lucy audio executive summary of top memories"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg><span>Lucy Briefing</span></button>
         </div>
       </div>
 
@@ -2900,6 +3039,70 @@ window.loadLog = async (id) => {
   `;
 };
 
+window.showCyberToast = function(msg) {
+  const existing = document.querySelector('.cyber-toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'cyber-toast';
+  toast.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>${escapeHtml(msg)}</span>`;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    setTimeout(() => toast.remove(), 350);
+  }, 3200);
+};
+
+window.purgeMemoryCache = async function() {
+  if (!confirm("Are you sure you want to flush the local memory cache and trigger a daemon consolidation beat on :8788?")) return;
+  try {
+    localStorage.removeItem('zoth_memories_cache');
+    sessionStorage.removeItem('zoth_memories_cache');
+    await fetch(API + '/v1/beat/run').catch(() => {});
+    showCyberToast("⚡ Memory cache purged & consolidation beat initiated");
+    await load(true);
+  } catch (err) {
+    showCyberToast("Memory purge complete (local store cleared)");
+    await load(true);
+  }
+};
+
+window.openTopicRecallPrompt = async function() {
+  const topic = prompt("Enter topic or keyword to recall from daemon (:8788):", "neural");
+  if (!topic) return;
+  showCyberToast(`🔍 Recalling memories for topic "${topic}"...`);
+  try {
+    const res = await fetch(API + '/v1/memories/recall?topic=' + encodeURIComponent(topic.trim().toLowerCase()));
+    if (res.ok) {
+      const items = await res.json();
+      if (Array.isArray(items) && items.length) {
+        showCyberToast(`✔ Recalled ${items.length} memory trace(s) from daemon`);
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+          searchInput.value = topic;
+          load(false);
+        }
+        return;
+      }
+    }
+  } catch (e) {}
+  const searchInput = document.getElementById('search');
+  if (searchInput) {
+    searchInput.value = topic;
+    load(false);
+  }
+  showCyberToast(`Filtered stratum for "${topic}"`);
+};
+
+window.addEventListener('zoth-theme-change', () => {
+  if (typeof drawStdpCurve === 'function') drawStdpCurve();
+  if (typeof drawForgettingCurve === 'function') {
+    const activeMem = rawAllMemories.find(m => m.id === selectedForgettingMemoryId) || rawAllMemories[0];
+    drawForgettingCurve(activeMem);
+  }
+});
+
 window.recallByTopic = async () => {
   const topic = (document.getElementById('recallTopic')?.value || '').trim().toLowerCase();
   const container = document.getElementById('recallResults');
@@ -3693,6 +3896,17 @@ function focusNode3D(nodeId) {
 function initThreeGraph(){
   const container = document.getElementById('threeGraphContainer');
   if (!container || typeof THREE === 'undefined') return;
+  if (window.ZothNetrunnerScene && ZothNetrunnerScene.skipWebGL()) {
+    graph3D.active = false;
+    const canvas2d = document.getElementById('graphCanvas');
+    const badge = document.getElementById('graph3dBadge');
+    const btn = document.getElementById('toggle3dBtn');
+    container.style.display = 'none';
+    if (canvas2d) canvas2d.style.display = 'block';
+    if (badge) { badge.textContent = '2D CANVAS'; badge.style.color = '#fbbf24'; }
+    if (btn) btn.textContent = '⬢ 3D off on this device';
+    return;
+  }
   if (graph3D.renderer) {
     resizeThreeGraph();
     return;
@@ -3701,54 +3915,52 @@ function initThreeGraph(){
   try {
     const width = container.clientWidth || 1100;
     const height = container.clientHeight || 580;
+    const reduce = window.ZothNetrunnerScene && ZothNetrunnerScene.reduced();
 
-    // Scene setup with subtle deep space fog
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x060912, 0.0012);
     graph3D.scene = scene;
 
-    const camera = new THREE.PerspectiveCamera(52, width / height, 0.8, 4800);
-    camera.position.set(0, 42, 520);
+    const camera = new THREE.PerspectiveCamera(48, width / height, 0.8, 5200);
+    camera.position.set(0, 86, 560);
     graph3D.camera = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setClearColor(0x060912, 1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.setClearColor(0x05070e, 1);
     if (window.ZothStudio3D && ZothStudio3D.dressRenderer) {
       ZothStudio3D.dressRenderer(renderer);
-      renderer.toneMappingExposure = 1.18;
+      renderer.toneMappingExposure = 1.1;
     } else {
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.22;
+      renderer.toneMappingExposure = 1.12;
     }
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
     graph3D.renderer = renderer;
 
-    // OrbitControls with smooth inertia damping
     if (typeof THREE.OrbitControls !== 'undefined') {
       const controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      controls.dampingFactor = 0.06;
-      controls.autoRotate = graph3D.autoRotate;
-      controls.autoRotateSpeed = 0.8;
-      controls.maxDistance = 1400;
-      controls.minDistance = 60;
+      controls.dampingFactor = 0.055;
+      controls.autoRotate = graph3D.autoRotate && !reduce;
+      controls.autoRotateSpeed = 0.45;
+      controls.maxDistance = 1600;
+      controls.minDistance = 80;
+      controls.maxPolarAngle = Math.PI * 0.48;
+      controls.target.set(0, 8, 0);
       graph3D.controls = controls;
     }
 
-    // Sovereign Post-Processing Bloom Pipeline
     if (typeof THREE.EffectComposer !== 'undefined' && typeof THREE.RenderPass !== 'undefined') {
       const composer = new THREE.EffectComposer(renderer);
-      const renderPass = new THREE.RenderPass(scene, camera);
-      composer.addPass(renderPass);
-      if (typeof THREE.UnrealBloomPass !== 'undefined') {
+      composer.addPass(new THREE.RenderPass(scene, camera));
+      if (typeof THREE.UnrealBloomPass !== 'undefined' && !reduce) {
         const bloomPass = new THREE.UnrealBloomPass(
           new THREE.Vector2(width, height),
-          0.32, // strength — keep InstancedMesh cores from blooming into white rectangles
-          0.28, // radius
-          0.92  // threshold
+          0.22,
+          0.18,
+          0.88
         );
         composer.addPass(bloomPass);
         graph3D.bloomPass = bloomPass;
@@ -3760,119 +3972,43 @@ function initThreeGraph(){
       graph3D.rig = ZothStudio3D.addStudioRig(scene, renderer, {
         noFloor: true,
         radius: 280,
-        hemi: 0.42,
-        keyIntensity: 2.4,
-        rimIntensity: 1.7,
+        hemi: 0.28,
+        keyIntensity: 1.6,
+        rimIntensity: 1.15,
       });
     }
-    const ambLight = new THREE.AmbientLight(0xb7d4ff, 0.42);
+    const ambLight = new THREE.AmbientLight(0x8aa4c8, 0.22);
     scene.add(ambLight);
     graph3D.ambLight = ambLight;
 
-    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.65);
-    dirLight1.position.set(220, 280, 360);
+    const dirLight1 = new THREE.DirectionalLight(0x00f0ff, 1.15);
+    dirLight1.position.set(180, 220, 280);
     scene.add(dirLight1);
     graph3D.dirLight1 = dirLight1;
 
-    const dirLight2 = new THREE.DirectionalLight(0xf472b6, 1.25);
-    dirLight2.position.set(-240, 120, -280);
+    const dirLight2 = new THREE.DirectionalLight(0xf472b6, 0.7);
+    dirLight2.position.set(-200, 80, -220);
     scene.add(dirLight2);
     graph3D.dirLight2 = dirLight2;
 
-    const fillLight = new THREE.PointLight(0x7c5cff, 1.2, 900, 2);
-    fillLight.position.set(0, 40, 0);
-    scene.add(fillLight);
-    graph3D.fillLight = fillLight;
+    if (window.ZothNetrunnerScene && ZothNetrunnerScene.dressGraph) {
+      ZothNetrunnerScene.dressGraph(scene, renderer, camera, graph3D);
+    }
 
-    if (window.ZothStudio3D && ZothStudio3D.introDolly) {
-      ZothStudio3D.introDolly(camera, null, {
-        from: new THREE.Vector3(80, 160, 720),
+    if (window.ZothStudio3D && ZothStudio3D.introDolly && !reduce) {
+      ZothStudio3D.introDolly(camera, graph3D.controls, {
+        from: new THREE.Vector3(40, 210, 820),
         to: camera.position.clone(),
-        duration: 1800
+        duration: 2200
       });
     }
 
-    // Ambient 2,500 Star Tensor Dust Particle Cloud (InstancedMesh)
-    const dustCount = 2500;
-    const dustGeo = new THREE.SphereGeometry(0.8, 6, 6);
-    const dustMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
-      transparent: true,
-      opacity: 0.45,
-      blending: THREE.AdditiveBlending
-    });
-    const dustMesh = new THREE.InstancedMesh(dustGeo, dustMat, dustCount);
-    const dummy = new THREE.Object3D();
-    for (let i = 0; i < dustCount; i++) {
-      const rad = 150 + Math.random() * 450;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      dummy.position.set(
-        rad * Math.sin(phi) * Math.cos(theta),
-        rad * Math.sin(phi) * Math.sin(theta) * 0.7,
-        rad * Math.cos(phi)
-      );
-      const s = 0.4 + Math.random() * 0.9;
-      dummy.scale.set(s, s, s);
-      dummy.updateMatrix();
-      dustMesh.setMatrixAt(i, dummy.matrix);
-    }
-    dustMesh.instanceMatrix.needsUpdate = true;
-    scene.add(dustMesh);
-    graph3D.dustMesh = dustMesh;
-
-    // Concentric Celestial Holographic Orbital Rings
-    const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.32, blending: THREE.AdditiveBlending });
-    const ringMat2 = new THREE.MeshBasicMaterial({ color: 0xf472b6, wireframe: true, transparent: true, opacity: 0.26, blending: THREE.AdditiveBlending });
-    const ringMat3 = new THREE.MeshBasicMaterial({ color: 0xa78bfa, wireframe: true, transparent: true, opacity: 0.20, blending: THREE.AdditiveBlending });
-    const ringMesh1 = new THREE.Mesh(new THREE.TorusGeometry(190, 0.75, 12, 80), ringMat1);
-    const ringMesh2 = new THREE.Mesh(new THREE.TorusGeometry(250, 0.75, 12, 80), ringMat2);
-    const ringMesh3 = new THREE.Mesh(new THREE.TorusGeometry(310, 0.75, 12, 80), ringMat3);
-    const orbitalGroup = new THREE.Group();
-    orbitalGroup.add(ringMesh1);
-    orbitalGroup.add(ringMesh2);
-    orbitalGroup.add(ringMesh3);
-    scene.add(orbitalGroup);
-    graph3D.orbitalGroup = orbitalGroup;
-    graph3D.rings = [ringMesh1, ringMesh2, ringMesh3];
-
-    // Lucy 3D Hologram Anchor Sprite at Central Nexus
-    const texLoader = new THREE.TextureLoader();
-    const lucyTex = texLoader.load('/assets/lucy.png');
-    const lucyHoloMat = new THREE.SpriteMaterial({
-      map: lucyTex,
-      transparent: true,
-      opacity: 0.85,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-    const lucyNexusSprite = new THREE.Sprite(lucyHoloMat);
-    lucyNexusSprite.scale.set(44, 44, 1);
-    lucyNexusSprite.position.set(0, 4, 0);
-
-    const pedestalGeo = new THREE.RingGeometry(10, 24, 32);
-    const pedestalMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.45,
-      blending: THREE.AdditiveBlending
-    });
-    const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
-    pedestal.rotation.x = Math.PI / 2;
-    pedestal.position.set(0, -18, 0);
-
-    const lucyNexusGroup = new THREE.Group();
-    lucyNexusGroup.add(lucyNexusSprite);
-    lucyNexusGroup.add(pedestal);
-    scene.add(lucyNexusGroup);
-    graph3D.lucyNexus = lucyNexusGroup;
-    graph3D.lucySprite = lucyNexusSprite;
-    graph3D.pedestal = pedestal;
+    const hint = document.getElementById('graphLoadHint');
+    if (hint) hint.style.display = 'none';
 
     // Traveling Synaptic Pulse Particles along Active Links
-    const pulseCount = 200;
-    const pulseGeo = new THREE.SphereGeometry(1.3, 6, 6);
+    const pulseCount = 96;
+    const pulseGeo = new THREE.SphereGeometry(0.85, 6, 6);
     const pulseMat = new THREE.MeshBasicMaterial({
       color: 0x00f0ff,
       transparent: true,
@@ -3923,43 +4059,19 @@ function initThreeGraph(){
 function applyNetrunnerTheme3D(themeName) {
   if (!graph3D.scene || !graph3D.renderer) return;
   const theme = String(themeName).toLowerCase();
-  
-  let clearColor = 0x060912;
-  let fogColor = 0x060912;
-  let light1Color = 0x00f0ff;
-  let light2Color = 0xf472b6;
-  let dustColor = 0x00f0ff;
-  let ring1 = 0x00f0ff, ring2 = 0xf472b6;
-
-  if (theme.includes('gold') || theme.includes('hermetic') || theme.includes('alchemy')) {
-    clearColor = 0x070603; fogColor = 0x070603;
-    light1Color = 0xfbbf24; light2Color = 0xf59e0b; dustColor = 0xfbbf24;
-    ring1 = 0xfbbf24; ring2 = 0xf59e0b;
-  } else if (theme.includes('matrix') || theme.includes('terminal') || theme.includes('emerald')) {
-    clearColor = 0x020804; fogColor = 0x020804;
-    light1Color = 0x00ff66; light2Color = 0x10b981; dustColor = 0x00ff66;
-    ring1 = 0x00ff66; ring2 = 0x10b981;
-  } else if (theme.includes('synthwave') || theme.includes('cyberpunk') || theme.includes('neon')) {
-    clearColor = 0x09030c; fogColor = 0x09030c;
-    light1Color = 0xff007a; light2Color = 0x00f0ff; dustColor = 0xff007a;
-    ring1 = 0x00f0ff; ring2 = 0xff007a;
-  } else if (theme.includes('light')) {
-    clearColor = 0xe2e8f0; fogColor = 0xe2e8f0;
-    light1Color = 0x0284c7; light2Color = 0x7c3aed; dustColor = 0x0284c7;
-    ring1 = 0x0284c7; ring2 = 0x7c3aed;
+  if (window.ZothNetrunnerScene && ZothNetrunnerScene.applyTheme) {
+    graph3D.renderer = graph3D.renderer;
+    ZothNetrunnerScene.applyTheme(graph3D, theme);
   }
-
-  graph3D.renderer.setClearColor(clearColor, 1);
-  if (graph3D.scene.fog) graph3D.scene.fog.color.setHex(fogColor);
-  if (graph3D.dirLight1) graph3D.dirLight1.color.setHex(light1Color);
-  if (graph3D.dirLight2) graph3D.dirLight2.color.setHex(light2Color);
-  if (graph3D.dustMesh && graph3D.dustMesh.material) graph3D.dustMesh.material.color.setHex(dustColor);
-  if (graph3D.rings && graph3D.rings.length >= 2) {
-    if (graph3D.rings[0].material) graph3D.rings[0].material.color.setHex(ring1);
-    if (graph3D.rings[1].material) graph3D.rings[1].material.color.setHex(ring2);
-  }
-  if (graph3D.pedestal && graph3D.pedestal.material) graph3D.pedestal.material.color.setHex(ring1);
-  if (graph3D.pulseMesh && graph3D.pulseMesh.material) graph3D.pulseMesh.material.color.setHex(ring1);
+  const pal = (window.ZothNetrunnerScene && ZothNetrunnerScene.palette)
+    ? ZothNetrunnerScene.palette(theme)
+    : { a: 0x00f0ff, b: 0xf472b6, bg: 0x060912, fog: 0x060912 };
+  graph3D.renderer.setClearColor(pal.bg, 1);
+  if (graph3D.scene.fog) graph3D.scene.fog.color.setHex(pal.fog);
+  if (graph3D.dirLight1) graph3D.dirLight1.color.setHex(pal.a);
+  if (graph3D.dirLight2) graph3D.dirLight2.color.setHex(pal.b);
+  if (graph3D.pulseMesh && graph3D.pulseMesh.material) graph3D.pulseMesh.material.color.setHex(pal.a);
+  if (graph3D.ambLight) graph3D.ambLight.intensity = pal.light ? 0.55 : 0.22;
 }
 
 function resizeThreeGraph(){
@@ -4115,18 +4227,18 @@ function updateThreeGraph(mems){
   if (!placed.length) return;
 
   const Phys = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
-  const nodeGeo = new THREE.IcosahedronGeometry(4.2, 1);
+  const nodeGeo = new THREE.OctahedronGeometry(4.6, 0);
   const nodeMat = new Phys({
     color: 0xffffff,
-    metalness: 0.55,
-    roughness: 0.22,
-    emissive: 0x141018,
-    emissiveIntensity: 0.55,
-    clearcoat: 0.65,
-    clearcoatRoughness: 0.18,
-    envMapIntensity: 1.25,
+    metalness: 0.18,
+    roughness: 0.12,
+    emissive: 0x101418,
+    emissiveIntensity: 0.72,
+    clearcoat: 1,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.45,
     transparent: true,
-    opacity: 0.96
+    opacity: 0.92
   });
   const nodeMesh = new THREE.InstancedMesh(nodeGeo, nodeMat, placed.length);
   nodeMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -4190,7 +4302,7 @@ function updateThreeGraph(mems){
     const lineMat = new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.62,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
@@ -4361,6 +4473,9 @@ function animateThreeGraph(){
   if (!graph3D.active || !graph3D.renderer || !graph3D.scene || !graph3D.camera) return;
 
   const time = performance.now() * 0.0015;
+  if (window.ZothNetrunnerScene && ZothNetrunnerScene.tick) {
+    ZothNetrunnerScene.tick(graph3D, time);
+  }
 
   // Web Audio Pulse level for dynamic sound-reactive node breathing
   const audioLevel = (window.ZothAudioFX && typeof window.ZothAudioFX.getAudioLevel === 'function') 
@@ -4382,31 +4497,8 @@ function animateThreeGraph(){
     graph3D.controls.update();
   }
 
-  // Orbit ambient tensor star dust mesh
-  if (graph3D.dustMesh) {
-    graph3D.dustMesh.rotation.y = time * 0.05;
-    graph3D.dustMesh.rotation.x = time * 0.02;
-  }
-
-  // Animate Concentric Celestial Holographic Orbital Rings
-  if (graph3D.rings && graph3D.rings.length === 3) {
-    graph3D.rings[0].rotation.x = time * 0.14;
-    graph3D.rings[0].rotation.y = time * 0.20;
-    graph3D.rings[1].rotation.y = -time * 0.16;
-    graph3D.rings[1].rotation.z = time * 0.11;
-    graph3D.rings[2].rotation.x = -time * 0.09;
-    graph3D.rings[2].rotation.z = -time * 0.15;
-  }
-
-  // Animate Lucy 3D Hologram Anchor Sprite & Spinning Pedestal
-  if (graph3D.lucySprite) {
-    graph3D.lucySprite.position.y = 4 + Math.sin(time * 2.2) * 3;
-    if (graph3D.lucySprite.material) {
-      graph3D.lucySprite.material.opacity = 0.78 + 0.15 * Math.sin(time * 3) + audioLevel * 0.25;
-    }
-  }
-  if (graph3D.pedestal) {
-    graph3D.pedestal.rotation.z = time * 0.5;
+  if (graph3D.lucySprite && graph3D.lucySprite.material && audioLevel) {
+    graph3D.lucySprite.material.opacity = Math.min(1, (graph3D.lucySprite.material.opacity || 0.8) + audioLevel * 0.12);
   }
 
   // Animate Traveling Synaptic Pulse Particles along Active Causal Links
@@ -5398,6 +5490,7 @@ function makeMazeRoomKit(floorMat, wallMat, ceilMat){
 function initWorldGL(st){
   const glCanvas = document.getElementById('worldCanvasGL');
   if (!glCanvas || typeof THREE === 'undefined') return false;
+  if (window.ZothNetrunnerScene && ZothNetrunnerScene.skipWebGL()) return false;
   try {
     const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -5437,9 +5530,20 @@ function initWorldGL(st){
       }
     }
     const Phys = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
-    const floorMat = new Phys({ color: 0x101826, metalness: 0.78, roughness: 0.28, emissive: 0x041018, emissiveIntensity: 0.45, clearcoat: 0.45, envMapIntensity: 1.1 });
-    const wallMat = new Phys({ color: 0x243044, metalness: 0.42, roughness: 0.42, emissive: 0x123048, emissiveIntensity: 0.55, side: THREE.DoubleSide });
-    const ceilMat = new Phys({ color: 0x0c121c, metalness: 0.8, roughness: 0.28, emissive: 0x060a12, emissiveIntensity: 0.25 });
+    const floorMap = (window.ZothNetrunnerScene && ZothNetrunnerScene.mazeGridTexture) ? ZothNetrunnerScene.mazeGridTexture() : null;
+    const floorMat = new Phys({
+      color: 0x0a1018,
+      metalness: 0.88,
+      roughness: 0.16,
+      emissive: 0x031018,
+      emissiveIntensity: 0.55,
+      clearcoat: 0.7,
+      clearcoatRoughness: 0.12,
+      envMapIntensity: 1.25,
+      map: floorMap || undefined
+    });
+    const wallMat = new Phys({ color: 0x161e2c, metalness: 0.55, roughness: 0.34, emissive: 0x0a1828, emissiveIntensity: 0.38, side: THREE.DoubleSide });
+    const ceilMat = new Phys({ color: 0x080c14, metalness: 0.86, roughness: 0.22, emissive: 0x04080e, emissiveIntensity: 0.2 });
     const kits = [];
     for (let i = 0; i < 49; i++) {
       const kit = makeMazeRoomKit(floorMat, wallMat, ceilMat);

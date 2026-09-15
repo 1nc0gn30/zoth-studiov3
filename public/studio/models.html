@@ -799,67 +799,94 @@
   </div>
 </section>
 <!-- Hardware VRAM & Quantization Matrix Calculator -->
-<section class="vram-panel" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;">
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.8rem; flex-wrap: wrap; gap: 0.8rem;">
-<div>
-<div class="kicker" style="color: var(--emerald);"><span>✦ Hardware &amp; Memory Architecture</span></div>
-<h2 style="font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">
-            GPU VRAM &amp; GGUF Quantization Sizer
-          </h2>
-</div>
-<span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">FP16 · Q8_0 · Q4_K_M · KV Cache Memory</span>
-</div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
-<div>
-<label style="display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px;">Model Parameters (Billion)</label>
-<select class="form-input" id="vram-params" onchange="calculateVRAM()" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem;">
-<option value="0.36">0.36B (Zoth-AI-Micro / SmolLM2)</option>
-<option selected="" value="1.5">1.5B (Zoth-AI Flagship / Qwen-2.5)</option>
-<option value="3.0">3.0B (Llama-3.2 / Qwen-2.5-3B)</option>
-<option value="7.0">7.0B (Qwen-2.5-Coder / Mistral-7B)</option>
-<option value="14.0">14.0B (Qwen-2.5-14B / DeepSeek-14B)</option>
-<option value="32.0">32.0B (Qwen-2.5-32B / DeepSeek-Coder-33B)</option>
-<option value="70.0">70.0B (Hermes 3 / Llama-3.3-70B)</option>
-<option value="671.0">671.0B (DeepSeek-R1 / V3 MoE 37B Active)</option>
-</select>
-</div>
-<div>
-<label style="display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px;">Quantization Precision</label>
-<select class="form-input" id="vram-quant" onchange="calculateVRAM()" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem;">
-<option value="16.0">FP16 (Uncompressed 16-bit · 2.0 B/param)</option>
-<option value="8.5">Q8_0 (Near-Lossless · 1.06 B/param)</option>
-<option selected="" value="4.5">Q4_K_M (Optimal Sweetspot · 0.56 B/param)</option>
-<option value="2.5">Q2_K (Ultra-Compact · 0.31 B/param)</option>
-</select>
-</div>
-<div>
-<label style="display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px;">Context Length (Tokens)</label>
-<select class="form-input" id="vram-ctx" onchange="calculateVRAM()" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem;">
-<option value="4096">4,096 Tokens (Standard)</option>
-<option selected="" value="8192">8,192 Tokens (Extended)</option>
-<option value="32768">32,768 Tokens (Large Codebase)</option>
-<option value="131072">131,072 Tokens (Full Repository)</option>
-</select>
-</div>
-</div>
-<div class="vram-readout" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1.25rem;">
-<div>
-<div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">Model Weights</div>
-<div id="vram-out-weights" style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--cyan); margin-top: 2px;">0.84 GB</div>
-</div>
-<div>
-<div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">KV Cache Memory</div>
-<div id="vram-out-kv" style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--purple); margin-top: 2px;">0.50 GB</div>
-</div>
-<div>
-<div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">Total Recommended VRAM</div>
-<div id="vram-out-total" style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--emerald); margin-top: 2px;">1.34 GB</div>
-</div>
-<div>
-<div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">Hardware Tier Match</div>
-<div id="vram-out-hw" style="font-family: var(--font-mono); font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-top: 6px;">🟢 CPU / 4GB iGPU / Laptop</div>
-</div>
-</div>
+<section class="vram-panel" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 16px; padding: clamp(24px, 3vw, 32px); margin-bottom: 2rem; box-shadow: 0 8px 30px rgba(0,0,0,0.4);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.9rem; flex-wrap: wrap; gap: 0.8rem;">
+    <div>
+      <div class="kicker" style="color: var(--emerald); display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        <span>Hardware &amp; Memory Architecture</span>
+      </div>
+      <h2 style="font-family: var(--font-display); font-size: 1.45rem; font-weight: 800; color: var(--text-primary); margin: 4px 0 0;">
+        GPU VRAM &amp; GGUF Quantization Sizer
+      </h2>
+    </div>
+    <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); background: rgba(0,240,255,0.08); border: 1px solid rgba(0,240,255,0.25); padding: 4px 10px; border-radius: 999px;">FP16 · Q8_0 · Q6_K · Q4_K_M · KV Cache Sizer</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 1.25rem;">
+    <div>
+      <label style="display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; font-weight: 700;">Model Parameters</label>
+      <select class="form-input" id="vram-params" onchange="calculateVRAM()" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 12px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem;">
+        <option value="0.36">0.36B (Zoth-AI-Micro / SmolLM2)</option>
+        <option selected="" value="1.5">1.5B (Zoth-AI Flagship / Qwen-2.5)</option>
+        <option value="3.0">3.0B (Llama-3.2 / Qwen-2.5-3B)</option>
+        <option value="7.0">7.0B (Qwen-2.5-Coder / Mistral-7B)</option>
+        <option value="14.0">14.0B (Qwen-2.5-14B / DeepSeek-14B)</option>
+        <option value="32.0">32.0B (Qwen-2.5-32B / DeepSeek-Coder-33B)</option>
+        <option value="70.0">70.0B (Hermes 3 / Llama-3.3-70B)</option>
+        <option value="671.0">671.0B (DeepSeek-R1 MoE / 37B Active)</option>
+      </select>
+    </div>
+
+    <div>
+      <label style="display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; font-weight: 700;">Quantization Precision</label>
+      <select class="form-input" id="vram-quant" onchange="calculateVRAM()" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 12px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem;">
+        <option value="16.0">FP16 (Uncompressed 16-bit · 2.00 B/param)</option>
+        <option value="8.5">Q8_0 (Near-Lossless · 1.06 B/param)</option>
+        <option value="6.5">Q6_K (High-Fidelity · 0.81 B/param)</option>
+        <option selected="" value="4.5">Q4_K_M (Optimal Sweetspot · 0.56 B/param)</option>
+        <option value="3.5">Q3_K_M (Compact Code · 0.44 B/param)</option>
+        <option value="2.5">Q2_K (Ultra-Compact · 0.31 B/param)</option>
+      </select>
+    </div>
+
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+        <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; margin: 0; font-weight: 700;">Context Length</label>
+        <span id="vram-ctx-label" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--cyan); font-weight:700;">8,192 Tokens</span>
+      </div>
+      <input type="range" id="vram-ctx-slider" min="2048" max="131072" step="2048" value="8192" oninput="document.getElementById('vram-ctx').value=this.value; document.getElementById('vram-ctx-label').textContent = parseInt(this.value).toLocaleString() + ' Tokens'; calculateVRAM();" style="width:100%; accent-color:var(--cyan); margin-bottom:6px;"/>
+      <select class="form-input" id="vram-ctx" onchange="document.getElementById('vram-ctx-slider').value=this.value; document.getElementById('vram-ctx-label').textContent = parseInt(this.value).toLocaleString() + ' Tokens'; calculateVRAM();" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem;">
+        <option value="4096">4,096 Tokens (Standard)</option>
+        <option selected="" value="8192">8,192 Tokens (Extended)</option>
+        <option value="16384">16,384 Tokens (Multi-file)</option>
+        <option value="32768">32,768 Tokens (Large Codebase)</option>
+        <option value="65536">65,536 Tokens (Book Length)</option>
+        <option value="131072">131,072 Tokens (Full Repository)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Visual Memory Composition Progress Bar -->
+  <div style="background:rgba(0,0,0,0.6); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:1.25rem;">
+    <div style="display:flex; justify-content:space-between; font-size:11px; font-family:var(--font-mono); color:var(--text-dim); margin-bottom:6px;">
+      <span>VRAM ALLOCATION BREAKDOWN</span>
+      <span id="vram-bar-ratio">Weights: 63% · KV Cache: 37%</span>
+    </div>
+    <div style="display:flex; height:10px; border-radius:5px; overflow:hidden; background:#070b14;">
+      <div id="vram-bar-weights" style="width:63%; background:var(--cyan); transition:width 0.2s ease;"></div>
+      <div id="vram-bar-kv" style="width:37%; background:var(--purple); transition:width 0.2s ease;"></div>
+    </div>
+  </div>
+
+  <div class="vram-readout" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1.25rem;">
+    <div>
+      <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">Model Weights</div>
+      <div id="vram-out-weights" style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--cyan); margin-top: 2px;">0.84 GB</div>
+    </div>
+    <div>
+      <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">KV Cache Memory</div>
+      <div id="vram-out-kv" style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--purple); margin-top: 2px;">0.50 GB</div>
+    </div>
+    <div>
+      <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">Total Recommended VRAM</div>
+      <div id="vram-out-total" style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--emerald); margin-top: 2px;">1.34 GB</div>
+    </div>
+    <div>
+      <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">Hardware Tier Match</div>
+      <div id="vram-out-hw" style="font-family: var(--font-mono); font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-top: 6px;">🟢 CPU / 4GB iGPU / Laptop</div>
+    </div>
+  </div>
 </section>
 <!-- Filter & Search Controls -->
 <section class="filter-bar">
@@ -1192,9 +1219,9 @@
               ${m.tags.map(t => `<span class="model-tag">${t}</span>`).join('')}
             </div>
             <div class="card-actions">
-              <button class="btn-test" onclick="exportModelAgentSpec('${m.id}')" title="Export sovereign agent spec YAML for this model">Spec 📄</button>
-              <button class="btn-test" onclick="loadIntoSandbox('${m.id}')">Test</button>
-              <button class="btn-deploy" onclick="deployToArena('${m.id}')">Deploy ➔</button>
+              <button class="btn-test" onclick="exportModelAgentSpec('${m.id}')" title="Export sovereign agent spec YAML for this model" style="display:inline-flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Spec</span></button>
+              <button class="btn-test" onclick="loadIntoSandbox('${m.id}')" style="display:inline-flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Test</span></button>
+              <button class="btn-deploy" onclick="deployToArena('${m.id}')" style="display:inline-flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg><span>Deploy</span></button>
             </div>
           </div>
         `;
@@ -1937,6 +1964,16 @@ parameters:
       document.getElementById('vram-out-weights').textContent = `${weightGB.toFixed(2)} GB`;
       document.getElementById('vram-out-kv').textContent = `${kvGB.toFixed(2)} GB`;
       document.getElementById('vram-out-total').textContent = `${totalGB.toFixed(2)} GB`;
+
+      // Update memory breakdown visual bar
+      const weightPct = Math.max(10, Math.min(90, Math.round((weightGB / totalGB) * 100)));
+      const kvPct = 100 - weightPct;
+      const barW = document.getElementById('vram-bar-weights');
+      const barK = document.getElementById('vram-bar-kv');
+      const barR = document.getElementById('vram-bar-ratio');
+      if (barW) barW.style.width = `${weightPct}%`;
+      if (barK) barK.style.width = `${kvPct}%`;
+      if (barR) barR.textContent = `Weights: ${weightPct}% (${weightGB.toFixed(1)}GB) · KV Cache: ${kvPct}% (${kvGB.toFixed(1)}GB)`;
 
       let hw = "🟢 CPU / 4GB iGPU / Laptop";
       if (totalGB > 64) {
