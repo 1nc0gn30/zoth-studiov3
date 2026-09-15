@@ -1,38 +1,41 @@
-# ⚡ Zoth Studio v6.7.0 — Sovereign Multi-Agent Workstation
+# ⚡ Zoth Studio v6.8.0 — Sovereign Multi-Agent Workstation
 
 Local-first AI workstation: public hub, private operator deck, encrypted key
-vault, and a full tool orchestrator. This release restores the **complete
-cross-platform artifact suite** — Linux, Windows, macOS and Android — for the
-first time since v4.6.0, and is the first release ever to ship an Android APK.
+vault, biomorphic STDP memory matrix, and full 23-tool orchestrator suite.
+This release features a complete overhaul across all 23 studio workstations,
+AAA Cyberpunk HUD dock, biomorphic netrunner memory matrix, vector icon architecture,
+governance specifications, and automated cross-platform artifact suite (Linux, Windows, macOS, Android APK).
 
 ---
 
-## 🆕 In this release
+## 🆕 In this release (v6.8.0)
 
-### 🤖 Android — first APK ever published
-`zoth-signal-bridge-6.7.0-android.apk` (~94 MB). The Zoth Signal Bridge
-(Kotlin + Jetpack Compose): pantheon roster, consensus arena, soundboard, notes
-reviewer and an in-app studio WebView bridge.
+### 🎨 Studio Workstations & UI Elevation
+- Comprehensive UI elevation across all 23 studio workstations with 4-theme token systems (Cyberpunk, Matrix Neon, Minimalist, High Contrast).
+- AAA Cyberpunk Floating Dock with responsive vector SVG iconography, keyboard shortcuts (`Alt+1..5`, `Alt+H`, `Alt+P`), and zero-layout-shift drawer mechanics.
+- Pet HUD Mascot system with ergonomic anti-collision positioning, mobile viewport elevation, and procedural Web Audio SFX.
+- Biomorphic Netrunner Memory Whitespace Matrix (`/studio/netrunner-memory.html`) with dual-layer associative vector topology and STDP synaptic decay.
 
-The Android project previously lived **outside version control**, which is why
-the APK step silently no-opped on every prior run. It is now part of this repo
-(build output and `local.properties` stay gitignored) with versionCode 7 /
-versionName 6.7.0.
+### 📜 Open Source Governance & Community Infrastructure
+- Full standardized open source governance suite: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CITATION.cff`, `REPO_METADATA.md`, `.github/FUNDING.yml`, and standardized Issue/PR templates.
+- Machine-readable Entity Graph (`JSON-LD`), `llms.txt`, `llms-full.txt`, and exhaustive `sitemap.xml` for AI search crawlers.
+
+### 🤖 Android — Zoth Signal Bridge APK
+`zoth-signal-bridge-6.8.0-android.apk` (Kotlin + Jetpack Compose): pantheon roster, consensus arena, soundboard, notes reviewer, and in-app studio bridge (versionCode 8 / versionName 6.8.0).
 
 ### 🐧 Linux suite
-- `zoth-studio_6.7.0_all.deb` — native Debian/Ubuntu/Parrot/Kali package (~650 MB)
-- `zoth-linux-x86_64.run` — self-extracting single-file executable (~918 MB)
-- `zoth-studio-v6.7.0-linux-x86_64.tar.gz` — portable tarball (~679 MB)
-- `Zoth_Studio-v6.7.0-x86_64.AppImage` — portable AppImage (~602 MB)
+- `zoth-studio_6.8.0_all.deb` — native Debian/Ubuntu/Parrot/Kali package
+- `zoth-linux-x86_64.run` — self-extracting single-file executable
+- `zoth-studio-v6.8.0-linux-x86_64.tar.gz` — portable tarball
+- `Zoth_Studio-v6.8.0-x86_64.AppImage` — portable AppImage
 
 ### 🪟 Windows suite
-- `zoth-studio-v6.7.0-windows-x86_64.zip` — standalone portable ZIP (~678 MB)
-- `zoth-windows-package.zip` — identical fallback copy (see limitations)
-- `zoth-vault-daemon-windows-x86_64.exe` — vault daemon, native PE (~2.4 MB)
+- `zoth-studio-v6.8.0-windows-x86_64.zip` — standalone portable ZIP
+- `zoth-vault-daemon-windows-x86_64.exe` — native Rust Argon2id PE binary
 
 ### 🍎 macOS suite
-- `zoth-studio-v6.7.0-macos-universal.tar.gz` (~680 MB)
-- `zoth-studio-v6.7.0-macos.zip` (~681 MB)
+- `zoth-studio-v6.8.0-macos-universal.tar.gz`
+- `zoth-studio-v6.8.0-macos.zip`
 
 ### 🔐 Sovereign Rust Key Vault (`zoth-vault-daemon`)
 - **Memory-hard KDF:** RFC 9106 Argon2id v19 (`m=64 MiB, t=3, p=4`)

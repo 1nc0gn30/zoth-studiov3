@@ -234,9 +234,9 @@
       env.add(mesh);
       return mesh;
     }
-    var inlayA = inlay(168, 0.55, pal.c, 0.55);
-    var inlayB = inlay(248, 0.35, pal.a, 0.38);
-    var inlayC = inlay(338, 0.22, pal.b, 0.22);
+    var inlayA = inlay(168, 0.45, pal.c, 0.32);
+    var inlayB = inlay(248, 0.28, pal.a, 0.28);
+    var inlayC = inlay(338, 0.18, pal.b, 0.16);
 
     var stars = starField(T, 2800, 1600);
     env.add(stars);
@@ -268,7 +268,7 @@
     env.add(dust);
 
     var column = new T.Mesh(
-      new T.CylinderGeometry(18, 28, 96, 32, 1, true),
+      new T.CylinderGeometry(12, 20, 88, 32, 1, true),
       new T.MeshBasicMaterial({
         color: pal.a,
         transparent: true,
@@ -335,7 +335,7 @@
         metalness: 0.9,
         roughness: 0.18,
         emissive: pal.a,
-        emissiveIntensity: 0.22
+        emissiveIntensity: 0.08
       })
     );
     pedestal.position.y = -38;
