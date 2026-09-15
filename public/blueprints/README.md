@@ -1,14 +1,14 @@
 # Zoth Blueprint Foundry
 
-> Production-ready, verified architectural blueprints empowering autonomous AI agents to compose, wire, and deploy full-stack web applications in sub-second execution loops.
+> Production-ready, deterministic architectural blueprints empowering autonomous AI agents to compose, wire, and deploy full-stack applications in sub-second execution loops.
 
 ---
 
-## ⚡ Overview
+## ⚡ Architectural Overview
 
-In traditional software development, autonomous agents frequently hallucinate dependencies, misconfigure build pipelines, or stitch together incompatible libraries. **Zoth Blueprint Foundry** solves this by establishing a deterministic library of **48+ battle-tested architectural blueprints**.
+In traditional agentic development, autonomous models often hallucinate incompatible dependencies, misconfigure deployment scripts, or generate unverified glue code. **Zoth Blueprint Foundry** establishes a deterministic library of **48+ battle-tested architectural blueprints**.
 
-Instead of writing applications from a blank slate, AI agents (Antigravity, Grok, Hermes, Ollama) pull modular components—ranging from Web Audio synthesizers and Three.js holograms to Stripe checkout sessions, Argon2id BYOK vaults, Consensus Arena v2 arbiters, and AEO Schema.org knowledge graphs—to synthesize verified, production-ready systems.
+Instead of writing applications from scratch, AI agents (`@antigravity`, `@grok`, `@hermes`, and local Ollama instances) query structured blueprint archetypes, wire modular subcomponents, and synthesize verified, production-ready systems.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -29,7 +29,7 @@ Instead of writing applications from a blank slate, AI agents (Antigravity, Grok
 │  └───────────────────────┘   └────────────────────────┘  │
 └────────────────────────────┬─────────────────────────────┘
                              │
-             Zero-Key Local Dev / Production CI
+              Zero-Key Local Dev / Production CI
                              ▼
 ┌──────────────────────────────────────────────────────────┐
 │                  Production Deployment                   │
@@ -39,7 +39,7 @@ Instead of writing applications from a blank slate, AI agents (Antigravity, Grok
 
 ---
 
-## 🛠️ Key Blueprint Categories
+## 🛠️ Blueprint Categories & Archetype Matrix
 
 | Category | Archetype Focus | Key Modules & Technologies |
 |---|---|---|
@@ -54,23 +54,42 @@ Instead of writing applications from a blank slate, AI agents (Antigravity, Grok
 
 ## 🧩 Architectural Principles
 
-1. **Zero-Key Offline Durability**
-   Every blueprint includes zero-dependency mock emulation (e.g., mock Stripe checkouts, devnet Solana RPCs, synthetic agent telemetry) allowing instantaneous local execution without cloud API keys.
-2. **Multi-Agent Arbitration Doctrine**
-   Dialectic 3-agent triangulation across Google Antigravity, xAI Grok, and Nous Hermes, verified via Python AST static analysis and Shannon agreement entropy telemetry ($H(p)$).
-3. **Loopback & Data Sovereignty**
-   Operator workflows and sensitive credential management remain strictly bound to local loopback (`127.0.0.1:8484` and `127.0.0.1:8787`).
-4. **Answer Engine Optimization (AEO) Native**
-   All synthesized outputs automatically bundle linked Schema.org JSON-LD knowledge graphs, entity disambiguation structures, and semantic metadata.
-5. **Multi-Platform Binary Packaging**
-   Direct compilation into Linux universal run installer, AppImage, Debian `.deb`, and Windows `.exe` formats.
+### 1. Zero-Key Offline Durability
+Every blueprint includes zero-dependency mock emulation (e.g., mock Stripe checkouts, devnet Solana RPCs, synthetic agent telemetry) allowing instantaneous local execution without cloud API keys.
+
+### 2. Multi-Agent Arbitration Doctrine (Consensus Arena v2)
+Dialectic 3-agent triangulation across Google Antigravity, xAI Grok, and Nous Hermes, verified via Python AST static analysis and Shannon agreement entropy telemetry:
+$$H(p) = -\sum_{i=1}^n p_i \log_2(p_i)$$
+
+### 3. Airgap Topology & Data Sovereignty
+Operator workflows and sensitive credential management remain strictly bound to local loopback:
+- `:8484` — Operator Command Deck & Swarm PTY Terminal
+- `:8787` — Argon2id BYOK Encrypted Keyring Daemon
+- `:8788` — Biomorphic Associative Memory & Vector Whitespace
+
+### 4. Answer Engine Optimization (AEO) Native
+All synthesized outputs automatically bundle linked Schema.org JSON-LD knowledge graphs, entity disambiguation structures, and semantic speakable specifications for generative AI indexers.
+
+### 5. Multi-Platform Packaging
+Direct compilation into Linux universal run installer, AppImage, Debian `.deb`, Android `.apk`, and Windows `.exe` formats.
+
+---
+
+## 🎨 4-Theme Token Support
+
+The Blueprint Foundry UI supports 4 distinct visual themes across all canvas elements, modal drawers, and node graphs:
+- **Dark Void** (`[data-theme="dark"]`): Cyber cyan & deep obsidian canvas.
+- **Light Sovereign** (`[data-theme="light"]`): High-contrast slate & warm amber typography.
+- **Matrix Terminal** (`[data-theme="matrix"]`): Phosphor green telemetry & CRT scanline accents.
+- **Alchemical Gold** (`[data-theme="gold"]`): Solar amber glow & sacred geometry linework.
 
 ---
 
 ## 📚 Blueprint File Manifest
 
-- [`zoth-knowledge-graph.json`](./zoth-knowledge-graph.json): Machine-readable Schema.org JSON-LD graph connecting all 16 suites, agent capabilities, pets, download binaries, and connectors.
+- [`zoth-knowledge-graph.json`](./zoth-knowledge-graph.json): Machine-readable Schema.org JSON-LD graph connecting all 23 suites, agent capabilities, mascots, download binaries, and connectors.
 - [`aeo-entity-definitions.md`](./aeo-entity-definitions.md): Detailed knowledge graph entity definitions and relationship mappings for LLM / Answer Engine indexing.
 - [`blueprints.js`](./blueprints.js): Client-side blueprint dataset and interactive synthesis logic.
-- [`blueprints.css`](./blueprints.css): High-contrast cyberpunk styling and responsive layout rules.
+- [`blueprints.css`](./blueprints.css): Foundational layout, canvas node connectors, and component styling.
+- [`blueprints-poster.css`](./blueprints-poster.css): Editorial layout, typography hierarchy, and 4-theme token overrides.
 - [`index.html`](./index.html): Interactive visual foundry explorer and blueprint synthesizer UI.

@@ -351,6 +351,26 @@ prompt_xml = client.get_prompt_context(query="webgen compiler", mode="dual", lim
 
 ---
 
+## 📖 Module Documentation & Architecture Guides
+
+Every workstation and core domain in Zoth Studio includes comprehensive technical documentation:
+
+| Module / Surface | Route | Architectural Guide | Key Focus |
+|------------------|-------|---------------------|-----------|
+| **Home & Azoth Sanctum** | `/` & `/zoth/` | [`public/docs/home-sanctum.md`](public/docs/home-sanctum.md) | Hero telemetry, 3D WebGL sanctum, AST consensus tiebreaker |
+| **Studio & Cockpits** | `/studio/` | [`public/studio/README.md`](public/studio/README.md) | 21 specialized workstations, IDE, tool bench, swarm radar |
+| **Pets & 3D Sanctuary** | `/pets/` | [`public/pets/README.md`](public/pets/README.md) | 24 companion spirits, PBR shaders, procedural audio DSP, SOUL specs |
+| **Agent Registry** | `/registry/` | [`public/registry/README.md`](public/registry/README.md) | 298+ tool catalog, runtime environments, `zoth-public-registry/v1` |
+| **Blueprints & DAGs** | `/blueprints/` | [`public/blueprints/README.md`](public/blueprints/README.md) | 48+ blueprints, execution DAGs, AEO schema, multi-theme canvas |
+| **Cryptographic Vault** | `/vault/` | [`public/vault/README.md`](public/vault/README.md) | Argon2id v19 KDF, XChaCha20 AEAD, `mlock()` RAM enclave |
+| **Memory Matrix** | `/memory/` | [`public/memory/README.md`](public/memory/README.md) | Biomorphic CLS + STDP synaptic memory, dual JSON/XML formats |
+| **Documentation Hub** | `/docs/` | [`public/docs/README.md`](public/docs/README.md) | Port topology, 4 Hermetic Rites, sovereign CLI reference |
+| **Brand Identity** | `/brand/` | [`public/brand/README.md`](public/brand/README.md) | Fibonacci scales ($\Phi = 1.618$), typography hierarchy, vector seals |
+| **Engineering Whitepapers** | `/articles/` | [`public/articles/README.md`](public/articles/README.md) | 8 sovereign dispatches, 65–75ch typography standards |
+| **AZOTH Cyber Comic** | `/comic/` | [`public/comic/README.md`](public/comic/README.md) | Interactive episodic DAG, lore codex, soundboard SFX |
+
+---
+
 ## 🚀 Development & Verification Loop
 
 ```bash

@@ -728,7 +728,7 @@
 <p><a href="/registry/tools.json">Download the full snapshot (tools.json, 298 tools)</a></p>
 </div>
 </noscript>
-<div class="reg-sticky" id="reg-sticky">
+<<div class="reg-sticky" id="reg-sticky">
 <div class="registry-fleet-toolbar">
 <div class="reg-meta">
 <span class="reg-meta-label">Tools shown</span>
@@ -737,7 +737,11 @@
 <span class="src" id="src">snapshot</span>
 </div>
 <div class="seek">
-<input aria-label="Search tools" autocomplete="off" id="q" placeholder="Search tools (Press /)..." type="search"/>
+<svg class="seek-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+<input aria-label="Search tools" autocomplete="off" id="q" placeholder="Search 298+ tools, categories, runtimes (Press /)..." type="search"/>
+<button type="button" class="seek-clear hidden" id="seek-clear" aria-label="Clear search" title="Clear search">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</button>
 </div>
 </div>
 <div aria-label="Categories" class="cats" id="cats" role="tablist"></div>
@@ -747,15 +751,26 @@
 <canvas aria-hidden="true" aria-label="3D tool registry wall" id="gl"></canvas>
 <div aria-hidden="true" id="veil"></div>
 <div class="tip" hidden="" id="tip"></div>
-<aside class="inspect" hidden="" id="inspect">
-<button aria-label="Close" class="inspect-close" id="inspect-close" type="button">×</button>
-<p class="inspect-kicker" id="inspect-cat"></p>
-<h2 id="inspect-name"></h2>
+<aside class="inspect" hidden="" id="inspect" aria-label="Tool Inspector Details">
+<button aria-label="Close Inspector" class="inspect-close" id="inspect-close" type="button">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</button>
+<span class="fleet-card-cat-badge" id="inspect-cat"></span>
+<h2 id="inspect-name" style="margin-top: 10px;"></h2>
 <p id="inspect-desc"></p>
 <div class="inspect-action-bar">
-  <button type="button" class="inspect-btn" id="inspect-fav-btn">★ Star Favorite</button>
-  <button type="button" class="inspect-btn" id="inspect-copy-run-btn">📋 Copy Run Command</button>
-  <button type="button" class="inspect-btn" id="inspect-copy-path-btn">📂 Copy Path</button>
+  <button type="button" class="inspect-btn" id="inspect-fav-btn">
+    <svg class="svg-star" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+    <span class="btn-text">Star Favorite</span>
+  </button>
+  <button type="button" class="inspect-btn" id="inspect-copy-run-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+    <span class="btn-text">Copy Run Command</span>
+  </button>
+  <button type="button" class="inspect-btn" id="inspect-copy-path-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+    <span class="btn-text">Copy Path</span>
+  </button>
 </div>
 <dl>
 <div>
@@ -763,12 +778,13 @@
 <dd id="inspect-run"></dd>
 </div>
 <div>
-<dt>Path</dt>
+<dt>Local Path</dt>
 <dd><code id="inspect-path"></code></dd>
 </div>
 </dl>
-<div class="inspect-tags" id="inspect-tags"></div>
-<p class="inspect-note">Live runs stay on the private deck. This wall is the public index.</p>
+<p class="inspect-tags-title">Tags (Click to search)</p>
+<div class="inspect-tags-wrap" id="inspect-tags"></div>
+<p class="inspect-note">🔒 Local POSIX execution. Live runs stay on the private loopback deck.</p>
 </aside>
 <script type="importmap">
       {
@@ -785,11 +801,17 @@
   var grid = document.getElementById("fleet");
   var catsEl = document.getElementById("cats");
   var qEl = document.getElementById("q");
+  var clearBtn = document.getElementById("seek-clear");
   var countEl = document.getElementById("fleet-count") || document.getElementById("count");
   var toggleEl = document.getElementById("reg-toggle-all");
   var groups = [];
   var emptyEl = null;
   var currentInspectedTool = null;
+
+  var STAR_ICON_OUTLINE = '<svg class="svg-star" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+  var STAR_ICON_FILLED = '<svg class="svg-star" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+  var COPY_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+  var ARROW_ICON = '<svg class="fleet-card-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>';
 
   // --- Favorite Bookmarks System ---
   function getFavorites() {
@@ -822,7 +844,7 @@
     } catch (e) {}
     updateFavoriteDOM(id, added);
     refreshFavoriteTab();
-    showToast(added ? "★ Added to Favorites" : "Removed from Favorites");
+    showToast(added ? "★ Added to Bookmarks" : "Removed from Bookmarks");
     return added;
   }
 
@@ -830,13 +852,15 @@
     var btns = document.querySelectorAll('.card-fav-btn[data-id="' + id + '"]');
     btns.forEach(function(b) {
       b.classList.toggle("is-fav", isFav);
-      b.textContent = isFav ? "★" : "☆";
+      b.innerHTML = isFav ? STAR_ICON_FILLED : STAR_ICON_OUTLINE;
       b.title = isFav ? "Remove bookmark" : "Bookmark tool";
+      b.setAttribute("aria-label", isFav ? "Remove bookmark" : "Bookmark tool");
     });
     var inspectFav = document.getElementById("inspect-fav-btn");
     if (inspectFav && currentInspectedTool && currentInspectedTool.id === id) {
       inspectFav.classList.toggle("is-fav", isFav);
-      inspectFav.textContent = isFav ? "★ Starred Favorite" : "☆ Star Favorite";
+      var textSpan = inspectFav.querySelector(".btn-text");
+      if (textSpan) textSpan.textContent = isFav ? "Starred Favorite" : "Star Favorite";
     }
   }
 
@@ -846,7 +870,7 @@
     if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
     var toast = document.createElement("div");
     toast.className = "reg-copy-toast";
-    toast.innerHTML = "<span>✨</span> <span>" + msg + "</span>";
+    toast.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>' + msg + '</span>';
     document.body.appendChild(toast);
     setTimeout(function () {
       if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
@@ -899,7 +923,8 @@
     if (favBtn) {
       var fav = isFavorite(t.id);
       favBtn.classList.toggle("is-fav", fav);
-      favBtn.textContent = fav ? "★ Starred Favorite" : "☆ Star Favorite";
+      var textSpan = favBtn.querySelector(".btn-text");
+      if (textSpan) textSpan.textContent = fav ? "Starred Favorite" : "Star Favorite";
       favBtn.onclick = function() { toggleFavorite(t.id); };
     }
 
@@ -915,9 +940,20 @@
 
     var tags = document.getElementById("inspect-tags");
     if (tags) {
-      tags.replaceChildren.apply(tags, (t.tags || []).slice(0, 12).map(function (tag) {
-        var s = document.createElement("span");
-        s.textContent = tag;
+      tags.replaceChildren.apply(tags, (t.tags || []).slice(0, 16).map(function (tag) {
+        var s = document.createElement("button");
+        s.type = "button";
+        s.className = "inspect-tag-pill";
+        s.textContent = "#" + tag;
+        s.onclick = function() {
+          if (qEl) {
+            qEl.value = tag;
+            applyFilter();
+            if (clearBtn) clearBtn.classList.remove("hidden");
+            var inspect = document.getElementById("inspect");
+            if (inspect) inspect.hidden = true;
+          }
+        };
         return s;
       }));
     }
@@ -956,6 +992,9 @@
   function applyFilter() {
     if (!grid) return 0;
     var q = ((qEl && qEl.value) || "").trim().toLowerCase();
+    if (clearBtn) {
+      clearBtn.classList.toggle("hidden", !q);
+    }
     var filter = activeCat();
     var shown = 0;
     for (var g = 0; g < groups.length; g++) {
@@ -987,8 +1026,16 @@
     return shown;
   }
 
-  /* Used when a category chip is chosen: filter, open that group, bring it
-     into view (the sticky bar's scroll-margin keeps it clear of the header). */
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function() {
+      if (qEl) {
+        qEl.value = "";
+        qEl.focus();
+        applyFilter();
+      }
+    });
+  }
+
   function focusFilter() {
     applyFilter();
     var filter = activeCat();
@@ -1019,7 +1066,7 @@
   function refreshFavoriteTab() {
     var favTab = catsEl && catsEl.querySelector('button[data-cat="starred"]');
     if (favTab) {
-      favTab.textContent = "★ Starred " + getFavorites().length;
+      favTab.innerHTML = STAR_ICON_FILLED + " Starred (" + getFavorites().length + ")";
     }
   }
 
@@ -1031,20 +1078,20 @@
       counts[c] = (counts[c] || 0) + 1;
     });
     var names = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
-    function mk(id, label) {
+    function mk(id, label, icon) {
       var b = document.createElement("button");
       b.type = "button";
       b.setAttribute("role", "tab");
       b.setAttribute("data-cat", id);
-      b.textContent = label;
+      b.innerHTML = (icon ? icon + " " : "") + label;
       b.setAttribute("aria-selected", id === "all" ? "true" : "false");
       if (id === "all") b.classList.add("is-on");
       return b;
     }
-    catsEl.appendChild(mk("all", "All " + list.length));
-    catsEl.appendChild(mk("starred", "★ Starred " + getFavorites().length));
+    catsEl.appendChild(mk("all", "All (" + list.length + ")"));
+    catsEl.appendChild(mk("starred", "Starred (" + getFavorites().length + ")", STAR_ICON_FILLED));
     names.forEach(function (n) {
-      catsEl.appendChild(mk(n, n.split("&")[0].trim() + " " + counts[n]));
+      catsEl.appendChild(mk(n, n.split("&")[0].trim() + " (" + counts[n] + ")"));
     });
   }
 
@@ -1084,7 +1131,7 @@
       var chev = document.createElement("span");
       chev.className = "reg-group-chev";
       chev.setAttribute("aria-hidden", "true");
-      chev.textContent = "▾";
+      chev.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>';
       sum.appendChild(num);
       sum.appendChild(nm);
       sum.appendChild(cnt);
@@ -1103,7 +1150,15 @@
           ((t.tags || []).join(" ")) + " " + (t.id || "")
         ).toLowerCase());
 
-        // Card action overlay: Bookmark star & Quick copy
+        // Card Top Bar with category badge, runtimes, and action buttons
+        var topBar = document.createElement("div");
+        topBar.className = "fleet-card-top-bar";
+
+        var catBadge = document.createElement("span");
+        catBadge.className = "fleet-card-cat-badge";
+        catBadge.textContent = t.category || "Tool";
+        topBar.appendChild(catBadge);
+
         var actionsWrap = document.createElement("div");
         actionsWrap.className = "fleet-card-header-actions";
 
@@ -1111,8 +1166,9 @@
         copyBtn.className = "card-action-btn card-copy-btn";
         copyBtn.setAttribute("role", "button");
         copyBtn.setAttribute("tabindex", "0");
-        copyBtn.title = "Copy tool command";
-        copyBtn.textContent = "📋";
+        copyBtn.title = "Copy CLI run command";
+        copyBtn.setAttribute("aria-label", "Copy CLI run command");
+        copyBtn.innerHTML = COPY_ICON;
         copyBtn.addEventListener("click", function(ev) {
           ev.stopPropagation();
           copyText("zoth run " + (t.id || t.name), "Command");
@@ -1131,7 +1187,8 @@
         favBtn.setAttribute("tabindex", "0");
         favBtn.setAttribute("data-id", t.id || "");
         favBtn.title = isFavorite(t.id) ? "Remove bookmark" : "Bookmark tool";
-        favBtn.textContent = isFavorite(t.id) ? "★" : "☆";
+        favBtn.setAttribute("aria-label", isFavorite(t.id) ? "Remove bookmark" : "Bookmark tool");
+        favBtn.innerHTML = isFavorite(t.id) ? STAR_ICON_FILLED : STAR_ICON_OUTLINE;
         favBtn.addEventListener("click", function(ev) {
           ev.stopPropagation();
           toggleFavorite(t.id);
@@ -1146,18 +1203,30 @@
 
         actionsWrap.appendChild(copyBtn);
         actionsWrap.appendChild(favBtn);
-        card.appendChild(actionsWrap);
+        topBar.appendChild(actionsWrap);
+        card.appendChild(topBar);
 
-        var c = document.createElement("p");
-        c.className = "fleet-card-cat";
-        c.textContent = t.category || "Other";
         var h3 = document.createElement("h3");
-        h3.textContent = t.name || t.id || "Untitled";
+        var nameSpan = document.createElement("span");
+        nameSpan.textContent = t.name || t.id || "Untitled";
+        h3.appendChild(nameSpan);
+        h3.innerHTML += ARROW_ICON;
+
         var p = document.createElement("p");
-        p.textContent = t.description || "";
-        card.appendChild(c);
+        p.textContent = t.description || "Production-ready local tool harness with deterministic execution and zero cloud telemetry.";
+
         card.appendChild(h3);
         card.appendChild(p);
+
+        // Footer meta with runtimes and path
+        var footerMeta = document.createElement("div");
+        footerMeta.className = "fleet-card-footer-meta";
+        var pathCode = document.createElement("span");
+        pathCode.className = "fleet-card-path";
+        pathCode.textContent = (t.runtimes && t.runtimes.length) ? t.runtimes.join(" · ") : (t.relative_path || t.id);
+        footerMeta.appendChild(pathCode);
+        card.appendChild(footerMeta);
+
         card.addEventListener("click", function () { openInspect(t); });
         inner.appendChild(card);
       });
@@ -1193,9 +1262,6 @@
   if (qEl) qEl.addEventListener("input", applyFilter);
   if (catsEl) {
     catsEl.addEventListener("click", function (e) {
-      /* NB: registry.js re-renders the chips inside its own click handler, so
-         by the time this delegated handler runs the clicked button is already
-         detached — never gate the work on catsEl.contains(btn). */
       var btn = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!btn) return;
       if (btn.hasAttribute("data-cat") && !btn.getAttribute("data-bound-by-registry") &&

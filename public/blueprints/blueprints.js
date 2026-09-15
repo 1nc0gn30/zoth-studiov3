@@ -490,7 +490,7 @@ function renderBlueprints() {
       </div>
 
       <h3 class="card-title">${bp.title}</h3>
-      <div class="card-archetype">📐 ${bp.archetype}</div>
+      <div class="card-archetype"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-1px;margin-right:4px;"><polygon points="2 2 22 2 2 22 2 2"/><line x1="2" y1="8" x2="8" y2="8"/><line x1="2" y1="14" x2="14" y2="14"/></svg>${bp.archetype}</div>
 
       <div class="card-why-block">
         <strong>Why it powers Zoth Studio</strong>
@@ -1483,9 +1483,12 @@ window.triggerSwarmCycle = function() {
 window.toggleLaserTelemetry = function() {
   laserTelemetryActive = !laserTelemetryActive;
   const btn = document.getElementById('btn-toggle-laser');
+  const label = document.getElementById('label-laser-telemetry');
   if (btn) {
     btn.classList.toggle('active-laser', laserTelemetryActive);
-    btn.innerHTML = `<span>📡 Telemetry Pulse: ${laserTelemetryActive ? 'ON' : 'OFF'}</span>`;
+  }
+  if (label) {
+    label.textContent = `Telemetry Pulse: ${laserTelemetryActive ? 'ON' : 'OFF'}`;
   }
   playTone(laserTelemetryActive ? 700 : 350, 'sine', 0.08, 0.1);
   renderCurrentDiagram();
@@ -1520,10 +1523,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (toggleLaserBtn) toggleLaserBtn.addEventListener('click', toggleLaserTelemetry);
 
   const soundDiagramBtn = document.getElementById('btn-sound-diagram');
+  const soundLabel = document.getElementById('label-sound-diagram');
   if (soundDiagramBtn) {
     soundDiagramBtn.addEventListener('click', () => {
       soundEnabled = !soundEnabled;
-      soundDiagramBtn.innerHTML = `<span>🔊 Chimes: ${soundEnabled ? 'ON' : 'OFF'}</span>`;
+      if (soundLabel) {
+        soundLabel.textContent = `Chimes: ${soundEnabled ? 'ON' : 'OFF'}`;
+      }
       playTone(soundEnabled ? 660 : 330, 'sine', 0.08, 0.1);
     });
   }
