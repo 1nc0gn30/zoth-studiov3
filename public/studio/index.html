@@ -201,9 +201,253 @@
 <link href="/assets/zoth-nav.css?v=11" rel="stylesheet"/>
 <link href="/studio/studio-poster.css" rel="stylesheet"/>
 <link href="/assets/zoth-studio-index.css?v=1" rel="stylesheet"/>
-</meta></link>  <link rel="stylesheet" href="/assets/zoth-footer.css" />
+<link rel="stylesheet" href="/assets/zoth-footer.css" />
+<link href="/assets/zoth-hub-pages.css" rel="stylesheet" />
+<style>
+/* ── Recently Used Workstations Chip Bar ── */
+.recent-workstations-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 20px 0;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--surface-card, rgba(16, 20, 34, 0.75));
+  border: 1px solid var(--border, rgba(0, 240, 255, 0.22));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.recent-workstations-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold, #fbbf24);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.recent-workstations-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1 1 auto;
+}
+.rw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.14));
+  color: var(--text-primary, #f1f5f9);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+.rw-chip:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--cyan, #00f0ff);
+  color: var(--text-primary, #fff);
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+  text-decoration: none;
+}
+.rw-chip-badge {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 240, 255, 0.2);
+  color: var(--cyan, #00f0ff);
+  font-weight: 700;
+}
+.rw-shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.16));
+  color: var(--text-subhead, #94a3b8);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+.rw-shortcut-hint:hover {
+  border-color: var(--gold, #fbbf24);
+  color: var(--gold, #fbbf24);
+}
+.rw-shortcut-hint kbd {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* ── Global Keyboard Shortcuts Modal ── */
+.zoth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(3, 5, 10, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+.zoth-modal-backdrop[hidden] {
+  display: none !important;
+}
+.zoth-modal-dialog {
+  background: var(--surface-card, #0a0e1c);
+  border: 1px solid var(--border, rgba(0, 240, 255, 0.3));
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 240, 255, 0.15);
+  width: min(680px, 100%);
+  max-height: min(88vh, 720px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-primary, #f1f5f9);
+  animation: zothModalZoom 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes zothModalZoom {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.zoth-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+}
+.zoth-modal-header h2 {
+  font-family: var(--font-display, sans-serif);
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--text-primary, #fff);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.zoth-modal-close {
+  background: transparent;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.16));
+  color: var(--text-subhead, #94a3b8);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+.zoth-modal-close:hover {
+  border-color: var(--cyan, #00f0ff);
+  color: var(--cyan, #00f0ff);
+  background: rgba(0, 240, 255, 0.1);
+}
+.zoth-modal-body {
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.shortcut-group-title {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold, #fbbf24);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.85rem;
+  color: var(--text-subhead, #cbd5e1);
+}
+.shortcut-row kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--cyan, #00f0ff);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+}
+.zoth-modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  color: var(--text-subhead, #94a3b8);
+  font-family: var(--font-mono, monospace);
+}
+html[data-theme="light"] .recent-workstations-bar {
+  background: #ffffff;
+  border-color: rgba(17, 24, 39, 0.12);
+}
+html[data-theme="light"] .rw-chip {
+  background: #f1f5f9;
+  border-color: rgba(17, 24, 39, 0.14);
+  color: #1e293b;
+}
+html[data-theme="light"] .zoth-modal-dialog {
+  background: #ffffff;
+  border-color: rgba(17, 24, 39, 0.16);
+  color: #111827;
+}
+html[data-theme="light"] .shortcut-row {
+  background: #f8fafc;
+  color: #334155;
+}
+html[data-theme="light"] .shortcut-row kbd {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #0369a1;
+}
+</style>
 </head>
-<body>
+<body class="studio-hub">
 <a class="skip skip-to-content" href="#main-content">Skip to main content</a>
                                                 <header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
@@ -491,6 +735,40 @@
 <h2 id="grid-title">All Workstations</h2>
 <span id="grid-count">Showing 19 stations</span>
 </div>
+
+<!-- Recently Used Workstations Quick-Launch Chip Bar -->
+<div class="recent-workstations-bar" id="recentWorkstationsBar" aria-label="Recently Used Workstations">
+  <div class="recent-workstations-label">
+    <span class="rw-icon">⚡</span>
+    <span>Recently Used Workstations:</span>
+  </div>
+  <div class="recent-workstations-chips" id="recentWorkstationsChips"></div>
+  <button type="button" class="rw-shortcut-hint" id="btnOpenShortcutsModal" title="Open Keyboard Shortcuts Cheatsheet (?)">
+    <kbd>?</kbd> Shortcuts
+  </button>
+</div>
+
+<!-- Matured Instant Station Shortcuts Bar -->
+<div class="quick-jump-bar">
+<div class="quick-jump-info">
+<div class="quick-jump-title">⚡ Instant Station Shortcuts</div>
+<div class="quick-jump-sub">One-click jump directly into running visual workstations, tools &amp; control decks</div>
+</div>
+<div class="quick-jump-links">
+<a class="quick-jump-pill" data-tip="Scaffold &amp; build web apps" href="/studio/webgen.html"><span class="qj-icon">⚡</span> Web Foundry</a>
+<a class="quick-jump-pill" data-tip="3D WebGL multi-agent arena" href="/studio/swarm.html"><span class="qj-icon">🌐</span> Swarm Arena</a>
+<a class="quick-jump-pill" data-tip="Triangulate code between agents" href="/studio/consensus.html"><span class="qj-icon">⚔️</span> Consensus v2</a>
+<a class="quick-jump-pill" data-tip="Visual DAG workflow composer" href="/studio/agent-composer.html"><span class="qj-icon">📐</span> DAG Composer</a>
+<a class="quick-jump-pill" data-tip="Volumetric 3D mascot figures" href="/pets/pet-studio.html"><span class="qj-icon">💎</span> 3D Pet Studio</a>
+<a class="quick-jump-pill" data-tip="Touchless hand tracking HUD" href="/studio/vision-link.html"><span class="qj-icon">👁️</span> Vision Link</a>
+<a class="quick-jump-pill" data-tip="Live SSE message broker NOC" href="/studio/bus-monitor.html"><span class="qj-icon">📡</span> Swarm Bus</a>
+<a class="quick-jump-pill" data-tip="GPU VRAM &amp; context calculator" href="/studio/models.html"><span class="qj-icon">🧠</span> Model Foundry</a>
+<a class="quick-jump-pill" data-tip="21 sovereign agent archetypes" href="/agents/"><span class="qj-icon">🪐</span> Agent Pantheon</a>
+<a class="quick-jump-pill" data-tip="Argon2id client key storage" href="/vault/"><span class="qj-icon">🔐</span> Key Vault</a>
+<a class="quick-jump-pill" data-tip="Complete architecture manual" href="/docs/"><span class="qj-icon">📚</span> Docs Manual</a>
+<a class="quick-jump-pill js-deck" data-tip="Local orchestrator control deck" href="http://127.0.0.1:8484/"><span class="qj-icon">🎛️</span> Deck (:8484)</a>
+</div>
+</div>
 <div class="workstations-grid" id="workstations-grid">
 <section class="ws-group" data-category="nocode" data-group-count="3">
 <h2 class="ws-group-title">No-Code &amp; Creators <span class="ws-group-count">3 Stations</span></h2>
@@ -774,27 +1052,6 @@
 </a>
 </section>
 </div>
-<!-- Matured Instant Station Shortcuts Bar -->
-<div class="quick-jump-bar">
-<div class="quick-jump-info">
-<div class="quick-jump-title">⚡ Instant Station Shortcuts</div>
-<div class="quick-jump-sub">One-click jump directly into running visual workstations, tools &amp; control decks</div>
-</div>
-<div class="quick-jump-links">
-<a class="quick-jump-pill" data-tip="Scaffold &amp; build web apps" href="/studio/webgen.html"><span class="qj-icon">⚡</span> Web Foundry</a>
-<a class="quick-jump-pill" data-tip="3D WebGL multi-agent arena" href="/studio/swarm.html"><span class="qj-icon">🌐</span> Swarm Arena</a>
-<a class="quick-jump-pill" data-tip="Triangulate code between agents" href="/studio/consensus.html"><span class="qj-icon">⚔️</span> Consensus v2</a>
-<a class="quick-jump-pill" data-tip="Visual DAG workflow composer" href="/studio/agent-composer.html"><span class="qj-icon">📐</span> DAG Composer</a>
-<a class="quick-jump-pill" data-tip="Volumetric 3D mascot figures" href="/pets/pet-studio.html"><span class="qj-icon">💎</span> 3D Pet Studio</a>
-<a class="quick-jump-pill" data-tip="Touchless hand tracking HUD" href="/studio/vision-link.html"><span class="qj-icon">👁️</span> Vision Link</a>
-<a class="quick-jump-pill" data-tip="Live SSE message broker NOC" href="/studio/bus-monitor.html"><span class="qj-icon">📡</span> Swarm Bus</a>
-<a class="quick-jump-pill" data-tip="GPU VRAM &amp; context calculator" href="/studio/models.html"><span class="qj-icon">🧠</span> Model Foundry</a>
-<a class="quick-jump-pill" data-tip="21 sovereign agent archetypes" href="/agents/"><span class="qj-icon">🪐</span> Agent Pantheon</a>
-<a class="quick-jump-pill" data-tip="Argon2id client key storage" href="/vault/"><span class="qj-icon">🔐</span> Key Vault</a>
-<a class="quick-jump-pill" data-tip="Complete architecture manual" href="/docs/"><span class="qj-icon">📚</span> Docs Manual</a>
-<a class="quick-jump-pill js-deck" data-tip="Local orchestrator control deck" href="http://127.0.0.1:8484/"><span class="qj-icon">🎛️</span> Deck (:8484)</a>
-</div>
-</div>
 </section>
 </main>
                                         <footer class="site" role="contentinfo">
@@ -918,6 +1175,217 @@
 
       applyFilters();
     </script>
+
+<!-- Global Keyboard Shortcuts Cheatsheet Modal -->
+<div id="zoth-shortcuts-modal" class="zoth-modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-title">
+  <div class="zoth-modal-dialog" role="document">
+    <div class="zoth-modal-header">
+      <h2 id="shortcuts-modal-title"><span>⌨️</span> Keyboard Shortcuts</h2>
+      <button type="button" class="zoth-modal-close" id="btnShortcutsModalClose" aria-label="Close shortcuts modal">✕</button>
+    </div>
+    <div class="zoth-modal-body">
+      <div class="shortcut-group">
+        <div class="shortcut-group-title">🌌 Navigation</div>
+        <div class="shortcut-list">
+          <div class="shortcut-row"><span>Home Hub</span> <span><kbd>G</kbd> <kbd>H</kbd></span></div>
+          <div class="shortcut-row"><span>Workstations Hub</span> <span><kbd>G</kbd> <kbd>S</kbd></span></div>
+          <div class="shortcut-row"><span>Agent Pantheon</span> <span><kbd>G</kbd> <kbd>A</kbd></span></div>
+          <div class="shortcut-row"><span>Tool Registry</span> <span><kbd>G</kbd> <kbd>R</kbd></span></div>
+          <div class="shortcut-row"><span>Documentation</span> <span><kbd>G</kbd> <kbd>D</kbd></span></div>
+          <div class="shortcut-row"><span>Key Vault</span> <span><kbd>G</kbd> <kbd>V</kbd></span></div>
+          <div class="shortcut-row"><span>Zoth World 3D</span> <span><kbd>G</kbd> <kbd>W</kbd></span></div>
+        </div>
+      </div>
+      <div class="shortcut-group">
+        <div class="shortcut-group-title">⚡ Quick Workstation Jumps</div>
+        <div class="shortcut-list">
+          <div class="shortcut-row"><span>The Cockpit</span> <kbd>1</kbd></div>
+          <div class="shortcut-row"><span>WebGen Foundry</span> <kbd>2</kbd></div>
+          <div class="shortcut-row"><span>Consensus Arena</span> <kbd>3</kbd></div>
+          <div class="shortcut-row"><span>3D Swarm Arena</span> <kbd>4</kbd></div>
+          <div class="shortcut-row"><span>Companion Pets 3D</span> <kbd>5</kbd></div>
+        </div>
+      </div>
+      <div class="shortcut-group">
+        <div class="shortcut-group-title">🎨 Studio Tools &amp; Actions</div>
+        <div class="shortcut-list">
+          <div class="shortcut-row"><span>Shortcuts Cheatsheet</span> <kbd>?</kbd></div>
+          <div class="shortcut-row"><span>Command Palette</span> <span><kbd>Ctrl/Cmd</kbd> + <kbd>K</kbd></span></div>
+          <div class="shortcut-row"><span>Cycle Visual Theme (4)</span> <span><kbd>Shift</kbd> + <kbd>T</kbd></span></div>
+          <div class="shortcut-row"><span>On-Screen Annotator</span> <span><kbd>Shift</kbd> + <kbd>A</kbd></span></div>
+          <div class="shortcut-row"><span>Dismiss / Close</span> <kbd>Esc</kbd></div>
+        </div>
+      </div>
+    </div>
+    <div class="zoth-modal-footer">
+      <span>Zoth Studio Keyboard Master · 100% Local Sovereign Execution</span>
+      <span>Press <kbd>Esc</kbd> to close</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // --- Recently Used Workstations Logic ---
+  var DEFAULT_STATIONS = [
+    { id: "cockpit", title: "The Cockpit", icon: "🪐", url: "/studio/cockpit.html", badge: "SWARM" },
+    { id: "webgen", title: "WebGen Studio", icon: "⚡", url: "/studio/webgen.html", badge: "FOUNDRY" },
+    { id: "consensus", title: "Consensus v2", icon: "⚔️", url: "/studio/consensus.html", badge: "AST" },
+    { id: "swarm", title: "Swarm Arena", icon: "🌐", url: "/studio/swarm.html", badge: "3D GPU" },
+    { id: "vos", title: "vOS Sandbox", icon: "💻", url: "/studio/vos-sandbox.html", badge: "WASM" },
+    { id: "pets", title: "Companion Pets", icon: "💎", url: "/pets/", badge: "MASCOTS" }
+  ];
+
+  function getRecentWorkstations() {
+    try {
+      var saved = localStorage.getItem("zoth_recent_workstations");
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_STATIONS.slice(0, 4);
+  }
+
+  function recordWorkstationUse(st) {
+    try {
+      var current = getRecentWorkstations();
+      var filtered = current.filter(function(item) { return item.id !== st.id && item.url !== st.url; });
+      filtered.unshift(st);
+      if (filtered.length > 6) filtered = filtered.slice(0, 6);
+      localStorage.setItem("zoth_recent_workstations", JSON.stringify(filtered));
+      renderRecentWorkstations();
+    } catch (e) {}
+  }
+
+  function renderRecentWorkstations() {
+    var container = document.getElementById("recentWorkstationsChips");
+    if (!container) return;
+    var list = getRecentWorkstations();
+    container.innerHTML = "";
+    list.forEach(function(st) {
+      var a = document.createElement("a");
+      a.className = "rw-chip";
+      a.href = st.url;
+      a.innerHTML = "<span>" + (st.icon || "⚡") + "</span> <strong>" + st.title + "</strong>" + (st.badge ? ' <span class="rw-chip-badge">' + st.badge + "</span>" : "");
+      a.addEventListener("click", function() { recordWorkstationUse(st); });
+      container.appendChild(a);
+    });
+  }
+
+  renderRecentWorkstations();
+
+  // Also hook card clicks to record recently used
+  document.querySelectorAll(".ws-card, .quick-jump-pill").forEach(function(card) {
+    card.addEventListener("click", function() {
+      var href = card.getAttribute("href");
+      var titleEl = card.querySelector(".ws-title") || card;
+      var title = titleEl ? titleEl.textContent.trim().split("—")[0].trim() : "Workstation";
+      var icon = "⚡";
+      if (href && href.indexOf("cockpit") !== -1) icon = "🪐";
+      else if (href && href.indexOf("swarm") !== -1) icon = "🌐";
+      else if (href && href.indexOf("consensus") !== -1) icon = "⚔️";
+      else if (href && href.indexOf("pet") !== -1) icon = "💎";
+      else if (href && href.indexOf("vos") !== -1) icon = "💻";
+      if (href) {
+        recordWorkstationUse({
+          id: href.replace(/[^a-z0-9]/gi, "_"),
+          title: title,
+          icon: icon,
+          url: href,
+          badge: "ACTIVE"
+        });
+      }
+    });
+  });
+
+  // --- Keyboard Shortcuts Modal & Global Key Listener ---
+  var modal = document.getElementById("zoth-shortcuts-modal");
+  var btnOpen = document.getElementById("btnOpenShortcutsModal");
+  var btnClose = document.getElementById("btnShortcutsModalClose");
+
+  function openShortcutsModal() {
+    if (modal) {
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      if (btnClose) btnClose.focus();
+    }
+  }
+
+  function closeShortcutsModal() {
+    if (modal) {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      if (btnOpen) btnOpen.focus();
+    }
+  }
+
+  if (btnOpen) btnOpen.addEventListener("click", openShortcutsModal);
+  if (btnClose) btnClose.addEventListener("click", closeShortcutsModal);
+  if (modal) {
+    modal.addEventListener("click", function(e) {
+      if (e.target === modal) closeShortcutsModal();
+    });
+  }
+
+  var keySeq = [];
+  var seqTimer = null;
+
+  document.addEventListener("keydown", function(e) {
+    var activeTag = (document.activeElement && document.activeElement.tagName) || "";
+    var isInput = activeTag === "INPUT" || activeTag === "TEXTAREA" || activeTag === "SELECT" || (document.activeElement && document.activeElement.isContentEditable);
+
+    if (e.key === "Escape") {
+      if (modal && !modal.hidden) {
+        e.preventDefault();
+        closeShortcutsModal();
+        return;
+      }
+    }
+
+    if (isInput) return;
+
+    // Toggle shortcut modal on '?' (Shift + /)
+    if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+      e.preventDefault();
+      if (modal && !modal.hidden) closeShortcutsModal();
+      else openShortcutsModal();
+      return;
+    }
+
+    // Number keys 1-5 for quick workstation launch
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      if (e.key === "1") { window.location.href = "/studio/cockpit.html"; return; }
+      if (e.key === "2") { window.location.href = "/studio/webgen.html"; return; }
+      if (e.key === "3") { window.location.href = "/studio/consensus.html"; return; }
+      if (e.key === "4") { window.location.href = "/studio/swarm.html"; return; }
+      if (e.key === "5") { window.location.href = "/pets/"; return; }
+    }
+
+    // G + key navigation combos (e.g. G then H)
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      var k = e.key.toLowerCase();
+      if (k === "g" && keySeq.length === 0) {
+        keySeq.push("g");
+        clearTimeout(seqTimer);
+        seqTimer = setTimeout(function() { keySeq = []; }, 1200);
+        return;
+      }
+      if (keySeq.length === 1 && keySeq[0] === "g") {
+        keySeq = [];
+        clearTimeout(seqTimer);
+        if (k === "h") { window.location.href = "/"; return; }
+        if (k === "s") { window.location.href = "/studio/"; return; }
+        if (k === "a") { window.location.href = "/agents/"; return; }
+        if (k === "r") { window.location.href = "/registry/"; return; }
+        if (k === "d") { window.location.href = "/docs/"; return; }
+        if (k === "v") { window.location.href = "/vault/"; return; }
+        if (k === "w") { window.location.href = "/zoth-world.html"; return; }
+      }
+    }
+  });
+})();
+</script>
 <script src="/assets/zoth-gate.js"></script>
 <script src="/assets/zoth-guide.js"></script>
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>

@@ -457,6 +457,54 @@ html[data-theme="light"] .docs-top-link {
 html[data-theme="light"] .docs-filter-count { color: #6b7280; }
 html[data-theme="light"] .docs-filter-none { color: #92400e; }
 
+/* ── Dynamic Search Highlight & Result Navigator ── */
+.doc-search-highlight {
+  background: rgba(251, 191, 36, 0.4) !important;
+  color: #fff !important;
+  padding: 1px 4px;
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+  font-weight: 700;
+  text-decoration: underline dotted var(--docs-gold, #fbbf24);
+}
+.doc-search-highlight.is-current-match {
+  background: #f59e0b !important;
+  color: #000 !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.9);
+  outline: 2px solid #fff;
+}
+html[data-theme="light"] .doc-search-highlight {
+  background: rgba(245, 158, 11, 0.3) !important;
+  color: #92400e !important;
+  box-shadow: 0 0 4px rgba(146, 64, 14, 0.3);
+}
+html[data-theme="light"] .doc-search-highlight.is-current-match {
+  background: #b45309 !important;
+  color: #ffffff !important;
+  outline-color: #92400e;
+}
+.docs-search-jump-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+}
+.docs-search-jump-btn {
+  background: var(--surface-card, rgba(16, 20, 34, 0.8));
+  border: 1px solid var(--docs-line-strong, rgba(255, 255, 255, 0.2));
+  color: var(--docs-gold, #fbbf24);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.docs-search-jump-btn:hover {
+  background: rgba(251, 191, 36, 0.15);
+  border-color: var(--docs-gold, #fbbf24);
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    nav-6 · ≥44×44 hit areas for the page's own controls at 390px. The shared
    zoth-mobile.css pins button:not(…) to min-height:44px but leaves width, so
@@ -2311,16 +2359,91 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
         document.body.removeChild(ta);
       }
 
-      // Filter search
+      // Filter search with Tokenized Indexing, Dynamic Highlighting & Jump Navigation
       const filterInput = document.getElementById('docs-filter');
+      let currentMatches = [];
+      let currentMatchIdx = -1;
 
-      // Filters can hide whole chapters; say so instead of failing silently.
-      function updateFilterStatus(q, shownSections, totalSections, shownTools, totalTools) {
+      function clearHighlights() {
+        const marks = document.querySelectorAll('mark.doc-search-highlight');
+        marks.forEach(m => {
+          const parent = m.parentNode;
+          if (parent) {
+            m.replaceWith(document.createTextNode(m.textContent));
+            parent.normalize();
+          }
+        });
+        currentMatches = [];
+        currentMatchIdx = -1;
+      }
+
+      function highlightTextInNode(node, regex) {
+        if (!node || node.nodeType !== Node.TEXT_NODE) return;
+        const text = node.textContent;
+        if (!regex.test(text)) return;
+
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        text.replace(regex, (match, offset) => {
+          if (offset > lastIndex) {
+            fragment.appendChild(document.createTextNode(text.slice(lastIndex, offset)));
+          }
+          const mark = document.createElement('mark');
+          mark.className = 'doc-search-highlight';
+          mark.textContent = match;
+          fragment.appendChild(mark);
+          currentMatches.push(mark);
+          lastIndex = offset + match.length;
+        });
+        if (lastIndex < text.length) {
+          fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+        }
+        node.replaceWith(fragment);
+      }
+
+      function applyHighlightsToElement(el, regex) {
+        if (!el) return;
+        const walker = document.createTreeWalker(
+          el,
+          NodeFilter.SHOW_TEXT,
+          {
+            acceptNode: function(n) {
+              const p = n.parentElement;
+              if (!p) return NodeFilter.FILTER_REJECT;
+              const tag = p.tagName.toLowerCase();
+              if (tag === 'script' || tag === 'style' || tag === 'mark' || tag === 'svg' || tag === 'button') {
+                return NodeFilter.FILTER_REJECT;
+              }
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          }
+        );
+        const textNodes = [];
+        while (walker.nextNode()) textNodes.push(walker.currentNode);
+        textNodes.forEach(n => highlightTextInNode(n, regex));
+      }
+
+      function jumpToMatch(index) {
+        if (!currentMatches.length) return;
+        currentMatches.forEach(m => m.classList.remove('is-current-match'));
+        currentMatchIdx = ((index % currentMatches.length) + currentMatches.length) % currentMatches.length;
+        const active = currentMatches[currentMatchIdx];
+        if (active) {
+          active.classList.add('is-current-match');
+          active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const countIndicator = document.getElementById('docs-jump-indicator');
+          if (countIndicator) {
+            countIndicator.textContent = (currentMatchIdx + 1) + '/' + currentMatches.length;
+          }
+        }
+      }
+
+      function updateFilterStatus(q, shownSections, totalSections, shownTools, totalTools, matchCount) {
         const el = document.getElementById('docsFilterStatus');
         if (!el) return;
         if (!q) {
           el.hidden = true;
-          el.textContent = '';
+          el.innerHTML = '';
           el.className = 'docs-filter-count';
           return;
         }
@@ -2330,39 +2453,79 @@ python3 orchestrator.py run subsweep --target targetdomain.com --output json
           el.textContent = 'Nothing on this page matches “' + q + '”. Clear the field to restore all ' + totalSections + ' chapters and ' + totalTools + ' tools.';
         } else {
           el.className = 'docs-filter-count';
-          el.textContent = 'Filter “' + q + '” hiding ' + (totalSections - shownSections) + ' of ' + totalSections + ' chapters and ' + (totalTools - shownTools) + ' of ' + totalTools + ' tools. Clear the field to restore everything.';
+          let navHtml = '';
+          if (matchCount > 0) {
+            navHtml = '<span class="docs-search-jump-nav">' +
+              '<span id="docs-jump-indicator" style="color:var(--docs-gold);font-weight:700;">1/' + matchCount + '</span>' +
+              '<button type="button" class="docs-search-jump-btn" id="btnPrevMatch" title="Previous match">▲ Prev</button>' +
+              '<button type="button" class="docs-search-jump-btn" id="btnNextMatch" title="Next match">▼ Next</button>' +
+              '</span>';
+          }
+          el.innerHTML = 'Found <strong>' + matchCount + '</strong> matches across ' + shownSections + ' chapters (' + shownTools + ' tools).' + navHtml;
+
+          const btnPrev = document.getElementById('btnPrevMatch');
+          const btnNext = document.getElementById('btnNextMatch');
+          if (btnPrev) btnPrev.addEventListener('click', () => jumpToMatch(currentMatchIdx - 1));
+          if (btnNext) btnNext.addEventListener('click', () => jumpToMatch(currentMatchIdx + 1));
         }
       }
 
       if (filterInput) {
+        let debounceTimer;
         filterInput.addEventListener('input', (e) => {
-          const q = e.target.value.toLowerCase().trim();
-          let shownTools = 0;
-          let shownSections = 0;
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            const q = (e.target.value || '').trim();
+            const qLower = q.toLowerCase();
+            clearHighlights();
 
-          // Filter tool cards
-          const toolCards = document.querySelectorAll('.tool-item-card');
-          toolCards.forEach(card => {
-            if (!q || card.innerText.toLowerCase().includes(q)) {
-              card.style.display = 'flex';
-              shownTools++;
-            } else {
-              card.style.display = 'none';
+            let shownTools = 0;
+            let shownSections = 0;
+
+            const toolCards = document.querySelectorAll('.tool-item-card');
+            const sections = document.querySelectorAll('.doc-section');
+
+            // 1. Filter elements
+            toolCards.forEach(card => {
+              if (!qLower || card.innerText.toLowerCase().includes(qLower)) {
+                card.style.display = 'flex';
+                shownTools++;
+              } else {
+                card.style.display = 'none';
+              }
+            });
+
+            sections.forEach(sec => {
+              if (!qLower || sec.innerText.toLowerCase().includes(qLower)) {
+                sec.style.display = 'block';
+                shownSections++;
+              } else {
+                sec.style.display = 'none';
+              }
+            });
+
+            // 2. Highlight text matches if query >= 2 chars
+            if (q.length >= 2) {
+              const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const regex = new RegExp(escaped, 'gi');
+
+              sections.forEach(sec => {
+                if (sec.style.display !== 'none') {
+                  applyHighlightsToElement(sec, regex);
+                }
+              });
+              toolCards.forEach(card => {
+                if (card.style.display !== 'none') {
+                  applyHighlightsToElement(card, regex);
+                }
+              });
             }
-          });
 
-          // Filter sections if search has query
-          const sections = document.querySelectorAll('.doc-section');
-          sections.forEach(sec => {
-            if (!q || sec.innerText.toLowerCase().includes(q)) {
-              sec.style.display = 'block';
-              shownSections++;
-            } else {
-              sec.style.display = 'none';
+            updateFilterStatus(q, shownSections, sections.length, shownTools, toolCards.length, currentMatches.length);
+            if (currentMatches.length > 0) {
+              jumpToMatch(0);
             }
-          });
-
-          updateFilterStatus(q, shownSections, sections.length, shownTools, toolCards.length);
+          }, 60);
         });
       }
 

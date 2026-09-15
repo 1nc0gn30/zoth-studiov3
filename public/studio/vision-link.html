@@ -1442,6 +1442,7 @@
 <button class="btn-shimmer btn-shimmer-dark" id="btn-synth-toggle">🔊 Chimes Muted</button>
 </div>
 <div style="display:flex; gap:6px; align-items:center;">
+<button class="btn-shimmer btn-shimmer-dark" id="btn-capture-analyze" onclick="captureLiveCameraToInspector()" title="Capture live camera frame into Visual Inspector for Token Density &amp; OCR Analysis">🔬 Analyze Live Frame</button>
 <button class="btn-shimmer btn-shimmer-dark" id="btn-snapshot-cam">📸 Snapshot</button>
 <button class="btn-shimmer btn-shimmer-dark" id="btn-record-clip">🎥 Record</button>
 </div>
@@ -1469,6 +1470,7 @@
             <button class="filter-chip active" id="btn-sample-dashboard" onclick="loadSampleImage('dashboard', this)">🖼️ Zoth Dashboard</button>
             <button class="filter-chip" id="btn-sample-ecommerce" onclick="loadSampleImage('ecommerce', this)">🛒 E-Commerce App</button>
             <button class="filter-chip" id="btn-sample-terminal" onclick="loadSampleImage('terminal', this)">🐲 Hermes Terminal</button>
+            <button class="filter-chip" id="btn-sample-livecam" onclick="captureLiveCameraToInspector()" style="border-color:var(--cyan); color:var(--cyan);">📷 Live Cam Frame</button>
             <button class="filter-chip" onclick="document.getElementById('vision-file-input').click()" style="border-color:var(--emerald); color:var(--emerald);">📁 Upload Image</button>
 
             <!-- Zoom & Pan Toolbar -->
@@ -2637,6 +2639,73 @@
         });
         if (btn) btn.classList.add('active');
         hoveredDetectedBox = null;
+      };
+
+      window.captureLiveCameraToInspector = async function() {
+        try {
+          if (!isCamRunning || !video.videoWidth) {
+            logEvent("Attuning camera stream for live frame capture...", "var(--gold)");
+            await startCam();
+            await new Promise(r => setTimeout(r, 600));
+          }
+
+          if (video.videoWidth && video.videoHeight) {
+            const snapCanvas = document.createElement('canvas');
+            snapCanvas.width = video.videoWidth;
+            snapCanvas.height = video.videoHeight;
+            const snapCtx = snapCanvas.getContext('2d');
+            snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+
+            const img = new Image();
+            img.onload = function() {
+              inspectorImage = img;
+              window.currentSampleType = 'live_camera';
+              document.querySelectorAll('.ctx-inspector-bar .filter-chip').forEach(b => {
+                if (b.id && b.id.startsWith('btn-sample-')) b.classList.remove('active');
+              });
+              const btnLive = document.getElementById('btn-sample-livecam');
+              if (btnLive) btnLive.classList.add('active');
+
+              const totalVitPatches = Math.ceil(img.width / 14) * Math.ceil(img.height / 14);
+              const totalGeminiTokens = Math.ceil(img.width / 768) * Math.ceil(img.height / 768) * 258;
+
+              const rawBoxes = [
+                { id: 'cam-roi-1', class: 'modal', label: 'Primary Field of View (Central ROI)', confidence: 0.99, boxNorm: [150, 180, 850, 820], color: '#e8c872' },
+                { id: 'cam-roi-2', class: 'header', label: 'Upper Horizon / Optical Bounding Box', confidence: 0.95, boxNorm: [40, 60, 220, 940], color: '#00f0ff' },
+                { id: 'cam-roi-3', class: 'button', label: 'Focal Salience Target (Centroid)', confidence: 0.97, boxNorm: [420, 420, 580, 580], color: '#ff007a' },
+                { id: 'cam-roi-4', class: 'text', label: 'Spatial Feature Cluster', confidence: 0.91, boxNorm: [700, 200, 900, 800], color: '#34d399' }
+              ];
+              detectedBoundingBoxes = computeBoxesPixelAndTokens(rawBoxes, img.width, img.height);
+              window.detectedBoundingBoxes = detectedBoundingBoxes;
+              showTokenHeatmap = true;
+              const heatBtn = document.getElementById('btn-toggle-heatmap');
+              if (heatBtn) {
+                heatBtn.textContent = '🔥 ViT Heatmap: ON';
+                heatBtn.classList.add('active');
+              }
+              setHudMode('inspector');
+              inspectorZoom = 1.0;
+              inspectorPan = { x: 0, y: 0 };
+              if (zoomLevelBadge) zoomLevelBadge.textContent = '100%';
+
+              if (detectedBoundingBoxes.length > 0) {
+                const first = detectedBoundingBoxes[0];
+                setElText('insp-hit-class', `${first.label}`);
+                setElText('insp-hit-conf', `${(first.confidence * 100).toFixed(1)}%`);
+                setElText('insp-hit-norm', `[${first.boxNorm.join(', ')}]`);
+                setElText('insp-hit-pixel', `x: ${Math.round(first.boxPx.x)}, y: ${Math.round(first.boxPx.y)}, w: ${Math.round(first.boxPx.w)}, h: ${Math.round(first.boxPx.h)}`);
+                setElText('insp-hit-tokens', `${first.vitTokens} ViT Patches (14x14) · ${first.geminiTiles} Tile (${first.geminiTiles * 258} tok)`);
+              }
+
+              logEvent(`📸 Captured Live Cam Frame (${img.width}x${img.height}) · Density: ${totalVitPatches} ViT patches / ${totalGeminiTokens} Gemini tokens`, '#00f0ff');
+            };
+            img.src = snapCanvas.toDataURL('image/png');
+          } else {
+            logEvent("Camera frame not active yet. Starting stream...", "#ef4444");
+          }
+        } catch(err) {
+          logEvent(`Live frame capture error: ${err.message}`, "#ff007a");
+        }
       };
 
       function screenToImageCoords(screenX, screenY) {

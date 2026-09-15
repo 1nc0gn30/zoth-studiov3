@@ -70,6 +70,227 @@
 }
 </script>
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
+  <style>
+    /* 3D Avatar Card Preview Modal Styles */
+    .char-card {
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .char-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 240, 255, 0.2);
+      border-color: rgba(0, 240, 255, 0.4);
+    }
+    .char-actions-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-3d-inspect {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      color: var(--comic-cyan, #00f0ff);
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      flex: 1;
+      justify-content: center;
+    }
+    .btn-3d-inspect:hover {
+      background: var(--comic-cyan, #00f0ff);
+      color: #030408;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+    }
+    .avatar-3d-modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(3, 4, 8, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .avatar-3d-modal-backdrop.active {
+      display: flex;
+      opacity: 1;
+    }
+    .avatar-3d-stage {
+      perspective: 1200px;
+      width: 100%;
+      max-width: 580px;
+    }
+    .avatar-3d-card {
+      background: linear-gradient(145deg, rgba(16, 20, 32, 0.95), rgba(8, 10, 18, 0.98));
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 32px rgba(0, 240, 255, 0.2);
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease-out;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    .modal-close-btn:hover {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+    }
+    .avatar-3d-figure-wrap {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .avatar-3d-halo {
+      position: absolute;
+      top: -8px; left: -8px; right: -8px; bottom: -8px;
+      border-radius: 50%;
+      border: 2px dashed var(--comic-cyan, #00f0ff);
+      animation: rotateHalo 12s linear infinite;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    }
+    @keyframes rotateHalo {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .avatar-3d-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid var(--comic-gold, #f59e0b);
+      position: relative;
+      z-index: 2;
+    }
+    .avatar-3d-name {
+      font-size: 1.6rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      margin: 0 0 6px;
+    }
+    .avatar-3d-role {
+      font-size: 0.8rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--comic-gold, #f59e0b);
+      text-align: center;
+      display: block;
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+    .avatar-3d-bio {
+      color: #cbd5e1;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .avatar-3d-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .avatar-3d-stat-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .avatar-3d-stat-label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .avatar-3d-stat-val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 2px;
+    }
+    .avatar-3d-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-modal-voice {
+      flex: 1;
+      background: var(--comic-gold, #f59e0b);
+      color: #030408;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-modal-voice:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+    }
+    /* Theme overrides */
+    html[data-theme="light"] .avatar-3d-card {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.15);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+    }
+    html[data-theme="light"] .avatar-3d-name { color: #0f172a; }
+    html[data-theme="light"] .avatar-3d-bio { color: #334155; }
+    html[data-theme="light"] .avatar-3d-stat-box {
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+    }
+    html[data-theme="light"] .avatar-3d-stat-val { color: #0f172a; }
+    html[data-theme="matrix"] .avatar-3d-card {
+      background: #010f05;
+      border-color: rgba(0, 255, 65, 0.45);
+    }
+    html[data-theme="gold"] .avatar-3d-card {
+      background: #140d04;
+      border-color: rgba(245, 158, 11, 0.45);
+    }
+  </style>
 </head>
 <body>
 <a class="skip-to-content" href="#main-content">Skip to content</a>
@@ -565,17 +786,159 @@
 </article>
 </div>
 </section>
+
+<!-- 3D AVATAR CARD PREVIEW MODAL -->
+<div aria-hidden="true" class="avatar-3d-modal-backdrop" id="avatar3DModal" role="dialog" aria-modal="true" aria-labelledby="modalCharName">
+  <div class="avatar-3d-stage" id="avatar3DStage">
+    <div class="avatar-3d-card" id="avatar3DCard">
+      <button type="button" class="modal-close-btn" onclick="closeAvatarModal()" aria-label="Close 3D Hologram Preview">✕</button>
+      
+      <div class="avatar-3d-figure-wrap">
+        <div class="avatar-3d-halo"></div>
+        <img src="/assets/mascot/zoth-canonical.jpg" alt="Character 3D Avatar" class="avatar-3d-img" id="modalCharImg" />
+      </div>
+
+      <h3 class="avatar-3d-name" id="modalCharName">Master Azoth</h3>
+      <span class="avatar-3d-role" id="modalCharRole">Operator of the Saga</span>
+      
+      <p class="avatar-3d-bio" id="modalCharBio">
+        Azoth is the operator of the saga. He picks the team, breaks the tie, and keeps the work on this machine — zero cloud telemetry.
+      </p>
+
+      <div class="avatar-3d-stats-grid" id="modalCharStats">
+        <div class="avatar-3d-stat-box">
+          <div class="avatar-3d-stat-label">Domain</div>
+          <div class="avatar-3d-stat-val">Synthesis</div>
+        </div>
+        <div class="avatar-3d-stat-box">
+          <div class="avatar-3d-stat-label">Latency</div>
+          <div class="avatar-3d-stat-val">0.00ms</div>
+        </div>
+        <div class="avatar-3d-stat-box">
+          <div class="avatar-3d-stat-label">Consensus</div>
+          <div class="avatar-3d-stat-val">100%</div>
+        </div>
+        <div class="avatar-3d-stat-box">
+          <div class="avatar-3d-stat-label">Entropy</div>
+          <div class="avatar-3d-stat-val">Minimal</div>
+        </div>
+      </div>
+
+      <div class="avatar-3d-actions">
+        <button type="button" class="btn-modal-voice" id="modalVoiceBtn" onclick="playModalVoice()">
+          <span>🔊</span> Play Neural Voice Line
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </main>
 <script>
-  let _activeAudio = null;
-  function playCharacterVoice(src) {
-    if (_activeAudio) {
-      _activeAudio.pause();
-      _activeAudio.currentTime = 0;
-    }
-    _activeAudio = new Audio(src);
-    _activeAudio.play().catch(() => {});
-  }
+  (function() {
+    let _activeAudio = null;
+    let _currentModalVoiceSrc = "/assets/audio/mascot/azoth.mp3";
+
+    window.playCharacterVoice = function(src) {
+      if (_activeAudio) {
+        _activeAudio.pause();
+        _activeAudio.currentTime = 0;
+      }
+      _activeAudio = new Audio(src);
+      _activeAudio.play().catch(() => {});
+    };
+
+    window.playModalVoice = function() {
+      if (_currentModalVoiceSrc) {
+        window.playCharacterVoice(_currentModalVoiceSrc);
+      }
+    };
+
+    window.openAvatarModalFromCard = function(card) {
+      const name = card.querySelector("h2") ? card.querySelector("h2").textContent.trim() : "Agent";
+      const role = card.querySelector(".char-role-badge") ? card.querySelector(".char-role-badge").textContent.trim() : "Sovereign Node";
+      const bio = card.querySelector(".char-bio") ? card.querySelector(".char-bio").textContent.trim() : "";
+      const img = card.querySelector(".char-avatar") ? card.querySelector(".char-avatar").src : "/assets/mascot/zoth-canonical.jpg";
+      const voiceBtn = card.querySelector(".voice-btn");
+      
+      let voiceSrc = "/assets/audio/mascot/azoth.mp3";
+      if (voiceBtn) {
+        const onClickAttr = voiceBtn.getAttribute("onclick") || "";
+        const match = onClickAttr.match(/'([^']+)'/);
+        if (match) voiceSrc = match[1];
+      }
+      _currentModalVoiceSrc = voiceSrc;
+
+      document.getElementById("modalCharName").textContent = name;
+      document.getElementById("modalCharRole").textContent = role;
+      document.getElementById("modalCharBio").textContent = bio;
+      document.getElementById("modalCharImg").src = img;
+
+      // Extract stats
+      const statsContainer = document.getElementById("modalCharStats");
+      statsContainer.innerHTML = "";
+      const statItems = card.querySelectorAll(".stat-item");
+      statItems.forEach(item => {
+        const label = item.querySelector("span") ? item.querySelector("span").textContent.replace(":", "").trim() : "Stat";
+        const val = item.querySelector("strong") ? item.querySelector("strong").textContent.trim() : "Optimal";
+        const box = document.createElement("div");
+        box.className = "avatar-3d-stat-box";
+        box.innerHTML = `<div class="avatar-3d-stat-label">${label}</div><div class="avatar-3d-stat-val">${val}</div>`;
+        statsContainer.appendChild(box);
+      });
+
+      const modal = document.getElementById("avatar3DModal");
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden", "false");
+    };
+
+    window.closeAvatarModal = function() {
+      const modal = document.getElementById("avatar3DModal");
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+      const card = document.getElementById("avatar3DCard");
+      if (card) card.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg)";
+    };
+
+    // 3D Perspective Tilt Tracking
+    document.addEventListener("DOMContentLoaded", function() {
+      const modal = document.getElementById("avatar3DModal");
+      const stage = document.getElementById("avatar3DStage");
+      const card = document.getElementById("avatar3DCard");
+
+      if (modal) {
+        modal.addEventListener("click", function(e) {
+          if (e.target === modal) window.closeAvatarModal();
+        });
+      }
+
+      if (stage && card) {
+        stage.addEventListener("mousemove", function(e) {
+          const rect = stage.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          const rotateX = (-y / (rect.height / 2)) * 14;
+          const rotateY = (x / (rect.width / 2)) * 14;
+          card.style.transform = `perspective(1200px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        stage.addEventListener("mouseleave", function() {
+          card.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+        });
+      }
+
+      // Attach click to all char-cards
+      document.querySelectorAll(".char-card").forEach(c => {
+        c.addEventListener("click", function(e) {
+          if (e.target.tagName === "BUTTON" && e.target.classList.contains("voice-btn")) return;
+          window.openAvatarModalFromCard(c);
+        });
+      });
+    });
+
+    window.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") window.closeAvatarModal();
+    });
+  })();
 </script>
                                         <footer class="site" role="contentinfo">
       <div class="foot-wrap">

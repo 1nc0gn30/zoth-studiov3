@@ -1843,13 +1843,31 @@
 </h2>
 <p style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Continuous rolling round-trip ping time-series across loopback and local IPC mesh.</p>
 </div>
-<div style="display: flex; gap: 8px; align-items: center;">
-<button class="btn-pill" id="btn-ping-sweep" onclick="triggerPingSweep()" style="border-color: var(--cyan); color: var(--cyan);">
-<span>⚡ Sweep Swarm Ping</span>
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+<button class="btn-pill" id="btn-ping-sweep" onclick="triggerPingSweep()" style="border-color: var(--cyan); color: var(--cyan);" title="Trigger round-trip ping sweep">
+<span>⚡ Ping Sweep</span>
+</button>
+<button class="btn-pill" id="btn-graph-mode" onclick="toggleRadarDisplayMode()" style="border-color: var(--emerald); color: var(--emerald);" title="Toggle Waveform vs Pre-settled Topological Mesh Graph">
+<span id="graph-mode-label">🕸️ Mode: Topology</span>
+</button>
+<button class="btn-pill" id="btn-chaos-inject" onclick="toggleChaosInjector()" style="border-color: var(--red); color: var(--red);" title="Chaos Engineering: Inject simulated packet dropouts and network partitions">
+<span id="chaos-btn-label">💥 Chaos: OFF</span>
 </button>
 <button class="btn-pill" id="btn-jitter-stress" onclick="toggleJitterSimulation()">
-<span id="jitter-label">🎲 Stress Mode: OFF</span>
+<span id="jitter-label">🎲 Stress: OFF</span>
 </button>
+</div>
+</div>
+<!-- Chaos Engineering Control Tray -->
+<div id="chaos-control-tray" style="display:none; margin: 8px 0; padding: 8px 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-family: var(--font-mono); font-size: 0.72rem; color: #fca5a5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<span>⚡ <strong>CHAOS INJECTOR:</strong></span>
+<span>Drop Rate: <strong id="chaos-drop-rate-val">25%</strong></span>
+<input id="chaos-rate-slider" max="80" min="5" oninput="setChaosRate(this.value)" style="width: 100px; accent-color: #ef4444;" type="range" value="25"/>
+</div>
+<div style="display: flex; gap: 8px; align-items: center;">
+<span>Dropped: <strong id="chaos-drop-counter" style="color: #ef4444;">0</strong> pkts</span>
+<button class="btn-pill" onclick="injectChaosBurst(5)" style="background: rgba(239,68,68,0.25); border-color: #ef4444; color: #fff; padding: 2px 8px; font-size: 0.68rem;">💥 Inject 5-Pkt Dropout</button>
 </div>
 </div>
 <!-- Canvas Container -->
@@ -2954,6 +2972,63 @@
 
         let canvas = null;
         let ctx = null;
+        let radarDisplayMode = 'topology'; // Instant pre-settled topology on initial load
+        let chaosInjectorActive = false;
+        let chaosDropRate = 0.25;
+        let chaosDropCount = 0;
+
+        const PRE_SETTLED_TOPOLOGY = [
+          { id: "azoth", name: "@Azoth", role: "Core Hub", normX: 0.50, normY: 0.50, color: "#fbbf24" },
+          { id: "kai", name: "@Kai", role: "AST Scan", normX: 0.22, normY: 0.26, color: "#00f0ff" },
+          { id: "athena", name: "@Athena", role: "Vector Graph", normX: 0.78, normY: 0.26, color: "#3b82f6" },
+          { id: "draco", name: "@Draco", role: "Fusion Arbiter", normX: 0.86, normY: 0.65, color: "#e8c872" },
+          { id: "kitsune", name: "@Kitsune", role: "UI Engine", normX: 0.68, normY: 0.88, color: "#ff007a" },
+          { id: "pixel-neko", name: "@Pixel-Neko", role: "Mascot Index", normX: 0.32, normY: 0.88, color: "#ec4899" },
+          { id: "hermes", name: "@Hermes", role: "Consensus", normX: 0.14, normY: 0.65, color: "#ffaa40" },
+          { id: "lycan", name: "@Lycan", role: "SecOps", normX: 0.50, normY: 0.12, color: "#f43f5e" }
+        ];
+
+        window.toggleRadarDisplayMode = function() {
+          radarDisplayMode = (radarDisplayMode === 'topology') ? 'waveform' : 'topology';
+          const label = document.getElementById('graph-mode-label');
+          if (label) label.textContent = (radarDisplayMode === 'topology') ? '🕸️ Mode: Topology' : '📈 Mode: Waveform';
+          drawRadarCanvas();
+        };
+
+        window.toggleChaosInjector = function() {
+          chaosInjectorActive = !chaosInjectorActive;
+          const label = document.getElementById('chaos-btn-label');
+          const btn = document.getElementById('btn-chaos-inject');
+          const tray = document.getElementById('chaos-control-tray');
+          if (label) label.textContent = chaosInjectorActive ? '💥 Chaos: ACTIVE' : '💥 Chaos: OFF';
+          if (btn) btn.classList.toggle('active', chaosInjectorActive);
+          if (tray) tray.style.display = chaosInjectorActive ? 'flex' : 'none';
+          if (chaosInjectorActive) {
+            playChime(440);
+            injectChaosBurst(3);
+          }
+        };
+
+        window.setChaosRate = function(val) {
+          chaosDropRate = parseInt(val, 10) / 100;
+          const display = document.getElementById('chaos-drop-rate-val');
+          if (display) display.textContent = val + '%';
+        };
+
+        window.injectChaosBurst = function(count = 5) {
+          chaosDropCount += count;
+          const dropCounter = document.getElementById('chaos-drop-counter');
+          if (dropCounter) dropCounter.textContent = chaosDropCount;
+          
+          allMessages.unshift({
+            from: "chaos-engine",
+            to: "swarm-bus",
+            timestamp: Date.now(),
+            message: `💥 [CHAOS ENGINEERING] Injected ${count}-packet dropout across sovereign loopback bus. Simulating packet loss & recovery.`
+          });
+          renderMessages();
+          playChime(349.23);
+        };
 
         function resizeRadarCanvas() {
           canvas = document.getElementById('ping-oscilloscope-canvas');
@@ -2968,67 +3043,159 @@
           if (!canvas || !ctx) return;
           const w = canvas.width;
           const h = canvas.height;
+          const dpr = window.devicePixelRatio || 1;
 
           ctx.fillStyle = '#03050a';
           ctx.fillRect(0, 0, w, h);
 
-          ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
-          ctx.lineWidth = 1;
-          const gridRows = 5;
-          const gridCols = 8;
-
-          for (let r = 1; r < gridRows; r++) {
-            const y = (h / gridRows) * r;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(w, y);
-            ctx.stroke();
-          }
-
-          for (let c = 1; c < gridCols; c++) {
-            const x = (w / gridCols) * c;
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, h);
-            ctx.stroke();
-          }
-
-          const maxScale = jitterStressMode ? 6.0 : 3.0;
-
-          peers.forEach(peer => {
-            ctx.strokeStyle = peer.color;
-            ctx.lineWidth = 2 * (window.devicePixelRatio || 1);
-            ctx.beginPath();
-
-            const stepX = w / (maxHistoryTicks - 1);
-
-            peer.history.forEach((val, idx) => {
-              const x = idx * stepX;
-              const normalized = Math.min(val / maxScale, 1.0);
-              const y = h - (normalized * (h - 20) + 10);
-
-              if (idx === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
+          if (radarDisplayMode === 'topology') {
+            // Instant Pre-Settled Topology Graph Visualizer
+            const nodes = PRE_SETTLED_TOPOLOGY.map(n => {
+              const pData = peers.find(p => p.id === n.id);
+              return {
+                ...n,
+                x: n.normX * w,
+                y: n.normY * h,
+                rtt: pData ? pData.currentRtt : 0.35,
+                isDropped: chaosInjectorActive && Math.random() < chaosDropRate
+              };
             });
 
-            ctx.stroke();
+            const hub = nodes[0]; // Azoth center
 
-            const lastVal = peer.history[peer.history.length - 1];
-            const headX = w;
-            const headY = h - (Math.min(lastVal / maxScale, 1.0) * (h - 20) + 10);
+            // 1. Draw Mesh Links with Animated Pulse
+            const t = Date.now() / 600;
+            ctx.lineWidth = 1.5 * dpr;
 
-            ctx.fillStyle = peer.color;
-            ctx.beginPath();
-            ctx.arc(headX - 4, headY, 4 * (window.devicePixelRatio || 1), 0, Math.PI * 2);
-            ctx.fill();
-          });
+            for (let i = 1; i < nodes.length; i++) {
+              const target = nodes[i];
+              const isBroken = target.isDropped;
+
+              ctx.strokeStyle = isBroken ? 'rgba(239, 68, 68, 0.4)' : 'rgba(0, 240, 255, 0.18)';
+              ctx.beginPath();
+              ctx.moveTo(hub.x, hub.y);
+              ctx.lineTo(target.x, target.y);
+              ctx.stroke();
+
+              // Ring links between outer nodes
+              const nextTarget = nodes[i === nodes.length - 1 ? 1 : i + 1];
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+              ctx.beginPath();
+              ctx.moveTo(target.x, target.y);
+              ctx.lineTo(nextTarget.x, nextTarget.y);
+              ctx.stroke();
+
+              // Link Pulse
+              if (!isBroken) {
+                const pulseProg = (t + i * 0.25) % 1;
+                const px = hub.x + (target.x - hub.x) * pulseProg;
+                const py = hub.y + (target.y - hub.y) * pulseProg;
+                ctx.fillStyle = target.color;
+                ctx.beginPath();
+                ctx.arc(px, py, 2.5 * dpr, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+
+            // 2. Draw Pre-Settled Topology Nodes
+            nodes.forEach(node => {
+              const isBroken = node.isDropped;
+              
+              // Glow Halo
+              ctx.fillStyle = isBroken ? 'rgba(239, 68, 68, 0.2)' : `${node.color}22`;
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, 16 * dpr, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Node Core
+              ctx.fillStyle = isBroken ? '#ef4444' : node.color;
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, 6 * dpr, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Label & Metric
+              ctx.fillStyle = '#f8fafc';
+              ctx.font = `${9 * dpr}px "IBM Plex Mono", monospace`;
+              ctx.textAlign = 'center';
+              ctx.fillText(node.name, node.x, node.y - 12 * dpr);
+
+              ctx.fillStyle = isBroken ? '#ef4444' : (node.color || '#94a3b8');
+              ctx.font = `${7.5 * dpr}px "IBM Plex Mono", monospace`;
+              ctx.fillText(isBroken ? 'DROPOUT' : `${node.rtt.toFixed(2)}ms`, node.x, node.y + 16 * dpr);
+            });
+
+            // Topology Banner
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.8)';
+            ctx.font = `${8 * dpr}px "IBM Plex Mono", monospace`;
+            ctx.textAlign = 'left';
+            ctx.fillText(`TOPOLOGY: 8-Node Pre-Settled Star Mesh · Latency Sync Active`, 12 * dpr, 18 * dpr);
+
+          } else {
+            // Waveform Oscilloscope
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+            ctx.lineWidth = 1;
+            const gridRows = 5;
+            const gridCols = 8;
+
+            for (let r = 1; r < gridRows; r++) {
+              const y = (h / gridRows) * r;
+              ctx.beginPath();
+              ctx.moveTo(0, y);
+              ctx.lineTo(w, y);
+              ctx.stroke();
+            }
+
+            for (let c = 1; c < gridCols; c++) {
+              const x = (w / gridCols) * c;
+              ctx.beginPath();
+              ctx.moveTo(x, 0);
+              ctx.lineTo(x, h);
+              ctx.stroke();
+            }
+
+            const maxScale = jitterStressMode ? 6.0 : 3.0;
+
+            peers.forEach(peer => {
+              ctx.strokeStyle = peer.color;
+              ctx.lineWidth = 2 * dpr;
+              ctx.beginPath();
+
+              const stepX = w / (maxHistoryTicks - 1);
+
+              peer.history.forEach((val, idx) => {
+                const x = idx * stepX;
+                const normalized = Math.min(val / maxScale, 1.0);
+                const y = h - (normalized * (h - 20) + 10);
+
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              });
+
+              ctx.stroke();
+
+              const lastVal = peer.history[peer.history.length - 1];
+              const headX = w;
+              const headY = h - (Math.min(lastVal / maxScale, 1.0) * (h - 20) + 10);
+
+              ctx.fillStyle = peer.color;
+              ctx.beginPath();
+              ctx.arc(headX - 4, headY, 4 * dpr, 0, Math.PI * 2);
+              ctx.fill();
+            });
+          }
         }
 
         function updatePingTicks() {
           peers.forEach(peer => {
             const spike = jitterStressMode && Math.random() < 0.15 ? Math.random() * 3.5 : 0;
+            const isDropped = chaosInjectorActive && Math.random() < chaosDropRate;
+            if (isDropped) {
+              chaosDropCount++;
+              const el = document.getElementById('chaos-drop-counter');
+              if (el) el.textContent = chaosDropCount;
+            }
             const noise = (Math.random() - 0.5) * peer.jitter;
-            const freshRtt = Math.max(peer.baseRtt + noise + spike, 0.1);
+            const freshRtt = isDropped ? (peer.baseRtt + 4.5) : Math.max(peer.baseRtt + noise + spike, 0.1);
 
             peer.currentRtt = freshRtt;
             peer.min = Math.min(peer.min, freshRtt);

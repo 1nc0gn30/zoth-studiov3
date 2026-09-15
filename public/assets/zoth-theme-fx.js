@@ -1,20 +1,76 @@
 /**
  * Theme atmosphere: Matrix rain, gold sunlight/dust, light grain, dark motes,
- * plus company-specific atmospheric particles (Google 4-color, Microsoft Fluent, Apple OLED, OpenAI Emerald, AWS Amber).
- * applyTheme() in zoth-theme.js calls ZothThemeFx.set().
+ * plus one distinct overlay per extra navbar theme.
+ * applyTheme() in zoth-theme.js dispatches zoth-theme-change → ZothThemeFx.set().
  */
 (function () {
   "use strict";
-  var root, rainCanvas, dustCanvas, rainTimer, dustTimer, resizeRain, resizeDust;
+  var root, rainCanvas, dustCanvas, rainTimer, dustTimer, resizeRain, resizeDust, reduceMq;
   var cols, drops, active, particles;
   var GLYPHS = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴ0123456789ZOTH#$*";
+
+  var DUST_THEMES = {
+    gold: 1,
+    dark: 1,
+    amazon: 1,
+    nord: 1,
+    monokai: 1,
+    ocean: 1,
+    ember: 1,
+    copper: 1,
+    blood: 1,
+    nvidia: 1,
+    jade: 1,
+    gruvbox: 1,
+    solarized: 1,
+    coral: 1,
+    rust: 1,
+    groq: 1,
+    ayu: 1,
+    flexoki: 1
+  };
+
+  var PALETTES = {
+    gold: ["255, 214, 120", "251, 191, 36", "245, 158, 11"],
+    dark: ["0, 240, 255", "168, 85, 247", "52, 211, 153"],
+    amazon: ["255, 153, 0", "236, 114, 17", "245, 158, 11"],
+    nord: ["136, 192, 208", "216, 222, 233", "236, 239, 244", "129, 161, 193"],
+    monokai: ["230, 219, 116", "249, 38, 114", "166, 226, 46", "102, 217, 239", "174, 129, 255"],
+    ocean: ["34, 211, 238", "14, 165, 233", "45, 212, 191", "8, 145, 178"],
+    ember: ["249, 115, 22", "234, 88, 12", "251, 146, 60", "180, 83, 9"],
+    copper: ["217, 119, 6", "180, 83, 9", "245, 158, 11", "120, 113, 108"],
+    blood: ["239, 68, 68", "185, 28, 28", "252, 165, 165", "127, 29, 29"],
+    nvidia: ["118, 185, 0", "163, 230, 53", "34, 197, 94"],
+    jade: ["45, 212, 191", "52, 211, 153", "13, 148, 136"],
+    gruvbox: ["250, 189, 47", "254, 128, 25", "184, 187, 38", "235, 219, 178"],
+    solarized: ["38, 139, 210", "42, 161, 152", "181, 137, 0", "147, 161, 161"],
+    coral: ["255, 107, 74", "234, 88, 12", "253, 186, 116"],
+    rust: ["234, 88, 12", "194, 65, 12", "251, 146, 60"],
+    groq: ["245, 80, 54", "220, 38, 38", "252, 165, 165"],
+    ayu: ["230, 180, 80", "255, 143, 64", "191, 189, 182"],
+    flexoki: ["209, 77, 65", "208, 162, 21", "58, 169, 159"]
+  };
 
   function reduced() {
     return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
+  function pick(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
   function ensure() {
-    if (root && document.body && root.parentNode) return root;
+    if (root && document.body && root.parentNode) {
+      if (!document.getElementById("zoth-fx-atm")) {
+        var extra = document.createElement("div");
+        extra.className = "fx-layer";
+        extra.id = "zoth-fx-atm";
+        root.appendChild(extra);
+      }
+      rainCanvas = document.getElementById("zoth-fx-matrix");
+      dustCanvas = document.getElementById("zoth-fx-dust");
+      return root;
+    }
     if (!document.body) return null;
     root = document.getElementById("zoth-theme-fx");
     if (!root) {
@@ -28,8 +84,14 @@
         '<div class="fx-layer" id="zoth-fx-sun-orb"></div>' +
         '<div class="fx-layer" id="zoth-fx-day"></div>' +
         '<div class="fx-layer" id="zoth-fx-void"></div>' +
+        '<div class="fx-layer" id="zoth-fx-atm"></div>' +
         '<canvas id="zoth-fx-dust" class="fx-layer"></canvas>';
       document.body.insertBefore(root, document.body.firstChild);
+    } else if (!document.getElementById("zoth-fx-atm")) {
+      var atm = document.createElement("div");
+      atm.className = "fx-layer";
+      atm.id = "zoth-fx-atm";
+      root.appendChild(atm);
     }
     rainCanvas = document.getElementById("zoth-fx-matrix");
     dustCanvas = document.getElementById("zoth-fx-dust");
@@ -107,93 +169,141 @@
     particles = null;
   }
 
-  function getPaletteForKind(kind) {
-    if (kind === "google") {
-      return ["66, 133, 244", "234, 67, 53", "251, 188, 4", "52, 168, 83", "138, 180, 248"];
+  function spawnDust(kind, w, h) {
+    var palette = PALETTES[kind] || PALETTES.dark;
+    var n = 36;
+    var list = [];
+    var i, p;
+    if (kind === "gold") n = 48;
+    else if (kind === "amazon") n = 26;
+    else if (kind === "nord") n = 32;
+    else if (kind === "monokai") n = 24;
+    else if (kind === "ocean") n = 18;
+    else if (kind === "ember" || kind === "copper" || kind === "blood" || kind === "nvidia" || kind === "coral" || kind === "rust" || kind === "groq") n = 16;
+    else if (kind === "jade" || kind === "solarized") n = 18;
+    else if (kind === "gruvbox" || kind === "ayu" || kind === "flexoki") n = 28;
+    else if (kind === "dark") n = 36;
+
+    for (i = 0; i < n; i++) {
+      p = {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 0.6 + Math.random() * 1.4,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.12,
+        a: 0.25 + Math.random() * 0.5,
+        da: 0,
+        amin: 0.12,
+        amax: 0.7,
+        fill: pick(palette),
+        wrap: "xy"
+      };
+      if (kind === "gold") {
+        p.r = 1.2 + Math.random() * 2.2;
+        p.vx = 0.15 + Math.random() * 0.35;
+        p.vy = 0.08 + Math.random() * 0.22;
+        p.a = 0.28 + Math.random() * 0.5;
+      } else if (kind === "amazon") {
+        p.r = 0.5 + Math.random() * 1.2;
+        p.vx = (Math.random() - 0.5) * 0.12;
+        p.vy = 0.18 + Math.random() * 0.28;
+        p.a = 0.2 + Math.random() * 0.45;
+        p.da = 0.008 + Math.random() * 0.012;
+        p.amin = 0.08;
+        p.amax = 0.65;
+        p.wrap = "y";
+      } else if (kind === "nord") {
+        p.r = 0.5 + Math.random() * 1.5;
+        p.vx = (Math.random() - 0.5) * 0.06;
+        p.vy = 0.08 + Math.random() * 0.16;
+        p.a = 0.18 + Math.random() * 0.32;
+        p.wrap = "y";
+      } else if (kind === "monokai") {
+        p.r = 0.7 + Math.random() * 1.6;
+        p.vx = (Math.random() - 0.5) * 0.28;
+        p.vy = (Math.random() - 0.5) * 0.28;
+        p.a = 0.22 + Math.random() * 0.4;
+      } else if (kind === "ocean") {
+        p.r = 1.4 + Math.random() * 2.6;
+        p.vx = (Math.random() - 0.5) * 0.05;
+        p.vy = -0.035 - Math.random() * 0.07;
+        p.a = 0.1 + Math.random() * 0.22;
+        p.wrap = "y";
+      } else if (kind === "ember" || kind === "copper" || kind === "blood" || kind === "nvidia" || kind === "coral" || kind === "rust" || kind === "groq") {
+        p.r = 1.0 + Math.random() * 2.2;
+        p.vx = (Math.random() - 0.5) * 0.18;
+        p.vy = -0.14 - Math.random() * 0.32;
+        p.a = 0.3 + Math.random() * 0.5;
+        p.da = 0.012 + Math.random() * 0.02;
+        p.amin = 0.1;
+        p.amax = 0.85;
+        p.wrap = "y";
+      } else if (kind === "jade" || kind === "solarized") {
+        p.r = 1.4 + Math.random() * 2.6;
+        p.vx = (Math.random() - 0.5) * 0.05;
+        p.vy = -0.035 - Math.random() * 0.07;
+        p.a = 0.1 + Math.random() * 0.22;
+        p.wrap = "y";
+      } else if (kind === "ayu" || kind === "flexoki") {
+        p.r = 1.1 + Math.random() * 2.0;
+        p.vx = 0.08 + Math.random() * 0.22;
+        p.vy = 0.04 + Math.random() * 0.14;
+        p.a = 0.22 + Math.random() * 0.4;
+      } else if (kind === "gruvbox") {
+        p.r = 1.1 + Math.random() * 2.0;
+        p.vx = 0.08 + Math.random() * 0.22;
+        p.vy = 0.04 + Math.random() * 0.14;
+        p.a = 0.22 + Math.random() * 0.4;
+      }
+      list.push(p);
     }
-    if (kind === "microsoft") {
-      return ["0, 164, 239", "242, 80, 34", "127, 186, 0", "255, 185, 0", "0, 120, 212"];
-    }
-    if (kind === "apple") {
-      return ["10, 132, 255", "191, 90, 242", "229, 229, 234", "100, 210, 255", "255, 255, 255"];
-    }
-    if (kind === "openai") {
-      return ["16, 163, 127", "0, 166, 126", "52, 211, 153", "20, 184, 166"];
-    }
-    if (kind === "amazon") {
-      return ["255, 153, 0", "236, 114, 17", "245, 158, 11", "83, 159, 229"];
-    }
-    if (kind === "anthropic") {
-      return ["217, 119, 87", "232, 168, 124", "240, 195, 180", "250, 248, 245"];
-    }
-    if (kind === "xai") {
-      return ["0, 212, 170", "78, 224, 194", "255, 255, 255", "0, 255, 180"];
-    }
-    if (kind === "dracula") {
-      return ["189, 147, 249", "255, 121, 198", "139, 233, 253", "80, 250, 123", "255, 184, 108"];
-    }
-    if (kind === "nord") {
-      return ["136, 192, 208", "129, 161, 193", "94, 129, 172", "163, 190, 140", "236, 239, 244"];
-    }
-    if (kind === "synthwave") {
-      return ["255, 42, 133", "0, 240, 255", "255, 230, 0", "184, 69, 242"];
-    }
-    if (kind === "solana") {
-      return ["153, 69, 255", "20, 241, 149", "220, 31, 255", "0, 255, 163"];
-    }
-    if (kind === "monokai") {
-      return ["230, 219, 116", "249, 38, 114", "166, 226, 46", "102, 217, 239", "174, 129, 255"];
-    }
-    if (kind === "gold") {
-      return ["255, 214, 120", "251, 191, 36", "245, 158, 11"];
-    }
-    if (kind === "light") {
-      return ["99, 91, 255", "180, 150, 80", "52, 199, 89"];
-    }
-    // dark default
-    return ["0, 240, 255", "168, 85, 247", "52, 211, 153", "251, 191, 36"];
+    return list;
   }
 
   function startDust(kind) {
     if (!dustCanvas || reduced()) return;
+    stopDust();
     var ctx = dustCanvas.getContext("2d");
-    var palette = getPaletteForKind(kind);
 
-    function spawn() {
-      var w = dustCanvas.width;
-      var h = dustCanvas.height;
-      var n = kind === "gold" ? 48 : kind === "google" ? 40 : kind === "microsoft" ? 36 : kind === "openai" ? 38 : kind === "apple" ? 32 : kind === "amazon" ? 42 : 36;
-      particles = [];
-      for (var i = 0; i < n; i++) {
-        var color = palette[Math.floor(Math.random() * palette.length)];
-        particles.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          r: (kind === "gold" || kind === "google") ? 1.2 + Math.random() * 2.0 : 0.6 + Math.random() * 1.5,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.25 - 0.05,
-          a: 0.25 + Math.random() * 0.55,
-          fill: color
-        });
-      }
-    }
     resizeDust = function () {
       dustCanvas.width = window.innerWidth;
       dustCanvas.height = window.innerHeight;
-      spawn();
+      particles = spawnDust(kind, dustCanvas.width, dustCanvas.height);
     };
     resizeDust();
     window.addEventListener("resize", resizeDust, { passive: true });
     function tick() {
-      ctx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+      var w = dustCanvas.width;
+      var h = dustCanvas.height;
+      ctx.clearRect(0, 0, w, h);
       for (var i = 0; i < particles.length; i++) {
         var p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        if (p.x > dustCanvas.width) p.x = 0;
-        if (p.x < 0) p.x = dustCanvas.width;
-        if (p.y > dustCanvas.height) p.y = 0;
-        if (p.y < 0) p.y = dustCanvas.height;
+        if (kind === "monokai" && Math.random() > 0.992) {
+          p.vx *= -1;
+          p.vy *= -1;
+        }
+        if (p.da) {
+          p.a += p.da;
+          if (p.a > p.amax || p.a < p.amin) p.da *= -1;
+        }
+        if (p.wrap === "y") {
+          if (p.x > w) p.x = 0;
+          if (p.x < 0) p.x = w;
+          if (p.vy < 0 && p.y < -8) {
+            p.y = h + 8;
+            p.x = Math.random() * w;
+          } else if (p.vy >= 0 && p.y > h + 8) {
+            p.y = -8;
+            p.x = Math.random() * w;
+          }
+        } else {
+          if (p.x > w) p.x = 0;
+          if (p.x < 0) p.x = w;
+          if (p.y > h) p.y = 0;
+          if (p.y < 0) p.y = h;
+        }
         ctx.beginPath();
         ctx.fillStyle = "rgba(" + p.fill + "," + p.a + ")";
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -212,8 +322,14 @@
     ensure();
     stopRain();
     stopDust();
+    if (reduced()) return;
     if (themeId === "matrix") startRain();
-    else startDust(themeId);
+    else if (DUST_THEMES[themeId]) startDust(themeId);
+  }
+
+  function onReduceChange() {
+    var themeId = document.documentElement.getAttribute("data-theme") || "dark";
+    set(themeId);
   }
 
   window.ZothThemeFx = { set: set, ensure: ensure };
@@ -221,6 +337,12 @@
   window.addEventListener("zoth-theme-change", function (e) {
     if (e && e.detail && e.detail.theme) set(e.detail.theme);
   });
+
+  if (window.matchMedia) {
+    reduceMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMq.addEventListener) reduceMq.addEventListener("change", onReduceChange);
+    else if (reduceMq.addListener) reduceMq.addListener(onReduceChange);
+  }
 
   function boot() {
     ensure();

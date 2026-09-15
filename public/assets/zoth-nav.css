@@ -483,12 +483,22 @@ nav.menu {
   z-index: 2;
 }
 
-.nav-dropdown:hover .nav-dropdown-btn,
-.nav-dropdown:focus-within .nav-dropdown-btn,
-.nav-dropdown.active .nav-dropdown-btn,
+.nav-dropdown-btn:hover,
 .nav-dropdown.open .nav-dropdown-btn,
-.nav-dropdown-btn:hover {
+.nav-dropdown.active .nav-dropdown-btn {
   color: var(--text-primary, #ffffff) !important;
+}
+
+.nav-dropdown.open .nav-dropdown-btn::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 2px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold, #fbbf24), transparent);
+  pointer-events: none;
+  opacity: 0.85;
 }
 
 .nav-dropdown-btn.on {
@@ -497,17 +507,16 @@ nav.menu {
 }
 
 .dropdown-chevron {
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, opacity 0.2s ease;
   opacity: 0.7;
   pointer-events: none;
+  transform-origin: 50% 45%;
 }
 
-.nav-dropdown:hover .dropdown-chevron,
-.nav-dropdown:focus-within .dropdown-chevron,
 .nav-dropdown.open .dropdown-chevron {
   transform: rotate(180deg);
   opacity: 1;
-  color: var(--cyan, #00f0ff);
+  color: var(--gold, #fbbf24);
 }
 
 /* Dropdown Menu Panel */
@@ -526,9 +535,15 @@ nav.menu {
   -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
   opacity: 0 !important;
   visibility: hidden !important;
-  transform: translateY(8px) scale(0.97) !important;
-  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s !important;
+  transform: translateY(-10px) scale(0.98) !important;
+  transform-origin: top center !important;
+  transition:
+    opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.28s,
+    filter 0.28s ease !important;
   pointer-events: none !important;
+  filter: blur(2px);
   z-index: 100000 !important;
   display: flex !important;
   flex-direction: column !important;
@@ -571,7 +586,7 @@ nav.menu {
   margin-bottom: 4px;
 }
 
-/* Hover bridge */
+/* Click-only: no hover bridge. Hover used to keep menus open after click-close. */
 .nav-dropdown-menu::before {
   content: "";
   position: absolute;
@@ -580,16 +595,15 @@ nav.menu {
   right: 0;
   height: 12px;
   background: transparent;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
-.nav-dropdown:hover .nav-dropdown-menu,
-.nav-dropdown:focus-within .nav-dropdown-menu,
 .nav-dropdown.open .nav-dropdown-menu {
   opacity: 1 !important;
   visibility: visible !important;
   transform: translateY(0) scale(1) !important;
   pointer-events: auto !important;
+  filter: none;
 }
 
 /* Dropdown Menu Item Links */
@@ -2363,3 +2377,211 @@ body.menu-open #drawer {
   }
 }
 
+/* =============================================================================
+   Click-only dropdowns — hover / focus-within must NOT keep a menu open.
+   Last-wins belt: open rules match closed specificity (incl. :hover + :open).
+   ============================================================================= */
+
+.nav-dropdown-menu::before {
+  pointer-events: none;
+}
+
+.nav-dropdown:hover .dropdown-chevron,
+.nav-dropdown:focus-within .dropdown-chevron {
+  transform: none;
+  opacity: 0.7;
+  color: inherit;
+}
+
+.nav-dropdown.open .dropdown-chevron,
+.nav-dropdown.open:hover .dropdown-chevron,
+.nav-dropdown.open:focus-within .dropdown-chevron {
+  transform: rotate(180deg);
+  opacity: 1;
+  color: var(--gold, #fbbf24);
+}
+
+header.bar .nav-dropdown:not(.open) .nav-dropdown-menu,
+header.bar .nav-dropdown:hover:not(.open) .nav-dropdown-menu,
+header.bar .nav-dropdown:focus-within:not(.open) .nav-dropdown-menu,
+.nav-dropdown:not(.open) .nav-dropdown-menu,
+.nav-dropdown:hover:not(.open) .nav-dropdown-menu,
+.nav-dropdown:focus-within:not(.open) .nav-dropdown-menu {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-10px) scale(0.98) !important;
+  filter: blur(2px);
+}
+
+header.bar .nav-dropdown.open .nav-dropdown-menu,
+header.bar .nav-dropdown.open:hover .nav-dropdown-menu,
+header.bar .nav-dropdown.open:focus-within .nav-dropdown-menu,
+header.bar .nav-dropdown.open .nav-dropdown-menu.nav-dropdown-mega,
+.nav-dropdown.open .nav-dropdown-menu,
+.nav-dropdown.open:hover .nav-dropdown-menu,
+.nav-dropdown.open:focus-within .nav-dropdown-menu,
+.nav-dropdown.open .nav-dropdown-menu.nav-dropdown-mega {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) scale(1) !important;
+  filter: none !important;
+  box-shadow:
+    0 24px 60px var(--shadow-color, rgba(0, 0, 0, 0.92)),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 28px var(--accent-glow, rgba(251, 191, 36, 0.18)),
+    0 1px 0 rgba(251, 191, 36, 0.35) !important;
+}
+
+.nav-dropdown.open .nav-dropdown-menu a {
+  animation: zothNavItemIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(1) { animation-delay: 0.02s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(2) { animation-delay: 0.045s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(3) { animation-delay: 0.07s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(4) { animation-delay: 0.095s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(5) { animation-delay: 0.12s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(6) { animation-delay: 0.145s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(7) { animation-delay: 0.17s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(8) { animation-delay: 0.195s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(9) { animation-delay: 0.22s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(10) { animation-delay: 0.245s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(11) { animation-delay: 0.27s; }
+.nav-dropdown.open .nav-dropdown-menu a:nth-of-type(12) { animation-delay: 0.295s; }
+
+@keyframes zothNavItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-theme-popover-menu {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-10px) scale(0.98) !important;
+  transform-origin: top right !important;
+  transition:
+    opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.28s !important;
+}
+
+.nav-theme-dropdown:not(.open) .nav-theme-popover-menu,
+.nav-theme-dropdown:hover:not(.open) .nav-theme-popover-menu,
+.nav-theme-dropdown:focus-within:not(.open) .nav-theme-popover-menu {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-10px) scale(0.98) !important;
+}
+
+.nav-theme-dropdown.open .nav-theme-popover-menu,
+.nav-theme-dropdown.open:hover .nav-theme-popover-menu,
+.nav-theme-dropdown.open:focus-within .nav-theme-popover-menu {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-dropdown.open .nav-dropdown-menu a {
+    animation: none;
+  }
+  .nav-dropdown-menu,
+  .nav-theme-popover-menu,
+  .dropdown-chevron {
+    transition: none !important;
+    filter: none !important;
+  }
+}
+
+
+
+/* =============================================================================
+   🛸 2026 AAA CYBERPUNK VECTOR SVG NAVIGATION ICONS
+   ============================================================================= */
+.nav-svg-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+}
+
+.nav-item-icon-box .nav-svg-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.d-link-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-card, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-card, rgba(255, 255, 255, 0.1));
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.d-link-icon .nav-svg-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.drawer-link:hover .d-link-icon {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--cyan, #00f0ff);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+  transform: scale(1.08);
+}
+
+.drawer-link {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.drawer-tool-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-tool-pill .nav-svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.drawer-pill-link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.drawer-pill-link .nav-svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.nav-pill .nav-svg-icon,
+.nav-palette-btn .nav-svg-icon,
+.nav-annotate-btn .nav-svg-icon,
+.git .nav-svg-icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 4px;
+}

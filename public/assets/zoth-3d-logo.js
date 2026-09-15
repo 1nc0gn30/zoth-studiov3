@@ -789,27 +789,53 @@
     render();
   };
 
-  // ── Auto-Mount 3D Logo Across Navbar ──
+  // ── Auto-Mount 3D Logo Across Navbar & Footer ──
+  var activeLogoInstances = [];
+
   function initNavbar3DLogo() {
     if (!isWebGLAvailable()) return;
 
-    var curTheme = (window.getZothTheme && window.getZothTheme()) || "dark";
-    var wraps = document.querySelectorAll('.brand-emblem-wrap');
+    var curTheme = (window.getZothTheme && window.getZothTheme()) || (document.documentElement.getAttribute("data-theme") || "dark");
+    var wraps = document.querySelectorAll('.brand-emblem-wrap, .foot-brand-emblem-wrap, .footer-brand-emblem-wrap');
     wraps.forEach(function (wrap) {
       if (wrap.dataset.threeMounted) return;
       wrap.dataset.threeMounted = "true";
-      var instance = new Zoth3DLogoInstance(wrap, { size: 34, isNavbar: true });
+      var isFoot = wrap.classList.contains('foot-brand-emblem-wrap') || wrap.classList.contains('footer-brand-emblem-wrap') || !!wrap.closest('footer');
+      var instance = new Zoth3DLogoInstance(wrap, { size: isFoot ? 36 : 34, isNavbar: true });
       instance.adaptToTheme(curTheme);
+      activeLogoInstances.push(instance);
     });
+  }
+
+  // Theme Sync across all 3D logo emblems
+  window.addEventListener('zoth-theme-change', function (e) {
+    if (e && e.detail && e.detail.theme) {
+      activeLogoInstances.forEach(function (inst) {
+        if (inst && typeof inst.adaptToTheme === 'function') {
+          inst.adaptToTheme(e.detail.theme);
+        }
+      });
+    }
+  });
+
+  // Re-scan when DOM or Navigation updates
+  if (typeof MutationObserver !== 'undefined') {
+    var observer = new MutationObserver(function () {
+      initNavbar3DLogo();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 
   // ── Global Export ──
   global.Zoth3DLogo = {
     create: function (container, options) {
-      return new Zoth3DLogoInstance(container, options);
+      var inst = new Zoth3DLogoInstance(container, options);
+      activeLogoInstances.push(inst);
+      return inst;
     },
     materials: MATERIAL_PRESETS,
-    initNavbar: initNavbar3DLogo
+    initNavbar: initNavbar3DLogo,
+    instances: activeLogoInstances
   };
 
   if (document.readyState === 'loading') {
@@ -817,4 +843,5 @@
   } else {
     initNavbar3DLogo();
   }
+  window.addEventListener('load', initNavbar3DLogo);
 })(typeof window !== 'undefined' ? window : this);

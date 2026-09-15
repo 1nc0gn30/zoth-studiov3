@@ -83,6 +83,114 @@
       z-index: 100000;
       outline: 2px solid #fff;
     }
+
+    /* ── Registry Card Action Overlay & Stars ── */
+    .fleet-card {
+      position: relative;
+    }
+    .fleet-card-header-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      z-index: 5;
+    }
+    .card-action-btn {
+      background: rgba(5, 5, 8, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--text-dim, #94a3b8);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .card-action-btn:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--cyan, #00f0ff);
+      color: #fff;
+      transform: scale(1.1);
+    }
+    .card-action-btn.is-fav {
+      color: var(--gold, #fbbf24);
+      border-color: rgba(251, 191, 36, 0.5);
+      background: rgba(251, 191, 36, 0.15);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+    .inspect-action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .inspect-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--line, rgba(255, 255, 255, 0.16));
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text, #fff);
+      transition: all 0.2s ease;
+    }
+    .inspect-btn:hover {
+      border-color: var(--cyan, #00f0ff);
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--cyan, #00f0ff);
+    }
+    .inspect-btn.is-fav {
+      border-color: var(--gold, #fbbf24);
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--gold, #fbbf24);
+    }
+    .reg-copy-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100000;
+      background: var(--surface-card, #0a0e1c);
+      border: 1px solid var(--cyan, #00f0ff);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.3);
+      color: var(--text, #fff);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: regToastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes regToastIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    html[data-theme="light"] .card-action-btn {
+      background: #f1f5f9;
+      border-color: rgba(17, 24, 39, 0.16);
+      color: #475569;
+    }
+    html[data-theme="light"] .inspect-btn {
+      background: #f8fafc;
+      border-color: rgba(17, 24, 39, 0.14);
+      color: #1e293b;
+    }
+    html[data-theme="light"] .reg-copy-toast {
+      background: #ffffff;
+      color: #0f172a;
+      border-color: #0284c7;
+    }
 </style>
 <script type="application/ld+json">
 {
@@ -644,6 +752,11 @@
 <p class="inspect-kicker" id="inspect-cat"></p>
 <h2 id="inspect-name"></h2>
 <p id="inspect-desc"></p>
+<div class="inspect-action-bar">
+  <button type="button" class="inspect-btn" id="inspect-fav-btn">★ Star Favorite</button>
+  <button type="button" class="inspect-btn" id="inspect-copy-run-btn">📋 Copy Run Command</button>
+  <button type="button" class="inspect-btn" id="inspect-copy-path-btn">📂 Copy Path</button>
+</div>
 <dl>
 <div>
 <dt>Runtimes</dt>
@@ -676,6 +789,98 @@
   var toggleEl = document.getElementById("reg-toggle-all");
   var groups = [];
   var emptyEl = null;
+  var currentInspectedTool = null;
+
+  // --- Favorite Bookmarks System ---
+  function getFavorites() {
+    try {
+      var favs = localStorage.getItem("zoth_registry_favorites");
+      if (favs) return JSON.parse(favs);
+    } catch (e) {}
+    return [];
+  }
+
+  function isFavorite(id) {
+    if (!id) return false;
+    return getFavorites().indexOf(id) !== -1;
+  }
+
+  function toggleFavorite(id) {
+    if (!id) return false;
+    var favs = getFavorites();
+    var idx = favs.indexOf(id);
+    var added = false;
+    if (idx === -1) {
+      favs.push(id);
+      added = true;
+    } else {
+      favs.splice(idx, 1);
+      added = false;
+    }
+    try {
+      localStorage.setItem("zoth_registry_favorites", JSON.stringify(favs));
+    } catch (e) {}
+    updateFavoriteDOM(id, added);
+    refreshFavoriteTab();
+    showToast(added ? "★ Added to Favorites" : "Removed from Favorites");
+    return added;
+  }
+
+  function updateFavoriteDOM(id, isFav) {
+    var btns = document.querySelectorAll('.card-fav-btn[data-id="' + id + '"]');
+    btns.forEach(function(b) {
+      b.classList.toggle("is-fav", isFav);
+      b.textContent = isFav ? "★" : "☆";
+      b.title = isFav ? "Remove bookmark" : "Bookmark tool";
+    });
+    var inspectFav = document.getElementById("inspect-fav-btn");
+    if (inspectFav && currentInspectedTool && currentInspectedTool.id === id) {
+      inspectFav.classList.toggle("is-fav", isFav);
+      inspectFav.textContent = isFav ? "★ Starred Favorite" : "☆ Star Favorite";
+    }
+  }
+
+  // --- Instant Copy with Toast Feedback ---
+  function showToast(msg) {
+    var existing = document.querySelector(".reg-copy-toast");
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    var toast = document.createElement("div");
+    toast.className = "reg-copy-toast";
+    toast.innerHTML = "<span>✨</span> <span>" + msg + "</span>";
+    document.body.appendChild(toast);
+    setTimeout(function () {
+      if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 2400);
+  }
+
+  function copyText(text, label) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showToast("✓ Copied " + (label || "") + " to clipboard!");
+      }).catch(function() {
+        fallbackCopy(text, label);
+      });
+    } else {
+      fallbackCopy(text, label);
+    }
+  }
+
+  function fallbackCopy(text, label) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      showToast("✓ Copied " + (label || "") + " to clipboard!");
+    } catch (e) {
+      showToast("Copied to clipboard!");
+    }
+    document.body.removeChild(ta);
+  }
 
   function setText(id, value) {
     var n = document.getElementById(id);
@@ -683,11 +888,31 @@
   }
 
   function openInspect(t) {
+    currentInspectedTool = t;
     setText("inspect-cat", t.category || "");
     setText("inspect-name", t.name || t.id || "Untitled");
     setText("inspect-desc", t.description || "No description in the snapshot.");
     setText("inspect-run", (t.runtimes || []).join(" · ") || "—");
     setText("inspect-path", t.relative_path || t.id || "");
+    
+    var favBtn = document.getElementById("inspect-fav-btn");
+    if (favBtn) {
+      var fav = isFavorite(t.id);
+      favBtn.classList.toggle("is-fav", fav);
+      favBtn.textContent = fav ? "★ Starred Favorite" : "☆ Star Favorite";
+      favBtn.onclick = function() { toggleFavorite(t.id); };
+    }
+
+    var runBtn = document.getElementById("inspect-copy-run-btn");
+    if (runBtn) {
+      runBtn.onclick = function() { copyText("zoth run " + (t.id || t.name), "Run command"); };
+    }
+
+    var pathBtn = document.getElementById("inspect-copy-path-btn");
+    if (pathBtn) {
+      pathBtn.onclick = function() { copyText(t.relative_path || t.id, "Path"); };
+    }
+
     var tags = document.getElementById("inspect-tags");
     if (tags) {
       tags.replaceChildren.apply(tags, (t.tags || []).slice(0, 12).map(function (tag) {
@@ -700,6 +925,15 @@
     if (inspect) inspect.hidden = false;
   }
 
+  var inspectCloseBtn = document.getElementById("inspect-close");
+  if (inspectCloseBtn) {
+    inspectCloseBtn.addEventListener("click", function() {
+      var inspect = document.getElementById("inspect");
+      if (inspect) inspect.hidden = true;
+      currentInspectedTool = null;
+    });
+  }
+
   function activeCat() {
     var on = catsEl && catsEl.querySelector('button.is-on, button[aria-selected="true"]');
     if (!on) return "all";
@@ -707,11 +941,13 @@
     if (dc) return dc;
     var t = (on.textContent || "").trim();
     if (/^All\b/i.test(t)) return "all";
+    if (/^Starred\b/i.test(t) || /^★/i.test(t)) return "starred";
     return t.replace(/\s+\d+\s*$/, "").trim();
   }
 
-  function catMatch(toolCat, filter) {
+  function catMatch(toolCat, filter, toolId) {
     if (!filter || filter === "all") return true;
+    if (filter === "starred") return isFavorite(toolId);
     if (toolCat === filter) return true;
     var short = (toolCat || "").split("&")[0].trim();
     return short === filter || (toolCat || "").indexOf(filter) === 0;
@@ -730,7 +966,8 @@
         var card = cards[i];
         var hay = card.getAttribute("data-hay") || "";
         var cat = card.getAttribute("data-cat") || "";
-        var ok = (!q || hay.indexOf(q) !== -1) && catMatch(cat, filter);
+        var id = card.getAttribute("data-id") || "";
+        var ok = (!q || hay.indexOf(q) !== -1) && catMatch(cat, filter, id);
         card.hidden = !ok;
         if (ok) hits += 1;
       }
@@ -755,10 +992,10 @@
   function focusFilter() {
     applyFilter();
     var filter = activeCat();
-    if (!filter || filter === "all") return;
+    if (!filter || filter === "all" || filter === "starred") return;
     for (var i = 0; i < groups.length; i++) {
       var grp = groups[i];
-      if (!grp.el.hidden && catMatch(grp.cat, filter)) {
+      if (!grp.el.hidden && catMatch(grp.cat, filter, null)) {
         grp.el.open = true;
         if (grp.el.scrollIntoView) grp.el.scrollIntoView({ block: "start" });
         break;
@@ -777,6 +1014,13 @@
     var open = allOpen();
     toggleEl.textContent = open ? "Collapse all" : "Expand all";
     toggleEl.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function refreshFavoriteTab() {
+    var favTab = catsEl && catsEl.querySelector('button[data-cat="starred"]');
+    if (favTab) {
+      favTab.textContent = "★ Starred " + getFavorites().length;
+    }
   }
 
   function paintCats(list) {
@@ -798,6 +1042,7 @@
       return b;
     }
     catsEl.appendChild(mk("all", "All " + list.length));
+    catsEl.appendChild(mk("starred", "★ Starred " + getFavorites().length));
     names.forEach(function (n) {
       catsEl.appendChild(mk(n, n.split("&")[0].trim() + " " + counts[n]));
     });
@@ -857,6 +1102,52 @@
           (t.name || "") + " " + (t.description || "") + " " + (t.category || "") + " " +
           ((t.tags || []).join(" ")) + " " + (t.id || "")
         ).toLowerCase());
+
+        // Card action overlay: Bookmark star & Quick copy
+        var actionsWrap = document.createElement("div");
+        actionsWrap.className = "fleet-card-header-actions";
+
+        var copyBtn = document.createElement("span");
+        copyBtn.className = "card-action-btn card-copy-btn";
+        copyBtn.setAttribute("role", "button");
+        copyBtn.setAttribute("tabindex", "0");
+        copyBtn.title = "Copy tool command";
+        copyBtn.textContent = "📋";
+        copyBtn.addEventListener("click", function(ev) {
+          ev.stopPropagation();
+          copyText("zoth run " + (t.id || t.name), "Command");
+        });
+        copyBtn.addEventListener("keydown", function(ev) {
+          if (ev.key === "Enter" || ev.key === " ") {
+            ev.stopPropagation();
+            ev.preventDefault();
+            copyText("zoth run " + (t.id || t.name), "Command");
+          }
+        });
+
+        var favBtn = document.createElement("span");
+        favBtn.className = "card-action-btn card-fav-btn" + (isFavorite(t.id) ? " is-fav" : "");
+        favBtn.setAttribute("role", "button");
+        favBtn.setAttribute("tabindex", "0");
+        favBtn.setAttribute("data-id", t.id || "");
+        favBtn.title = isFavorite(t.id) ? "Remove bookmark" : "Bookmark tool";
+        favBtn.textContent = isFavorite(t.id) ? "★" : "☆";
+        favBtn.addEventListener("click", function(ev) {
+          ev.stopPropagation();
+          toggleFavorite(t.id);
+        });
+        favBtn.addEventListener("keydown", function(ev) {
+          if (ev.key === "Enter" || ev.key === " ") {
+            ev.stopPropagation();
+            ev.preventDefault();
+            toggleFavorite(t.id);
+          }
+        });
+
+        actionsWrap.appendChild(copyBtn);
+        actionsWrap.appendChild(favBtn);
+        card.appendChild(actionsWrap);
+
         var c = document.createElement("p");
         c.className = "fleet-card-cat";
         c.textContent = t.category || "Other";

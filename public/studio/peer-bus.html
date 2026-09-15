@@ -961,14 +961,28 @@
 <div class="peer-card">
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
 <div>
-<h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary);">⚡ Swarm Latency Waveform Oscilloscope</h3>
-<p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Real-time rolling RTT ping time-series across loopback and local IPC mesh.</p>
+<h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary);">⚡ Swarm Latency &amp; Topology Radar</h3>
+<p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Real-time rolling RTT ping time-series and instant pre-settled topological mesh.</p>
 </div>
-<div style="display: flex; gap: 8px;">
-<button class="btn" onclick="triggerPeerPingSweep()" style="background: var(--cyan); color: #030408; font-weight: 700; font-size: 0.78rem; padding: 6px 12px;">⚡ Trigger Mesh Ping Sweep</button>
+<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+<button class="btn" onclick="triggerPeerPingSweep()" style="background: var(--cyan); color: #030408; font-weight: 700; font-size: 0.78rem; padding: 6px 12px;" title="Trigger Round-Trip Ping Sweep">⚡ Ping Sweep</button>
+<button class="btn btn-ghost" id="btn-peer-graph-mode" onclick="togglePeerRadarMode()" style="font-size: 0.78rem; padding: 6px 12px;" title="Toggle Topology vs Waveform">🕸️ Mode: Topology</button>
+<button class="btn btn-ghost" id="btn-peer-chaos" onclick="togglePeerChaos()" style="color: #ef4444; border-color: rgba(239,68,68,0.4); font-size: 0.78rem; padding: 6px 12px;" title="Chaos Engineering: Simulate Bus Dropouts">💥 Chaos: OFF</button>
 </div>
 </div>
-<div class="radar-canvas-wrap">
+<!-- Chaos Engineering Control Tray -->
+<div id="peer-chaos-tray" style="display:none; margin-top: 10px; padding: 8px 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-family: var(--font-mono); font-size: 0.72rem; color: #fca5a5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<span>⚡ <strong>CHAOS INJECTOR:</strong></span>
+<span>Drop Rate: <strong id="peer-chaos-rate-val">30%</strong></span>
+<input id="peer-chaos-slider" max="80" min="5" oninput="setPeerChaosRate(this.value)" style="width: 100px; accent-color: #ef4444;" type="range" value="30"/>
+</div>
+<div style="display: flex; gap: 8px; align-items: center;">
+<span>Dropped: <strong id="peer-chaos-counter" style="color: #ef4444;">0</strong> pkts</span>
+<button class="btn" onclick="injectPeerChaosBurst(4)" style="background: rgba(239,68,68,0.25); border: 1px solid #ef4444; color: #fff; padding: 2px 8px; font-size: 0.68rem; cursor:pointer;">💥 Drop 4 Packets</button>
+</div>
+</div>
+<div class="radar-canvas-wrap" style="margin-top: 10px;">
 <canvas id="peer-radar-canvas"></canvas>
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); flex-wrap: wrap; gap: 8px;">
@@ -978,7 +992,7 @@
 <span style="color: #a855f7;">■ @Hermes</span>
 <span style="color: #10b981;">■ @Local-Zoth</span>
 </div>
-<div>Sampling: 60 Ticks · 120ms tick frequency</div>
+<div>Sampling: 60 Ticks · Pre-Settled Topology Active</div>
 </div>
 </div>
 </div>
@@ -1263,12 +1277,12 @@
         renderPeerWaterfall();
       };
 
-      /* Latency Oscilloscope */
+      /* Latency & Pre-Settled Topology Radar */
       const peerNodes = [
-        { id: "agy", name: "@Antigravity", color: "#00f0ff", base: 0.32, current: 0.32, history: [] },
-        { id: "grok", name: "@Grok", color: "#fbbf24", base: 0.48, current: 0.48, history: [] },
-        { id: "hermes", name: "@Hermes", color: "#a855f7", base: 0.75, current: 0.75, history: [] },
-        { id: "local", name: "@Local-Zoth", color: "#10b981", base: 1.12, current: 1.12, history: [] }
+        { id: "agy", name: "@Antigravity", role: "Primary Hub", color: "#00f0ff", base: 0.32, current: 0.32, normX: 0.50, normY: 0.50, history: [] },
+        { id: "grok", name: "@Grok", role: "Speed Engine", color: "#fbbf24", base: 0.48, current: 0.48, normX: 0.24, normY: 0.30, history: [] },
+        { id: "hermes", name: "@Hermes", role: "Consensus", color: "#a855f7", base: 0.75, current: 0.75, normX: 0.76, normY: 0.30, history: [] },
+        { id: "local", name: "@Local-Zoth", role: "Air-Gapped", color: "#10b981", base: 1.12, current: 1.12, normX: 0.50, normY: 0.82, history: [] }
       ];
 
       peerNodes.forEach(p => {
@@ -1277,6 +1291,50 @@
 
       let pCanvas = null;
       let pCtx = null;
+      let peerRadarMode = 'topology';
+      let peerChaosActive = false;
+      let peerChaosDropRate = 0.30;
+      let peerChaosDropCount = 0;
+
+      window.togglePeerRadarMode = function() {
+        peerRadarMode = (peerRadarMode === 'topology') ? 'waveform' : 'topology';
+        const label = document.getElementById('btn-peer-graph-mode');
+        if (label) label.textContent = (peerRadarMode === 'topology') ? '🕸️ Mode: Topology' : '📈 Mode: Waveform';
+        drawPeerRadar();
+      };
+
+      window.togglePeerChaos = function() {
+        peerChaosActive = !peerChaosActive;
+        const btn = document.getElementById('btn-peer-chaos');
+        const tray = document.getElementById('peer-chaos-tray');
+        if (btn) {
+          btn.textContent = peerChaosActive ? '💥 Chaos: ACTIVE' : '💥 Chaos: OFF';
+          btn.style.borderColor = peerChaosActive ? '#ef4444' : 'rgba(239,68,68,0.4)';
+          btn.style.background = peerChaosActive ? 'rgba(239,68,68,0.2)' : '';
+        }
+        if (tray) tray.style.display = peerChaosActive ? 'flex' : 'none';
+        if (peerChaosActive) injectPeerChaosBurst(3);
+      };
+
+      window.setPeerChaosRate = function(val) {
+        peerChaosDropRate = parseInt(val, 10) / 100;
+        const display = document.getElementById('peer-chaos-rate-val');
+        if (display) display.textContent = val + '%';
+      };
+
+      window.injectPeerChaosBurst = function(count = 4) {
+        peerChaosDropCount += count;
+        const counter = document.getElementById('peer-chaos-counter');
+        if (counter) counter.textContent = peerChaosDropCount;
+
+        messages.unshift({
+          from: "@Chaos Injector",
+          to: "@all",
+          time: new Date().toLocaleTimeString(),
+          body: `💥 [CHAOS SIMULATION] ${count} packets dropped on peer bus. Simulating packet dropouts & retransmit.`
+        });
+        renderMessages();
+      };
 
       function resizePeerCanvas() {
         pCanvas = document.getElementById('peer-radar-canvas');
@@ -1291,41 +1349,119 @@
         if (!pCanvas || !pCtx) return;
         const w = pCanvas.width;
         const h = pCanvas.height;
+        const dpr = window.devicePixelRatio || 1;
 
         pCtx.fillStyle = '#03050a';
         pCtx.fillRect(0, 0, w, h);
 
-        pCtx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
-        pCtx.lineWidth = 1;
+        if (peerRadarMode === 'topology') {
+          // Instant Pre-Settled Topology Graph
+          const hub = peerNodes[0];
+          const hubX = hub.normX * w;
+          const hubY = hub.normY * h;
+          const t = Date.now() / 600;
 
-        for (let r = 1; r < 4; r++) {
-          const y = (h / 4) * r;
-          pCtx.beginPath();
-          pCtx.moveTo(0, y);
-          pCtx.lineTo(w, y);
-          pCtx.stroke();
-        }
+          // Mesh Links & Packets
+          pCtx.lineWidth = 1.5 * dpr;
+          for (let i = 1; i < peerNodes.length; i++) {
+            const node = peerNodes[i];
+            const nx = node.normX * w;
+            const ny = node.normY * h;
+            const isDropped = peerChaosActive && Math.random() < peerChaosDropRate;
 
-        peerNodes.forEach(p => {
-          pCtx.strokeStyle = p.color;
-          pCtx.lineWidth = 2 * window.devicePixelRatio;
-          pCtx.beginPath();
+            pCtx.strokeStyle = isDropped ? 'rgba(239, 68, 68, 0.45)' : 'rgba(0, 229, 255, 0.2)';
+            pCtx.beginPath();
+            pCtx.moveTo(hubX, hubY);
+            pCtx.lineTo(nx, ny);
+            pCtx.stroke();
 
-          const stepX = w / (p.history.length - 1);
-          p.history.forEach((val, idx) => {
-            const x = idx * stepX;
-            const norm = Math.min(val / 2.5, 1.0);
-            const y = h - (norm * (h - 20) + 10);
-            if (idx === 0) pCtx.moveTo(x, y);
-            else pCtx.lineTo(x, y);
+            // Link pulses
+            if (!isDropped) {
+              const prog = (t + i * 0.33) % 1;
+              const px = hubX + (nx - hubX) * prog;
+              const py = hubY + (ny - hubY) * prog;
+              pCtx.fillStyle = node.color;
+              pCtx.beginPath();
+              pCtx.arc(px, py, 2.5 * dpr, 0, Math.PI * 2);
+              pCtx.fill();
+            }
+          }
+
+          // Render Pre-Settled Nodes
+          peerNodes.forEach(node => {
+            const nx = node.normX * w;
+            const ny = node.normY * h;
+            const isDropped = peerChaosActive && Math.random() < peerChaosDropRate;
+
+            // Halo
+            pCtx.fillStyle = isDropped ? 'rgba(239, 68, 68, 0.25)' : `${node.color}22`;
+            pCtx.beginPath();
+            pCtx.arc(nx, ny, 16 * dpr, 0, Math.PI * 2);
+            pCtx.fill();
+
+            // Core
+            pCtx.fillStyle = isDropped ? '#ef4444' : node.color;
+            pCtx.beginPath();
+            pCtx.arc(nx, ny, 6 * dpr, 0, Math.PI * 2);
+            pCtx.fill();
+
+            // Labels
+            pCtx.fillStyle = '#f8fafc';
+            pCtx.font = `${9 * dpr}px "IBM Plex Mono", monospace`;
+            pCtx.textAlign = 'center';
+            pCtx.fillText(node.name, nx, ny - 12 * dpr);
+
+            pCtx.fillStyle = isDropped ? '#ef4444' : node.color;
+            pCtx.font = `${7.5 * dpr}px "IBM Plex Mono", monospace`;
+            pCtx.fillText(isDropped ? 'DROPOUT' : `${node.current.toFixed(2)}ms`, nx, ny + 16 * dpr);
           });
-          pCtx.stroke();
-        });
+
+          // Legend Header
+          pCtx.fillStyle = 'rgba(0, 229, 255, 0.85)';
+          pCtx.font = `${8 * dpr}px "IBM Plex Mono", monospace`;
+          pCtx.textAlign = 'left';
+          pCtx.fillText('TOPOLOGY: 4-Node Pre-Settled Mesh · 0ms Layout Lag', 10 * dpr, 16 * dpr);
+
+        } else {
+          // Waveform Mode
+          pCtx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+          pCtx.lineWidth = 1;
+
+          for (let r = 1; r < 4; r++) {
+            const y = (h / 4) * r;
+            pCtx.beginPath();
+            pCtx.moveTo(0, y);
+            pCtx.lineTo(w, y);
+            pCtx.stroke();
+          }
+
+          peerNodes.forEach(p => {
+            pCtx.strokeStyle = p.color;
+            pCtx.lineWidth = 2 * dpr;
+            pCtx.beginPath();
+
+            const stepX = w / (p.history.length - 1);
+            p.history.forEach((val, idx) => {
+              const x = idx * stepX;
+              const norm = Math.min(val / 2.5, 1.0);
+              const y = h - (norm * (h - 20) + 10);
+              if (idx === 0) pCtx.moveTo(x, y);
+              else pCtx.lineTo(x, y);
+            });
+            pCtx.stroke();
+          });
+        }
       }
 
       function updatePeerPingTicks() {
         peerNodes.forEach(p => {
-          const fresh = Math.max(p.base + (Math.random() - 0.5) * 0.1, 0.1);
+          const isDropped = peerChaosActive && Math.random() < peerChaosDropRate;
+          if (isDropped) {
+            peerChaosDropCount++;
+            const el = document.getElementById('peer-chaos-counter');
+            if (el) el.textContent = peerChaosDropCount;
+          }
+          const fresh = isDropped ? (p.base + 3.2) : Math.max(p.base + (Math.random() - 0.5) * 0.1, 0.1);
           p.current = fresh;
           p.history.push(fresh);
           if (p.history.length > 50) p.history.shift();

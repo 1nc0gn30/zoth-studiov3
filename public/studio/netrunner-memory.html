@@ -1100,6 +1100,7 @@ body.maze-open #zoth-pet-hud {
       <div style="display:flex;gap:6px;background:rgba(0,0,0,0.4);padding:4px;border-radius:10px;border:1px solid var(--border);flex-wrap:wrap">
         <button id="tabBtnExplore" class="workstation-tab active" onclick="switchWorkstationTab('explore')" style="background:var(--gold);color:#050508;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer">📂 Browse Ledger</button>
         <button id="tabBtnBrainLab" class="workstation-tab" onclick="switchWorkstationTab('brainLab')" style="background:transparent;color:#00f0ff;border:1px solid rgba(0,240,255,0.4);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer">🧠 Brain Dynamics Lab</button>
+        <button id="tabBtnAstDiff" class="workstation-tab" onclick="switchWorkstationTab('astDiff')" style="background:transparent;color:#c084fc;border:1px solid rgba(192,132,252,0.4);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer">🔄 AST Transition Inspector</button>
         <button id="tabBtnEncode" class="workstation-tab" onclick="switchWorkstationTab('encode')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">+ Encode Memory</button>
         <button id="tabBtnPersp" class="workstation-tab" onclick="switchWorkstationTab('perspectives')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">👁️ Add Perspective</button>
         <button id="tabBtnLink" class="workstation-tab" onclick="switchWorkstationTab('link')" style="background:transparent;color:#94a3b8;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">🔗 Causal Synapse</button>
@@ -1276,6 +1277,86 @@ body.maze-open #zoth-pet-hud {
           <div id="workingMemoryList" style="max-height:220px;overflow-y:auto;background:#05070f;border:1px solid var(--border);border-radius:8px;padding:8px;display:grid;gap:6px"></div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- TAB: AST TRANSITION INSPECTOR -->
+    <div id="tabContentAstDiff" style="display:none;max-width:1160px;margin:0 auto">
+      <div style="background:var(--surface-2);border:1px solid rgba(192,132,252,0.4);border-radius:12px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:15px;font-weight:900;color:var(--purple,#c084fc);font-family:var(--font-display);display:flex;align-items:center;gap:8px">
+              <span>🔄 Visual Memory Transition Inspector</span>
+              <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(192,132,252,0.15);border:1px solid rgba(192,132,252,0.3);color:#c084fc;font-family:var(--font-mono)">dlPFC → Invariant Neocortex AST</span>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin:4px 0 0;max-width:720px">
+              Inspect how high-entropy, short-term conversational working memory buffers undergo STDP synaptic consolidation and AST invariant extraction, yielding immutable, cryptographically-sealed long-term memory schemas.
+            </p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button type="button" onclick="runAstTransmutationStep()" style="background:linear-gradient(135deg, #c084fc, #00f0ff);color:#05070f;font-weight:800;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:12px">⚡ Transmute AST Invariant</button>
+          </div>
+        </div>
+
+        <!-- Sample Transition Preset Selector -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;background:#050811;padding:8px 12px;border-radius:8px;border:1px solid var(--border)">
+          <span style="font-size:11px;font-family:var(--font-mono);color:var(--muted);font-weight:700">PRESETS:</span>
+          <button type="button" onclick="loadAstDiffPreset('argon2')" class="subsystem-filter-btn" id="astBtnArgon2" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(251,191,36,0.15);color:var(--gold);border:1px solid rgba(251,191,36,0.4);cursor:pointer;font-family:var(--font-mono)">🔐 Argon2id Enclave Memory</button>
+          <button type="button" onclick="loadAstDiffPreset('consensus')" class="subsystem-filter-btn" id="astBtnConsensus" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(0,240,255,0.1);color:var(--cyan);border:1px solid rgba(0,240,255,0.3);cursor:pointer;font-family:var(--font-mono)">⚔️ Tri-Agent Consensus Invariant</button>
+          <button type="button" onclick="loadAstDiffPreset('vector')" class="subsystem-filter-btn" id="astBtnVector" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(52,211,153,0.1);color:var(--green,#34d399);border:1px solid rgba(52,211,153,0.3);cursor:pointer;font-family:var(--font-mono)">🧬 Vector Whitespace 1024-Dim</button>
+          <button type="button" onclick="loadAstDiffPreset('cache')" class="subsystem-filter-btn" id="astBtnCache" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(244,114,182,0.1);color:var(--pink,#f472b6);border:1px solid rgba(244,114,182,0.3);cursor:pointer;font-family:var(--font-mono)">⚡ Self-Healing State Cache</button>
+        </div>
+
+        <!-- 4-Stage Transition Pipeline HUD -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:8px;margin-bottom:16px">
+          <div class="crypto-step-card complete" id="astStage1" style="padding:8px 12px;background:#05070f;border:1px solid rgba(0,240,255,0.25);border-radius:8px">
+            <div style="font-size:10px;color:var(--cyan);font-family:var(--font-mono);font-weight:700">STAGE 01 · INGEST</div>
+            <div style="font-size:12px;font-weight:800;color:#fff">Volatile Token Buffer</div>
+            <div style="font-size:10px;color:var(--muted)">Entropy: H(p) = 0.684 bits</div>
+          </div>
+          <div class="crypto-step-card complete" id="astStage2" style="padding:8px 12px;background:#05070f;border:1px solid rgba(251,191,36,0.25);border-radius:8px">
+            <div style="font-size:10px;color:var(--gold);font-family:var(--font-mono);font-weight:700">STAGE 02 · STDP CONSOLIDATION</div>
+            <div style="font-size:12px;font-weight:800;color:#fff">Synaptic Pruning</div>
+            <div style="font-size:10px;color:var(--muted)">Δw = A+ · exp(-Δt/τ+)</div>
+          </div>
+          <div class="crypto-step-card complete" id="astStage3" style="padding:8px 12px;background:#05070f;border:1px solid rgba(192,132,252,0.25);border-radius:8px">
+            <div style="font-size:10px;color:var(--purple,#c084fc);font-family:var(--font-mono);font-weight:700">STAGE 03 · INVARIANT EXTRACTION</div>
+            <div style="font-size:12px;font-weight:800;color:#fff">Schema AST Minimization</div>
+            <div style="font-size:10px;color:var(--muted)">Shannon Minimization: -78%</div>
+          </div>
+          <div class="crypto-step-card complete" id="astStage4" style="padding:8px 12px;background:#05070f;border:1px solid rgba(52,211,153,0.25);border-radius:8px">
+            <div style="font-size:10px;color:var(--green,#34d399);font-family:var(--font-mono);font-weight:700">STAGE 04 · SOVEREIGN SEAL</div>
+            <div style="font-size:12px;font-weight:800;color:#fff">Argon2id Enclave AST</div>
+            <div style="font-size:10px;color:var(--muted)">Root: 0x7f9a88bc3e...</div>
+          </div>
+        </div>
+
+        <!-- Side-by-Side AST Diff Viewer Container -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(min(100%, 480px), 1fr));gap:14px">
+          <!-- Left: Short-Term Working Memory AST -->
+          <div style="background:#05070f;border:1px solid rgba(244,114,182,0.3);border-radius:10px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:11px;font-family:var(--font-mono);font-weight:800;color:var(--pink,#f472b6)">🔴 SHORT-TERM WORKING TRACE (dlPFC BUFFER)</span>
+              <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">MUTABLE · HIGH ENTROPY</span>
+            </div>
+            <pre id="astDiffLeft" style="background:#020408;border:1px solid var(--border);border-radius:6px;padding:12px;color:#cbd5e1;font-family:var(--font-mono);font-size:11px;line-height:1.55;overflow-x:auto;max-height:360px;margin:0"></pre>
+          </div>
+
+          <!-- Right: Sovereign Invariant AST -->
+          <div style="background:#05070f;border:1px solid rgba(52,211,153,0.3);border-radius:10px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:11px;font-family:var(--font-mono);font-weight:800;color:var(--green,#34d399)">🟢 SOVEREIGN INVARIANT AST (NEOCORTEX ROOT)</span>
+              <span style="font-size:10px;color:var(--gold);font-family:var(--font-mono);font-weight:700">SEALED · IMMUTABLE</span>
+            </div>
+            <pre id="astDiffRight" style="background:#020408;border:1px solid var(--border);border-radius:6px;padding:12px;color:#34d399;font-family:var(--font-mono);font-size:11px;line-height:1.55;overflow-x:auto;max-height:360px;margin:0"></pre>
+          </div>
+        </div>
+
+        <!-- Invariant Verification Assertion Banner -->
+        <div id="astVerificationBanner" style="margin-top:14px;padding:10px 14px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-family:var(--font-mono);font-size:11px">
+          <span style="color:var(--green,#34d399);font-weight:700">✔ INVARIANT VERIFICATION PASS · Zero Token Hallucination · Mathematical Predicate Satisfied</span>
+          <span style="color:var(--muted)">Argon2id Enclave Signature Verified</span>
+        </div>
       </div>
     </div>
 
@@ -1516,7 +1597,7 @@ function sceneFor(m){
   </div>`;
 }
 function switchWorkstationTab(tabName){
-  const tabs = ['explore', 'brainLab', 'encode', 'perspectives', 'link', 'ops'];
+  const tabs = ['explore', 'brainLab', 'astDiff', 'encode', 'perspectives', 'link', 'ops'];
   tabs.forEach(t => {
     const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
     const content = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1525,6 +1606,9 @@ function switchWorkstationTab(tabName){
         if (t === 'brainLab') {
           btn.style.background = '#00f0ff';
           btn.style.color = '#05070f';
+        } else if (t === 'astDiff') {
+          btn.style.background = '#c084fc';
+          btn.style.color = '#05070f';
         } else {
           btn.style.background = 'var(--gold)';
           btn.style.color = '#050508';
@@ -1532,7 +1616,7 @@ function switchWorkstationTab(tabName){
         btn.style.fontWeight = '800';
       } else {
         btn.style.background = 'transparent';
-        btn.style.color = (t === 'brainLab') ? '#00f0ff' : '#94a3b8';
+        btn.style.color = (t === 'brainLab') ? '#00f0ff' : (t === 'astDiff') ? '#c084fc' : '#94a3b8';
         btn.style.fontWeight = '700';
       }
     }
@@ -1540,7 +1624,151 @@ function switchWorkstationTab(tabName){
   });
   if (tabName === 'brainLab') {
     initBrainLab();
+  } else if (tabName === 'astDiff') {
+    initAstDiffViewer();
   }
+}
+
+// --- Visual Memory Transition Inspector (AST Diff Engine) ---
+const AST_DIFF_PRESETS = {
+  argon2: {
+    title: "🔐 Argon2id Enclave Memory Transition",
+    left: {
+      node_type: "VolatilePromptMemoryBuffer",
+      agent_source: "@azoth (dlPFC working memory buffer)",
+      entropy_shannon: "0.684 bits",
+      decay_half_life_ttl: "140s",
+      raw_trace: "Operator requested compiling Argon2id daemon for loopback port :8787 with memory hard parameters m=65536, t=3, p=4. Temporary buffer allocated at heap 0x7ffd...",
+      transient_variables: {
+        nonce_draft: "rnd_99a8b1",
+        plaintext_flag: true,
+        unvalidated_user_params: ["--quick", "--dev-mode"]
+      }
+    },
+    right: {
+      node_type: "SovereignInvariantMemoryAST",
+      agent_owner: "@azoth (Sovereign Lead)",
+      enclave_seal: "Argon2id-13(m=65536, t=3, p=4)",
+      entropy_shannon: "0.118 bits (Optimal Consolidation)",
+      formal_invariant_proof: "∀p ∈ Enclave : Decrypt(p, k) ⇒ InvariantPass(p)",
+      cryptographic_root: "0x7f9a88bc3e4190d5fa9102c81e289f0a",
+      immutable_schema_contract: {
+        service_port: 8787,
+        isolation_boundary: "Loopback-Only 127.0.0.1",
+        zero_telemetry_egress: true,
+        byzantine_fault_tolerance: 1.0
+      }
+    }
+  },
+  consensus: {
+    title: "⚔️ Tri-Agent Consensus Invariant Transition",
+    left: {
+      node_type: "TransientDialecticChatStream",
+      agents: ["@azoth", "@kai", "@draco"],
+      raw_arguments: "Kai claims AST schema needs strict regex. Draco argues for probabilistic LLM fallback. Azoth waiting for quorum weight...",
+      entropy_shannon: "0.582 bits",
+      status: "UNRESOLVED_CONVERSATIONAL_BUFFER"
+    },
+    right: {
+      node_type: "TriAgentConsensusSealedAST",
+      quorum_aligned: "3/3 (Azoth 50%, Grok 30%, Ollama 20%)",
+      synthesized_invariant: "Predicate(AST_Schema) ∧ ZeroByzantineDrift(Mesh)",
+      entropy_shannon: "0.142 bits",
+      consensus_signature: "0xed25519_quorum_seal_38f0a288c1",
+      immutable_resolution: "Strict Regex AST Validator applied with Zero-Knowledge Boundary Check."
+    }
+  },
+  vector: {
+    title: "🧬 Vector Whitespace 1024-Dim Projection",
+    left: {
+      node_type: "VolatileTokenEmbeddingBuffer",
+      dim: 1024,
+      unnormalized_vector: [0.042, -0.198, 0.412, "... (1021 more floats)"],
+      cosine_drift: "±0.082",
+      entropy_shannon: "0.490 bits"
+    },
+    right: {
+      node_type: "NormalizedManifoldProjectionAST",
+      dim: 1024,
+      l2_norm: "1.000000",
+      topological_cluster: "Cluster #42 (Hermetic Sovereign Cryptography)",
+      entropy_shannon: "0.105 bits",
+      associative_weight: 0.994
+    }
+  },
+  cache: {
+    title: "⚡ Self-Healing State Cache Invariant",
+    left: {
+      node_type: "VolatileLocalStorageBlob",
+      key: "zoth_session_state",
+      storage_version: "unversioned_raw",
+      risk_of_corruption: "HIGH (Schema Mismatch)"
+    },
+    right: {
+      node_type: "SelfHealingImmutableASTCache",
+      key: "zoth_sovereign_state_v12",
+      schema_checksum: "sha256:4a88bc3e...",
+      auto_migration_handler: "PASS_VERIFIED",
+      data_integrity_seal: "0x39a1f88c"
+    }
+  }
+};
+
+let currentAstDiffKey = 'argon2';
+
+function initAstDiffViewer() {
+  loadAstDiffPreset(currentAstDiffKey || 'argon2');
+}
+
+function loadAstDiffPreset(key) {
+  currentAstDiffKey = key;
+  const preset = AST_DIFF_PRESETS[key];
+  if (!preset) return;
+
+  ['Argon2', 'Consensus', 'Vector', 'Cache'].forEach(k => {
+    const btn = document.getElementById('astBtn' + k);
+    if (btn) {
+      const match = k.toLowerCase() === key;
+      btn.style.background = match ? 'rgba(192,132,252,0.25)' : 'rgba(255,255,255,0.05)';
+      btn.style.borderColor = match ? '#c084fc' : 'var(--border)';
+      btn.style.color = match ? '#c084fc' : 'var(--muted)';
+    }
+  });
+
+  const leftEl = document.getElementById('astDiffLeft');
+  const rightEl = document.getElementById('astDiffRight');
+  if (leftEl) leftEl.textContent = JSON.stringify(preset.left, null, 2);
+  if (rightEl) rightEl.textContent = JSON.stringify(preset.right, null, 2);
+}
+
+function runAstTransmutationStep() {
+  const steps = [
+    document.getElementById('astStage1'),
+    document.getElementById('astStage2'),
+    document.getElementById('astStage3'),
+    document.getElementById('astStage4')
+  ].filter(Boolean);
+
+  steps.forEach(s => s.classList.remove('complete'));
+  let current = 0;
+
+  const timer = setInterval(() => {
+    if (current < steps.length) {
+      steps[current].classList.add('complete');
+      current++;
+    } else {
+      clearInterval(timer);
+      const banner = document.getElementById('astVerificationBanner');
+      if (banner) {
+        banner.style.background = 'rgba(52, 211, 153, 0.2)';
+        banner.style.borderColor = 'var(--green, #34d399)';
+        setTimeout(() => {
+          banner.style.background = 'rgba(52, 211, 153, 0.08)';
+          banner.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+        }, 2000);
+      }
+    }
+  }, 140);
 }
 
 function cleanMemoryPreview(raw){

@@ -1,55 +1,68 @@
 /**
- * ============================================================================
- * HERMETIC CELESTIAL TRAIL & AETHER PARTICLE ENGINE (v3.0)
- * ============================================================================
- * Sacred Geometry · Golden Ratio (Φ = 1.6180339887) Dynamics · Aether Bloom
- * Colors: #fbbf24 (Solar Gold) · #00f0ff (Aether Cyan) · #34d399 (Emerald Verde)
- * 60 FPS Delta-Normalized · Zero-CPU Idle Auto-Sleep · Clean Memory Lifecycle
- * ============================================================================
+ * Zoth Studio — pointer / touch trail.
+ * Smooth head lerp + spatially resampled ribbon. Touch width stays capped.
  */
 (function (global) {
   "use strict";
+  if (typeof window === "undefined" || typeof document === "undefined") return;
 
-  if (typeof window === "undefined") return;
-  if (document.getElementById("celestial-cursor-canvas")) return;
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) return;
+  var reduceMq = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (reduceMq && reduceMq.matches) return;
 
-  // Sacred Mathematical Constants
-  var PHI = 1.618033988749895;              // Golden Ratio Φ
-  var GOLDEN_ANGLE = 137.50776405003785 * (Math.PI / 180); // 2.39996323 rad
-  var SPIRAL_EXP = 0.3063489;                // b = ln(Φ)/(pi/2)
-  var DAMPING = 0.9412;                      // Φ-harmonic velocity damping
+  if (global.__ZOTH_CELESTIAL_TRAIL_ACTIVE__) {
+    if (global.CelestialTrail && typeof global.CelestialTrail.refresh === "function") {
+      global.CelestialTrail.refresh();
+    }
+    return;
+  }
+  global.__ZOTH_CELESTIAL_TRAIL_ACTIVE__ = true;
 
-  // Hermetic Spectral Palette
-  var PALETTE = [
-    { r: 251, g: 191, b: 36,  hex: "#fbbf24", name: "solar-gold" },    // Hermetic Solar Gold
-    { r: 0,   g: 240, b: 255, hex: "#00f0ff", name: "aether-cyan" },   // Celestial Mercury Cyan
-    { r: 52,  g: 211, b: 153, hex: "#34d399", name: "emerald-verde" }, // Emerald Tablet Verde
-    { r: 253, g: 230, b: 138, hex: "#fde68a", name: "gold-shimmer" },  // Radiant Solar Crown
-    { r: 165, g: 243, b: 252, hex: "#a5f3fc", name: "aether-mist" }    // Ethereal Prism
-  ];
+  var fineMq = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+  var isFine = !!(fineMq && fineMq.matches);
 
-  // Device & Pointer Capabilities
-  var isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  var dpr = isFinePointer ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-  var MAX_POINTS = isFinePointer ? 24 : 10;
-  var MAX_SPARKS = isFinePointer ? 120 : 36;
-  var MAX_WIDTH = isFinePointer ? 10.0 : 4.5;
-  var VELOCITY_CAP = isFinePointer ? 28 : 12;
-  var SPARK_CHANCE = isFinePointer ? 0.35 : 0.12;
+  var PALETTES = {
+    dark:   [{ r: 0, g: 240, b: 255 }, { r: 251, g: 191, b: 36 }, { r: 168, g: 85, b: 247 }],
+    gold:   [{ r: 255, g: 215, b: 0 }, { r: 251, g: 191, b: 36 }, { r: 255, g: 251, b: 235 }],
+    matrix: [{ r: 0, g: 255, b: 65 }, { r: 134, g: 239, b: 172 }, { r: 240, g: 253, b: 244 }],
+    light:  [{ r: 99, g: 91, b: 255 }, { r: 2, g: 132, b: 199 }, { r: 15, g: 23, b: 42 }]
+  };
 
-  // DOM Canvas Construction
-  var canvas = document.createElement("canvas");
+  var themeId = (document.documentElement.getAttribute("data-theme") || "dark").toLowerCase();
+  var palette = PALETTES[themeId] || PALETTES.dark;
+  var isLight = themeId === "light";
+
+  var dpr = isFine ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+  var MAX_POINTS = isFine ? 48 : 18;
+  var SPACING = isFine ? 3.2 : 7.5;
+  var HEAD_LAMBDA = isFine ? 28 : 18;
+  var CORE_MAX = isFine ? 7.5 : 4.2;
+  var GLOW_MAX = isFine ? 22 : 9;
+  var VEL_CAP = isFine ? 34 : 14;
+  var SPARK_MAX = isFine ? 64 : 18;
+
+  var canvas = document.getElementById("celestial-cursor-canvas");
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+    canvas.id = "celestial-cursor-canvas";
+    canvas.setAttribute("aria-hidden", "true");
+    document.body.appendChild(canvas);
+  }
+
+  var style = document.getElementById("celestial-trail-css");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "celestial-trail-css";
+    style.textContent =
+      "#celestial-cursor-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99990;contain:strict;mix-blend-mode:screen;mix-blend-mode:plus-lighter}" +
+      "html[data-theme='light'] #celestial-cursor-canvas{mix-blend-mode:multiply;opacity:.72}" +
+      "@media (pointer:coarse){#celestial-cursor-canvas{mix-blend-mode:screen;opacity:.85}}" +
+      "@media (prefers-reduced-motion:reduce){#celestial-cursor-canvas{display:none!important}}";
+    document.head.appendChild(style);
+  }
+
   var ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
-  canvas.id = "celestial-cursor-canvas";
-  canvas.setAttribute("aria-hidden", "true");
-  canvas.style.cssText =
-    "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:28;contain:strict;";
-  document.body.appendChild(canvas);
-
-  var width = 0;
-  var height = 0;
+  var width = 1;
+  var height = 1;
 
   function resize() {
     width = Math.max(1, window.innerWidth);
@@ -58,381 +71,390 @@
     canvas.height = Math.floor(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-
   window.addEventListener("resize", resize, { passive: true });
   resize();
 
-  // ── SPARK OBJECT POOL (Zero GC Overhead) ──────────────────────────────────
-  function HermeticSpark() {
-    this.active = false;
+  var rawX = -200;
+  var rawY = -200;
+  var headX = -200;
+  var headY = -200;
+  var vel = 0;
+  var points = [];
+  var lastSampleX = -9999;
+  var lastSampleY = -9999;
+  var lastMove = 0;
+  var tracking = false;
+  var touchDown = false;
+  var running = false;
+  var rafId = 0;
+  var hidden = false;
+  var lastT = performance.now();
+  var hueShift = 0;
+
+  function Spark() {
+    this.on = false;
     this.x = 0;
     this.y = 0;
     this.vx = 0;
     this.vy = 0;
-    this.color = PALETTE[0];
-    this.size = 2;
     this.life = 0;
-    this.maxLife = 20;
-    this.type = 0; // 0 = Octagram, 1 = Diamond, 2 = Orb
-    this.orbitAngle = 0;
-    this.orbitRadius = 0;
-    this.orbitSpeed = 0;
+    this.max = 1;
+    this.size = 2;
+    this.ci = 0;
   }
-
-  HermeticSpark.prototype.init = function (x, y, vx, vy, color, size, maxLife, type, orbitRadius, orbitSpeed) {
-    this.active = true;
+  Spark.prototype.kick = function (x, y, vx, vy, life, size, ci) {
+    this.on = true;
     this.x = x;
     this.y = y;
     this.vx = vx;
     this.vy = vy;
-    this.color = color || PALETTE[0];
-    this.size = size || 2;
-    this.life = maxLife || 20;
-    this.maxLife = maxLife || 20;
-    this.type = typeof type === "number" ? type : 0;
-    this.orbitAngle = Math.random() * Math.PI * 2;
-    this.orbitRadius = orbitRadius || 0;
-    this.orbitSpeed = orbitSpeed || 0;
+    this.life = life;
+    this.max = life;
+    this.size = size;
+    this.ci = ci;
   };
-
-  HermeticSpark.prototype.step = function (dt) {
-    if (!this.active) return;
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-    this.vx *= Math.pow(DAMPING, dt);
-    this.vy *= Math.pow(DAMPING, dt);
-
-    if (this.orbitRadius > 0) {
-      this.orbitAngle += this.orbitSpeed * dt;
-      this.x += Math.cos(this.orbitAngle) * this.orbitRadius * dt * 0.1;
-      this.y += Math.sin(this.orbitAngle) * this.orbitRadius * dt * 0.1;
-    }
-
-    this.life -= dt;
-    if (this.life <= 0) {
-      this.active = false;
-    }
-  };
-
-  HermeticSpark.prototype.draw = function (c) {
-    if (!this.active) return;
-    var p = Math.max(0, this.life / this.maxLife);
-    var alpha = Math.sin(p * Math.PI);
-    var r = Math.max(0.3, this.size * (0.4 + 0.6 * p));
-    var col = this.color;
-
-    c.save();
-    c.translate(this.x, this.y);
-
-    if (this.type === 0) {
-      // 8-Pointed Hermetic Octagram Star
-      c.globalAlpha = alpha * 0.95;
-      c.fillStyle = "rgba(" + col.r + ", " + col.g + ", " + col.b + ", " + alpha + ")";
-      if (isFinePointer) {
-        c.shadowColor = col.hex;
-        c.shadowBlur = 8 * p;
-      }
-
-      c.beginPath();
-      for (var k = 0; k < 8; k++) {
-        var ang = (k * Math.PI) / 4;
-        var len = k % 2 === 0 ? r * 1.8 : r * 0.6;
-        var px = Math.cos(ang) * len;
-        var py = Math.sin(ang) * len;
-        if (k === 0) c.moveTo(px, py);
-        else c.lineTo(px, py);
-      }
-      c.closePath();
-      c.fill();
-
-      // White hot center
-      c.fillStyle = "rgba(255, 255, 255, " + (alpha * 0.8) + ")";
-      c.beginPath();
-      c.arc(0, 0, r * 0.4, 0, Math.PI * 2);
-      c.fill();
-
-    } else if (this.type === 1) {
-      // 4-Pointed Sacred Diamond Spark
-      c.globalAlpha = alpha * 0.85;
-      c.fillStyle = "rgba(" + col.r + ", " + col.g + ", " + col.b + ", " + alpha + ")";
-      if (isFinePointer) {
-        c.shadowColor = col.hex;
-        c.shadowBlur = 6 * p;
-      }
-
-      c.beginPath();
-      c.moveTo(0, -r * 1.6);
-      c.lineTo(r * 0.4, 0);
-      c.lineTo(0, r * 1.6);
-      c.lineTo(-r * 0.4, 0);
-      c.closePath();
-      c.fill();
-
-    } else {
-      // Luminous Ethereal Aether Orb with Soft Falloff
-      c.globalAlpha = alpha * 0.75;
-      var grad = c.createRadialGradient(0, 0, 0, 0, 0, r * 2.2);
-      grad.addColorStop(0, "rgba(255, 255, 255, " + (alpha * 0.9) + ")");
-      grad.addColorStop(0.35, "rgba(" + col.r + ", " + col.g + ", " + col.b + ", " + (alpha * 0.7) + ")");
-      grad.addColorStop(1, "rgba(" + col.r + ", " + col.g + ", " + col.b + ", 0)");
-      c.fillStyle = grad;
-      c.beginPath();
-      c.arc(0, 0, r * 2.2, 0, Math.PI * 2);
-      c.fill();
-    }
-
-    c.restore();
-  };
-
-  // Pre-allocated Spark Pool
-  var sparkPool = [];
-  for (var spi = 0; spi < MAX_SPARKS; spi++) {
-    sparkPool.push(new HermeticSpark());
-  }
-
-  function acquireSpark() {
-    for (var i = 0; i < sparkPool.length; i++) {
-      if (!sparkPool[i].active) return sparkPool[i];
-    }
+  var sparks = [];
+  for (var si = 0; si < SPARK_MAX; si++) sparks.push(new Spark());
+  function grabSpark() {
+    for (var i = 0; i < sparks.length; i++) if (!sparks[i].on) return sparks[i];
     return null;
   }
 
-  // ── TRAIL STATE ──────────────────────────────────────────────────────────
-  var points = [];
-  var colorCycleIndex = 0;
-  var lastMove = 0;
-  var tracking = false;
-  var rafId = 0;
-  var isRunning = false;
-  var lastFrameTime = performance.now();
-  var documentHidden = false;
+  function Ripple() {
+    this.on = false;
+    this.x = 0;
+    this.y = 0;
+    this.r = 0;
+    this.maxR = 40;
+    this.life = 0;
+    this.max = 1;
+    this.ci = 0;
+  }
+  Ripple.prototype.kick = function (x, y, maxR, ci) {
+    this.on = true;
+    this.x = x;
+    this.y = y;
+    this.r = 2;
+    this.maxR = maxR;
+    this.life = 22;
+    this.max = 22;
+    this.ci = ci;
+  };
+  var ripples = [];
+  for (var ri = 0; ri < (isFine ? 6 : 3); ri++) ripples.push(new Ripple());
+  function grabRipple() {
+    for (var i = 0; i < ripples.length; i++) if (!ripples[i].on) return ripples[i];
+    return null;
+  }
 
-  // Golden Ratio Spiral Particle Emitter
-  function spawnPhiSpiralBurst(x, y, count, speedMultiplier) {
-    speedMultiplier = speedMultiplier || 1.0;
-    var total = isFinePointer ? count : Math.min(count, 6);
-    var startAngle = Math.random() * Math.PI * 2;
-
-    for (var k = 0; k < total; k++) {
-      var spark = acquireSpark();
-      if (!spark) break;
-
-      // Golden angle distribution for natural sacred spiral unpacking
-      var theta = startAngle + k * GOLDEN_ANGLE;
-      var spiralRadius = Math.exp(SPIRAL_EXP * (k / total) * 1.8);
-      var speed = (0.8 + Math.random() * 1.4) * speedMultiplier * (spiralRadius * 0.5);
-      var vx = Math.cos(theta) * speed;
-      var vy = Math.sin(theta) * speed;
-
-      // Color selection according to Hermetic sacred triad
-      var col = PALETTE[k % PALETTE.length];
-      var type = k % 5 === 0 ? 0 : (k % 2 === 0 ? 1 : 2);
-      var life = 14 + Math.random() * 16;
-      var size = (Math.random() * 2.2 + 1.2) * (isFinePointer ? 1.0 : 0.7);
-
-      spark.init(
-        x,
-        y,
-        vx,
-        vy,
-        col,
-        size,
-        life,
-        type,
-        k % 3 === 0 ? Math.random() * 2 + 1 : 0,
-        (Math.random() - 0.5) * 0.15
-      );
+  function burst(x, y, n) {
+    n = isFine ? n : Math.min(n, 8);
+    var rip = grabRipple();
+    if (rip) rip.kick(x, y, isFine ? 56 : 28, 0);
+    for (var k = 0; k < n; k++) {
+      var s = grabSpark();
+      if (!s) break;
+      var a = (k / n) * Math.PI * 2 + Math.random() * 0.4;
+      var sp = (isFine ? 2.4 : 1.4) * (0.6 + Math.random());
+      s.kick(x, y, Math.cos(a) * sp, Math.sin(a) * sp, 14 + Math.random() * 12, 1.4 + Math.random() * 2.2, k % palette.length);
     }
   }
 
-  function wakeEngine() {
-    if (documentHidden) return;
-    if (!isRunning) {
-      isRunning = true;
-      lastFrameTime = performance.now();
-      rafId = requestAnimationFrame(renderLoop);
-    }
-  }
-
-  function registerPointerPoint(x, y, isBurst) {
-    lastMove = performance.now();
-    tracking = true;
-
-    // Push new vertex to trail
-    points.unshift({ x: x, y: y, time: lastMove });
+  function sample(x, y, now) {
+    var dx = x - lastSampleX;
+    var dy = y - lastSampleY;
+    var d = Math.hypot(dx, dy);
+    if (d < SPACING && points.length) return;
+    lastSampleX = x;
+    lastSampleY = y;
+    points.unshift({ x: x, y: y, t: now });
     if (points.length > MAX_POINTS) points.length = MAX_POINTS;
-
-    colorCycleIndex = (colorCycleIndex + 0.15) % PALETTE.length;
-
-    if (isBurst) {
-      spawnPhiSpiralBurst(x, y, isFinePointer ? 18 : 8, isFinePointer ? 2.4 : 1.4);
-    } else if (Math.random() < SPARK_CHANCE) {
-      var spark = acquireSpark();
-      if (spark) {
-        var ang = Math.random() * Math.PI * 2;
-        var spd = Math.random() * 1.2 + 0.3;
-        var col = PALETTE[Math.floor(colorCycleIndex) % PALETTE.length];
-        spark.init(
-          x,
-          y,
-          Math.cos(ang) * spd,
-          Math.sin(ang) * spd,
-          col,
-          Math.random() * 2 + 1.0,
-          12 + Math.random() * 10,
-          Math.random() > 0.6 ? 1 : 2
-        );
-      }
-    }
-
-    wakeEngine();
   }
 
-  // Pointer Event Listeners (Passive for high performance)
-  window.addEventListener(
-    "pointermove",
-    function (e) {
-      if (e.pointerType === "touch" && e.isPrimary === false) return;
-      if (!isFinePointer && e.pointerType === "mouse") return;
-      registerPointerPoint(e.clientX, e.clientY, false);
-    },
-    { passive: true }
-  );
+  function onPointer(e, down) {
+    if (e.pointerType === "touch" && e.isPrimary === false) return;
+    if (e.pointerType === "touch") {
+      tracking = e.buttons > 0 || down || touchDown;
+      if (!tracking && !down) return;
+    } else {
+      tracking = true;
+    }
+    var moved = Math.hypot(e.clientX - rawX, e.clientY - rawY);
+    rawX = e.clientX;
+    rawY = e.clientY;
+    if (down || moved > 0.45) lastMove = performance.now();
+    if (down) {
+      headX = rawX;
+      headY = rawY;
+      burst(rawX, rawY, isFine ? 16 : 7);
+    }
+    wake();
+  }
 
-  window.addEventListener(
-    "pointerdown",
-    function (e) {
-      if (e.pointerType === "touch" && e.isPrimary === false) return;
-      registerPointerPoint(e.clientX, e.clientY, true);
-    },
-    { passive: true }
-  );
+  window.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "touch") touchDown = true;
+    onPointer(e, true);
+  }, { passive: true });
+  window.addEventListener("pointerup", function (e) {
+    if (e.pointerType === "touch") touchDown = false;
+    tracking = e.pointerType !== "touch";
+  }, { passive: true });
+  window.addEventListener("pointercancel", function () {
+    touchDown = false;
+    tracking = false;
+  }, { passive: true });
+  window.addEventListener("pointerleave", function () {
+    tracking = false;
+  }, { passive: true });
 
-  window.addEventListener("pointerup", function () { tracking = false; }, { passive: true });
-  window.addEventListener("pointercancel", function () { tracking = false; }, { passive: true });
+  var moveType = "onpointerrawupdate" in window ? "pointerrawupdate" : "pointermove";
+  window.addEventListener(moveType, function (e) {
+    onPointer(e, false);
+  }, { passive: true });
 
-  // Tab Visibility Lifecycle Management (Zero CPU when backgrounded)
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden) {
-      documentHidden = true;
-      isRunning = false;
+    hidden = document.hidden;
+    if (hidden) {
+      running = false;
       if (rafId) cancelAnimationFrame(rafId);
       ctx.clearRect(0, 0, width, height);
-    } else {
-      documentHidden = false;
-      if (points.length > 0) wakeEngine();
-    }
+    } else if (points.length) wake();
   });
 
-  // ── RENDER LOOP (60 FPS Delta Normalized) ─────────────────────────────────
-  function renderLoop(now) {
-    if (documentHidden) {
-      isRunning = false;
+  function applyTheme(id) {
+    themeId = String(id || "dark").toLowerCase();
+    palette = PALETTES[themeId] || PALETTES.dark;
+    isLight = themeId === "light";
+  }
+  window.addEventListener("zoth-theme-change", function (e) {
+    if (e && e.detail && e.detail.theme) applyTheme(e.detail.theme);
+    else applyTheme(document.documentElement.getAttribute("data-theme"));
+    if (points[0]) burst(points[0].x, points[0].y, 10);
+  });
+  try {
+    new MutationObserver(function () {
+      applyTheme(document.documentElement.getAttribute("data-theme"));
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  } catch (err) {}
+
+  if (reduceMq && reduceMq.addEventListener) {
+    reduceMq.addEventListener("change", function (ev) {
+      if (ev.matches) {
+        hidden = true;
+        canvas.style.display = "none";
+        running = false;
+        if (rafId) cancelAnimationFrame(rafId);
+      }
+    });
+  }
+
+  function wake() {
+    if (hidden || running) return;
+    running = true;
+    lastT = performance.now();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function lerpHead(dt) {
+    var k = 1 - Math.exp(-HEAD_LAMBDA * dt);
+    var ox = headX;
+    var oy = headY;
+    headX += (rawX - headX) * k;
+    headY += (rawY - headY) * k;
+    var v = Math.hypot(headX - ox, headY - oy) / Math.max(dt, 0.001);
+    vel = Math.min(VEL_CAP, vel * 0.82 + v * 0.045);
+  }
+
+  function fadeTail(now) {
+    if (touchDown) return;
+    var idle = now - lastMove;
+    var drops = idle > 70 ? 1 : 0;
+    if (idle > 140) drops = 2;
+    if (idle > 220) drops = 4;
+    while (drops-- && points.length) points.pop();
+  }
+
+  function normals() {
+    var n = points.length;
+    var out = new Array(n);
+    for (var i = 0; i < n; i++) {
+      var a = points[Math.min(n - 1, i + 1)];
+      var b = points[Math.max(0, i - 1)];
+      var dx = b.x - a.x;
+      var dy = b.y - a.y;
+      var len = Math.hypot(dx, dy) || 1;
+      out[i] = { x: -dy / len, y: dx / len };
+    }
+    return out;
+  }
+
+  function fillRibbon(maxW, alpha, col) {
+    var n = points.length;
+    if (n < 2) return;
+    var ns = normals();
+    ctx.beginPath();
+    for (var i = 0; i < n; i++) {
+      var p = 1 - i / (n - 1);
+      var w = Math.max(0.4, maxW * p * p);
+      var x = points[i].x + ns[i].x * w;
+      var y = points[i].y + ns[i].y * w;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    for (var j = n - 1; j >= 0; j--) {
+      var q = 1 - j / (n - 1);
+      var w2 = Math.max(0.4, maxW * q * q);
+      ctx.lineTo(points[j].x - ns[j].x * w2, points[j].y - ns[j].y * w2);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "rgba(" + col.r + "," + col.g + "," + col.b + "," + alpha + ")";
+    ctx.fill();
+  }
+
+  function drawHead() {
+    var c0 = palette[0];
+    var c1 = palette[1] || c0;
+    var r = isFine ? 11 : 7;
+    var g = ctx.createRadialGradient(headX, headY, 0, headX, headY, r * 3.2);
+    g.addColorStop(0, "rgba(255,255,255," + (isLight ? 0.7 : 0.95) + ")");
+    g.addColorStop(0.18, "rgba(" + c1.r + "," + c1.g + "," + c1.b + ",0.85)");
+    g.addColorStop(0.45, "rgba(" + c0.r + "," + c0.g + "," + c0.b + ",0.35)");
+    g.addColorStop(1, "rgba(" + c0.r + "," + c0.g + "," + c0.b + ",0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(headX, headY, r * 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isLight ? "rgba(15,23,42,0.9)" : "rgba(255,255,255,0.95)";
+    ctx.beginPath();
+    ctx.arc(headX, headY, isFine ? 2.2 : 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function tick(now) {
+    if (hidden) {
+      running = false;
       return;
     }
+    var dt = Math.min((now - lastT) / 1000, 0.045);
+    lastT = now;
 
-    var dt = Math.min((now - lastFrameTime) / 16.667, 3.0); // 60 FPS normalizer
-    lastFrameTime = now;
+    lerpHead(dt);
+    sample(headX, headY, now);
+    fadeTail(now);
+    hueShift = (hueShift + dt * 0.7) % 1;
+
+    if (isFine && tracking && Math.random() < 0.22) {
+      var sp = grabSpark();
+      if (sp) {
+        var a = Math.random() * Math.PI * 2;
+        sp.kick(headX, headY, Math.cos(a) * 0.6, Math.sin(a) * 0.6 - 0.2, 10 + Math.random() * 10, 1.1 + Math.random(), 0);
+      }
+    }
 
     ctx.clearRect(0, 0, width, height);
+    ctx.globalCompositeOperation = isLight ? "source-over" : "lighter";
 
-    // Fade old trail points when pointer stops
-    if (!tracking && points.length > 0) {
-      if (now - lastMove > 140) points.pop();
-      if (now - lastMove > 280 && points.length > 0) points.pop();
-    }
+    var glowW = Math.min(GLOW_MAX, GLOW_MAX * 0.55 + vel * 0.28);
+    var coreW = Math.min(CORE_MAX, CORE_MAX * 0.45 + vel * 0.12);
+    var c0 = palette[0];
+    var c1 = palette[1] || c0;
 
-    // 1. Render Multi-Layer Aether Ribbon
     if (points.length > 1) {
-      // Pass A: Volumetric Aether Glow (Composite: Screen / Lighter)
-      ctx.save();
-      ctx.globalCompositeOperation = isFinePointer ? "screen" : "source-over";
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-
-      for (var i = 0; i < points.length - 1; i++) {
-        var a = points[i];
-        var b = points[i + 1];
-        var dx = b.x - a.x;
-        var dy = b.y - a.y;
-        var v = Math.min(Math.sqrt(dx * dx + dy * dy), VELOCITY_CAP);
-        var p = 1 - i / points.length;
-        var ribbonWidth = Math.max(1.2, p * (MAX_WIDTH + v * (isFinePointer ? 0.22 : 0.08)));
-
-        // Color tri-harmonic interpolation
-        var colIdx = (Math.floor(colorCycleIndex) + i) % PALETTE.length;
-        var col = PALETTE[colIdx];
-
-        // Outer Ethereal Glow
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.quadraticCurveTo(a.x, a.y, (a.x + b.x) * 0.5, (a.y + b.y) * 0.5);
-
-        if (isFinePointer) {
-          ctx.shadowBlur = 12 * p;
-          ctx.shadowColor = col.hex;
-        }
-
-        ctx.lineWidth = ribbonWidth * 1.5;
-        ctx.strokeStyle = "rgba(" + col.r + ", " + col.g + ", " + col.b + ", " + (p * 0.45) + ")";
-        ctx.stroke();
-
-        // Inner Sharp Radiant Core
-        ctx.shadowBlur = 0;
-        ctx.lineWidth = Math.max(0.8, ribbonWidth * 0.4);
-        ctx.strokeStyle = "rgba(255, 255, 255, " + (p * 0.85) + ")";
-        ctx.stroke();
-      }
-      ctx.restore();
+      fillRibbon(glowW, isLight ? 0.16 : 0.22, c0);
+      fillRibbon(glowW * 0.62, isLight ? 0.18 : 0.28, c1);
+      fillRibbon(coreW, isLight ? 0.7 : 0.55, { r: 255, g: 255, b: 255 });
     }
 
-    // 2. Step & Draw Sparks from Object Pool
-    var activeSparkCount = 0;
-    for (var s = 0; s < sparkPool.length; s++) {
-      var spark = sparkPool[s];
-      if (spark.active) {
-        spark.step(dt);
-        spark.draw(ctx);
-        if (spark.active) activeSparkCount++;
+    var liveR = 0;
+    for (var r = 0; r < ripples.length; r++) {
+      var rip = ripples[r];
+      if (!rip.on) continue;
+      var rp = 1 - rip.life / rip.max;
+      rip.r = rip.maxR * (1 - Math.pow(1 - rp, 3));
+      rip.life -= dt * 60;
+      if (rip.life <= 0) {
+        rip.on = false;
+        continue;
       }
+      liveR++;
+      var ra = Math.sin((rip.life / rip.max) * Math.PI) * 0.55;
+      var rc = palette[rip.ci % palette.length];
+      ctx.strokeStyle = "rgba(" + rc.r + "," + rc.g + "," + rc.b + "," + ra + ")";
+      ctx.lineWidth = isFine ? 1.6 : 1.1;
+      ctx.beginPath();
+      ctx.arc(rip.x, rip.y, rip.r, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
-    // 3. Check Idle Sleep State
-    if (points.length > 0 || activeSparkCount > 0) {
-      rafId = requestAnimationFrame(renderLoop);
+    var liveS = 0;
+    for (var s = 0; s < sparks.length; s++) {
+      var spark = sparks[s];
+      if (!spark.on) continue;
+      spark.x += spark.vx;
+      spark.y += spark.vy;
+      spark.vx *= 0.94;
+      spark.vy *= 0.94;
+      spark.life -= dt * 60;
+      if (spark.life <= 0) {
+        spark.on = false;
+        continue;
+      }
+      liveS++;
+      var p = spark.life / spark.max;
+      var sc = palette[spark.ci % palette.length];
+      ctx.globalAlpha = Math.sin(p * Math.PI) * (isLight ? 0.55 : 0.85);
+      ctx.fillStyle = "rgb(" + sc.r + "," + sc.g + "," + sc.b + ")";
+      ctx.beginPath();
+      ctx.arc(spark.x, spark.y, spark.size * (0.4 + 0.6 * p), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    if (tracking || points.length > 2) drawHead();
+
+    if (points.length || liveS || liveR || tracking) {
+      rafId = requestAnimationFrame(tick);
     } else {
-      isRunning = false;
+      running = false;
       ctx.clearRect(0, 0, width, height);
     }
   }
 
-  // ── PUBLIC API EXPOSURE ──────────────────────────────────────────────────
   global.HermeticCelestialTrail = {
     burst: function (x, y, count) {
-      spawnPhiSpiralBurst(x, y, count || 16, 2.0);
-      wakeEngine();
+      burst(x || headX, y || headY, count || 14);
+      wake();
+    },
+    ripple: function (x, y, radius) {
+      var rip = grabRipple();
+      if (rip) rip.kick(x || headX, y || headY, radius || 64, 0);
+      wake();
+    },
+    setTheme: applyTheme,
+    refresh: function () {
+      resize();
     },
     pause: function () {
-      documentHidden = true;
-      isRunning = false;
+      hidden = true;
+      running = false;
       if (rafId) cancelAnimationFrame(rafId);
       ctx.clearRect(0, 0, width, height);
     },
     resume: function () {
-      documentHidden = false;
-      wakeEngine();
+      hidden = false;
+      wake();
     },
     destroy: function () {
-      isRunning = false;
+      running = false;
       if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", resize);
       if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      if (style && style.parentNode) style.parentNode.removeChild(style);
+      delete global.__ZOTH_CELESTIAL_TRAIL_ACTIVE__;
       delete global.HermeticCelestialTrail;
+      delete global.CelestialTrail;
     }
   };
-
-  // Backwards compatibility alias
   global.CelestialTrail = global.HermeticCelestialTrail;
-
+  global.ZothMouseTrail = global.HermeticCelestialTrail;
 })(typeof window !== "undefined" ? window : this);
-

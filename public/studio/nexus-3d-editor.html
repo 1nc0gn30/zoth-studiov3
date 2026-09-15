@@ -1502,7 +1502,10 @@
     <div>
       <label style="display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-bottom: 2px;">Font Style</label>
       <select id="typo-font-style" style="background: rgba(10, 14, 26, 0.9); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 6px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.7rem; padding: 4px 6px; width: 100%; outline: none;">
-        <option value="cyber-block" selected>⚡ Cyber Block</option>
+        <option value="cyber-geometric" selected>⚡ Cyber Geometric (Angular 45° Chamfers)</option>
+        <option value="serif-hermetic">🏛️ Serif Hermetic (Sacred Golden Ratio)</option>
+        <option value="monospace-terminal">💻 Monospace Terminal (Fixed-Pitch Grid)</option>
+        <option value="cyber-block">⚡ Cyber Block</option>
         <option value="alchemical-serif">🏛️ Sacred Serif</option>
         <option value="neo-tokyo">🏙️ Neo-Tokyo Stencil</option>
         <option value="runic-futurism">ᚠ Runic Futurism</option>
@@ -2948,29 +2951,401 @@
         selectedObject.traverse(targetMat);
       }
 
-      function spawn3DTypography() {
-        if (typeof Nexus3DTypography === 'undefined') {
-          console.error('Nexus3DTypography engine not loaded');
-          return;
+      // =========================================================================
+      // 🔤 EMBEDDED 3D VECTOR TYPOGRAPHY ENGINE (CYBER GEOMETRIC, SERIF HERMETIC, MONOSPACE TERMINAL)
+      // =========================================================================
+      const EMBEDDED_VECTOR_FONTS = {
+        // 1. Cyber Geometric: 45° chamfers, angular aggressive bevels, hex lines
+        'cyber-geometric': {
+          name: 'Cyber Geometric',
+          charWidth: 0.9,
+          lineHeight: 1.4,
+          strokeWidth: 0.14,
+          getGlyphShapes: function(char, ox, oy, scale) {
+            const s = scale || 1.0;
+            const shapes = [];
+            const c = char.toUpperCase();
+            const shape = new THREE.Shape();
+            
+            // Standard bounding box: [ox, oy] to [ox + 0.8*s, oy + 1.1*s]
+            const w = 0.8 * s;
+            const h = 1.1 * s;
+            const ch = 0.18 * s; // 45° chamfer size
+            
+            if (c === 'A') {
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox + ch, oy + h - ch);
+              shape.lineTo(ox + w * 0.5, oy + h);
+              shape.lineTo(ox + w - ch, oy + h - ch);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox + w - 0.15*s, oy);
+              shape.lineTo(ox + w * 0.65, oy + 0.4*s);
+              shape.lineTo(ox + w * 0.35, oy + 0.4*s);
+              shape.lineTo(ox + 0.15*s, oy);
+              shape.closePath();
+              const hole = new THREE.Path();
+              hole.moveTo(ox + w * 0.5, oy + 0.85*s);
+              hole.lineTo(ox + w * 0.62, oy + 0.55*s);
+              hole.lineTo(ox + w * 0.38, oy + 0.55*s);
+              hole.closePath();
+              shape.holes.push(hole);
+            } else if (c === 'B') {
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox, oy + h);
+              shape.lineTo(ox + w - ch, oy + h);
+              shape.lineTo(ox + w, oy + h - ch);
+              shape.lineTo(ox + w * 0.7, oy + h * 0.52);
+              shape.lineTo(ox + w, oy + h * 0.52 - ch);
+              shape.lineTo(ox + w, oy + ch);
+              shape.lineTo(ox + w - ch, oy);
+              shape.closePath();
+              const h1 = new THREE.Path();
+              h1.moveTo(ox + 0.15*s, oy + h * 0.6);
+              h1.lineTo(ox + 0.15*s, oy + h - 0.15*s);
+              h1.lineTo(ox + w - 0.25*s, oy + h - 0.15*s);
+              h1.lineTo(ox + 0.15*s, oy + h * 0.6);
+              h1.closePath();
+              shape.holes.push(h1);
+              const h2 = new THREE.Path();
+              h2.moveTo(ox + 0.15*s, oy + 0.15*s);
+              h2.lineTo(ox + 0.15*s, oy + h * 0.45);
+              h2.lineTo(ox + w - 0.25*s, oy + 0.15*s);
+              h2.closePath();
+              shape.holes.push(h2);
+            } else if (c === 'C' || c === 'G') {
+              shape.moveTo(ox + w, oy + h - ch);
+              shape.lineTo(ox + w - ch, oy + h);
+              shape.lineTo(ox + ch, oy + h);
+              shape.lineTo(ox, oy + h - ch);
+              shape.lineTo(ox, oy + ch);
+              shape.lineTo(ox + ch, oy);
+              shape.lineTo(ox + w - ch, oy);
+              shape.lineTo(ox + w, oy + (c === 'G' ? 0.45*s : ch));
+              if (c === 'G') {
+                shape.lineTo(ox + w * 0.5, oy + 0.45*s);
+                shape.lineTo(ox + w * 0.5, oy + 0.3*s);
+                shape.lineTo(ox + w - 0.15*s, oy + 0.3*s);
+              }
+              shape.lineTo(ox + w - 0.15*s, oy + 0.15*s);
+              shape.lineTo(ox + 0.15*s + ch, oy + 0.15*s);
+              shape.lineTo(ox + 0.15*s, oy + ch + 0.15*s);
+              shape.lineTo(ox + 0.15*s, oy + h - ch - 0.15*s);
+              shape.lineTo(ox + 0.15*s + ch, oy + h - 0.15*s);
+              shape.lineTo(ox + w - 0.15*s, oy + h - 0.15*s);
+              shape.closePath();
+            } else if (c === 'Z' || c === 'N') {
+              shape.moveTo(ox, oy + h);
+              shape.lineTo(ox + w, oy + h);
+              shape.lineTo(ox + w, oy + h - 0.18*s);
+              shape.lineTo(ox + 0.22*s, oy + 0.18*s);
+              shape.lineTo(ox + w, oy + 0.18*s);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox, oy);
+              shape.lineTo(ox, oy + 0.18*s);
+              shape.lineTo(ox + w - 0.22*s, oy + h - 0.18*s);
+              shape.lineTo(ox, oy + h - 0.18*s);
+              shape.closePath();
+            } else if (c === 'O' || c === '0' || c === 'D') {
+              shape.moveTo(ox + ch, oy);
+              shape.lineTo(ox + w - ch, oy);
+              shape.lineTo(ox + w, oy + ch);
+              shape.lineTo(ox + w, oy + h - ch);
+              shape.lineTo(ox + w - ch, oy + h);
+              shape.lineTo(ox + ch, oy + h);
+              shape.lineTo(ox, oy + h - ch);
+              shape.lineTo(ox, oy + ch);
+              shape.closePath();
+              const hole = new THREE.Path();
+              hole.moveTo(ox + ch + 0.12*s, oy + 0.15*s);
+              hole.lineTo(ox + w - ch - 0.12*s, oy + 0.15*s);
+              hole.lineTo(ox + w - 0.15*s, oy + ch + 0.12*s);
+              hole.lineTo(ox + w - 0.15*s, oy + h - ch - 0.12*s);
+              hole.lineTo(ox + w - ch - 0.12*s, oy + h - 0.15*s);
+              hole.lineTo(ox + ch + 0.12*s, oy + h - 0.15*s);
+              hole.lineTo(ox + 0.15*s, oy + h - ch - 0.12*s);
+              hole.lineTo(ox + 0.15*s, oy + ch + 0.12*s);
+              hole.closePath();
+              shape.holes.push(hole);
+            } else {
+              // Universal Chamfered Block Glyph Fallback for all other characters
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox, oy + h);
+              shape.lineTo(ox + w, oy + h);
+              shape.lineTo(ox + w, oy + h - 0.15*s);
+              shape.lineTo(ox + 0.18*s, oy + h - 0.15*s);
+              shape.lineTo(ox + 0.18*s, oy + h * 0.55);
+              shape.lineTo(ox + w * 0.8, oy + h * 0.55);
+              shape.lineTo(ox + w * 0.8, oy + h * 0.40);
+              shape.lineTo(ox + 0.18*s, oy + h * 0.40);
+              shape.lineTo(ox + 0.18*s, oy + 0.15*s);
+              shape.lineTo(ox + w, oy + 0.15*s);
+              shape.lineTo(ox + w, oy);
+              shape.closePath();
+            }
+            shapes.push(shape);
+            return shapes;
+          }
+        },
+
+        // 2. Serif Hermetic: Sacred Golden Ratio (Phi = 1.618), Roman/Alchemical triangular serifs
+        'serif-hermetic': {
+          name: 'Serif Hermetic',
+          charWidth: 0.95,
+          lineHeight: 1.5,
+          strokeWidth: 0.12,
+          getGlyphShapes: function(char, ox, oy, scale) {
+            const s = scale || 1.0;
+            const shapes = [];
+            const c = char.toUpperCase();
+            const shape = new THREE.Shape();
+            const w = 0.85 * s;
+            const h = 1.15 * s;
+            const serif = 0.12 * s;
+
+            if (c === 'A') {
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox + serif * 1.5, oy);
+              shape.lineTo(ox + w * 0.5 - 0.05*s, oy + h - serif);
+              shape.lineTo(ox + w * 0.5 + 0.05*s, oy + h - serif);
+              shape.lineTo(ox + w - serif * 1.5, oy);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox + w - 0.15*s, oy + 0.08*s);
+              shape.lineTo(ox + w * 0.68, oy + 0.4*s);
+              shape.lineTo(ox + w * 0.32, oy + 0.4*s);
+              shape.lineTo(ox + 0.15*s, oy + 0.08*s);
+              shape.closePath();
+              const hole = new THREE.Path();
+              hole.moveTo(ox + w * 0.5, oy + 0.9*s);
+              hole.lineTo(ox + w * 0.62, oy + 0.52*s);
+              hole.lineTo(ox + w * 0.38, oy + 0.52*s);
+              hole.closePath();
+              shape.holes.push(hole);
+            } else if (c === 'I' || c === '1') {
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox + w * 0.65, oy + 0.1*s);
+              shape.lineTo(ox + w * 0.65, oy + h - 0.1*s);
+              shape.lineTo(ox + w, oy + h);
+              shape.lineTo(ox, oy + h);
+              shape.lineTo(ox + w * 0.35, oy + h - 0.1*s);
+              shape.lineTo(ox + w * 0.35, oy + 0.1*s);
+              shape.closePath();
+            } else if (c === 'O' || c === '0' || c === 'Q') {
+              // Hermetic Elliptical Golden Ratio Ring
+              const cx = ox + w * 0.5;
+              const cy = oy + h * 0.5;
+              shape.absellipse(cx, cy, w * 0.48, h * 0.48, 0, Math.PI * 2, false, 0);
+              const hole = new THREE.Path();
+              hole.absellipse(cx, cy, w * 0.28, h * 0.35, 0, Math.PI * 2, true, 0);
+              shape.holes.push(hole);
+            } else {
+              // Classical Bracketed Roman Stem for all other characters
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox + w * 0.85, oy);
+              shape.lineTo(ox + w * 0.7, oy + 0.1*s);
+              shape.lineTo(ox + 0.3*s, oy + 0.1*s);
+              shape.lineTo(ox + 0.3*s, oy + h * 0.45);
+              shape.lineTo(ox + w * 0.65, oy + h * 0.45);
+              shape.lineTo(ox + w * 0.65, oy + h * 0.58);
+              shape.lineTo(ox + 0.3*s, oy + h * 0.58);
+              shape.lineTo(ox + 0.3*s, oy + h - 0.1*s);
+              shape.lineTo(ox + w * 0.85, oy + h);
+              shape.lineTo(ox, oy + h);
+              shape.closePath();
+            }
+            shapes.push(shape);
+            return shapes;
+          }
+        },
+
+        // 3. Monospace Terminal: Strict fixed-pitch CRT matrix grid with slashed zero & square caps
+        'monospace-terminal': {
+          name: 'Monospace Terminal',
+          charWidth: 0.85,
+          lineHeight: 1.4,
+          strokeWidth: 0.15,
+          getGlyphShapes: function(char, ox, oy, scale) {
+            const s = scale || 1.0;
+            const shapes = [];
+            const c = char.toUpperCase();
+            const shape = new THREE.Shape();
+            const w = 0.75 * s;
+            const h = 1.05 * s;
+            const th = 0.14 * s; // Constant monospace beam thickness
+
+            if (c === '0') {
+              // Slashed zero
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox + w, oy + h);
+              shape.lineTo(ox, oy + h);
+              shape.closePath();
+              const hole = new THREE.Path();
+              hole.moveTo(ox + th, oy + th);
+              hole.lineTo(ox + w - th, oy + th);
+              hole.lineTo(ox + w - th, oy + h - th);
+              hole.lineTo(ox + th, oy + h - th);
+              hole.closePath();
+              shape.holes.push(hole);
+              // Monospace diagonal slash
+              const slash = new THREE.Shape();
+              slash.moveTo(ox + th * 0.8, oy + th * 1.5);
+              slash.lineTo(ox + w - th * 1.5, oy + h - th * 0.8);
+              slash.lineTo(ox + w - th * 0.8, oy + h - th * 1.5);
+              slash.lineTo(ox + th * 1.5, oy + th * 0.8);
+              slash.closePath();
+              shapes.push(slash);
+            } else if (c === 'A') {
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox, oy + h);
+              shape.lineTo(ox + w, oy + h);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox + w - th, oy);
+              shape.lineTo(ox + w - th, oy + h * 0.45);
+              shape.lineTo(ox + th, oy + h * 0.45);
+              shape.lineTo(ox + th, oy);
+              shape.closePath();
+              const hole = new THREE.Path();
+              hole.moveTo(ox + th, oy + h * 0.6);
+              hole.lineTo(ox + w - th, oy + h * 0.6);
+              hole.lineTo(ox + w - th, oy + h - th);
+              hole.lineTo(ox + th, oy + h - th);
+              hole.closePath();
+              shape.holes.push(hole);
+            } else if (c === 'H') {
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox + th, oy);
+              shape.lineTo(ox + th, oy + h * 0.45);
+              shape.lineTo(ox + w - th, oy + h * 0.45);
+              shape.lineTo(ox + w - th, oy);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox + w, oy + h);
+              shape.lineTo(ox + w - th, oy + h);
+              shape.lineTo(ox + w - th, oy + h * 0.6);
+              shape.lineTo(ox + th, oy + h * 0.6);
+              shape.lineTo(ox + th, oy + h);
+              shape.lineTo(ox, oy + h);
+              shape.closePath();
+            } else {
+              // Terminal Monospace Orthogonal Block
+              shape.moveTo(ox, oy);
+              shape.lineTo(ox + w, oy);
+              shape.lineTo(ox + w, oy + th);
+              shape.lineTo(ox + th, oy + th);
+              shape.lineTo(ox + th, oy + h * 0.5 - th * 0.5);
+              shape.lineTo(ox + w * 0.8, oy + h * 0.5 - th * 0.5);
+              shape.lineTo(ox + w * 0.8, oy + h * 0.5 + th * 0.5);
+              shape.lineTo(ox + th, oy + h * 0.5 + th * 0.5);
+              shape.lineTo(ox + th, oy + h - th);
+              shape.lineTo(ox + w, oy + h - th);
+              shape.lineTo(ox + w, oy + h);
+              shape.lineTo(ox, oy + h);
+              shape.closePath();
+            }
+            shapes.push(shape);
+            return shapes;
+          }
         }
+      };
+
+      // Native Vector 3D Extrusion Engine
+      function buildVectorExtrusionTextMesh(text, options) {
+        const styleKey = options.fontStyle || 'cyber-geometric';
+        const font = EMBEDDED_VECTOR_FONTS[styleKey] || EMBEDDED_VECTOR_FONTS['cyber-geometric'];
+        const depth = options.depth || 0.25;
+        const bevel = options.bevelThickness || 0.03;
+        const size = options.size || 1.1;
+
+        const allShapes = [];
+        let curX = 0;
+        const str = String(text || 'NEXUS 3D');
+
+        for (let i = 0; i < str.length; i++) {
+          const char = str[i];
+          if (char === ' ') {
+            curX += (font.charWidth || 0.85) * size * 0.6;
+            continue;
+          }
+          if (font.getGlyphShapes) {
+            const charShapes = font.getGlyphShapes(char, curX, 0, size);
+            charShapes.forEach(s => allShapes.push(s));
+          }
+          curX += (font.charWidth || 0.85) * size + 0.06 * size;
+        }
+
+        const extrudeSettings = {
+          steps: 2,
+          depth: depth,
+          bevelEnabled: bevel > 0,
+          bevelThickness: bevel,
+          bevelSize: bevel,
+          bevelOffset: 0,
+          bevelSegments: 3
+        };
+
+        const geom = new THREE.ExtrudeGeometry(allShapes.length > 0 ? allShapes : [new THREE.Shape()], extrudeSettings);
+        geom.center();
+
+        const frontColor = options.frontMaterial === 'sacred-gold' ? 0xfbbf24 : (options.frontMaterial === 'brushed-titanium' ? 0x94a3b8 : 0x0a1020);
+        const edgeColor = options.edgeMaterial === 'neon-amber' ? 0xf59e0b : (options.edgeMaterial === 'neon-crimson' ? 0xf43f5e : 0x00f0ff);
+
+        const frontMat = new THREE.MeshStandardMaterial({
+          color: frontColor,
+          metalness: 0.85,
+          roughness: 0.15,
+          clearcoat: 0.8,
+          clearcoatRoughness: 0.1
+        });
+        const edgeMat = new THREE.MeshStandardMaterial({
+          color: edgeColor,
+          emissive: edgeColor,
+          emissiveIntensity: 0.6,
+          metalness: 0.2,
+          roughness: 0.3
+        });
+
+        const mesh = new THREE.Mesh(geom, [frontMat, edgeMat]);
+        mesh.name = `Vector3D_${styleKey}_${text.slice(0, 8)}`;
+        return mesh;
+      }
+
+      function spawn3DTypography() {
         const text = document.getElementById('typo-text-input')?.value || 'NEXUS 3D';
-        const fontStyle = document.getElementById('typo-font-style')?.value || 'cyber-block';
+        const fontStyle = document.getElementById('typo-font-style')?.value || 'cyber-geometric';
         const deformation = document.getElementById('typo-deformation')?.value || 'none';
         const frontMaterial = document.getElementById('typo-front-mat')?.value || 'obsidian';
         const edgeMaterial = document.getElementById('typo-edge-mat')?.value || 'neon-cyan';
         const bevel = parseFloat(document.getElementById('typo-bevel')?.value || '0.03');
         const depth = parseFloat(document.getElementById('typo-depth')?.value || '0.25');
 
-        const mesh = Nexus3DTypography.createTextMesh(text, {
-          fontStyle: fontStyle,
-          deformation: deformation,
-          frontMaterial: frontMaterial,
-          edgeMaterial: edgeMaterial,
-          bevelThickness: bevel,
-          bevelSize: bevel,
-          depth: depth,
-          size: 1.1
-        });
+        let mesh = null;
+        if (typeof Nexus3DTypography !== 'undefined' && fontStyle !== 'cyber-geometric' && fontStyle !== 'serif-hermetic' && fontStyle !== 'monospace-terminal') {
+          try {
+            mesh = Nexus3DTypography.createTextMesh(text, {
+              fontStyle: fontStyle,
+              deformation: deformation,
+              frontMaterial: frontMaterial,
+              edgeMaterial: edgeMaterial,
+              bevelThickness: bevel,
+              bevelSize: bevel,
+              depth: depth,
+              size: 1.1
+            });
+          } catch(e) {
+            mesh = null;
+          }
+        }
+
+        if (!mesh) {
+          mesh = buildVectorExtrusionTextMesh(text, {
+            fontStyle: fontStyle,
+            frontMaterial: frontMaterial,
+            edgeMaterial: edgeMaterial,
+            bevelThickness: bevel,
+            depth: depth,
+            size: 1.1
+          });
+        }
 
         mesh.position.set(0, 1.5, 0);
         scene.add(mesh);
@@ -2978,6 +3353,7 @@
         selectObject(mesh);
         updateOutliner();
         updateStats();
+        burstParticles();
       }
 
       function spawnSelectedMonogram(symbolKey) {

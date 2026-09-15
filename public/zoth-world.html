@@ -353,7 +353,7 @@
     <div class="hud-mid">
       <!-- Left: Tactical Radar & Active Companion Triad -->
       <div class="tactical-left">
-        <div class="radar-panel" role="region" aria-label="Tactical World Radar">
+        <div class="radar-panel" id="zoth-radar-minimap" role="region" aria-label="Tactical World Radar">
           <div class="panel-header">
             <span>📡 Tactical Radar</span>
             <span style="color:var(--emerald-primary)">LIVE</span>
@@ -756,6 +756,144 @@
           actionsHome.insertBefore(actions, actionsNext);
         }
       }
+      /* 7. Interactive Sovereign Radar Minimap Overlay (#zoth-radar-minimap) */
+      (function initRadarMinimap() {
+        var canvas = document.getElementById('radar-canvas');
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d');
+        var coordsDisplay = document.getElementById('radar-coords-display');
+        var entities = [
+          { name: "Master Azoth", realm: "Sanctum", x: 0, z: 0, color: "#fbbf24", role: "Alchemist Core" },
+          { name: "Kitsune Prime", realm: "Grove", x: 42, z: -35, color: "#f97316", role: "Spirit Envoy" },
+          { name: "Draco Obsidian", realm: "Citadel", x: -65, z: 50, color: "#ef4444", role: "Guardian Drake" },
+          { name: "Lucy Oracle", realm: "Crypt", x: -30, z: -70, color: "#a855f7", role: "Memory Synthesizer" },
+          { name: "Ouroboros", realm: "Nexus", x: 80, z: 45, color: "#00f0ff", role: "Vector Loop" },
+          { name: "Golem Aegis", realm: "Sanctum", x: 15, z: 60, color: "#10b981", role: "Security Sentinel" }
+        ];
+
+        var angle = 0;
+        function renderRadar() {
+          requestAnimationFrame(renderRadar);
+          var w = canvas.width;
+          var h = canvas.height;
+          var cx = w / 2;
+          var cy = h / 2;
+          angle += 0.03;
+
+          var app = window.zothWorldApp;
+          var camDist = 100;
+          var camX = 0, camZ = 28;
+          if (app && app.camera) {
+            camX = Math.round(app.camera.position.x * 10) / 10;
+            camZ = Math.round(app.camera.position.z * 10) / 10;
+            camDist = app.camera.position.length ? app.camera.position.length() : 100;
+          }
+          if (coordsDisplay) {
+            coordsDisplay.innerHTML = '<span>X: ' + camX + '</span> <span>Z: ' + camZ + '</span> <span>ZOOM: ' + Math.round(camDist) + 'm</span>';
+          }
+
+          var maxRange = Math.max(120, Math.min(350, camDist * 2.2));
+          var rScale = (cx - 10) / maxRange;
+
+          ctx.clearRect(0, 0, w, h);
+
+          // Radar background disc
+          ctx.fillStyle = 'rgba(4, 7, 17, 0.88)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, cx - 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Concentric Range Rings (50m, 100m, 250m)
+          var rings = [
+            { r: 50, label: "50m" },
+            { r: 100, label: "100m" },
+            { r: 250, label: "250m" }
+          ];
+
+          rings.forEach(function(ring) {
+            var px = ring.r * rScale;
+            if (px < cx - 4) {
+              ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
+              ctx.setLineDash([3, 4]);
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.arc(cx, cy, px, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.setLineDash([]);
+
+              ctx.font = '8px "IBM Plex Mono", monospace';
+              ctx.fillStyle = 'rgba(0, 240, 255, 0.6)';
+              ctx.fillText(ring.label, cx + 4, cy - px + 9);
+            }
+          });
+
+          // Crosshairs
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.15)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(cx, 4);
+          ctx.lineTo(cx, h - 4);
+          ctx.moveTo(4, cy);
+          ctx.lineTo(w - 4, cy);
+          ctx.stroke();
+
+          // Rotating Sweep line
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+          var grad = ctx.createLinearGradient(0, 0, cx - 4, 0);
+          grad.addColorStop(0, 'rgba(0, 240, 255, 0)');
+          grad.addColorStop(1, 'rgba(0, 240, 255, 0.45)');
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(cx - 4, 0);
+          ctx.stroke();
+          ctx.restore();
+
+          // Camera Center Point
+          ctx.fillStyle = '#00f0ff';
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Entity Blips
+          entities.forEach(function(ent) {
+            var bx = cx + (ent.x - camX * 0.2) * rScale;
+            var by = cy + (ent.z - camZ * 0.2) * rScale;
+            var dFromCenter = Math.sqrt((bx - cx) * (bx - cx) + (by - cy) * (by - cy));
+            if (dFromCenter <= cx - 6) {
+              var pulse = Math.sin(angle * 4 + ent.x) * 1.5;
+              ctx.fillStyle = ent.color;
+              ctx.shadowColor = ent.color;
+              ctx.shadowBlur = 8;
+              ctx.beginPath();
+              ctx.arc(bx, by, Math.max(2, 3.5 + pulse), 0, Math.PI * 2);
+              ctx.fill();
+              ctx.shadowBlur = 0;
+
+              ctx.font = '7px "IBM Plex Mono", monospace';
+              ctx.fillStyle = '#ffffff';
+              ctx.fillText(ent.name.split(' ')[0], bx + 5, by + 3);
+            }
+          });
+        }
+        renderRadar();
+
+        canvas.style.cursor = 'crosshair';
+        canvas.addEventListener('click', function() {
+          var realmPills = document.querySelectorAll('.realm-pill');
+          if (realmPills.length) {
+            var randomPill = realmPills[Math.floor(Math.random() * realmPills.length)];
+            randomPill.click();
+          }
+        });
+      })();
+
       placeActions();
       window.addEventListener('resize', placeActions);
     } catch (err) {
@@ -763,6 +901,6 @@
     }
   })();
   </script>
-
+  <script src="/assets/celestial-trail.js"></script>
 </body>
 </html>

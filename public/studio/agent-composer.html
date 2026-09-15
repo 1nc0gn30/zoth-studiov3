@@ -294,6 +294,8 @@
         </select>
         <span id="agent-select" style="display:none;"></span>
         <button class="btn-pill primary" id="btn-run-playbook">▶ Run DAG Pipeline</button>
+        <button class="btn-pill" id="btn-publish-directory" onclick="publishToLocalAgentsDirectory()" style="background: linear-gradient(135deg, #10b981, #00f0ff); color: #040916; font-weight: 800; border: none; box-shadow: 0 0 14px rgba(16,185,129,0.35); cursor: pointer;" title="1-Click Publish to Local Agents Directory">🚀 Publish to Agents Directory</button>
+        <span id="publish-status-badge" class="btn-pill" style="display:none; font-size:0.7rem; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.4); color:var(--emerald,#10b981); font-weight:700;">● PUBLISHED LIVE</span>
         <button class="btn-pill" id="btn-export-yaml">📄 Download YAML</button>
         <button class="btn-pill" id="btn-copy-spec">📋 Copy Spec</button>
         <button class="btn-pill" id="btn-export-json">💾 Export JSON</button>
@@ -985,6 +987,66 @@
           playTone(330);
         }
       });
+
+      // 1-Click: Publish to Local Agents Directory
+      window.publishToLocalAgentsDirectory = function() {
+        const yamlSpec = document.getElementById('spec-yaml-preview')?.textContent || '';
+        const pythonAst = document.getElementById('python-ast-preview')?.textContent || '';
+        const presetName = document.getElementById('preset-selector')?.value || 'custom_dag';
+
+        const manifest = {
+          dag_id: 'dag_' + Date.now().toString(36),
+          name: presetName.replace(/_/g, ' ').toUpperCase(),
+          published_at: new Date().toISOString(),
+          node_count: nodes.length,
+          connection_count: connections.length,
+          nodes: nodes,
+          connections: connections,
+          yaml_spec: yamlSpec,
+          python_ast: pythonAst,
+          status: 'LIVE_ACTIVE',
+          directory_path: '/agents/dags/' + presetName + '.yaml'
+        };
+
+        try {
+          localStorage.setItem('zoth_latest_published_dag', JSON.stringify(manifest));
+          
+          let directory = [];
+          try {
+            directory = JSON.parse(localStorage.getItem('zoth_custom_agents_directory') || '[]');
+          } catch(e) {}
+          
+          const existingIdx = directory.findIndex(d => d.name === manifest.name);
+          if (existingIdx >= 0) directory[existingIdx] = manifest;
+          else directory.unshift(manifest);
+          
+          localStorage.setItem('zoth_custom_agents_directory', JSON.stringify(directory.slice(0, 20)));
+
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bus = new BroadcastChannel('zoth_swarm_bus');
+            bus.postMessage({
+              from: 'agent-composer',
+              to: 'all',
+              type: 'DAG_PUBLISHED',
+              timestamp: Date.now(),
+              message: `🚀 [DAG COMPOSER] Published "${manifest.name}" (${nodes.length} nodes) to local agents directory.`
+            });
+            bus.close();
+          }
+        } catch(e) {}
+
+        const badge = document.getElementById('publish-status-badge');
+        if (badge) {
+          badge.style.display = 'inline-flex';
+          badge.textContent = `✅ PUBLISHED LIVE (${nodes.length} Nodes)`;
+          badge.style.background = 'rgba(16, 185, 129, 0.25)';
+          badge.style.borderColor = '#10b981';
+          badge.style.color = 'var(--emerald, #10b981)';
+        }
+
+        playTone(784);
+        setTimeout(() => playTone(1046), 120);
+      };
 
       // Export JSON
       document.getElementById('btn-export-json').addEventListener('click', () => {

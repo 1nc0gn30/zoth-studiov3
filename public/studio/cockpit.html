@@ -370,7 +370,20 @@
               <i class="ph-bold ph-pause-circle" id="swarmPauseIcon"></i>
               <span id="swarmPauseText">Pause Swarm</span>
             </button>
+            <button id="cockpitAudioToggleBtn" class="cockpit-emergency-btn" onclick="toggleCockpitAudio()" title="Toggle Web Audio Tactical Notification Chimes (Alert, Invariant Pass, Directive Complete)">
+              <i class="ph-bold ph-speaker-high" id="cockpitAudioIcon"></i>
+              <span id="cockpitAudioText">Chimes: ON</span>
+            </button>
             <div class="cockpit-quick-nav-row">
+              <button class="cockpit-quick-nav-btn" onclick="playTacticalChime('alert')" title="Test Tactical Alert Chime" style="cursor:pointer;border:none;background:rgba(239,68,68,0.12);color:var(--magenta,#f43f5e);">
+                <span>🔔 Alert</span>
+              </button>
+              <button class="cockpit-quick-nav-btn" onclick="playTacticalChime('invariant_pass')" title="Test Invariant Pass Chime" style="cursor:pointer;border:none;background:rgba(16,185,129,0.12);color:var(--emerald,#10b981);">
+                <span>✨ Pass</span>
+              </button>
+              <button class="cockpit-quick-nav-btn" onclick="playTacticalChime('directive_complete')" title="Test Directive Complete Chime" style="cursor:pointer;border:none;background:rgba(0,240,255,0.12);color:var(--cyan,#00f0ff);">
+                <span>🏆 Complete</span>
+              </button>
               <a href="/studio/swarm.html" class="cockpit-quick-nav-btn" title="Open 3D WebGL Swarm Arena">
                 <i class="ph-bold ph-cube"></i>
                 <span>3D Arena</span>
@@ -692,6 +705,123 @@
       } catch(e) {}
     }
 
+    // --- Web Audio Tactical Notification Sound Engine ---
+    var __zothAudioCtx = null;
+    window.__zothAudioEnabled = localStorage.getItem('zoth_cockpit_audio_enabled') !== 'false';
+
+    function getAudioContext() {
+      if (!__zothAudioCtx) {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) __zothAudioCtx = new AudioCtx();
+      }
+      if (__zothAudioCtx && __zothAudioCtx.state === 'suspended') {
+        __zothAudioCtx.resume();
+      }
+      return __zothAudioCtx;
+    }
+
+    window.toggleCockpitAudio = function() {
+      window.__zothAudioEnabled = !window.__zothAudioEnabled;
+      localStorage.setItem('zoth_cockpit_audio_enabled', window.__zothAudioEnabled ? 'true' : 'false');
+      updateAudioButtonUI();
+      if (window.__zothAudioEnabled) {
+        playTacticalChime('invariant_pass');
+      }
+    };
+
+    function updateAudioButtonUI() {
+      var btn = document.getElementById('cockpitAudioToggleBtn');
+      var icon = document.getElementById('cockpitAudioIcon');
+      var text = document.getElementById('cockpitAudioText');
+      if (!btn) return;
+      if (window.__zothAudioEnabled) {
+        btn.style.borderColor = 'rgba(0, 240, 255, 0.4)';
+        btn.style.color = 'var(--cyan, #00f0ff)';
+        if (icon) icon.className = 'ph-bold ph-speaker-high';
+        if (text) text.textContent = 'Chimes: ON';
+      } else {
+        btn.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        btn.style.color = 'var(--muted, #94a3b8)';
+        if (icon) icon.className = 'ph-bold ph-speaker-slash';
+        if (text) text.textContent = 'Chimes: OFF';
+      }
+    }
+
+    window.playTacticalChime = function(type) {
+      if (!window.__zothAudioEnabled) return;
+      try {
+        var ctx = getAudioContext();
+        if (!ctx) return;
+        var now = ctx.currentTime;
+
+        if (type === 'alert' || type === 'error' || type === 'pause') {
+          // Tactical Alert Chime: Dissonant two-tone warning pulse (880Hz -> 440Hz sawtooth/sine with fast FM)
+          var osc1 = ctx.createOscillator();
+          var osc2 = ctx.createOscillator();
+          var gain = ctx.createGain();
+
+          osc1.type = 'sawtooth';
+          osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(880, now);
+          osc1.frequency.exponentialRampToValueAtTime(440, now + 0.28);
+          osc2.frequency.setValueAtTime(840, now);
+          osc2.frequency.exponentialRampToValueAtTime(420, now + 0.28);
+
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.33);
+          osc2.stop(now + 0.33);
+        } else if (type === 'pass' || type === 'invariant_pass' || type === 'invariant') {
+          // Invariant Pass: Crystalline rising harmonic dual sine (587Hz -> 880Hz -> 1175Hz)
+          var freqs = [587.33, 880.00, 1174.66];
+          freqs.forEach(function(f, idx) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            var start = now + (idx * 0.06);
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, start);
+
+            gain.gain.setValueAtTime(0.06, start);
+            gain.gain.exponentialRampToValueAtTime(0.0005, start + 0.4);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + 0.42);
+          });
+        } else if (type === 'complete' || type === 'directive_complete' || type === 'resume') {
+          // Directive Complete: 4-tone triumphant arpeggio (C5 - E5 - G5 - C6)
+          var notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach(function(f, idx) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            var start = now + (idx * 0.08);
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, start);
+
+            gain.gain.setValueAtTime(0.09, start);
+            gain.gain.exponentialRampToValueAtTime(0.0008, start + 0.55);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + 0.6);
+          });
+        }
+      } catch (err) {}
+    };
+
     function handleIncomingBusMessage(msg) {
       if (window.__isSwarmPaused && msg.type !== 'control') return;
       var stream = document.getElementById('cockpitMessagesStream');
@@ -701,6 +831,16 @@
       if (!text) return;
       var from = (msg.from || 'agent').toLowerCase();
       var isOp = from === 'operator';
+
+      // Audio Tactical Trigger based on agent event contents
+      var lower = text.toLowerCase();
+      if (lower.includes('alert') || lower.includes('error') || lower.includes('fail') || lower.includes('violation')) {
+        playTacticalChime('alert');
+      } else if (lower.includes('invariant') || lower.includes('ast') || lower.includes('passed') || lower.includes('verified') || lower.includes('valid')) {
+        playTacticalChime('invariant_pass');
+      } else if (lower.includes('complete') || lower.includes('sealed') || lower.includes('consensus') || lower.includes('synthesized')) {
+        playTacticalChime('directive_complete');
+      }
 
       var bubble = document.createElement('div');
       bubble.className = 'cockpit-msg ' + (isOp ? 'user-msg' : 'agent-msg');
@@ -744,6 +884,7 @@
         if (btn) btn.classList.add('is-paused');
         if (icon) icon.className = 'ph-bold ph-play-circle';
         if (text) text.textContent = 'Resume Swarm';
+        playTacticalChime('alert');
       } else {
         if (badge) {
           badge.className = 'status-pill status-online';
@@ -752,6 +893,7 @@
         if (btn) btn.classList.remove('is-paused');
         if (icon) icon.className = 'ph-bold ph-pause-circle';
         if (text) text.textContent = 'Pause Swarm';
+        playTacticalChime('directive_complete');
       }
 
       broadcastCockpitDirective({

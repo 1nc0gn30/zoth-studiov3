@@ -627,3 +627,23 @@ Static HTML5/React production bundle compiled in public/previews/{safe_slug}/
             "workbot": "🤖 @ollama: Tailored copy & interactive sandbox state"
         }
     }
+
+
+def cli_main():
+    """CLI entry point for headless swarm synthesis via swarm_backend.py."""
+    import argparse
+    import sys
+    parser = argparse.ArgumentParser(description="Zoth Swarm Site Generator")
+    parser.add_argument("--spec", required=True, help="Path to JSON spec file")
+    parser.add_argument("--out", required=True, help="Output directory for generated site")
+    args = parser.parse_args()
+
+    spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
+    result = synthesize_swarm_website(spec, Path(args.out))
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("status") == "ok" else 1
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(cli_main())

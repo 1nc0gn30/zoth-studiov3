@@ -940,14 +940,28 @@
       <section aria-label="3-Agent Byzantine Consensus Topology" class="consensus-topology-section">
         <div class="topology-header">
           <div>
-            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em;">✦ Real-Time Triangulation Engine</div>
-            <h2 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: #fff; margin-top: 2px;">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em;">✦ Real-Time Triangulation & Consensus Engine</div>
+            <h2 id="topology-title-text" style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: #fff; margin-top: 2px;">
               Tri-Agent Byzantine Consensus Topology &amp; Quorum Core
             </h2>
           </div>
           <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);">
             Click any agent node to inspect AST proposals · Active fault states reflected in real time
           </div>
+        </div>
+
+        <!-- Consensus Topology Selector Strip (3-Agent Dialectic, 5-Node Raft/PBFT, 7-Node PBFT Sovereign) -->
+        <div class="topology-selector-strip" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; background:rgba(15,23,42,0.8); padding:8px 12px; border-radius:10px; border:1px solid var(--border);">
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim); font-weight:700;">CONSENSUS TOPOLOGY:</span>
+          <button id="topoBtn3" class="hero-action-btn active" onclick="setConsensusTopology('3node')" style="font-size:0.74rem; padding:6px 14px; background:rgba(0,240,255,0.15); border-color:var(--cyan); color:var(--cyan);">
+            <span>⚡ 3-Agent Dialectic (Triangulation)</span>
+          </button>
+          <button id="topoBtn5" class="hero-action-btn" onclick="setConsensusTopology('5node')" style="font-size:0.74rem; padding:6px 14px;">
+            <span>🛡️ 5-Node Raft / PBFT (f=1 Quorum)</span>
+          </button>
+          <button id="topoBtn7" class="hero-action-btn" onclick="setConsensusTopology('7node')" style="font-size:0.74rem; padding:6px 14px;">
+            <span>🌌 7-Node PBFT Sovereign Mesh (f=2 Quorum)</span>
+          </button>
         </div>
 
         <div class="topology-svg-wrapper">
@@ -1781,6 +1795,144 @@
       showToast(`Loaded Scenario: ${scen.name}`, 'info');
     }
 
+    let currentConsensusTopology = '3node';
+
+    const TOPOLOGY_NODES = {
+      '3node': [
+        { id: 'azoth', name: '@azoth', role: '50% · Truth Core', color: '#fbbf24', avatar: '/assets/agents/azoth.jpg', x: 420, y: 70 },
+        { id: 'grok', name: '@grok', role: '30% · Fuzzer', color: '#00f0ff', avatar: '/assets/agents/grok.jpg', x: 180, y: 370 },
+        { id: 'hermes', name: '@hermes', role: '20% · Logic AST', color: '#10b981', avatar: '/assets/agents/hermes.jpg', x: 660, y: 370 }
+      ],
+      '5node': [
+        { id: 'azoth', name: '@azoth', role: 'Leader · Raft Anchor', color: '#fbbf24', avatar: '/assets/agents/azoth.jpg', x: 420, y: 70 },
+        { id: 'antigravity', name: '@antigravity', role: 'Raft Follower 1', color: '#7c9cff', avatar: '/assets/mascot/azoth-antigravity.jpg', x: 670, y: 190 },
+        { id: 'hermes', name: '@hermes', role: 'PBFT Commit 2', color: '#10b981', avatar: '/assets/agents/hermes.jpg', x: 570, y: 380 },
+        { id: 'grok', name: '@grok', role: 'PBFT Prepare 3', color: '#00f0ff', avatar: '/assets/agents/grok.jpg', x: 270, y: 380 },
+        { id: 'kai', name: '@kai', role: 'AST Sentinel 4', color: '#38bdf8', avatar: '/assets/pets/kai-neon.jpg', x: 170, y: 190 }
+      ],
+      '7node': [
+        { id: 'azoth', name: '@azoth', role: 'Sovereign Speaker', color: '#fbbf24', avatar: '/assets/agents/azoth.jpg', x: 420, y: 65 },
+        { id: 'antigravity', name: '@antigravity', role: 'Systems Architect', color: '#7c9cff', avatar: '/assets/mascot/azoth-antigravity.jpg', x: 620, y: 130 },
+        { id: 'draco', name: '@draco', role: 'Fusion Arbiter', color: '#e8c872', avatar: '/assets/pets/draco-neon.jpg', x: 670, y: 300 },
+        { id: 'hermes', name: '@hermes', role: 'Consensus Herald', color: '#10b981', avatar: '/assets/agents/hermes.jpg', x: 520, y: 400 },
+        { id: 'lycan', name: '@lycan', role: 'SecOps Sentinel', color: '#f43f5e', avatar: '/assets/mascot/ghostbyte-avatar.jpg', x: 320, y: 400 },
+        { id: 'grok', name: '@grok', role: 'Speed Engine', color: '#00f0ff', avatar: '/assets/agents/grok.jpg', x: 170, y: 300 },
+        { id: 'kai', name: '@kai', role: 'AST Auditor', color: '#38bdf8', avatar: '/assets/pets/kai-neon.jpg', x: 220, y: 130 }
+      ]
+    };
+
+    function setConsensusTopology(topo) {
+      currentConsensusTopology = topo || '3node';
+      playAudioCue('ping');
+
+      ['3', '5', '7'].forEach(n => {
+        const btn = document.getElementById('topoBtn' + n);
+        const match = topo === (n + 'node');
+        if (btn) {
+          btn.style.background = match ? 'rgba(0,240,255,0.18)' : '';
+          btn.style.borderColor = match ? 'var(--cyan)' : 'var(--border)';
+          btn.style.color = match ? 'var(--cyan)' : 'var(--text)';
+        }
+      });
+
+      const titleEl = document.getElementById('topology-title-text');
+      if (titleEl) {
+        if (topo === '5node') {
+          titleEl.textContent = '5-Node Raft / PBFT Consensus Topology (f=1 Fault Tolerance)';
+        } else if (topo === '7node') {
+          titleEl.textContent = '7-Node PBFT Sovereign Consensus Mesh (f=2 Fault Tolerance)';
+        } else {
+          titleEl.textContent = 'Tri-Agent Byzantine Consensus Topology & Quorum Core';
+        }
+      }
+
+      renderSvgTopology();
+      renderContenderCards();
+      renderASTDiffGrid();
+      recalculateQuorum();
+      showToast(`Consensus Topology: ${topo.toUpperCase()} active`, 'info');
+    }
+
+    function renderSvgTopology() {
+      const svg = document.getElementById('svg-topology');
+      if (!svg) return;
+
+      const nodes = TOPOLOGY_NODES[currentConsensusTopology] || TOPOLOGY_NODES['3node'];
+      const cx = 420, cy = 250;
+
+      let linksHtml = '';
+      for (let i = 0; i < nodes.length; i++) {
+        const n1 = nodes[i];
+        // Connect to center quorum
+        linksHtml += `<path class="anim-dash-flow" d="M ${n1.x} ${n1.y} L ${cx} ${cy}" stroke="${n1.color}" stroke-opacity="0.35" stroke-width="2" fill="none"></path>`;
+        // Ring links
+        const n2 = nodes[(i + 1) % nodes.length];
+        linksHtml += `<path class="anim-dash-flow" d="M ${n1.x} ${n1.y} L ${n2.x} ${n2.y}" stroke="rgba(0,240,255,0.25)" stroke-width="1.5" fill="none"></path>`;
+      }
+
+      let nodesHtml = nodes.map(n => {
+        const isSelected = n.id === currentAgent;
+        const isHonest = AGENT_HEALTH[n.id] !== false;
+        return `
+          <g class="svg-node-interactive" id="svg-node-${n.id}" onclick="selectContender('${n.id}')" title="Inspect ${n.name}">
+            <circle class="anim-pulse-ring" cx="${n.x}" cy="${n.y}" r="${isSelected ? 42 : 36}" fill="none" stroke="${isHonest ? n.color : '#ef4444'}" stroke-dasharray="4 4" stroke-width="1.5"></circle>
+            <circle cx="${n.x}" cy="${n.y}" r="28" fill="#040916" stroke="${isHonest ? n.color : '#ef4444'}" stroke-width="${isSelected ? 2.5 : 1.5}"></circle>
+            <image href="${n.avatar}" x="${n.x - 24}" y="${n.y - 24}" width="48" height="48" clip-path="url(#clip-${n.id})" onerror="this.src='/assets/agents/azoth.jpg'"></image>
+            <rect x="${n.x - 65}" y="${n.y + 32}" width="130" height="28" rx="6" fill="rgba(4, 9, 22, 0.92)" stroke="${n.color}" stroke-width="1"></rect>
+            <text x="${n.x}" y="${n.y + 45}" text-anchor="middle" font-family="var(--font-display)" font-size="10" font-weight="800" fill="${n.color}">${n.name}</text>
+            <text x="${n.x}" y="${n.y + 55}" text-anchor="middle" font-family="var(--font-mono)" font-size="8" fill="#94a3b8">${n.role}</text>
+          </g>
+        `;
+      }).join('');
+
+      let clipsHtml = nodes.map(n => `<clipPath id="clip-${n.id}"><circle cx="${n.x}" cy="${n.y}" r="24"></circle></clipPath>`).join('');
+
+      svg.innerHTML = `
+        <defs>
+          <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+          <filter id="glow-emerald" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+          ${clipsHtml}
+        </defs>
+        <g opacity="0.15">
+          <circle cx="${cx}" cy="${cy}" r="190" fill="none" stroke="var(--cyan)" stroke-dasharray="4 8" stroke-width="1"></circle>
+          <circle cx="${cx}" cy="${cy}" r="130" fill="none" stroke="var(--purple)" stroke-dasharray="2 6" stroke-width="1"></circle>
+        </g>
+        ${linksHtml}
+        <!-- Quorum Core Centroid -->
+        <g id="svg-quorum-core" transform="translate(${cx}, ${cy})">
+          <circle class="anim-spin-slow" cx="0" cy="0" r="48" fill="none" stroke="rgba(0, 240, 255, 0.5)" stroke-dasharray="6 4 12 4" stroke-width="1.5"></circle>
+          <circle cx="0" cy="0" r="36" fill="#040916" stroke="var(--emerald)" stroke-width="2" filter="url(#glow-emerald)"></circle>
+          <text text-anchor="middle" x="0" y="-4" font-family="var(--font-display)" font-size="9" font-weight="800" fill="#ffffff">QUORUM</text>
+          <text text-anchor="middle" x="0" y="10" font-family="var(--font-mono)" font-size="10" font-weight="800" fill="var(--emerald)" id="svg-quorum-label">RATIFIED</text>
+        </g>
+        ${nodesHtml}
+      `;
+    }
+
+    function renderContenderCards() {
+      const container = document.querySelector('.contenders-row');
+      if (!container) return;
+      const nodes = TOPOLOGY_NODES[currentConsensusTopology] || TOPOLOGY_NODES['3node'];
+      container.innerHTML = nodes.map(n => {
+        const isSel = n.id === currentAgent;
+        const isHonest = AGENT_HEALTH[n.id] !== false;
+        const conf = isHonest ? ((AGENT_CONFIDENCE[n.id] || 0.92) * 100).toFixed(1) : '12.4';
+        return `
+          <div class="contender-card ${isSel ? 'active' : ''}" id="card-${n.id}" onclick="selectContender('${n.id}')" style="min-width:140px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <img src="${n.avatar}" alt="${n.name}" style="width:28px; height:28px; border-radius:50%; border:2px solid ${n.color};" onerror="this.src='/assets/agents/azoth.jpg'"/>
+              <div>
+                <div class="contender-name" style="color:${n.color};">${n.name}</div>
+                <div class="contender-role">${n.role}</div>
+              </div>
+            </div>
+            <div class="confidence-bar"><div class="confidence-bar-fill" id="conf-bar-${n.id}" style="width:${conf}%; background:${n.color};"></div></div>
+            <div style="margin-top:4px; font-family:var(--font-mono); font-size:0.65rem; color:#cbd5e1;">Confidence: <strong id="conf-val-${n.id}">${conf}%</strong></div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function selectContender(agent) {
       currentAgent = agent;
       playAudioCue('ping');
@@ -1788,6 +1940,7 @@
       const card = document.getElementById(`card-${agent}`);
       if (card) card.classList.add('active');
       renderCurrentCode();
+      renderSvgTopology();
     }
 
     function renderCurrentCode() {
@@ -1795,17 +1948,16 @@
       if (!scen) return;
 
       const codeViewer = document.getElementById('contender-code-text');
-      const isHonest = AGENT_HEALTH[currentAgent];
-      const code = isHonest ? scen.proposals[currentAgent] : (scen.faultProposals[currentAgent] || scen.proposals[currentAgent]);
+      const isHonest = AGENT_HEALTH[currentAgent] !== false;
+      const code = isHonest ? (scen.proposals[currentAgent] || scen.proposals['azoth']) : (scen.faultProposals[currentAgent] || scen.faultProposals['azoth'] || scen.proposals['azoth']);
       if (codeViewer) codeViewer.textContent = code;
 
       const synthViewer = document.getElementById('synthesized-code-text');
       if (synthViewer) synthViewer.textContent = scen.synthesized;
 
-      // Update confidence display
       const confVal = document.getElementById(`conf-val-${currentAgent}`);
       const confBar = document.getElementById(`conf-bar-${currentAgent}`);
-      const conf = isHonest ? (AGENT_CONFIDENCE[currentAgent] * 100).toFixed(1) : '12.4';
+      const conf = isHonest ? ((AGENT_CONFIDENCE[currentAgent] || 0.92) * 100).toFixed(1) : '12.4';
       if (confVal) confVal.textContent = `${conf}%`;
       if (confBar) confBar.style.width = `${conf}%`;
     }
@@ -1816,21 +1968,17 @@
       if (!grid || !scen) return;
 
       grid.innerHTML = '';
-      const agents = [
-        { key: 'azoth', label: '@azoth (50% Truth)', color: '#fbbf24' },
-        { key: 'grok', label: '@grok (30% Fuzzer)', color: '#00f0ff' },
-        { key: 'hermes', label: '@hermes (20% Logic AST)', color: '#10b981' }
-      ];
+      const nodes = TOPOLOGY_NODES[currentConsensusTopology] || TOPOLOGY_NODES['3node'];
 
-      agents.forEach(a => {
-        const isHonest = AGENT_HEALTH[a.key];
-        const tree = isHonest ? scen.astTrees[a.key] : [{ name: "BYZANTINE_FAULT_NODE", type: "corrupted", tag: "fault" }];
+      nodes.forEach(a => {
+        const isHonest = AGENT_HEALTH[a.id] !== false;
+        const tree = isHonest ? (scen.astTrees[a.id] || scen.astTrees['azoth']) : [{ name: "BYZANTINE_FAULT_NODE", type: "corrupted", tag: "fault" }];
 
         const col = document.createElement('div');
         col.className = 'ast-agent-column';
         col.innerHTML = `
           <div class="ast-column-head" style="color: ${a.color};">
-            <span>${a.label}</span>
+            <span>${a.name} (${a.role})</span>
             <span class="ast-tag ${isHonest ? 'ast-tag-match' : 'ast-tag-fault'}">${isHonest ? 'VALID' : 'FAULTY'}</span>
           </div>
           <div class="ast-tree-viewer">
@@ -2046,6 +2194,7 @@
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
+      setConsensusTopology('3node');
       switchScenario('byzantine_fuzz');
     });
   </script>

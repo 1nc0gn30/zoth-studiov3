@@ -216,6 +216,212 @@
   ]
 }</script>
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
+  <style>
+    /* Interactive Consensus Deliberation Branches */
+    .deliberation-branches-card {
+      background: rgba(13, 14, 20, 0.92);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 40px auto;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 24px rgba(168, 85, 247, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    .deliberation-branches-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--comic-purple, #a855f7), var(--comic-cyan, #00f0ff), var(--comic-gold, #f59e0b));
+    }
+    .delib-branch-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 24px 0;
+    }
+    @media (max-width: 768px) {
+      .delib-branch-tabs {
+        grid-template-columns: 1fr;
+      }
+    }
+    .delib-branch-tab {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .delib-branch-tab:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+    .delib-branch-tab.active {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: var(--comic-purple, #a855f7);
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.25);
+    }
+    .delib-branch-tab.tab-azoth.active {
+      border-color: var(--comic-gold, #f59e0b);
+      background: rgba(245, 158, 11, 0.12);
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.25);
+    }
+    .delib-branch-tab.tab-athena.active {
+      border-color: var(--comic-cyan, #00f0ff);
+      background: rgba(0, 240, 255, 0.12);
+      box-shadow: 0 0 18px rgba(0, 240, 255, 0.25);
+    }
+    .delib-branch-tab.tab-kai.active {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.12);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.25);
+    }
+    .delib-tab-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .delib-tab-icon {
+      font-size: 1.4rem;
+    }
+    .delib-tab-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text-primary, #fff);
+      margin: 0;
+    }
+    .delib-tab-role {
+      font-size: 0.72rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: #94a3b8;
+    }
+    .delib-preview-stage {
+      background: rgba(5, 6, 12, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 16px;
+    }
+    .delib-speech-bubble {
+      background: rgba(168, 85, 247, 0.08);
+      border-left: 4px solid var(--comic-purple, #a855f7);
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 20px;
+      font-style: italic;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .delib-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .delib-metric-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .delib-metric-label {
+      font-size: 0.7rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .delib-metric-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--text-primary, #fff);
+      margin-top: 2px;
+    }
+    .delib-code-wrap {
+      background: #030408;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      max-height: 240px;
+      margin: 16px 0;
+    }
+    .delib-commit-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-delib-commit {
+      background: linear-gradient(135deg, var(--comic-purple, #a855f7), var(--comic-cyan, #00f0ff));
+      color: #030306;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-delib-commit:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      transform: translateY(-1px);
+    }
+    /* Theme overrides */
+    html[data-theme="light"] .deliberation-branches-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(0, 0, 0, 0.15);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+    }
+    html[data-theme="light"] .delib-branch-tab {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    html[data-theme="light"] .delib-preview-stage {
+      background: #f8fafc;
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    html[data-theme="light"] .delib-speech-bubble {
+      background: rgba(168, 85, 247, 0.08);
+      color: #1e293b;
+    }
+    html[data-theme="light"] .delib-code-wrap {
+      background: #0f172a;
+      color: #38bdf8;
+    }
+    html[data-theme="matrix"] .deliberation-branches-card {
+      background: rgba(0, 15, 5, 0.96);
+      border-color: rgba(0, 255, 65, 0.4);
+      box-shadow: 0 0 25px rgba(0, 255, 65, 0.2);
+    }
+    html[data-theme="matrix"] .btn-delib-commit {
+      background: #00ff41;
+      color: #000;
+    }
+    html[data-theme="gold"] .deliberation-branches-card {
+      background: rgba(20, 15, 5, 0.96);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+  </style>
 </head>
 <body>
 <a class="skip" href="#main-content">Skip to main content</a>
@@ -730,6 +936,113 @@
 </div>
 </div>
 </section>
+<!-- INTERACTIVE CONSENSUS DELIBERATION CHOICE BRANCHES -->
+<section aria-labelledby="deliberationHeading" class="deliberation-branches-card" id="deliberationBranches">
+  <div class="section-headline">
+    <div>
+      <div class="comic-hero-badge" style="background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.4);color:var(--comic-purple);">
+        ⚖️ INTERACTIVE CONSENSUS DELIBERATION
+      </div>
+      <h2 class="section-title" id="deliberationHeading">
+        Triangulation Branch Decision Crucible
+      </h2>
+    </div>
+    <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--comic-gold);font-weight:700;">
+      3 Sovereign Archetype Branches · Real-Time AST Synthesis
+    </span>
+  </div>
+  <p style="color:#cbd5e1;font-size:0.95rem;line-height:1.6;margin:0 0 16px;">
+    Select an agent archetype below to branch the consensus deliberation. Inspect their strategic stance, formal invariant proofs, and real-time execution telemetry before committing to the quorum.
+  </p>
+
+  <!-- 3 Branch Choice Selectors -->
+  <div class="delib-branch-tabs" role="tablist" aria-label="Deliberation Archetype Branches">
+    <div class="delib-branch-tab tab-azoth active" id="tabAzoth" role="tab" aria-selected="true" onclick="selectDeliberationBranch('azoth')">
+      <div class="delib-tab-header">
+        <span class="delib-tab-icon">👑</span>
+        <div>
+          <h3 class="delib-tab-title">Master Azoth</h3>
+          <span class="delib-tab-role">Prime Sovereign Crucible</span>
+        </div>
+      </div>
+      <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.4;">
+        Loopback AST Synthesis · Unified Deterministic Kernel
+      </div>
+    </div>
+
+    <div class="delib-branch-tab tab-athena" id="tabAthena" role="tab" aria-selected="false" onclick="selectDeliberationBranch('athena')">
+      <div class="delib-tab-header">
+        <span class="delib-tab-icon">🛡️</span>
+        <div>
+          <h3 class="delib-tab-title">Athena</h3>
+          <span class="delib-tab-role">Strategic Logic & Formal Invariants</span>
+        </div>
+      </div>
+      <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.4;">
+        Zero-Knowledge Invariant Gates · Symbolic Verification
+      </div>
+    </div>
+
+    <div class="delib-branch-tab tab-kai" id="tabKai" role="tab" aria-selected="false" onclick="selectDeliberationBranch('kai')">
+      <div class="delib-tab-header">
+        <span class="delib-tab-icon">⚡</span>
+        <div>
+          <h3 class="delib-tab-title">Kai</h3>
+          <span class="delib-tab-role">Kinetic Vanguard & Sandbox</span>
+        </div>
+      </div>
+      <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.4;">
+        Kinetic PTY Terminal Execution · Active Entropy Shield
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Deliberation Stage -->
+  <div class="delib-preview-stage" id="delibStage">
+    <div class="delib-speech-bubble" id="delibSpeech">
+      "All three computational sub-graphs must pass through the loopback crucible at 127.0.0.1:8484. We do not compromise on zero-leakage AST synthesis."
+    </div>
+
+    <div class="delib-metrics-grid">
+      <div class="delib-metric-item">
+        <div class="delib-metric-label">Quorum Status</div>
+        <div class="delib-metric-val" id="delibQuorum" style="color:var(--comic-gold);">3/3 ABSOLUTE QUORUM</div>
+      </div>
+      <div class="delib-metric-item">
+        <div class="delib-metric-label">Invariant Integrity</div>
+        <div class="delib-metric-val" id="delibInvariant" style="color:var(--comic-emerald);">100.00% DETERMINISTIC</div>
+      </div>
+      <div class="delib-metric-item">
+        <div class="delib-metric-label">Telemetry Leakage</div>
+        <div class="delib-metric-val" id="delibLeakage" style="color:var(--comic-cyan);">0.000 BYTES (ZERO-LEAK)</div>
+      </div>
+      <div class="delib-metric-item">
+        <div class="delib-metric-label">Execution Latency</div>
+        <div class="delib-metric-val" id="delibLatency" style="color:var(--comic-purple);">1.1ms LOCAL PTY</div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+      <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--comic-gold);font-weight:700;" id="delibCodeTitle">
+        PROPOSED AST &amp; VERIFICATION LOG:
+      </span>
+      <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--comic-cyan);" id="delibCodeTag">
+        BRANCH: AZOTH_CRUCIBLE_v1
+      </span>
+    </div>
+    <pre class="delib-code-wrap" id="delibCodeSnippet"></pre>
+
+    <div class="delib-commit-bar">
+      <span style="font-family:var(--font-mono);font-size:0.75rem;color:#94a3b8;" id="delibCommitStatus">
+        Ready to commit deliberation branch into the consensus pool.
+      </span>
+      <button class="btn-delib-commit" onclick="commitDeliberationBranch()" type="button">
+        ⚡ Commit Deliberation Branch to Quorum
+      </button>
+    </div>
+  </div>
+</section>
+
 <!-- INTERACTIVE ALCHEMICAL SOUNDBOARD -->
 <section aria-labelledby="soundboardHeading" class="soundboard-card" id="soundboardSection">
 <div class="section-headline">
@@ -1800,10 +2113,122 @@
         requestAnimationFrame(animateRadar);
       }
 
+      // ==========================================
+      // CONSENSUS DELIBERATION CHOICE BRANCHES
+      // ==========================================
+      var DELIB_BRANCHES = {
+        azoth: {
+          speech: '"All three computational sub-graphs must pass through the loopback crucible at 127.0.0.1:8484. We do not compromise on zero-leakage AST synthesis."',
+          quorum: "3/3 ABSOLUTE QUORUM",
+          invariant: "100.00% DETERMINISTIC",
+          leakage: "0.000 BYTES (ZERO-LEAK)",
+          latency: "1.1ms LOCAL PTY",
+          title: "PROPOSED AST & KERNEL INVARIANT:",
+          tag: "BRANCH: AZOTH_CRUCIBLE_v1",
+          code: "{\n  \"crucibleKernel\": \"0x8484_SOVEREIGN_ALCHEMIST\",\n  \"invariants\": {\n    \"zeroLeakage\": true,\n    \"localSiliconOnly\": true,\n    \"cloudMonolithTelemetry\": \"REJECTED_403\"\n  },\n  \"consensusProof\": \"Argon2id(XChaCha20Poly1305(AST_DAG))\"\n}",
+          tone: function() { synthCrystalChime(); }
+        },
+        athena: {
+          speech: '"A single unverified token invariant renders the entire compiler unsafe. Every AST transformation must be mathematically proven before dispatch."',
+          quorum: "3/3 FORMAL ZK VERIFIED",
+          invariant: "99.999% SYMBOLIC PROOF",
+          leakage: "0.000 BYTES (SEALED)",
+          latency: "0.8ms ZK-PROVER",
+          title: "PROPOSED ZK-INVARIANT FORMAL SPECIFICATION:",
+          tag: "BRANCH: ATHENA_ZK_PROOF_v2",
+          code: "interface FormalInvariantProof {\n  zkProofWitness: \"0xathena_zk_00_inv_39a\",\n  symbolicTreeDepth: 12,\n  entropyShield: \"ACTIVE\",\n  verifyTokenBoundary: (ast: ASTNode) => boolean;\n}",
+          tone: function() { synthAstrolabeSpin(); }
+        },
+        kai: {
+          speech: '"Speed and isolation are symbiotic. Execute the AST inside the local vOS PTY sandbox with zero hesitation and microsecond memory rollbacks."',
+          quorum: "3/3 REAL-TIME LOCK",
+          invariant: "4,800 OPS/SEC KINETIC",
+          leakage: "0.000 BYTES (ISOLATED)",
+          latency: "0.4ms VOS-PTY",
+          title: "PROPOSED KINETIC PTY SANDBOX PIPELINE:",
+          tag: "BRANCH: KAI_KINETIC_PTY_v3",
+          code: "# Kai Kinetic Execution Pipeline\nvos sandbox --isolate --pty-fast \\\n  --entropy-rollback=0.1ms \\\n  --kernel=azoth-v3 \\\n  --dispatch-quarantine=sealed",
+          tone: function() { synthHermesBurst(); }
+        }
+      };
+
+      var activeDelibBranch = "azoth";
+
+      window.selectDeliberationBranch = function(branchKey) {
+        activeDelibBranch = branchKey;
+        var data = DELIB_BRANCHES[branchKey];
+        if (!data) return;
+
+        ["azoth", "athena", "kai"].forEach(function(k) {
+          var tab = document.getElementById("tab" + k.charAt(0).toUpperCase() + k.slice(1));
+          if (tab) {
+            var isActive = (k === branchKey);
+            tab.classList.toggle("active", isActive);
+            tab.setAttribute("aria-selected", isActive ? "true" : "false");
+          }
+        });
+
+        var speech = document.getElementById("delibSpeech");
+        var quorum = document.getElementById("delibQuorum");
+        var invariant = document.getElementById("delibInvariant");
+        var leakage = document.getElementById("delibLeakage");
+        var latency = document.getElementById("delibLatency");
+        var codeTitle = document.getElementById("delibCodeTitle");
+        var codeTag = document.getElementById("delibCodeTag");
+        var codeSnippet = document.getElementById("delibCodeSnippet");
+        var commitStatus = document.getElementById("delibCommitStatus");
+
+        if (speech) speech.textContent = data.speech;
+        if (quorum) quorum.textContent = data.quorum;
+        if (invariant) invariant.textContent = data.invariant;
+        if (leakage) leakage.textContent = data.leakage;
+        if (latency) latency.textContent = data.latency;
+        if (codeTitle) codeTitle.textContent = data.title;
+        if (codeTag) codeTag.textContent = data.tag;
+        if (codeSnippet) codeSnippet.textContent = data.code;
+        if (commitStatus) commitStatus.textContent = "Branch selected: " + branchKey.toUpperCase() + ". Ready to commit to quorum.";
+
+        data.tone();
+      };
+
+      window.commitDeliberationBranch = function() {
+        var data = DELIB_BRANCHES[activeDelibBranch];
+        var commitStatus = document.getElementById("delibCommitStatus");
+        if (commitStatus) {
+          commitStatus.textContent = "✅ Quorum locked on " + activeDelibBranch.toUpperCase() + " branch! 100% consensus verified.";
+          commitStatus.style.color = "var(--comic-emerald)";
+        }
+        synthCrystalChime();
+        showToast("⚡ Deliberation Branch committed to AST Quorum with zero leakage!");
+      };
+
+      // Reading progress tracking
+      function saveReadingProgress() {
+        try {
+          var bookmark = {
+            episode: "s01e03",
+            title: "The Triangulation of Consensus",
+            pageIdx: 0,
+            pageTitle: "Triangulation of Consensus",
+            totalPages: 7,
+            scrollY: window.scrollY,
+            url: "/comic/s01e03.html",
+            updatedAt: Date.now()
+          };
+          localStorage.setItem("azoth_comic_bookmark", JSON.stringify(bookmark));
+        } catch (e) {}
+      }
+
+      window.addEventListener("scroll", function() {
+        saveReadingProgress();
+      }, { passive: true });
+
       // Initialize Cinematic 2.39:1 Player & Alchemical Chapter Markers for S01E03
       document.addEventListener("DOMContentLoaded", function() {
         loadAstPreset(0);
+        selectDeliberationBranch('azoth');
         animateRadar();
+        saveReadingProgress();
 
         const S01E03_CHAPTERS = [
           { time: 0, sigil: "☿", title: "Consensus Arena Nexus", desc: "Master Azoth opens the sacred crucible as cloud monopolies fracture.", pageIdx: 0 },

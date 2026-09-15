@@ -2614,7 +2614,59 @@
 </select>
 </div>
 </div>
-<button class="btn-omni btn-magenta" id="btn-record-shorts" style="width:100%; margin-bottom:10px;">📹 Record &amp; Download WebM Video (60 FPS + Audio)</button>
+<!-- High-Res Video Export Options Suite -->
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 10px;">
+<div>
+<label class="form-label" style="font-size:0.75rem;">Export Video Format</label>
+<select class="form-select" id="video-export-format">
+<option value="mp4" selected>🎥 MP4 (H.264 / AAC Pro)</option>
+<option value="webm_vp9">⚡ WebM (VP9 60 FPS Ultra)</option>
+<option value="webm_high">💎 WebM High-Bitrate (50 Mbps)</option>
+<option value="gif">🖼️ Animated GIF / WebP Loop</option>
+</select>
+</div>
+<div>
+<label class="form-label" style="font-size:0.75rem;">Export Resolution</label>
+<select class="form-select" id="video-export-res">
+<option value="1080p" selected>1080p Full HD (1080 × 1920)</option>
+<option value="4k">4K Ultra HD (2160 × 3840)</option>
+<option value="720p">720p HD (720 × 1280)</option>
+<option value="native">Native Canvas Viewport</option>
+</select>
+</div>
+</div>
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 12px;">
+<div>
+<label class="form-label" style="font-size:0.75rem;">Target FPS</label>
+<select class="form-select" id="video-export-fps">
+<option value="60" selected>60 FPS (Ultra Smooth Motion)</option>
+<option value="30">30 FPS (Standard Social)</option>
+</select>
+</div>
+<div>
+<label class="form-label" style="font-size:0.75rem;">Render Engine</label>
+<select class="form-select" id="video-export-engine">
+<option value="realtime" selected>⚡ Real-Time Capture (60 FPS + Audio)</option>
+<option value="offscreen_worker">🧵 OffscreenCanvas Worker (Zero Frame Drops)</option>
+</select>
+</div>
+</div>
+
+<div id="video-export-progress-wrap" style="display:none; background:rgba(0,0,0,0.5); border:1px solid var(--omni-border); border-radius:8px; padding:10px; margin-bottom:12px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-family:var(--font-mono); font-size:0.75rem;">
+    <span id="export-progress-status" style="color:var(--omni-cyan); font-weight:700;">Rendering Video...</span>
+    <span id="export-progress-pct" style="color:var(--text-primary);">0%</span>
+  </div>
+  <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-bottom:6px;">
+    <div id="export-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg, var(--omni-cyan), var(--omni-magenta)); transition:width 0.15s ease;"></div>
+  </div>
+  <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.68rem; color:var(--muted);">
+    <span id="export-frame-counter">Frame: 0 / 0</span>
+    <span id="export-time-eta">ETA: Calculating...</span>
+  </div>
+</div>
+
+<button class="btn-omni btn-magenta" id="btn-record-shorts" style="width:100%; margin-bottom:10px;">📹 Render &amp; Export Video (High-Res MP4/WebM)</button>
 <!-- Video Script & Subtitle Exporters -->
 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
 <button class="btn-omni btn-secondary btn-sm" onclick="exportSubtitles('srt')" style="flex:1;">📥 Export .SRT</button>
@@ -7267,14 +7319,161 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
           playSfx('warp');
         });
 
-        // MediaRecorder WebM/MP4 Video Recording with Proper Audio Muxing & Fallbacks
+        // Universal High-Res MP4/WebM Video Recording & OffscreenCanvas Worker Suite
         let mediaRecorder = null;
         let recordedChunks = [];
+        let offscreenWorkerRunning = false;
+
+        // Unified Client-Side Download Handler
+        window.downloadRecordedVideo = function(blob, filename, ext) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename || `zoth-video-${videoAspectRatio}-${Date.now()}.${ext || 'mp4'}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 15000);
+          playSfx('chime');
+          
+          const progWrap = document.getElementById('video-export-progress-wrap');
+          if (progWrap) {
+            document.getElementById('export-progress-status').textContent = `✅ Export Complete (${(blob.size / (1024 * 1024)).toFixed(2)} MB)`;
+            document.getElementById('export-progress-bar').style.width = '100%';
+            document.getElementById('export-progress-pct').textContent = '100%';
+            setTimeout(() => { progWrap.style.display = 'none'; }, 4000);
+          }
+          alert(`✅ ${videoAspectRatio} Video exported successfully (${(ext || 'mp4').toUpperCase()} · ${(blob.size / (1024 * 1024)).toFixed(2)} MB)!`);
+        };
+
+        // OffscreenCanvas Recording Worker Fallback Engine
+        function runOffscreenWorkerExport(options) {
+          const { format, res, fps, totalDuration, ext } = options;
+          const progWrap = document.getElementById('video-export-progress-wrap');
+          const progStatus = document.getElementById('export-progress-status');
+          const progBar = document.getElementById('export-progress-bar');
+          const progPct = document.getElementById('export-progress-pct');
+          const frameCounter = document.getElementById('export-frame-counter');
+          const timeEta = document.getElementById('export-time-eta');
+          const btn = document.getElementById('btn-record-shorts');
+
+          if (progWrap) progWrap.style.display = 'block';
+          if (progStatus) progStatus.textContent = '🧵 Offscreen Worker Initializing...';
+
+          let targetW = 1080;
+          let targetH = 1920;
+          if (videoAspectRatio === 'landscape') {
+            targetW = 1920; targetH = 1080;
+            if (res === '4k') { targetW = 3840; targetH = 2160; }
+            else if (res === '720p') { targetW = 1280; targetH = 720; }
+          } else if (videoAspectRatio === 'square') {
+            targetW = 1080; targetH = 1080;
+            if (res === '4k') { targetW = 2160; targetH = 2160; }
+            else if (res === '720p') { targetW = 720; targetH = 720; }
+          } else {
+            // portrait / shorts
+            if (res === '4k') { targetW = 2160; targetH = 3840; }
+            else if (res === '720p') { targetW = 720; targetH = 1280; }
+          }
+
+          const offCanvas = document.createElement('canvas');
+          offCanvas.width = targetW;
+          offCanvas.height = targetH;
+          const offCtx = offCanvas.getContext('2d');
+
+          const totalFrames = Math.ceil(totalDuration * fps);
+          let currentFrame = 0;
+          offscreenWorkerRunning = true;
+          const startTime = performance.now();
+
+          // Prepare stream from offscreen canvas
+          const stream = offCanvas.captureStream ? offCanvas.captureStream(fps) : canvas.captureStream(fps);
+          let workerChunks = [];
+          
+          let selectedMime = 'video/webm;codecs=vp9';
+          if (format === 'mp4' && typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')) {
+            selectedMime = 'video/mp4;codecs=avc1,mp4a.40.2';
+          } else if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+            selectedMime = 'video/webm;codecs=vp9';
+          } else if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('video/webm')) {
+            selectedMime = 'video/webm';
+          }
+
+          let workerRecorder = null;
+          try {
+            workerRecorder = new MediaRecorder(stream, { mimeType: selectedMime, videoBitsPerSecond: format === 'webm_high' ? 50000000 : 20000000 });
+          } catch(e) {
+            try { workerRecorder = new MediaRecorder(stream); } catch(err) { workerRecorder = null; }
+          }
+
+          if (workerRecorder) {
+            workerRecorder.ondataavailable = (e) => {
+              if (e.data && e.data.size > 0) workerChunks.push(e.data);
+            };
+            workerRecorder.onstop = () => {
+              offscreenWorkerRunning = false;
+              btn.textContent = '📹 Render & Export Video (High-Res MP4/WebM)';
+              btn.style.background = '';
+              const blob = new Blob(workerChunks, { type: selectedMime });
+              window.downloadRecordedVideo(blob, `zoth-worker-${videoAspectRatio}-${Date.now()}.${ext}`, ext);
+            };
+            workerRecorder.start(100);
+          }
+
+          function renderWorkerStep() {
+            if (!offscreenWorkerRunning) return;
+            if (currentFrame >= totalFrames) {
+              if (workerRecorder && workerRecorder.state === 'recording') {
+                workerRecorder.stop();
+              } else {
+                offscreenWorkerRunning = false;
+                btn.textContent = '📹 Render & Export Video (High-Res MP4/WebM)';
+                btn.style.background = '';
+                // Fallback snapshot blob if mediaRecorder not available
+                offCanvas.toBlob((blob) => {
+                  window.downloadRecordedVideo(blob || new Blob([]), `zoth-frame-${Date.now()}.png`, 'png');
+                }, 'image/png');
+              }
+              return;
+            }
+
+            const frameTime = currentFrame / fps;
+            // Draw frame at exact timecode
+            drawShortsFrame(frameTime);
+            offCtx.drawImage(canvas, 0, 0, offCanvas.width, offCanvas.height);
+
+            currentFrame++;
+            const pct = Math.round((currentFrame / totalFrames) * 100);
+            const elapsed = (performance.now() - startTime) / 1000;
+            const remainingFrames = totalFrames - currentFrame;
+            const fpsRender = currentFrame / Math.max(0.01, elapsed);
+            const eta = Math.ceil(remainingFrames / Math.max(1, fpsRender));
+
+            if (progBar) progBar.style.width = pct + '%';
+            if (progPct) progPct.textContent = pct + '%';
+            if (progStatus) progStatus.textContent = `🧵 Offscreen Rendering (${pct}% @ ${fpsRender.toFixed(1)} fps)...`;
+            if (frameCounter) frameCounter.textContent = `Frame: ${currentFrame} / ${totalFrames}`;
+            if (timeEta) timeEta.textContent = `ETA: ${eta}s remaining`;
+            btn.textContent = `🔴 Offscreen Rendering (${pct}%)... Stop`;
+
+            // Yield to browser loop to prevent freezing UI
+            if (currentFrame % 3 === 0) {
+              requestAnimationFrame(renderWorkerStep);
+            } else {
+              setTimeout(renderWorkerStep, 0);
+            }
+          }
+
+          renderWorkerStep();
+        }
 
         document.getElementById('btn-record-shorts')?.addEventListener('click', () => {
           const btn = document.getElementById('btn-record-shorts');
-          if (!canvas || !canvas.captureStream) {
-            alert('Canvas captureStream not supported in this browser.');
+          if (offscreenWorkerRunning) {
+            offscreenWorkerRunning = false;
+            btn.textContent = '📹 Render & Export Video (High-Res MP4/WebM)';
+            btn.style.background = '';
+            alert('Offscreen render cancelled.');
             return;
           }
 
@@ -7283,8 +7482,27 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
             return;
           }
 
+          const format = document.getElementById('video-export-format')?.value || 'mp4';
+          const res = document.getElementById('video-export-res')?.value || '1080p';
+          const fps = parseInt(document.getElementById('video-export-fps')?.value || '60', 10);
+          const engine = document.getElementById('video-export-engine')?.value || 'realtime';
+          const totalDuration = getTotalVideoDuration() || 30.0;
+          const isMp4 = format === 'mp4';
+          const ext = isMp4 ? 'mp4' : (format === 'gif' ? 'gif' : 'webm');
+
+          if (engine === 'offscreen_worker') {
+            runOffscreenWorkerExport({ format, res, fps, totalDuration, ext });
+            return;
+          }
+
+          if (!canvas || !canvas.captureStream) {
+            // Fallback to offscreen worker engine
+            runOffscreenWorkerExport({ format, res, fps, totalDuration, ext });
+            return;
+          }
+
           recordedChunks = [];
-          const canvasStream = canvas.captureStream(60);
+          const canvasStream = canvas.captureStream(fps);
           const audioCtx = getAudioContext();
           let combinedStream;
 
@@ -7318,7 +7536,13 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
             combinedStream = canvasStream;
           }
 
-          const candidateMimes = [
+          const candidateMimes = isMp4 ? [
+            'video/mp4;codecs=avc1,mp4a.40.2',
+            'video/mp4',
+            'video/webm;codecs=vp9,opus',
+            'video/webm;codecs=h264,opus',
+            'video/webm'
+          ] : [
             'video/webm;codecs=vp9,opus',
             'video/webm;codecs=vp8,opus',
             'video/webm;codecs=h264,opus',
@@ -7335,50 +7559,62 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
             }
           }
 
-          const recOptions = selectedMime ? { mimeType: selectedMime } : {};
+          const bps = format === 'webm_high' ? 50000000 : (res === '4k' ? 35000000 : 16000000);
+          const recOptions = selectedMime ? { mimeType: selectedMime, videoBitsPerSecond: bps } : {};
 
           try {
             mediaRecorder = new MediaRecorder(combinedStream, recOptions);
           } catch (e) {
-            mediaRecorder = new MediaRecorder(combinedStream);
+            try { mediaRecorder = new MediaRecorder(combinedStream); } catch(err) {
+              runOffscreenWorkerExport({ format, res, fps, totalDuration, ext });
+              return;
+            }
           }
 
           mediaRecorder.ondataavailable = (e) => {
             if (e.data && e.data.size > 0) recordedChunks.push(e.data);
           };
 
-          const isMp4 = selectedMime.includes('mp4');
-          const ext = isMp4 ? 'mp4' : 'webm';
+          const actualExt = (selectedMime && selectedMime.includes('mp4')) ? 'mp4' : 'webm';
+
+          const progWrap = document.getElementById('video-export-progress-wrap');
+          const progStatus = document.getElementById('export-progress-status');
+          const progBar = document.getElementById('export-progress-bar');
+          const progPct = document.getElementById('export-progress-pct');
+          const frameCounter = document.getElementById('export-frame-counter');
+          const timeEta = document.getElementById('export-time-eta');
+
+          if (progWrap) progWrap.style.display = 'block';
 
           mediaRecorder.onstop = () => {
-            btn.textContent = '📹 Record & Download WebM Video (60 FPS + Audio)';
+            btn.textContent = '📹 Render & Export Video (High-Res MP4/WebM)';
             btn.style.background = '';
             const blob = new Blob(recordedChunks, { type: selectedMime || 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `zoth-video-${videoAspectRatio}-${Date.now()}.${ext}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            playSfx('chime');
-            alert(`✅ ${videoAspectRatio} Video exported successfully (${ext.toUpperCase()} 60 FPS + Audio)!`);
+            window.downloadRecordedVideo(blob, `zoth-video-${videoAspectRatio}-${Date.now()}.${actualExt}`, actualExt);
           };
 
           // Reset time to 0 and ensure playback is active
           animTime = 0;
           if (!isPlaying) toggleShortsPlayback();
 
-          mediaRecorder.start();
+          mediaRecorder.start(100);
           playSfx('warp');
 
-          let countdown = Math.ceil(getTotalVideoDuration() || 30.0);
+          let countdown = Math.ceil(totalDuration);
+          const totalSec = countdown;
           btn.textContent = `🔴 Recording (${countdown}s remaining)... Click to Stop`;
           btn.style.background = '#ef4444';
 
           const timer = setInterval(() => {
             countdown--;
+            const elapsed = totalSec - countdown;
+            const pct = Math.min(100, Math.round((elapsed / totalSec) * 100));
+            if (progBar) progBar.style.width = pct + '%';
+            if (progPct) progPct.textContent = pct + '%';
+            if (progStatus) progStatus.textContent = `🔴 Capturing Real-Time Stream (${pct}%)...`;
+            if (frameCounter) frameCounter.textContent = `Frame: ~${Math.round(elapsed * fps)} / ~${totalSec * fps}`;
+            if (timeEta) timeEta.textContent = `ETA: ${Math.max(0, countdown)}s remaining`;
+
             if (countdown > 0 && mediaRecorder && mediaRecorder.state === 'recording') {
               btn.textContent = `🔴 Recording (${countdown}s remaining)... Click to Stop`;
             } else {

@@ -38,22 +38,57 @@
     }
   };
 
-  var TOOL_PATH = /\/(vault|registry|blueprints)(\/|$)|\/studio\/.+\.html|\/studio\/nexus-3d|\/studio\/swarm|\/signal(\/|$)/;
+  /* Workstations that bind loopback. Catalog pages (home, docs, comic, studio index) stay public. */
+  var TOOL_PATH = /\/(vault|memory|signal)(\/|$)|\/studio\/(?!index\.html(?:$|\?))[^/]+\.html/i;
 
-  function loopback() {
-    var h = (location.hostname || "").toLowerCase();
+  var PUBLIC_HOSTS = /^(zoth\.nullai\.tech|www\.zoth\.nullai\.tech|nullai\.tech|www\.nullai\.tech)$/;
+
+  function hostname() {
+    return (location.hostname || "").toLowerCase().replace(/^\[|\]$/g, "");
+  }
+
+  function isPrivateLan(h) {
+    if (/^10\.\d+\.\d+\.\d+$/.test(h)) return true;
+    if (/^192\.168\.\d+\.\d+$/.test(h)) return true;
+    var m = h.match(/^172\.(\d+)\.\d+\.\d+$/);
+    if (m) {
+      var n = +m[1];
+      return n >= 16 && n <= 31;
+    }
+    return false;
+  }
+
+  function isTailscale(h) {
+    if (h.endsWith(".ts.net") || h.endsWith(".tailscale.net")) return true;
+    var m = h.match(/^100\.(\d+)\.\d+\.\d+$/);
+    if (!m) return false;
+    var n = +m[1];
+    return n >= 64 && n <= 127;
+  }
+
+  function isLoopbackHost(h) {
     return (
       h === "127.0.0.1" ||
       h === "localhost" ||
-      h === "[::1]" ||
+      h === "::1" ||
       h === "0.0.0.0" ||
-      h.startsWith("100.") ||
-      h.startsWith("192.168.") ||
-      h.startsWith("10.") ||
-      h.startsWith("172.16.") ||
       h.endsWith(".local") ||
-      h.endsWith(".internal")
+      h.endsWith(".internal") ||
+      isPrivateLan(h) ||
+      isTailscale(h)
     );
+  }
+
+  function loopback() {
+    return isLoopbackHost(hostname());
+  }
+
+  function isPublicHub() {
+    var h = hostname();
+    if (PUBLIC_HOSTS.test(h)) return true;
+    if (h.endsWith(".netlify.app") || h.endsWith(".netlify.com")) return true;
+    if (h.endsWith(".nullai.tech")) return true;
+    return !isLoopbackHost(h);
   }
 
   function onDeck() {
@@ -62,6 +97,23 @@
 
   function forcePreview() {
     return /(?:\?|&)preview=1(?:&|$)/.test(location.search);
+  }
+
+  function runtimeKind() {
+    if (onDeck()) return "deck";
+    if (isTailscale(hostname())) return "tailscale";
+    if (isLoopbackHost(hostname())) return "local-preview";
+    return "public";
+  }
+
+  function isToolPath(path) {
+    var p = path || location.pathname || "";
+    if (p.length > 1 && p.charAt(p.length - 1) === "/") p = p.slice(0, -1);
+    return TOOL_PATH.test(p);
+  }
+
+  function shouldLockTools() {
+    return isPublicHub() && isToolPath() && !forcePreview() && !onDeck();
   }
 
   function detectOs() {
@@ -78,10 +130,6 @@
     if (/127\.0\.0\.1:8484|localhost:8484/.test(href)) return true;
     if (href === DECK || href === DECK + "/") return true;
     return false;
-  }
-
-  function isToolPath(path) {
-    return TOOL_PATH.test(path || location.pathname);
   }
 
   var aliveCache = null;
@@ -176,7 +224,19 @@
       "#zoth-modal .modal-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);font-size:.82rem}",
       "#zoth-modal .btn-dismiss{background:none;border:none;color:#94a3b8;cursor:pointer;font-family:Inter,sans-serif;padding:6px 10px}",
       "#zoth-modal .btn-dismiss:hover{color:#fff}",
-      "#zoth-modal .btn-social-wall{color:#e8c872;text-decoration:none;font-family:JetBrains Mono,monospace;font-weight:600}"
+      "#zoth-modal .btn-social-wall{color:#e8c872;text-decoration:none;font-family:JetBrains Mono,monospace;font-weight:600}",
+
+      "#zoth-tool-lock{position:fixed;inset:0;z-index:999990;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,6,10,0.92);backdrop-filter:blur(18px)}",
+      "#zoth-tool-lock.on{display:flex}",
+      "#zoth-tool-lock .lock-sheet{width:min(36rem,100%);background:var(--panel,#0d1222);color:var(--text,#f8fafc);border:1px solid var(--gold,#fbbf24);border-radius:22px;padding:32px 28px;font-family:var(--font-sans,Inter,system-ui,sans-serif);box-shadow:0 24px 80px rgba(0,0,0,0.55)}",
+      "#zoth-tool-lock .lock-kicker{font-family:var(--font-mono,ui-monospace,monospace);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold,#fbbf24);margin:0 0 12px}",
+      "#zoth-tool-lock h2{font-family:var(--font-display,Syne,serif);font-size:clamp(1.5rem,3vw,2.1rem);letter-spacing:-.03em;margin:0 0 10px;line-height:1.15}",
+      "#zoth-tool-lock p{color:var(--text-subhead,#cbd5e1);line-height:1.55;margin:0 0 18px}",
+      "#zoth-tool-lock .lock-actions{display:flex;flex-wrap:wrap;gap:10px}",
+      "#zoth-tool-lock .lock-on{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 20px;border-radius:999px;background:var(--gold,#fbbf24);color:#14110a;font-family:var(--font-mono,ui-monospace,monospace);font-weight:700;text-decoration:none;border:0;cursor:pointer}",
+      "#zoth-tool-lock .lock-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid var(--line,rgba(255,255,255,.18));background:transparent;color:var(--text,#f8fafc);font-family:var(--font-mono,ui-monospace,monospace);font-weight:600;text-decoration:none}",
+      "html.zoth-tool-locked body{overflow:hidden}",
+      "html.zoth-tool-locked #zoth-guide{display:none!important}"
     ].join("");
   }
 
@@ -342,8 +402,48 @@
   }
 
   function ribbon(on) {
-    // Disabled permanently per user specification
-    return;
+    ensureUi();
+    var r = document.getElementById("zoth-ribbon");
+    if (!r) return;
+    if (on) {
+      document.documentElement.classList.add("zoth-preview");
+      r.classList.add("on");
+    } else {
+      document.documentElement.classList.remove("zoth-preview");
+      r.classList.remove("on");
+    }
+  }
+
+  function ensureLock() {
+    if (document.getElementById("zoth-tool-lock")) return;
+    ensureUi();
+    var lock = document.createElement("div");
+    lock.id = "zoth-tool-lock";
+    lock.setAttribute("role", "dialog");
+    lock.setAttribute("aria-modal", "true");
+    lock.setAttribute("aria-labelledby", "zoth-lock-title");
+    lock.innerHTML =
+      '<div class="lock-sheet">' +
+        '<p class="lock-kicker">Local workstation · loopback only</p>' +
+        '<h2 id="zoth-lock-title">This tool runs on your machine, not in the cloud.</h2>' +
+        '<p>zoth.nullai.tech is the public preview. Swarm, vault, signal, and studio workstations bind <code>127.0.0.1:8484</code>. Opening them here would look broken. Install Zoth Studio locally — or open the catalog while you wait.</p>' +
+        '<div class="lock-actions">' +
+          '<button type="button" class="lock-on" data-zoth-open>Install locally</button>' +
+          '<a class="lock-ghost" href="/studio/">Studio catalog</a>' +
+          '<a class="lock-ghost" href="/#install">Install section</a>' +
+          '<a class="lock-ghost" href="?preview=1">Peek static preview</a>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(lock);
+    var openBtn = lock.querySelector("[data-zoth-open]");
+    if (openBtn) openBtn.addEventListener("click", show);
+  }
+
+  function showLock() {
+    ensureLock();
+    var lock = document.getElementById("zoth-tool-lock");
+    if (lock) lock.classList.add("on");
+    document.documentElement.classList.add("zoth-tool-locked");
   }
 
   function intercept(e) {
@@ -372,17 +472,40 @@
     });
   }
 
+  function stampRuntime() {
+    var kind = runtimeKind();
+    var html = document.documentElement;
+    html.setAttribute("data-zoth-runtime", kind);
+    html.setAttribute("data-zoth-public", isPublicHub() ? "1" : "0");
+    html.setAttribute("data-zoth-local", loopback() ? "1" : "0");
+  }
+
   function boot() {
+    stampRuntime();
     rewriteHubLinks();
     ensureUi();
     document.addEventListener("click", intercept, true);
+    if (isPublicHub()) ribbon(true);
+    if (shouldLockTools()) showLock();
   }
+
+  window.ZothRuntime = {
+    kind: runtimeKind,
+    isPublic: isPublicHub,
+    isLocal: loopback,
+    isDeck: onDeck,
+    isTailscale: function () { return isTailscale(hostname()); },
+    isToolPath: isToolPath,
+    shouldLockTools: shouldLockTools,
+    hostname: hostname
+  };
 
   window.ZothGate = {
     show: show,
     hide: hide,
     deckAlive: deckAlive,
     detectOs: detectOs,
+    runtime: window.ZothRuntime
   };
 
   if (document.readyState === "loading") {

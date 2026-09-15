@@ -53,13 +53,24 @@
     document.head.appendChild(link);
   }
 
-  ensureStylesheet("zoth-theme-core-css", "/assets/zoth-theme.css?v=12");
-  ensureStylesheet("zoth-theme-fx-css", "/assets/zoth-theme-fx.css?v=12");
-  ensureStylesheet("zoth-theme-transformer-css", "/assets/zoth-theme-transformer.css?v=12");
-  ensureStylesheet("zoth-theme-light-css", "/assets/zoth-theme-light.css?v=12");
-  ensureStylesheet("zoth-nav-css", "/assets/zoth-nav.css?v=12");
+  ensureStylesheet("zoth-theme-core-css", "/assets/zoth-theme.css?v=13");
+  ensureStylesheet("zoth-theme-fx-css", "/assets/zoth-theme-fx.css?v=10");
+  ensureStylesheet("zoth-theme-transformer-css", "/assets/zoth-theme-transformer.css?v=13");
+  ensureStylesheet("zoth-theme-light-css", "/assets/zoth-theme-light.css?v=13");
+  ensureStylesheet("zoth-theme-pack-frontier-css", "/assets/zoth-theme-pack-frontier.css?v=4");
+  ensureStylesheet("zoth-theme-pack-dev-css", "/assets/zoth-theme-pack-dev.css?v=4");
+  ensureStylesheet("zoth-theme-pack-atelier-css", "/assets/zoth-theme-pack-atelier.css?v=4");
+  ensureStylesheet("zoth-theme-pack-labs-css", "/assets/zoth-theme-pack-labs.css?v=4");
+  ensureStylesheet("zoth-theme-pack-editors-css", "/assets/zoth-theme-pack-editors.css?v=4");
+  ensureStylesheet("zoth-theme-pack-atelier2-css", "/assets/zoth-theme-pack-atelier2.css?v=4");
+  ensureStylesheet("zoth-theme-pack-labs2-css", "/assets/zoth-theme-pack-labs2.css?v=4");
+  ensureStylesheet("zoth-theme-pack-editors2-css", "/assets/zoth-theme-pack-editors2.css?v=4");
+  ensureStylesheet("zoth-nav-css", "/assets/zoth-nav.css?v=16");
   ensureStylesheet("zoth-magic-ui-css", "/assets/zoth-magic-ui.css?v=12");
   ensureStylesheet("zoth-luxury-fx-css", "/assets/zoth-luxury-fx.css?v=12");
+  ensureStylesheet("zoth-theme-life-css", "/assets/zoth-theme-life.css?v=2");
+  var lifeSheet = document.getElementById("zoth-theme-life-css");
+  if (lifeSheet && lifeSheet.parentNode) lifeSheet.parentNode.appendChild(lifeSheet);
   ensureStylesheet("zoth-interactive-dock-css", "/assets/zoth-interactive-dock.css?v=12");
   ensureStylesheet("zoth-footer-css", "/assets/zoth-footer.css?v=20260913c");
 
@@ -68,7 +79,7 @@
 
   if (!window.setZothTheme && !document.querySelector('script[src*="zoth-theme.js"]')) {
     var themeScript = document.createElement("script");
-    themeScript.src = ASSETS_BASE + "zoth-theme.js?v=12";
+    themeScript.src = ASSETS_BASE + "zoth-theme.js?v=19";
     document.head.appendChild(themeScript);
   }
 
@@ -99,11 +110,11 @@
     document.head.appendChild(logo3dScript);
   }
 
-  if (!window.ZothNetrunnerMemory && !document.querySelector('script[src*="zoth-netrunner-memory.js"]')) {
-    var netrunnerScript = document.createElement("script");
-    netrunnerScript.src = ASSETS_BASE + "zoth-netrunner-memory.js?v=3";
-    netrunnerScript.defer = true;
-    document.head.appendChild(netrunnerScript);
+  if (!window.CelestialTrail && !document.querySelector('script[src*="celestial-trail.js"]')) {
+    var trailScript = document.createElement("script");
+    trailScript.src = ASSETS_BASE + "celestial-trail.js?v=5";
+    trailScript.defer = true;
+    document.head.appendChild(trailScript);
   }
 
   // ── 2. Procedural Web Audio Synthesizer ──
@@ -341,7 +352,7 @@
       '<a class="foot-brand-lockup" href="/">',
       '<img alt="Master Azoth" class="foot-azoth" decoding="async" height="72" loading="lazy" src="' + ASSETS_BASE + 'mascot/azoth-bust.jpg" width="72"/>',
       '<span class="foot-brand-text">',
-      '<img alt="" class="foot-brand-logo" decoding="async" height="28" loading="lazy" src="' + ASSETS_BASE + 'brand/zoth-golden-z-192.png" width="28"/>',
+      '<div class="brand-emblem-wrap foot-brand-emblem-wrap" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;position:relative;vertical-align:middle;margin-right:8px;"><img alt="Zoth 3D Golden Emblem" class="brand-emblem-img" decoding="async" height="28" loading="lazy" src="' + ASSETS_BASE + 'brand/zoth-golden-z-192.png" width="28"/><span class="brand-emblem-halo"></span></div>',
       '<strong class="foot-brand-title">Zoth Studio</strong>',
       '</span></a>',
       '<small class="foot-brand-desc">Local-first workspace for a team of AI agents. Files stay on this machine.</small>',
@@ -437,11 +448,33 @@
     var shiftTText = isMac ? "⇧T" : "Shift+T";
     var shiftAText = isMac ? "⇧A" : "Shift+A";
 
-    var categories = ["Studio Originals", "Frontier AI & Tech", "Developer Archetypes"];
+    function themeCatMeta(cat) {
+      if (cat.indexOf("Studio") === 0) return { icon: "✦", short: "Originals" };
+      if (cat.indexOf("Frontier") === 0) return { icon: "🌐", short: "Frontier" };
+      if (cat.indexOf("Editor") === 0) return { icon: "💻", short: "Editors" };
+      return { icon: "⚡", short: "Dev" };
+    }
+    var categories = [];
+    themesList.forEach(function(t) {
+      var c = t.category || "Studio Originals";
+      if (categories.indexOf(c) === -1) categories.push(c);
+    });
+    var themeFilterChipsHtml = [
+      '<button type="button" class="theme-chip-btn active" data-filter-cat="all">All (' + themesList.length + ')</button>'
+    ].concat(categories.map(function(cat) {
+      var meta = themeCatMeta(cat);
+      return '<button type="button" class="theme-chip-btn" data-filter-cat="' + cat.toLowerCase() + '">' + meta.icon + " " + meta.short + "</button>";
+    })).join("");
+    var drawerFilterChipsHtml = [
+      '<button type="button" class="theme-chip-btn active" data-drawer-cat="all">All (' + themesList.length + ')</button>'
+    ].concat(categories.map(function(cat) {
+      var meta = themeCatMeta(cat);
+      return '<button type="button" class="theme-chip-btn" data-drawer-cat="' + cat.toLowerCase() + '">' + meta.short + "</button>";
+    })).join("");
     var themePopHtml = categories.map(function(cat) {
       var items = themesList.filter(function(t) { return (t.category || "Studio Originals") === cat; });
       if (!items.length) return "";
-      var catIcon = cat.startsWith("Studio") ? "✦" : (cat.startsWith("Frontier") ? "🌐" : "⚡");
+      var catIcon = themeCatMeta(cat).icon;
       
       return [
         '<div class="theme-popover-category" data-cat-name="' + cat.toLowerCase() + '">',
@@ -524,6 +557,46 @@
 
     var breadcrumbHtml = getBreadcrumbHtml();
 
+      // 🛸 Bespoke Cyberpunk Vector SVG Icon Matrix (Zero Default Emojis)
+  var NAV_ICONS = {
+    core: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2"/><polygon points="12,4 19,16 5,16" stroke="var(--gold, #fbbf24)" stroke-width="1.6" fill="none"/><circle cx="12" cy="12" r="2.5" fill="var(--cyan, #00f0ff)"/></svg>',
+    agents: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M13 2L4 13H11L9 22L20 10H13L16 2H13Z" stroke="var(--gold, #fbbf24)" stroke-width="1.6" fill="rgba(251, 191, 36, 0.15)" stroke-linejoin="round"/></svg>',
+    consensus: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M5 19L19 5M6 4L20 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><polygon points="12,2 15,12 12,22 9,12" fill="rgba(0, 240, 255, 0.2)" stroke="var(--cyan, #00f0ff)" stroke-width="1.5"/><circle cx="12" cy="12" r="2" fill="var(--gold, #fbbf24)"/></svg>',
+    swarm: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="3" fill="var(--cyan, #00f0ff)"/><ellipse cx="12" cy="12" rx="9" ry="3.5" stroke="currentColor" stroke-width="1.4" transform="rotate(-30 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.5" stroke="var(--gold, #fbbf24)" stroke-width="1.4" transform="rotate(30 12 12)"/><circle cx="18" cy="8.5" r="1.5" fill="var(--magenta, #c084fc)"/></svg>',
+    memory: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="5.5" r="2.2" fill="var(--cyan, #00f0ff)"/><circle cx="5.5" cy="13.5" r="2" fill="var(--magenta, #c084fc)"/><circle cx="18.5" cy="13.5" r="2" fill="var(--magenta, #c084fc)"/><circle cx="9" cy="19.5" r="1.8" fill="var(--gold, #fbbf24)"/><circle cx="15" cy="19.5" r="1.8" fill="var(--gold, #fbbf24)"/><path d="M12 7.7V11.5M12 11.5L7.5 12.5M12 11.5L16.5 12.5M6.8 15.5L8.2 17.7M17.2 15.5L15.8 17.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    zothworld: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/><ellipse cx="12" cy="12" rx="9" ry="4" stroke="var(--cyan, #00f0ff)" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="21" stroke="var(--gold, #fbbf24)" stroke-width="1.3"/></svg>',
+    cockpit: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="4" stroke="var(--gold, #fbbf24)" stroke-width="1.6"/><line x1="12" y1="1" x2="12" y2="5" stroke="var(--cyan, #00f0ff)" stroke-width="2"/><line x1="12" y1="19" x2="12" y2="23" stroke="var(--cyan, #00f0ff)" stroke-width="2"/><line x1="1" y1="12" x2="5" y2="12" stroke="var(--cyan, #00f0ff)" stroke-width="2"/><line x1="19" y1="12" x2="23" y2="12" stroke="var(--cyan, #00f0ff)" stroke-width="2"/></svg>',
+    webgen: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M13 2L4 13H11L9 22L20 10H13L16 2H13Z" stroke="var(--gold, #fbbf24)" stroke-width="1.6" fill="rgba(251, 191, 36, 0.15)" stroke-linejoin="round"/></svg>',
+    vos: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="3" y="4" width="18" height="15" rx="3" stroke="currentColor" stroke-width="1.6"/><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1.2"/><path d="M7 13.5L10 16L7 18.5" stroke="var(--cyan, #00f0ff)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="13" y1="18.5" x2="17" y2="18.5" stroke="var(--gold, #fbbf24)" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    nexus3d: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="12" x2="21" y2="7" stroke="var(--cyan, #00f0ff)" stroke-width="1.5"/><line x1="12" y1="12" x2="3" y2="7" stroke="var="var(--magenta, #c084fc)" stroke-width="1.5"/><line x1="12" y1="12" x2="12" y2="22" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/></svg>',
+    omnipost: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><polygon points="10,9 16,12 10,15" fill="var(--gold, #fbbf24)" stroke="var(--gold, #fbbf24)" stroke-width="1.2" stroke-linejoin="round"/><line x1="7" y1="4" x2="7" y2="8" stroke="var(--cyan, #00f0ff)" stroke-width="1.5"/><line x1="17" y1="4" x2="17" y2="8" stroke="var(--cyan, #00f0ff)" stroke-width="1.5"/></svg>',
+    math: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M4 19L9.5 5L13.5 17L17.5 9L21 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 21H21" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/><circle cx="9.5" cy="5" r="1.8" fill="var(--cyan, #00f0ff)"/><circle cx="13.5" cy="17" r="1.8" fill="var(--magenta, #c084fc)"/></svg>',
+    securecomms: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="4" y="10" width="16" height="11" rx="2.5" stroke="currentColor" stroke-width="1.6" fill="rgba(0, 240, 255, 0.08)"/><path d="M8 10V6.5C8 4.5 9.8 3 12 3C14.2 3 16 4.5 16 6.5V10" stroke="var(--gold, #fbbf24)" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.8" fill="var(--cyan, #00f0ff)"/><path d="M12 17V19" stroke="var(--cyan, #00f0ff)" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    signal: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M12 19V5M12 5L7 10M12 5L17 10" stroke="var(--gold, #fbbf24)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="19" r="2" fill="var(--cyan, #00f0ff)"/><path d="M5 12A10 10 0 0 1 19 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 15A6 6 0 0 1 16 15" stroke="var(--cyan, #00f0ff)" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    web3: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="9" stroke="var(--gold, #fbbf24)" stroke-width="1.6" fill="rgba(251, 191, 36, 0.1)"/><polygon points="12,6 16,12 12,18 8,12" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="12" cy="12" r="1.5" fill="var(--cyan, #00f0ff)"/></svg>',
+    pets: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><polygon points="6,4 18,4 22,10 12,21 2,10" stroke="var(--cyan, #00f0ff)" stroke-width="1.5" fill="rgba(0, 240, 255, 0.12)" stroke-linejoin="round"/><line x1="2" y1="10" x2="22" y2="10" stroke="var(--gold, #fbbf24)" stroke-width="1.4"/><line x1="12" y1="21" x2="6" y2="4" stroke="currentColor" stroke-width="1.2"/><line x1="12" y1="21" x2="18" y2="4" stroke="currentColor" stroke-width="1.2"/></svg>',
+    studio: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="1.2"/><circle cx="7" cy="15" r="2" fill="var(--gold, #fbbf24)"/><path d="M12 15H17" stroke="var(--cyan, #00f0ff)" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    comic: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="1.2"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.2"/><polygon points="7,7 9,6 9,8" fill="var(--gold, #fbbf24)"/><circle cx="17" cy="7" r="2" fill="var(--cyan, #00f0ff)"/><path d="M5 18L10 14" stroke="var(--magenta, #c084fc)" stroke-width="1.4"/></svg>',
+    social: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="3" fill="var(--cyan, #00f0ff)"/><path d="M12 3C7.03 3 3 7.03 3 12M21 12C21 7.03 16.97 3 12 3M12 21C16.97 21 21 16.97 21 12M3 12C3 16.97 7.03 21 12 21" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2"/><circle cx="19" cy="6" r="2" fill="var(--gold, #fbbf24)"/></svg>',
+    articles: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="var(--gold, #fbbf24)" stroke-width="1.6"/><line x1="8" y1="13" x2="16" y2="13" stroke="var(--cyan, #00f0ff)" stroke-width="1.4"/><line x1="8" y1="17" x2="14" y2="17" stroke="var(--cyan, #00f0ff)" stroke-width="1.4"/></svg>',
+    article: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="var(--gold, #fbbf24)"/><path d="M2 12C5 6 19 6 22 12C19 18 5 18 2 12Z" stroke="var(--cyan, #00f0ff)" stroke-width="1.5"/></svg>',
+    webgpu: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="8" width="8" height="8" rx="1" fill="rgba(0, 240, 255, 0.2)" stroke="var(--cyan, #00f0ff)" stroke-width="1.5"/><line x1="2" y1="8" x2="4" y2="8" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/><line x1="2" y1="12" x2="4" y2="12" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/><line x1="2" y1="16" x2="4" y2="16" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/><line x1="20" y1="8" x2="22" y2="8" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/><line x1="20" y1="12" x2="22" y2="12" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/><line x1="20" y1="16" x2="22" y2="16" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/></svg>',
+    adytum: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M12 2L2 22H22L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="14" r="3.5" stroke="var(--gold, #fbbf24)" stroke-width="1.6" fill="rgba(251, 191, 36, 0.2)"/><circle cx="12" cy="14" r="1.2" fill="var(--cyan, #00f0ff)"/><line x1="12" y1="7" x2="12" y2="9" stroke="var(--gold, #fbbf24)" stroke-width="1.5"/></svg>',
+    docs: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 2H20V22H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z" stroke="currentColor" stroke-width="1.6"/><line x1="8" y1="7" x2="16" y2="7" stroke="var(--gold, #fbbf24)" stroke-width="1.4"/><line x1="8" y1="11" x2="14" y2="11" stroke="var(--cyan, #00f0ff)" stroke-width="1.4"/></svg>',
+    vault: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="4" y="10" width="16" height="11" rx="2.5" stroke="currentColor" stroke-width="1.6" fill="rgba(0, 240, 255, 0.08)"/><path d="M8 10V6.5C8 4.5 9.8 3 12 3C14.2 3 16 4.5 16 6.5V10" stroke="var(--gold, #fbbf24)" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.8" fill="var(--cyan, #00f0ff)"/><path d="M12 17V19" stroke="var(--cyan, #00f0ff)" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    patron: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" stroke="var(--gold, #fbbf24)" stroke-width="1.6" fill="rgba(251, 191, 36, 0.2)" stroke-linejoin="round"/></svg>',
+    faq: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M9.09 9C9.325 8.33 9.85 7.81 10.5 7.53C11.16 7.25 11.9 7.23 12.56 7.47C13.22 7.71 13.76 8.19 14.04 8.82C14.33 9.45 14.33 10.17 14.04 10.8C13.5 12 12 12.5 12 14" stroke="var(--cyan, #00f0ff)" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="var(--gold, #fbbf24)"/></svg>',
+    search: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><circle cx="11" cy="11" r="7" stroke="var(--cyan, #00f0ff)" stroke-width="1.8"/><path d="M16 16L21 21" stroke="var(--gold, #fbbf24)" stroke-width="2" stroke-linecap="round"/></svg>',
+    annotate: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M12 20H21M16.5 3.5L20.5 7.5L7 21L3 21L3 17L16.5 3.5Z" stroke="var(--gold, #fbbf24)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    telemetry: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="var(--cyan, #00f0ff)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    audioOn: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="1.6" fill="rgba(0, 240, 255, 0.15)" stroke-linejoin="round"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="var(--cyan, #00f0ff)" stroke-width="1.6" stroke-linecap="round"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="var(--gold, #fbbf24)" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    audioOff: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><line x1="23" y1="9" x2="17" y2="15" stroke="var(--muted, #94a3b8)" stroke-width="1.6" stroke-linecap="round"/><line x1="17" y1="9" x2="23" y2="15" stroke="var(--muted, #94a3b8)" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    github: '<svg viewBox="0 0 24 24" fill="currentColor" class="nav-svg-icon"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>',
+    android: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="5" y="6" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 3L10 6M15 3L14 6" stroke="var(--gold, #fbbf24)" stroke-width="1.6" stroke-linecap="round"/><circle cx="9" cy="11" r="1.2" fill="var(--cyan, #00f0ff)"/><circle cx="15" cy="11" r="1.2" fill="var(--cyan, #00f0ff)"/></svg>',
+    deck: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 20H16M12 17V20" stroke="var(--gold, #fbbf24)" stroke-width="1.6" stroke-linecap="round"/><line x1="7" y1="9" x2="10" y2="9" stroke="var(--cyan, #00f0ff)" stroke-width="1.6" stroke-linecap="round"/><line x1="7" y1="12" x2="13" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    featured: '<svg viewBox="0 0 24 24" fill="none" class="nav-svg-icon"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="var(--gold, #fbbf24)" stroke="var(--gold, #fbbf24)" stroke-width="1.2" stroke-linejoin="round"/></svg>'
+  };
+
     var masterTopbarHtml = [
       '<a aria-label="Zoth Studio Home" class="brand js-hub" href="/">',
       '  <div class="brand-emblem-wrap">',
@@ -550,12 +623,12 @@
       '    </button>',
       '    <div class="nav-dropdown-menu">',
       '      <div class="nav-dropdown-header"><span>🔮 CORE AI ARCHITECTURE</span><span class="nav-item-badge">6 NODES</span></div>',
-      '      <a href="/zoth/"><span class="nav-item-icon-box">🔮</span><div class="nav-item-body"><strong>Master Azoth Core</strong><small>Sovereign Alchemical AI Core &amp; Synthesis</small></div><span class="nav-item-badge">CORE</span></a>',
-      '      <a href="/agents/"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>21-Agent Pantheon</strong><small>Autonomous Model Archetypes &amp; Sandboxes</small></div><span class="nav-item-badge">21 AGENTS</span></a>',
-      '      <a href="/studio/consensus.html"><span class="nav-item-icon-box">⚔️</span><div class="nav-item-body"><strong>Consensus Battle Arena</strong><small>3-Agent Triangulation &amp; AST Synthesis</small></div><span class="nav-item-badge">AST</span></a>',
-      '      <a href="/studio/swarm.html"><span class="nav-item-icon-box">🌐</span><div class="nav-item-body"><strong>3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></div><span class="nav-item-badge">3D GPU</span></a>',
-      '      <a href="/memory/"><span class="nav-item-icon-box">🧠</span><div class="nav-item-body"><strong>Memory Whitespace</strong><small>Biomorphic Associative Graph &amp; Lucy Oracle</small></div><span class="nav-item-badge">VECTOR</span></a>',
-      '      <a href="/zoth-world.html"><span class="nav-item-icon-box">🌌</span><div class="nav-item-body"><strong>Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm &amp; Multiverse</small></div><span class="nav-item-badge">3D</span></a>',
+      '      <a href="/zoth/"><span class="nav-item-icon-box">' + NAV_ICONS.core + '</span><div class="nav-item-body"><strong>Master Azoth Core</strong><small>Sovereign Alchemical AI Core &amp; Synthesis</small></div><span class="nav-item-badge">CORE</span></a>',
+      '      <a href="/agents/"><span class="nav-item-icon-box">' + NAV_ICONS.agents + '</span><div class="nav-item-body"><strong>21-Agent Pantheon</strong><small>Autonomous Model Archetypes &amp; Sandboxes</small></div><span class="nav-item-badge">21 AGENTS</span></a>',
+      '      <a href="/studio/consensus.html"><span class="nav-item-icon-box">' + NAV_ICONS.consensus + '</span><div class="nav-item-body"><strong>Consensus Battle Arena</strong><small>3-Agent Triangulation &amp; AST Synthesis</small></div><span class="nav-item-badge">AST</span></a>',
+      '      <a href="/studio/swarm.html"><span class="nav-item-icon-box">' + NAV_ICONS.swarm + '</span><div class="nav-item-body"><strong>3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></div><span class="nav-item-badge">3D GPU</span></a>',
+      '      <a href="/memory/"><span class="nav-item-icon-box">' + NAV_ICONS.memory + '</span><div class="nav-item-body"><strong>Memory Whitespace</strong><small>Biomorphic Associative Graph &amp; Lucy Oracle</small></div><span class="nav-item-badge">VECTOR</span></a>',
+      '      <a href="/zoth-world.html"><span class="nav-item-icon-box">' + NAV_ICONS.zothworld + '</span><div class="nav-item-body"><strong>Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm &amp; Multiverse</small></div><span class="nav-item-badge">3D</span></a>',
       '    </div>',
       '  </div>',
 
@@ -567,17 +640,17 @@
       '    </button>',
       '    <div class="nav-dropdown-menu nav-dropdown-mega">',
       '      <div class="nav-dropdown-header"><span>🪐 14+ STUDIO WORKSTATIONS</span><span class="nav-item-badge">LOCAL DAGS</span></div>',
-      '      <a href="/studio/cockpit.html"><span class="nav-item-icon-box">🪐</span><div class="nav-item-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>',
-      '      <a href="/studio/webgen.html"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
-      '      <a href="/studio/vos-sandbox.html"><span class="nav-item-icon-box">💻</span><div class="nav-item-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
-      '      <a href="/studio/nexus-3d.html"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
-      '      <a href="/studio/omnipost.html"><span class="nav-item-icon-box">🎬</span><div class="nav-item-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
-      '      <a href="/studio/math-pillars.html"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
-      '      <a href="/secure-comms/"><span class="nav-item-icon-box">🔒</span><div class="nav-item-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
-      '      <a href="/signal/"><span class="nav-item-icon-box">📡</span><div class="nav-item-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
-      '      <a href="/studio/web3-hub.html"><span class="nav-item-icon-box">🪙</span><div class="nav-item-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
-      '      <a href="/pets/"><span class="nav-item-icon-box">💎</span><div class="nav-item-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
-      '      <a href="/studio/"><span class="nav-item-icon-box">🛠️</span><div class="nav-item-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
+      '      <a href="/studio/cockpit.html"><span class="nav-item-icon-box">' + NAV_ICONS.cockpit + '</span><div class="nav-item-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>',
+      '      <a href="/studio/webgen.html"><span class="nav-item-icon-box">' + NAV_ICONS.webgen + '</span><div class="nav-item-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
+      '      <a href="/studio/vos-sandbox.html"><span class="nav-item-icon-box">' + NAV_ICONS.vos + '</span><div class="nav-item-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
+      '      <a href="/studio/nexus-3d.html"><span class="nav-item-icon-box">' + NAV_ICONS.nexus3d + '</span><div class="nav-item-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
+      '      <a href="/studio/omnipost.html"><span class="nav-item-icon-box">' + NAV_ICONS.omnipost + '</span><div class="nav-item-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
+      '      <a href="/studio/math-pillars.html"><span class="nav-item-icon-box">' + NAV_ICONS.math + '</span><div class="nav-item-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
+      '      <a href="/secure-comms/"><span class="nav-item-icon-box">' + NAV_ICONS.securecomms + '</span><div class="nav-item-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
+      '      <a href="/signal/"><span class="nav-item-icon-box">' + NAV_ICONS.signal + '</span><div class="nav-item-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
+      '      <a href="/studio/web3-hub.html"><span class="nav-item-icon-box">' + NAV_ICONS.web3 + '</span><div class="nav-item-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
+      '      <a href="/pets/"><span class="nav-item-icon-box">' + NAV_ICONS.pets + '</span><div class="nav-item-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
+      '      <a href="/studio/"><span class="nav-item-icon-box">' + NAV_ICONS.studio + '</span><div class="nav-item-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
       '    </div>',
       '  </div>',
 
@@ -589,12 +662,12 @@
       '    </button>',
       '    <div class="nav-dropdown-menu">',
       '      <div class="nav-dropdown-header"><span>🌌 UNIVERSE &amp; PUBLICATIONS</span><span class="nav-item-badge">STORIES</span></div>',
-      '      <a href="/comic/"><span class="nav-item-icon-box">🎨</span><div class="nav-item-body"><strong>AZOTH Anime Comic</strong><small>Season 1 Ep 1: Genesis in Silicon Rain (Audio)</small></div><span class="nav-item-badge">AUDIO</span></a>',
-      '      <a href="/social/"><span class="nav-item-icon-box">🌌</span><div class="nav-item-body"><strong>Community Social Wall</strong><small>Builder Dispatches &amp; Showcase Transmissions</small></div><span class="nav-item-badge">LIVE</span></a>',
-      '      <a href="/articles/"><span class="nav-item-icon-box">📜</span><div class="nav-item-body"><strong>Engineering Whitepapers</strong><small>Architectural Deep-Dives &amp; Benchmarks</small></div><span class="nav-item-badge">RESEARCH</span></a>',
-      '      <a href="/article/"><span class="nav-item-icon-box">🔮</span><div class="nav-item-body"><strong>Sovereign AI Manifesto</strong><small>Multi-Agent Consensus &amp; Philosophical Vision</small></div><span class="nav-item-badge">VISION</span></a>',
-      '      <a href="/ai-webgpu.html"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></div><span class="nav-item-badge">WEBGPU</span></a>',
-      '      <a href="/adytum/"><span class="nav-item-icon-box">🏛️</span><div class="nav-item-body"><strong>Adytum Sanctum</strong><small>Offline Hardware Gateway &amp; Cryptography</small></div><span class="nav-item-badge">SANCTUM</span></a>',
+      '      <a href="/comic/"><span class="nav-item-icon-box">' + NAV_ICONS.comic + '</span><div class="nav-item-body"><strong>AZOTH Anime Comic</strong><small>Season 1 Ep 1: Genesis in Silicon Rain (Audio)</small></div><span class="nav-item-badge">AUDIO</span></a>',
+      '      <a href="/social/"><span class="nav-item-icon-box">' + NAV_ICONS.social + '</span><div class="nav-item-body"><strong>Community Social Wall</strong><small>Builder Dispatches &amp; Showcase Transmissions</small></div><span class="nav-item-badge">LIVE</span></a>',
+      '      <a href="/articles/"><span class="nav-item-icon-box">' + NAV_ICONS.articles + '</span><div class="nav-item-body"><strong>Engineering Whitepapers</strong><small>Architectural Deep-Dives &amp; Benchmarks</small></div><span class="nav-item-badge">RESEARCH</span></a>',
+      '      <a href="/article/"><span class="nav-item-icon-box">' + NAV_ICONS.article + '</span><div class="nav-item-body"><strong>Sovereign AI Manifesto</strong><small>Multi-Agent Consensus &amp; Philosophical Vision</small></div><span class="nav-item-badge">VISION</span></a>',
+      '      <a href="/ai-webgpu.html"><span class="nav-item-icon-box">' + NAV_ICONS.webgpu + '</span><div class="nav-item-body"><strong>WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></div><span class="nav-item-badge">WEBGPU</span></a>',
+      '      <a href="/adytum/"><span class="nav-item-icon-box">' + NAV_ICONS.adytum + '</span><div class="nav-item-body"><strong>Adytum Sanctum</strong><small>Offline Hardware Gateway &amp; Cryptography</small></div><span class="nav-item-badge">SANCTUM</span></a>',
       '    </div>',
       '  </div>',
 
@@ -606,10 +679,10 @@
       '    </button>',
       '    <div class="nav-dropdown-menu">',
       '      <div class="nav-dropdown-header"><span>📚 DOCUMENTATION &amp; SECURITY</span><span class="nav-item-badge">SPECS</span></div>',
-      '      <a href="/docs/"><span class="nav-item-icon-box">📚</span><div class="nav-item-body"><strong>Master Documentation</strong><small>Port Topology, 1-Click Install Scripts &amp; API Guide</small></div><span class="nav-item-badge">DOCS</span></a>',
-      '      <a href="/vault/"><span class="nav-item-icon-box">🔐</span><div class="nav-item-body"><strong>Sovereign Vault</strong><small>Argon2id Secrets, Tokens &amp; Keyrings</small></div><span class="nav-item-badge">ARGON2</span></a>',
-      '      <a href="/pricing/"><span class="nav-item-icon-box">💛</span><div class="nav-item-body"><strong>Support / Patron</strong><small>Keep Zoth Free, Open Source &amp; Sovereign</small></div><span class="nav-item-badge">PATRON</span></a>',
-      '      <a href="/faq.html"><span class="nav-item-icon-box">❓</span><div class="nav-item-body"><strong>FAQ &amp; Troubleshooting</strong><small>Hardware Requirements, Ports &amp; Diagnostics</small></div><span class="nav-item-badge">FAQ</span></a>',
+      '      <a href="/docs/"><span class="nav-item-icon-box">' + NAV_ICONS.docs + '</span><div class="nav-item-body"><strong>Master Documentation</strong><small>Port Topology, 1-Click Install Scripts &amp; API Guide</small></div><span class="nav-item-badge">DOCS</span></a>',
+      '      <a href="/vault/"><span class="nav-item-icon-box">' + NAV_ICONS.vault + '</span><div class="nav-item-body"><strong>Sovereign Vault</strong><small>Argon2id Secrets, Tokens &amp; Keyrings</small></div><span class="nav-item-badge">ARGON2</span></a>',
+      '      <a href="/pricing/"><span class="nav-item-icon-box">' + NAV_ICONS.patron + '</span><div class="nav-item-body"><strong>Support / Patron</strong><small>Keep Zoth Free, Open Source &amp; Sovereign</small></div><span class="nav-item-badge">PATRON</span></a>',
+      '      <a href="/faq.html"><span class="nav-item-icon-box">' + NAV_ICONS.faq + '</span><div class="nav-item-body"><strong>FAQ &amp; Troubleshooting</strong><small>Hardware Requirements, Ports &amp; Diagnostics</small></div><span class="nav-item-badge">FAQ</span></a>',
       '    </div>',
       '  </div>',
 
@@ -630,12 +703,12 @@
 
       '  <!-- 🔍 Command Palette Quick Trigger -->',
       '  <button type="button" class="nav-pill nav-palette-btn" title="Open Global Command Palette (' + cmdKText + ')" aria-label="Command Palette">',
-      '    <span class="palette-icon">🔍</span><kbd class="nav-kbd">' + cmdKText + '</kbd>',
+      '    ' + NAV_ICONS.search + '<kbd class="nav-kbd">' + cmdKText + '</kbd>',
       '  </button>',
 
       '  <!-- ✏️ Visual Annotator Quick Trigger -->',
       '  <button type="button" class="nav-pill nav-annotate-btn" title="Toggle On-Screen Annotator &amp; Feedback (' + shiftAText + ')" aria-label="Toggle Annotator">',
-      '    <span class="annotate-icon">✏️</span><span class="annotate-text">Annotate</span><kbd class="nav-kbd">' + shiftAText + '</kbd>',
+      '    ' + NAV_ICONS.annotate + '<span class="annotate-text">Annotate</span><kbd class="nav-kbd">' + shiftAText + '</kbd>',
       '  </button>',
 
       '  <!-- 🎨 Master Theme Popover -->',
@@ -649,7 +722,7 @@
       '    <div class="nav-dropdown-menu nav-theme-popover-menu">',
       '      <div class="theme-popover-header">',
       '        <div class="theme-popover-title">',
-      '          <span class="palette-icon">🎨</span> Visual Identity Studio',
+      '          ' + NAV_ICONS.studio + ' <span>Visual Identity Studio</span>',
       '        </div>',
       '        <div class="theme-popover-actions">',
       '          <button type="button" class="theme-audio-toggle-btn" title="Toggle UI Sound Synthesizer">' + (isAudioOn ? '🔊 Audio FX' : '🔇 Audio Off') + '</button>',
@@ -657,21 +730,18 @@
       '        </div>',
       '      </div>',
       '      <div class="theme-popover-search-wrap">',
-      '        <span class="search-icon">🔍</span>',
-      '        <input type="text" class="theme-search-input" placeholder="Filter 16 themes (e.g. Apple, Matrix, Grok)..." autocomplete="off" spellcheck="false" />',
+      '        ' + NAV_ICONS.search + '',
+      '        <input type="text" class="theme-search-input" placeholder="Filter ' + themesList.length + ' themes (e.g. Apple, Matrix, Grok)..." autocomplete="off" spellcheck="false" />',
       '        <button type="button" class="theme-search-clear" style="display:none;">×</button>',
       '      </div>',
       '      <div class="theme-filter-chips">',
-      '        <button type="button" class="theme-chip-btn active" data-filter-cat="all">All (16)</button>',
-      '        <button type="button" class="theme-chip-btn" data-filter-cat="studio originals">✦ Originals</button>',
-      '        <button type="button" class="theme-chip-btn" data-filter-cat="frontier ai & tech">🌐 Frontier</button>',
-      '        <button type="button" class="theme-chip-btn" data-filter-cat="developer archetypes">⚡ Dev</button>',
+      themeFilterChipsHtml,
       '      </div>',
       '      <div class="theme-popover-scroll-body">',
       themePopHtml,
       '      </div>',
       '      <div class="theme-popover-footer">',
-      '        <span>⚡ 16 Sovereign Workstation Archetypes</span>',
+      '        <span>⚡ ' + themesList.length + ' Sovereign Workstation Archetypes</span>',
       '        <span><kbd class="nav-kbd">' + shiftTText + '</kbd> to cycle</span>',
       '      </div>',
       '    </div>',
@@ -679,7 +749,7 @@
 
       '  <!-- 🐙 GitHub Repository Pill -->',
       '  <a class="nav-pill git" href="https://github.com/NullAITech/zoth-studio" rel="noopener noreferrer" target="_blank" title="GitHub Repository — Open Source code, Debian packages, and releases">',
-      '    <span>🐙 GitHub ↗</span>',
+      '    ' + NAV_ICONS.github + ' <span>GitHub ↗</span>',
       '  </a>',
       '</nav>',
 
@@ -886,6 +956,7 @@
         } else {
           themeDd.classList.remove("open");
           themeTriggerBtn.setAttribute("aria-expanded", "false");
+          themeTriggerBtn.blur();
         }
       });
 
@@ -927,13 +998,17 @@
         e.preventDefault();
         e.stopPropagation();
         var wasOpen = dd.classList.contains("open");
-        document.querySelectorAll(".nav-dropdown.open").forEach(function(d) { d.classList.remove("open"); });
+        document.querySelectorAll(".nav-dropdown.open").forEach(function(d) {
+          d.classList.remove("open");
+          var b = d.querySelector(".nav-dropdown-btn");
+          if (b) b.setAttribute("aria-expanded", "false");
+        });
         if (!wasOpen) {
           dd.classList.add("open");
           btn.setAttribute("aria-expanded", "true");
           if (window.ZothAudioFX) window.ZothAudioFX.playHover();
         } else {
-          btn.setAttribute("aria-expanded", "false");
+          btn.blur();
         }
       });
 
@@ -990,10 +1065,10 @@
       '<div class="drawer-section drawer-tools-section">',
       '  <div class="drawer-heading">⚡ Quick Actions</div>',
       '  <div class="drawer-quick-tools-grid">',
-      '    <button type="button" class="drawer-tool-pill drawer-palette-trigger"><span>🔍</span> Command Palette <kbd class="nav-kbd">' + cmdKText + '</kbd></button>',
-      '    <button type="button" class="drawer-tool-pill drawer-annotate-trigger"><span>✏️</span> On-Screen Annotator <kbd class="nav-kbd">' + shiftAText + '</kbd></button>',
-      '    <button type="button" class="drawer-tool-pill drawer-telemetry-trigger"><span>⚡</span> Telemetry HUD</button>',
-      '    <button type="button" class="drawer-tool-pill drawer-audio-trigger"><span>' + (isAudioOn ? '🔊' : '🔇') + '</span> Audio FX</button>',
+      '    <button type="button" class="drawer-tool-pill drawer-palette-trigger">' + NAV_ICONS.search + ' Command Palette <kbd class="nav-kbd">' + cmdKText + '</kbd></button>',
+      '    <button type="button" class="drawer-tool-pill drawer-annotate-trigger">' + NAV_ICONS.annotate + ' On-Screen Annotator <kbd class="nav-kbd">' + shiftAText + '</kbd></button>',
+      '    <button type="button" class="drawer-tool-pill drawer-telemetry-trigger">' + NAV_ICONS.telemetry + ' Telemetry HUD</button>',
+      '    <button type="button" class="drawer-tool-pill drawer-audio-trigger">' + (isAudioOn ? NAV_ICONS.audioOn : NAV_ICONS.audioOff) + ' Audio FX</button>',
       '  </div>',
       '</div>',
 
@@ -1001,14 +1076,11 @@
       '<div class="drawer-section drawer-theme-section">',
       '  <div class="drawer-heading">🎨 Visual Theme (' + themesList.length + ' Archetypes)</div>',
       '  <div class="drawer-search-wrap">',
-      '    <span class="search-icon">🔍</span>',
-      '    <input type="text" class="drawer-theme-search-input" placeholder="Search 16 themes..." autocomplete="off" />',
+      '    ' + NAV_ICONS.search + '',
+      '    <input type="text" class="drawer-theme-search-input" placeholder="Search themes..." autocomplete="off" />',
       '  </div>',
       '  <div class="theme-filter-chips drawer-filter-chips">',
-      '    <button type="button" class="theme-chip-btn active" data-drawer-cat="all">All (16)</button>',
-      '    <button type="button" class="theme-chip-btn" data-drawer-cat="studio originals">Originals</button>',
-      '    <button type="button" class="theme-chip-btn" data-drawer-cat="frontier ai & tech">Frontier</button>',
-      '    <button type="button" class="theme-chip-btn" data-drawer-cat="developer archetypes">Dev</button>',
+      drawerFilterChipsHtml,
       '  </div>',
       '  <div class="drawer-theme-grid">',
       themesList.map(function(t) {
@@ -1021,61 +1093,61 @@
       '<!-- ✦ Featured & Zero-Code -->',
       '<div class="drawer-section">',
       '  <div class="drawer-heading">✦ Featured</div>',
-      '  <a class="drawer-link drawer-hero-link" href="/#for-everyone"><span class="d-link-icon">✦</span><div class="d-link-body"><strong>For You (No-Code Showcases)</strong><small>How Non-Tech Founders, Creators &amp; Teams Use Zoth</small></div><span class="nav-item-badge">SHOWCASE</span></a>',
+      '  <a class="drawer-link drawer-hero-link" href="/#for-everyone"><span class="d-link-icon">' + NAV_ICONS.featured + '</span><div class="d-link-body"><strong>For You (No-Code Showcases)</strong><small>How Non-Tech Founders, Creators &amp; Teams Use Zoth</small></div><span class="nav-item-badge">SHOWCASE</span></a>',
       '</div>',
 
       '<!-- 🔮 Core AI & Pantheon -->',
       '<div class="drawer-section">',
       '  <div class="drawer-heading">🔮 Core AI &amp; Pantheon</div>',
-      '  <a class="drawer-link" href="/zoth/"><span class="d-link-icon">🔮</span><div class="d-link-body"><strong>Master Azoth Core</strong><small>Sovereign Alchemical AI Core &amp; Synthesis</small></div><span class="nav-item-badge">CORE</span></a>',
-      '  <a class="drawer-link" href="/agents/"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>21-Agent Pantheon</strong><small>Autonomous Model Archetypes &amp; Sandboxes</small></div><span class="nav-item-badge">21 AGENTS</span></a>',
-      '  <a class="drawer-link" href="/studio/consensus.html"><span class="d-link-icon">⚔️</span><div class="d-link-body"><strong>Consensus Battle Arena</strong><small>3-Agent Triangulation &amp; AST Synthesis</small></div><span class="nav-item-badge">AST</span></a>',
-      '  <a class="drawer-link" href="/studio/swarm.html"><span class="d-link-icon">🌐</span><div class="d-link-body"><strong>3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></div><span class="nav-item-badge">3D GPU</span></a>',
-      '  <a class="drawer-link" href="/memory/"><span class="d-link-icon">🧠</span><div class="d-link-body"><strong>Memory Whitespace</strong><small>Biomorphic Associative Graph &amp; Lucy Oracle</small></div><span class="nav-item-badge">VECTOR</span></a>',
-      '  <a class="drawer-link" href="/zoth-world.html"><span class="d-link-icon">🌌</span><div class="d-link-body"><strong>Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm &amp; Multiverse</small></div><span class="nav-item-badge">3D</span></a>',
+      '  <a class="drawer-link" href="/zoth/"><span class="d-link-icon">' + NAV_ICONS.core + '</span><div class="d-link-body"><strong>Master Azoth Core</strong><small>Sovereign Alchemical AI Core &amp; Synthesis</small></div><span class="nav-item-badge">CORE</span></a>',
+      '  <a class="drawer-link" href="/agents/"><span class="d-link-icon">' + NAV_ICONS.agents + '</span><div class="d-link-body"><strong>21-Agent Pantheon</strong><small>Autonomous Model Archetypes &amp; Sandboxes</small></div><span class="nav-item-badge">21 AGENTS</span></a>',
+      '  <a class="drawer-link" href="/studio/consensus.html"><span class="d-link-icon">' + NAV_ICONS.consensus + '</span><div class="d-link-body"><strong>Consensus Battle Arena</strong><small>3-Agent Triangulation &amp; AST Synthesis</small></div><span class="nav-item-badge">AST</span></a>',
+      '  <a class="drawer-link" href="/studio/swarm.html"><span class="d-link-icon">' + NAV_ICONS.swarm + '</span><div class="d-link-body"><strong>3D Swarm Arena</strong><small>Real-time WebGL Kinetic Battle Arena</small></div><span class="nav-item-badge">3D GPU</span></a>',
+      '  <a class="drawer-link" href="/memory/"><span class="d-link-icon">' + NAV_ICONS.memory + '</span><div class="d-link-body"><strong>Memory Whitespace</strong><small>Biomorphic Associative Graph &amp; Lucy Oracle</small></div><span class="nav-item-badge">VECTOR</span></a>',
+      '  <a class="drawer-link" href="/zoth-world.html"><span class="d-link-icon">' + NAV_ICONS.zothworld + '</span><div class="d-link-body"><strong>Zoth World 3D Sanctum</strong><small>Living Hermetic Swarm &amp; Multiverse</small></div><span class="nav-item-badge">3D</span></a>',
       '</div>',
 
       '<!-- 🪐 Studio Workstations -->',
       '<div class="drawer-section">',
       '  <div class="drawer-heading">🪐 Workstations &amp; DAGs</div>',
-      '  <a class="drawer-link" href="/studio/cockpit.html"><span class="d-link-icon">🪐</span><div class="d-link-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>',
-      '  <a class="drawer-link" href="/studio/webgen.html"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
-      '  <a class="drawer-link" href="/studio/vos-sandbox.html"><span class="d-link-icon">💻</span><div class="d-link-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
-      '  <a class="drawer-link" href="/studio/nexus-3d.html"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
-      '  <a class="drawer-link" href="/studio/omnipost.html"><span class="d-link-icon">🎬</span><div class="d-link-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
-      '  <a class="drawer-link" href="/studio/math-pillars.html"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
-      '  <a class="drawer-link" href="/secure-comms/"><span class="d-link-icon">🔒</span><div class="d-link-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
-      '  <a class="drawer-link" href="/signal/"><span class="d-link-icon">📡</span><div class="d-link-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
-      '  <a class="drawer-link" href="/studio/web3-hub.html"><span class="d-link-icon">🪙</span><div class="d-link-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
-      '  <a class="drawer-link" href="/pets/"><span class="d-link-icon">💎</span><div class="d-link-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
-      '  <a class="drawer-link" href="/studio/"><span class="d-link-icon">🛠️</span><div class="d-link-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html"><span class="d-link-icon">' + NAV_ICONS.cockpit + '</span><div class="d-link-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>',
+      '  <a class="drawer-link" href="/studio/webgen.html"><span class="d-link-icon">' + NAV_ICONS.webgen + '</span><div class="d-link-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
+      '  <a class="drawer-link" href="/studio/vos-sandbox.html"><span class="d-link-icon">' + NAV_ICONS.vos + '</span><div class="d-link-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
+      '  <a class="drawer-link" href="/studio/nexus-3d.html"><span class="d-link-icon">' + NAV_ICONS.nexus3d + '</span><div class="d-link-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
+      '  <a class="drawer-link" href="/studio/omnipost.html"><span class="d-link-icon">' + NAV_ICONS.omnipost + '</span><div class="d-link-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
+      '  <a class="drawer-link" href="/studio/math-pillars.html"><span class="d-link-icon">' + NAV_ICONS.math + '</span><div class="d-link-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
+      '  <a class="drawer-link" href="/secure-comms/"><span class="d-link-icon">' + NAV_ICONS.securecomms + '</span><div class="d-link-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
+      '  <a class="drawer-link" href="/signal/"><span class="d-link-icon">' + NAV_ICONS.signal + '</span><div class="d-link-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
+      '  <a class="drawer-link" href="/studio/web3-hub.html"><span class="d-link-icon">' + NAV_ICONS.web3 + '</span><div class="d-link-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
+      '  <a class="drawer-link" href="/pets/"><span class="d-link-icon">' + NAV_ICONS.pets + '</span><div class="d-link-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
+      '  <a class="drawer-link" href="/studio/"><span class="d-link-icon">' + NAV_ICONS.studio + '</span><div class="d-link-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
       '</div>',
 
       '<!-- 📜 Universe & Media -->',
       '<div class="drawer-section">',
       '  <div class="drawer-heading">📜 Universe &amp; Research</div>',
-      '  <a class="drawer-link" href="/comic/"><span class="d-link-icon">🎨</span><div class="d-link-body"><strong>AZOTH Anime Comic Series</strong><small>Season 1 Ep 1: Genesis in Silicon Rain</small></div><span class="nav-item-badge">AUDIO</span></a>',
-      '  <a class="drawer-link" href="/social/"><span class="d-link-icon">🌌</span><div class="d-link-body"><strong>Community Social Wall</strong><small>Builder Dispatches &amp; Showcase Transmissions</small></div><span class="nav-item-badge">LIVE</span></a>',
-      '  <a class="drawer-link" href="/articles/"><span class="d-link-icon">📜</span><div class="d-link-body"><strong>Engineering Whitepapers</strong><small>Architectural Deep-Dives &amp; Benchmarks</small></div><span class="nav-item-badge">RESEARCH</span></a>',
-      '  <a class="drawer-link" href="/article/"><span class="d-link-icon">🔮</span><div class="d-link-body"><strong>Sovereign AI Manifesto</strong><small>Multi-Agent Consensus &amp; Philosophical Vision</small></div><span class="nav-item-badge">VISION</span></a>',
-      '  <a class="drawer-link" href="/ai-webgpu.html"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></div><span class="nav-item-badge">WEBGPU</span></a>',
-      '  <a class="drawer-link" href="/adytum/"><span class="d-link-icon">🏛️</span><div class="d-link-body"><strong>Adytum Sanctum</strong><small>Offline Hardware Gateway &amp; Cryptography</small></div><span class="nav-item-badge">SANCTUM</span></a>',
+      '  <a class="drawer-link" href="/comic/"><span class="d-link-icon">' + NAV_ICONS.comic + '</span><div class="d-link-body"><strong>AZOTH Anime Comic Series</strong><small>Season 1 Ep 1: Genesis in Silicon Rain</small></div><span class="nav-item-badge">AUDIO</span></a>',
+      '  <a class="drawer-link" href="/social/"><span class="d-link-icon">' + NAV_ICONS.social + '</span><div class="d-link-body"><strong>Community Social Wall</strong><small>Builder Dispatches &amp; Showcase Transmissions</small></div><span class="nav-item-badge">LIVE</span></a>',
+      '  <a class="drawer-link" href="/articles/"><span class="d-link-icon">' + NAV_ICONS.articles + '</span><div class="d-link-body"><strong>Engineering Whitepapers</strong><small>Architectural Deep-Dives &amp; Benchmarks</small></div><span class="nav-item-badge">RESEARCH</span></a>',
+      '  <a class="drawer-link" href="/article/"><span class="d-link-icon">' + NAV_ICONS.article + '</span><div class="d-link-body"><strong>Sovereign AI Manifesto</strong><small>Multi-Agent Consensus &amp; Philosophical Vision</small></div><span class="nav-item-badge">VISION</span></a>',
+      '  <a class="drawer-link" href="/ai-webgpu.html"><span class="d-link-icon">' + NAV_ICONS.webgpu + '</span><div class="d-link-body"><strong>WebGPU Local AI</strong><small>Browser Neural Transformers (360M Micro)</small></div><span class="nav-item-badge">WEBGPU</span></a>',
+      '  <a class="drawer-link" href="/adytum/"><span class="d-link-icon">' + NAV_ICONS.adytum + '</span><div class="d-link-body"><strong>Adytum Sanctum</strong><small>Offline Hardware Gateway &amp; Cryptography</small></div><span class="nav-item-badge">SANCTUM</span></a>',
       '</div>',
 
       '<!-- 📚 Docs, Security & Support -->',
       '<div class="drawer-section">',
       '  <div class="drawer-heading">📚 Docs &amp; Security</div>',
-      '  <a class="drawer-link" href="/docs/"><span class="d-link-icon">📚</span><div class="d-link-body"><strong>Complete Documentation</strong><small>Port Topology, 1-Click Install Scripts &amp; API</small></div><span class="nav-item-badge">DOCS</span></a>',
-      '  <a class="drawer-link" href="/vault/"><span class="d-link-icon">🔐</span><div class="d-link-body"><strong>Sovereign Vault</strong><small>Argon2id Secrets, Tokens &amp; Keyrings</small></div><span class="nav-item-badge">ARGON2</span></a>',
-      '  <a class="drawer-link" href="/pricing/"><span class="d-link-icon">💛</span><div class="d-link-body"><strong>Support / Patron</strong><small>Keep Zoth Free, Open Source &amp; Sovereign</small></div><span class="nav-item-badge">PATRON</span></a>',
-      '  <a class="drawer-link" href="/faq.html"><span class="d-link-icon">❓</span><div class="d-link-body"><strong>FAQ &amp; Troubleshooting</strong><small>Hardware Requirements, Ports &amp; Diagnostics</small></div><span class="nav-item-badge">FAQ</span></a>',
+      '  <a class="drawer-link" href="/docs/"><span class="d-link-icon">' + NAV_ICONS.docs + '</span><div class="d-link-body"><strong>Complete Documentation</strong><small>Port Topology, 1-Click Install Scripts &amp; API</small></div><span class="nav-item-badge">DOCS</span></a>',
+      '  <a class="drawer-link" href="/vault/"><span class="d-link-icon">' + NAV_ICONS.vault + '</span><div class="d-link-body"><strong>Sovereign Vault</strong><small>Argon2id Secrets, Tokens &amp; Keyrings</small></div><span class="nav-item-badge">ARGON2</span></a>',
+      '  <a class="drawer-link" href="/pricing/"><span class="d-link-icon">' + NAV_ICONS.patron + '</span><div class="d-link-body"><strong>Support / Patron</strong><small>Keep Zoth Free, Open Source &amp; Sovereign</small></div><span class="nav-item-badge">PATRON</span></a>',
+      '  <a class="drawer-link" href="/faq.html"><span class="d-link-icon">' + NAV_ICONS.faq + '</span><div class="d-link-body"><strong>FAQ &amp; Troubleshooting</strong><small>Hardware Requirements, Ports &amp; Diagnostics</small></div><span class="nav-item-badge">FAQ</span></a>',
       '</div>',
 
       '<!-- 🔗 Quick Launch & External Links -->',
       '<div class="drawer-section drawer-footer-section">',
-      '  <a class="drawer-pill-link js-deck" href="' + deckUrl + '">💻 Launch Local Operator Deck (:8484)</a>',
-      '  <a class="drawer-pill-link" href="https://github.com/NullAITech/zoth-studio" target="_blank" rel="noopener noreferrer">🐙 GitHub Source Repository ↗</a>',
-      '  <a class="drawer-pill-link" href="/downloads/zoth-studio-android.apk">📱 Download Android App (.apk)</a>',
+      '  <a class="drawer-pill-link js-deck" href="' + deckUrl + '">' + NAV_ICONS.deck + ' Launch Local Operator Deck (:8484)</a>',
+      '  <a class="drawer-pill-link" href="https://github.com/NullAITech/zoth-studio" target="_blank" rel="noopener noreferrer">' + NAV_ICONS.github + ' GitHub Source Repository ↗</a>',
+      '  <a class="drawer-pill-link" href="/downloads/zoth-studio-android.apk">' + NAV_ICONS.android + ' Download Android App (.apk)</a>',
       '</div>'
     ].join("");
 

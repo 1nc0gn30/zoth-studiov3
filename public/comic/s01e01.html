@@ -179,6 +179,163 @@
   ]
 }</script>
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
+  <style>
+    /* Slideshow & Ambient SFX Enhancements */
+    .dock-mode-toggle .mode-btn.active {
+      background: var(--gold, #f59e0b);
+      color: #050508;
+      font-weight: 700;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+    }
+    .slideshow-nav-dock {
+      display: none;
+      position: sticky;
+      bottom: 24px;
+      z-index: 99;
+      background: rgba(8, 10, 18, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 999px;
+      padding: 10px 22px;
+      margin: 20px auto 0;
+      max-width: 720px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.15);
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .view-slideshow .slideshow-nav-dock {
+      display: flex;
+      animation: slideDockIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .view-slideshow .panel-card {
+      display: none !important;
+    }
+    .view-slideshow .panel-card.slideshow-active {
+      display: block !important;
+      animation: panelSlideFade 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes panelSlideFade {
+      from { opacity: 0; transform: translateY(12px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes slideDockIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slideshow-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text-primary, #fff);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .slideshow-btn:hover {
+      background: var(--cyan, #00f0ff);
+      color: #030306;
+      border-color: var(--cyan, #00f0ff);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+    }
+    .slideshow-btn.active {
+      background: var(--gold, #f59e0b);
+      color: #050508;
+      border-color: var(--gold, #f59e0b);
+    }
+    .slideshow-counter {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gold, #f59e0b);
+      letter-spacing: 0.05em;
+    }
+    .slideshow-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .slideshow-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      padding: 0;
+    }
+    .slideshow-dot.active {
+      width: 20px;
+      border-radius: 999px;
+      background: var(--gold, #f59e0b);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+    }
+    .ambient-sfx-toast {
+      position: fixed;
+      bottom: 84px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(13, 14, 20, 0.92);
+      border: 1px solid var(--cyan, #00f0ff);
+      color: var(--cyan, #00f0ff);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-family: 'IBM Plex Mono', monospace;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    }
+    .ambient-sfx-toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Theme overrides */
+    html[data-theme="light"] .slideshow-nav-dock {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+    }
+    html[data-theme="light"] .slideshow-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.12);
+      color: #0f172a;
+    }
+    html[data-theme="light"] .slideshow-dot {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    html[data-theme="matrix"] .slideshow-nav-dock {
+      background: rgba(0, 15, 5, 0.96);
+      border-color: rgba(0, 255, 65, 0.4);
+      box-shadow: 0 0 25px rgba(0, 255, 65, 0.2);
+    }
+    html[data-theme="matrix"] .slideshow-btn {
+      color: #00ff41;
+      border-color: rgba(0, 255, 65, 0.3);
+    }
+    html[data-theme="matrix"] .slideshow-counter {
+      color: #00ff41;
+    }
+    html[data-theme="matrix"] .slideshow-dot.active {
+      background: #00ff41;
+      box-shadow: 0 0 10px #00ff41;
+    }
+    html[data-theme="gold"] .slideshow-nav-dock {
+      background: rgba(20, 15, 5, 0.96);
+      border-color: rgba(245, 158, 11, 0.45);
+    }
+  </style>
 </head>
 <body>
 <a class="skip" href="#main-content">Skip to main content</a>
@@ -469,11 +626,15 @@
 <div aria-label="View Mode Toggle" class="dock-mode-toggle" role="group">
 <button class="mode-btn active" id="btnModeManga" onclick="setViewMode('manga')" type="button">📖 Manga Panels</button>
 <button class="mode-btn" id="btnModeVideo" onclick="setViewMode('video')" type="button">🎬 Animated 60fps Video</button>
+<button class="mode-btn" id="btnModeSlideshow" onclick="setViewMode('slideshow')" type="button">📽️ Panel Slideshow</button>
 </div>
 </div>
 <div class="dock-audio-actions">
 <button class="play-panel-btn" id="btnPlayAll" onclick="playContinuousNarration()" type="button">
             ▶ Play Full Episode Narration (BGM + Voice)
+          </button>
+<button class="btn btn-off" id="btnToggleAmbientSfx" onclick="toggleAmbientSfx()" type="button" style="font-size:0.78rem;padding:8px 16px;">
+            ✨ Ambient SFX: ON
           </button>
 <a class="btn btn-off" href="/comic/" style="font-size:0.78rem;padding:8px 16px;">
             Comic Hub ➔
@@ -483,6 +644,23 @@
           </a>
 </div>
 </section>
+<!-- Floating Slideshow Dock -->
+<div class="slideshow-nav-dock" id="slideshowNavDock" role="region" aria-label="Slideshow Navigation">
+  <button class="slideshow-btn" id="btnSlidePrev" onclick="prevSlide()" type="button">← Prev Panel</button>
+  <div class="slideshow-counter" id="slideshowCounter">PANEL 1 OF 7</div>
+  <div class="slideshow-dots" id="slideshowDots">
+    <button class="slideshow-dot active" onclick="jumpToSlide(0)" title="Panel 0: Cover" aria-label="Cover"></button>
+    <button class="slideshow-dot" onclick="jumpToSlide(1)" title="Panel 1: The Breaking Point" aria-label="Panel 1"></button>
+    <button class="slideshow-dot" onclick="jumpToSlide(2)" title="Panel 2: Covenant" aria-label="Panel 2"></button>
+    <button class="slideshow-dot" onclick="jumpToSlide(3)" title="Panel 3: Vanguard" aria-label="Panel 3"></button>
+    <button class="slideshow-dot" onclick="jumpToSlide(4)" title="Panel 4: Citadel" aria-label="Panel 4"></button>
+    <button class="slideshow-dot" onclick="jumpToSlide(5)" title="Panel 5: Sovereign Dawn" aria-label="Panel 5"></button>
+    <button class="slideshow-dot" onclick="jumpToSlide(6)" title="Panel 6: Post-Credits" aria-label="Panel 6"></button>
+  </div>
+  <button class="slideshow-btn" id="btnSlideAuto" onclick="toggleSlideAutoPlay()" type="button">⏱️ Auto-Advance</button>
+  <button class="slideshow-btn" id="btnSlideNext" onclick="nextSlide()" type="button">Next Panel →</button>
+</div>
+<div class="ambient-sfx-toast" id="ambientSfxToast">✨ Ambient SFX Active</div>
 <section aria-label="S01E01 Motion Anime Trailer" class="trailer-box" id="trailer">
 <div class="trailer-header-wrap">
 <div>
@@ -808,6 +986,12 @@
       var currentAudio = null;
       var activeBtn = null;
       var sfxAudio = null;
+      var currentSlide = 0;
+      var autoPlayInterval = null;
+      var ambientSfxEnabled = true;
+      var audioCtx = null;
+      var lastPlayedIndex = -1;
+
       var episodeTracks = [
         "/assets/audio/comic/s01e01-cover.mp3",
         "/assets/audio/comic/s01e01-p01.mp3",
@@ -817,23 +1001,229 @@
         "/assets/audio/comic/s01e01-p05.mp3",
         "/assets/audio/comic/s01e01-p06.mp3"
       ];
+      var panelTitles = [
+        "Genesis in the Silicon Rain",
+        "The Breaking Point (429 Rate Limit)",
+        "The Covenant of Local Compute",
+        "The Vanguard Unleashed",
+        "The Constellation Awakened",
+        "The Sovereign Dawn",
+        "Cipher 00 & Phase Two Teaser"
+      ];
       var trackIdx = 0;
       var isContinuous = false;
 
-      window.setViewMode = function(mode) {
-        var btnManga = document.getElementById("btnModeManga");
-        var btnVideo = document.getElementById("btnModeVideo");
-        if (mode === "video") {
-          document.body.classList.add("view-video");
-          if (btnVideo) btnVideo.classList.add("active");
-          if (btnManga) btnManga.classList.remove("active");
-        } else {
-          document.body.classList.remove("view-video");
-          if (btnManga) btnManga.classList.add("active");
-          if (btnVideo) btnVideo.classList.remove("active");
+      // Web Audio Ambient Synthesizer
+      function getAudioContext() {
+        if (!audioCtx) {
+          var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      function playPanelAmbientTone(idx) {
+        if (!ambientSfxEnabled) return;
+        var ctx = getAudioContext();
+        if (!ctx) return;
+
+        try {
+          var now = ctx.currentTime;
+          var masterGain = ctx.createGain();
+          masterGain.gain.setValueAtTime(0.001, now);
+          masterGain.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
+          masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          masterGain.connect(ctx.destination);
+
+          var freqs = [
+            [432, 648, 864],        // Cover: 432Hz Solfeggio Master Harmonics
+            [220, 233.08, 440],     // P1: 429 Tension Dissonance (A3 + Bb3)
+            [528, 792, 1056],       // P2: 528Hz Solve et Coagula Transformation
+            [329.63, 493.88, 659.25],// P3: Vanguard Strike E Major
+            [587.33, 739.99, 880],  // P4: Citadel Celestial Chord
+            [523.25, 659.25, 783.99],// P5: Sovereign Dawn Golden Triad
+            [110, 164.81, 329.63]   // P6: Crimson Deepnet Sub-Bass
+          ];
+
+          var panelFreqs = freqs[idx] || [432, 540, 648];
+          panelFreqs.forEach(function(f, i) {
+            var osc = ctx.createOscillator();
+            var oscGain = ctx.createGain();
+            osc.type = (idx === 1 || idx === 6) ? 'sawtooth' : (idx === 3 ? 'triangle' : 'sine');
+            osc.frequency.setValueAtTime(f, now);
+            if (idx === 2) {
+              osc.frequency.exponentialRampToValueAtTime(f * 1.05, now + 0.8);
+            }
+            oscGain.gain.setValueAtTime(1 / (i + 1), now);
+            osc.connect(oscGain);
+            oscGain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 1.25);
+          });
+
+          showAmbientToast("✨ Ambient SFX: " + panelTitles[idx]);
+        } catch (e) {
+          console.warn("Web Audio ambient synth notice:", e);
+        }
+      }
+
+      function showAmbientToast(msg) {
+        var toast = document.getElementById("ambientSfxToast");
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.classList.add("visible");
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(function() {
+          toast.classList.remove("visible");
+        }, 2200);
+      }
+
+      window.toggleAmbientSfx = function() {
+        ambientSfxEnabled = !ambientSfxEnabled;
+        var btn = document.getElementById("btnToggleAmbientSfx");
+        if (btn) {
+          btn.textContent = ambientSfxEnabled ? "✨ Ambient SFX: ON" : "✨ Ambient SFX: OFF";
+          btn.classList.toggle("btn-on", ambientSfxEnabled);
+        }
+        try {
+          localStorage.setItem("azoth_ambient_sfx", ambientSfxEnabled ? "true" : "false");
+        } catch(e){}
+        if (ambientSfxEnabled) {
+          playPanelAmbientTone(currentSlide);
         }
       };
 
+      // Bookmark Auto-saving
+      function saveReadingProgress(idx) {
+        try {
+          var bookmark = {
+            episode: "s01e01",
+            title: "Genesis in the Silicon Rain",
+            pageIdx: idx,
+            pageTitle: panelTitles[idx] || ("Panel " + idx),
+            totalPages: 7,
+            scrollY: window.scrollY,
+            url: "/comic/s01e01.html",
+            updatedAt: Date.now()
+          };
+          localStorage.setItem("azoth_comic_bookmark", JSON.stringify(bookmark));
+        } catch (e) {}
+      }
+
+      // View Mode Switcher
+      window.setViewMode = function(mode) {
+        var btnManga = document.getElementById("btnModeManga");
+        var btnVideo = document.getElementById("btnModeVideo");
+        var btnSlideshow = document.getElementById("btnModeSlideshow");
+
+        document.body.classList.remove("view-video", "view-slideshow");
+        if (btnManga) btnManga.classList.remove("active");
+        if (btnVideo) btnVideo.classList.remove("active");
+        if (btnSlideshow) btnSlideshow.classList.remove("active");
+
+        if (mode === "video") {
+          document.body.classList.add("view-video");
+          if (btnVideo) btnVideo.classList.add("active");
+        } else if (mode === "slideshow") {
+          document.body.classList.add("view-slideshow");
+          if (btnSlideshow) btnSlideshow.classList.add("active");
+          updateSlideshowUI();
+          var targetPanel = getPanels()[currentSlide];
+          if (targetPanel) targetPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else {
+          if (btnManga) btnManga.classList.add("active");
+        }
+      };
+
+      function getPanels() {
+        return [
+          document.getElementById("panel-cover"),
+          document.getElementById("panel-1"),
+          document.getElementById("panel-2"),
+          document.getElementById("panel-3"),
+          document.getElementById("panel-4"),
+          document.getElementById("panel-5"),
+          document.getElementById("panel-6")
+        ].filter(Boolean);
+      }
+
+      function updateSlideshowUI() {
+        var panels = getPanels();
+        panels.forEach(function(panel, idx) {
+          if (idx === currentSlide) {
+            panel.classList.add("slideshow-active");
+          } else {
+            panel.classList.remove("slideshow-active");
+          }
+        });
+
+        var counter = document.getElementById("slideshowCounter");
+        if (counter) {
+          counter.textContent = "PANEL " + (currentSlide + 1) + " OF " + panels.length + ": " + (panelTitles[currentSlide] || "");
+        }
+
+        var dots = document.querySelectorAll("#slideshowDots .slideshow-dot");
+        dots.forEach(function(dot, idx) {
+          dot.classList.toggle("active", idx === currentSlide);
+        });
+
+        saveReadingProgress(currentSlide);
+        playPanelAmbientTone(currentSlide);
+      }
+
+      window.nextSlide = function() {
+        var panels = getPanels();
+        if (currentSlide < panels.length - 1) {
+          currentSlide++;
+        } else {
+          currentSlide = 0;
+        }
+        updateSlideshowUI();
+      };
+
+      window.prevSlide = function() {
+        var panels = getPanels();
+        if (currentSlide > 0) {
+          currentSlide--;
+        } else {
+          currentSlide = panels.length - 1;
+        }
+        updateSlideshowUI();
+      };
+
+      window.jumpToSlide = function(idx) {
+        var panels = getPanels();
+        if (idx >= 0 && idx < panels.length) {
+          currentSlide = idx;
+          updateSlideshowUI();
+        }
+      };
+
+      window.toggleSlideAutoPlay = function() {
+        var btn = document.getElementById("btnSlideAuto");
+        if (autoPlayInterval) {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+          if (btn) {
+            btn.textContent = "⏱️ Auto-Advance";
+            btn.classList.remove("active");
+          }
+        } else {
+          window.nextSlide();
+          autoPlayInterval = setInterval(window.nextSlide, 7000);
+          if (btn) {
+            btn.textContent = "⏹ Pause Auto";
+            btn.classList.add("active");
+          }
+        }
+      };
+
+      // Audio Playback
       window.playSingleAudio = function(src, btn) {
         if (currentAudio && !currentAudio.paused && activeBtn === btn) {
           currentAudio.pause();
@@ -902,6 +1292,32 @@
         sfxAudio.play().catch(function(e) { console.warn("SFX audio blocked:", e); });
       };
 
+      // IntersectionObserver for scroll-triggered ambient audio & progress
+      if ('IntersectionObserver' in window) {
+        var panelObserver = new IntersectionObserver(function(entries) {
+          if (document.body.classList.contains("view-slideshow")) return;
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              var panel = entry.target;
+              var panels = getPanels();
+              var idx = panels.indexOf(panel);
+              if (idx !== -1 && idx !== lastPlayedIndex) {
+                lastPlayedIndex = idx;
+                currentSlide = idx;
+                saveReadingProgress(idx);
+                playPanelAmbientTone(idx);
+              }
+            }
+          });
+        }, { threshold: 0.5 });
+
+        document.addEventListener("DOMContentLoaded", function() {
+          getPanels().forEach(function(panel) {
+            panelObserver.observe(panel);
+          });
+        });
+      }
+
       // Keyboard Controls
       window.addEventListener("keydown", function(e) {
         if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
@@ -912,6 +1328,18 @@
           window.setViewMode("manga");
         } else if (e.key === "v" || e.key === "V") {
           window.setViewMode("video");
+        } else if (e.key === "s" || e.key === "S") {
+          window.setViewMode("slideshow");
+        } else if (e.key === "ArrowRight" || e.key === "PageDown") {
+          if (document.body.classList.contains("view-slideshow")) {
+            e.preventDefault();
+            window.nextSlide();
+          }
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          if (document.body.classList.contains("view-slideshow")) {
+            e.preventDefault();
+            window.prevSlide();
+          }
         }
       });
     })();

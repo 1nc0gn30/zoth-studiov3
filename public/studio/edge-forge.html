@@ -331,6 +331,112 @@
       .node-name { color: var(--edge-cyan); font-weight: 700; }
       .node-ping { color: var(--edge-emerald); font-size: 0.7rem; margin-top: 2px; }
 
+      /* Streaming Mode & Live Chunk Inspector */
+      .protocol-mode-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+      .protocol-mode-btn {
+        background: rgba(14, 20, 36, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        padding: 5px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 600;
+      }
+      .protocol-mode-btn:hover, .protocol-mode-btn.active {
+        color: var(--edge-cyan);
+        border-color: var(--edge-cyan);
+        background: rgba(0, 240, 255, 0.12);
+      }
+      .stream-inspector-box {
+        background: #020409;
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        border-radius: var(--fib-radius-md, 13px);
+        padding: 14px;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .stream-telemetry-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(0, 240, 255, 0.05);
+        border: 1px solid rgba(0, 240, 255, 0.15);
+        border-radius: 8px;
+        font-size: 0.72rem;
+      }
+      .stream-tel-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .stream-tel-label {
+        color: #94a3b8;
+      }
+      .stream-tel-val {
+        color: var(--text-primary, #ffffff);
+        font-weight: 700;
+      }
+      .chunk-feed-list {
+        max-height: 220px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 4px;
+        background: rgba(0,0,0,0.5);
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+      .chunk-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 6px 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border-left: 3px solid var(--edge-cyan);
+        border-radius: 4px;
+        font-size: 0.73rem;
+        animation: chunkArrival 0.25s ease-out;
+      }
+      .chunk-item.ws-in {
+        border-left-color: var(--edge-emerald);
+      }
+      .chunk-item.ws-out {
+        border-left-color: var(--edge-gold);
+        background: rgba(251, 191, 36, 0.04);
+      }
+      .chunk-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #94a3b8;
+        font-size: 0.68rem;
+      }
+      .chunk-payload {
+        color: #38bdf8;
+        white-space: pre-wrap;
+        word-break: break-all;
+        font-family: var(--font-mono);
+      }
+      @keyframes chunkArrival {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+
       /* Mobile Segmented Switcher */
       .forge-mobile-tabs {
         display: none;
@@ -1068,56 +1174,108 @@
 </div>
 <textarea class="code-editor-area" id="edge-code-area" oninput="updateCharCount()"></textarea>
 </div>
-<!-- Interactive Request Configurator -->
+<!-- Interactive Request Configurator with Streaming SSE & WebSocket Test Modes -->
 <div style="background:rgba(4,6,14,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:10px;">
-<div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">
-<span style="text-transform:uppercase; font-weight:700; color: var(--text-primary);">⚙️ Request Simulator</span>
-<span>Target: <code style="color:var(--edge-cyan);">http://127.0.0.1:8484/edge/execute</code></span>
+  <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8; flex-wrap:wrap; gap:8px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="text-transform:uppercase; font-weight:700; color: var(--text-primary);">⚙️ Request Simulator</span>
+      <div class="protocol-mode-tabs" style="margin-bottom:0;">
+        <button type="button" class="protocol-mode-btn active" id="btn-proto-rest" onclick="setProtocolMode('rest')">⚡ REST</button>
+        <button type="button" class="protocol-mode-btn" id="btn-proto-sse" onclick="setProtocolMode('sse')">🌊 SSE Stream</button>
+        <button type="button" class="protocol-mode-btn" id="btn-proto-ws" onclick="setProtocolMode('ws')">🔌 WebSocket</button>
+      </div>
+    </div>
+    <span id="target-endpoint-label">Target: <code style="color:var(--edge-cyan);">http://127.0.0.1:8484/edge/execute</code></span>
+  </div>
+
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <select id="req-method" style="width:110px; min-height:38px; background:#020408; color:var(--edge-cyan); font-weight:700;">
+      <option value="GET">GET</option>
+      <option selected="" value="POST">POST</option>
+      <option value="PUT">PUT</option>
+      <option value="DELETE">DELETE</option>
+    </select>
+    <input id="req-path" placeholder="/path/to/resource" style="flex:1 1 180px; min-height:38px; min-width:0; width:100%;" type="text" value="/api/v1/auth/verify?cluster=IAD1"/>
+  </div>
+
+  <div id="rest-body-wrap">
+    <textarea id="req-body" placeholder='{ "message": "hello edge", "client_id": "zoth_987" }' rows="2" style="min-height:55px; font-size:0.75rem;"></textarea>
+  </div>
+
+  <!-- WebSocket Interactive Client Message Sender (Visible in WS mode) -->
+  <div id="ws-client-input-wrap" style="display:none; gap:8px; align-items:center;">
+    <input type="text" id="ws-msg-input" placeholder='{"action": "ping", "sub": "solana_ticks"}' style="flex:1; min-height:36px; font-size:0.75rem;" />
+    <button type="button" class="btn-ghost-edge" style="min-height:36px; padding:0 14px;" onclick="sendWsClientFrame()">Send WS Frame ↗</button>
+  </div>
 </div>
-<div style="display:flex; gap:8px; flex-wrap:wrap;">
-<select id="req-method" style="width:110px; min-height:38px; background:#020408; color:var(--edge-cyan); font-weight:700;">
-<option value="GET">GET</option>
-<option selected="" value="POST">POST</option>
-<option value="PUT">PUT</option>
-<option value="DELETE">DELETE</option>
-</select>
-<input id="req-path" placeholder="/path/to/resource" style="flex:1 1 180px; min-height:38px; min-width:0; width:100%;" type="text" value="/api/v1/auth/verify?cluster=IAD1"/>
-</div>
-<div>
-<textarea id="req-body" placeholder='{ "message": "hello edge", "client_id": "zoth_987" }' rows="2" style="min-height:55px; font-size:0.75rem;"></textarea>
-</div>
-</div>
+
 <div class="action-row">
-<button class="btn-edge" onclick="runDryRunTest()">
-<span>⚡</span> Execute Live Isolate Test
-            </button>
-<button class="btn-ghost-edge" onclick="deployToEdge()">
-<span>🚀</span> Deploy to Local Node (:8484)
-            </button>
-<button class="btn-ghost-edge" onclick="copyEdgeCurl()">
-<span>📋</span> Copy cURL
-            </button>
-<button class="btn-ghost-edge" onclick="exportTypeScript()">
-<span>📦</span> Export TS
-            </button>
-<span id="deploy-msg" style="font-family:var(--font-mono); font-size:0.8rem; color:var(--edge-emerald); margin-left:auto;"></span>
+  <button class="btn-edge" id="btn-execute-test" onclick="runDryRunTest()">
+    <span id="exec-btn-icon">⚡</span> <span id="exec-btn-label">Execute Live Isolate Test</span>
+  </button>
+  <button class="btn-ghost-edge" id="btn-abort-stream" style="display:none; color:#f43f5e; border-color:#f43f5e;" onclick="abortStream()">
+    <span>⏹</span> Abort Stream
+  </button>
+  <button class="btn-ghost-edge" id="btn-pause-stream" style="display:none;" onclick="togglePauseStream()">
+    <span id="pause-btn-icon">⏸</span> <span id="pause-btn-label">Pause</span>
+  </button>
+  <button class="btn-ghost-edge" onclick="deployToEdge()">
+    <span>🚀</span> Deploy to Local Node (:8484)
+  </button>
+  <button class="btn-ghost-edge" onclick="copyEdgeCurl()">
+    <span>📋</span> Copy cURL
+  </button>
+  <button class="btn-ghost-edge" onclick="exportTypeScript()">
+    <span>📦</span> Export TS
+  </button>
+  <span id="deploy-msg" style="font-family:var(--font-mono); font-size:0.8rem; color:var(--edge-emerald); margin-left:auto;"></span>
 </div>
-<!-- Execution Output Console -->
-<div style="background:#020409; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; font-family:var(--font-mono); font-size:0.78rem;">
-<div style="color:#94a3b8; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
-<span style="font-weight:700; color: var(--text-primary);">Simulated Execution Log</span>
-<span id="test-status-badge" style="color:var(--edge-emerald); font-weight:700;">HTTP 200 OK · 1.42ms</span>
+
+<!-- Live Chunk Inspector Console -->
+<div class="stream-inspector-box">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-weight:700; color: var(--text-primary);" id="inspector-header-title">Live Chunk Inspector</span>
+      <span class="chip" id="stream-mode-badge" style="font-size:0.65rem; background:rgba(0,240,255,0.1); border-color:var(--edge-cyan); color:var(--edge-cyan);">REST MODE</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <button type="button" class="tpl-btn" style="padding:2px 8px; font-size:0.68rem;" onclick="clearChunkInspector()">🧹 Clear</button>
+      <span id="test-status-badge" style="color:var(--edge-emerald); font-weight:700;">HTTP 200 OK · 1.42ms</span>
+    </div>
+  </div>
+
+  <!-- Stream Telemetry HUD Strip -->
+  <div class="stream-telemetry-bar" id="stream-telemetry-hud">
+    <div class="stream-tel-item">
+      <span class="stream-tel-label">TTFT:</span>
+      <span class="stream-tel-val" id="tel-ttft" style="color:var(--edge-cyan);">0.42ms</span>
+    </div>
+    <div class="stream-tel-item">
+      <span class="stream-tel-label">Chunks:</span>
+      <span class="stream-tel-val" id="tel-chunks">0</span>
+    </div>
+    <div class="stream-tel-item">
+      <span class="stream-tel-label">Speed:</span>
+      <span class="stream-tel-val" id="tel-speed" style="color:var(--edge-emerald);">—</span>
+    </div>
+    <div class="stream-tel-item">
+      <span class="stream-tel-label">Payload:</span>
+      <span class="stream-tel-val" id="tel-bytes" style="color:var(--edge-gold);">0 B</span>
+    </div>
+  </div>
+
+  <!-- Live Chunk List Feed -->
+  <div class="chunk-feed-list" id="stream-chunk-feed">
+    <div class="chunk-item">
+      <div class="chunk-header">
+        <span>#01 · REST Single-Shot Payload</span>
+        <span>+0.00ms · 246 B</span>
+      </div>
+      <div class="chunk-payload">{\n  "status": "ok",\n  "worker": "zoth-edge-iad1",\n  "runtime": "v8-isolate-sandboxed",\n  "latency_ms": 1.42,\n  "memory_used_kb": 148,\n  "rate_limit_remaining": 98,\n  "timestamp": "2026-08-21T00:00:00.000Z"\n}</div>
+    </div>
+  </div>
 </div>
-<pre id="test-output-log" style="color:#38bdf8; max-height:160px; overflow-y:auto; line-height:1.5; -webkit-overflow-scrolling:touch; word-break:break-word;">{
-  "status": "ok",
-  "worker": "zoth-edge-iad1",
-  "runtime": "v8-isolate-sandboxed",
-  "latency_ms": 1.42,
-  "memory_used_kb": 148,
-  "rate_limit_remaining": 98,
-  "timestamp": "2026-08-21T00:00:00.000Z"
-}</pre>
-</div>
+
 </section>
 <!-- Right: Global Clusters & Waterflow Telemetry -->
 <aside class="forge-right-col">
@@ -1359,83 +1517,376 @@
         }, 400);
       }
 
-      function runDryRunTest() {
-        const log = document.getElementById('test-output-log');
-        const badge = document.getElementById('test-status-badge');
-        const method = (document.getElementById('req-method') && document.getElementById('req-method').value) || 'POST';
-        const path = (document.getElementById('req-path') && document.getElementById('req-path').value) || '/api/v1/auth/verify?cluster=IAD1';
+      var currentProtocolMode = 'rest';
+      var streamState = {
+        isRunning: false,
+        isPaused: false,
+        streamTimer: null,
+        chunkCount: 0,
+        totalBytes: 0,
+        startTime: 0,
+        ttftMs: null
+      };
+
+      function setProtocolMode(mode) {
+        currentProtocolMode = mode;
+        ['rest', 'sse', 'ws'].forEach(function (m) {
+          var btn = document.getElementById('btn-proto-' + m);
+          if (btn) btn.classList.toggle('active', m === mode);
+        });
+
+        var targetLabel = document.getElementById('target-endpoint-label');
+        var restWrap = document.getElementById('rest-body-wrap');
+        var wsWrap = document.getElementById('ws-client-input-wrap');
+        var abortBtn = document.getElementById('btn-abort-stream');
+        var pauseBtn = document.getElementById('btn-pause-stream');
+        var modeBadge = document.getElementById('stream-mode-badge');
+        var btnIcon = document.getElementById('exec-btn-icon');
+        var btnLabel = document.getElementById('exec-btn-label');
+
+        if (mode === 'rest') {
+          if (targetLabel) targetLabel.innerHTML = 'Target: <code style="color:var(--edge-cyan);">http://127.0.0.1:8484/edge/execute</code>';
+          if (restWrap) restWrap.style.display = 'block';
+          if (wsWrap) wsWrap.style.display = 'none';
+          if (abortBtn) abortBtn.style.display = 'none';
+          if (pauseBtn) pauseBtn.style.display = 'none';
+          if (modeBadge) { modeBadge.textContent = 'REST MODE'; modeBadge.style.color = 'var(--edge-cyan)'; modeBadge.style.borderColor = 'var(--edge-cyan)'; }
+          if (btnIcon) btnIcon.textContent = '⚡';
+          if (btnLabel) btnLabel.textContent = 'Execute Live Isolate Test';
+        } else if (mode === 'sse') {
+          if (targetLabel) targetLabel.innerHTML = 'Target: <code style="color:var(--edge-cyan);">http://127.0.0.1:8484/edge/stream/sse</code>';
+          if (restWrap) restWrap.style.display = 'block';
+          if (wsWrap) wsWrap.style.display = 'none';
+          if (abortBtn) abortBtn.style.display = 'inline-flex';
+          if (pauseBtn) pauseBtn.style.display = 'inline-flex';
+          if (modeBadge) { modeBadge.textContent = 'SSE STREAM MODE'; modeBadge.style.color = '#38bdf8'; modeBadge.style.borderColor = '#38bdf8'; }
+          if (btnIcon) btnIcon.textContent = '🌊';
+          if (btnLabel) btnLabel.textContent = 'Start Real-Time SSE Stream';
+        } else if (mode === 'ws') {
+          if (targetLabel) targetLabel.innerHTML = 'Target: <code style="color:var(--edge-cyan);">ws://127.0.0.1:8484/edge/ws/v1</code>';
+          if (restWrap) restWrap.style.display = 'none';
+          if (wsWrap) wsWrap.style.display = 'flex';
+          if (abortBtn) abortBtn.style.display = 'inline-flex';
+          if (pauseBtn) pauseBtn.style.display = 'inline-flex';
+          if (modeBadge) { modeBadge.textContent = 'WEBSOCKET DUPLEX'; modeBadge.style.color = 'var(--edge-emerald)'; modeBadge.style.borderColor = 'var(--edge-emerald)'; }
+          if (btnIcon) btnIcon.textContent = '🔌';
+          if (btnLabel) btnLabel.textContent = 'Open WebSocket Channel';
+        }
+      }
+
+      function clearChunkInspector() {
+        var feed = document.getElementById('stream-chunk-feed');
+        if (feed) feed.innerHTML = '';
+        streamState.chunkCount = 0;
+        streamState.totalBytes = 0;
+        updateStreamTelemetry(0, 0, 0, '—');
+      }
+
+      function updateStreamTelemetry(ttft, chunks, bytes, speed) {
+        var ttftEl = document.getElementById('tel-ttft');
+        var chunksEl = document.getElementById('tel-chunks');
+        var bytesEl = document.getElementById('tel-bytes');
+        var speedEl = document.getElementById('tel-speed');
+
+        if (ttftEl && typeof ttft === 'number') ttftEl.textContent = ttft.toFixed(2) + 'ms';
+        if (chunksEl) chunksEl.textContent = String(chunks);
+        if (bytesEl) {
+          bytesEl.textContent = bytes > 1024 ? (bytes / 1024).toFixed(2) + ' KB' : bytes + ' B';
+        }
+        if (speedEl && speed) speedEl.textContent = speed;
+      }
+
+      function appendChunkToFeed(headerText, deltaMs, byteSize, payloadText, chunkClass) {
+        var feed = document.getElementById('stream-chunk-feed');
+        if (!feed) return;
+
+        var item = document.createElement('div');
+        item.className = 'chunk-item' + (chunkClass ? (' ' + chunkClass) : '');
+        item.innerHTML = 
+          '<div class="chunk-header">' +
+            '<span>' + headerText + '</span>' +
+            '<span>+' + deltaMs.toFixed(2) + 'ms · ' + byteSize + ' B</span>' +
+          '</div>' +
+          '<div class="chunk-payload">' + payloadText + '</div>';
         
+        feed.appendChild(item);
+        feed.scrollTop = feed.scrollHeight;
+      }
+
+      function abortStream() {
+        if (streamState.streamTimer) {
+          clearTimeout(streamState.streamTimer);
+          clearInterval(streamState.streamTimer);
+          streamState.streamTimer = null;
+        }
+        streamState.isRunning = false;
+        streamState.isPaused = false;
+
+        var badge = document.getElementById('test-status-badge');
         if (badge) {
-          badge.textContent = 'Executing V8 Isolate...';
-          badge.style.color = 'var(--edge-gold)';
+          badge.textContent = 'STREAM TERMINATED (Client Abort)';
+          badge.style.color = '#f43f5e';
         }
 
-        const start = performance.now();
-        setTimeout(() => {
-          const elapsed = (Math.random() * 0.8 + 0.9).toFixed(2);
-          const dnsTime = (Math.random() * 0.2 + 0.1).toFixed(2);
-          const tlsTime = (Math.random() * 0.3 + 0.2).toFixed(2);
-          const v8Time = Math.max(0.1, (elapsed - dnsTime - tlsTime)).toFixed(2);
+        appendChunkToFeed('⏹ CLIENT_ABORT', performance.now() - streamState.startTime, 0, '[ABORT] Isolate readable stream closed by client signal.', 'ws-out');
+      }
 
-          const ttfbEl = document.getElementById('waterfall-ttfb');
-          const dnsEl = document.getElementById('wf-dns-val');
-          const tlsEl = document.getElementById('wf-tls-val');
-          const v8El = document.getElementById('wf-v8-val');
+      function togglePauseStream() {
+        streamState.isPaused = !streamState.isPaused;
+        var btnIcon = document.getElementById('pause-btn-icon');
+        var btnLabel = document.getElementById('pause-btn-label');
+        if (btnIcon && btnLabel) {
+          btnIcon.textContent = streamState.isPaused ? '▶' : '⏸';
+          btnLabel.textContent = streamState.isPaused ? 'Resume' : 'Pause';
+        }
+      }
 
-          if (ttfbEl) ttfbEl.textContent = elapsed + 'ms';
-          if (dnsEl) dnsEl.textContent = dnsTime + 'ms';
-          if (tlsEl) tlsEl.textContent = tlsTime + 'ms';
-          if (v8El) v8El.textContent = v8Time + 'ms';
+      function sendWsClientFrame() {
+        var input = document.getElementById('ws-msg-input');
+        if (!input) return;
+        var msg = input.value.trim() || '{"action": "ping", "sub": "solana_ticks"}';
+        var byteSize = new TextEncoder().encode(msg).length;
+        var delta = performance.now() - (streamState.startTime || performance.now());
 
+        appendChunkToFeed('📤 WS CLIENT_FRAME (Opcode: Text)', delta, byteSize, msg, 'ws-out');
+        streamState.totalBytes += byteSize;
+        streamState.chunkCount++;
+        updateStreamTelemetry(streamState.ttftMs || 0.4, streamState.chunkCount, streamState.totalBytes, 'Duplex Active');
+
+        // Emulate instant Isolate reply frame
+        setTimeout(function () {
+          var reply = JSON.stringify({
+            event: 'ws_pong',
+            client_echo: msg,
+            cluster: 'IAD1-V8-ISOLATE',
+            seq: streamState.chunkCount + 1,
+            server_time: new Date().toISOString()
+          }, null, 2);
+          var replyBytes = new TextEncoder().encode(reply).length;
+          appendChunkToFeed('📥 WS ISOLATE_REPLY (Opcode: Text)', delta + 1.2, replyBytes, reply, 'ws-in');
+          streamState.totalBytes += replyBytes;
+          streamState.chunkCount++;
+          updateStreamTelemetry(streamState.ttftMs || 0.4, streamState.chunkCount, streamState.totalBytes, 'Duplex Active');
+        }, 45);
+      }
+
+      function runDryRunTest() {
+        var badge = document.getElementById('test-status-badge');
+        var method = (document.getElementById('req-method') && document.getElementById('req-method').value) || 'POST';
+        var path = (document.getElementById('req-path') && document.getElementById('req-path').value) || '/api/v1/auth/verify?cluster=IAD1';
+
+        // 1. REST Single-Shot Execution
+        if (currentProtocolMode === 'rest') {
           if (badge) {
-            badge.textContent = `HTTP 200 OK · ${elapsed}ms`;
-            badge.style.color = 'var(--edge-emerald)';
+            badge.textContent = 'Executing V8 Isolate...';
+            badge.style.color = 'var(--edge-gold)';
           }
 
-          const sampleResponse = {
-            status: 'ok',
-            request: {
-              method: method,
-              path: path,
-              proto: 'HTTP/2'
-            },
-            worker: 'zoth-edge-iad1',
-            runtime: 'v8-isolate-sandboxed',
-            latency_ms: parseFloat(elapsed),
-            memory_used_kb: Math.floor(Math.random() * 40 + 120),
-            security_invariants: {
-              zero_cloud_leakage: true,
-              argon2id_vault_isolated: true,
-              ast_clean: true
-            },
-            timestamp: new Date().toISOString()
-          };
+          var start = performance.now();
+          setTimeout(function () {
+            var elapsed = (Math.random() * 0.8 + 0.9).toFixed(2);
+            var dnsTime = (Math.random() * 0.2 + 0.1).toFixed(2);
+            var tlsTime = (Math.random() * 0.3 + 0.2).toFixed(2);
+            var v8Time = Math.max(0.1, (elapsed - dnsTime - tlsTime)).toFixed(2);
 
-          if (log) log.textContent = JSON.stringify(sampleResponse, null, 2);
-        }, 180);
+            var ttfbEl = document.getElementById('waterfall-ttfb');
+            var dnsEl = document.getElementById('wf-dns-val');
+            var tlsEl = document.getElementById('wf-tls-val');
+            var v8El = document.getElementById('wf-v8-val');
+
+            if (ttfbEl) ttfbEl.textContent = elapsed + 'ms';
+            if (dnsEl) dnsEl.textContent = dnsTime + 'ms';
+            if (tlsEl) tlsEl.textContent = tlsTime + 'ms';
+            if (v8El) v8El.textContent = v8Time + 'ms';
+
+            if (badge) {
+              badge.textContent = 'HTTP 200 OK · ' + elapsed + 'ms';
+              badge.style.color = 'var(--edge-emerald)';
+            }
+
+            var sampleResponse = {
+              status: 'ok',
+              request: {
+                method: method,
+                path: path,
+                proto: 'HTTP/2'
+              },
+              worker: 'zoth-edge-iad1',
+              runtime: 'v8-isolate-sandboxed',
+              latency_ms: parseFloat(elapsed),
+              memory_used_kb: Math.floor(Math.random() * 40 + 120),
+              security_invariants: {
+                zero_cloud_leakage: true,
+                argon2id_vault_isolated: true,
+                ast_clean: true
+              },
+              timestamp: new Date().toISOString()
+            };
+
+            var jsonStr = JSON.stringify(sampleResponse, null, 2);
+            var bytes = new TextEncoder().encode(jsonStr).length;
+            clearChunkInspector();
+            appendChunkToFeed('#01 · HTTP/2 REST Payload', parseFloat(elapsed), bytes, jsonStr);
+            updateStreamTelemetry(parseFloat(elapsed), 1, bytes, 'Single-shot');
+          }, 180);
+          return;
+        }
+
+        // 2. SSE Real-Time Chunked Streaming Simulation
+        if (currentProtocolMode === 'sse') {
+          clearChunkInspector();
+          streamState.isRunning = true;
+          streamState.isPaused = false;
+          streamState.startTime = performance.now();
+          streamState.chunkCount = 0;
+          streamState.totalBytes = 0;
+
+          if (badge) {
+            badge.textContent = 'CONNECTING SSE STREAM...';
+            badge.style.color = 'var(--edge-gold)';
+          }
+
+          var sseEvents = [
+            { event: 'connected', data: { status: 'stream_open', cluster: 'IAD1', isolate_id: 'iso_9941a', transport: 'HTTP/2-SSE' } },
+            { event: 'ast_analysis', data: { parsing: 'handler.ts', dialect: 'TypeScript 5.4', ast_valid: true } },
+            { event: 'token_delta', data: { chunk: 'export default async function handler(req) {', index: 0, delta_len: 44 } },
+            { event: 'token_delta', data: { chunk: '  const { readable, writable } = new TransformStream();', index: 1, delta_len: 56 } },
+            { event: 'token_delta', data: { chunk: '  // Streaming response from 8 global V8 edge nodes', index: 2, delta_len: 52 } },
+            { event: 'telemetry_tick', data: { active_isolates: 8, mem_rss_kb: 164, zero_copy: true } },
+            { event: 'token_delta', data: { chunk: '  return new Response(readable, { headers: { "Content-Type": "text/event-stream" } });', index: 3, delta_len: 89 } },
+            { event: 'token_delta', data: { chunk: '}', index: 4, delta_len: 1 } },
+            { event: 'security_audit', data: { tenant_isolated: true, argon2_locked: true, ast_integrity: 'PASS_100%' } },
+            { event: 'stream_end', data: { status: 'completed', total_tokens: 5, total_chunks: 10, eot: true } }
+          ];
+
+          var chunkIdx = 0;
+          function emitNextSseChunk() {
+            if (!streamState.isRunning) return;
+            if (streamState.isPaused) {
+              streamState.streamTimer = setTimeout(emitNextSseChunk, 100);
+              return;
+            }
+
+            if (chunkIdx >= sseEvents.length) {
+              streamState.isRunning = false;
+              if (badge) {
+                badge.textContent = 'STREAM COMPLETE (200 OK · ' + streamState.chunkCount + ' Chunks)';
+                badge.style.color = 'var(--edge-emerald)';
+              }
+              appendChunkToFeed('🏁 SSE [DONE]', performance.now() - streamState.startTime, 0, 'data: [DONE]\n\n');
+              return;
+            }
+
+            var evt = sseEvents[chunkIdx];
+            var delta = performance.now() - streamState.startTime;
+
+            if (chunkIdx === 0) {
+              streamState.ttftMs = delta;
+              if (badge) {
+                badge.textContent = 'STREAMING LIVE · TTFT: ' + delta.toFixed(2) + 'ms';
+                badge.style.color = '#38bdf8';
+              }
+            }
+
+            var payloadStr = 'event: ' + evt.event + '\ndata: ' + JSON.stringify(evt.data, null, 2) + '\n\n';
+            var bytes = new TextEncoder().encode(payloadStr).length;
+
+            streamState.chunkCount++;
+            streamState.totalBytes += bytes;
+            var currentRate = (streamState.chunkCount / (Math.max(0.001, delta) / 1000)).toFixed(1) + ' chunks/s';
+
+            appendChunkToFeed('#' + (chunkIdx + 1).toString().padStart(2, '0') + ' · event: ' + evt.event, delta, bytes, payloadStr);
+            updateStreamTelemetry(streamState.ttftMs, streamState.chunkCount, streamState.totalBytes, currentRate);
+
+            chunkIdx++;
+            streamState.streamTimer = setTimeout(emitNextSseChunk, Math.floor(Math.random() * 35 + 45));
+          }
+
+          // Initial connection latency (TTFT)
+          streamState.streamTimer = setTimeout(emitNextSseChunk, 80);
+          return;
+        }
+
+        // 3. WebSocket Full-Duplex Channel Simulation
+        if (currentProtocolMode === 'ws') {
+          clearChunkInspector();
+          streamState.isRunning = true;
+          streamState.isPaused = false;
+          streamState.startTime = performance.now();
+          streamState.chunkCount = 0;
+          streamState.totalBytes = 0;
+
+          if (badge) {
+            badge.textContent = '101 SWITCHING PROTOCOLS (WebSocket Handshake)...';
+            badge.style.color = 'var(--edge-gold)';
+          }
+
+          setTimeout(function () {
+            var delta = performance.now() - streamState.startTime;
+            streamState.ttftMs = delta;
+
+            if (badge) {
+              badge.textContent = 'WS_OPEN · Channel Live (101 OK)';
+              badge.style.color = 'var(--edge-emerald)';
+            }
+
+            var hsFrame = JSON.stringify({
+              protocol: 'zoth-edge-ws-v1',
+              transport: 'WSS',
+              cluster: 'IAD1',
+              heartbeat_interval_ms: 1000,
+              capabilities: ['ast_live_diff', 'solana_pubsub', 'e2ee_simplex']
+            }, null, 2);
+            var hsBytes = new TextEncoder().encode(hsFrame).length;
+
+            streamState.chunkCount++;
+            streamState.totalBytes += hsBytes;
+            appendChunkToFeed('🔌 101 UPGRADE_OK (Server -> Client)', delta, hsBytes, hsFrame, 'ws-in');
+            updateStreamTelemetry(streamState.ttftMs, streamState.chunkCount, streamState.totalBytes, 'Duplex Connected');
+
+            // Automatic initial subscription frame
+            setTimeout(function () {
+              var subFrame = JSON.stringify({ action: 'subscribe', topic: 'cluster_telemetry' });
+              var subBytes = new TextEncoder().encode(subFrame).length;
+              var subDelta = performance.now() - streamState.startTime;
+
+              streamState.chunkCount++;
+              streamState.totalBytes += subBytes;
+              appendChunkToFeed('📤 WS CLIENT_SUB (Client -> Server)', subDelta, subBytes, subFrame, 'ws-out');
+              updateStreamTelemetry(streamState.ttftMs, streamState.chunkCount, streamState.totalBytes, 'Duplex Active');
+            }, 60);
+          }, 65);
+        }
       }
 
       function copyEdgeCurl() {
-        const method = (document.getElementById('req-method') && document.getElementById('req-method').value) || 'POST';
-        const path = (document.getElementById('req-path') && document.getElementById('req-path').value) || '/api/v1/auth/verify?cluster=IAD1';
-        const curl = `curl -X ${method} http://127.0.0.1:8484${path} \\\n  -H "Authorization: Bearer sk_zoth_sovereign" \\\n  -H "Content-Type: application/json"`;
+        var method = (document.getElementById('req-method') && document.getElementById('req-method').value) || 'POST';
+        var path = (document.getElementById('req-path') && document.getElementById('req-path').value) || '/api/v1/auth/verify?cluster=IAD1';
+        var curl = '';
+        if (currentProtocolMode === 'rest') {
+          curl = 'curl -X ' + method + ' http://127.0.0.1:8484' + path + ' \\\n  -H "Authorization: Bearer sk_zoth_sovereign" \\\n  -H "Content-Type: application/json"';
+        } else if (currentProtocolMode === 'sse') {
+          curl = 'curl -N -X GET http://127.0.0.1:8484/edge/stream/sse \\\n  -H "Accept: text/event-stream" \\\n  -H "Authorization: Bearer sk_zoth_sovereign"';
+        } else if (currentProtocolMode === 'ws') {
+          curl = 'websocat ws://127.0.0.1:8484/edge/ws/v1 \\\n  -H="Authorization: Bearer sk_zoth_sovereign"';
+        }
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(curl).then(() => {
+          navigator.clipboard.writeText(curl).then(function () {
             alert('cURL command copied to clipboard!');
-          }).catch(() => {
-            prompt('Copy cURL command:', curl);
+          }).catch(function () {
+            prompt('Copy command:', curl);
           });
         } else {
-          prompt('Copy cURL command:', curl);
+          prompt('Copy command:', curl);
         }
       }
 
       function exportTypeScript() {
-        const codeArea = document.getElementById('edge-code-area');
-        const code = codeArea ? codeArea.value : '';
-        const blob = new Blob([code], { type: 'text/typescript' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        var codeArea = document.getElementById('edge-code-area');
+        var code = codeArea ? codeArea.value : '';
+        var blob = new Blob([code], { type: 'text/typescript' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
         a.href = url;
         a.download = 'handler.ts';
         a.click();
@@ -1443,16 +1894,18 @@
       }
 
       function setForgeMobileView(viewKey) {
-        document.querySelectorAll('.forge-tab-btn').forEach(b => b.classList.remove('active'));
-        const activeBtn = Array.from(document.querySelectorAll('.forge-tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(viewKey));
+        document.querySelectorAll('.forge-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        var activeBtn = Array.from(document.querySelectorAll('.forge-tab-btn')).find(function (b) {
+          return b.getAttribute('onclick') && b.getAttribute('onclick').includes(viewKey);
+        });
         if (activeBtn) activeBtn.classList.add('active');
 
-        document.querySelectorAll('.forge-panel').forEach(p => p.classList.remove('mobile-active'));
-        const target = document.getElementById('pane-forge-' + viewKey);
+        document.querySelectorAll('.forge-panel').forEach(function (p) { p.classList.remove('mobile-active'); });
+        var target = document.getElementById('pane-forge-' + viewKey);
         if (target) target.classList.add('mobile-active');
       }
 
-      window.addEventListener('DOMContentLoaded', () => {
+      window.addEventListener('DOMContentLoaded', function () {
         loadTemplate('ratelimit');
       });
     </script>

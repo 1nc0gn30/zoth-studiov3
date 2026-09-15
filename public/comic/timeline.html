@@ -1914,6 +1914,9 @@
 <button class="btn-autoplay" id="btn-story-walkthrough" onclick="toggleStoryAutoplay()">
 <span id="walkthrough-icon">▶</span> <span id="walkthrough-text">Start Story Walkthrough</span>
 </button>
+<button class="btn-tool-pill" id="btn-dag-order-toggle" onclick="toggleDagOrderMode()" aria-label="Toggle between Canonical Release and Chronological Lore Ordering" title="Switch between Canonical Release Sequence and Chronological Lore Order">
+<span id="order-mode-icon">🔄</span> <span id="order-mode-text">Order: Canonical Release</span>
+</button>
 <button class="btn-tool-pill" onclick="resetGraphZoom()">
 <span>🎯 Reset Zoom</span>
 </button>
@@ -1962,19 +1965,19 @@
 <div class="dag-nodes-stage" id="dag-nodes-layer">
 <!-- Epoch 1 Column Background -->
 <div class="dag-epoch-lane" style="left:20px; width:340px;">
-<span class="dag-epoch-lane-header" style="background:rgba(0,240,255,0.15); color:var(--comic-cyan);">EPOCH 1 · GENESIS</span>
+<span class="dag-epoch-lane-header" id="dag-lane-header-1" style="background:rgba(0,240,255,0.15); color:var(--comic-cyan);">EPOCH 1 · GENESIS</span>
 </div>
 <!-- Epoch 2 Column Background -->
 <div class="dag-epoch-lane" style="left:390px; width:340px;">
-<span class="dag-epoch-lane-header" style="background:rgba(168,85,247,0.15); color:var(--comic-purple);">EPOCH 2 · DARK ARCHONS</span>
+<span class="dag-epoch-lane-header" id="dag-lane-header-2" style="background:rgba(168,85,247,0.15); color:var(--comic-purple);">EPOCH 2 · DARK ARCHONS</span>
 </div>
 <!-- Epoch 3 Column Background -->
 <div class="dag-epoch-lane" style="left:760px; width:370px;">
-<span class="dag-epoch-lane-header" style="background:rgba(16,185,129,0.15); color:var(--comic-emerald);">EPOCH 3 · CONSENSUS</span>
+<span class="dag-epoch-lane-header" id="dag-lane-header-3" style="background:rgba(16,185,129,0.15); color:var(--comic-emerald);">EPOCH 3 · CONSENSUS</span>
 </div>
 <!-- Epoch 4 Column Background -->
 <div class="dag-epoch-lane" style="left:1160px; width:350px;">
-<span class="dag-epoch-lane-header" style="background:rgba(255,0,122,0.15); color:var(--comic-rose);">EPOCH 4 · FINALE TEASER</span>
+<span class="dag-epoch-lane-header" id="dag-lane-header-4" style="background:rgba(255,0,122,0.15); color:var(--comic-rose);">EPOCH 4 · FINALE TEASER</span>
 </div>
 <!-- DAG NODES (Injected and managed via JavaScript for dynamic interactivity) -->
 </div>
@@ -2751,6 +2754,51 @@
         }
       ];
 
+      // In-Universe Deep-Time Chronological Map
+      const CHRONO_MAP = {
+        "node-e04-cover": { chronoX: 40, chronoY: 60, chronoPhase: "phase-1", chronoCode: "LORE.01" },
+        "node-e04-p04": { chronoX: 40, chronoY: 210, chronoPhase: "phase-1", chronoCode: "LORE.02" },
+        "node-e02-p06": { chronoX: 40, chronoY: 360, chronoPhase: "phase-1", chronoCode: "LORE.03" },
+        "node-e02-p02": { chronoX: 40, chronoY: 510, chronoPhase: "phase-1", chronoCode: "LORE.04" },
+        "node-e01-p01": { chronoX: 40, chronoY: 660, chronoPhase: "phase-1", chronoCode: "LORE.05" },
+        "node-e03-p01": { chronoX: 40, chronoY: 810, chronoPhase: "phase-1", chronoCode: "LORE.06" },
+
+        "node-e01-p02": { chronoX: 410, chronoY: 80, chronoPhase: "phase-2", chronoCode: "LORE.07" },
+        "node-e01-p03": { chronoX: 410, chronoY: 230, chronoPhase: "phase-2", chronoCode: "LORE.08" },
+        "node-e01-p04": { chronoX: 410, chronoY: 380, chronoPhase: "phase-2", chronoCode: "LORE.09" },
+        "node-e01-p05": { chronoX: 410, chronoY: 530, chronoPhase: "phase-2", chronoCode: "LORE.10" },
+        "node-e01-p06": { chronoX: 410, chronoY: 680, chronoPhase: "phase-2", chronoCode: "LORE.11" },
+
+        "node-e02-p01": { chronoX: 780, chronoY: 60, chronoPhase: "phase-3", chronoCode: "LORE.12" },
+        "node-e02-p03": { chronoX: 780, chronoY: 200, chronoPhase: "phase-3", chronoCode: "LORE.13" },
+        "node-e02-p04": { chronoX: 780, chronoY: 340, chronoPhase: "phase-3", chronoCode: "LORE.14" },
+        "node-e04-p02": { chronoX: 780, chronoY: 480, chronoPhase: "phase-3", chronoCode: "LORE.15" },
+        "node-e03-p02": { chronoX: 780, chronoY: 620, chronoPhase: "phase-3", chronoCode: "LORE.16" },
+        "node-e03-p03": { chronoX: 780, chronoY: 760, chronoPhase: "phase-3", chronoCode: "LORE.17" },
+        "node-e03-p04": { chronoX: 780, chronoY: 900, chronoPhase: "phase-3", chronoCode: "LORE.18" },
+
+        "node-e03-p05": { chronoX: 1180, chronoY: 80, chronoPhase: "phase-4", chronoCode: "LORE.19" },
+        "node-e02-p05": { chronoX: 1180, chronoY: 230, chronoPhase: "phase-4", chronoCode: "LORE.20" },
+        "node-e04-p01": { chronoX: 1180, chronoY: 380, chronoPhase: "phase-4", chronoCode: "LORE.21" },
+        "node-e04-p03": { chronoX: 1180, chronoY: 530, chronoPhase: "phase-4", chronoCode: "LORE.22" },
+        "node-e04-p05": { chronoX: 1180, chronoY: 680, chronoPhase: "phase-4", chronoCode: "LORE.23" },
+        "node-e03-p06": { chronoX: 1180, chronoY: 830, chronoPhase: "phase-4", chronoCode: "LORE.24" },
+        "node-e04-p06": { chronoX: 1180, chronoY: 980, chronoPhase: "phase-4", chronoCode: "LORE.25" }
+      };
+
+      // Populate coordinates and order codes
+      STORY_NODES.forEach(n => {
+        n.canonicalX = n.x;
+        n.canonicalY = n.y;
+        n.canonicalCode = n.code;
+        const c = CHRONO_MAP[n.id] || { chronoX: n.x, chronoY: n.y, chronoPhase: n.epoch, chronoCode: n.code };
+        n.chronoX = c.chronoX;
+        n.chronoY = c.chronoY;
+        n.chronoPhase = c.chronoPhase;
+        n.chronoCode = c.chronoCode;
+      });
+
+      let currentOrderMode = "canonical"; // "canonical" | "chronological"
       let selectedNodeId = null;
       let activeEpochFilter = "all";
       let activeAudio = null;
@@ -2758,6 +2806,29 @@
       let autoplayIdx = 0;
       let autoplayTimer = null;
       let sfxAudioPlayer = null;
+
+      /**
+       * Procedural Web Audio Chime
+       */
+      function playProceduralChime(freq = 432) {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          if (ctx.state === "suspended") ctx.resume();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(freq * 1.5, ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.36);
+        } catch (e) {}
+      }
 
       /**
        * Initialization
@@ -2773,11 +2844,67 @@
       }
 
       /**
+       * Toggle between Canonical Release and Chronological Lore Ordering
+       */
+      window.toggleDagOrderMode = function() {
+        currentOrderMode = currentOrderMode === "canonical" ? "chronological" : "canonical";
+        const isChrono = currentOrderMode === "chronological";
+
+        playProceduralChime(isChrono ? 528 : 432);
+
+        // Update Toggle Button UI
+        const orderText = document.getElementById("order-mode-text");
+        const orderBtn = document.getElementById("btn-dag-order-toggle");
+        if (orderText) {
+          orderText.textContent = isChrono ? "Order: Chronological Lore" : "Order: Canonical Release";
+        }
+        if (orderBtn) {
+          orderBtn.classList.toggle("active", isChrono);
+          if (isChrono) {
+            orderBtn.style.borderColor = "var(--comic-gold)";
+            orderBtn.style.color = "var(--comic-gold)";
+            orderBtn.style.background = "rgba(251, 191, 36, 0.15)";
+          } else {
+            orderBtn.style.borderColor = "";
+            orderBtn.style.color = "";
+            orderBtn.style.background = "";
+          }
+        }
+
+        // Update DAG lane headers
+        const lane1 = document.getElementById("dag-lane-header-1");
+        const lane2 = document.getElementById("dag-lane-header-2");
+        const lane3 = document.getElementById("dag-lane-header-3");
+        const lane4 = document.getElementById("dag-lane-header-4");
+
+        if (lane1) lane1.textContent = isChrono ? "PHASE I · ABYSSAL GENESIS & MONOLITH" : "EPOCH 1 · GENESIS";
+        if (lane2) lane2.textContent = isChrono ? "PHASE II · SOVEREIGN AWAKENING" : "EPOCH 2 · DARK ARCHONS";
+        if (lane3) lane3.textContent = isChrono ? "PHASE III · TRIANGULATION & PROOFS" : "EPOCH 3 · CONSENSUS";
+        if (lane4) lane4.textContent = isChrono ? "PHASE IV · 22-NODE SINGULARITY" : "EPOCH 4 · FINALE TEASER";
+
+        // Update active coordinates on story nodes
+        STORY_NODES.forEach(n => {
+          n.x = isChrono ? n.chronoX : n.canonicalX;
+          n.y = isChrono ? n.chronoY : n.canonicalY;
+        });
+
+        renderDagGraph();
+        renderStreamTimeline();
+        renderAccessibleTable();
+
+        const announcer = document.getElementById("a11y-status-announcer");
+        if (announcer) {
+          announcer.textContent = `Timeline re-ordered by ${isChrono ? "Deep-Time In-Universe Chronological Lore" : "Canonical Episode Release Sequence"}.`;
+        }
+      };
+
+      /**
        * Render the Interactive DAG SVG & HTML Nodes Layer
        */
       function renderDagGraph() {
         const nodesLayer = document.getElementById("dag-nodes-layer");
         const svgLines = document.getElementById("dag-svg-lines");
+        const isChrono = currentOrderMode === "chronological";
 
         // Clear existing nodes except lane containers
         const existingNodeEls = nodesLayer.querySelectorAll(".dag-node");
@@ -2801,6 +2928,7 @@
 
         // Render Nodes
         STORY_NODES.forEach(node => {
+          const displayCode = isChrono ? node.chronoCode : node.code;
           const nodeEl = document.createElement("div");
           nodeEl.className = "dag-node";
           nodeEl.id = "dag-" + node.id;
@@ -2808,11 +2936,15 @@
           nodeEl.style.top = node.y + "px";
           nodeEl.setAttribute("tabindex", "0");
           nodeEl.setAttribute("role", "button");
-          nodeEl.setAttribute("aria-label", `${node.code}: ${node.title} (${node.episode})`);
+          nodeEl.setAttribute("aria-label", `${displayCode}: ${node.title} (${node.episode})`);
+
+          if (selectedNodeId === node.id) {
+            nodeEl.classList.add("active-selected");
+          }
 
           nodeEl.innerHTML = `
             <div class="dag-node-header">
-              <span class="dag-node-code">${node.code}</span>
+              <span class="dag-node-code">${displayCode}</span>
               <span class="dag-node-ep">${node.episode}</span>
             </div>
             <div class="dag-node-body">
@@ -2968,7 +3100,8 @@
         // Update Announcer for screen readers
         const announcer = document.getElementById("a11y-status-announcer");
         if (announcer) {
-          announcer.textContent = `Selected story node ${node.code}: ${node.title}. Episode ${node.episode}.`;
+          const displayCode = currentOrderMode === "chronological" ? node.chronoCode : node.code;
+          announcer.textContent = `Selected story node ${displayCode}: ${node.title}. Episode ${node.episode}.`;
         }
 
         if (openDrawer) {
@@ -2981,7 +3114,8 @@
        * Populate Inspector Drawer
        */
       function populateDrawer(node) {
-        document.getElementById("drawer-node-code").textContent = `NODE ${node.code}`;
+        const displayCode = currentOrderMode === "chronological" ? node.chronoCode : node.code;
+        document.getElementById("drawer-node-code").textContent = `NODE ${displayCode}`;
         document.getElementById("drawer-node-epoch").textContent = node.epochName.toUpperCase();
         document.getElementById("drawer-node-title").textContent = node.title;
         document.getElementById("drawer-node-subtitle").textContent = node.subtitle;
@@ -3006,7 +3140,8 @@
         } else {
           upWrap.innerHTML = node.incoming.map(id => {
             const upNode = STORY_NODES.find(n => n.id === id);
-            return `<button class="relation-pill" onclick="selectNode('${id}', true)">◀ ${upNode ? upNode.code + ': ' + upNode.title : id}</button>`;
+            const upCode = upNode ? (currentOrderMode === "chronological" ? upNode.chronoCode : upNode.code) : id;
+            return `<button class="relation-pill" onclick="selectNode('${id}', true)">◀ ${upNode ? upCode + ': ' + upNode.title : id}</button>`;
           }).join("");
         }
 
@@ -3017,7 +3152,8 @@
         } else {
           downWrap.innerHTML = node.outgoing.map(id => {
             const downNode = STORY_NODES.find(n => n.id === id);
-            return `<button class="relation-pill" onclick="selectNode('${id}', true)">▶ ${downNode ? downNode.code + ': ' + downNode.title : id}</button>`;
+            const downCode = downNode ? (currentOrderMode === "chronological" ? downNode.chronoCode : downNode.code) : id;
+            return `<button class="relation-pill" onclick="selectNode('${id}', true)">▶ ${downNode ? downCode + ': ' + downNode.title : id}</button>`;
           }).join("");
         }
 
@@ -3045,25 +3181,34 @@
        */
       function renderStreamTimeline() {
         const root = document.getElementById("stream-timeline-cards-root");
-        const epochs = [
+        const isChrono = currentOrderMode === "chronological";
+
+        const groups = isChrono ? [
+          { key: "phase-1", title: "PHASE I: ABYSSAL GENESIS & MONOLITHIC MONOPOLIES", color: "var(--comic-cyan)" },
+          { key: "phase-2", title: "PHASE II: SOVEREIGN AWAKENING & PANTHEON SWARM", color: "var(--comic-purple)" },
+          { key: "phase-3", title: "PHASE III: CRYPTOGRAPHIC TRIANGULATION & PROOFS", color: "var(--comic-emerald)" },
+          { key: "phase-4", title: "PHASE IV: CONSENSUS SINGULARITY & BEDROCK SEAL", color: "var(--comic-rose)" }
+        ] : [
           { key: "epoch-1", title: "EPOCH 1: GENESIS IN THE SILICON RAIN (S01E01)", color: "var(--comic-cyan)" },
           { key: "epoch-2", title: "EPOCH 2: THE DARK ARCHONS & CIPHER 00 (S01E02)", color: "var(--comic-purple)" },
           { key: "epoch-3", title: "EPOCH 3: TRIANGULATION OF CONSENSUS (S01E03)", color: "var(--comic-emerald)" },
           { key: "epoch-4", title: "EPOCH 4: SEASON 1 FINALE TEASER (S01E04)", color: "var(--comic-rose)" }
         ];
 
-        root.innerHTML = epochs.map(ep => {
-          const epNodes = STORY_NODES.filter(n => n.epoch === ep.key);
-          if (epNodes.length === 0) return "";
+        root.innerHTML = groups.map(grp => {
+          const grpNodes = isChrono 
+            ? STORY_NODES.filter(n => n.chronoPhase === grp.key).sort((a, b) => a.chronoY - b.chronoY)
+            : STORY_NODES.filter(n => n.epoch === grp.key);
+          if (grpNodes.length === 0) return "";
 
           return `
-            <section class="timeline-epoch-section" id="stream-${ep.key}">
+            <section class="timeline-epoch-section" id="stream-${grp.key}">
               <header class="timeline-epoch-header">
-                <span class="comic-pill" style="border-color:${ep.color}; color:${ep.color};">${ep.key.toUpperCase()}</span>
-                <h2 class="timeline-epoch-title">${ep.title}</h2>
+                <span class="comic-pill" style="border-color:${grp.color}; color:${grp.color};">${grp.key.toUpperCase()}</span>
+                <h2 class="timeline-epoch-title">${grp.title}</h2>
               </header>
               <div class="timeline-cards-track">
-                ${epNodes.map(node => `
+                ${grpNodes.map(node => `
                   <article class="timeline-card" id="card-${node.id}">
                     <div class="timeline-card-media">
                       <img class="timeline-card-img" src="${node.img}" alt="${node.title} comic scene" loading="lazy" />
@@ -3071,7 +3216,7 @@
                     <div class="timeline-card-content">
                       <div>
                         <div class="timeline-card-meta">
-                          <span class="comic-pill gold">${node.code}</span>
+                          <span class="comic-pill gold">${isChrono ? node.chronoCode : node.code}</span>
                           <span style="font-family:var(--font-mono); font-size:0.75rem; color:#94a3b8;">${node.episode}</span>
                         </div>
                         <h3 class="timeline-card-heading">${node.title}</h3>
@@ -3101,9 +3246,14 @@
        */
       function renderAccessibleTable() {
         const tbody = document.getElementById("accessible-table-body");
-        tbody.innerHTML = STORY_NODES.map(node => `
+        const isChrono = currentOrderMode === "chronological";
+        const nodesToDisplay = isChrono 
+          ? [...STORY_NODES].sort((a, b) => a.chronoCode.localeCompare(b.chronoCode))
+          : [...STORY_NODES];
+
+        tbody.innerHTML = nodesToDisplay.map(node => `
           <tr>
-            <td><strong style="color:var(--comic-gold); font-family:var(--font-mono);">${node.code}</strong></td>
+            <td><strong style="color:var(--comic-gold); font-family:var(--font-mono);">${isChrono ? node.chronoCode : node.code}</strong></td>
             <td><span class="comic-pill">${node.episode}</span></td>
             <td>
               <strong style="color:#ffffff;">${node.title}</strong>

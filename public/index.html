@@ -30,13 +30,13 @@
 <link href="/llms.txt" rel="alternate" title="llms.txt" type="text/plain"/>
 <link href="/favicon.png" rel="icon" type="image/png"/>
 <link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
-<link as="image" fetchpriority="high" href="/assets/mascot/azoth-hero.jpg" rel="preload"/>
+<link as="image" fetchpriority="high" href="/assets/media/home/azoth-hero-cinematic.jpg" rel="preload"/>
 <link as="image" href="/assets/media/land/hub-hero.jpg" rel="preload"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="/assets/zoth-guide.css" rel="stylesheet"/>
 <link href="/assets/zoth-theme.css?v=11" id="zoth-theme-core-css" rel="stylesheet"/>
-<script src="/assets/zoth-theme.js?v=11"></script>
+<script src="/assets/zoth-theme.js?v=19"></script>
 <script>/* Progressive enhancement flag: set before first paint so CSS entrance
    states only apply when JS is actually available. If JS is blocked or this
    fails, [data-rise] content stays fully visible at rest. */
@@ -346,6 +346,249 @@ document.documentElement.classList.add("js-armed");</script>
         outline: 2px solid var(--cyan);
         outline-offset: 3px;
       }
+
+      /* ── Recently Used Workstations Chip Bar ── */
+      .recent-workstations-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        background: var(--surface-card, rgba(16, 20, 34, 0.75));
+        border: 1px solid var(--border, rgba(0, 240, 255, 0.2));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      .recent-workstations-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--gold, #fbbf24);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+      }
+      .recent-workstations-chips {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        flex: 1 1 auto;
+      }
+      .rw-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border, rgba(255, 255, 255, 0.14));
+        color: var(--text-primary, #f1f5f9);
+        font-family: var(--font-mono, monospace);
+        font-size: 0.78rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        min-height: 32px;
+        box-sizing: border-box;
+      }
+      .rw-chip:hover {
+        background: rgba(0, 240, 255, 0.15);
+        border-color: var(--cyan, #00f0ff);
+        color: var(--text-primary, #fff);
+        transform: translateY(-1px);
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+        text-decoration: none;
+      }
+      .rw-chip-badge {
+        font-size: 0.65rem;
+        padding: 1px 5px;
+        border-radius: 4px;
+        background: rgba(0, 240, 255, 0.2);
+        color: var(--cyan, #00f0ff);
+        font-weight: 700;
+      }
+      .rw-shortcut-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: 1px solid var(--border, rgba(255, 255, 255, 0.16));
+        color: var(--text-subhead, #94a3b8);
+        font-family: var(--font-mono, monospace);
+        font-size: 0.72rem;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-left: auto;
+      }
+      .rw-shortcut-hint:hover {
+        border-color: var(--gold, #fbbf24);
+        color: var(--gold, #fbbf24);
+      }
+      .rw-shortcut-hint kbd {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-weight: 700;
+      }
+
+      /* ── Global Keyboard Shortcuts Modal ── */
+      .zoth-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(3, 5, 10, 0.82);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+        opacity: 1;
+        transition: opacity 0.2s ease;
+      }
+      .zoth-modal-backdrop[hidden] {
+        display: none !important;
+      }
+      .zoth-modal-dialog {
+        background: var(--surface-card, #0a0e1c);
+        border: 1px solid var(--border, rgba(0, 240, 255, 0.3));
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 240, 255, 0.15);
+        width: min(680px, 100%);
+        max-height: min(88vh, 720px);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        color: var(--text-primary, #f1f5f9);
+        animation: zothModalZoom 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      @keyframes zothModalZoom {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .zoth-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+      }
+      .zoth-modal-header h2 {
+        font-family: var(--font-display, sans-serif);
+        font-size: 1.25rem;
+        margin: 0;
+        color: var(--text-primary, #fff);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .zoth-modal-close {
+        background: transparent;
+        border: 1px solid var(--border, rgba(255, 255, 255, 0.16));
+        color: var(--text-subhead, #94a3b8);
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+      }
+      .zoth-modal-close:hover {
+        border-color: var(--cyan, #00f0ff);
+        color: var(--cyan, #00f0ff);
+        background: rgba(0, 240, 255, 0.1);
+      }
+      .zoth-modal-body {
+        padding: 20px 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .shortcut-group-title {
+        font-family: var(--font-mono, monospace);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--gold, #fbbf24);
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .shortcut-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .shortcut-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.03);
+        font-size: 0.85rem;
+        color: var(--text-subhead, #cbd5e1);
+      }
+      .shortcut-row kbd {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--cyan, #00f0ff);
+        box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+      }
+      .zoth-modal-footer {
+        padding: 14px 24px;
+        border-top: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.76rem;
+        color: var(--text-subhead, #94a3b8);
+        font-family: var(--font-mono, monospace);
+      }
+      html[data-theme="light"] .recent-workstations-bar {
+        background: #ffffff;
+        border-color: rgba(17, 24, 39, 0.12);
+      }
+      html[data-theme="light"] .rw-chip {
+        background: #f1f5f9;
+        border-color: rgba(17, 24, 39, 0.14);
+        color: #1e293b;
+      }
+      html[data-theme="light"] .zoth-modal-dialog {
+        background: #ffffff;
+        border-color: rgba(17, 24, 39, 0.16);
+        color: #111827;
+      }
+      html[data-theme="light"] .shortcut-row {
+        background: #f8fafc;
+        color: #334155;
+      }
+      html[data-theme="light"] .shortcut-row kbd {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+        color: #0369a1;
+      }
+
       #zoth-tip {
         position: fixed; z-index: 90;
         max-width: 17rem;
@@ -1655,11 +1898,14 @@ document.documentElement.classList.add("js-armed");</script>
   ]
 }
   </script>
-<link href="/assets/zoth-nav.css?v=11" id="zoth-nav-css" rel="stylesheet"/>
+<link href="/assets/zoth-nav.css?v=16" id="zoth-nav-css" rel="stylesheet"/>
 <link href="/assets/zoth-ui-overhaul.css" rel="stylesheet"/>
 <link href="/assets/zoth-parallax.css" rel="stylesheet"/>
 <link href="/assets/zoth-travel-parallax.css?v=2" rel="stylesheet"/>
-<link href="/assets/zoth-home-poster.css?v=20260913j" rel="stylesheet"/>
+<link href="/assets/zoth-home-poster.css?v=20260914a" rel="stylesheet"/>
+<link href="/assets/zoth-home-sections.css?v=20260914b" rel="stylesheet"/>
+<link href="/assets/zoth-home-atelier.css?v=20260915b" rel="stylesheet"/>
+<link href="/assets/zoth-theme-life.css?v=2" id="zoth-theme-life-css" rel="stylesheet"/>
 <link href="/assets/zoth-footer.css?v=20260913c" id="zoth-footer-css" rel="stylesheet"/>
 <style id="home-annotation-fix-layer">
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1682,6 +1928,8 @@ document.documentElement.classList.add("js-armed");</script>
 .eco-mark[data-logo="simplex"] { --eco-src: url("/assets/logos/eco/simplex.svg"); }
 .eco-mark[data-logo="pytorch"] { --eco-src: url("/assets/logos/eco/pytorch.svg"); }
 .eco-mark[data-logo="solana"]  { --eco-src: url("/assets/logos/eco/solana.svg"); }
+.eco-mark[data-logo="hermes"]  { --eco-src: url("/assets/logos/eco/hermes.svg"); }
+.eco-mark[data-logo="nous"]    { --eco-src: url("/assets/logos/eco/nous.svg"); }
 
 /* Short footer links: hit area >= 44px wide (labels stay visually unchanged). */
 .mega-footer-link,
@@ -2131,17 +2379,27 @@ document.documentElement.classList.add("js-armed");</script>
 <a class="btn btn-off" href="#install">Install locally</a>
 <a class="btn btn-ghost" href="/pricing/">Support the forge</a>
 </div>
+<div class="recent-workstations-bar" id="recentWorkstationsBar" aria-label="Recently Used Workstations">
+  <div class="recent-workstations-label">
+    <span class="rw-icon">⚡</span>
+    <span>Recent Workstations:</span>
+  </div>
+  <div class="recent-workstations-chips" id="recentWorkstationsChips"></div>
+  <button type="button" class="rw-shortcut-hint" id="btnOpenShortcutsModal" title="Open Keyboard Shortcuts Cheatsheet (?)">
+    <kbd>?</kbd> Shortcuts
+  </button>
+</div>
 </div>
 <div class="hero-azoth">
-<img alt="Master Azoth" class="hero-azoth-still" decoding="async" fetchpriority="high" height="1600" src="/assets/mascot/azoth-hero.jpg" width="1280"/>
-<video class="hero-azoth-film" loop="" muted="" playsinline="" poster="/assets/mascot/azoth-hero.jpg" preload="none">
+<img alt="Master Azoth" class="hero-azoth-still" decoding="async" fetchpriority="high" height="1600" src="/assets/media/home/azoth-hero-cinematic.jpg" width="1280"/>
+<video class="hero-azoth-film" loop="" muted="" playsinline="" poster="/assets/media/home/azoth-hero-cinematic.jpg" preload="none">
 <source media="(min-width: 881px) and (prefers-reduced-motion: no-preference)" src="/assets/media/land/azoth-hero.mp4" type="video/mp4"/>
 </video>
 </div>
 </div>
 </section><section class="travel-scene-stage creators-stage" data-guide="Choose or describe what you want to accomplish.|Zoth selects the right agent team.|See the work progress in a clean chat." id="how-it-works">
 <div id="for-everyone" style="position:relative; top:-70px; pointer-events:none;"></div>
-<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-flow.jpg" width="1920"/></div>
+<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-flow-cinematic.jpg" width="1920"/></div>
 <div class="showcase-inner stage-scroll-panel flow-wrap" data-rise="">
 <div class="flow-intro">
 <p class="flow-kicker">Simple 3-step workflow</p>
@@ -2157,9 +2415,9 @@ document.documentElement.classList.add("js-armed");</script>
 <label class="flow-step" for="flow-1" onclick="if(window.ZothAudioFX) window.ZothAudioFX.playClick(880, 0.08, 'sine')">
 <span class="flow-num">01</span>
 <span class="flow-step-copy">
-<div class="flow-step-meta" style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+<div class="flow-step-meta">
 <strong>Step 1 · Plain Language</strong>
-<span class="flow-tag" style="font-family:var(--font-mono, monospace); font-size:0.68rem; font-weight:700; color:var(--cyan,#00f0ff); background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.25); border-radius:4px; padding:1px 6px;">[NLP COMPOSER]</span>
+<span class="flow-tag">[NLP COMPOSER]</span>
 </div>
 <span>Describe your goal in plain English: a website, automated data cleanup, 3D asset, or private document audit.</span>
 </span>
@@ -2169,9 +2427,9 @@ document.documentElement.classList.add("js-armed");</script>
 <label class="flow-step" for="flow-2" onclick="if(window.ZothAudioFX) window.ZothAudioFX.playClick(1040, 0.08, 'sine')">
 <span class="flow-num">02</span>
 <span class="flow-step-copy">
-<div class="flow-step-meta" style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+<div class="flow-step-meta">
 <strong>Step 2 · Swarm Consensus</strong>
-<span class="flow-tag" style="font-family:var(--font-mono, monospace); font-size:0.68rem; font-weight:700; color:var(--gold,#fbbf24); background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.25); border-radius:4px; padding:1px 6px;">[AST TRIANGULATION]</span>
+<span class="flow-tag flow-tag-gold">[AST TRIANGULATION]</span>
 </div>
 <span>Planner, builder, and security reviewer agents collaborate in a clean chat thread to plan, synthesize, and cross-check code.</span>
 </span>
@@ -2181,9 +2439,9 @@ document.documentElement.classList.add("js-armed");</script>
 <label class="flow-step" for="flow-3" onclick="if(window.ZothAudioFX) window.ZothAudioFX.playClick(1200, 0.08, 'sine')">
 <span class="flow-num">03</span>
 <span class="flow-step-copy">
-<div class="flow-step-meta" style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+<div class="flow-step-meta">
 <strong>Step 3 · Sovereign Execution</strong>
-<span class="flow-tag" style="font-family:var(--font-mono, monospace); font-size:0.68rem; font-weight:700; color:#34d399; background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.25); border-radius:4px; padding:1px 6px;">[100% LOCAL FS]</span>
+<span class="flow-tag flow-tag-ok">[100% LOCAL FS]</span>
 </div>
 <span>Receive clean, responsive websites, cleaned datasets, and verified code written directly into your local folders.</span>
 </span>
@@ -2409,11 +2667,11 @@ document.documentElement.classList.add("js-armed");</script>
 <span class="live-dot-pulse"></span>
 <span id="goalBadge">INTERACTIVE SIMULATION</span>
 </div>
-<div class="goal-demo-header-row" style="display:flex; align-items:center; gap:12px; margin: 8px 0;">
-<div aria-hidden="true" class="goal-demo-icon" id="goalIcon" style="font-size:2rem;">🌐</div>
+<div class="goal-demo-header-row">
+<div aria-hidden="true" class="goal-demo-icon" id="goalIcon">🌐</div>
 <div class="goal-demo-titles">
-<h3 class="goal-demo-title" id="goalTitle" style="margin:0; font-size:1.25rem;">Launch a Modern Website with Zero Coding</h3>
-<div class="goal-demo-subtitle" id="goalSubtitle" style="font-family:var(--font-mono, monospace); font-size:0.75rem; color:var(--cyan,#00f0ff); margin-top:2px;">Autonomous Site Builder · Semantic HTML5 &amp; CSS3</div>
+<h3 class="goal-demo-title" id="goalTitle">Launch a Modern Website with Zero Coding</h3>
+<div class="goal-demo-subtitle" id="goalSubtitle">Autonomous Site Builder · Semantic HTML5 &amp; CSS3</div>
 </div>
 </div>
 <p class="goal-demo-desc" id="goalDesc">Describe what you need in everyday language. Zoth designs the layout, writes the copy, and publishes the site straight from your computer.</p>
@@ -2425,12 +2683,12 @@ document.documentElement.classList.add("js-armed");</script>
 <span class="md3-chip goal-team-chip"><span aria-hidden="true">🛡️</span><strong>Security Reviewer (Hermes)</strong></span>
 </div>
 </div>
-<div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:14px;">
+<div class="goal-demo-cta-row">
 <a class="magic-shimmer-btn md3-btn-filled goal-demo-cta" href="/studio/webgen.html" id="goalActionBtn">
 <span>Open WebGen Studio</span>
 <span aria-hidden="true" class="goal-demo-cta-arrow">➔</span>
 </a>
-<span style="font-family:var(--font-mono, monospace); font-size:0.72rem; color:#34d399; font-weight:700;">⚡ 100% Local Loopback</span>
+<span class="goal-local-chip">⚡ 100% Local Loopback</span>
 </div>
 </div>
 <div class="goal-simulation-screen">
@@ -2482,7 +2740,7 @@ document.documentElement.classList.add("js-armed");</script>
 </div>
 </div>
 </section><section class="travel-scene-stage phone-stage" data-guide="Familiar phone-based interface.|1:1 chats, swarm group messages, and voice calls.|Transcripts, durations, and summaries stored locally." id="interface">
-<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-deck.jpg" width="1920"/></div>
+<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-deck-cinematic.jpg" width="1920"/></div>
 <div class="deck-wrap">
 <input checked="" class="deck-radio" id="deck-chat" name="home-deck" type="radio"/>
 <input class="deck-radio" id="deck-voice" name="home-deck" type="radio"/>
@@ -2496,10 +2754,10 @@ document.documentElement.classList.add("js-armed");</script>
 <label class="deck-tab" for="deck-voice" onclick="if(window.ZothAudioFX) window.ZothAudioFX.playClick(1040, 0.06, 'sine');">Voice transcripts</label>
 <label class="deck-tab" for="deck-progress" onclick="if(window.ZothAudioFX) window.ZothAudioFX.playClick(1200, 0.06, 'sine');">Live progress</label>
 </div>
-<div class="deck-quick-chips" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 18px;" aria-label="Quick scenario previews">
-<button class="deck-quick-chip" onclick="document.getElementById('deck-chat').checked=true; if(window.ZothAudioFX) window.ZothAudioFX.playClick(880, 0.06, 'sine');" type="button" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:999px; padding:4px 12px; font-family:var(--font-mono, monospace); font-size:0.72rem; color:var(--text-subhead,#cbd5e1); cursor:pointer;">💬 E-Commerce Site</button>
-<button class="deck-quick-chip" onclick="document.getElementById('deck-voice').checked=true; if(window.ZothAudioFX) window.ZothAudioFX.playClick(1040, 0.06, 'sine');" type="button" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:999px; padding:4px 12px; font-family:var(--font-mono, monospace); font-size:0.72rem; color:var(--text-subhead,#cbd5e1); cursor:pointer;">🎙️ Offline Voice Audit</button>
-<button class="deck-quick-chip" onclick="document.getElementById('deck-progress').checked=true; if(window.ZothAudioFX) window.ZothAudioFX.playClick(1200, 0.06, 'sine');" type="button" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:999px; padding:4px 12px; font-family:var(--font-mono, monospace); font-size:0.72rem; color:var(--text-subhead,#cbd5e1); cursor:pointer;">⚡ AST File Verification</button>
+<div class="deck-quick-chips" aria-label="Quick scenario previews">
+<button class="deck-quick-chip" onclick="document.getElementById('deck-chat').checked=true; if(window.ZothAudioFX) window.ZothAudioFX.playClick(880, 0.06, 'sine');" type="button">💬 E-Commerce Site</button>
+<button class="deck-quick-chip" onclick="document.getElementById('deck-voice').checked=true; if(window.ZothAudioFX) window.ZothAudioFX.playClick(1040, 0.06, 'sine');" type="button">🎙️ Offline Voice Audit</button>
+<button class="deck-quick-chip" onclick="document.getElementById('deck-progress').checked=true; if(window.ZothAudioFX) window.ZothAudioFX.playClick(1200, 0.06, 'sine');" type="button">⚡ AST File Verification</button>
 </div>
 <div class="deck-copy-panels">
 <div class="deck-blurb" data-deck="chat">
@@ -2669,8 +2927,8 @@ document.documentElement.classList.add("js-armed");</script>
      STAGE 3: THE 21-AGENT SPECIALIST TEAM
      ═══════════════════════════════════════════════════════════════ -->
 <section class="travel-scene-stage agents-stage" data-guide="Understand each agent by human job title first.|Click any agent to inspect full profile and capabilities." id="agents">
-<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-team.jpg" width="1920"/></div>
-<div class="team-wrap" style="max-width: 1240px; width: 100%; margin: 0 auto;">
+<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-team-cinematic.jpg" width="1920"/></div>
+<div class="team-wrap">
 <div class="team-intro" data-rise="">
 <p class="team-kicker">21 Autonomous Agent Specialists</p>
 <h2>Meet Your Sovereign AI Swarm</h2>
@@ -3089,12 +3347,12 @@ document.documentElement.classList.add("js-armed");</script>
   </div>
 </div>
 
-<div style="margin-top: 32px; text-align: center;">
+<div class="team-cta-row">
   <a class="team-cta" href="/agents/">Inspect Full 21-Agent Dossiers &amp; Sandboxes ➔</a>
 </div>
 </div>
 </section><section class="travel-scene-stage trust-stage" data-guide="Clear privacy boundaries.|Local files stay on your machine.|Inspect what happens locally vs. remotely." id="trust">
-<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-trust.jpg" width="1920"/></div>
+<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-trust-cinematic.jpg" width="1920"/></div>
 <div class="trust-wrap">
 <div class="trust-intro" data-rise="">
 <p class="trust-kicker">Auditable data boundaries</p>
@@ -3129,14 +3387,30 @@ document.documentElement.classList.add("js-armed");</script>
 <h3>Seamless Integrations Across the Best AI Platforms</h3>
 <p>Run top-tier AI models, harnesses, and agent frameworks locally or connect your own API keys with zero platform lock-in.</p>
 </div>
+<div class="eco-leads">
+<a class="eco-lead" href="https://nousresearch.com/" rel="noopener noreferrer" target="_blank">
+<span class="eco-mark" data-logo="nous"></span>
+<span class="eco-lead-copy">
+<strong>Nous Research</strong>
+<small>Hermes 3 · local research harness</small>
+</span>
+</a>
+<a class="eco-lead" href="https://github.com/NousResearch/hermes-agent" rel="noopener noreferrer" target="_blank">
+<span class="eco-mark" data-logo="hermes"></span>
+<span class="eco-lead-copy">
+<strong>Hermes Agent</strong>
+<small>Winged tool executor on loopback</small>
+</span>
+</a>
+</div>
 <div class="eco-featured">
+<a class="eco-chip" href="https://nousresearch.com/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="nous"></span><span>Nous Research</span></a>
+<a class="eco-chip" href="https://github.com/NousResearch/hermes-agent" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="hermes"></span><span>Hermes Agent</span></a>
 <a class="eco-chip" href="https://openai.com/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="openai"></span><span>OpenAI</span></a>
 <a class="eco-chip" href="https://www.anthropic.com/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="anthropic"></span><span>Anthropic</span></a>
 <a class="eco-chip" href="https://x.ai/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="grok"></span><span>xAI Grok</span></a>
 <a class="eco-chip" href="https://gemini.google.com/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="gemini"></span><span>Google Gemini</span></a>
-<a class="eco-chip" href="https://llama.meta.com/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="meta"></span><span>Meta Llama</span></a>
 <a class="eco-chip" href="https://huggingface.co/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="huggingface"></span><span>Hugging Face</span></a>
-<a class="eco-chip" href="https://cursor.com/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="cursor"></span><span>Cursor</span></a>
 <a class="eco-chip" href="https://ollama.com/" rel="noopener noreferrer" target="_blank"><span class="eco-mark" data-logo="ollama"></span><span>Ollama</span></a>
 </div>
 <div class="eco-marquee" aria-hidden="true">
@@ -3150,7 +3424,8 @@ document.documentElement.classList.add("js-armed");</script>
 <a class="eco-pill" tabindex="-1" href="https://ollama.com/"><span class="eco-mark" data-logo="ollama"></span>Ollama</a>
 <a class="eco-pill" tabindex="-1" href="https://huggingface.co/"><span class="eco-mark" data-logo="huggingface"></span>Hugging Face</a>
 <a class="eco-pill" tabindex="-1" href="https://perplexity.ai/"><span class="eco-mark" data-logo="perplexity"></span>Perplexity</a>
-<a class="eco-pill" tabindex="-1" href="https://nousresearch.com/"><span class="eco-mark" data-logo="nous"></span>Nous</a>
+<a class="eco-pill" tabindex="-1" href="https://nousresearch.com/"><span class="eco-mark" data-logo="nous"></span>Nous Research</a>
+<a class="eco-pill" tabindex="-1" href="https://github.com/NousResearch/hermes-agent"><span class="eco-mark" data-logo="hermes"></span>Hermes Agent</a>
 <a class="eco-pill" tabindex="-1" href="https://qwenlm.github.io/"><span class="eco-mark" data-logo="qwen"></span>Qwen</a>
 <a class="eco-pill" tabindex="-1" href="https://openrouter.ai/"><span class="eco-mark" data-logo="openrouter"></span>OpenRouter</a>
 <!-- Duplicate block for seamless 50% loop -->
@@ -3163,7 +3438,8 @@ document.documentElement.classList.add("js-armed");</script>
 <a class="eco-pill" tabindex="-1" href="https://ollama.com/"><span class="eco-mark" data-logo="ollama"></span>Ollama</a>
 <a class="eco-pill" tabindex="-1" href="https://huggingface.co/"><span class="eco-mark" data-logo="huggingface"></span>Hugging Face</a>
 <a class="eco-pill" tabindex="-1" href="https://perplexity.ai/"><span class="eco-mark" data-logo="perplexity"></span>Perplexity</a>
-<a class="eco-pill" tabindex="-1" href="https://nousresearch.com/"><span class="eco-mark" data-logo="nous"></span>Nous</a>
+<a class="eco-pill" tabindex="-1" href="https://nousresearch.com/"><span class="eco-mark" data-logo="nous"></span>Nous Research</a>
+<a class="eco-pill" tabindex="-1" href="https://github.com/NousResearch/hermes-agent"><span class="eco-mark" data-logo="hermes"></span>Hermes Agent</a>
 <a class="eco-pill" tabindex="-1" href="https://qwenlm.github.io/"><span class="eco-mark" data-logo="qwen"></span>Qwen</a>
 <a class="eco-pill" tabindex="-1" href="https://openrouter.ai/"><span class="eco-mark" data-logo="openrouter"></span>OpenRouter</a>
 </div>
@@ -3201,7 +3477,7 @@ document.documentElement.classList.add("js-armed");</script>
 </div>
 </section>
 <section class="travel-scene-stage install-stage" data-guide="Install Zoth on your computer.|1-line setup for Linux, macOS, and Windows.|Run locally in under a minute." id="install">
-<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-install.jpg" width="1920"/></div>
+<div aria-hidden="true" class="stage-media"><img alt="" decoding="async" height="1080" loading="lazy" src="/assets/media/home/stage-install-cinematic.jpg" width="1920"/></div>
 <div class="install-wrap">
 <div aria-hidden="true" class="install-orbit"></div>
 <div class="install-3d-stage">
@@ -3220,11 +3496,11 @@ document.documentElement.classList.add("js-armed");</script>
       </div>
     </div>
     <div aria-label="Installation operating system packages" class="install-os-deck" role="tablist">
-      <button aria-controls="cmd" aria-selected="true" class="os on" data-cmd="curl -fsSL https://zoth.nullai.tech/install.sh | bash" role="tab" type="button"><span class="os-icon">🍎</span> macOS</button>
-      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="curl -fsSL https://zoth.nullai.tech/install.sh | bash" role="tab" type="button"><span class="os-icon">🐧</span> Linux</button>
-      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="irm https://zoth.nullai.tech/install.ps1 | iex" role="tab" type="button"><span class="os-icon">🪟</span> Windows</button>
-      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="docker run -d -p 8484:8484 -p 8088:8088 nullai/zoth-studio" role="tab" type="button"><span class="os-icon">🐳</span> Docker</button>
-      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="cargo install zoth-studio &amp;&amp; zoth start" role="tab" type="button"><span class="os-icon">🦀</span> Rust / Cargo</button>
+      <button aria-controls="cmd" aria-selected="true" class="os on" data-cmd="curl -fsSL https://zoth.nullai.tech/install.sh | bash" role="tab" type="button"><span class="os-logo" aria-hidden="true"><img alt="" height="18" src="/assets/logos/os/apple.svg" width="18"/></span> macOS</button>
+      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="curl -fsSL https://zoth.nullai.tech/install.sh | bash" role="tab" type="button"><span class="os-logo" aria-hidden="true"><img alt="" height="18" src="/assets/logos/os/linux.svg" width="18"/></span> Linux</button>
+      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="irm https://zoth.nullai.tech/install.ps1 | iex" role="tab" type="button"><span class="os-logo" aria-hidden="true"><img alt="" height="18" src="/assets/logos/os/windows.svg" width="18"/></span> Windows</button>
+      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="docker run -d -p 8484:8484 -p 8088:8088 nullai/zoth-studio" role="tab" type="button"><span class="os-logo" aria-hidden="true"><img alt="" height="18" src="/assets/logos/os/docker.svg" width="18"/></span> Docker</button>
+      <button aria-controls="cmd" aria-selected="false" class="os" data-cmd="cargo install zoth-studio &amp;&amp; zoth start" role="tab" type="button"><span class="os-logo" aria-hidden="true"><img alt="" height="18" src="/assets/logos/os/rust.svg" width="18"/></span> Rust / Cargo</button>
     </div>
     <div class="install-terminal-deck">
       <div class="term-titlebar">
@@ -3253,11 +3529,11 @@ document.documentElement.classList.add("js-armed");</script>
       </div>
     </div>
     <!-- Hardware Readiness Radar -->
-    <div class="hw-readiness-radar" style="margin-top: 18px; padding: 12px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; font-family: var(--font-mono, monospace); font-size: 0.72rem;">
-      <div><span style="color:#64748b;">RAM:</span> <strong style="color:#34d399;">8GB+ Ready</strong></div>
-      <div><span style="color:#64748b;">GPU/VRAM:</span> <strong style="color:var(--cyan,#00f0ff);">CPU/CUDA/Metal</strong></div>
-      <div><span style="color:#64748b;">Ports:</span> <strong style="color:var(--gold,#fbbf24);">:8199, :8484, :8088</strong></div>
-      <div><span style="color:#64748b;">Isolation:</span> <strong style="color:#34d399;">127.0.0.1 100% Local</strong></div>
+    <div class="hw-readiness-radar">
+      <div><span class="hw-label">RAM:</span> <strong class="hw-ok">8GB+ Ready</strong></div>
+      <div><span class="hw-label">GPU/VRAM:</span> <strong class="hw-accent">CPU/CUDA/Metal</strong></div>
+      <div><span class="hw-label">Ports:</span> <strong class="hw-gold">:8199, :8484, :8088</strong></div>
+      <div><span class="hw-label">Isolation:</span> <strong class="hw-ok">127.0.0.1 100% Local</strong></div>
     </div>
     <div class="install-footer-row">
       <div class="install-feature-chips">
@@ -3283,11 +3559,11 @@ document.documentElement.classList.add("js-armed");</script>
   <div class="showcase-film-container">
     <video aria-label="Zoth Studio showcase film" class="showcase-film-video" id="homeShowcasePlayer" loop="" muted="" playsinline="" poster="/assets/media/land/hub-hero.jpg" preload="metadata" src="/assets/generated/videos/video_hero.mp4"></video>
     <div class="showcase-film-hud">
-      <div class="film-hud-left" style="display: flex; align-items: center; gap: 14px;">
+      <div class="film-hud-left">
         <button type="button" class="film-play-toggle-btn" id="filmPlayBtn" title="Play Showcase Film" aria-label="Play / Pause Showcase Film" onclick="toggleShowcaseFilm()">▶</button>
         <div class="film-channel-info">
-          <span style="font-family: var(--font-mono, monospace); font-size: 0.68rem; color: #34d399; font-weight: 700; letter-spacing: 0.08em;">● 21:9 CINEMATIC 60 FPS</span>
-          <h4 id="filmActiveTitle" style="margin: 2px 0 0; font-family: var(--font-display, Syne, sans-serif); font-size: 1.05rem; color: #ffffff;">Azoth Conductor &amp; Sovereign Foundry</h4>
+          <span class="film-live-chip">● 21:9 CINEMATIC 60 FPS</span>
+          <h4 id="filmActiveTitle">Azoth Conductor &amp; Sovereign Foundry</h4>
         </div>
       </div>
       <div class="film-channel-pills" role="tablist" aria-label="Showcase video channels">
@@ -3310,7 +3586,7 @@ document.documentElement.classList.add("js-armed");</script>
             <a class="foot-brand-lockup" href="/">
               <img alt="Master Azoth" class="foot-azoth" decoding="async" height="72" loading="lazy" src="/assets/mascot/azoth-bust.jpg" width="72" />
               <span class="foot-brand-text">
-                <img alt="" class="foot-brand-logo" decoding="async" height="28" loading="lazy" src="/assets/brand/zoth-golden-z-192.png" width="28" />
+                <div class="brand-emblem-wrap foot-brand-emblem-wrap" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;position:relative;vertical-align:middle;margin-right:8px;"><img alt="Zoth 3D Golden Emblem" class="brand-emblem-img" decoding="async" height="28" loading="lazy" src="/assets/brand/zoth-golden-z-192.png" width="28" /><span class="brand-emblem-halo"></span></div>
                 <strong class="foot-brand-title">Zoth Studio</strong>
               </span>
             </a>
@@ -3365,10 +3641,10 @@ document.documentElement.classList.add("js-armed");</script>
       </div>
     </footer>
 <script defer="" src="https://unpkg.com/@phosphor-icons/web"></script>
-<script src="/assets/zoth-gate.js"></script>
+<script src="/assets/zoth-gate.js?v=12"></script>
 <script src="/assets/zoth-guide.js"></script>
 <script defer="" src="/assets/zoth-hero-canvas.js"></script>
-<script src="/assets/celestial-trail.js"></script>
+<script src="/assets/celestial-trail.js?v=5"></script>
 <script>
       (function () {
         var deck = location.port === "8484" ? "/" : "http://127.0.0.1:8484/";
@@ -4018,10 +4294,196 @@ document.documentElement.classList.add("js-armed");</script>
   for (var i = 0; i < els.length; i++) els[i].classList.add("in");
 })();
 </script>
-<script src="/assets/zoth-theme-fx.js?v=5"></script>
+<!-- Global Keyboard Shortcuts Cheatsheet Modal -->
+<div id="zoth-shortcuts-modal" class="zoth-modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-title">
+  <div class="zoth-modal-dialog" role="document">
+    <div class="zoth-modal-header">
+      <h2 id="shortcuts-modal-title"><span>⌨️</span> Keyboard Shortcuts</h2>
+      <button type="button" class="zoth-modal-close" id="btnShortcutsModalClose" aria-label="Close shortcuts modal">✕</button>
+    </div>
+    <div class="zoth-modal-body">
+      <div class="shortcut-group">
+        <div class="shortcut-group-title">🌌 Navigation</div>
+        <div class="shortcut-list">
+          <div class="shortcut-row"><span>Home Hub</span> <span><kbd>G</kbd> <kbd>H</kbd></span></div>
+          <div class="shortcut-row"><span>Workstations Hub</span> <span><kbd>G</kbd> <kbd>S</kbd></span></div>
+          <div class="shortcut-row"><span>Agent Pantheon</span> <span><kbd>G</kbd> <kbd>A</kbd></span></div>
+          <div class="shortcut-row"><span>Tool Registry</span> <span><kbd>G</kbd> <kbd>R</kbd></span></div>
+          <div class="shortcut-row"><span>Documentation</span> <span><kbd>G</kbd> <kbd>D</kbd></span></div>
+          <div class="shortcut-row"><span>Key Vault</span> <span><kbd>G</kbd> <kbd>V</kbd></span></div>
+          <div class="shortcut-row"><span>Zoth World 3D</span> <span><kbd>G</kbd> <kbd>W</kbd></span></div>
+        </div>
+      </div>
+      <div class="shortcut-group">
+        <div class="shortcut-group-title">⚡ Quick Workstation Jumps</div>
+        <div class="shortcut-list">
+          <div class="shortcut-row"><span>The Cockpit</span> <kbd>1</kbd></div>
+          <div class="shortcut-row"><span>WebGen Foundry</span> <kbd>2</kbd></div>
+          <div class="shortcut-row"><span>Consensus Arena</span> <kbd>3</kbd></div>
+          <div class="shortcut-row"><span>3D Swarm Arena</span> <kbd>4</kbd></div>
+          <div class="shortcut-row"><span>Companion Pets 3D</span> <kbd>5</kbd></div>
+        </div>
+      </div>
+      <div class="shortcut-group">
+        <div class="shortcut-group-title">🎨 Studio Tools &amp; Actions</div>
+        <div class="shortcut-list">
+          <div class="shortcut-row"><span>Shortcuts Cheatsheet</span> <kbd>?</kbd></div>
+          <div class="shortcut-row"><span>Command Palette</span> <span><kbd>Ctrl/Cmd</kbd> + <kbd>K</kbd></span></div>
+          <div class="shortcut-row"><span>Cycle Visual Theme (4)</span> <span><kbd>Shift</kbd> + <kbd>T</kbd></span></div>
+          <div class="shortcut-row"><span>On-Screen Annotator</span> <span><kbd>Shift</kbd> + <kbd>A</kbd></span></div>
+          <div class="shortcut-row"><span>Dismiss / Close</span> <kbd>Esc</kbd></div>
+        </div>
+      </div>
+    </div>
+    <div class="zoth-modal-footer">
+      <span>Zoth Studio Keyboard Master · 100% Local Sovereign Execution</span>
+      <span>Press <kbd>Esc</kbd> to close</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // --- Recently Used Workstations Logic ---
+  var DEFAULT_STATIONS = [
+    { id: "cockpit", title: "The Cockpit", icon: "🪐", url: "/studio/cockpit.html", badge: "SWARM" },
+    { id: "webgen", title: "WebGen Studio", icon: "⚡", url: "/studio/webgen.html", badge: "FOUNDRY" },
+    { id: "consensus", title: "Consensus v2", icon: "⚔️", url: "/studio/consensus.html", badge: "AST" },
+    { id: "swarm", title: "Swarm Arena", icon: "🌐", url: "/studio/swarm.html", badge: "3D GPU" },
+    { id: "vos", title: "vOS Sandbox", icon: "💻", url: "/studio/vos-sandbox.html", badge: "WASM" },
+    { id: "pets", title: "Companion Pets", icon: "💎", url: "/pets/", badge: "MASCOTS" }
+  ];
+
+  function getRecentWorkstations() {
+    try {
+      var saved = localStorage.getItem("zoth_recent_workstations");
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_STATIONS.slice(0, 4);
+  }
+
+  function recordWorkstationUse(st) {
+    try {
+      var current = getRecentWorkstations();
+      var filtered = current.filter(function(item) { return item.id !== st.id && item.url !== st.url; });
+      filtered.unshift(st);
+      if (filtered.length > 6) filtered = filtered.slice(0, 6);
+      localStorage.setItem("zoth_recent_workstations", JSON.stringify(filtered));
+      renderRecentWorkstations();
+    } catch (e) {}
+  }
+
+  function renderRecentWorkstations() {
+    var container = document.getElementById("recentWorkstationsChips");
+    if (!container) return;
+    var list = getRecentWorkstations();
+    container.innerHTML = "";
+    list.forEach(function(st) {
+      var a = document.createElement("a");
+      a.className = "rw-chip";
+      a.href = st.url;
+      a.innerHTML = "<span>" + (st.icon || "⚡") + "</span> <strong>" + st.title + "</strong>" + (st.badge ? ' <span class="rw-chip-badge">' + st.badge + "</span>" : "");
+      a.addEventListener("click", function() { recordWorkstationUse(st); });
+      container.appendChild(a);
+    });
+  }
+
+  renderRecentWorkstations();
+
+  // --- Keyboard Shortcuts Modal & Global Key Listener ---
+  var modal = document.getElementById("zoth-shortcuts-modal");
+  var btnOpen = document.getElementById("btnOpenShortcutsModal");
+  var btnClose = document.getElementById("btnShortcutsModalClose");
+
+  function openShortcutsModal() {
+    if (modal) {
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      if (btnClose) btnClose.focus();
+    }
+  }
+
+  function closeShortcutsModal() {
+    if (modal) {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      if (btnOpen) btnOpen.focus();
+    }
+  }
+
+  if (btnOpen) btnOpen.addEventListener("click", openShortcutsModal);
+  if (btnClose) btnClose.addEventListener("click", closeShortcutsModal);
+  if (modal) {
+    modal.addEventListener("click", function(e) {
+      if (e.target === modal) closeShortcutsModal();
+    });
+  }
+
+  var keySeq = [];
+  var seqTimer = null;
+
+  document.addEventListener("keydown", function(e) {
+    var activeTag = (document.activeElement && document.activeElement.tagName) || "";
+    var isInput = activeTag === "INPUT" || activeTag === "TEXTAREA" || activeTag === "SELECT" || (document.activeElement && document.activeElement.isContentEditable);
+
+    if (e.key === "Escape") {
+      if (modal && !modal.hidden) {
+        e.preventDefault();
+        closeShortcutsModal();
+        return;
+      }
+    }
+
+    if (isInput) return;
+
+    // Toggle shortcut modal on '?' (Shift + /)
+    if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+      e.preventDefault();
+      if (modal && !modal.hidden) closeShortcutsModal();
+      else openShortcutsModal();
+      return;
+    }
+
+    // Number keys 1-5 for quick workstation launch
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      if (e.key === "1") { window.location.href = "/studio/cockpit.html"; return; }
+      if (e.key === "2") { window.location.href = "/studio/webgen.html"; return; }
+      if (e.key === "3") { window.location.href = "/studio/consensus.html"; return; }
+      if (e.key === "4") { window.location.href = "/studio/swarm.html"; return; }
+      if (e.key === "5") { window.location.href = "/pets/"; return; }
+    }
+
+    // G + key navigation combos (e.g. G then H)
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      var k = e.key.toLowerCase();
+      if (k === "g" && keySeq.length === 0) {
+        keySeq.push("g");
+        clearTimeout(seqTimer);
+        seqTimer = setTimeout(function() { keySeq = []; }, 1200);
+        return;
+      }
+      if (keySeq.length === 1 && keySeq[0] === "g") {
+        keySeq = [];
+        clearTimeout(seqTimer);
+        if (k === "h") { window.location.href = "/"; return; }
+        if (k === "s") { window.location.href = "/studio/"; return; }
+        if (k === "a") { window.location.href = "/agents/"; return; }
+        if (k === "r") { window.location.href = "/registry/"; return; }
+        if (k === "d") { window.location.href = "/docs/"; return; }
+        if (k === "v") { window.location.href = "/vault/"; return; }
+        if (k === "w") { window.location.href = "/zoth-world.html"; return; }
+      }
+    }
+  });
+})();
+</script>
+<script src="/assets/zoth-theme-fx.js?v=10"></script>
 <script defer="" src="/assets/zoth-tip.js"></script>
 <script defer="" src="/assets/zoth-annotator.js"></script>
-<script defer="" src="/assets/zoth-nav.js?v=13"></script>
+<script defer="" src="/assets/zoth-nav.js?v=22"></script>
 <script defer="" src="/assets/zoth-parallax.js"></script>
 <script defer="" src="/assets/zoth-hero-title.js"></script>
 <script defer="" src="/assets/zoth-travel-parallax.js"></script>

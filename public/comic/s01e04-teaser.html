@@ -221,6 +221,165 @@
   ]
 }</script>
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
+  <style>
+    /* ARG Interactive Terminal & Keystroke Audio Styles */
+    .arg-terminal-card {
+      background: #02040a;
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 14px;
+      margin: 28px 0;
+      padding: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), inset 0 0 30px rgba(0, 240, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .arg-terminal-card::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+    .arg-term-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .arg-term-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .arg-term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .arg-term-dot.r { background: #ef4444; }
+    .arg-term-dot.y { background: #f59e0b; }
+    .arg-term-dot.g { background: #10b981; }
+    .arg-term-title {
+      font-size: 0.78rem;
+      color: var(--comic-cyan, #00f0ff);
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+    .arg-term-output {
+      max-height: 260px;
+      overflow-y: auto;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: #93c5fd;
+      margin-bottom: 14px;
+      padding-right: 8px;
+    }
+    .arg-term-output .term-line {
+      margin-bottom: 6px;
+    }
+    .arg-term-output .term-prompt {
+      color: var(--comic-gold, #f59e0b);
+      font-weight: 700;
+    }
+    .arg-term-output .term-success {
+      color: #34d399;
+    }
+    .arg-term-output .term-err {
+      color: #f87171;
+    }
+    .arg-term-output .term-highlight {
+      color: var(--comic-cyan, #00f0ff);
+      font-weight: 700;
+    }
+    .arg-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 240, 255, 0.05);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 8px;
+      padding: 8px 14px;
+      position: relative;
+      z-index: 5;
+    }
+    .arg-prompt-label {
+      color: var(--comic-gold, #f59e0b);
+      font-weight: 700;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+    .arg-input-field {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+    }
+    .arg-btn-submit {
+      background: var(--comic-cyan, #00f0ff);
+      color: #030408;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: all 0.2s ease;
+    }
+    .arg-btn-submit:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    }
+    .arg-chips-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      align-items: center;
+      position: relative;
+      z-index: 5;
+    }
+    .arg-chip-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: all 0.2s ease;
+    }
+    .arg-chip-btn:hover {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--comic-cyan, #00f0ff);
+      color: var(--comic-cyan, #00f0ff);
+    }
+    /* Theme overrides */
+    html[data-theme="light"] .arg-terminal-card {
+      background: #0f172a;
+      border-color: rgba(0, 0, 0, 0.2);
+    }
+    html[data-theme="matrix"] .arg-terminal-card {
+      background: #010d05;
+      border-color: rgba(0, 255, 65, 0.4);
+    }
+    html[data-theme="gold"] .arg-terminal-card {
+      background: #0f0a02;
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+  </style>
 </head>
 <body>
 <a class="skip skip-to-content" href="#main-content">Skip to main content</a>
@@ -650,6 +809,43 @@
 <button class="decrypt-btn" id="btnDecrypt" onclick="reDecryptCurrentTab()" type="button">⚡ Scramble Decryption Cycle</button>
 <span class="lore-hash">SHA-256: <code>e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</code></span>
 </div>
+</div>
+
+<!-- ARG Interactive Command Terminal with Audio Click Feedback -->
+<div class="arg-terminal-card" id="argTerminal">
+  <div class="arg-term-header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="arg-term-dots">
+        <span class="arg-term-dot r"></span>
+        <span class="arg-term-dot y"></span>
+        <span class="arg-term-dot g"></span>
+      </div>
+      <span class="arg-term-title">ZOTH://ARG-EMULATOR-v4.4 · MARIANA TRENCH OPTICAL PTY</span>
+    </div>
+    <button class="arg-chip-btn" id="btnToggleKeystrokeAudio" onclick="toggleKeystrokeAudio()" type="button">
+      🔊 Keystroke Audio: ON
+    </button>
+  </div>
+  <div class="arg-term-output" id="argTermOutput" tabindex="0">
+    <div class="term-line"><span class="term-highlight">● SOVEREIGN ARG TERMINAL INITIALIZED</span> [Port 8484 / Loopback Connected]</div>
+    <div class="term-line">Type <span class="term-prompt">help</span> to view available decryption and mission commands, or click the quick action chips below.</div>
+  </div>
+  <form class="arg-input-row" onsubmit="handleArgSubmit(event)">
+    <span class="arg-prompt-label">operator@trench-8484:~$</span>
+    <input type="text" class="arg-input-field" id="argInputField" placeholder="Type a command (e.g. decrypt, cipher00, leviathan)..." autocomplete="off" />
+    <button type="submit" class="arg-btn-submit">EXECUTE</button>
+  </form>
+  <div class="arg-chips-row">
+    <span style="font-size:0.72rem;color:#94a3b8;font-family:'IBM Plex Mono',monospace;">QUICK COMMANDS:</span>
+    <button class="arg-chip-btn" onclick="execArgCommand('help')" type="button">help</button>
+    <button class="arg-chip-btn" onclick="execArgCommand('status')" type="button">status</button>
+    <button class="arg-chip-btn" onclick="execArgCommand('decrypt')" type="button">decrypt</button>
+    <button class="arg-chip-btn" onclick="execArgCommand('cipher00')" type="button">cipher00</button>
+    <button class="arg-chip-btn" onclick="execArgCommand('leviathan')" type="button">leviathan</button>
+    <button class="arg-chip-btn" onclick="execArgCommand('mesh')" type="button">mesh</button>
+    <button class="arg-chip-btn" onclick="execArgCommand('season2')" type="button">season2</button>
+    <button class="arg-chip-btn" onclick="execArgCommand('clear')" type="button">clear</button>
+  </div>
 </div>
 </section>
 <section aria-labelledby="dossier-title" class="dossier-section" id="dossier">
@@ -1489,26 +1685,197 @@
       }
 
       /* ==========================================================================
-         6. Depth Meter Scroll Tracker
+         7. ARG Terminal Emulator & Web Audio Keystroke Feedback
          ========================================================================== */
-      function updateDepthMeter() {
-        var scrollY = window.scrollY || window.pageYOffset;
-        var maxScroll = (document.documentElement.scrollHeight - window.innerHeight) || 1;
-        var progress = Math.min(1, Math.max(0, scrollY / maxScroll));
+      var keystrokeAudioEnabled = true;
+      var keyAudioCtx = null;
 
-        var depthFill = document.getElementById('depthFill');
-        var depthVal = document.getElementById('depthVal');
-
-        if (depthFill) {
-          depthFill.style.height = (progress * 100) + '%';
+      function getKeyAudioCtx() {
+        if (!keyAudioCtx) {
+          var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) keyAudioCtx = new AudioContextClass();
         }
-        if (depthVal) {
-          var meter = Math.floor(progress * 10994);
-          depthVal.textContent = '-' + meter.toLocaleString() + 'm';
+        if (keyAudioCtx && keyAudioCtx.state === 'suspended') {
+          keyAudioCtx.resume();
         }
+        return keyAudioCtx;
       }
 
-      window.addEventListener('scroll', updateDepthMeter, { passive: true });
+      function playKeystrokeClick(type) {
+        if (!keystrokeAudioEnabled) return;
+        var ctx = getKeyAudioCtx();
+        if (!ctx) return;
+        try {
+          var now = ctx.currentTime;
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+
+          if (type === 'enter') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(1760, now + 0.08);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.12);
+          } else if (type === 'error') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, now);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.2);
+          } else {
+            var baseFreq = 2400 + Math.random() * 800;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(baseFreq, now);
+            osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.4, now + 0.025);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.035);
+          }
+        } catch (e) {}
+      }
+
+      window.toggleKeystrokeAudio = function() {
+        keystrokeAudioEnabled = !keystrokeAudioEnabled;
+        var btn = document.getElementById("btnToggleKeystrokeAudio");
+        if (btn) {
+          btn.textContent = keystrokeAudioEnabled ? "🔊 Keystroke Audio: ON" : "🔇 Keystroke Audio: OFF";
+        }
+        playKeystrokeClick('enter');
+      };
+
+      function appendTermOutput(html) {
+        var out = document.getElementById("argTermOutput");
+        if (!out) return;
+        var line = document.createElement("div");
+        line.className = "term-line";
+        line.innerHTML = html;
+        out.appendChild(line);
+        out.scrollTop = out.scrollHeight;
+      }
+
+      var ARG_COMMANDS = {
+        help: function() {
+          return "<span class='term-highlight'>=== AVAILABLE ARG COMMANDS ===</span><br/>" +
+                 "• <span class='term-prompt'>status</span>: Query Mariana Trench Sub-station :8484 telemetry.<br/>" +
+                 "• <span class='term-prompt'>decrypt</span>: Execute full-depth classified log scramble cycle.<br/>" +
+                 "• <span class='term-prompt'>cipher00</span>: Inspect Crimson Deepnet Anomaly Sector 7 logs.<br/>" +
+                 "• <span class='term-prompt'>leviathan</span>: Query 22nd Archetype biological AST telemetry.<br/>" +
+                 "• <span class='term-prompt'>mesh</span>: Inspect 24-node low-Earth orbit peer-to-peer relay.<br/>" +
+                 "• <span class='term-prompt'>season2</span>: Preview Season 2: The Orbital Mesh & Stellar Lattice.<br/>" +
+                 "• <span class='term-prompt'>clear</span>: Clear terminal console buffer.";
+        },
+        status: function() {
+          return "<span class='term-success'>[NODE 127.0.0.1:8484 STATUS: ONLINE]</span><br/>" +
+                 "• Depth: -10,994m (Mariana Hadal Trench)<br/>" +
+                 "• Swarm Quorum: 22/22 Nodes Synchronized<br/>" +
+                 "• Consensus Integrity: 100.00% Deterministic<br/>" +
+                 "• Telemetry Leakage: 0.000000 KB (Zero-Cloud Verified)";
+        },
+        decrypt: function() {
+          window.reDecryptCurrentTab();
+          return "<span class='term-success'>[DECRYPTION COMMENCED]</span> Hydrophone audio scramble pulse dispatched across all 4 classified logs.";
+        },
+        cipher00: function() {
+          return "<span class='term-err'>[ALERT: CIPHER 00 ANOMALY CONFIRMED]</span><br/>" +
+                 "Origin: Subterranean Vault Sector 7.<br/>" +
+                 "Payload: Dark Archon harvesting daemon attempt repelled by Kraken & Grok truth vectors.<br/>" +
+                 "Verdict: Zero private keys compromised. Master Azoth initiates Phase Two.";
+        },
+        leviathan: function() {
+          return "<span class='term-highlight'>[ARCHETYPE 22: THE LEVIATHAN]</span><br/>" +
+                 "• Status: AWAKENED<br/>" +
+                 "• Processing Capacity: 1.2 Billion Tokens/sec (Local Silicon)<br/>" +
+                 "• Core Frequencies: 432Hz Solfeggio & 528Hz Transformation<br/>" +
+                 "• Shield: Deep sea hydrodynamic Faraday armor.";
+        },
+        mesh: function() {
+          return "<span class='term-highlight'>[ORBITAL MESH SPECIFICATION]</span><br/>" +
+                 "• Orbit: 550km LEO Constellation<br/>" +
+                 "• Swarm Topology: 24-Node Peer-to-Peer Ring<br/>" +
+                 "• Cryptography: Argon2id + XChaCha20-Poly1305<br/>" +
+                 "• Latency: &lt; 2.4ms Inter-Agent Consensus.";
+        },
+        season2: function() {
+          return "<span class='term-success'>[SEASON 2 TRANSMISSION: THE ORBITAL MESH & STELLAR LATTICE]</span><br/>" +
+                 "Ascending from the Mariana Trench into low Earth orbit. The Sovereign Pantheon establishes unbreakable global mesh connectivity without cloud gateways.<br/>" +
+                 "<a href='/comic/s01e04.html#season2TeaserBanner' style='color:var(--comic-gold);text-decoration:underline;'>View Official Season 2 Teaser Banner ➔</a>";
+        },
+        clear: function() {
+          var out = document.getElementById("argTermOutput");
+          if (out) out.innerHTML = "";
+          return "<span class='term-highlight'>● TERMINAL CONSOLE CLEARED</span>";
+        }
+      };
+
+      window.execArgCommand = function(cmd) {
+        var cleanCmd = (cmd || "").trim().toLowerCase();
+        if (!cleanCmd) return;
+
+        appendTermOutput("<span class='term-prompt'>operator@trench-8484:~$</span> " + cleanCmd);
+        var handler = ARG_COMMANDS[cleanCmd];
+        if (handler) {
+          playKeystrokeClick('enter');
+          var result = handler();
+          if (result) appendTermOutput(result);
+        } else {
+          playKeystrokeClick('error');
+          appendTermOutput("<span class='term-err'>Command not recognized: '" + cleanCmd + "'. Type 'help' for available commands.</span>");
+        }
+      };
+
+      window.handleArgSubmit = function(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        var input = document.getElementById("argInputField");
+        if (!input) return;
+        var val = input.value;
+        input.value = "";
+        window.execArgCommand(val);
+      };
+
+      // Keystroke sound on physical typing
+      document.addEventListener("DOMContentLoaded", function() {
+        var input = document.getElementById("argInputField");
+        if (input) {
+          input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+              // will be handled by submit
+            } else {
+              playKeystrokeClick('type');
+            }
+          });
+        }
+      });
+
+      // Reading progress tracking
+      function saveReadingProgress() {
+        try {
+          var bookmark = {
+            episode: "s01e04-teaser",
+            title: "Season 1 Finale Teaser & ARG",
+            pageIdx: 0,
+            pageTitle: "Mariana Trench Teaser",
+            totalPages: 4,
+            scrollY: window.scrollY,
+            url: "/comic/s01e04-teaser.html",
+            updatedAt: Date.now()
+          };
+          localStorage.setItem("azoth_comic_bookmark", JSON.stringify(bookmark));
+        } catch (e) {}
+      }
+
+      window.addEventListener("scroll", function() {
+        saveReadingProgress();
+      }, { passive: true });
 
       // Init all on DOM ready
       if (document.readyState === 'loading') {
@@ -1516,11 +1883,13 @@
           initCanvas();
           updateCountdown();
           updateDepthMeter();
+          saveReadingProgress();
         });
       } else {
         initCanvas();
         updateCountdown();
         updateDepthMeter();
+        saveReadingProgress();
       }
     })();
   </script>

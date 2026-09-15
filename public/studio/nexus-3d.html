@@ -1688,7 +1688,7 @@
 </div>
 </div>
   <!-- Interactive 3D Animation Timeline & Exploded CAD Sequencer HUD -->
-  <div class="viewport-timeline-dock" id="viewport-timeline-dock" style="position: absolute; bottom: 52px; left: 12px; right: 12px; background: rgba(5, 8, 16, 0.92); border: 1px solid rgba(0, 229, 255, 0.35); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; z-index: 15; backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.7);">
+  <div class="viewport-timeline-dock" id="viewport-timeline-dock" style="position: absolute; bottom: 52px; left: 12px; right: 12px; background: rgba(5, 8, 16, 0.94); border: 1px solid rgba(0, 229, 255, 0.35); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; z-index: 15; backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.7);">
     <!-- Transport & Scrub Bar -->
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
       <div style="display: flex; align-items: center; gap: 6px;">
@@ -1697,10 +1697,14 @@
         <span class="tag-pill" id="timeline-timecode" style="font-family: var(--font-mono); font-size: 0.70rem; color: var(--cyan); min-width: 86px; text-align: center;">0.00s / 5.00s</span>
       </div>
 
-      <!-- Scrub Slider -->
-      <div style="flex: 1; display: flex; align-items: center; gap: 8px; min-width: 160px;">
-        <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted);">SCRUB</span>
-        <input type="range" id="timeline-scrub-slider" min="0" max="100" value="0" step="0.1" oninput="onTimelineScrub(this.value)" style="flex: 1; accent-color: var(--cyan); cursor: pointer;" />
+      <!-- Scrub Slider & Keyframe Markers Container -->
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 180px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted);">SCRUB</span>
+          <input type="range" id="timeline-scrub-slider" min="0" max="100" value="0" step="0.1" oninput="onTimelineScrub(this.value)" style="flex: 1; accent-color: var(--cyan); cursor: pointer;" />
+        </div>
+        <!-- Keyframe Markers Track -->
+        <div id="cam-keyframe-track" style="position: relative; height: 10px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;"></div>
       </div>
 
       <!-- Speed & Loop -->
@@ -1717,28 +1721,36 @@
       </div>
     </div>
 
-    <!-- Procedural Preset Selector & Exploded CAD View Slider -->
+    <!-- Bezier Camera Keyframe & Orbit Choreography Sub-Bar -->
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
-      <!-- Procedural Presets -->
+      <!-- Camera Choreography Controls -->
       <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-        <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); margin-right: 2px;">MOTIONS:</span>
-        <button class="btn-cad timeline-preset-btn" data-preset="hover-levitate" onclick="setTimelinePreset('hover-levitate')" style="padding: 3px 8px; font-size: 0.68rem;">🛸 Levitate</button>
-        <button class="btn-cad timeline-preset-btn" data-preset="exploded-view" onclick="setTimelinePreset('exploded-view')" style="padding: 3px 8px; font-size: 0.68rem; color:#fbbf24;">💥 Exploded CAD</button>
-        <button class="btn-cad timeline-preset-btn" data-preset="orbital-turntable" onclick="setTimelinePreset('orbital-turntable')" style="padding: 3px 8px; font-size: 0.68rem;">🔄 Turntable</button>
-        <button class="btn-cad timeline-preset-btn" data-preset="pulse-breathe" onclick="setTimelinePreset('pulse-breathe')" style="padding: 3px 8px; font-size: 0.68rem;">💓 Pulse</button>
-        <button class="btn-cad timeline-preset-btn" data-preset="warp-spin" onclick="setTimelinePreset('warp-spin')" style="padding: 3px 8px; font-size: 0.68rem; color:#f472b6;">⚡ Warp Spin</button>
-        <button class="btn-cad timeline-preset-btn active" data-preset="none" onclick="setTimelinePreset('none')" style="padding: 3px 8px; font-size: 0.68rem;">⏱️ Timeline</button>
+        <span style="font-family: var(--font-mono); font-size: 0.65rem; color: #38bdf8; font-weight: 700;">🎥 CAM BEZIER:</span>
+        <button class="btn-cad" onclick="captureCameraKeyframe()" style="padding: 2px 7px; font-size: 0.65rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);" title="Capture current camera position and target as keyframe">📸 Set Keyframe</button>
+        <select id="cam-bezier-easing" onchange="onBezierEasingChange(this.value)" style="background: rgba(0,0,0,0.6); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; font-family: var(--font-mono); font-size: 0.65rem; padding: 3px 5px; outline: none; cursor: pointer;">
+          <option value="easeInOutCubic" selected>Bezier: Ease-In-Out</option>
+          <option value="cinematicSurge">Bezier: Cinematic Surge</option>
+          <option value="springBounce">Bezier: Spring Glide</option>
+          <option value="linear">Bezier: Linear Orbit</option>
+        </select>
+        <canvas id="bezier-curve-canvas" width="48" height="20" style="border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 4px; background: rgba(0,0,0,0.5); vertical-align: middle;"></canvas>
+      </div>
+
+      <!-- Orbit Transition Choreography Presets -->
+      <div style="display: flex; align-items: center; gap: 3px; flex-wrap: wrap;">
+        <span style="font-family: var(--font-mono); font-size: 0.65rem; color: #c084fc; font-weight: 700;">CHOREOGRAPHY:</span>
+        <button class="btn-cad" onclick="applyCameraChoreography('spiral-descent')" style="padding: 2px 6px; font-size: 0.65rem; color:#c084fc;">🌀 Spiral</button>
+        <button class="btn-cad" onclick="applyCameraChoreography('heli-sweep')" style="padding: 2px 6px; font-size: 0.65rem; color:#c084fc;">🚁 360° Heli</button>
+        <button class="btn-cad" onclick="applyCameraChoreography('macro-flyby')" style="padding: 2px 6px; font-size: 0.65rem; color:#c084fc;">⚡ Fly-By</button>
+        <button class="btn-cad" onclick="applyCameraChoreography('sacred-axial')" style="padding: 2px 6px; font-size: 0.65rem; color:#fbbf24;">👑 Sacred Axial</button>
       </div>
 
       <!-- Exploded CAD View Slider -->
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: #fbbf24; font-weight: 600;">💥 CAD EXPLODE:</span>
-        <input type="range" id="slider-exploded-cad" min="0" max="1" value="0" step="0.01" oninput="onExplodedSliderChange(this.value)" style="width: 90px; accent-color: #fbbf24; cursor: pointer;" />
-        <span id="exploded-factor-badge" class="tag-pill" style="font-size: 0.65rem; color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); padding: 2px 6px; min-width: 32px; text-align: center;">0%</span>
-        <button class="btn-cad" onclick="quickSetExploded(0)" style="padding: 2px 6px; font-size: 0.62rem;">0%</button>
-        <button class="btn-cad" onclick="quickSetExploded(0.5)" style="padding: 2px 6px; font-size: 0.62rem;">50%</button>
-        <button class="btn-cad" onclick="quickSetExploded(1.0)" style="padding: 2px 6px; font-size: 0.62rem;">100%</button>
-        <button class="btn-cad" onclick="exportAnimatedCADGLB()" style="padding: 3px 8px; font-size: 0.68rem; color: #34d399; border-color: rgba(52, 211, 153, 0.4);">💾 Animated GLB</button>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <span style="font-family: var(--font-mono); font-size: 0.65rem; color: #fbbf24; font-weight: 600;">💥 CAD EXPLODE:</span>
+        <input type="range" id="slider-exploded-cad" min="0" max="1" value="0" step="0.01" oninput="onExplodedSliderChange(this.value)" style="width: 75px; accent-color: #fbbf24; cursor: pointer;" />
+        <span id="exploded-factor-badge" class="tag-pill" style="font-size: 0.62rem; color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); padding: 1px 4px; min-width: 28px; text-align: center;">0%</span>
+        <button class="btn-cad" onclick="exportAnimatedCADGLB()" style="padding: 2px 6px; font-size: 0.65rem; color: #34d399; border-color: rgba(52, 211, 153, 0.4);">💾 GLB</button>
       </div>
     </div>
   </div>
@@ -2757,7 +2769,11 @@
             if (scrubEl && !scrubEl.matches(':active')) {
               scrubEl.value = (data.progress * 100).toFixed(1);
             }
+            applyBezierCameraAtTime(data.time);
           });
+
+          renderCameraKeyframeTrack();
+          drawBezierCurvePreview();
 
           nexusTimeline.on('play', () => {
             const btn = document.getElementById('btn-timeline-play');
@@ -2798,11 +2814,235 @@
         if (nexusTimeline) nexusTimeline.stop();
       }
 
+      // =========================================================================
+      // 🎥 BEZIER CAMERA KEYFRAME SCRUBBER & ORBIT CHOREOGRAPHY ENGINE
+      // =========================================================================
+      let cameraKeyframes = [
+        { time: 0.0, px: 6.0, py: 6.0, pz: 12.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'easeInOutCubic' },
+        { time: 2.5, px: 0.0, py: 8.0, pz: 14.0, tx: 0, ty: 0, tz: 0, fov: 42, easing: 'easeInOutCubic' },
+        { time: 5.0, px: -8.0, py: 3.0, pz: 10.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'easeInOutCubic' }
+      ];
+      let activeBezierEasing = 'easeInOutCubic';
+      let isCameraChoreographyActive = true;
+
+      function cubicBezierVal(p1x, p1y, p2x, p2y, t) {
+        let u = Math.max(0, Math.min(1, t));
+        for (let i = 0; i < 5; i++) {
+          const currentX = 3 * (1 - u) * (1 - u) * u * p1x + 3 * (1 - u) * u * u * p2x + u * u * u;
+          const currentSlope = 3 * (1 - u) * (1 - u) * p1x + 6 * (1 - u) * u * (p2x - p1x) + 3 * u * u * (1 - p2x);
+          if (Math.abs(currentSlope) < 1e-5) break;
+          u -= (currentX - t) / currentSlope;
+          u = Math.max(0, Math.min(1, u));
+        }
+        return 3 * (1 - u) * (1 - u) * u * p1y + 3 * (1 - u) * u * u * p2y + u * u * u;
+      }
+
+      const BEZIER_EASINGS = {
+        easeInOutCubic: (t) => cubicBezierVal(0.65, 0, 0.35, 1, t),
+        cinematicSurge: (t) => cubicBezierVal(0.85, 0, 0.15, 1, t),
+        springBounce: (t) => {
+          const c4 = (2 * Math.PI) / 3;
+          return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+        },
+        linear: (t) => t
+      };
+
+      function drawBezierCurvePreview() {
+        const cvs = document.getElementById('bezier-curve-canvas');
+        if (!cvs) return;
+        const ctx = cvs.getContext('2d');
+        const w = cvs.width;
+        const h = cvs.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        const fn = BEZIER_EASINGS[activeBezierEasing] || BEZIER_EASINGS.easeInOutCubic;
+        for (let x = 0; x < w; x++) {
+          const normT = x / w;
+          const normY = fn(normT);
+          const y = h - 3 - normY * (h - 6);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      function onBezierEasingChange(val) {
+        activeBezierEasing = val;
+        drawBezierCurvePreview();
+        const tag = document.getElementById('viewport-status-tag');
+        if (tag) tag.textContent = `🎥 Camera Bezier Easing: ${val}`;
+      }
+
+      function renderCameraKeyframeTrack() {
+        const track = document.getElementById('cam-keyframe-track');
+        if (!track) return;
+        const maxDuration = (nexusTimeline && nexusTimeline.duration) || 5.0;
+        track.innerHTML = '';
+        cameraKeyframes.forEach((kf, idx) => {
+          const pct = (kf.time / maxDuration) * 100;
+          const pin = document.createElement('div');
+          pin.style.cssText = `position:absolute; left:${Math.min(98, Math.max(1, pct))}%; top:1px; width:8px; height:8px; background:#38bdf8; transform:translateX(-50%) rotate(45deg); cursor:pointer; box-shadow:0 0 6px rgba(56,189,248,0.8); border:1px solid #fff;`;
+          pin.title = `Keyframe #${idx + 1}: ${kf.time.toFixed(2)}s`;
+          pin.onclick = (e) => {
+            e.stopPropagation();
+            if (nexusTimeline) nexusTimeline.scrub(kf.time / maxDuration);
+            applyBezierCameraAtTime(kf.time);
+          };
+          track.appendChild(pin);
+        });
+      }
+
+      function captureCameraKeyframe() {
+        if (!camera || !controls) return;
+        const t = (nexusTimeline && nexusTimeline.currentTime) || 0.0;
+        const target = controls.target || new THREE.Vector3(0, 0, 0);
+
+        const newKf = {
+          time: parseFloat(t.toFixed(2)),
+          px: parseFloat(camera.position.x.toFixed(3)),
+          py: parseFloat(camera.position.y.toFixed(3)),
+          pz: parseFloat(camera.position.z.toFixed(3)),
+          tx: parseFloat(target.x.toFixed(3)),
+          ty: parseFloat(target.y.toFixed(3)),
+          tz: parseFloat(target.z.toFixed(3)),
+          fov: parseFloat(camera.fov.toFixed(1)),
+          easing: activeBezierEasing
+        };
+
+        const existingIdx = cameraKeyframes.findIndex(k => Math.abs(k.time - newKf.time) < 0.15);
+        if (existingIdx >= 0) {
+          cameraKeyframes[existingIdx] = newKf;
+        } else {
+          cameraKeyframes.push(newKf);
+          cameraKeyframes.sort((a, b) => a.time - b.time);
+        }
+
+        renderCameraKeyframeTrack();
+        const tag = document.getElementById('viewport-status-tag');
+        if (tag) tag.textContent = `📸 Camera Keyframe Set at ${newKf.time}s (${newKf.px}, ${newKf.py}, ${newKf.pz})`;
+        burstParticles();
+      }
+
+      function applyBezierCameraAtTime(currentTime) {
+        if (!camera || !controls || cameraKeyframes.length === 0) return;
+        if (!isCameraChoreographyActive) return;
+
+        const maxDuration = (nexusTimeline && nexusTimeline.duration) || 5.0;
+        const t = Math.max(0, Math.min(maxDuration, currentTime));
+
+        let k1 = cameraKeyframes[0];
+        let k2 = cameraKeyframes[cameraKeyframes.length - 1];
+
+        if (cameraKeyframes.length === 1 || t <= k1.time) {
+          camera.position.set(k1.px, k1.py, k1.pz);
+          controls.target.set(k1.tx, k1.ty, k1.tz);
+          if (camera.fov !== k1.fov) {
+            camera.fov = k1.fov;
+            camera.updateProjectionMatrix();
+          }
+          controls.update();
+          return;
+        }
+
+        if (t >= k2.time) {
+          camera.position.set(k2.px, k2.py, k2.pz);
+          controls.target.set(k2.tx, k2.ty, k2.tz);
+          if (camera.fov !== k2.fov) {
+            camera.fov = k2.fov;
+            camera.updateProjectionMatrix();
+          }
+          controls.update();
+          return;
+        }
+
+        for (let i = 0; i < cameraKeyframes.length - 1; i++) {
+          if (t >= cameraKeyframes[i].time && t <= cameraKeyframes[i + 1].time) {
+            k1 = cameraKeyframes[i];
+            k2 = cameraKeyframes[i + 1];
+            break;
+          }
+        }
+
+        const segmentDuration = k2.time - k1.time;
+        if (segmentDuration <= 0) return;
+
+        const segmentProgress = (t - k1.time) / segmentDuration;
+        const easeFn = BEZIER_EASINGS[k1.easing || activeBezierEasing] || BEZIER_EASINGS.easeInOutCubic;
+        const eased = easeFn(segmentProgress);
+
+        camera.position.x = k1.px + (k2.px - k1.px) * eased;
+        camera.position.y = k1.py + (k2.py - k1.py) * eased;
+        camera.position.z = k1.pz + (k2.pz - k1.pz) * eased;
+
+        controls.target.x = k1.tx + (k2.tx - k1.tx) * eased;
+        controls.target.y = k1.ty + (k2.ty - k1.ty) * eased;
+        controls.target.z = k1.tz + (k2.tz - k1.tz) * eased;
+
+        if (k1.fov && k2.fov) {
+          camera.fov = k1.fov + (k2.fov - k1.fov) * eased;
+          camera.updateProjectionMatrix();
+        }
+
+        controls.update();
+      }
+
+      function applyCameraChoreography(preset) {
+        if (!camera || !controls) return;
+        if (!nexusTimeline) initNexusTimeline();
+
+        const duration = (nexusTimeline && nexusTimeline.duration) || 5.0;
+
+        if (preset === 'spiral-descent') {
+          cameraKeyframes = [
+            { time: 0.0, px: 0.0, py: 14.0, pz: 16.0, tx: 0, ty: 0, tz: 0, fov: 50, easing: 'easeInOutCubic' },
+            { time: duration * 0.33, px: 12.0, py: 8.0, pz: 4.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'easeInOutCubic' },
+            { time: duration * 0.66, px: -8.0, py: 4.0, pz: -10.0, tx: 0, ty: 0, tz: 0, fov: 40, easing: 'easeInOutCubic' },
+            { time: duration, px: 4.0, py: 2.5, pz: 6.0, tx: 0, ty: 0.5, tz: 0, fov: 38, easing: 'easeInOutCubic' }
+          ];
+        } else if (preset === 'heli-sweep') {
+          cameraKeyframes = [
+            { time: 0.0, px: 0.0, py: 6.0, pz: 14.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'cinematicSurge' },
+            { time: duration * 0.25, px: 14.0, py: 5.0, pz: 0.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'cinematicSurge' },
+            { time: duration * 0.50, px: 0.0, py: 7.0, pz: -14.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'cinematicSurge' },
+            { time: duration * 0.75, px: -14.0, py: 5.0, pz: 0.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'cinematicSurge' },
+            { time: duration, px: 0.0, py: 6.0, pz: 14.0, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'cinematicSurge' }
+          ];
+        } else if (preset === 'macro-flyby') {
+          cameraKeyframes = [
+            { time: 0.0, px: -16.0, py: 1.0, pz: 8.0, tx: -4, ty: 0, tz: 0, fov: 40, easing: 'cinematicSurge' },
+            { time: duration * 0.5, px: 0.0, py: 0.5, pz: 2.8, tx: 0, ty: 0, tz: 0, fov: 32, easing: 'springBounce' },
+            { time: duration, px: 16.0, py: 2.0, pz: -8.0, tx: 4, ty: 0, tz: 0, fov: 42, easing: 'easeInOutCubic' }
+          ];
+        } else if (preset === 'sacred-axial') {
+          cameraKeyframes = [
+            { time: 0.0, px: 0.0, py: 18.0, pz: 0.1, tx: 0, ty: 0, tz: 0, fov: 45, easing: 'easeInOutCubic' },
+            { time: duration * 0.5, px: 10.0, py: 10.0, pz: 10.0, tx: 0, ty: 0, tz: 0, fov: 42, easing: 'easeInOutCubic' },
+            { time: duration, px: 0.0, py: 1.5, pz: 10.0, tx: 0, ty: 0, tz: 0, fov: 40, easing: 'easeInOutCubic' }
+          ];
+        }
+
+        renderCameraKeyframeTrack();
+        drawBezierCurvePreview();
+        isCameraChoreographyActive = true;
+        applyBezierCameraAtTime(0);
+
+        if (nexusTimeline && !nexusTimeline.isPlaying) {
+          nexusTimeline.play();
+        }
+
+        const tag = document.getElementById('viewport-status-tag');
+        if (tag) tag.textContent = `🎬 Applied Choreography: ${preset.toUpperCase()} (4 Bezier Keyframes)`;
+        burstParticles();
+      }
+
       function onTimelineScrub(val) {
         if (!nexusTimeline) initNexusTimeline();
         if (nexusTimeline) {
           const progress = parseFloat(val) / 100.0;
           nexusTimeline.scrub(progress);
+          applyBezierCameraAtTime(nexusTimeline.currentTime);
         }
       }
 

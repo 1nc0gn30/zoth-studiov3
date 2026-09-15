@@ -890,6 +890,7 @@
   // --- STAGE 0 PROJECT INITIALIZATION CONTROLLER ---
     // Dynamic Orchestrator API Base URL
   var ORCHESTRATOR_API_BASE = (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8484';
+  var SWARM_BACKEND = (window.location.protocol || 'http:') + '//' + (window.location.hostname || '127.0.0.1') + ':8485';
   var currentProjectMode = 'scratch';
 
   function selectProjectMode(mode) {
@@ -1110,6 +1111,54 @@
     });
     if (btn) btn.classList.add('active');
     filterTemplateVault();
+  }
+
+  // ─── REAL SWARM BACKEND INTEGRATION ───
+  // Posts to swarm_backend.py (:8485) which spawns swarm_site_generator.py headlessly,
+  // then polls for real file output instead of the fake setInterval animation.
+  async function spawnSwarmReal(prompt, projName, framework, theme, design, audience, monetization, accent) {
+    var slug = (projName || 'site').toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/^-+|-+$/g, '').substring(0, 40) || 'site';
+    var payload = {
+      slug: slug,
+      projectName: projName || 'Zoth App',
+      tagline: (currentSite && currentSite.tagline) || 'Synthesized by Zoth Swarm',
+      niche: 'site',
+      theme: theme || 'obsidian-gold',
+      framework: framework || 'vite-react',
+      prompt: prompt,
+      components: ['hero', 'features', 'sandbox', 'pricing', 'faq', 'cta']
+    };
+
+    // POST synthesize job
+    var res = await fetch(SWARM_BACKEND + '/api/zoth/swarm/synthesize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.error || 'Synthesis failed');
+
+    // Poll for completion (max 30s)
+    var polls = 0;
+    while (polls < 60) {
+      await new Promise(function(r) { setTimeout(r, 500); });
+      var st = await fetch(SWARM_BACKEND + '/api/zoth/swarm/status/' + slug).then(function(r) { return r.json(); });
+      if (st.status === 'done') break;
+      if (st.status === 'error') throw new Error(st.error || 'Unknown error');
+      polls++;
+    }
+
+    // Fetch generated index.html
+    var htmlRes = await fetch(SWARM_BACKEND + '/api/zoth/swarm/output/' + slug + '/index.html');
+    if (!htmlRes.ok) throw new Error('Failed to fetch generated site');
+    var html = await htmlRes.text();
+
+    // Inject theme accent color dynamically
+    var accentHex = accent || '#e8c872';
+    html = html.replace(/--z-primary:[^;]+;/g, '--z-primary: ' + accentHex + ';');
+    html = html.replace(/--z-accent:[^;]+;/g, '--z-accent: ' + accentHex + ';');
+
+    return { slug: slug, html: html, files: data.files || [] };
   }
 
   function filterTemplateVault() {
@@ -2241,8 +2290,8 @@
       }, 600);
     }
 
-    // Try fetching from backend orchestrator
-    var backendUrl = ORCHESTRATOR_API_BASE + '/api/zoth/terminal/session';
+    // Try fetching from real swarm backend
+    var backendUrl = SWARM_BACKEND + '/api/zoth/swarm/synthesize';
     var fetchPromise = fetch(backendUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2267,14 +2316,14 @@
       .then(function(res) { return res.json(); })
       .then(function(data) {
         if (inlineBar) inlineBar.style.width = '80%';
-        if (data && data.status === 'ok' && data.plan) {
-          finalizeBuildLocally(data.plan.brandName || data.slug, data.plan);
+        if (data && data.status === 'ok') {
+          finalizeBuildLocally(data.slug || projName, null);
         } else {
           finalizeBuildLocally(projName || 'Sovereign App', null);
         }
       })
       .catch(function(err) {
-        console.warn('[Orchestrator Notice] Compiling directly with sovereign in-browser 21-agent swarm:', err);
+        console.warn('[Swarm Backend Notice] Real backend unreachable, falling back to local synthesis:', err);
         finalizeBuildLocally(projName || 'Sovereign App', null);
       });
   }
@@ -2646,31 +2695,44 @@
     var statusDesc = document.getElementById('swarmStatusDesc');
 
     if (overlay) overlay.style.display = 'flex';
-    if (logTerm) logTerm.innerHTML = '<div>[00:00:00] ⚡ 21-Agent Megacluster Orchestration Kernel Initiated...</div>';
+    if (logTerm) logTerm.innerHTML = '<div>[00:00:00] ⚡ Real Swarm Backend: synthesizing...</div>';
 
     renderSwarmGrid();
-    // Asynchronously dispatch real headless swarm broadcast to orchestrator on :8484
-    try {
-      fetch(ORCHESTRATOR_API_BASE + '/api/zoth/swarm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: (currentSite ? (currentSite.name + ': ' + (currentSite.tagline || '')) : 'Synthesize website'),
-          to: 'aether',
-          framework: studioConfig.framework,
-          agents_count: 21,
-          mode: swarmMode
-        })
-      }).catch(function(e) { console.log('[Swarm Daemon Bridge]', e); });
-    } catch(err) {}
 
-    var swarmCfg = Object.assign({}, studioConfig, {
-      mode: swarmMode || 'rapid',
-      stepDelay: (swarmMode === 'deep' ? 750 : 280)
+    var projNameEl = document.getElementById('projectNameInput');
+    var projName = (projNameEl && projNameEl.value.trim()) ? projNameEl.value.trim() : 'Zoth App';
+    var promptEl = document.getElementById('sitePromptInput');
+    var prompt = (promptEl && promptEl.value.trim()) ? promptEl.value.trim() : 'Build a sovereign AI platform';
+
+    // Use real backend instead of fake orchestrator animation
+    spawnSwarmReal(prompt, projName, studioConfig.framework, studioConfig.design, studioConfig.design, studioConfig.audience, studioConfig.monetization, studioConfig.customAccent || '#00f0ff').then(function(result) {
+      // Render generated site in preview iframe
+      var iframe = document.getElementById('previewIframe');
+      if (iframe) iframe.srcdoc = result.html;
+
+      if (badge) badge.textContent = '✅ Synthesis Complete';
+      if (statusDesc) statusDesc.textContent = 'Real files written to disk — ' + (result.files || []).length + ' files generated.';
+      if (pVal) pVal.textContent = '100%';
+      if (pBar) pBar.style.width = '100%';
+
+      // Update grid tiles to done
+      document.querySelectorAll('.swarm-agent-tile').forEach(function(t) { t.classList.remove('active'); t.classList.add('done'); });
+
+      setTimeout(function() {
+        if (overlay) overlay.style.display = 'none';
+        var btnUnlock = document.getElementById('btnUnlockPreviewDirect');
+        var cStatus = document.getElementById('cockpitStatusTag');
+        if (btnUnlock) btnUnlock.style.display = 'inline-block';
+        if (cStatus) { cStatus.textContent = '✅ Real Swarm Synthesis Finished!'; cStatus.style.color = '#34d399'; }
+        showStudioToast('✨ Website synthesized by real swarm backend!');
+      }, 600);
+    }).catch(function(err) {
+      if (logTerm) logTerm.innerHTML += '<div style="color:#f87171;">[ERROR] ' + err.message + '</div>';
+      if (badge) badge.textContent = '❌ Swarm Failed';
+      if (statusDesc) statusDesc.textContent = err.message;
+      setTimeout(function() { if (overlay) overlay.style.display = 'none'; }, 2000);
     });
-
-    if (typeof ZothSwarmOrchestrator !== 'undefined') {
-      ZothSwarmOrchestrator.orchestrateSwarm(currentSite, swarmCfg, {
+  }
         onAgentStart: function(agent, idx) {
           if (badge) badge.textContent = 'Agent ' + agent.num + '/21: ' + agent.name;
           if (statusDesc) statusDesc.textContent = agent.task;
@@ -2733,27 +2795,6 @@
             bEl.style.width = '100%';
             bEl.style.background = '#34d399';
           }
-        },
-        onComplete: function(routes, feedback) {
-          if (!activeTemplate) {
-            multiPageCache = routes;
-          }
-          if (pVal) pVal.textContent = '100%';
-          if (pBar) pBar.style.width = '100%';
-          if (badge) badge.textContent = '✅ Synthesis Complete';
-          if (statusDesc) statusDesc.textContent = 'All routes verified & ready for 1-click export.';
-
-          setTimeout(function() {
-            if (overlay) overlay.style.display = 'none';
-            var btnUnlock = document.getElementById('btnUnlockPreviewDirect');
-            var cStatus = document.getElementById('cockpitStatusTag');
-            if (btnUnlock) btnUnlock.style.display = 'inline-block';
-            if (cStatus) {
-              cStatus.textContent = '✅ 21-Agent Swarm Synthesis Finished!';
-              cStatus.style.color = '#34d399';
-            }
-            openPostGenerationFeedbackModal(feedback);
-          }, 600);
         }
       });
     }
