@@ -258,7 +258,7 @@ def hydrate_site_template(template_id: str, custom_overrides: Dict[str, Any], pr
     tagline = cfg.get("tagline", "Autonomous Multi-Agent Application")
 
     # 3. Compile Master Navigation
-    nav_html = "".join([f'<a href="{item.get("href", "#")}" class="nav-link">{item.get("label", "")}</a>' for item in cfg.get("navLinks", [])])
+    nav_html = "".join([f'<a href="{item.get("href", "#")}" class="zoth-nav-link">{item.get("label", "")}</a>' for item in cfg.get("navLinks", [])])
 
     # 4. Compile Features Bento Grid
     features_html = "".join([
@@ -275,14 +275,14 @@ def hydrate_site_template(template_id: str, custom_overrides: Dict[str, Any], pr
     # 5. Compile Pricing Matrix
     pricing_html = "".join([
         f'''
-        <div class="pricing-card {'featured' if p.get('featured') else ''}">
-          {f'<div class="pricing-badge">{p.get("badge")}</div>' if p.get('badge') else ''}
+        <div class="zoth-price-card {'featured' if p.get('featured') else ''}">
+          {f'<div class="zoth-price-badge">{p.get("badge")}</div>' if p.get('badge') else ''}
           <h3>{p.get("tier", "")}</h3>
-          <div class="pricing-num">{p.get("price", "")}<small>{p.get("period", "")}</small></div>
-          <ul class="pricing-perks">
+          <div class="zoth-price-num">{p.get("price", "")}<small>{p.get("period", "")}</small></div>
+          <ul class="zoth-price-perks">
             {''.join([f'<li>✓ {perk}</li>' for perk in p.get("features", [])])}
           </ul>
-          <button class="pricing-btn" onclick="playChime()">{p.get("cta", "Get Started")}</button>
+          <button class="zoth-price-btn" onclick="playChime()">{p.get("cta", "Get Started")}</button>
         </div>
         '''
         for p in cfg.get("pricing", [])
@@ -291,7 +291,7 @@ def hydrate_site_template(template_id: str, custom_overrides: Dict[str, Any], pr
     # 6. Compile FAQ Accordion
     faqs_html = "".join([
         f'''
-        <details class="faq-item">
+        <details class="zoth-faq-item">
           <summary>{faq.get("q", "")}</summary>
           <p>{faq.get("a", "")}</p>
         </details>
@@ -299,305 +299,15 @@ def hydrate_site_template(template_id: str, custom_overrides: Dict[str, Any], pr
         for faq in cfg.get("faqs", [])
     ])
 
-    # 7. Compile Complete HTML5 Production Bundle
-    compiled_html = f'''<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{site_name} — {tagline}</title>
-  <meta name="description" content="{cfg.get('heroSubheadline', tagline)}" />
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
-
-  <style>
-    :root {{
-      --primary: {theme.get('primary', '#00f0ff')};
-      --accent: {theme.get('accent', '#c084fc')};
-      --bg: {theme.get('bg', '#05070f')};
-      --surface: {theme.get('surface', '#0a0e1c')};
-      --surface-hover: #12182e;
-      --border: {theme.get('border', '#1a2342')};
-      --text: #f0f4fc;
-      --text-muted: #8493b8;
-      --font-display: {theme.get('font_display', "'Syne', sans-serif")};
-      --font-body: {theme.get('font_body', "'Figtree', sans-serif")};
-      --font-mono: {theme.get('font_mono', "'IBM Plex Mono', monospace")};
-    }}
-
-    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body {{
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }}
-
-    /* Background Canvas */
-    #bg-canvas {{
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      pointer-events: none; z-index: -1; opacity: 0.35;
-    }}
-
-    /* Navbar */
-    .navbar {{
-      position: sticky; top: 0; z-index: 100;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 1rem 2rem;
-      background: rgba(5, 7, 15, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-    }}
-    .brand {{
-      display: flex; align-items: center; gap: 8px;
-      font-family: var(--font-display); font-weight: 800; font-size: 1.25rem;
-      color: #fff; text-decoration: none;
-    }}
-    .brand span {{ color: var(--primary); }}
-    .nav-links {{ display: flex; gap: 1.5rem; }}
-    .nav-link {{ color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s; }}
-    .nav-link:hover {{ color: var(--primary); }}
-    .btn-nav {{
-      background: var(--primary); color: #05070f;
-      padding: 0.45rem 1.1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem;
-      text-decoration: none; border: none; cursor: pointer; transition: all 0.2s;
-    }}
-    .btn-nav:hover {{ transform: translateY(-1px); box-shadow: 0 0 15px var(--primary); }}
-
-    /* Hero Section */
-    .hero {{
-      text-align: center;
-      padding: 6rem 1.5rem 4rem;
-      max-width: 900px;
-      margin: 0 auto;
-    }}
-    .kicker {{
-      display: inline-block; font-family: var(--font-mono); font-size: 0.78rem;
-      color: var(--primary); background: rgba(0, 240, 255, 0.1);
-      padding: 4px 12px; border-radius: 999px; margin-bottom: 1.2rem;
-      border: 1px solid var(--border);
-    }}
-    .hero h1 {{
-      font-family: var(--font-display); font-size: 3.25rem; font-weight: 900;
-      line-height: 1.15; margin-bottom: 1.2rem; letter-spacing: -0.02em;
-    }}
-    .hero h1 span {{
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }}
-    .hero p {{
-      font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 700px; margin-inline: auto;
-    }}
-    .hero-actions {{ display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }}
-    .btn-hero {{
-      background: var(--primary); color: #05070f; font-family: var(--font-display); font-weight: 800;
-      padding: 0.85rem 2rem; border-radius: 999px; text-decoration: none; font-size: 1rem;
-      border: none; cursor: pointer; transition: all 0.25s; box-shadow: 0 0 25px rgba(0,240,255,0.3);
-    }}
-    .btn-hero:hover {{ transform: translateY(-2px); box-shadow: 0 0 35px var(--primary); }}
-    .btn-sec {{
-      background: var(--surface); color: var(--text); border: 1px solid var(--border);
-      padding: 0.85rem 1.8rem; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 0.95rem;
-      transition: all 0.2s;
-    }}
-    .btn-sec:hover {{ border-color: var(--primary); color: var(--primary); }}
-
-    /* Features Grid */
-    .features-sec {{
-      max-width: 1200px; margin: 4rem auto; padding: 0 1.5rem;
-    }}
-    .sec-head {{ text-align: center; margin-bottom: 3rem; }}
-    .sec-head h2 {{ font-family: var(--font-display); font-size: 2.2rem; margin-bottom: 0.5rem; }}
-    .sec-head p {{ color: var(--text-muted); font-size: 1rem; }}
-
-    .feature-grid {{
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;
-    }}
-    .feature-card {{
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-      padding: 2rem; transition: all 0.25s ease;
-    }}
-    .feature-card:hover {{
-      transform: translateY(-3px); border-color: var(--primary); background: var(--surface-hover);
-    }}
-    .feat-icon {{ font-size: 2rem; margin-bottom: 1rem; }}
-    .feature-card h3 {{ font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 0.6rem; }}
-    .feature-card p {{ color: var(--text-muted); font-size: 0.92rem; line-height: 1.5; }}
-
-    /* Sandbox Interactive Demo */
-    .sandbox-sec {{
-      max-width: 900px; margin: 4rem auto; padding: 0 1.5rem;
-    }}
-    .terminal-box {{
-      background: #000; border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
-    }}
-    .terminal-bar {{
-      background: var(--surface); padding: 0.6rem 1rem; display: flex; align-items: center; gap: 8px;
-      border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);
-    }}
-    .term-dot {{ width: 10px; height: 10px; border-radius: 50%; }}
-    .term-dot.r {{ background: #f87171; }}
-    .term-dot.y {{ background: #fbbf24; }}
-    .term-dot.g {{ background: #34d399; }}
-    .terminal-body {{
-      padding: 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary);
-    }}
-    .term-input-row {{
-      display: flex; gap: 8px; margin-top: 1rem; align-items: center;
-    }}
-    .term-input {{
-      flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: #fff; padding: 0.5rem 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem;
-    }}
-    .term-btn {{
-      background: var(--primary); color: #05070f; border: none; padding: 0.5rem 1rem;
-      border-radius: 6px; font-weight: 700; cursor: pointer; font-family: var(--font-mono);
-    }}
-
-    /* Pricing Section */
-    .pricing-sec {{
-      max-width: 1100px; margin: 5rem auto; padding: 0 1.5rem;
-    }}
-    .pricing-grid {{
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
-      align-items: stretch;
-    }}
-    .pricing-card {{
-      background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
-      padding: 2.2rem 1.8rem; display: flex; flex-direction: column; position: relative;
-    }}
-    .pricing-card.featured {{
-      border-color: var(--primary); box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
-      background: linear-gradient(180deg, rgba(0,240,255,0.06), var(--surface));
-    }}
-    .pricing-badge {{
-      position: absolute; top: -12px; right: 20px; background: var(--primary); color: #05070f;
-      font-size: 0.72rem; font-weight: 800; font-family: var(--font-display); padding: 3px 10px; border-radius: 999px;
-    }}
-    .pricing-card h3 {{ font-family: var(--font-display); font-size: 1.35rem; margin-bottom: 0.8rem; }}
-    .pricing-num {{ font-size: 2.5rem; font-weight: 900; font-family: var(--font-display); margin-bottom: 1.5rem; color: #fff; }}
-    .pricing-num small {{ font-size: 0.9rem; color: var(--text-muted); font-weight: 400; }}
-    .pricing-perks {{ list-style: none; margin-bottom: 2rem; flex: 1; }}
-    .pricing-perks li {{ font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.6rem; }}
-    .pricing-btn {{
-      background: var(--surface-hover); border: 1px solid var(--border); color: #fff;
-      padding: 0.75rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-    }}
-    .pricing-card.featured .pricing-btn {{ background: var(--primary); color: #05070f; border-color: var(--primary); }}
-    .pricing-btn:hover {{ border-color: var(--primary); transform: translateY(-1px); }}
-
-    /* FAQ */
-    .faq-sec {{ max-width: 800px; margin: 4rem auto; padding: 0 1.5rem; }}
-    .faq-item {{
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 1rem 1.25rem; margin-bottom: 0.75rem; cursor: pointer;
-    }}
-    .faq-item summary {{ font-weight: 700; font-size: 1rem; color: #fff; list-style: none; }}
-    .faq-item summary::-webkit-details-marker {{ display: none; }}
-    .faq-item p {{ margin-top: 0.75rem; color: var(--text-muted); font-size: 0.92rem; }}
-
-    /* Footer */
-    footer {{
-      border-top: 1px solid var(--border); padding: 3rem 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;
-    }}
-  </style>
-</head>
-<body>
-
-  <canvas id="bg-canvas"></canvas>
-
-  <!-- Navigation -->
-  <nav class="navbar">
-    <a href="#" class="brand">◈ {site_name}</a>
-    <div class="nav-links">
-      {nav_html}
-    </div>
-    <a href="#sandbox" class="btn-nav" onclick="playChime()">Initialize Node</a>
-  </nav>
-
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="kicker">{cfg.get('kicker', 'Autonomous Systems')}</div>
-    <h1>{cfg.get('heroHeadline', site_name)}</h1>
-    <p>{cfg.get('heroSubheadline', tagline)}</p>
-    <div class="hero-actions">
-      <a href="{cfg.get('ctaPrimary', {}).get('link', '#sandbox')}" class="btn-hero" onclick="playChime()">{cfg.get('ctaPrimary', {}).get('text', 'Get Started →')}</a>
-      <a href="{cfg.get('ctaSecondary', {}).get('link', '/docs/')}" class="btn-sec">{cfg.get('ctaSecondary', {}).get('text', 'Documentation')}</a>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features-sec" id="features">
-    <div class="sec-head">
-      <p class="kicker">Architecture</p>
-      <h2>Engineered for High-Assurance Autonomy</h2>
-      <p>Decentralized multi-agent execution with AST safety guarantees and local loopback gates.</p>
-    </div>
-    <div class="feature-grid">
-      {features_html}
-    </div>
-  </section>
-
-  <!-- Interactive Sandbox -->
-  <section class="sandbox-sec" id="sandbox">
-    <div class="sec-head">
-      <p class="kicker">Live Interactive Sandbox</p>
-      <h2>Test Neural & Cryptographic Operations</h2>
-    </div>
-    <div class="terminal-box">
-      <div class="terminal-bar">
-        <span class="term-dot r"></span>
-        <span class="term-dot y"></span>
-        <span class="term-dot g"></span>
-        <span>{slug} :: interactive loopback terminal</span>
-      </div>
-      <div class="terminal-body" id="term-out">
-        <div>[System] Node initialized. Ready for interactive AST execution.</div>
-        <div style="color:var(--text-muted); margin-top:4px;">Type a command like 'audit', 'derive-key', or 'ping' and click Execute.</div>
-      </div>
-      <div class="term-input-row" style="padding: 0 1.5rem 1.25rem;">
-        <input type="text" id="sandbox-input" class="term-input" placeholder="e.g. derive-key --argon2id" value="derive-key --argon2id" />
-        <button class="term-btn" onclick="runSandboxCommand()">Execute</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pricing Section -->
-  <section class="pricing-sec" id="pricing">
-    <div class="sec-head">
-      <p class="kicker">Deploy & Scale</p>
-      <h2>Transparent, Open-Source Pricing</h2>
-      <p>Zero lock-in. Host locally or deploy to high-availability global CDNs.</p>
-    </div>
-    <div class="pricing-grid">
-      {pricing_html}
-    </div>
-  </section>
-
-  <!-- FAQ Section -->
-  <section class="faq-sec" id="faq">
-    <div class="sec-head">
-      <p class="kicker">Knowledge Base</p>
-      <h2>Frequently Asked Questions</h2>
-    </div>
-    {faqs_html}
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <p>© 2026 {site_name}. Generated by Zoth Autonomous Multi-Agent Foundry.</p>
-  </footer>
-
-  <!-- Web Audio DSP & Interactive Sandbox Script -->
-  <script>
+    # Build mobile nav sheet links
+    nav_html_sheet = "".join([
+        f'<li><a href="{item.get("href", "#")}" class="zoth-sheet-link">{item.get("label", "")}</a></li>'
+        for item in cfg.get("navLinks", [])
+    ])
+    js_script_raw = r"""
     // Web Audio Sound Engine
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playChime() {{
+    function playChime() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -610,10 +320,10 @@ def hydrate_site_template(template_id: str, custom_overrides: Dict[str, Any], pr
       gain.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + 0.35);
-    }}
+    }
 
     // Sandbox Execution
-    function runSandboxCommand() {{
+    function runSandboxCommand() {
       playChime();
       const inp = document.getElementById('sandbox-input');
       const out = document.getElementById('term-out');
@@ -622,49 +332,237 @@ def hydrate_site_template(template_id: str, custom_overrides: Dict[str, Any], pr
 
       const d = document.createElement('div');
       d.style.marginTop = '8px';
-      d.innerHTML = `<span style="color:#fff;">&gt; ${{cmd}}</span><br/><span style="color:#34d399;">✓ [AST Validated] Operation executed smoothly on loopback. Nonce: ${{Math.random().toString(36).substring(2, 9)}}</span>`;
+      d.innerHTML = `<span style="color:#fff;">&gt; ${cmd}</span><br/><span style="color:#34d399;">✓ [AST Validated] Operation executed smoothly on loopback. Nonce: ${Math.random().toString(36).substring(2, 9)}</span>`;
       out.appendChild(d);
       inp.value = '';
-    }}
+    }
 
     // Particle Background
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height, particles = [];
+    (function() {
+      const bg = document.querySelector('.zoth-bg');
+      if (!bg) return;
+      const c = document.createElement('canvas');
+      c.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+      bg.appendChild(c);
+      const ctx = c.getContext('2d');
+      let w, h, particles = [];
 
-    function resize() {{
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }}
-    window.addEventListener('resize', resize);
-    resize();
+      function resize() {
+        w = c.width = bg.offsetWidth;
+        h = c.height = bg.offsetHeight;
+        particles = [];
+        for (let i = 0; i < 45; i++) {
+          particles.push({
+            x: Math.random() * w, y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+            r: Math.random() * 1.6 + 0.6
+          });
+        }
+      }
+      window.addEventListener('resize', resize);
+      resize();
 
-    for (let i = 0; i < 40; i++) {{
-      particles.push({{
-        x: Math.random() * width, y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
-        size: Math.random() * 2 + 1
-      }});
-    }}
+      function animate() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'var(--z-primary)';
+        ctx.globalAlpha = 0.3;
+        for (const p of particles) {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
 
-    function animate() {{
+    function animate() {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '{theme.get("primary", "#00f0ff")}';
-      particles.forEach(p => {{
+      particles.forEach(p => {
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
         if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
-      }});
+      });
       requestAnimationFrame(animate);
-    }}
+    }
     animate();
+        """
+    
+    primary_js = json.dumps(theme.get("primary", "#00f0ff"))
+    compiled_html = f'''<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{site_name} — {tagline}</title>
+  <meta name="description" content="{cfg.get('heroSubheadline', tagline)}" />
+
+  <!-- Shared Zoth Design System -->
+  <link rel="stylesheet" href="/assets/zoth-generated.css" />
+  <style>
+    :root {{
+      --z-primary: {theme.get('primary', '#00f0ff')};
+      --z-accent:  {theme.get('accent', '#c084fc')};
+      --z-bg:      {theme.get('bg', '#05070f')};
+      --z-surface: {theme.get('surface', '#0a0e1c')};
+      --z-surface-2: {theme.get('surface-hover', '#12182e')};
+      --z-border:  {theme.get('border', '#1a2342')};
+    }}
+    .zoth-bg {{ opacity: 0.85; }}
+    .zoth-hero::before {{
+      width: 600px; height: 320px;
+      background: radial-gradient(ellipse at center, color-mix(in srgb, var(--z-primary) 22%, transparent) 0%, transparent 70%);
+    }}
+    .zoth-nav-link--active {{ color: var(--z-text); }}
+    .zoth-nav-link--active::after {{ transform: scaleX(1); }}
+    .zoth-price-card.featured {{
+      border-color: var(--z-primary);
+      box-shadow: 0 0 30px color-mix(in srgb, var(--z-primary) 20%, transparent), 0 0 0 1px color-mix(in srgb, var(--z-primary) 40%, transparent);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--z-primary) 6%, transparent), var(--z-surface) 60%);
+    }}
+  </style>
+</head>
+<body>
+
+  <div class="zoth-bg" aria-hidden="true"></div>
+
+  <div class="zoth-site">
+    <!-- Navigation -->
+    <nav class="zoth-nav" id="zoth-nav">
+      <a href="#" class="zoth-brand">
+        <span class="zoth-brand-dot" aria-hidden="true"></span>
+        <span class="zoth-brand-name">{site_name}</span>
+      </a>
+      <ul class="zoth-nav-links">
+        {nav_html}
+      </ul>
+      <a href="#sandbox" class="zoth-nav-cta desktop-only" onclick="playChime()">Initialize Node</a>
+      <button class="zoth-nav-sheet-btn" id="zoth-nav-open" aria-label="Open menu">
+        <span class="zoth-brand-dot" style="width:7px;height:7px"></span>
+        MENU
+      </button>
+    </nav>
+
+    <!-- Mobile Nav Sheet -->
+    <div class="zoth-nav-sheet" id="zoth-nav-sheet" role="dialog" aria-modal="true" aria-label="Site navigation">
+      <button class="zoth-sheet-close" id="zoth-nav-close" aria-label="Close menu">×</button>
+      <ul class="zoth-sheet-links">
+        {nav_html_sheet}
+      </ul>
+    </div>
+
+    <!-- Hero -->
+    <section class="zoth-hero zoth-section">
+      <div class="zoth-kicker">{cfg.get('kicker', 'Autonomous Systems')}</div>
+      <h1 class="zoth-title">{cfg.get('heroHeadline', site_name)}</h1>
+      <p class="zoth-lead">{cfg.get('heroSubheadline', tagline)}</p>
+      <div class="zoth-actions">
+        <a href="{cfg.get('ctaPrimary', {}).get('link', '#sandbox')}" class="zoth-btn zoth-btn-primary" onclick="playChime()">
+          {cfg.get('ctaPrimary', {}).get('text', 'Initialize Node →')}
+        </a>
+        <a href="{cfg.get('ctaSecondary', {}).get('link', '/docs/')}" class="zoth-btn zoth-btn-ghost">
+          {cfg.get('ctaSecondary', {}).get('text', 'Documentation')}
+        </a>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="zoth-section" id="features">
+      <div class="zoth-section-head">
+        <p class="zoth-section-eyebrow">Architecture</p>
+        <h2 class="zoth-section-title">Engineered for High-Assurance Autonomy</h2>
+        <p class="zoth-section-sub">Decentralized multi-agent execution with AST safety guarantees and local loopback gates.</p>
+      </div>
+      <div class="zoth-features">
+        {features_html}
+      </div>
+    </section>
+
+    <!-- Sandbox -->
+    <section class="zoth-section" id="sandbox">
+      <div class="zoth-section-head">
+        <p class="zoth-section-eyebrow">Live Interactive Sandbox</p>
+        <h2 class="zoth-section-title">Test Neural &amp; Cryptographic Operations</h2>
+      </div>
+      <div class="zoth-terminal">
+        <div class="zoth-term-bar">
+          <span class="zoth-term-dot r"></span>
+          <span class="zoth-term-dot y"></span>
+          <span class="zoth-term-dot g"></span>
+          <span>{slug} :: interactive loopback terminal</span>
+        </div>
+        <div class="zoth-term-body" id="term-out">
+          <div><span class="zoth-term-prompt">[System]</span> Node initialized. Ready for interactive AST execution.</div>
+          <div style="color:var(--z-muted); margin-top:4px;">Type a command like 'audit', 'derive-key', or 'ping' and click Execute.</div>
+        </div>
+        <div class="zoth-term-input-row">
+          <input type="text" id="sandbox-input" class="zoth-term-input" placeholder="e.g. derive-key --argon2id" value="derive-key --argon2id" />
+          <button class="zoth-term-btn" onclick="runSandboxCommand()">Execute</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="zoth-section" id="pricing">
+      <div class="zoth-section-head">
+        <p class="zoth-section-eyebrow">Deploy &amp; Scale</p>
+        <h2 class="zoth-section-title">Transparent, Open-Source Pricing</h2>
+        <p class="zoth-section-sub">Zero lock-in. Host locally or deploy to high-availability global CDNs.</p>
+      </div>
+      <div class="zoth-pricing">
+        {pricing_html}
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="zoth-section" id="faq">
+      <div class="zoth-section-head">
+        <p class="zoth-section-eyebrow">Knowledge Base</p>
+        <h2 class="zoth-section-title">Frequently Asked Questions</h2>
+      </div>
+      <div class="zoth-faq">
+        {faqs_html}
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="zoth-footer">
+      <p>© 2026 <strong>{site_name}</strong>. Generated by Zoth Autonomous Multi-Agent Foundry.</p>
+      <p class="zoth-foot-meta">Zero-cloud egress · Loopback-first · AST-verified output</p>
+    </footer>
+  </div>
+
+  <!-- Web Audio DSP & Interactive Sandbox Script -->
+  <script>
+    const ZOTH_PRIMARY = {primary_js};
+  </script>
+  {js_script_raw}
+  <script>
+    (function() {{
+      const bg = document.querySelector('.zoth-bg');
+      if (bg && !bg.querySelector('canvas')) {{
+        const canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+        bg.appendChild(canvas);
+      }}
+    }})();
   </script>
 </body>
 </html>
-'''
+    '''
+
+
+
+
+
+
 
     # Save to preview directory
     target_site_dir = previews_dir / slug

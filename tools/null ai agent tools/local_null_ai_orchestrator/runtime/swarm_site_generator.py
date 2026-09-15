@@ -172,638 +172,402 @@ def synthesize_swarm_website(spec: dict, previews_dir: Path) -> dict:
     }, indent=2)
 
     # 🦊 Kitsune: Synthesize Complete Interactive Single-Page HTML5 / CSS / JS
-    html_code = f"""<!doctype html>
-<html lang="en" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="{csp_header}" />
-  <title>{clean_name} — {tagline}</title>
-  <meta name="description" content="{clean_name}: {tagline}. Synthesized autonomously with Zoth Studio." />
-  <link rel="canonical" href="https://zoth.nullai.tech/previews/{safe_slug}/" />
-  <link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt" />
-  
-  <!-- OpenGraph Metadata -->
-  <meta property="og:title" content="{clean_name} — {tagline}" />
-  <meta property="og:description" content="{clean_name} delivers next-generation {niche} capabilities." />
-  <meta property="og:type" content="website" />
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
-  <!-- Schema.org JSON-LD -->
-  <script type="application/ld+json">
-{json_ld_schema}
-  </script>
 
-  <style>
-    :root {{
-      --bg: {theme['bg']};
-      --surface: {theme['surface']};
-      --surface-2: {theme['surface2']};
-      --border: {theme['border']};
-      --border-hover: {theme['border_hover']};
-      --accent: {theme['accent']};
-      --accent-glow: {theme['accent_glow']};
-      --text: {theme['text']};
-      --text-muted: {theme['text_muted']};
-      --badge-bg: {theme['badge_bg']};
-      --font-display: 'Syne', sans-serif;
-      --font-sans: 'Figtree', system-ui, sans-serif;
-      --font-mono: 'IBM Plex Mono', monospace;
-    }}
-
-    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    
-    body {{
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-sans);
-      min-height: 100vh;
-      line-height: 1.6;
-      overflow-x: hidden;
-      selection-background-color: var(--accent);
-      selection-color: var(--bg);
-    }}
-
-    /* Background Canvas */
-    #bg-canvas {{
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-      pointer-events: none;
-    }}
-
-    /* Navigation */
-    .nav-bar {{
-      position: fixed;
-      top: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 2rem);
-      max-width: 1180px;
-      height: 60px;
-      background: var(--surface);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5rem;
-      z-index: 100;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-    }}
-
-    .nav-brand {{
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 1.15rem;
-      color: var(--text);
-      text-decoration: none;
-    }}
-
-    .nav-brand-dot {{
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
-    }}
-
-    .nav-links {{
-      display: flex;
-      align-items: center;
-      gap: 1.75rem;
-      list-style: none;
-    }}
-
-    .nav-links a {{
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.88rem;
-      font-weight: 500;
-      transition: color 0.2s;
-    }}
-
-    .nav-links a:hover {{ color: var(--accent); }}
-
-    .btn {{
-      padding: 0.6rem 1.3rem;
-      border-radius: 999px;
-      font-family: var(--font-sans);
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.25s ease;
-      border: 1px solid transparent;
-    }}
-
-    .btn-primary {{
-      background: var(--accent);
-      color: var(--bg);
-      font-weight: 700;
-      box-shadow: 0 0 20px var(--accent-glow);
-    }}
-
-    .btn-primary:hover {{
-      transform: translateY(-2px);
-      box-shadow: 0 0 30px var(--accent-glow);
-    }}
-
-    .btn-outline {{
-      background: var(--surface-2);
-      color: var(--text);
-      border-color: var(--border);
-    }}
-
-    .btn-outline:hover {{
-      border-color: var(--accent);
-      color: var(--accent);
-    }}
-
-    /* Main Container */
-    .container {{
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }}
-
-    /* Hero Section */
-    .hero {{
-      padding: 9.5rem 0 5rem;
-      text-align: center;
-      position: relative;
-    }}
-
-    .badge {{
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      background: var(--badge-bg);
-      border: 1px solid var(--border);
-      color: var(--accent);
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-    }}
-
-    .hero-title {{
-      font-family: var(--font-display);
-      font-size: clamp(2.4rem, 6vw, 4.2rem);
-      font-weight: 800;
-      line-height: 1.15;
-      letter-spacing: -0.025em;
-      margin-bottom: 1.25rem;
-    }}
-
-    .hero-title span {{
-      color: var(--accent);
-      text-shadow: 0 0 24px var(--accent-glow);
-    }}
-
-    .hero-desc {{
-      font-size: clamp(1rem, 2vw, 1.25rem);
-      color: var(--text-muted);
-      max-width: 720px;
-      margin: 0 auto 2.5rem;
-    }}
-
-    .hero-actions {{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }}
-
-    /* Bento Grid */
-    .section {{
-      padding: 5rem 0;
-    }}
-
-    .section-head {{
-      text-align: center;
-      margin-bottom: 3.5rem;
-    }}
-
-    .section-title {{
-      font-family: var(--font-display);
-      font-size: 2.2rem;
-      font-weight: 800;
-      margin-bottom: 0.6rem;
-    }}
-
-    .section-subtitle {{
-      color: var(--text-muted);
-      font-size: 1rem;
-      max-width: 600px;
-      margin: 0 auto;
-    }}
-
-    .bento-grid {{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-    }}
-
-    .card {{
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }}
-
-    .card:hover {{
-      border-color: var(--border-hover);
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-    }}
-
-    .card-icon {{
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-      display: inline-block;
-    }}
-
-    .card-title {{
-      font-family: var(--font-display);
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }}
-
-    .card-desc {{
-      color: var(--text-muted);
-      font-size: 0.92rem;
-    }}
-
-    /* Interactive Sandbox */
-    .sandbox-panel {{
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      margin-top: 2rem;
-    }}
-
-    .terminal-head {{
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 1rem;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }}
-
-    .dot {{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; }}
-    .dot-red {{ background: #f87171; }}
-    .dot-yellow {{ background: #fbbf24; }}
-    .dot-green {{ background: #34d399; }}
-
-    /* Pricing Tiers */
-    .pricing-grid {{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }}
-
-    .pricing-card.featured {{
-      border-color: var(--accent);
-      box-shadow: 0 0 30px var(--accent-glow);
-    }}
-
-    .price {{
-      font-family: var(--font-display);
-      font-size: 2.8rem;
-      font-weight: 800;
-      color: var(--text);
-      margin: 1rem 0;
-    }}
-
-    /* FAQ */
-    .faq-item {{
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 1rem;
-      overflow: hidden;
-    }}
-
-    .faq-q {{
-      padding: 1.25rem 1.5rem;
-      cursor: pointer;
-      font-weight: 600;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }}
-
-    .faq-a {{
-      padding: 0 1.5rem 1.25rem;
-      color: var(--text-muted);
-      font-size: 0.92rem;
-      display: none;
-    }}
-
-    .faq-item.open .faq-a {{ display: block; }}
-    .faq-item.open .faq-icon {{ transform: rotate(180deg); }}
-
-    /* Footer */
-    footer {{
-      border-top: 1px solid var(--border);
-      padding: 3.5rem 0 2rem;
-      margin-top: 5rem;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }}
-
-    @media (max-width: 768px) {{
-      .nav-links {{ display: none; }}
-      .hero {{ padding: 7.5rem 0 3rem; }}
-    }}
-  </style>
-</head>
-<body>
-
-  <canvas id="bg-canvas"></canvas>
-
-  <!-- ─── TOP NAV ─── -->
-  <nav class="nav-bar">
-    <a href="#" class="nav-brand">
-      <span class="nav-brand-dot"></span>
-      {clean_name}
-    </a>
-    <ul class="nav-links">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#sandbox">Demo</a></li>
-      <li><a href="#pricing">Pricing</a></li>
-      <li><a href="#faq">FAQ</a></li>
-    </ul>
-    <a href="#contact" class="btn btn-primary sfx-trigger">Get Started →</a>
-  </nav>
-
-  <!-- ─── HERO ─── -->
-  <header class="hero container">
-    <div class="badge">⚡ Powered by Zoth Multi-Agent Swarm · v3.0</div>
-    <h1 class="hero-title">{clean_name}: <span>{tagline}</span></h1>
-    <p class="hero-desc">{master_prompt}</p>
-    <div class="hero-actions">
-      <a href="#sandbox" class="btn btn-primary sfx-trigger">Launch Live Demo</a>
-      <a href="#features" class="btn btn-outline sfx-trigger">Explore Specifications</a>
-    </div>
-  </header>
-
-  <!-- ─── BENTO FEATURES ─── -->
-  <section id="features" class="section container">
-    <div class="section-head">
-      <h2 class="section-title">Engineered for Sovereign Velocity</h2>
-      <p class="section-subtitle">Zero-cloud dependencies, cryptographic isolation, and unified multi-agent consensus.</p>
-    </div>
-    <div class="bento-grid">
-      <div class="card">
-        <span class="card-icon">⚡</span>
-        <h3 class="card-title">{fallback_features[0]['title']}</h3>
-        <p class="card-desc">{fallback_features[0]['desc']}</p>
-      </div>
-      <div class="card">
-        <span class="card-icon">🛡️</span>
-        <h3 class="card-title">{fallback_features[1]['title']}</h3>
-        <p class="card-desc">{fallback_features[1]['desc']}</p>
-      </div>
-      <div class="card">
-        <span class="card-icon">🔒</span>
-        <h3 class="card-title">{fallback_features[2]['title']}</h3>
-        <p class="card-desc">{fallback_features[2]['desc']}</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── INTERACTIVE SANDBOX ─── -->
-  <section id="sandbox" class="section container">
-    <div class="section-head">
-      <h2 class="section-title">Interactive Swarm Sandbox</h2>
-      <p class="section-subtitle">Test and execute simulated pipeline instructions right inside your browser.</p>
-    </div>
-    <div class="sandbox-panel">
-      <div class="terminal-head">
-        <span class="dot dot-red"></span>
-        <span class="dot dot-yellow"></span>
-        <span class="dot dot-green"></span>
-        <span>zoth@{safe_slug}:~$ ./run-audit --strict</span>
-      </div>
-      <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
-        <input type="text" id="demo-input" placeholder="Type prompt command..." value="Verify memory isolation boundaries" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:0.6rem 1rem; border-radius:8px; font-family:var(--font-mono); font-size:0.85rem;" />
-        <button id="demo-btn" class="btn btn-primary sfx-trigger" onclick="runSandbox()">Execute</button>
-      </div>
-      <pre id="demo-output" style="background:var(--bg); padding:1rem; border-radius:8px; border:1px solid var(--border); font-family:var(--font-mono); font-size:0.82rem; color:var(--accent); min-height:100px; white-space:pre-wrap;">🟢 System Online: {clean_name} loopback core active. Press Execute above to run diagnostic.</pre>
-    </div>
-  </section>
-
-  <!-- ─── PRICING ─── -->
-  <section id="pricing" class="section container">
-    <div class="section-head">
-      <h2 class="section-title">Transparent Sovereign Pricing</h2>
-      <p class="section-subtitle">Run on your machine forever or deploy seamlessly to global edge nodes.</p>
-    </div>
-    <div class="pricing-grid">
-      <div class="card pricing-card">
-        <h3 class="card-title">Local Solo</h3>
-        <div class="price">$0</div>
-        <p class="card-desc">Zero-cloud local operation with unlimited offline execution.</p>
-        <ul style="list-style:none; margin:1.5rem 0; font-size:0.88rem; color:var(--text-muted); line-height:2;">
-          <li>✓ 100% Local Inference</li>
-          <li>✓ Argon2id Key Vault</li>
-          <li>✓ OWASP Hardened Output</li>
-        </ul>
-        <a href="#contact" class="btn btn-outline" style="width:100%; justify-content:center;">Get Started</a>
-      </div>
-      <div class="card pricing-card featured">
-        <div class="badge" style="margin-bottom:0.5rem;">Recommended</div>
-        <h3 class="card-title">Sovereign Swarm</h3>
-        <div class="price">$29 <span style="font-size:1rem; color:var(--text-muted);">/mo</span></div>
-        <p class="card-desc">Full 16-agent team harness with 1-click Netlify and cloud sync.</p>
-        <ul style="list-style:none; margin:1.5rem 0; font-size:0.88rem; color:var(--text-muted); line-height:2;">
-          <li>✓ All 16 Mascot Agents</li>
-          <li>✓ 1-Click Netlify Deployer</li>
-          <li>✓ Neural Audio Memo Engine</li>
-          <li>✓ Signal Remote Bridge</li>
-        </ul>
-        <a href="#contact" class="btn btn-primary sfx-trigger" style="width:100%; justify-content:center;">Deploy Swarm</a>
-      </div>
-      <div class="card pricing-card">
-        <h3 class="card-title">Enterprise Foundry</h3>
-        <div class="price">Custom</div>
-        <p class="card-desc">Dedicated hardware clusters and custom LLM weight fine-tuning.</p>
-        <ul style="list-style:none; margin:1.5rem 0; font-size:0.88rem; color:var(--text-muted); line-height:2;">
-          <li>✓ Custom On-Prem Models</li>
-          <li>✓ Multi-Node Cluster Mesh</li>
-          <li>✓ 24/7 Security Audit SLA</li>
-        </ul>
-        <a href="#contact" class="btn btn-outline" style="width:100%; justify-content:center;">Contact Foundry</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── FAQ ─── -->
-  <section id="faq" class="section container">
-    <div class="section-head">
-      <h2 class="section-title">Frequently Asked Questions</h2>
-    </div>
-    <div style="max-width:760px; margin:0 auto;">
-      <div class="faq-item open">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
-          <span>How does {clean_name} preserve privacy and data sovereignty?</span>
-          <span class="faq-icon">▾</span>
-        </div>
-        <div class="faq-a">
-          {clean_name} runs on loopback (127.0.0.1) with zero third-party telemetry. All prompts and keys are cryptographically guarded.
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
-          <span>Can I deploy this site to Netlify or Vercel?</span>
-          <span class="faq-icon">▾</span>
-        </div>
-        <div class="faq-a">
-          Yes! The output is clean, standard HTML5/CSS/JS ready for 1-click drag-and-drop or Git CI/CD deployment.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── CONTACT / NETLIFY FORM ─── -->
-  <section id="contact" class="section container">
-    <div class="card" style="max-width:680px; margin:0 auto; text-align:center;">
-      <h2 class="card-title" style="font-size:1.8rem; margin-bottom:0.5rem;">Join the {clean_name} Ecosystem</h2>
-      <p class="card-desc" style="margin-bottom:1.5rem;">Enter your contact email to receive deployment credentials and API keys.</p>
-      
-      <form name="contact" method="POST" data-netlify="true" style="display:flex; flex-direction:column; gap:1rem; text-align:left;">
-        <input type="hidden" name="form-name" value="contact" />
-        <div>
-          <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:4px;">Your Name</label>
-          <input type="text" name="name" required placeholder="Jane Doe" style="width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:0.75rem 1rem; border-radius:8px; font-size:0.9rem;" />
-        </div>
-        <div>
-          <label style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:4px;">Email Address</label>
-          <input type="email" name="email" required placeholder="operator@domain.com" style="width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:0.75rem 1rem; border-radius:8px; font-size:0.9rem;" />
-        </div>
-        <button type="submit" class="btn btn-primary sfx-trigger" style="justify-content:center; padding:0.85rem; margin-top:0.5rem;">Submit Application →</button>
-      </form>
-    </div>
-  </section>
-
-  <!-- ─── FOOTER ─── -->
-  <footer class="container">
-    <p>© {datetime.now().year} {clean_name}. Synthesized autonomously with Zoth Studio Swarm.</p>
-    <p style="margin-top:4px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
-      OWASP CSP Hardened · WCAG AA Compliant · Zero-Cloud Egress
-    </p>
-  </footer>
-
-  <script>
-    // ─── Procedural Web Audio SFX ───
+    js_script_raw = r"""
+      <script>
+    // Web Audio DSP
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
-    function playChime(freq = 587.33) {{
-      try {{
+    function playChime(freq = 587.33) {
+      try {
         if (!audioCtx) audioCtx = new AudioCtx();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(freq * 1.5, audioCtx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.5, audioCtx.currentTime + 0.10);
+        gain.gain.setValueAtTime(0.09, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.28);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.25);
-      }} catch(e) {{}}
-    }}
+        osc.stop(audioCtx.currentTime + 0.28);
+      } catch(e) {}
+    }
 
-    document.querySelectorAll('.sfx-trigger').forEach(el => {{
-      el.addEventListener('mouseenter', () => playChime(440));
-      el.addEventListener('click', () => playChime(880));
-    }});
+    document.querySelectorAll('.sfx-trigger').forEach(el => {
+      el.addEventListener('mouseenter', () => playChime(523.25));
+      el.addEventListener('click', () => playChime(783.99));
+    });
 
-    // ─── Background Particle Canvas ───
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let w, h, particles = [];
+    // Mobile nav sheet
+    (function() {
+      const openBtn = document.getElementById('navOpenBtn');
+      const closeBtn = document.getElementById('navCloseBtn');
+      const sheet = document.getElementById('navSheet');
+      if (!openBtn || !closeBtn || !sheet) return;
+      openBtn.addEventListener('click', () => sheet.classList.add('open'));
+      closeBtn.addEventListener('click', () => sheet.classList.remove('open'));
+      sheet.addEventListener('click', (e) => {
+        if (e.target === sheet) sheet.classList.remove('open');
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sheet.classList.contains('open')) sheet.classList.remove('open');
+      });
+    }());
 
-    function resize() {{
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-      particles = Array.from({{ length: 45 }}, () => ({{
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 1.8 + 0.5
-      }}));
-    }}
-    window.addEventListener('resize', resize);
-    resize();
+    // Background particle canvas
+    (function() {
+      const bg = document.querySelector('.zoth-bg');
+      if (!bg) return;
+      const c = document.createElement('canvas');
+      c.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+      bg.appendChild(c);
+      const ctx = c.getContext('2d');
+      let w, h, particles = [];
 
-    function renderParticles() {{
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '{theme['accent']}';
-      ctx.globalAlpha = 0.25;
-      particles.forEach(p => {{
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = w;
-        if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h;
-        if (p.y > h) p.y = 0;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      }});
-      requestAnimationFrame(renderParticles);
-    }}
-    renderParticles();
+      function resize() {
+        w = c.width = bg.offsetWidth;
+        h = c.height = bg.offsetHeight;
+        particles = [];
+        for (let i = 0; i < 45; i++) {
+          particles.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.35,
+            vy: (Math.random() - 0.5) * 0.35,
+            r: Math.random() * 1.6 + 0.6
+          });
+        }
+      }
+      window.addEventListener('resize', resize);
+      resize();
 
-    // ─── Sandbox Executor ───
-    window.runSandbox = function() {{
-      const inp = document.getElementById('demo-input').value;
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'var(--z-primary)';
+        ctx.globalAlpha = 0.3;
+        for (const p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h;
+          if (p.y > h) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }());
+
+    // Sandbox executor
+    window.runSandbox = function() {
+      const inp = document.getElementById('demo-input');
       const out = document.getElementById('demo-output');
-      out.textContent = '⏳ Swarm Executing: "' + inp + '"...';
+      const cmd = inp.value.trim();
+      if (!cmd) return;
       playChime(660);
-      setTimeout(() => {{
-        out.textContent = '✅ [Lycan Security]: Memory boundaries verified.\\n⚡ [Kitsune Execution]: Pipeline rendered in 18ms.\\n🐲 [Draco Schema]: AEO validated.\\n🟢 Result: Instruction processed with 0 errors.';
-        playChime(920);
-      }}, 600);
-    }};
-  </script>
+      const ts = new Date().toLocaleTimeString();
+      const line = document.createElement('div');
+      line.style.marginTop = '10px';
+      line.style.padding = '8px 10px';
+      line.style.background = 'rgba(0,240,255,0.06)';
+      line.style.borderLeft = '2px solid var(--z-primary)';
+      line.style.borderRadius = '4px';
+      line.style.color = 'var(--z-primary)';
+      line.style.fontSize = '0.82rem';
+      line.style.fontFamily = 'var(--z-font-mono)';
+      line.innerHTML = '<span style="color:var(--z-muted)">[' + ts + '] $ </span>' + cmd + '<br>' +
+        '<span style="color:#34d399">✓ [Lycan Security]</span> Memory boundaries verified.<br>' +
+        '<span style="color:#a78bfa">⚡ [Kitsune Execution]</span> Pipeline rendered in 18ms.<br>' +
+        '<span style="color:#34d399">🐲 [Draco Schema]</span> AEO validated.<br>' +
+        '<span style="color:var(--z-primary)">🟢 Result:</span> Instruction processed with 0 errors.';
+      out.appendChild(line);
+      inp.value = '';
+    };
+
+    // Card mouse-follow glow + section reveal
+    (function() {
+      const cards = document.querySelectorAll('.zoth-card');
+      if (cards.length) {
+        cards.forEach(c => {
+          c.addEventListener('mousemove', (e) => {
+            const r = c.getBoundingClientRect();
+            c.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
+            c.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
+          });
+        });
+      }
+      const reveals = document.querySelectorAll('.zoth-reveal');
+      let ticking = false;
+      function checkReveals() {
+        reveals.forEach(el => {
+          if (el.getBoundingClientRect().top < window.innerHeight * 0.88) {
+            el.classList.add('in-view');
+          }
+        });
+        ticking = false;
+      }
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(checkReveals);
+          ticking = true;
+        }
+      }, { passive: true });
+      checkReveals();
+    }());
+      </script>
+    """
+    
+    html_code = f"""<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Content-Security-Policy" content="{csp_header}" />
+<title>{clean_name} — {tagline}</title>
+<meta name="description" content="{clean_name}: {tagline}. Synthesized autonomously with Zoth Studio." />
+<link rel="canonical" href="https://zoth.nullai.tech/previews/{safe_slug}/" />
+<link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt" />
+  
+<!-- OpenGraph Metadata -->
+<meta property="og:title" content="{clean_name} — {tagline}" />
+<meta property="og:description" content="{clean_name} delivers next-generation {niche} capabilities." />
+<meta property="og:type" content="website" />
+  
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+<!-- Schema.org JSON-LD -->
+<script type="application/ld+json">
+{json_ld_schema}
+</script>
+
+<link rel="stylesheet" href="/assets/zoth-generated.css" />
+<style>
+:root {{
+--z-primary: {theme['accent']};
+--z-accent:  {theme['accent']};
+--z-bg:      {theme['bg']};
+--z-surface: {theme['surface']};
+--z-surface-2: {theme['surface2']};
+--z-border:  {theme['border']};
+--z-border-strong: {theme['border_hover']};
+--z-text:    {theme['text']};
+--z-muted:   {theme['text_muted']};
+--z-glow:    {theme['accent_glow']};
+--z-font-display: 'Syne', sans-serif;
+--z-font-body:    'Figtree', system-ui, sans-serif;
+--z-font-mono:    'IBM Plex Mono', monospace;
+--z-radius: 20px;
+--z-radius-sm: 10px;
+}}
+.zoth-bg {{ opacity: 0.85; }}
+.zoth-hero::before {{
+width: 700px; height: 380px;
+background: radial-gradient(ellipse at center, color-mix(in srgb, var(--z-primary) 24%, transparent) 0%, transparent 70%);
+}}
+.zoth-title span {{ text-shadow: 0 0 24px color-mix(in srgb, var(--z-primary) 50%, transparent); }}
+.zoth-price-card.featured {{
+border-color: var(--z-primary);
+box-shadow: 0 0 30px color-mix(in srgb, var(--z-primary) 30%, transparent), 0 0 0 1px color-mix(in srgb, var(--z-primary) 50%, transparent);
+}}
+.zoth-faq-item {{ border-radius: 20px; }}
+.zoth-faq-q {{ border-radius: 20px 20px 0 0; }}
+.zoth-term-body {{ min-height: 100px; }}
+.zoth-section {{ padding: 5rem 0; }}
+</style>
+</head>
+<body>
+
+<div class="zoth-bg" aria-hidden="true"></div>
+
+<div class="zoth-site">
+<!-- Navigation -->
+<nav class="zoth-nav">
+<a href="#" class="zoth-brand">
+<span class="zoth-brand-dot" aria-hidden="true"></span>
+<span class="zoth-brand-name">{clean_name}</span>
+</a>
+<ul class="zoth-nav-links">
+<li><a href="#features" class="zoth-nav-link">Features</a></li>
+<li><a href="#sandbox" class="zoth-nav-link">Demo</a></li>
+<li><a href="#pricing" class="zoth-nav-link">Pricing</a></li>
+<li><a href="#faq" class="zoth-nav-link">FAQ</a></li>
+</ul>
+<a href="#contact" class="zoth-nav-cta desktop-only">Get Started →</a>
+<button class="zoth-nav-sheet-btn" id="navOpenBtn" aria-label="Open navigation menu">Menu</button>
+</nav>
+
+<!-- Mobile nav sheet -->
+<div class="zoth-nav-sheet" id="navSheet" role="dialog" aria-modal="true" aria-label="Site navigation">
+<button class="zoth-sheet-close" id="navCloseBtn" aria-label="Close navigation menu">×</button>
+<ul class="zoth-sheet-links">
+<li><a href="#features" class="zoth-sheet-link">Features</a></li>
+<li><a href="#sandbox" class="zoth-sheet-link">Demo</a></li>
+<li><a href="#pricing" class="zoth-sheet-link">Pricing</a></li>
+<li><a href="#faq" class="zoth-sheet-link">FAQ</a></li>
+</ul>
+</div>
+
+<!-- Hero -->
+<header class="zoth-hero">
+<div class="zoth-kicker">⚡ Powered by Zoth Multi-Agent Swarm · v3.0</div>
+<h1 class="zoth-title">{clean_name}<span>: {tagline}</span></h1>
+<p class="zoth-lead">{master_prompt}</p>
+<div class="zoth-actions">
+<a href="#sandbox" class="zoth-btn zoth-btn-primary">Launch Live Demo</a>
+<a href="#features" class="zoth-btn zoth-btn-ghost">Explore Specifications</a>
+</div>
+</header>
+
+<!-- Bento Features -->
+<section class="zoth-section" id="features">
+<div class="zoth-section-head">
+<div class="zoth-section-eyebrow">Core Architecture</div>
+<h2 class="zoth-section-title">Engineered for Sovereign Velocity</h2>
+<p class="zoth-section-sub">Zero-cloud dependencies, cryptographic isolation, and unified multi-agent consensus.</p>
+</div>
+<div class="zoth-features">
+<div class="zoth-card zoth-reveal">
+<span class="zoth-card-icon">⚡</span>
+<h3 class="zoth-card-title">{fallback_features[0]['title']}</h3>
+<p class="zoth-card-desc">{fallback_features[0]['desc']}</p>
+</div>
+<div class="zoth-card zoth-reveal">
+<span class="zoth-card-icon">🛡️</span>
+<h3 class="zoth-card-title">{fallback_features[1]['title']}</h3>
+<p class="zoth-card-desc">{fallback_features[1]['desc']}</p>
+</div>
+<div class="zoth-card zoth-reveal">
+<span class="zoth-card-icon">🔒</span>
+<h3 class="zoth-card-title">{fallback_features[2]['title']}</h3>
+<p class="zoth-card-desc">{fallback_features[2]['desc']}</p>
+</div>
+</div>
+</section>
+
+<!-- Interactive Sandbox -->
+<section class="zoth-section" id="sandbox">
+<div class="zoth-section-head">
+<div class="zoth-section-eyebrow">Live Playground</div>
+<h2 class="zoth-section-title">Interactive Swarm Sandbox</h2>
+<p class="zoth-section-sub">Test and execute simulated pipeline instructions right inside your browser.</p>
+</div>
+<div class="zoth-terminal">
+<div class="zoth-term-bar">
+<span class="zoth-term-dot r" aria-hidden="true"></span>
+<span class="zoth-term-dot y" aria-hidden="true"></span>
+<span class="zoth-term-dot g" aria-hidden="true"></span>
+<span>zoth@{safe_slug}:~$ ./run-audit --strict</span>
+</div>
+<div class="zoth-term-body" id="demo-output">
+<div>🟢 System Online: {clean_name} loopback core active.</div>
+<div style="color:var(--z-muted); margin-top:6px; font-size:0.8rem;">
+Press <kbd style="color:var(--z-primary); font-weight:600;">Execute</kbd> above to run diagnostic.
+</div>
+</div>
+<div class="zoth-term-input-row">
+<input
+type="text"
+id="demo-input"
+class="zoth-term-input"
+placeholder="Type prompt command..."
+value="Verify memory isolation boundaries"
+autocomplete="off"
+/>
+<button id="demo-btn" class="zoth-term-btn" onclick="runSandbox()">Execute</button>
+</div>
+</div>
+</section>
+
+<!-- Pricing -->
+<section class="zoth-section" id="pricing">
+<div class="zoth-section-head">
+<div class="zoth-section-eyebrow">Transparent Sovereign Pricing</div>
+<h2 class="zoth-section-title">Run Locally · Scale Globally</h2>
+<p class="zoth-section-sub">Your machine forever, or deploy seamlessly to global edge nodes.</p>
+</div>
+<div class="zoth-pricing">
+<div class="zoth-price-card">
+<h3 class="zoth-price-name">Local Solo</h3>
+<div class="zoth-price-num">$0</div>
+<p class="zoth-card-desc">Zero-cloud local operation with unlimited offline execution.</p>
+<ul class="zoth-price-perks">
+<li>100% Local Inference</li>
+<li>Argon2id Key Vault</li>
+<li>OWASP Hardened Output</li>
+</ul>
+<button class="zoth-price-btn">Get Started</button>
+</div>
+<div class="zoth-price-card featured">
+<div class="zoth-price-badge">Recommended</div>
+<h3 class="zoth-price-name">Sovereign Swarm</h3>
+<div class="zoth-price-num">$29 <small>/mo</small></div>
+<p class="zoth-card-desc">Full 16-agent team harness with 1-click Netlify and cloud sync.</p>
+<ul class="zoth-price-perks">
+<li>All 16 Mascot Agents</li>
+<li>1-Click Netlify Deployer</li>
+<li>Neural Audio Memo Engine</li>
+<li>Signal Remote Bridge</li>
+</ul>
+<button class="zoth-price-btn">Deploy Swarm</button>
+</div>
+<div class="zoth-price-card">
+<h3 class="zoth-price-name">Enterprise Foundry</h3>
+<div class="zoth-price-num">Custom</div>
+<p class="zoth-card-desc">Dedicated hardware clusters and custom LLM weight fine-tuning.</p>
+<ul class="zoth-price-perks">
+<li>Custom On-Prem Models</li>
+<li>Multi-Node Cluster Mesh</li>
+<li>24/7 Security Audit SLA</li>
+</ul>
+<button class="zoth-price-btn">Contact Foundry</button>
+</div>
+</div>
+</section>
+
+<!-- FAQ -->
+<section class="zoth-section" id="faq">
+<div class="zoth-section-head">
+<div class="zoth-section-eyebrow">Knowledge Base</div>
+<h2 class="zoth-section-title">Frequently Asked Questions</h2>
+</div>
+<div class="zoth-faq" style="max-width:760px; margin:0 auto;">
+<details class="zoth-faq-item open">
+<summary class="zoth-faq-q">How does {clean_name} preserve privacy and data sovereignty?</summary>
+<div class="zoth-faq-a">
+{clean_name} runs on loopback (127.0.0.1) with zero third-party telemetry. All prompts and keys are cryptographically guarded.
+</div>
+</details>
+<details class="zoth-faq-item">
+<summary class="zoth-faq-q">Can I deploy this site to Netlify or Vercel?</summary>
+<div class="zoth-faq-a">
+Yes! The output is clean, standard HTML5/CSS/JS ready for 1-click drag-and-drop or Git CI/CD deployment.
+</div>
+</details>
+</div>
+</section>
+
+<!-- Footer -->
+<footer class="zoth-footer">
+<p>© {datetime.now().year} {clean_name}. Synthesized autonomously with Zoth Studio Swarm.</p>
+<p class="zoth-foot-meta">OWASP CSP Hardened · WCAG AA Compliant · Zero-Cloud Egress</p>
+</footer>
+</div>
+
+{js_script_raw}
+
 </body>
 </html>
-"""
+    """
 
     # 2. Save Site to Public Previews Directory
     # -------------------------------------------------------------
