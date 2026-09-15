@@ -17,6 +17,48 @@
   // Prevent duplicate instances
   if (window.ZothPetHUD && window.ZothPetHUD.initialized) return;
 
+  // Procedural Cyber Synthesizer for Pet Companion
+  var petAudioCtx = null;
+  function playPetSFX(type) {
+    try {
+      if (!petAudioCtx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) petAudioCtx = new AC();
+      }
+      if (petAudioCtx && petAudioCtx.state === 'suspended') petAudioCtx.resume();
+      if (!petAudioCtx) return;
+      var now = petAudioCtx.currentTime;
+      var osc = petAudioCtx.createOscillator();
+      var gain = petAudioCtx.createGain();
+      if (type === 'chirp') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.045);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.connect(gain); gain.connect(petAudioCtx.destination);
+        osc.start(now); osc.stop(now + 0.055);
+      } else if (type === 'open') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.07);
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain); gain.connect(petAudioCtx.destination);
+        osc.start(now); osc.stop(now + 0.085);
+      } else if (type === 'close') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(660, now);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.06);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+        osc.connect(gain); gain.connect(petAudioCtx.destination);
+        osc.start(now); osc.stop(now + 0.07);
+      }
+    } catch (e) {}
+  }
+
+
   var PETS_ROSTER = [
     {
       id: "azoth",
@@ -276,7 +318,15 @@
         return '<option value="' + p.id + '" ' + selected + '>' + p.emoji + ' ' + p.name + ' — ' + p.domain + '</option>';
       }).join('');
 
-            hud.innerHTML = [
+            var SVG_CLOSE = '<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      var SVG_MIN = '<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"><path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      var SVG_COPY = '<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.6"/></svg>';
+      var SVG_EYE = '<svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"><circle cx="12" cy="12" r="3" fill="var(--pet-hud-cyan,#00f0ff)"/><path d="M2 12C5 6 19 6 22 12C19 18 5 18 2 12Z" stroke="var(--pet-hud-cyan,#00f0ff)" stroke-width="1.6"/></svg>';
+      var SVG_SPARK = '<svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="var(--pet-hud-gold,#fbbf24)" stroke="var(--pet-hud-gold,#fbbf24)" stroke-width="1.2"/></svg>';
+      var SVG_PAW = '<svg viewBox="0 0 24 24" fill="none" style="width:13px;height:13px;display:inline-block;vertical-align:middle;"><circle cx="12" cy="14" r="5" fill="currentColor"/><circle cx="6.5" cy="8.5" r="2" fill="currentColor"/><circle cx="17.5" cy="8.5" r="2" fill="currentColor"/><circle cx="12" cy="5.5" r="2" fill="currentColor"/></svg>';
+      var SVG_CUBE = '<svg viewBox="0 0 24 24" fill="none" style="width:13px;height:13px;display:inline-block;vertical-align:middle;"><path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" stroke-width="1.5"/></svg>';
+
+      hud.innerHTML = [
         '<!-- Floating Master Narrator & Companion Trigger Button -->',
         '<button type="button" class="pet-hud-trigger" id="pet-hud-trigger" aria-expanded="false" aria-label="Toggle Master Narrator & Companion Panel">',
         '  <div class="pet-hud-orb">',
@@ -286,15 +336,15 @@
         '  </div>',
         '  <div class="pet-hud-trigger-info">',
         '    <span class="pet-hud-trigger-name" id="pet-hud-trigger-name">' + pet.name + '</span>',
-        '    <span class="pet-hud-trigger-state">Narrator · Tap to Change</span>',
+        '    <span class="pet-hud-trigger-state">' + SVG_SPARK + ' <span>Narrator</span></span>',
         '  </div>',
         '</button>',
 
         '<!-- Exact Digest Speech Bubble (Resting Snugly Above Button) -->',
         '<div class="pet-hud-speech-bubble" id="pet-hud-speech">',
         '  <div class="pet-hud-speech-header">',
-        '    <span class="pet-hud-speech-title">' + pet.emoji + ' ' + (pet.name || "Azoth") + '</span>',
-        '    <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">×</button>',
+        '    <span class="pet-hud-speech-title">' + SVG_SPARK + ' ' + (pet.name || "Azoth") + '</span>',
+        '    <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">' + SVG_CLOSE + '</button>',
         '  </div>',
         '  <span class="pet-hud-speech-text">Companion online &amp; watching over session.</span>',
         '</div>',
@@ -303,12 +353,12 @@
         '<div class="pet-hud-card" id="pet-hud-card" role="region" aria-label="Pet Companion Panel">',
         '  <div class="pet-hud-header">',
         '    <div class="pet-hud-title-group">',
-        '      <span class="pet-hud-badge-icon">' + (pet.emoji || "🔮") + '</span>',
+        '      <span class="pet-hud-badge-icon">' + SVG_SPARK + '</span>',
         '      <span class="pet-hud-title">Master Narrator &amp; Companion</span>',
         '    </div>',
         '    <div class="pet-hud-header-actions">',
-        '      <button type="button" class="pet-hud-icon-btn" id="pet-hud-dock-btn" title="Toggle Compact Mode">🗕</button>',
-        '      <button type="button" class="pet-hud-icon-btn" id="pet-hud-close-btn" title="Close Panel">✕</button>',
+        '      <button type="button" class="pet-hud-icon-btn" id="pet-hud-dock-btn" title="Toggle Compact Mode">' + SVG_MIN + '</button>',
+        '      <button type="button" class="pet-hud-icon-btn" id="pet-hud-close-btn" title="Close Panel">' + SVG_CLOSE + '</button>',
         '    </div>',
         '  </div>',
 
@@ -339,13 +389,13 @@
         '    </div>',
 
         '    <div class="pet-hud-field" style="margin-top: 10px;">',
-        '      <label class="pet-hud-field-label">👁️ Sovereign Vision &amp; Screen Capture</label>',
+        '      <label class="pet-hud-field-label">' + SVG_EYE + ' Sovereign Vision &amp; Screen Capture</label>',
         '      <button type="button" class="pet-hud-vision-btn" id="pet-hud-vision-btn" style="width:100%; padding:9px 12px; background:linear-gradient(135deg, rgba(0,240,255,0.2), rgba(168,85,247,0.25)); border:1px solid var(--border-cyan, #00f0ff); border-radius:8px; color:#fff; font-family:inherit; font-weight:700; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">',
-        '        <span>👁️ Activate Visionary Screen Eye</span>',
+        '        <span>' + SVG_EYE + ' Activate Visionary Screen Eye</span>',
         '      </button>',
         '    </div>',
         '    <div class="pet-hud-field">',
-        '      <label class="pet-hud-field-label">🔮 Change Narrator &amp; Companion Spirit</label>',
+        '      <label class="pet-hud-field-label">' + SVG_SPARK + ' Change Narrator &amp; Companion Spirit</label>',
         '      <select class="pet-hud-select" id="pet-hud-switcher">',
         optionsHtml,
         '      </select>',
@@ -355,14 +405,14 @@
         '      <label class="pet-hud-field-label">Terminal Summon Command</label>',
         '      <div class="pet-hud-cmd-box">',
         '        <span class="pet-hud-cmd-text" id="pet-hud-cmd-text">' + pet.cmd + '</span>',
-        '        <button type="button" class="pet-hud-copy-btn" id="pet-hud-copy-cmd">📋 Copy</button>',
+        '        <button type="button" class="pet-hud-copy-btn" id="pet-hud-copy-cmd">' + SVG_COPY + ' <span>Copy</span></button>',
         '      </div>',
         '    </div>',
         '  </div>',
 
         '  <div class="pet-hud-footer">',
-        '    <a href="/pets/" class="pet-hud-footer-link">🐾 Sanctuary Roster (24)</a>',
-        '    <a href="/pets/studio.html" class="pet-hud-footer-link">💎 3D Studio ↗</a>',
+        '    <a href="/pets/" class="pet-hud-footer-link">' + SVG_PAW + ' <span>Sanctuary Roster (24)</span></a>',
+        '    <a href="/pets/studio.html" class="pet-hud-footer-link">' + SVG_CUBE + ' <span>3D Studio ↗</span></a>',
         '  </div>',
         '</div>'
       ].join('\n');
@@ -1070,6 +1120,7 @@
       if (hud) hud.classList.add("open");
       if (trigger) trigger.setAttribute("aria-expanded", "true");
       this.isOpen = true;
+      playPetSFX('open');
       this.say("Observing workspace telemetry...");
     },
 
@@ -1079,6 +1130,7 @@
       if (hud) hud.classList.remove("open");
       if (trigger) trigger.setAttribute("aria-expanded", "false");
       this.isOpen = false;
+      playPetSFX('close');
     },
 
     toggleDock: function () {
@@ -1124,6 +1176,7 @@
       // Broadcast custom event for other components if listening
       window.dispatchEvent(new CustomEvent("zoth:pet-switched", { detail: target }));
 
+      playPetSFX('open');
       this.say("Summoned " + target.name + " (" + target.domain + ")!");
     },
 
@@ -1170,6 +1223,7 @@
       }
 
       speech.classList.add("active");
+      playPetSFX('chirp');
       if (this.bubbleTimeout) clearTimeout(this.bubbleTimeout);
 
       var effectiveDuration = durationMs || (Array.isArray(content) ? 9000 : 4500);
