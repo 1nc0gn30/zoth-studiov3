@@ -535,7 +535,55 @@ assert.strictEqual(win.ZothHUD.isMuted(), false, 'REPL audio command must unmute
 win.ZothHUD.setDeviceMode('desktop');
 console.log('✔ Test 20 Passed: Tablet Tactical Bar, Mobile Bottom Sheets & Audio Mute Controller verified');
 
-console.log('\n⭐ ALL 20 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES & GROK TESTS PASSED (100%)!\n');
+// ==========================================
+// TEST 21: Tool Dropdown Quick-Switcher & Left Deck 21-Agent Dynamic Roster
+// ==========================================
+assert.strictEqual(typeof win.ZothHUD.toggleToolDropdown, 'function', 'toggleToolDropdown must be exposed');
+assert.strictEqual(typeof win.ZothHUD.openToolDropdown, 'function', 'openToolDropdown must be exposed');
+assert.strictEqual(typeof win.ZothHUD.closeToolDropdown, 'function', 'closeToolDropdown must be exposed');
+assert.strictEqual(typeof win.ZothHUD.filterToolDropdown, 'function', 'filterToolDropdown must be exposed');
+assert.strictEqual(typeof win.ZothHUD.renderAgentsRoster, 'function', 'renderAgentsRoster must be exposed');
+
+// Open and filter dropdown
+win.ZothHUD.openToolDropdown();
+const dropMenu = doc.getElementById('hud-tool-dropdown-menu');
+assert.strictEqual(dropMenu.classList.contains('is-open'), true, 'Dropdown menu must have is-open class');
+
+win.ZothHUD.filterToolDropdown('omnipost');
+const dropList = doc.getElementById('hud-tool-dropdown-list');
+assert.ok(dropList.innerHTML.includes('OmniPost'), 'Filtered list must contain OmniPost');
+
+win.ZothHUD.closeToolDropdown();
+assert.strictEqual(dropMenu.classList.contains('is-open'), false, 'Dropdown menu must close');
+
+// Verify 21 Agents Roster
+win.ZothHUD.renderAgentsRoster();
+const agentsRoster = doc.getElementById('hud-agents-roster');
+assert.ok(agentsRoster.innerHTML.includes('AZOTH'), 'Roster must render AZOTH');
+assert.ok(agentsRoster.innerHTML.includes('LEVIATHAN'), 'Roster must render LEVIATHAN');
+assert.ok(agentsRoster.innerHTML.includes('KRAKEN'), 'Roster must render KRAKEN');
+console.log('✔ Test 21 Passed: Tool Dropdown Quick-Switcher & 21-Agent Dynamic Left Deck Roster verified');
+
+// ==========================================
+// TEST 22: Dashboard Surface Toggle & Bottom Dock Navigation
+// ==========================================
+win.ZothHUD.loadTool('dashboard');
+assert.strictEqual(win.ZothHUD.getState().activeTool.id, 'dashboard', 'Active tool must be dashboard');
+const dashEl = doc.getElementById('hud-dashboard');
+assert.strictEqual(dashEl.classList.contains('is-open'), true, 'hud-dashboard must have is-open class');
+
+win.ZothHUD.loadTool('swarm');
+assert.strictEqual(win.ZothHUD.getState().activeTool.id, 'swarm', 'Active tool must switch to swarm');
+assert.strictEqual(dashEl.classList.contains('is-open'), false, 'hud-dashboard must be hidden when tool loaded');
+
+win.ZothHUD.loadTool('dashboard');
+assert.strictEqual(win.ZothHUD.getState().activeTool.id, 'dashboard', 'Active tool must return to dashboard');
+assert.strictEqual(dashEl.classList.contains('is-open'), true, 'hud-dashboard must be open again');
+
+win.ZothHUD.loadTool('omnipost');
+console.log('✔ Test 22 Passed: Dashboard Surface Toggle & Bottom Dock Navigation verified');
+
+console.log('\n⭐ ALL 22 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES & GROK TESTS PASSED (100%)!\n');
 process.exit(0);
 
 

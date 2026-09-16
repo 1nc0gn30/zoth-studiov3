@@ -3443,6 +3443,9 @@
       this.bindShortcuts();
       this.bindDOMEvents();
 
+      this.renderAgentsRoster();
+      this.renderToolDropdownList();
+
       this.loadTool(STATE.activeTool.id, true);
       if (STATE.splitMode && STATE.secondaryTool) {
         this.setSecondaryTool(STATE.secondaryTool.id);
@@ -3721,6 +3724,13 @@
         '</footer>';
     },
 
+    renderAgentsRoster: function () {
+      var roster = document.getElementById('hud-agents-roster');
+      if (roster) {
+        roster.innerHTML = this.getAgentsRosterHTML();
+      }
+    },
+
     getAgentsRosterHTML: function () {
       var html = '';
       ALL_21_AGENTS.forEach(function (agent) {
@@ -3728,13 +3738,161 @@
         html += '<div class="hud-agent-radio-item ' + (isActive ? 'active' : '') + '" data-agent="' + agent.id + '" onclick="ZothHUD.setAgent(\'' + agent.id + '\')">' +
           '<div class="hud-agent-radio-left">' +
             '<span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>' +
-            '<span style="font-size:0.80rem;">' + agent.icon + '</span>' +
+            '<div class="hud-agent-avatar-wrap"><span class="hud-agent-aura"></span><span>' + (agent.icon || '🔮') + '</span></div>' +
             '<span class="hud-agent-name">' + agent.name + '</span>' +
           '</div>' +
-          '<span class="hud-agent-role-pill">' + agent.role + '</span>' +
+          '<div class="hud-agent-right-meta">' +
+            '<span class="hud-agent-domain-chip" style="color:' + agent.color + ';background:' + agent.color + '18;">' + agent.role + '</span>' +
+            '<span class="hud-agent-beacon"></span>' +
+          '</div>' +
         '</div>';
       });
       return html;
+    },
+
+    toggleToolDropdown: function () {
+      var menu = document.getElementById('hud-tool-dropdown-menu');
+      if (!menu) return;
+      var isOpen = !menu.hidden && menu.classList.contains('is-open');
+      if (isOpen) {
+        this.closeToolDropdown();
+      } else {
+        this.openToolDropdown();
+      }
+    },
+
+    openToolDropdown: function () {
+      var menu = document.getElementById('hud-tool-dropdown-menu');
+      var btn = document.getElementById('hud-stage-tool-name');
+      if (!menu) return;
+      this.renderToolDropdownList();
+      menu.hidden = false;
+      menu.removeAttribute('hidden');
+      menu.classList.add('is-open');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+      var input = document.getElementById('hud-tool-dropdown-search-input');
+      if (input) {
+        input.value = '';
+        setTimeout(function () { input.focus(); }, 50);
+      }
+      playCyberSFX('select');
+    },
+
+    closeToolDropdown: function () {
+      var menu = document.getElementById('hud-tool-dropdown-menu');
+      var btn = document.getElementById('hud-stage-tool-name');
+      if (!menu) return;
+      menu.classList.remove('is-open');
+      menu.hidden = true;
+      menu.setAttribute('hidden', 'true');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    },
+
+    filterToolDropdown: function (query) {
+      this.renderToolDropdownList(query);
+    },
+
+    clearToolDropdownSearch: function () {
+      var input = document.getElementById('hud-tool-dropdown-search-input');
+      if (input) input.value = '';
+      this.renderToolDropdownList('');
+    },
+
+    renderToolDropdownList: function (query) {
+      var listEl = document.getElementById('hud-tool-dropdown-list');
+      if (!listEl) return;
+      var q = (query || '').toLowerCase().trim();
+
+      var stations = PRIMARY_WORKSTATIONS.slice();
+      if (window.ZOTH_HUD_WORKSTATIONS && Array.isArray(window.ZOTH_HUD_WORKSTATIONS)) {
+        window.ZOTH_HUD_WORKSTATIONS.forEach(function (ws) {
+          if (!stations.find(function (s) { return s.id === ws.id; })) {
+            stations.push(ws);
+          }
+        });
+      }
+
+      if (q) {
+        stations = stations.filter(function (s) {
+          return (s.name && s.name.toLowerCase().includes(q)) ||
+                 (s.shortName && s.shortName.toLowerCase().includes(q)) ||
+                 (s.desc && s.desc.toLowerCase().includes(q)) ||
+                 (s.category && s.category.toLowerCase().includes(q)) ||
+                 (s.tags && s.tags.some(function (t) { return t.toLowerCase().includes(q); }));
+        });
+      }
+
+      if (!stations.length) {
+        listEl.innerHTML = '<div class="hud-tool-dropdown-empty">No workstations matching "' + query + '"</div>';
+        return;
+      }
+
+      var groups = {};
+      stations.forEach(function (s) {
+        var cat = s.category || 'Workstations';
+        groups[cat] = groups[cat] || [];
+        groups[cat].push(s);
+      });
+
+      var html = '';
+      if (!q || 'dashboard'.includes(q) || 'home'.includes(q)) {
+        var isDashActive = (STATE.activeTool && STATE.activeTool.id === 'dashboard');
+        html += '<div class="hud-tool-dropdown-cat-header">SURFACE & OVERVIEW</div>' +
+          '<div class="hud-tool-dropdown-item ' + (isDashActive ? 'active' : '') + '" onclick="ZothHUD.loadTool(\'dashboard\'); ZothHUD.closeToolDropdown();">' +
+            '<div class="hud-tool-dropdown-item-left">' +
+              '<span class="hud-tool-dropdown-item-icon">⌂</span>' +
+              '<div>' +
+                '<div class="hud-tool-dropdown-item-name">Studio Command Dashboard</div>' +
+                '<div class="hud-tool-dropdown-item-desc">Master overview, learned recents & port self-heal</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="hud-tool-dropdown-item-right">' +
+              '<span class="hud-tool-tag gold">SURFACE</span>' +
+            '</div>' +
+          '</div>';
+      }
+
+      Object.keys(groups).forEach(function (cat) {
+        html += '<div class="hud-tool-dropdown-cat-header">' + cat.toUpperCase() + '</div>';
+        groups[cat].forEach(function (s) {
+          var isCurrent = (STATE.activeTool && STATE.activeTool.id === s.id);
+          var icon = '🛠';
+          if (s.id === 'omnipost') icon = '🎬';
+          else if (s.id === '3d-editor') icon = '📐';
+          else if (s.id === 'nexus-3d') icon = '🪐';
+          else if (s.id === 'swarm') icon = '🔮';
+          else if (s.id === 'webgen') icon = '⚡';
+          else if (s.id === 'tool-bench') icon = '⚙️';
+          else if (s.id === 'vault') icon = '🔐';
+          else if (s.id === 'netrunner-memory') icon = '🧠';
+          else if (s.id === 'consensus') icon = '⚔️';
+          else if (s.id === 'pets' || s.id === 'pets-studio') icon = '💎';
+          else if (s.id === 'agent-composer') icon = '🗺';
+          else if (s.id === 'vos-sandbox') icon = '💻';
+          else if (s.id === 'netlify-ax') icon = '🚀';
+          else if (s.id === 'ide') icon = '📝';
+          else if (s.id === 'math-pillars') icon = '📐';
+          else if (s.id === 'vision-link') icon = '👁️';
+          else if (s.id === 'signal') icon = '📡';
+          else if (s.id === 'docs') icon = '📖';
+
+          html += '<div class="hud-tool-dropdown-item ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.loadTool(\'' + s.id + '\'); ZothHUD.closeToolDropdown();">' +
+            '<div class="hud-tool-dropdown-item-left">' +
+              '<span class="hud-tool-dropdown-item-icon">' + icon + '</span>' +
+              '<div>' +
+                '<div class="hud-tool-dropdown-item-name">' + (s.name || s.shortName) + '</div>' +
+                '<div class="hud-tool-dropdown-item-desc">' + (s.desc || (s.tags ? s.tags.join(', ') : '')) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="hud-tool-dropdown-item-right">' +
+              (s.hotkey ? '<span class="hud-tool-dropdown-hotkey">[' + s.hotkey + ']</span>' : '') +
+              '<span class="hud-tool-tag" style="font-size:0.55rem;">' + (s.contract || 'VERIFIED') + '</span>' +
+            '</div>' +
+          '</div>';
+        });
+      });
+
+      listEl.innerHTML = html;
     },
 
     bindDOMEvents: function () {
@@ -3791,6 +3949,7 @@
         } else if ((e.key === '`' || e.key === 'Escape') && !isInput) {
           e.preventDefault();
           if (e.key === 'Escape') {
+            self.closeToolDropdown();
             self.closeModal();
             self.closeMobileSheet();
             self.closeDeck();
@@ -3817,7 +3976,73 @@
     },
 
     loadTool: function (toolId, isInitial) {
+      if (toolId === 'dashboard' || toolId === 'home') {
+        STATE.activeTool = {
+          id: 'dashboard',
+          name: 'Dashboard',
+          shortName: 'Dash',
+          desc: 'Studio Command Overview & Health Surface',
+          category: 'Overview',
+          url: '',
+          tags: ['SURFACE', 'COMMAND', 'HEALTH'],
+          runtime: 'frontend',
+          contract: 'SOVEREIGN'
+        };
+
+        var dash = document.getElementById('hud-dashboard');
+        if (dash) {
+          dash.hidden = false;
+          dash.removeAttribute('hidden');
+          dash.classList.add('is-open');
+        }
+
+        var iconEl = document.getElementById('hud-stage-tool-icon');
+        var labelEl = document.getElementById('hud-stage-tool-label');
+        var titleEl = document.getElementById('hud-stage-tool-name');
+        if (iconEl) iconEl.textContent = '⌂';
+        if (labelEl) labelEl.textContent = 'DASHBOARD OVERVIEW';
+        if (titleEl && !labelEl) titleEl.innerHTML = '<span>⌂</span> DASHBOARD OVERVIEW';
+
+        var tagsEl = document.getElementById('hud-stage-tags');
+        if (tagsEl) {
+          tagsEl.innerHTML = '<span class="hud-tool-tag gold">SURFACE</span><span class="hud-tool-tag">OVERVIEW</span><span class="hud-tool-tag green">SOVEREIGN</span>';
+        }
+
+        var dockTabs = document.querySelectorAll('.hud-dock-tab');
+        dockTabs.forEach(function (tab) {
+          tab.classList.toggle('active', tab.getAttribute('data-tool') === 'dashboard');
+        });
+
+        this.closeToolDropdown();
+        this.renderToolContextCard('dashboard');
+        this.syncURLState();
+
+        if (window.ZothHudIntel && window.ZothHudIntel.showDashboard) {
+          window.ZothHudIntel.showDashboard();
+        }
+
+        if (!isInitial) {
+          playCyberSFX('switch');
+          this.addLog('STAGE', 'Mounted surface: Studio Dashboard', 'system');
+        }
+        return;
+      }
+
+      // Hide dashboard if visible
+      var dashEl = document.getElementById('hud-dashboard');
+      if (dashEl) {
+        dashEl.hidden = true;
+        dashEl.setAttribute('hidden', 'true');
+        dashEl.classList.remove('is-open');
+      }
+      if (window.ZothHudIntel && window.ZothHudIntel.hideDashboard) {
+        window.ZothHudIntel.hideDashboard();
+      }
+
       var tool = PRIMARY_WORKSTATIONS.find(function (t) { return t.id === toolId; });
+      if (!tool && window.ZOTH_HUD_WORKSTATIONS) {
+        tool = window.ZOTH_HUD_WORKSTATIONS.find(function (t) { return t.id === toolId; });
+      }
       if (!tool && window.TOOL_DETAILS) {
         var found = window.TOOL_DETAILS.find(function (t) { return t.id === toolId; });
         if (found) {
@@ -3857,16 +4082,22 @@
         }
       }
 
-      var titleEl = document.getElementById('hud-stage-tool-name');
-      if (titleEl) {
-        var catIcon = '🛠';
-        if (tool.category.includes('Creative')) catIcon = '🎬';
-        else if (tool.category.includes('AI')) catIcon = '🔮';
-        else if (tool.category.includes('Security')) catIcon = '🔐';
-        else if (tool.category.includes('Learning')) catIcon = '📐';
-        else if (tool.category.includes('Web')) catIcon = '⚡';
+      var catIcon = '🛠';
+      if (tool.id === 'omnipost' || (tool.category && tool.category.includes('Creative'))) catIcon = '🎬';
+      else if (tool.id === '3d-editor' || tool.id === 'nexus-3d' || (tool.category && tool.category.includes('3D'))) catIcon = '📐';
+      else if (tool.id === 'swarm' || tool.id === 'consensus' || (tool.category && tool.category.includes('AI')) || (tool.category && tool.category.includes('Swarm'))) catIcon = '🔮';
+      else if (tool.id === 'vault' || tool.id === 'adytum' || (tool.category && tool.category.includes('Security'))) catIcon = '🔐';
+      else if (tool.id === 'netrunner-memory' || tool.id === 'math-pillars' || (tool.category && tool.category.includes('Observability')) || (tool.category && tool.category.includes('Learning'))) catIcon = '🧠';
+      else if (tool.id === 'webgen' || (tool.category && tool.category.includes('Web')) || (tool.category && tool.category.includes('No-Code'))) catIcon = '⚡';
+      else if (tool.id === 'pets' || tool.id === 'pets-studio') catIcon = '💎';
 
-        titleEl.innerHTML = '<span>' + catIcon + '</span> ' + tool.name.toUpperCase();
+      var iconEl = document.getElementById('hud-stage-tool-icon');
+      var labelEl = document.getElementById('hud-stage-tool-label');
+      var titleEl = document.getElementById('hud-stage-tool-name');
+      if (iconEl) iconEl.textContent = catIcon;
+      if (labelEl) labelEl.textContent = (tool.name || tool.shortName || tool.id).toUpperCase();
+      if (titleEl && !labelEl) {
+        titleEl.innerHTML = '<span>' + catIcon + '</span> ' + (tool.name || tool.shortName || tool.id).toUpperCase();
       }
 
       var tagsEl = document.getElementById('hud-stage-tags');
@@ -3891,6 +4122,7 @@
         }
       });
 
+      this.closeToolDropdown();
       this.renderToolContextCard(tool.id);
       this.syncURLState();
 
@@ -4451,10 +4683,14 @@
       if (e.target && (e.target.classList.contains('hud-modal-close-btn') || (e.target.closest && e.target.closest('.hud-modal-close-btn')))) {
         Modals.close();
       }
+      if (e.target && !e.target.closest('#hud-stage-tool-dropdown-wrap')) {
+        ZothHUD.closeToolDropdown();
+      }
     });
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' || e.keyCode === 27) {
+        ZothHUD.closeToolDropdown();
         Modals.close();
       }
     });

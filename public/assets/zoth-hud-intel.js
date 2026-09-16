@@ -314,19 +314,14 @@
   function rebuildWorkstationDock() {
     var tabs = document.getElementById('hud-dock-tabs');
     if (!tabs) return;
-    var dash = tabs.querySelector('[data-tool="dashboard"]');
-    var learned = document.getElementById('hud-dock-learned');
-    var stations = PRIMARY_FALLBACK();
-    var html = '';
-    if (dash) html += dash.outerHTML;
-    html += '<div class="hud-dock-learned" id="hud-dock-learned">' + (learned ? learned.innerHTML : '') + '</div>';
-    stations.forEach(function (t) {
-      html += '<button type="button" class="hud-dock-tab" data-tool="' + t.id + '">' + (t.shortName || t.name) + '</button>';
-    });
-    tabs.innerHTML = html;
+    // Preserve rich curated dock tabs and wire listeners
     tabs.querySelectorAll('.hud-dock-tab[data-tool]').forEach(function (btn) {
+      if (btn._hudBound) return;
+      btn._hudBound = true;
       btn.addEventListener('click', function () {
-        if (window.ZothHUD) window.ZothHUD.loadTool(btn.getAttribute('data-tool'));
+        if (window.ZothHUD && window.ZothHUD.loadTool) {
+          window.ZothHUD.loadTool(btn.getAttribute('data-tool'));
+        }
       });
     });
   }
@@ -469,11 +464,13 @@
         dwellTool = '';
         dwellStarted = 0;
         showDashboard();
+        origLoad('dashboard', isInitial);
         return;
       }
       var bootParams = new URLSearchParams(window.__HUD_LANDING_SEARCH || '');
       if (isInitial && !bootParams.get('tool')) {
         showDashboard();
+        origLoad('dashboard', isInitial);
         return;
       }
       if (dwellTool && dwellTool !== toolId) recordDwell(dwellTool);
