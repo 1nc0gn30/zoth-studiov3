@@ -98,6 +98,12 @@ class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(PUBLIC_DIR), **kwargs)
 
+    def copyfile(self, source, outputfile):
+        try:
+            super().copyfile(source, outputfile)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
+
     def _send_json(self, data, status: int = 200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
@@ -168,6 +174,16 @@ class ZothRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # 0. Health endpoint
+        if self.path in ["/api/health", "/health", "/v1/health"]:
+            return self._send_json({
+                "status": "ok",
+                "service": "zoth-dev-server",
+                "port": 8088,
+                "memory_daemon_8788": "online" if is_port_open(8788) else "offline",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+
         # 1. Visual Annotations API
         if self.path.startswith("/api/annotations"):
             notes = load_notes()
