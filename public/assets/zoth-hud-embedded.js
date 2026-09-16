@@ -228,7 +228,7 @@
         if (path.indexOf('/studio/') === 0 && file && file !== 'index') id = file;
       }
       if (!id) return false;
-      win.location.replace('/studio/cyberpunk-hud.html?tool=' + encodeURIComponent(id));
+      win.location.replace('/studio/cockpit.html?tool=' + encodeURIComponent(id));
       return true;
     } catch (e) {
       return false;
@@ -245,7 +245,7 @@
     var banner = doc.createElement('div');
     banner.className = 'hud-standalone-launcher-banner';
     banner.innerHTML = '' +
-      '<a href="/studio/cyberpunk-hud.html?tool=' + encodeURIComponent(toolId) + '" class="hud-launch-cockpit-btn" title="Open this tool inside the Cyberpunk HUD">' +
+      '<a href="/studio/cockpit.html?tool=' + encodeURIComponent(toolId) + '" class="hud-launch-cockpit-btn" title="Open this tool inside the Cyberpunk HUD">' +
         '<span class="hud-launch-icon">⚡</span>' +
         '<span class="hud-launch-text">OPEN IN CYBERPUNK HUD</span>' +
         '<span class="hud-launch-tag">COCKPIT ➔</span>' +

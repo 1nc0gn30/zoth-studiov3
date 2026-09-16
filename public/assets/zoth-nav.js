@@ -20,7 +20,7 @@
   }
   var _href = String(window.location.href || '');
   var _path = window.location.pathname || '';
-  if (/^\/workspaces\//.test(_path) || /srcdoc/i.test(_href) || _href.indexOf('about:') === 0) return;
+  if (/^\/workspaces\//.test(_path) || /srcdoc/i.test(_href) || _href.indexOf('about:') === 0 || /\/studio\/(cockpit|cyberpunk-hud)\.html$/.test(_path)) return;
 
   // Dynamic Base Path Detection for Local file:// & Web HTTP
   function getAssetsBase() {
@@ -303,16 +303,16 @@
       label: "Studio",
       items: [
         { href: "/studio/cockpit.html", icon: "🪐", title: "The Cockpit", desc: "21-Agent Autonomous Swarm Command Deck", badge: "SWARM" },
-        { href: "/studio/webgen.html", icon: "⚡", title: "WebGen Studio", desc: "Universal Interactive PTY Terminal & Site Builder", badge: "FOUNDRY" },
-        { href: "/studio/vos-sandbox.html", icon: "💻", title: "vOS Wasm Sandbox", desc: "In-Browser WebContainer, POSIX Shell & IDE", badge: "WASM" },
-        { href: "/studio/nexus-3d.html", icon: "📐", title: "Nexus 3D Omniverse", desc: "CAD Viewport, AI Mesh Generator & Animation", badge: "CAD" },
-        { href: "/studio/omnipost.html", icon: "🎬", title: "OmniPost 2.0 Video", desc: "60 FPS Video Studio & Social Motion Pipeline", badge: "60 FPS" },
-        { href: "/studio/math-pillars.html", icon: "📐", title: "AI Math Pillars & Academy", desc: "Linear Algebra, STDP, Manifolds & Entropy", badge: "MATH" },
-        { href: "/secure-comms/", icon: "🔒", title: "SimpleX ↔ Matrix Bridge", desc: "Zero-Knowledge E2EE SimpleX & Matrix Gateway", badge: "E2EE" },
-        { href: "/signal/", icon: "📡", title: "Signal Swarm Bridge", desc: "Mobile Phone Command Deck & Voice SSE", badge: "MOBILE" },
-        { href: "/studio/web3-hub.html", icon: "🪙", title: "Web3 & Solana DeFi Hub", desc: "Multi-Chain Wallets, Live SOL Ticker & Radar", badge: "WEB3" },
-        { href: "/pets/", icon: "💎", title: "Companion Pets 3D", desc: "Volumetric Mascot Spirits & Soundboards", badge: "MASCOTS" },
-        { href: "/studio/", icon: "🛠️", title: "All 14+ Studio Tools", desc: "Master Workstation & Toolchain Directory", badge: "INDEX" }
+        { href: "/studio/cockpit.html?tool=webgen", icon: "⚡", title: "WebGen Studio", desc: "Universal Interactive PTY Terminal & Site Builder", badge: "FOUNDRY" },
+        { href: "/studio/cockpit.html?tool=vos-sandbox", icon: "💻", title: "vOS Wasm Sandbox", desc: "In-Browser WebContainer, POSIX Shell & IDE", badge: "WASM" },
+        { href: "/studio/cockpit.html?tool=nexus-3d", icon: "📐", title: "Nexus 3D Omniverse", desc: "CAD Viewport, AI Mesh Generator & Animation", badge: "CAD" },
+        { href: "/studio/cockpit.html?tool=omnipost", icon: "🎬", title: "OmniPost 2.0 Video", desc: "60 FPS Video Studio & Social Motion Pipeline", badge: "60 FPS" },
+        { href: "/studio/cockpit.html?tool=math-pillars", icon: "📐", title: "AI Math Pillars & Academy", desc: "Linear Algebra, STDP, Manifolds & Entropy", badge: "MATH" },
+        { href: "/studio/cockpit.html?tool=secure-comms", icon: "🔒", title: "SimpleX ↔ Matrix Bridge", desc: "Zero-Knowledge E2EE SimpleX & Matrix Gateway", badge: "E2EE" },
+        { href: "/studio/cockpit.html?tool=signal-bridge", icon: "📡", title: "Signal Swarm Bridge", desc: "Mobile Phone Command Deck & Voice SSE", badge: "MOBILE" },
+        { href: "/studio/cockpit.html?tool=web3-hub", icon: "🪙", title: "Web3 & Solana DeFi Hub", desc: "Multi-Chain Wallets, Live SOL Ticker & Radar", badge: "WEB3" },
+        { href: "/studio/cockpit.html?tool=pets", icon: "💎", title: "Companion Pets 3D", desc: "Volumetric Mascot Spirits & Soundboards", badge: "MASCOTS" },
+        { href: "/studio/cockpit.html?tool=tool-nexus", icon: "🛠️", title: "All 14+ Studio Tools", desc: "Master Workstation & Toolchain Directory", badge: "INDEX" }
       ]
     },
     {
@@ -641,16 +641,16 @@
       '    <div class="nav-dropdown-menu nav-dropdown-mega">',
       '      <div class="nav-dropdown-header"><span>🪐 14+ STUDIO WORKSTATIONS</span><span class="nav-item-badge">LOCAL DAGS</span></div>',
       '      <a href="/studio/cockpit.html"><span class="nav-item-icon-box">' + NAV_ICONS.cockpit + '</span><div class="nav-item-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>',
-      '      <a href="/studio/webgen.html"><span class="nav-item-icon-box">' + NAV_ICONS.webgen + '</span><div class="nav-item-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
-      '      <a href="/studio/vos-sandbox.html"><span class="nav-item-icon-box">' + NAV_ICONS.vos + '</span><div class="nav-item-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
-      '      <a href="/studio/nexus-3d.html"><span class="nav-item-icon-box">' + NAV_ICONS.nexus3d + '</span><div class="nav-item-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
-      '      <a href="/studio/omnipost.html"><span class="nav-item-icon-box">' + NAV_ICONS.omnipost + '</span><div class="nav-item-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
-      '      <a href="/studio/math-pillars.html"><span class="nav-item-icon-box">' + NAV_ICONS.math + '</span><div class="nav-item-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
-      '      <a href="/secure-comms/"><span class="nav-item-icon-box">' + NAV_ICONS.securecomms + '</span><div class="nav-item-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
-      '      <a href="/signal/"><span class="nav-item-icon-box">' + NAV_ICONS.signal + '</span><div class="nav-item-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
-      '      <a href="/studio/web3-hub.html"><span class="nav-item-icon-box">' + NAV_ICONS.web3 + '</span><div class="nav-item-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
-      '      <a href="/pets/"><span class="nav-item-icon-box">' + NAV_ICONS.pets + '</span><div class="nav-item-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
-      '      <a href="/studio/"><span class="nav-item-icon-box">' + NAV_ICONS.studio + '</span><div class="nav-item-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
+      '      <a href="/studio/cockpit.html?tool=webgen"><span class="nav-item-icon-box">' + NAV_ICONS.webgen + '</span><div class="nav-item-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
+      '      <a href="/studio/cockpit.html?tool=vos-sandbox"><span class="nav-item-icon-box">' + NAV_ICONS.vos + '</span><div class="nav-item-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
+      '      <a href="/studio/cockpit.html?tool=nexus-3d"><span class="nav-item-icon-box">' + NAV_ICONS.nexus3d + '</span><div class="nav-item-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
+      '      <a href="/studio/cockpit.html?tool=omnipost"><span class="nav-item-icon-box">' + NAV_ICONS.omnipost + '</span><div class="nav-item-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
+      '      <a href="/studio/cockpit.html?tool=math-pillars"><span class="nav-item-icon-box">' + NAV_ICONS.math + '</span><div class="nav-item-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
+      '      <a href="/studio/cockpit.html?tool=secure-comms"><span class="nav-item-icon-box">' + NAV_ICONS.securecomms + '</span><div class="nav-item-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
+      '      <a href="/studio/cockpit.html?tool=signal-bridge"><span class="nav-item-icon-box">' + NAV_ICONS.signal + '</span><div class="nav-item-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
+      '      <a href="/studio/cockpit.html?tool=web3-hub"><span class="nav-item-icon-box">' + NAV_ICONS.web3 + '</span><div class="nav-item-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
+      '      <a href="/studio/cockpit.html?tool=pets"><span class="nav-item-icon-box">' + NAV_ICONS.pets + '</span><div class="nav-item-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
+      '      <a href="/studio/cockpit.html?tool=tool-nexus"><span class="nav-item-icon-box">' + NAV_ICONS.studio + '</span><div class="nav-item-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
       '    </div>',
       '  </div>',
 
@@ -1111,16 +1111,16 @@
       '<div class="drawer-section">',
       '  <div class="drawer-heading">🪐 Workstations &amp; DAGs</div>',
       '  <a class="drawer-link" href="/studio/cockpit.html"><span class="d-link-icon">' + NAV_ICONS.cockpit + '</span><div class="d-link-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>',
-      '  <a class="drawer-link" href="/studio/webgen.html"><span class="d-link-icon">' + NAV_ICONS.webgen + '</span><div class="d-link-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
-      '  <a class="drawer-link" href="/studio/vos-sandbox.html"><span class="d-link-icon">' + NAV_ICONS.vos + '</span><div class="d-link-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
-      '  <a class="drawer-link" href="/studio/nexus-3d.html"><span class="d-link-icon">' + NAV_ICONS.nexus3d + '</span><div class="d-link-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
-      '  <a class="drawer-link" href="/studio/omnipost.html"><span class="d-link-icon">' + NAV_ICONS.omnipost + '</span><div class="d-link-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
-      '  <a class="drawer-link" href="/studio/math-pillars.html"><span class="d-link-icon">' + NAV_ICONS.math + '</span><div class="d-link-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
-      '  <a class="drawer-link" href="/secure-comms/"><span class="d-link-icon">' + NAV_ICONS.securecomms + '</span><div class="d-link-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
-      '  <a class="drawer-link" href="/signal/"><span class="d-link-icon">' + NAV_ICONS.signal + '</span><div class="d-link-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
-      '  <a class="drawer-link" href="/studio/web3-hub.html"><span class="d-link-icon">' + NAV_ICONS.web3 + '</span><div class="d-link-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
-      '  <a class="drawer-link" href="/pets/"><span class="d-link-icon">' + NAV_ICONS.pets + '</span><div class="d-link-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
-      '  <a class="drawer-link" href="/studio/"><span class="d-link-icon">' + NAV_ICONS.studio + '</span><div class="d-link-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=webgen"><span class="d-link-icon">' + NAV_ICONS.webgen + '</span><div class="d-link-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal &amp; Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=vos-sandbox"><span class="d-link-icon">' + NAV_ICONS.vos + '</span><div class="d-link-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer &amp; Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=nexus-3d"><span class="d-link-icon">' + NAV_ICONS.nexus3d + '</span><div class="d-link-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes &amp; Motion</small></div><span class="nav-item-badge">CAD</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=omnipost"><span class="d-link-icon">' + NAV_ICONS.omnipost + '</span><div class="d-link-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio &amp; Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=math-pillars"><span class="d-link-icon">' + NAV_ICONS.math + '</span><div class="d-link-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds &amp; Entropy</small></div><span class="nav-item-badge">MATH</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=secure-comms"><span class="d-link-icon">' + NAV_ICONS.securecomms + '</span><div class="d-link-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=signal-bridge"><span class="d-link-icon">' + NAV_ICONS.signal + '</span><div class="d-link-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck &amp; Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=web3-hub"><span class="d-link-icon">' + NAV_ICONS.web3 + '</span><div class="d-link-body"><strong>Web3 &amp; Solana DeFi Hub</strong><small>Multi-Chain Wallets &amp; Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=pets"><span class="d-link-icon">' + NAV_ICONS.pets + '</span><div class="d-link-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits &amp; Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>',
+      '  <a class="drawer-link" href="/studio/cockpit.html?tool=tool-nexus"><span class="d-link-icon">' + NAV_ICONS.studio + '</span><div class="d-link-body"><strong>Studio Directory</strong><small>Master Workstation &amp; Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>',
       '</div>',
 
       '<!-- 📜 Universe & Media -->',

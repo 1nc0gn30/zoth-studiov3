@@ -28,10 +28,15 @@
     { id: 'adytum', name: 'Adytum Sanctum', shortName: 'Adytum', url: '/adytum/', category: 'Security & Vault', catSlug: 'security', tags: ['RITE'] },
     { id: 'signal', name: 'Signal Bridge', shortName: 'Signal', url: '/signal/', category: 'Security & Vault', catSlug: 'security', tags: ['MOBILE'] },
     { id: 'docs', name: 'Studio Docs', shortName: 'Docs', url: '/docs/', category: 'Security & Vault', catSlug: 'security', tags: ['MANUAL'] },
-    { id: 'web3-hub', name: 'Web3 Hub', shortName: 'Web3', url: '/studio/web3-hub.html', category: 'No-Code & Creators', catSlug: 'nocode', tags: ['SOLANA'] }
+    { id: 'web3-hub', name: 'Web3 Hub', shortName: 'Web3', url: '/studio/web3-hub.html', category: 'No-Code & Creators', catSlug: 'nocode', tags: ['SOLANA'] },
+    { id: 'secure-comms', name: 'SimpleX ↔ Matrix', shortName: 'SimpleX', url: '/secure-comms/', category: 'Security & Vault', catSlug: 'security', tags: ['E2EE', 'GATEWAY'] },
+    { id: 'cockpit', name: 'The Cockpit', shortName: 'Cockpit', url: '/studio/cockpit.html', category: 'Swarms & Consensus', catSlug: 'swarm', tags: ['SWARM', 'COMMAND'] },
+    { id: 'tool-nexus', name: 'Studio Directory', shortName: 'Directory', url: '/studio/tool-nexus.html', category: 'Observability & Code', catSlug: 'observability', tags: ['INDEX', 'TOOLS'] }
   ];
 
   var PATH_TO_ID = {
+    '/studio/cockpit.html': 'cockpit',
+    '/studio/cyberpunk-hud.html': 'cockpit',
     '/studio/vos-sandbox.html': 'vos-sandbox',
     '/studio/webgen.html': 'webgen',
     '/studio/netlify-ax.html': 'netlify-ax',
@@ -66,13 +71,17 @@
     '/studio/edge-forge.html': 'edge-forge',
     '/studio/subsweep.html': 'subsweep',
     '/studio/fusion-arena.html': 'fusion-arena',
-    '/studio/signal-bridge.html': 'signal',
+    '/studio/signal-bridge.html': 'signal-bridge',
+    '/secure-comms/': 'secure-comms',
+    '/secure-comms/index.html': 'secure-comms',
+    '/studio/': 'tool-nexus',
+    '/studio/index.html': 'tool-nexus',
     '/studio/tool-nexus.html': 'tool-nexus'
   };
 
   win.ZOTH_HUD_WORKSTATIONS = WS;
   win.ZOTH_HUD_PATH_TO_TOOL = PATH_TO_ID;
-  win.ZOTH_HUD_LAYOUT = '/studio/cyberpunk-hud.html';
+  win.ZOTH_HUD_LAYOUT = '/studio/cockpit.html';
 
   win.zothHudUrlForPath = function (pathname) {
     var id = PATH_TO_ID[pathname] || PATH_TO_ID[pathname.replace(/\/$/, '/')];

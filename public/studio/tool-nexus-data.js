@@ -6570,6 +6570,14 @@ function simulateToolExecution(toolId) {
 [STATUS]       ✔ Invariants Verified · Exit Code: 0 (Deterministic Execution)`;
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CATEGORY_META, RUNTIME_META, NAMES, TOOL_DETAILS, getCategorySvg, getRuntimeSvg, simulateToolExecution };
+if (typeof window !== 'undefined') {
+  window.TOOL_DETAILS = TOOL_DETAILS;
+  window.TOOL_NEXUS_DATA = TOOL_DETAILS;
+  window.CATEGORY_META = CATEGORY_META;
+  window.RUNTIME_META = RUNTIME_META;
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { CATEGORY_META, RUNTIME_META, NAMES, TOOL_DETAILS, TOOL_NEXUS_DATA: TOOL_DETAILS, getCategorySvg, getRuntimeSvg, simulateToolExecution };
+}
+

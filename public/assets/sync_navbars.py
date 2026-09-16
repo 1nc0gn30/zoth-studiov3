@@ -9,7 +9,14 @@ NO_FOOTER_PAGES = {
     "zoth-world.html",
     "studio/vos-sandbox.html",
     "studio/cockpit.html",
+    "studio/cyberpunk-hud.html",
     "article/index.html", # Redirect stub
+}
+
+# Full-viewport sovereign HUD apps that manage their own dedicated cyberpunk navigation
+NO_HEADER_PAGES = {
+    "studio/cockpit.html",
+    "studio/cyberpunk-hud.html",
 }
 
 # Directories to skip
@@ -19,6 +26,10 @@ EXCLUDE_DIRS = (
     "open-source-library",
     "templates-source",
     "cloned-projects",
+    "libsignal",
+    "node_modules",
+    "dist",
+    "target",
 )
 
 MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
@@ -63,16 +74,16 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
           <div class="nav-dropdown-menu nav-dropdown-mega">
             <div class="nav-dropdown-header"><span>🪐 14+ STUDIO WORKSTATIONS</span><span class="nav-item-badge">LOCAL DAGS</span></div>
             <a href="/studio/cockpit.html"><span class="nav-item-icon-box">🪐</span><div class="nav-item-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>
-            <a href="/studio/webgen.html"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>
-            <a href="/studio/vos-sandbox.html"><span class="nav-item-icon-box">💻</span><div class="nav-item-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>
-            <a href="/studio/nexus-3d.html"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></div><span class="nav-item-badge">CAD</span></a>
-            <a href="/studio/omnipost.html"><span class="nav-item-icon-box">🎬</span><div class="nav-item-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>
-            <a href="/studio/math-pillars.html"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></div><span class="nav-item-badge">MATH</span></a>
-            <a href="/secure-comms/"><span class="nav-item-icon-box">🔒</span><div class="nav-item-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>
-            <a href="/signal/"><span class="nav-item-icon-box">📡</span><div class="nav-item-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>
-            <a href="/studio/web3-hub.html"><span class="nav-item-icon-box">🪙</span><div class="nav-item-body"><strong>Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>
-            <a href="/pets/"><span class="nav-item-icon-box">💎</span><div class="nav-item-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>
-            <a href="/studio/"><span class="nav-item-icon-box">🛠️</span><div class="nav-item-body"><strong>Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>
+            <a href="/studio/cockpit.html?tool=webgen"><span class="nav-item-icon-box">⚡</span><div class="nav-item-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>
+            <a href="/studio/cockpit.html?tool=vos-sandbox"><span class="nav-item-icon-box">💻</span><div class="nav-item-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>
+            <a href="/studio/cockpit.html?tool=nexus-3d"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></div><span class="nav-item-badge">CAD</span></a>
+            <a href="/studio/cockpit.html?tool=omnipost"><span class="nav-item-icon-box">🎬</span><div class="nav-item-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>
+            <a href="/studio/cockpit.html?tool=math-pillars"><span class="nav-item-icon-box">📐</span><div class="nav-item-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></div><span class="nav-item-badge">MATH</span></a>
+            <a href="/studio/cockpit.html?tool=secure-comms"><span class="nav-item-icon-box">🔒</span><div class="nav-item-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>
+            <a href="/studio/cockpit.html?tool=signal-bridge"><span class="nav-item-icon-box">📡</span><div class="nav-item-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>
+            <a href="/studio/cockpit.html?tool=web3-hub"><span class="nav-item-icon-box">🪙</span><div class="nav-item-body"><strong>Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>
+            <a href="/studio/cockpit.html?tool=pets"><span class="nav-item-icon-box">💎</span><div class="nav-item-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>
+            <a href="/studio/cockpit.html?tool=tool-nexus"><span class="nav-item-icon-box">🛠️</span><div class="nav-item-body"><strong>Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>
           </div>
         </div>
 
@@ -204,16 +215,16 @@ MASTER_HEADER = """    <header class="bar" id="topbar" role="banner">
       <div class="drawer-section">
         <div class="drawer-heading">🪐 Workstations & DAGs</div>
         <a class="drawer-link" href="/studio/cockpit.html"><span class="d-link-icon">🪐</span><div class="d-link-body"><strong>The Cockpit</strong><small>21-Agent Autonomous Swarm Command Deck</small></div><span class="nav-item-badge">SWARM</span></a>
-        <a class="drawer-link" href="/studio/webgen.html"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>
-        <a class="drawer-link" href="/studio/vos-sandbox.html"><span class="d-link-icon">💻</span><div class="d-link-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>
-        <a class="drawer-link" href="/studio/nexus-3d.html"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></div><span class="nav-item-badge">CAD</span></a>
-        <a class="drawer-link" href="/studio/omnipost.html"><span class="d-link-icon">🎬</span><div class="d-link-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>
-        <a class="drawer-link" href="/studio/math-pillars.html"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></div><span class="nav-item-badge">MATH</span></a>
-        <a class="drawer-link" href="/secure-comms/"><span class="d-link-icon">🔒</span><div class="d-link-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>
-        <a class="drawer-link" href="/signal/"><span class="d-link-icon">📡</span><div class="d-link-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>
-        <a class="drawer-link" href="/studio/web3-hub.html"><span class="d-link-icon">🪙</span><div class="d-link-body"><strong>Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>
-        <a class="drawer-link" href="/pets/"><span class="d-link-icon">💎</span><div class="d-link-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>
-        <a class="drawer-link" href="/studio/"><span class="d-link-icon">🛠️</span><div class="d-link-body"><strong>Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=webgen"><span class="d-link-icon">⚡</span><div class="d-link-body"><strong>WebGen Studio</strong><small>Universal Interactive PTY Terminal & Foundry</small></div><span class="nav-item-badge">FOUNDRY</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=vos-sandbox"><span class="d-link-icon">💻</span><div class="d-link-body"><strong>vOS Wasm Sandbox</strong><small>In-Browser WebContainer & Terminal IDE</small></div><span class="nav-item-badge">WASM</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=nexus-3d"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>Nexus 3D Omniverse</strong><small>CAD Modeling, AI Meshes & Motion</small></div><span class="nav-item-badge">CAD</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=omnipost"><span class="d-link-icon">🎬</span><div class="d-link-body"><strong>OmniPost 2.0 Video</strong><small>60 FPS Video Studio & Social Motion</small></div><span class="nav-item-badge">60 FPS</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=math-pillars"><span class="d-link-icon">📐</span><div class="d-link-body"><strong>AI Math Pillars</strong><small>Linear Algebra, STDP, Manifolds & Entropy</small></div><span class="nav-item-badge">MATH</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=secure-comms"><span class="d-link-icon">🔒</span><div class="d-link-body"><strong>SimpleX ↔ Matrix Bridge</strong><small>Zero-Knowledge E2EE Gateway</small></div><span class="nav-item-badge">E2EE</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=signal-bridge"><span class="d-link-icon">📡</span><div class="d-link-body"><strong>Signal Swarm Bridge</strong><small>Mobile Phone Command Deck & Voice SSE</small></div><span class="nav-item-badge">MOBILE</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=web3-hub"><span class="d-link-icon">🪙</span><div class="d-link-body"><strong>Web3 & Solana DeFi Hub</strong><small>Multi-Chain Wallets & Live SOL Matrix</small></div><span class="nav-item-badge">WEB3</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=pets"><span class="d-link-icon">💎</span><div class="d-link-body"><strong>Companion Pets 3D</strong><small>Volumetric Mascot Spirits & Soundboards</small></div><span class="nav-item-badge">MASCOTS</span></a>
+        <a class="drawer-link" href="/studio/cockpit.html?tool=tool-nexus"><span class="d-link-icon">🛠️</span><div class="d-link-body"><strong>Studio Directory</strong><small>Master Workstation & Toolchain Catalog</small></div><span class="nav-item-badge">INDEX</span></a>
       </div>
 
       <div class="drawer-section">
@@ -311,6 +322,8 @@ count = 0
 for html_file in sorted(PUBLIC_DIR.rglob("*.html")):
     rel_path = str(html_file.relative_to(PUBLIC_DIR))
     if any(rel_path.startswith(ex) or ex in rel_path for ex in EXCLUDE_DIRS):
+        continue
+    if rel_path in NO_HEADER_PAGES:
         continue
 
     content = html_file.read_text(encoding="utf-8", errors="ignore")

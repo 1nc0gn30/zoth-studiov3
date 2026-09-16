@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/assets/zoth-theme.css?v=11" />
   <link rel="stylesheet" href="/assets/zoth-nav.css?v=11" />
   <link rel="stylesheet" href="/assets/zoth-cyberpunk-hud.css" />
+  <link rel="stylesheet" href="/assets/zoth-hud-palette.css" />
 
   <!-- Typography: Syne, Orbitron, Plus Jakarta Sans, IBM Plex Mono, JetBrains Mono, Cinzel, Share Tech Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,6 +25,8 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="cyberpunk-hud cockpit-hud-body" data-theme="dark">
+  <!-- Accessibility Live Region Announcer (WCAG AAA Compliant) -->
+  <div id="hud-a11y-announcer" class="hud-sr-only sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <!-- =========================================================================
        CYBERPUNK HUD APP SHELL
@@ -38,7 +41,7 @@
          1. TOP HEADER (54px Fixed)
          ======================================================================= -->
     <header class="hud-header" role="banner">
-      <!-- Header Left: Logo + Help + Drawer Toggle -->
+      <!-- Header Left: Logo + Help + Breadcrumb + Drawer Toggle -->
       <div class="hud-header-left">
         <a class="hud-brand js-hub" href="/" aria-label="Zoth Studio Home">
           <div class="hud-logo-badge">
@@ -47,6 +50,17 @@
             <span class="hud-brand-tag">SOVEREIGN</span>
           </div>
         </a>
+
+        <div class="hud-topbar-breadcrumb" id="hudTopbarBreadcrumb" title="Active Stage Location">
+          <span class="hud-breadcrumb-dot"></span>
+          <span class="hud-breadcrumb-text" id="hudBreadcrumbText">STAGE // 🎬 OMNIPOST</span>
+        </div>
+
+        <!-- Mobile Workstation Switcher Button (Phone Viewport) -->
+        <button type="button" class="hud-mobile-ws-btn" id="hudMobileWsBtn" onclick="ZothHUD.openMobileSheet('workstations')" aria-label="Select Workstation">
+          <span id="hudMobileWsName">🎬 OMNIPOST</span>
+          <span class="hud-mobile-ws-caret">▾</span>
+        </button>
 
         <button type="button" class="hud-help-btn" onclick="ZothCyberpunkHUD.openHelpModal()" title="Keyboard Shortcuts &amp; HUD Guide (?)">
           ?
@@ -59,8 +73,33 @@
         </button>
       </div>
 
-      <!-- Header Right: [ PORTS ], [ TIME ], [ THEMES ], [ TOOL MGR ] -->
+      <!-- Header Center: Real-Time Audio Oscilloscope & Agent Fleet Status -->
+      <div class="hud-header-center">
+        <div class="hud-header-audio-strip" title="Click to cycle Oscilloscope mode (Waveform / FFT / Phase)" onclick="if(window.ZothHUD) window.ZothHUD.setScopeMode();">
+          <div class="hud-audio-channel-badge"><span>L</span><span style="color:var(--hud-cyan);">●</span></div>
+          <div class="hud-oscilloscope-container">
+            <canvas class="hud-oscilloscope-canvas" id="hud-audio-oscilloscope" width="160" height="28"></canvas>
+          </div>
+          <div class="hud-audio-channel-badge"><span>R</span><span style="color:var(--hud-green);">●</span></div>
+        </div>
+        <div class="hud-header-status-beacon" title="Autonomous Multi-Agent Fleet Status">
+          <span class="hud-beacon-pulse"></span>
+          <span class="hud-beacon-text">21 AGENTS ACTIVE</span>
+        </div>
+      </div>
+
+      <!-- Header Right: [ PORTS ], [ TIME ], [ SFX ], [ THEMES ], [ TOOL MGR ], [ QUICK ] -->
       <div class="hud-header-right">
+        <!-- Mobile Quick Access & Theme Buttons (Phone Viewport) -->
+        <button type="button" class="hud-mobile-theme-btn" id="hudMobileThemeBtn" onclick="ZothHUD.openMobileSheet('themes')" aria-label="Switch Visual Theme" title="Choose 4 Themes (Dark, Matrix, Gold, Light)">
+          <span class="hud-mobile-theme-icon" id="hudMobileThemeIcon">🌑</span>
+          <span id="hudMobileThemeName">DARK</span>
+        </button>
+
+        <button type="button" class="hud-mobile-quick-btn" id="hudMobileQuickBtn" onclick="ZothHUD.openMobileSheet('quick')" aria-label="Quick Access Controls" title="Quick Access Controls">
+          <span>⚡ QUICK</span>
+        </button>
+
         <!-- Ports Badge -->
         <button type="button" class="hud-badge-action hud-badge-ports" onclick="ZothCyberpunkHUD.openPortsModal()" title="Inspect Local Loopback Port Topology (:8088, :8484, :8788)">
           <span class="hud-led green"></span>
@@ -68,28 +107,45 @@
         </button>
 
         <!-- Time Clock Badge -->
-        <button type="button" class="hud-badge-action hud-badge-time" onclick="ZothCyberpunkHUD.switchTool ? ZothCyberpunkHUD.switchTool : null" id="hudClockBtn" title="Live Sovereign Time (Click to toggle UTC/Local)">
+        <button type="button" class="hud-badge-action hud-badge-time" onclick="if(window.ZothHUD) window.ZothHUD.openModal('time');" id="hudClockBtn" title="Live Sovereign Time (Click to open scheduler)">
           <span class="hud-led cyan"></span>
           <span id="hudClockText">00:00:00 UTC</span>
         </button>
 
-        <!-- Themes Selector Button -->
-        <button type="button" class="hud-badge-action hud-badge-themes" onclick="ZothCyberpunkHUD.cycleHudTheme()" title="Cycle Visual Themes: Dark Void | Solar Light | Matrix | Gold (Shift+T)">
-          <span class="hud-theme-swatches">
-            <span class="hud-swatch-dot dark"></span>
-            <span class="hud-swatch-dot light"></span>
-            <span class="hud-swatch-dot matrix"></span>
-            <span class="hud-swatch-dot gold"></span>
-          </span>
-          <span>[ THEMES: <strong id="hudThemeLabel">DARK</strong> ]</span>
+        <!-- Audio SFX Toggle Button -->
+        <button type="button" class="hud-badge-action hud-badge-audio" id="hud-btn-sfx-toggle" onclick="ZothCyberpunkHUD.toggleMute()" title="Toggle Cyber Sound FX (Mute/Unmute)">
+          <span id="hud-audio-icon">🔊</span>
+          <span>[ SFX ]</span>
         </button>
 
+        <!-- 4-Theme Segmented Pill Selector -->
+        <div class="hud-theme-picker-group" role="group" aria-label="Visual Themes">
+          <button type="button" class="hud-theme-pill dark active" id="hudThemePillDark" data-theme="dark" onclick="ZothHUD.setTheme('dark')" title="Dark Midnight Void (1)">🌑 DARK</button>
+          <button type="button" class="hud-theme-pill matrix" id="hudThemePillMatrix" data-theme="matrix" onclick="ZothHUD.setTheme('matrix')" title="Matrix Phosphor CRT (2)">🟢 MATRIX</button>
+          <button type="button" class="hud-theme-pill gold" id="hudThemePillGold" data-theme="gold" onclick="ZothHUD.setTheme('gold')" title="Alchemical Gold (3)">👑 GOLD</button>
+          <button type="button" class="hud-theme-pill light" id="hudThemePillLight" data-theme="light" onclick="ZothHUD.setTheme('light')" title="Solar Paper Light (4)">☀️ LIGHT</button>
+        </div>
+
         <!-- Tool Manager / Omniverse Nav Button -->
-        <button type="button" class="hud-badge-action hud-badge-toolmgr" onclick="ZothCyberpunkHUD.openOmniverseNav()" title="Open 298+ Tools Omniverse Navigator &amp; Workstations Router (Ctrl+K)">
+        <button type="button" class="hud-badge-action hud-badge-toolmgr hud-badge-toolmgr-highlight" onclick="ZothCyberpunkHUD.openOmniverseNav()" title="Open 298+ Tools Omniverse Navigator &amp; Workstations Router (Ctrl+K)">
           <span>🚀 [ OMNIVERSE NAV ➔ ]</span>
         </button>
       </div>
     </header>
+
+    <!-- Tablet Segmented Tactical Bar (Visible on Tablet Viewport) -->
+    <div class="hud-tablet-tactical-bar" id="hud-tablet-tactical-bar" role="toolbar" aria-label="Tablet Cockpit Bar">
+      <button type="button" class="hud-tablet-pill active" data-tab="stage" onclick="ZothHUD.setTabletView('stage')">🎯 STAGE</button>
+      <button type="button" class="hud-tablet-pill" data-tab="telemetry" onclick="ZothHUD.setTabletView('telemetry')">📊 TELEMETRY</button>
+      <button type="button" class="hud-tablet-pill" data-tab="swarm" onclick="ZothHUD.setTabletView('swarm')">🔮 SWARM (21)</button>
+      <button type="button" class="hud-tablet-pill" data-tab="repl" onclick="ZothHUD.setTabletView('repl')">⚡ TERMINAL</button>
+      <button type="button" class="hud-tablet-pill" data-tab="memory" onclick="ZothHUD.setTabletView('memory')">🧠 MEMORY</button>
+      <button type="button" class="hud-tablet-pill" data-tab="pillars" onclick="ZothHUD.setTabletView('pillars')">📐 PILLARS</button>
+      <button type="button" class="hud-tablet-pill" data-tab="themes" onclick="ZothHUD.cycleTheme()" title="Cycle 4 Visual Themes">🎨 THEMES</button>
+    </div>
+
+    <!-- Deck Backdrop for Tablet/Mobile dismiss -->
+    <div class="hud-deck-backdrop" id="hud-deck-backdrop" onclick="ZothHUD.closeDeck()"></div>
 
     <!-- =======================================================================
          2. MAIN WORKSPACE GRID (2-Column Cockpit)
@@ -339,7 +395,7 @@
               </div>
 
               <!-- Active Tool iFrame Workspace -->
-              <iframe class="hud-tool-iframe" id="hudStageIframe" src="/studio/omnipost.html" title="Zoth Studio Dynamic Tool Stage"></iframe>
+              <iframe class="hud-tool-iframe" id="hud-stage-frame" src="/studio/omnipost.html" title="Zoth Studio Dynamic Tool Stage"></iframe>
 
               <!-- Coordinate Watermark Overlay -->
               <div class="hud-viewport-telemetry-pill">
@@ -587,26 +643,49 @@
     </div>
   </div>
 
-  <!-- 4. Mobile Slide-Up Sheet Drawer & Backdrop -->
-  <div class="hud-sheet-backdrop" id="hudSheetBackdrop" onclick="ZothCyberpunkHUD.closeMobileSheet()"></div>
-  <div class="hud-sheet-drawer" id="hudSheetDrawer">
-    <div class="hud-sheet-handle-bar" onclick="ZothCyberpunkHUD.closeMobileSheet()">
-      <span class="hud-sheet-handle-pill"></span>
+  <!-- 4. Mobile Tactical Navigation Bar (56px fixed - Phone Viewport) -->
+  <nav class="hud-mobile-nav" id="hud-mobile-nav" aria-label="Mobile HUD Tactical Navigation">
+    <button type="button" class="hud-mobile-tab active" data-tab="stage" onclick="ZothHUD.setMobileTab('stage')" aria-label="Workstation Stage Viewport">
+      <span class="hud-mobile-tab-icon">🎯</span>
+      <span class="hud-mobile-tab-label">Stage</span>
+    </button>
+    <button type="button" class="hud-mobile-tab" data-tab="tools" onclick="ZothHUD.setMobileTab('tools')" aria-label="Open 298+ Tools Drawer">
+      <span class="hud-mobile-tab-icon">🛠️</span>
+      <span class="hud-mobile-tab-label">Tools</span>
+    </button>
+    <button type="button" class="hud-mobile-tab" data-tab="swarm" onclick="ZothHUD.setMobileTab('swarm')" aria-label="Open 21 Swarm Agents Drawer">
+      <span class="hud-mobile-tab-icon">🔮</span>
+      <span class="hud-mobile-tab-label">Swarm</span>
+    </button>
+    <button type="button" class="hud-mobile-tab" data-tab="repl" onclick="ZothHUD.setMobileTab('repl')" aria-label="Open Sovereign Terminal REPL">
+      <span class="hud-mobile-tab-icon">⚡</span>
+      <span class="hud-mobile-tab-label">REPL</span>
+    </button>
+    <button type="button" class="hud-mobile-tab" data-tab="memory" onclick="ZothHUD.setMobileTab('memory')" aria-label="Open Netrunner Synaptic Memory Drawer">
+      <span class="hud-mobile-tab-icon">🧠</span>
+      <span class="hud-mobile-tab-label">Memory</span>
+    </button>
+  </nav>
+
+  <!-- 5. Mobile Slide-Up Sheet Drawer & Backdrop -->
+  <div class="hud-sheet-backdrop" id="hud-sheet-backdrop" hidden onclick="ZothHUD.closeMobileSheet()"></div>
+  <aside class="hud-sheet-drawer" id="hud-sheet-drawer" hidden aria-modal="true" role="dialog" aria-label="Mobile Command Sheet">
+    <div class="hud-sheet-handle-wrap" onclick="ZothHUD.closeMobileSheet()" title="Drag down or tap to close">
+      <div class="hud-sheet-handle"></div>
     </div>
     <div class="hud-sheet-header">
-      <strong class="hud-modal-title" id="hudSheetTitle">⚡ Telemetry Sheet</strong>
-      <button type="button" class="hud-modal-close-btn" onclick="ZothCyberpunkHUD.closeMobileSheet()">✕</button>
+      <div class="hud-sheet-title" id="hud-sheet-title">COMMAND SHEET</div>
+      <button type="button" class="hud-modal-close-btn" onclick="ZothHUD.closeMobileSheet()" aria-label="Close sheet">✕</button>
     </div>
-    <div class="hud-sheet-body" id="hudSheetBody">
-      <!-- Injected dynamically on mobile -->
-    </div>
-  </div>
+    <div class="hud-sheet-body hud-custom-scroll" id="hud-sheet-body"></div>
+  </aside>
 
   <!-- HUD Master Interactive Script -->
-  <script src="/assets/zoth-hud-workstations.js?v=1"></script>
+  <script src="/studio/tool-nexus-data.js"></script>
+  <script src="/assets/zoth-hud-workstations.js?v=2"></script>
   <script>window.__HUD_LANDING_SEARCH = window.location.search || "";</script>
-  <script src="/assets/zoth-cyberpunk-hud.js?v=7"></script>
-  <script src="/assets/zoth-hud-intel.js?v=6"></script>
-
+  <script src="/assets/zoth-cyberpunk-hud.js?v=8"></script>
+  <script src="/assets/zoth-hud-palette.js"></script>
+  <script src="/assets/zoth-hud-intel.js?v=7"></script>
 </body>
 </html>

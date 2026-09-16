@@ -78,6 +78,8 @@
   var MATERIAL_DENSITIES = {
     titanium: 4.506,       // Grade 5 Titanium (Ti-6Al-4V)
     gold: 19.320,          // 24K Pure Sacred Gold
+    azoth_gold: 19.320,    // 24K Alchemical Gold Leaf
+    amber: 1.080,          // Natural Baltic Amber Resin
     carbon_fiber: 1.600,   // Toray T1000 Carbon Composite
     glass: 2.500,          // Borosilicate Optical Glass
     steel: 7.850,          // Structural Damascus Tool Steel
@@ -85,7 +87,11 @@
     copper: 8.960,         // High-conductivity Tellurium Copper
     silver: 10.490,        // Pure Sterling Silver
     silicon: 2.330,        // Semiconductor Grade Monocrystalline Silicon
-    obsidian: 2.450        // Volcanic Obsidian Glass
+    obsidian: 2.450,       // Volcanic Obsidian Glass
+    obsidian_matte: 2.450, // Velvet Obsidian Matte / Carbon
+    hologram_grid: 0.001,  // Photonic Lattice Matrix Medium
+    neon_wireframe: 1.200, // Electroluminescent CAD Array
+    bioluminescent_pulse: 1.040 // Organic Cellular Bioluminescent Matrix
   };
 
   // Speed of Sound in Air at 20°C (m/s)

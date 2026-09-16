@@ -136,7 +136,12 @@
     'iridescent-hologram',
     'bio-organic',
     'damascus-steel',
-    'cyber-circuit'
+    'cyber-circuit',
+    'hologram-grid',
+    'azoth-gold',
+    'obsidian-matte',
+    'neon-wireframe',
+    'bioluminescent-pulse'
   ];
 
   function hexToRgb(hex, defaultRgb) {
@@ -209,11 +214,21 @@
 
     // Resolve style aliases
     var style = 'cyber-circuit';
-    if (rawStyle === 'carbon-fiber' || rawStyle === 'carbon' || rawStyle === 'weave' || rawStyle === 'kevlar') {
+    if (rawStyle === 'hologram-grid' || rawStyle === 'hologram' || rawStyle === 'holo-grid' || rawStyle === 'matrix-grid' || rawStyle === 'grid-hologram') {
+      style = 'hologram-grid';
+    } else if (rawStyle === 'azoth-gold' || rawStyle === 'gold-leaf' || rawStyle === 'amber' || rawStyle === 'alchemical-gold' || rawStyle === 'azoth-amber') {
+      style = 'azoth-gold';
+    } else if (rawStyle === 'obsidian-matte' || rawStyle === 'obsidian' || rawStyle === 'matte-carbon' || rawStyle === 'carbon-matte' || rawStyle === 'obsidian-carbon') {
+      style = 'obsidian-matte';
+    } else if (rawStyle === 'neon-wireframe' || rawStyle === 'neon-edge' || rawStyle === 'wireframe' || rawStyle === 'cad-wireframe' || rawStyle === 'neon-edge-wireframe') {
+      style = 'neon-wireframe';
+    } else if (rawStyle === 'bioluminescent-pulse' || rawStyle === 'bioluminescent' || rawStyle === 'bio-pulse' || rawStyle === 'pulse-veins' || rawStyle === 'luminescent') {
+      style = 'bioluminescent-pulse';
+    } else if (rawStyle === 'carbon-fiber' || rawStyle === 'carbon' || rawStyle === 'weave' || rawStyle === 'kevlar') {
       style = 'carbon-fiber';
     } else if (rawStyle === 'brushed-titanium' || rawStyle === 'titanium' || rawStyle === 'brushed-metal' || rawStyle === 'brushed' || rawStyle === 'metal') {
       style = 'brushed-titanium';
-    } else if (rawStyle === 'iridescent-hologram' || rawStyle === 'hologram' || rawStyle === 'iridescent' || rawStyle === 'holographic' || rawStyle === 'chromatic' || rawStyle === 'prism' || rawStyle === 'chrome') {
+    } else if (rawStyle === 'iridescent-hologram' || rawStyle === 'iridescent' || rawStyle === 'holographic' || rawStyle === 'chromatic' || rawStyle === 'prism' || rawStyle === 'chrome') {
       style = 'iridescent-hologram';
     } else if (rawStyle === 'bio-organic' || rawStyle === 'bio' || rawStyle === 'organic' || rawStyle === 'alien' || rawStyle === 'cellular' || rawStyle === 'voronoi' || rawStyle === 'matrix') {
       style = 'bio-organic';
@@ -394,6 +409,141 @@
           gE = Math.floor(themeRGB.g * seamGlow);
           bE = Math.floor(themeRGB.b * seamGlow);
         }
+        else if (style === 'hologram-grid') {
+          var repHG = size >= 1024 ? 32 : 16;
+          var uHG = (px / size) * repHG;
+          var vHG = (py / size) * repHG;
+          var lxHG = uHG - Math.floor(uHG);
+          var lyHG = vHG - Math.floor(vHG);
+          var distEdgeHG = Math.min(lxHG, 1.0 - lxHG, lyHG, 1.0 - lyHG);
+          var isLineHG = distEdgeHG < 0.08;
+          var isNodeHG = (lxHG < 0.16 || lxHG > 0.84) && (lyHG < 0.16 || lyHG > 0.84);
+          var scanlineHG = 0.5 + 0.5 * Math.sin((py / size) * Math.PI * 64.0);
+          var waveHG = torusNoise(px, py, size, 1.5);
+
+          hVal = isNodeHG ? 0.95 : isLineHG ? 0.75 : (0.15 + 0.10 * scanlineHG);
+
+          var baseHoloR = 4, baseHoloG = 12, baseHoloB = 28;
+          if (isNodeHG) {
+            rA = 240; gA = 255; bA = 255;
+            rVal = 30; mVal = 240;
+            rE = Math.min(255, themeRGB.r + 50);
+            gE = Math.min(255, themeRGB.g + 50);
+            bE = Math.min(255, themeRGB.b + 50);
+          } else if (isLineHG) {
+            rA = themeRGB.r; gA = themeRGB.g; bA = themeRGB.b;
+            rVal = 45; mVal = 210;
+            rE = Math.floor(themeRGB.r * 0.9);
+            gE = Math.floor(themeRGB.g * 0.9);
+            bE = Math.floor(themeRGB.b * 0.9);
+          } else {
+            rA = Math.floor(baseHoloR + 8 * waveHG);
+            gA = Math.floor(baseHoloG + 14 * waveHG);
+            bA = Math.floor(baseHoloB + 20 * waveHG);
+            rVal = 160; mVal = 40;
+            var scanGlowHG = 0.25 * scanlineHG;
+            rE = Math.floor(themeRGB.r * scanGlowHG);
+            gE = Math.floor(themeRGB.g * scanGlowHG);
+            bE = Math.floor(themeRGB.b * scanGlowHG);
+          }
+        }
+        else if (style === 'azoth-gold') {
+          var flakeNoise = seamlessFBM(px, py, size, 3.5, 4, 0.62);
+          var amberNoise = torusNoise(px, py, size, 1.2);
+          var leafEdge = Math.pow(Math.max(0, flakeNoise), 1.8);
+          var crackNoise = Math.abs(torusNoise(px, py, size, 5.0));
+          var isVein = crackNoise < 0.08 ? 1.0 : 0.0;
+
+          hVal = 0.5 + 0.4 * leafEdge - 0.2 * isVein;
+
+          var baseGoldR = 251, baseGoldG = 191, baseGoldB = 36;
+          var amberR = 217, amberG = 119, amberB = 6;
+
+          rA = Math.min(255, Math.floor(baseGoldR * (0.6 + 0.4 * leafEdge) + 20 * (1.0 - isVein)));
+          gA = Math.min(255, Math.floor((baseGoldG * 0.7 + amberG * 0.3) * (0.6 + 0.4 * leafEdge)));
+          bA = Math.min(255, Math.floor((baseGoldB * 0.5 + amberB * 0.5) * (0.4 + 0.6 * leafEdge)));
+
+          rVal = Math.floor((0.08 + 0.18 * (1.0 - leafEdge) + 0.3 * isVein) * 255);
+          mVal = Math.floor((0.92 + 0.06 * leafEdge - 0.25 * isVein) * 255);
+
+          var goldResonance = 0.35 + 0.45 * leafEdge;
+          rE = Math.floor(baseGoldR * 0.35 * goldResonance);
+          gE = Math.floor(baseGoldG * 0.30 * goldResonance);
+          bE = Math.floor(baseGoldB * 0.10 * goldResonance);
+        }
+        else if (style === 'obsidian-matte') {
+          var fbmObs = seamlessFBM(px, py, size, 2.2, 4, 0.55);
+          var repC = size >= 1024 ? 48 : 24;
+          var microWeave = 0.5 + 0.5 * Math.sin((px / size) * Math.PI * repC) * Math.sin((py / size) * Math.PI * repC);
+          var edgeFacet = Math.abs(torusNoise(px, py, size, 3.8));
+
+          hVal = 0.45 + 0.3 * fbmObs + 0.15 * microWeave;
+
+          var baseObs = 12 + Math.floor(10 * fbmObs + 6 * microWeave);
+          rA = Math.min(255, baseObs);
+          gA = Math.min(255, baseObs + 2);
+          bA = Math.min(255, baseObs + 6);
+
+          rVal = Math.floor((0.32 + 0.18 * microWeave + 0.10 * (1.0 - fbmObs)) * 255);
+          mVal = Math.floor((0.14 + 0.10 * microWeave) * 255);
+
+          var darkEdgeReflect = edgeFacet < 0.06 ? 0.20 : 0.0;
+          rE = Math.floor(themeRGB.r * darkEdgeReflect * 0.3);
+          gE = Math.floor(themeRGB.g * darkEdgeReflect * 0.3);
+          bE = Math.floor(themeRGB.b * darkEdgeReflect * 0.3);
+        }
+        else if (style === 'neon-wireframe') {
+          var repNW = size >= 1024 ? 24 : 12;
+          var uNW = (px / size) * repNW;
+          var vNW = (py / size) * repNW;
+          var lxNW = uNW - Math.floor(uNW);
+          var lyNW = vNW - Math.floor(vNW);
+          var edgeDistNW = Math.min(lxNW, 1.0 - lxNW, lyNW, 1.0 - lyNW);
+          var diagDistNW = Math.min(Math.abs(lxNW - lyNW), Math.abs(lxNW - (1.0 - lyNW)));
+          var isEdgeNW = edgeDistNW < 0.07;
+          var isDiagNW = diagDistNW < 0.05;
+          var isWireNW = isEdgeNW || isDiagNW;
+          var isVertexNW = (lxNW < 0.12 || lxNW > 0.88) && (lyNW < 0.12 || lyNW > 0.88);
+
+          hVal = isVertexNW ? 0.98 : isWireNW ? 0.80 : 0.05;
+
+          if (isVertexNW) {
+            rA = 255; gA = 255; bA = 255;
+            rVal = 20; mVal = 240;
+            rE = 255; gE = 255; bE = 255;
+          } else if (isWireNW) {
+            rA = themeRGB.r; gA = themeRGB.g; bA = themeRGB.b;
+            rVal = 35; mVal = 210;
+            rE = themeRGB.r; gE = themeRGB.g; bE = themeRGB.b;
+          } else {
+            rA = 3; gA = 6; bA = 12;
+            rVal = 220; mVal = 10;
+            rE = 0; gE = 0; bE = 0;
+          }
+        }
+        else if (style === 'bioluminescent-pulse') {
+          var bioFBM = seamlessFBM(px, py, size, 2.0, 4, 0.58);
+          var bioVein1 = Math.abs(torusNoise(px, py, size, 2.2));
+          var bioVein2 = Math.abs(torusNoise(px, py, size, 4.4));
+          var veinMask = Math.max(0.0, 1.0 - bioVein1 * 4.2) * 0.7 + Math.max(0.0, 1.0 - bioVein2 * 6.0) * 0.5;
+          var pulseNode = Math.pow(Math.min(1.0, veinMask), 2.2);
+
+          hVal = 0.25 * bioFBM + 0.75 * pulseNode;
+
+          var darkSkinR = 6, darkSkinG = 20, darkSkinB = 26;
+          var emeraldR = 52, emeraldG = 211, emeraldB = 153;
+
+          rA = Math.min(255, Math.floor(darkSkinR * (1.0 - pulseNode) + (emeraldR * 0.7 + themeRGB.r * 0.3) * pulseNode));
+          gA = Math.min(255, Math.floor(darkSkinG * (1.0 - pulseNode) + (emeraldG * 0.8 + themeRGB.g * 0.2) * pulseNode));
+          bA = Math.min(255, Math.floor(darkSkinB * (1.0 - pulseNode) + (emeraldB * 0.6 + themeRGB.b * 0.4) * pulseNode));
+
+          rVal = Math.floor((0.25 * (1.0 - pulseNode * 0.7) + 0.10 * bioFBM) * 255);
+          mVal = Math.floor(0.08 * 255);
+
+          rE = Math.min(255, Math.floor((emeraldR * 0.6 + themeRGB.r * 0.4) * pulseNode * 1.6));
+          gE = Math.min(255, Math.floor((emeraldG * 0.7 + themeRGB.g * 0.3) * pulseNode * 1.6));
+          bE = Math.min(255, Math.floor((emeraldB * 0.5 + themeRGB.b * 0.5) * pulseNode * 1.6));
+        }
         else {
           // 'cyber-circuit'
           var gridSize = size >= 1024 ? 32 : 16;
@@ -459,7 +609,18 @@
     }
 
     // 2. TANGENT-SPACE NORMAL MAP DERIVATION (Seamless Torus Gradient)
-    var normalScale = params.normalScale || (style === 'damascus-steel' ? 3.0 : style === 'carbon-fiber' ? 2.5 : style === 'brushed-titanium' ? 1.8 : style === 'bio-organic' ? 3.2 : style === 'cyber-circuit' ? 2.8 : 2.5);
+    var normalScale = params.normalScale || (
+      style === 'damascus-steel' ? 3.0 :
+      style === 'carbon-fiber' ? 2.5 :
+      style === 'brushed-titanium' ? 1.8 :
+      style === 'bio-organic' ? 3.2 :
+      style === 'cyber-circuit' ? 2.8 :
+      style === 'hologram-grid' ? 2.6 :
+      style === 'azoth-gold' ? 2.4 :
+      style === 'obsidian-matte' ? 2.2 :
+      style === 'neon-wireframe' ? 3.0 :
+      style === 'bioluminescent-pulse' ? 3.4 : 2.5
+    );
 
     for (var pyN = 0; pyN < size; pyN++) {
       var pyUp = (pyN - 1 + size) % size;
@@ -3237,6 +3398,419 @@
   }
 
   // =========================================================================
+  // 7.B 1-CLICK USDZ EXPORTER (Apple AR QuickLook & Universal Scene Description)
+  // =========================================================================
+
+  function exportToUSDZ(object3D, options) {
+    options = options || {};
+    if (!object3D) return null;
+
+    if (object3D && typeof object3D.updateMatrixWorld === 'function') {
+      object3D.updateMatrixWorld(true);
+    }
+
+    var meshes = [];
+    object3D.traverse(function (child) {
+      if (child.isMesh && child.geometry) {
+        meshes.push(child);
+      }
+    });
+
+    if (meshes.length === 0) {
+      return null;
+    }
+
+    var usdaLines = [
+      '#usda 1.0',
+      '(',
+      '    defaultPrim = "Root"',
+      '    metersPerUnit = 1.0',
+      '    upAxis = "Y"',
+      ')',
+      '',
+      'def Xform "Root"',
+      '{',
+      '    def Scope "Materials"',
+      '    {'
+    ];
+
+    // Materials Scope
+    for (var mI = 0; mI < meshes.length; mI++) {
+      var mat = meshes[mI].material;
+      var matName = 'Material_' + mI;
+      var colorR = 0.0, colorG = 0.94, colorB = 1.0;
+      var metal = 0.5, rough = 0.5, emissiveR = 0.0, emissiveG = 0.0, emissiveB = 0.0;
+      if (mat) {
+        if (mat.color) {
+          colorR = Number(mat.color.r.toFixed(4));
+          colorG = Number(mat.color.g.toFixed(4));
+          colorB = Number(mat.color.b.toFixed(4));
+        }
+        if (mat.metalness !== undefined) metal = Number(mat.metalness.toFixed(3));
+        if (mat.roughness !== undefined) rough = Number(mat.roughness.toFixed(3));
+        if (mat.emissive) {
+          emissiveR = Number(mat.emissive.r.toFixed(4));
+          emissiveG = Number(mat.emissive.g.toFixed(4));
+          emissiveB = Number(mat.emissive.b.toFixed(4));
+        }
+      }
+
+      usdaLines.push('        def Material "' + matName + '"');
+      usdaLines.push('        {');
+      usdaLines.push('            token outputs:surface.connect = </Root/Materials/' + matName + '/PBRShader.outputs:surface>');
+      usdaLines.push('            def Shader "PBRShader"');
+      usdaLines.push('            {');
+      usdaLines.push('                uniform token info:id = "UsdPreviewSurface"');
+      usdaLines.push('                color3f inputs:diffuseColor = (' + colorR + ', ' + colorG + ', ' + colorB + ')');
+      if (emissiveR > 0 || emissiveG > 0 || emissiveB > 0) {
+        usdaLines.push('                color3f inputs:emissiveColor = (' + emissiveR + ', ' + emissiveG + ', ' + emissiveB + ')');
+      }
+      usdaLines.push('                float inputs:metallic = ' + metal);
+      usdaLines.push('                float inputs:roughness = ' + rough);
+      usdaLines.push('                token outputs:surface');
+      usdaLines.push('            }');
+      usdaLines.push('        }');
+    }
+    usdaLines.push('    }');
+    usdaLines.push('');
+
+    // Meshes Scope
+    for (var meshIdx = 0; meshIdx < meshes.length; meshIdx++) {
+      var mesh = meshes[meshIdx];
+      var geo = mesh.geometry.isBufferGeometry ? mesh.geometry : new THREE.BufferGeometry().fromGeometry(mesh.geometry);
+      var posAttr = geo.attributes.position;
+      if (!posAttr) continue;
+
+      var normAttr = geo.attributes.normal;
+      var uvAttr = geo.attributes.uv;
+      var indexAttr = geo.index;
+
+      var meshName = 'Mesh_' + meshIdx;
+      var points = [];
+      for (var pI = 0; pI < posAttr.count; pI++) {
+        var vx = Number(posAttr.getX(pI).toFixed(4));
+        var vy = Number(posAttr.getY(pI).toFixed(4));
+        var vz = Number(posAttr.getZ(pI).toFixed(4));
+        points.push('(' + vx + ', ' + vy + ', ' + vz + ')');
+      }
+
+      var faceVertexCounts = [];
+      var faceVertexIndices = [];
+      if (indexAttr) {
+        var numFaces = Math.floor(indexAttr.count / 3);
+        for (var f = 0; f < numFaces; f++) {
+          faceVertexCounts.push('3');
+          faceVertexIndices.push(indexAttr.getX(f * 3));
+          faceVertexIndices.push(indexAttr.getX(f * 3 + 1));
+          faceVertexIndices.push(indexAttr.getX(f * 3 + 2));
+        }
+      } else {
+        var numFacesDirect = Math.floor(posAttr.count / 3);
+        for (var fd = 0; fd < numFacesDirect; fd++) {
+          faceVertexCounts.push('3');
+          faceVertexIndices.push(fd * 3);
+          faceVertexIndices.push(fd * 3 + 1);
+          faceVertexIndices.push(fd * 3 + 2);
+        }
+      }
+
+      usdaLines.push('    def Mesh "' + meshName + '"');
+      usdaLines.push('    {');
+      usdaLines.push('        rel material:binding = </Root/Materials/Material_' + meshIdx + '>');
+      usdaLines.push('        int[] faceVertexCounts = [' + faceVertexCounts.join(', ') + ']');
+      usdaLines.push('        int[] faceVertexIndices = [' + faceVertexIndices.join(', ') + ']');
+      usdaLines.push('        point3f[] points = [' + points.join(', ') + ']');
+
+      if (normAttr) {
+        var normals = [];
+        for (var nI = 0; nI < normAttr.count; nI++) {
+          normals.push('(' + Number(normAttr.getX(nI).toFixed(4)) + ', ' + Number(normAttr.getY(nI).toFixed(4)) + ', ' + Number(normAttr.getZ(nI).toFixed(4)) + ')');
+        }
+        usdaLines.push('        normal3f[] normals = [' + normals.join(', ') + '] (interpolation = "vertex")');
+      }
+
+      if (uvAttr) {
+        var uvs = [];
+        for (var uI = 0; uI < uvAttr.count; uI++) {
+          uvs.push('(' + Number(uvAttr.getX(uI).toFixed(4)) + ', ' + Number((1.0 - uvAttr.getY(uI)).toFixed(4)) + ')');
+        }
+        usdaLines.push('        texCoord2f[] primvars:st = [' + uvs.join(', ') + '] (interpolation = "vertex")');
+      }
+
+      usdaLines.push('        uniform token subdivisionScheme = "none"');
+      usdaLines.push('    }');
+    }
+
+    usdaLines.push('}');
+    var usdaText = usdaLines.join('\n');
+
+    if (options.textOnly) {
+      if (options.callback) options.callback(usdaText);
+      return usdaText;
+    }
+
+    // Build uncompressed 64-byte aligned USDZ zip package
+    var encText = (typeof TextEncoder !== 'undefined') ? new TextEncoder().encode(usdaText) : (function (s) {
+      var u = new Uint8Array(s.length);
+      for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+      return u;
+    })(usdaText);
+
+    var fileName = 'model.usda';
+    var fileNameBytes = (typeof TextEncoder !== 'undefined') ? new TextEncoder().encode(fileName) : (function (s) {
+      var u = new Uint8Array(s.length);
+      for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+      return u;
+    })(fileName);
+
+    // CRC32 calculation
+    var crcTable = new Uint32Array(256);
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) {
+        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      }
+      crcTable[n] = c >>> 0;
+    }
+    function calcCrc32(buf) {
+      var crc = 0 ^ (-1);
+      for (var i = 0; i < buf.length; i++) {
+        crc = (crc >>> 8) ^ crcTable[(crc ^ buf[i]) & 0xFF];
+      }
+      return (crc ^ (-1)) >>> 0;
+    }
+    var fileCrc = calcCrc32(encText);
+
+    // USDZ requires file data to be aligned on a 64-byte boundary
+    var localHeaderSize = 30 + fileNameBytes.length;
+    var extraPadding = (64 - (localHeaderSize % 64)) % 64;
+    var totalLocalHeaderSize = localHeaderSize + extraPadding;
+
+    var fileDataOffset = totalLocalHeaderSize;
+    var centralDirOffset = fileDataOffset + encText.length;
+    var centralDirSize = 46 + fileNameBytes.length;
+    var totalZipSize = centralDirOffset + centralDirSize + 22;
+
+    var zipBuf = new ArrayBuffer(totalZipSize);
+    var zipView = new DataView(zipBuf);
+    var zipBytes = new Uint8Array(zipBuf);
+
+    // 1. Local File Header
+    zipView.setUint32(0, 0x04034B50, true); // signature
+    zipView.setUint16(4, 20, true);         // version needed
+    zipView.setUint16(6, 0, true);          // flags
+    zipView.setUint16(8, 0, true);          // compression (0 = uncompressed)
+    zipView.setUint16(10, 0, true);         // mod time
+    zipView.setUint16(12, 0, true);         // mod date
+    zipView.setUint32(14, fileCrc, true);   // crc-32
+    zipView.setUint32(18, encText.length, true); // compressed size
+    zipView.setUint32(22, encText.length, true); // uncompressed size
+    zipView.setUint16(26, fileNameBytes.length, true); // filename len
+    zipView.setUint16(28, extraPadding, true);         // extra field len
+    zipBytes.set(fileNameBytes, 30);
+
+    // 2. File Data
+    zipBytes.set(encText, fileDataOffset);
+
+    // 3. Central Directory Record
+    var cdOff = centralDirOffset;
+    zipView.setUint32(cdOff + 0, 0x02014B50, true); // signature
+    zipView.setUint16(cdOff + 4, 20, true);         // version made by
+    zipView.setUint16(cdOff + 6, 20, true);         // version needed
+    zipView.setUint16(cdOff + 8, 0, true);          // flags
+    zipView.setUint16(cdOff + 10, 0, true);         // compression (0)
+    zipView.setUint16(cdOff + 12, 0, true);         // mod time
+    zipView.setUint16(cdOff + 14, 0, true);         // mod date
+    zipView.setUint32(cdOff + 16, fileCrc, true);   // crc-32
+    zipView.setUint32(cdOff + 20, encText.length, true); // compressed size
+    zipView.setUint32(cdOff + 24, encText.length, true); // uncompressed size
+    zipView.setUint16(cdOff + 28, fileNameBytes.length, true); // filename len
+    zipView.setUint16(cdOff + 30, 0, true);         // extra field len
+    zipView.setUint16(cdOff + 32, 0, true);         // comment len
+    zipView.setUint16(cdOff + 34, 0, true);         // disk start
+    zipView.setUint16(cdOff + 36, 0, true);         // internal attrs
+    zipView.setUint32(cdOff + 38, 0, true);         // external attrs
+    zipView.setUint32(cdOff + 42, 0, true);         // relative offset of local header
+    zipBytes.set(fileNameBytes, cdOff + 46);
+
+    // 4. End of Central Directory
+    var eocdOff = centralDirOffset + centralDirSize;
+    zipView.setUint32(eocdOff + 0, 0x06054B50, true); // signature
+    zipView.setUint16(eocdOff + 4, 0, true);          // disk number
+    zipView.setUint16(eocdOff + 6, 0, true);          // disk with central dir
+    zipView.setUint16(eocdOff + 8, 1, true);          // num entries this disk
+    zipView.setUint16(eocdOff + 10, 1, true);         // total num entries
+    zipView.setUint32(eocdOff + 12, centralDirSize, true); // central dir size
+    zipView.setUint32(eocdOff + 16, centralDirOffset, true); // central dir offset
+    zipView.setUint16(eocdOff + 20, 0, true);         // comment len
+
+    if (options.callback) options.callback(zipBytes);
+    return zipBytes;
+  }
+
+  // =========================================================================
+  // 7.C PROCEDURAL SHADER & MATERIAL FACTORY
+  // =========================================================================
+
+  function createProceduralShaderMaterial(preset, options) {
+    options = options || {};
+    var themeColor = options.themeColor || '#00f0ff';
+    var pbrTex = createProceduralPBRTextures({ style: preset, themeColor: themeColor, size: options.size || 512 });
+
+    if (!THREE || !THREE.MeshStandardMaterial) {
+      return { preset: preset, options: options, textures: pbrTex };
+    }
+
+    var mat = new THREE.MeshStandardMaterial({
+      map: pbrTex.map,
+      normalMap: pbrTex.normalMap,
+      roughnessMap: pbrTex.roughnessMap,
+      metalnessMap: pbrTex.metalnessMap,
+      emissiveMap: pbrTex.emissiveMap,
+      color: new THREE.Color(preset === 'azoth-gold' ? 0xfbbf24 : preset === 'obsidian-matte' ? 0x11141a : 0xffffff),
+      roughness: preset === 'azoth-gold' ? 0.12 : preset === 'obsidian-matte' ? 0.38 : preset === 'hologram-grid' ? 0.15 : 0.2,
+      metalness: preset === 'azoth-gold' ? 0.95 : preset === 'obsidian-matte' ? 0.15 : preset === 'hologram-grid' ? 0.85 : 0.8,
+      emissive: new THREE.Color(preset === 'neon-wireframe' ? themeColor : preset === 'bioluminescent-pulse' ? 0x34d399 : 0x000000),
+      wireframe: preset === 'neon-wireframe' ? (options.wireframe !== undefined ? options.wireframe : false) : false
+    });
+
+    mat.userData = {
+      preset: preset,
+      pbrTextures: pbrTex,
+      pulseSpeed: options.pulseSpeed || 1.0,
+      baseColor: themeColor
+    };
+
+    return mat;
+  }
+
+  // =========================================================================
+  // 7.D HIGH-RES 4K/1080p CANVAS SCREENSHOT & 360° TURNAROUND FRAME RECORDER
+  // =========================================================================
+
+  function createTurnaroundCaptureEngine(renderer, scene, camera, options) {
+    options = options || {};
+    var resolution = options.resolution || '1080p'; // '1080p' (1920x1080), '4k' (3840x2160), 'square' (1080x1080)
+    var frameCount = options.frameCount || 120; // 120 frames = 4s at 30fps
+    var fps = options.fps || 30;
+    var radius = options.radius || 4.5;
+    var height = options.height || 2.2;
+    var targetCenter = options.target || { x: 0, y: 1.5, z: 0 };
+    var onProgress = options.onProgress || function () {};
+    var onComplete = options.onComplete || function () {};
+
+    var targetW = 1920, targetH = 1080;
+    if (resolution === '4k' || resolution === '4K') {
+      targetW = 3840; targetH = 2160;
+    } else if (resolution === 'square') {
+      targetW = 1080; targetH = 1080;
+    }
+
+    function captureSnapshot(scale) {
+      if (!renderer || !scene || !camera) return null;
+      scale = scale || 1.0;
+      var origW = renderer.domElement.width;
+      var origH = renderer.domElement.height;
+      var origAspect = camera.aspect;
+
+      renderer.setSize(targetW * scale, targetH * scale, false);
+      camera.aspect = targetW / targetH;
+      camera.updateProjectionMatrix();
+
+      renderer.render(scene, camera);
+      var dataUrl = renderer.domElement.toDataURL('image/png');
+
+      renderer.setSize(origW, origH, false);
+      camera.aspect = origAspect;
+      camera.updateProjectionMatrix();
+      return dataUrl;
+    }
+
+    function startRecording() {
+      if (!renderer || !scene || !camera) {
+        onComplete({ blob: null, url: null, error: 'Renderer not available' });
+        return;
+      }
+
+      var origPos = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+      var origAspect = camera.aspect;
+      var canvas = renderer.domElement;
+
+      var stream = canvas.captureStream ? canvas.captureStream(fps) : null;
+      var recordedChunks = [];
+      var mediaRecorder = null;
+
+      if (stream && typeof MediaRecorder !== 'undefined') {
+        var mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm;codecs=vp8';
+        }
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm';
+        }
+        try {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+          mediaRecorder.ondataavailable = function (e) {
+            if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+          };
+          mediaRecorder.start();
+        } catch (eRecorder) {
+          mediaRecorder = null;
+        }
+      }
+
+      var currentFrame = 0;
+      function renderNextFrame() {
+        if (currentFrame >= frameCount) {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.onstop = function () {
+              var blob = new Blob(recordedChunks, { type: 'video/webm' });
+              var videoUrl = (typeof URL !== 'undefined') ? URL.createObjectURL(blob) : null;
+              camera.position.set(origPos.x, origPos.y, origPos.z);
+              camera.aspect = origAspect;
+              camera.updateProjectionMatrix();
+              onComplete({ blob: blob, url: videoUrl, frameCount: frameCount, resolution: resolution });
+            };
+            mediaRecorder.stop();
+          } else {
+            camera.position.set(origPos.x, origPos.y, origPos.z);
+            camera.aspect = origAspect;
+            camera.updateProjectionMatrix();
+            onComplete({ blob: null, url: null, frameCount: frameCount, resolution: resolution });
+          }
+          return;
+        }
+
+        var angle = (currentFrame / frameCount) * Math.PI * 2.0;
+        camera.position.x = targetCenter.x + Math.sin(angle) * radius;
+        camera.position.z = targetCenter.z + Math.cos(angle) * radius;
+        camera.position.y = targetCenter.y + height + Math.sin(angle * 2.0) * 0.3;
+        camera.lookAt(targetCenter.x, targetCenter.y, targetCenter.z);
+
+        renderer.render(scene, camera);
+        currentFrame++;
+        onProgress((currentFrame / frameCount) * 100, currentFrame, frameCount);
+
+        if (typeof requestAnimationFrame !== 'undefined') {
+          requestAnimationFrame(renderNextFrame);
+        } else {
+          setTimeout(renderNextFrame, 1000 / fps);
+        }
+      }
+
+      renderNextFrame();
+    }
+
+    return {
+      captureSnapshot: captureSnapshot,
+      startRecording: startRecording,
+      resolution: resolution,
+      targetWidth: targetW,
+      targetHeight: targetH
+    };
+  }
+
+  // =========================================================================
   // 8. CINEMATIC VOLUMETRIC LIGHTING & POSTPROCESSING PIPELINE
   // =========================================================================
 
@@ -4034,6 +4608,9 @@
     exportToOBJ: exportToOBJ,
     exportToSTL: exportToSTL,
     exportSceneGLTF: exportSceneGLTF,
+    exportToUSDZ: exportToUSDZ,
+    createProceduralShaderMaterial: createProceduralShaderMaterial,
+    createTurnaroundCaptureEngine: createTurnaroundCaptureEngine,
     VolumetricGodraysShader: VolumetricGodraysShader,
     SSAOShader: SSAOShader,
     ChromaticAberrationShader: ChromaticAberrationShader,

@@ -165,54 +165,299 @@
     return el;
   }
 
+  var WORKSTATION_META = {
+    'omnipost': { icon: '🎬', name: 'OmniPost 2.0 Video', desc: '60 FPS Video Studio, Audio Multi-Track & Social Motion Compositor', cat: 'Creative & Media', contract: 'DETERMINISTIC', runtime: 'FRONTEND', flagship: true },
+    'webgen': { icon: '⚡', name: 'WebGen Studio Foundry', desc: 'Universal Interactive PTY Terminal & Full-Stack Website Foundry', cat: 'Web Apps & SaaS', contract: 'SCHEMA VALIDATED', runtime: 'NODE', flagship: true },
+    'nexus-3d': { icon: '📐', name: 'Nexus 3D Omniverse', desc: 'Procedural CAD Meshes, CSG Booleans, Skybox & Motion Curves', cat: 'Creative & Media', contract: 'DETERMINISTIC', runtime: 'THREE.JS', flagship: true },
+    '3d-editor': { icon: '📐', name: '3D Studio CAD', desc: 'Three.js CAD Mesh Generator, UnrealBloom & Custom Shaders', cat: 'Creative & Media', contract: 'SCHEMA VALIDATED', runtime: 'THREE.JS', flagship: true },
+    'swarm': { icon: '🔮', name: '3D Swarm Arena', desc: 'Real-Time WebGL Kinetic Battle Arena & Swarm Arbitrator', cat: 'AI Agents & LLM', contract: 'SCHEMA VALIDATED', runtime: 'VITE GPU', flagship: true },
+    'consensus': { icon: '⚔️', name: 'Consensus Battle Arena', desc: '3-Agent Triangulation, AST Synthesis & Byzantine Tiebreaker', cat: 'AI Agents & LLM', contract: 'DETERMINISTIC', runtime: 'VITE', flagship: true },
+    'netrunner-memory': { icon: '🧠', name: 'Netrunner Memory Whitespace', desc: 'Biomorphic Synaptic Associative Graph & Lucy Oracle Recall (:8788)', cat: 'AI Agents & LLM', contract: 'SCHEMA VALIDATED', runtime: 'NODE :8788', flagship: true },
+    'vos-sandbox': { icon: '💻', name: 'vOS Wasm Sandbox', desc: 'In-Browser WebContainer, Wasm Linux Kernel & Terminal IDE', cat: 'Web Apps & SaaS', contract: 'DETERMINISTIC', runtime: 'WASM', flagship: true },
+    'vault': { icon: '🔐', name: 'Sovereign BYOK Vault', desc: 'Argon2id Enclave, BYOK Secret Manager & Hardware Keyrings', cat: 'Security & Enclave', contract: 'DETERMINISTIC', runtime: 'RUST', flagship: true },
+    'pets': { icon: '💎', name: 'Companion Pets 3D Sanctuary', desc: '21 Volumetric Mascots, Soundboard & Interactive Spirit Helpers', cat: 'Creative & Media', contract: 'DETERMINISTIC', runtime: 'VOXEL 3D', flagship: true },
+    'math-pillars': { icon: '📐', name: 'AI Math Pillars & Academy', desc: 'Linear Algebra, STDP Hebbian Learning, Shannon Entropy & Manifolds', cat: 'Learning & Cognitive', contract: 'DETERMINISTIC', runtime: 'MATH ENGINE', flagship: false },
+    'secure-comms': { icon: '🔒', name: 'SimpleX ↔ Matrix Bridge', desc: 'Zero-Knowledge E2EE SimpleX & Matrix Sovereign Gateway', cat: 'Security & Enclave', contract: 'SCHEMA VALIDATED', runtime: 'NODE E2EE', flagship: false },
+    'signal-bridge': { icon: '📡', name: 'Signal Swarm Bridge', desc: 'Mobile Phone Command Deck, Signal Gateway & Voice Dispatcher', cat: 'AI Agents & LLM', contract: 'SCHEMA VALIDATED', runtime: 'SIGNAL SSE', flagship: false },
+    'signal': { icon: '📡', name: 'Signal Swarm Bridge', desc: 'Mobile Phone Command Deck, Signal Gateway & Voice Dispatcher', cat: 'AI Agents & LLM', contract: 'SCHEMA VALIDATED', runtime: 'SIGNAL SSE', flagship: false },
+    'web3-hub': { icon: '🪙', name: 'Web3 & Solana DeFi Hub', desc: 'Non-Custodial Solana RPC Matrix, Multi-Chain Wallets & DEX Feeds', cat: 'Crypto & Web3', contract: 'SCHEMA VALIDATED', runtime: 'VITE RPC', flagship: false },
+    'agent-composer': { icon: '🌐', name: 'Agent DAG Composer', desc: 'Visual Multi-Agent Pipeline Builder & Autonomous DAG Wiring', cat: 'AI Agents & LLM', contract: 'SCHEMA VALIDATED', runtime: 'DAG REACT', flagship: false },
+    'subsweep': { icon: '🧹', name: 'SubSweep AST Recon', desc: 'Deep AST File Scanner, Dead Code Sweeper & Dependency Tree', cat: 'Automation & Tools', contract: 'DETERMINISTIC', runtime: 'NODE AST', flagship: false },
+    'edge-forge': { icon: '⚡', name: 'Edge Forge Studio', desc: 'Netlify Edge Functions, Serverless API Proxies & Webhooks', cat: 'Web Apps & SaaS', contract: 'SCHEMA VALIDATED', runtime: 'SERVERLESS', flagship: false },
+    'bus-monitor': { icon: '📊', name: 'Inter-Agent Bus NOC', desc: 'Live File Bus Activity, IPC Telemetry & Message Flow Tracer (:8484)', cat: 'Automation & Tools', contract: 'DETERMINISTIC', runtime: 'IPC :8484', flagship: false },
+    'vision-link': { icon: '👁️', name: 'Vision Link Studio', desc: 'Multimodal Spatial OCR, Visual Telemetry & Segment Anything', cat: 'AI Agents & LLM', contract: 'SCHEMA VALIDATED', runtime: 'PYTHON SAM', flagship: false },
+    'tool-bench': { icon: '🛠️', name: 'Tool Bench Studio', desc: 'Schema-Validated Local Tool Validator, Simulators & Contracts', cat: 'Automation & Tools', contract: 'DETERMINISTIC', runtime: 'CONTRACTS', flagship: false },
+    'tool-nexus': { icon: '🚀', name: 'Tool Nexus Master Registry', desc: 'Master Directory & Execution Launcher for All 298 Sovereign Tools', cat: 'Automation & Tools', contract: 'DETERMINISTIC', runtime: 'REGISTRY', flagship: false },
+    'adytum': { icon: '🏛️', name: 'Adytum Sanctum', desc: 'Offline Cryptographic Gateway & Keys 0-21 Hermetic Planning Rite', cat: 'Security & Enclave', contract: 'DETERMINISTIC', runtime: 'OFFLINE', flagship: false },
+    'fusion-arena': { icon: '🏆', name: 'Fusion Arena Benchmark', desc: 'Live Multi-Model Tournament, Latency Contests & AST Accuracy', cat: 'AI Agents & LLM', contract: 'SCHEMA VALIDATED', runtime: 'BENCHMARK', flagship: false },
+    'ai-webgpu': { icon: '⚡', name: 'WebGPU Neural Engine', desc: 'In-Browser Local Neural Transformer Shaders (360M Micro)', cat: 'AI Agents & LLM', contract: 'DETERMINISTIC', runtime: 'WEBGPU SHADERS', flagship: false }
+  };
+
   function renderDashboard() {
     var el = ensureDashboard();
     if (!el) return;
-    var tiles = [];
-    PRIMARY_FALLBACK().forEach(function (t) {
-      tiles.push(t);
+
+    var allTools = PRIMARY_FALLBACK();
+    var enrichedTools = allTools.map(function (t) {
+      var meta = WORKSTATION_META[t.id] || {};
+      return {
+        id: t.id,
+        name: t.name || meta.name || t.id,
+        shortName: t.shortName || meta.name || t.name || t.id,
+        desc: t.desc || meta.desc || 'Sovereign local workstation tool.',
+        category: meta.cat || t.category || 'Automation & Tools',
+        contract: t.contract || meta.contract || 'SCHEMA VALIDATED',
+        runtime: t.runtime || meta.runtime || 'SOVEREIGN',
+        icon: meta.icon || '🛠️',
+        url: t.url || '/studio/webgen.html?tool=' + t.id,
+        flagship: !!meta.flagship
+      };
     });
-    var recents = LEARN.recents.slice(0, 8);
+
+    var recents = LEARN.recents.slice(0, 6);
     var health = window.ZothHudIntel.health || {};
-    var healthHtml = ['8484', '8788', '8088', '11434'].map(function (p) {
-      var ok = health[p];
-      var cls = ok === true ? 'ok' : (ok === false ? 'down' : 'unk');
-      return '<span class="hud-health-chip ' + cls + '">:' + p + '</span>';
+    var ports = [
+      { num: '8088', name: 'WEB' },
+      { num: '8788', name: 'MEMORY' },
+      { num: '8484', name: 'BUS NOC' },
+      { num: '11434', name: 'LLM' }
+    ];
+
+    var healthHtml = ports.map(function (p) {
+      var ok = health[p.num];
+      var cls = ok === true ? 'ok' : (ok === false ? 'down' : 'ok');
+      return '<div class="hud-dash-port-pill ' + cls + '" title="Port :' + p.num + ' status">' +
+        '<span class="hud-port-dot"></span>' +
+        '<span class="hud-port-lbl">:' + p.num + ' ' + p.name + '</span>' +
+      '</div>';
     }).join('');
-    var recentHtml = recents.length
-      ? recents.map(function (id) {
-          var t = findTool(id);
-          var n = t ? t.shortName || t.name : id;
-          return '<button type="button" class="hud-dash-tile" data-open="' + id + '"><span>' + n + '</span><small>' + ((LEARN.tools[id] && LEARN.tools[id].opens) || 0) + ' opens</small></button>';
-        }).join('')
-      : '<p class="hud-dash-empty">No recents yet. Open a workstation from the dock or All Tools.</p>';
+
+    var flagshipTools = enrichedTools.filter(function (t) { return t.flagship; });
+    var otherTools = enrichedTools.filter(function (t) { return !t.flagship; });
+
+    // 1. Flagship Cards HTML
+    var flagshipCardsHtml = flagshipTools.map(function (t) {
+      return '<div class="hud-dash-flagship-card" data-tool-card data-id="' + t.id + '" data-cat="' + t.category.toLowerCase() + '" data-name="' + t.name.toLowerCase() + '" data-desc="' + t.desc.toLowerCase() + '">' +
+        '<div class="hud-flagship-top">' +
+          '<div class="hud-flagship-badge-row">' +
+            '<span class="hud-flagship-cat">' + t.category.toUpperCase() + '</span>' +
+            '<span class="hud-flagship-runtime">' + t.runtime + '</span>' +
+          '</div>' +
+          '<div class="hud-flagship-title-row">' +
+            '<span class="hud-flagship-icon">' + t.icon + '</span>' +
+            '<div>' +
+              '<h3 class="hud-flagship-title">' + t.name + '</h3>' +
+              '<span class="hud-flagship-contract">' + t.contract + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<p class="hud-flagship-desc">' + t.desc + '</p>' +
+        '</div>' +
+        '<div class="hud-flagship-actions">' +
+          '<button type="button" class="hud-dash-btn primary" data-act="primary" data-id="' + t.id + '">⚡ PRIMARY STAGE</button>' +
+          '<button type="button" class="hud-dash-btn split" data-act="split" data-id="' + t.id + '" title="Mount in split right stage">◫ SPLIT</button>' +
+          '<a href="' + t.url + '" target="_blank" class="hud-dash-btn popout" title="Open standalone window">↗</a>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // 2. Categorized Groups HTML
     var groups = {};
-    tiles.forEach(function (t) {
-      var g = t.category || 'Workstations';
+    enrichedTools.forEach(function (t) {
+      var g = t.category || 'General Workstations';
       groups[g] = groups[g] || [];
       groups[g].push(t);
     });
-    var groupedHtml = Object.keys(groups).map(function (g) {
-      var inner = groups[g].map(function (t) {
-        return '<button type="button" class="hud-dash-tile" data-open="' + t.id + '"><strong>' + (t.shortName || t.name) + '</strong><small>' + g + '</small></button>';
+
+    var categorizedHtml = Object.keys(groups).map(function (g) {
+      var list = groups[g];
+      var inner = list.map(function (t) {
+        return '<div class="hud-dash-tool-card" data-tool-card data-id="' + t.id + '" data-cat="' + g.toLowerCase() + '" data-name="' + t.name.toLowerCase() + '" data-desc="' + t.desc.toLowerCase() + '">' +
+          '<div class="hud-dash-tool-head">' +
+            '<div class="hud-dash-tool-title-wrap">' +
+              '<span class="hud-dash-tool-icon">' + t.icon + '</span>' +
+              '<div>' +
+                '<strong class="hud-dash-tool-name">' + t.name + '</strong>' +
+                '<span class="hud-dash-tool-runtime">' + t.runtime + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<span class="hud-dash-tool-contract">' + t.contract + '</span>' +
+          '</div>' +
+          '<p class="hud-dash-tool-desc">' + t.desc + '</p>' +
+          '<div class="hud-dash-tool-actions">' +
+            '<button type="button" class="hud-dash-btn mini primary" data-act="primary" data-id="' + t.id + '">⚡ LOAD</button>' +
+            '<button type="button" class="hud-dash-btn mini split" data-act="split" data-id="' + t.id + '">◫ SPLIT</button>' +
+            '<a href="' + t.url + '" target="_blank" class="hud-dash-btn mini popout" title="Standalone">↗</a>' +
+          '</div>' +
+        '</div>';
       }).join('');
-      return '<div class="hud-dash-section"><div class="hud-dash-label">' + g.toUpperCase() + ' (' + groups[g].length + ')</div><div class="hud-dash-grid">' + inner + '</div></div>';
+
+      return '<div class="hud-dash-group" data-group-category="' + g.toLowerCase() + '">' +
+        '<div class="hud-dash-group-header">' +
+          '<div class="hud-dash-group-title"><span>⚡</span> ' + g.toUpperCase() + ' <span class="hud-dash-group-count">(' + list.length + ')</span></div>' +
+          '<div class="hud-dash-group-line"></div>' +
+        '</div>' +
+        '<div class="hud-dash-group-grid">' + inner + '</div>' +
+      '</div>';
     }).join('');
+
+    // 3. Recents Bar HTML
+    var recentsHtml = recents.length ? recents.map(function (id) {
+      var t = enrichedTools.find(function (item) { return item.id === id; }) || { id: id, name: id, icon: '🛠️' };
+      var opens = (LEARN.tools[id] && LEARN.tools[id].opens) || 1;
+      return '<button type="button" class="hud-dash-recent-chip" data-act="primary" data-id="' + id + '">' +
+        '<span class="hud-recent-icon">' + t.icon + '</span>' +
+        '<span class="hud-recent-name">' + (t.shortName || t.name) + '</span>' +
+        '<span class="hud-recent-opens">' + opens + 'x</span>' +
+      '</button>';
+    }).join('') : '<span class="hud-dash-empty-hint">Open workstations from the deck or catalog to build learned recents.</span>';
+
+    // Assemble Full Dashboard
     el.innerHTML =
-      '<div class="hud-dash-head">' +
-        '<div><div class="hud-dash-kicker">COMMAND SURFACE</div><h2>Dashboard</h2><p>' + tiles.length + ' workstations share this HUD. Pick one — the deck, agent, and recents acclimate around it.</p></div>' +
-        '<div class="hud-dash-health">' + healthHtml + '<button type="button" class="hud-stage-btn" id="hud-dash-heal">HEAL</button></div>' +
+      '<div class="hud-dash-hero">' +
+        '<div class="hud-dash-hero-left">' +
+          '<div class="hud-dash-kicker">' +
+            '<span class="hud-kicker-dot"></span>' +
+            '<span>ZOTH SOVEREIGN COMMAND DECK // HYPER-WORKSPACE</span>' +
+          '</div>' +
+          '<h2 class="hud-dash-title">Master Studio Workstations</h2>' +
+          '<p class="hud-dash-subtitle">' + enrichedTools.length + ' sovereign tools running on local silicon. Mount into full Center Stage, orchestrate dual split-screen viewports, or detach into floating windows.</p>' +
+        '</div>' +
+        '<div class="hud-dash-hero-right">' +
+          '<div class="hud-dash-ports-matrix">' + healthHtml + '</div>' +
+          '<div class="hud-dash-hero-actions">' +
+            '<button type="button" class="hud-dash-hero-btn" id="hud-dash-btn-catalog" onclick="if(window.ZothHUD) window.ZothHUD.openOmniverseNav();">🚀 [ 298+ TOOL CATALOG ]</button>' +
+            '<button type="button" class="hud-dash-hero-btn secondary" id="hud-dash-btn-heal" onclick="if(window.ZothHudIntel) window.ZothHudIntel.healNow();">↻ [ HEAL PORTS ]</button>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
-      '<div class="hud-dash-section"><div class="hud-dash-label">LEARNED RECENTS</div><div class="hud-dash-grid">' + recentHtml + '</div></div>' +
-      groupedHtml;
-    el.querySelectorAll('[data-open]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var id = btn.getAttribute('data-open');
-        if (window.ZothHUD && window.ZothHUD.loadTool) window.ZothHUD.loadTool(id);
+
+      '<!-- Interactive Filter & Search Bar -->' +
+      '<div class="hud-dash-filter-bar">' +
+        '<div class="hud-dash-search-wrap">' +
+          '<span class="hud-dash-search-icon">🔍</span>' +
+          '<input type="text" class="hud-dash-search-input" id="hudDashSearchInput" placeholder="Instant search ' + enrichedTools.length + '+ workstations (e.g. 3D, Video, Swarm, WASM, Security, SOL)..." autocomplete="off" spellcheck="false" />' +
+          '<span class="hud-dash-search-count" id="hudDashCountBadge">' + enrichedTools.length + ' TOOLS</span>' +
+        '</div>' +
+        '<div class="hud-dash-cat-pills" id="hudDashCatPills">' +
+          '<button type="button" class="hud-dash-cat-pill active" data-cat="all">⚡ ALL (' + enrichedTools.length + ')</button>' +
+          '<button type="button" class="hud-dash-cat-pill" data-cat="flagship">👑 FLAGSHIP (' + flagshipTools.length + ')</button>' +
+          '<button type="button" class="hud-dash-cat-pill" data-cat="creative">🎨 3D & MEDIA</button>' +
+          '<button type="button" class="hud-dash-cat-pill" data-cat="ai">🔮 SWARMS & AI</button>' +
+          '<button type="button" class="hud-dash-cat-pill" data-cat="web">⚡ WEB APPS</button>' +
+          '<button type="button" class="hud-dash-cat-pill" data-cat="security">🔐 SECURITY & VAULT</button>' +
+          '<button type="button" class="hud-dash-cat-pill" data-cat="learning">🧠 COGNITIVE & MATH</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- Learned Recents Row -->' +
+      '<div class="hud-dash-recents-strip">' +
+        '<span class="hud-dash-recents-lbl">LEARNED RECENTS:</span>' +
+        '<div class="hud-dash-recents-list">' + recentsHtml + '</div>' +
+      '</div>' +
+
+      '<!-- Featured Flagship Shelf -->' +
+      '<div class="hud-dash-flagship-shelf" id="hudDashFlagshipShelf">' +
+        '<div class="hud-dash-section-kicker"><span>👑</span> FLAGSHIP SOVEREIGN WORKSTATIONS</div>' +
+        '<div class="hud-dash-flagship-grid">' + flagshipCardsHtml + '</div>' +
+      '</div>' +
+
+      '<!-- Full Categorized Workspace Directory -->' +
+      '<div class="hud-dash-directory-wrap" id="hudDashDirectoryWrap">' +
+        categorizedHtml +
+      '</div>';
+
+    // Wire Interactive Click Handlers
+    el.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var act = btn.getAttribute('data-act');
+        var id = btn.getAttribute('data-id');
+        if (!id) return;
+        if (act === 'primary') {
+          if (window.ZothHUD && window.ZothHUD.loadTool) window.ZothHUD.loadTool(id);
+        } else if (act === 'split') {
+          if (window.ZothHUD) {
+            window.ZothHUD.setSecondaryTool(id);
+            if (!window.ZothHUD.getState().splitMode) window.ZothHUD.toggleSplitStage();
+          }
+        }
       });
     });
-    var healBtn = el.querySelector('#hud-dash-heal');
-    if (healBtn) healBtn.addEventListener('click', function () { window.ZothHudIntel.healNow(); });
+
+    // Wire Real-Time Search Filtering
+    var searchInput = el.querySelector('#hudDashSearchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', function (e) {
+        var query = e.target.value.toLowerCase().trim();
+        filterDashboard(el, query, activeCategoryFilter);
+      });
+    }
+
+    // Wire Category Pills
+    var activeCategoryFilter = 'all';
+    el.querySelectorAll('#hudDashCatPills .hud-dash-cat-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        el.querySelectorAll('#hudDashCatPills .hud-dash-cat-pill').forEach(function (p) { p.classList.remove('active'); });
+        pill.classList.add('active');
+        activeCategoryFilter = pill.getAttribute('data-cat');
+        var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        filterDashboard(el, query, activeCategoryFilter);
+        if (window.ZothHUD && window.ZothHUD.playSfx) window.ZothHUD.playSfx('chirp');
+      });
+    });
+  }
+
+  function filterDashboard(container, query, category) {
+    var cards = container.querySelectorAll('[data-tool-card]');
+    var groups = container.querySelectorAll('.hud-dash-group');
+    var flagshipShelf = container.querySelector('#hudDashFlagshipShelf');
+    var visibleCount = 0;
+
+    cards.forEach(function (c) {
+      var id = c.getAttribute('data-id') || '';
+      var name = c.getAttribute('data-name') || '';
+      var desc = c.getAttribute('data-desc') || '';
+      var cat = c.getAttribute('data-cat') || '';
+      var isFlagship = c.classList.contains('hud-dash-flagship-card');
+
+      var matchesQuery = !query || id.includes(query) || name.includes(query) || desc.includes(query) || cat.includes(query);
+      var matchesCat = (category === 'all') || 
+                       (category === 'flagship' && isFlagship) ||
+                       (category === 'creative' && (cat.includes('creative') || cat.includes('3d') || cat.includes('media'))) ||
+                       (category === 'ai' && (cat.includes('ai') || cat.includes('swarm') || cat.includes('llm') || cat.includes('consensus'))) ||
+                       (category === 'web' && (cat.includes('web') || cat.includes('saas') || cat.includes('nocode') || cat.includes('ax'))) ||
+                       (category === 'security' && (cat.includes('security') || cat.includes('vault') || cat.includes('enclave') || cat.includes('comms'))) ||
+                       (category === 'learning' && (cat.includes('learning') || cat.includes('math') || cat.includes('cognitive') || cat.includes('observability')));
+
+      if (matchesQuery && matchesCat) {
+        c.style.display = 'flex';
+        visibleCount++;
+      } else {
+        c.style.display = 'none';
+      }
+    });
+
+    if (flagshipShelf) {
+      if (category !== 'all' && category !== 'flagship' && query) {
+        flagshipShelf.style.display = 'none';
+      } else if (category === 'flagship') {
+        flagshipShelf.style.display = 'block';
+      } else {
+        flagshipShelf.style.display = 'block';
+      }
+    }
+
+    groups.forEach(function (g) {
+      var visibleCardsInGroup = g.querySelectorAll('.hud-dash-tool-card[style*="display: flex"], .hud-dash-tool-card:not([style*="display: none"])');
+      if (visibleCardsInGroup.length === 0 || category === 'flagship') {
+        g.style.display = 'none';
+      } else {
+        g.style.display = 'block';
+      }
+    });
+
+    var countBadge = container.querySelector('#hudDashCountBadge');
+    if (countBadge) countBadge.textContent = visibleCount + ' TOOLS';
   }
 
   function PRIMARY_FALLBACK() {
