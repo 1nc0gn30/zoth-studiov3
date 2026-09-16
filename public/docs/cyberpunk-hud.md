@@ -147,13 +147,45 @@ The Cockpit is fully keyboard-navigable for maximum power-user ergonomics:
 | <kbd>P</kbd> | Open **Loopback Port Topology Modal** | Global |
 | <kbd>F</kbd> | Toggle **Fullscreen Center Stage** | Global |
 | <kbd>?</kbd> | Open **Keyboard Shortcuts & Quick Help Modal** | Global |
+### 6. Tactical Visualizers & Action Bridge Engines
+
+#### 1. 360° Polar Radar Sweep Mini-Map
+- **Interactive 2D Polar Canvas**: Tracks all 21 swarm agents positioned across 4 quadrants.
+- **Dynamic Sweep Beam**: 60 FPS rotating beam with glow fading, range zoom (`radar zoom <x>`), and clickable blips for instant agent focus.
+
+#### 2. Real-Time Audio Oscilloscope
+- **Web Audio Engine**: 60 FPS visualizer rendering Waveform, FFT frequency spectrum analyzer, and XY Lissajous orbital figures.
+- **Low-Latency Analysis**: Intercepts Web Audio synthesizer beeps, voice memos, and tactical soundboard clicks.
+
+#### 3. Dynamic Tool Operations Deck (`#hud-tool-context-card`)
+- **Profile-Driven Operations**: Automatically detects which tool is active in the Center Stage and renders quick dials and telemetry:
+  - *OmniPost*: Aspect Ratio toggles (`16:9`, `4:3`, `9:16`), 60 FPS Video Render, Synth Audio Track, Generate Thumbs.
+  - *3D CAD*: Toggle Wireframe, PBR Shading, Spawn Mesh, Snapshot Canvas.
+  - *Swarm Arena*: Laser Triangulation, Broadcast Swarm Bus, Dispatch Agent.
+  - *Consensus*: Dialectic Code Arbitration, Shannon Divergence Meter.
+  - *Hermes Agent*: Engine Status, Subagent Dispatch, Doctor Diagnostics.
+
+#### 4. Bi-Directional Action Bridge (`zoth-hud-embedded.js`)
+- **Message Dispatching**: Communicates across the stage iframe boundary via `postMessage({ type: 'ZOTH_TOOL_ACTION', action, payload })`.
+- **Zero-Friction Execution**: Workstations register handlers via `ZothEmbeddedAdapter.onAction(action, callback)` and execute canvas renders, mesh manipulations, and exports without full-page reloads.
+
+---
+
+## ⌨️ 6. Global Keyboard Shortcuts
+
+| Shortcut | Action Description | Scope |
+|---|---|---|
+| <kbd>Ctrl</kbd> + <kbd>K</kbd> | Open 298+ Tools Omniverse Navigator | Global |
+| <kbd>Shift</kbd> + <kbd>T</kbd> | Cycle 4 Themes (Dark Void → Solar Light → Matrix → Gold) | Global |
+| <kbd>Shift</kbd> + <kbd>S</kbd> | Toggle Dual-Tool Split Stage Mode | Global |
+| <kbd>Tab</kbd> | Auto-complete command in Terminal REPL | Terminal Input |
 | <kbd>Escape</kbd> | Close any open modal, sheet, or drawer | Global |
 | <kbd>↑</kbd> / <kbd>↓</kbd> | Navigate Terminal REPL command history | Terminal Input |
 | <kbd>Enter</kbd> | Execute command in Terminal REPL | Terminal Input |
 
 ---
 
-## 🔌 6. Local Port Topology & Sovereign Endpoints
+## 🔌 7. Local Port Topology & Sovereign Endpoints
 
 The Cockpit communicates exclusively over local loopback connections with zero cloud data transmission:
 
@@ -164,41 +196,20 @@ The Cockpit communicates exclusively over local loopback connections with zero c
 │ **:8088** │ HTTP (Static Server)             │ Core HTML/CSS/JS Studio Hub & Cockpit Surface   │
 │ **:8484** │ WebSocket / HTTP / IPC           │ Sovereign Swarm Bus & Orchestration Gateway     │
 │ **:8787** │ HTTP (Encrypted Vault)           │ Argon2id Cryptographic Secrets & Keyring Daemon │
-│ **:8788** │ HTTP / GraphQL (Memory Graph)    │ 1,024-dim Vector Whitespace & Lucy Knowledge DB │
+│ **:8788** │ HTTP / REST (Memory Daemon)      │ 1,024-dim Biomorphic Vector Substrate & STDP DB │
+│ **:5225** │ WebSocket (SimpleX E2EE)         │ Post-Quantum Zero-Metadata Messaging Gateway    │
+│ **:8199** │ HTTP (Topology Lab)              │ 12-Formula #つぶやきProcessing WebGL Studio     │
 │ **:11434**│ HTTP (Local LLM Inference)       │ Ollama / Llama.cpp Local Sovereign Models       │
-│ **:9000** │ HTTP (Tool Simulation Mock)      │ Zero-latency mock HTTP server for Tool Bench    │
 └───────────┴──────────────────────────────────┴─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛠️ 7. File Manifest & Exact Changes Made
+## 🛠️ 8. File Manifest & Automated Verification
 
-1. **`public/assets/zoth-cyberpunk-hud.css`**:
-   - Master Cyberpunk CSS system (1600+ lines).
-   - Theme variables for `dark`, `light`, `matrix`, and `gold`.
-   - Fixed 2-column zero-root-scroll layout, custom HUD scrollbars, and chamfer polygon clip-paths.
-   - Modals and dialog styling for Ports, Tool Manager, Help shortcuts, and Mobile slide-up sheets.
+- **`public/assets/zoth-cyberpunk-hud.css`**: Master Cyberpunk CSS system with 4 high-contrast themes and responsive drawers.
+- **`public/assets/zoth-cyberpunk-hud.js`**: Master HUD controller engine (Polar Radar, Audio Scope, 6 Pillars, Memory Graph, Split Stage, Omniverse Navigator).
+- **`public/assets/zoth-hud-embedded.css`**: Aggressive header/footer cleaner for embedded workstations.
+- **`public/assets/zoth-hud-embedded.js`**: Universal embedded adapter and bi-directional action bridge.
+- **`public/assets/zoth-cyberpunk-hud.test.js`**: 17-suite automated test suite verifying all visualizers and agent bridges (100% pass rate).
 
-2. **`public/assets/zoth-cyberpunk-hud.js`**:
-   - Complete interactive state controller.
-   - Dynamic Tool Registry supporting 14+ workstations (`switchTool`, `detachStage`, `toggleFullscreenStage`).
-   - Active Agent radio system (`selectAgent`, `addCustomAgentSlot`).
-   - Synaptic 2D Memory Canvas simulation with dynamic node rendering and particle impulses.
-   - Terminal REPL engine with command parser and history.
-   - Web Audio tactical chime synthesizer for tactile sound feedback.
-   - Swarm Bus synchronization via `BroadcastChannel` and `localStorage`.
-
-3. **`public/studio/cockpit.html`**:
-   - Re-architected into the 1:1 master Cyberpunk Video Game HUD whiteboard layout.
-   - Topbar: Brand, Help `(?)`, `[ DECK ]`, `[ PORTS ]`, `[ TIME ]`, `[ THEMES ]`, `[ TOOL MGR ]`.
-   - Left Deck: Active Agents, Synaptic Memory Canvas, Terminal REPL, Message Log, Pillar 6 Status.
-   - Center Stage: Modular tool viewport defaulting to OmniPost / Tool Bench, reticle brackets, telemetry watermark.
-   - Bottom Dock: `[ SWARM ]`, `[ MEMORY ]`, `[ WEB GEN ]`, `[ PETS ]`, `[ VAULT ]`, `[ CONSENSUS ]`, `[ NEXUS 3D ]`.
-   - Modals for Port Topology, Tool Catalog, and Keyboard Shortcuts.
-
-4. **`public/studio/index.html`**:
-   - Updated The Cockpit workstation card in the Workstations Directory to highlight the Master Cyberpunk HUD, 1:1 whiteboard layout, dynamic modular center stage, and 21-agent telemetry deck.
-
-5. **`public/docs/cyberpunk-hud.md`**:
-   - Master technical documentation specifying the HUD architecture, whiteboard origin, component breakdown, responsive rules, port mapping, and keyboard shortcuts.
