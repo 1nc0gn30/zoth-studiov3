@@ -4,11 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Cyberpunk HUD Cockpit — Sovereign Multi-Agent Telemetry & Workstation</title>
-  <meta name="description" content="Master Cyberpunk Video Game HUD: 21-Agent telemetry deck, synaptic memory graph, interactive command line REPL, math pillar gauges, and dynamic stage loader." />
+  <meta name="description" content="Master Cyberpunk Video Game HUD: 21-Agent telemetry deck, synaptic memory graph, interactive command line REPL, 6 sacred math pillar gauges, and dynamic stage loader." />
   
   <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg" />
   <link rel="stylesheet" href="/assets/zoth-theme.css?v=12" />
-  <link rel="stylesheet" href="/assets/zoth-cyberpunk-hud.css?v=1" />
+  <link rel="stylesheet" href="/assets/zoth-cyberpunk-hud.css?v=2" />
   
   <!-- Preconnect & Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -18,10 +18,22 @@
   <!-- Registry Data (298 Verified Tools) -->
   <script src="/studio/tool-nexus-data.js"></script>
 </head>
-<body class="cyberpunk-hud cockpit-hud-body">
+<body class="cyberpunk-hud cockpit-hud-body hud-crt-fx">
   <div class="hud-app-shell">
     <div class="hud-scanline-overlay"></div>
     <div class="hud-ambient-glow"></div>
+
+    <!-- Holographic HUD Atmosphere & Drifting Dust Motes -->
+    <div class="hud-holo-backdrop">
+      <div class="hud-holo-grid"></div>
+      <div class="hud-dust-motes">
+        <div class="hud-dust-mote"></div>
+        <div class="hud-dust-mote"></div>
+        <div class="hud-dust-mote"></div>
+        <div class="hud-dust-mote"></div>
+        <div class="hud-dust-mote"></div>
+      </div>
+    </div>
 
     <!-- 1. TOP HEADER (54px fixed) -->
     <header class="hud-header" role="banner">
@@ -35,6 +47,23 @@
         </a>
         <button type="button" class="hud-help-btn" onclick="ZothHUD.openModal('shortcuts')" title="Operator Guide & Shortcuts" aria-label="Operator Guide">(?)</button>
         <button type="button" class="hud-deck-toggle-btn" onclick="ZothHUD.toggleDeck()" title="Toggle Operations Deck" aria-label="Toggle Operations Deck"><span>☰</span> DECK</button>
+      </div>
+
+      <!-- Real-Time Audio Oscilloscope Bar in Header -->
+      <div class="hud-header-center">
+        <div class="hud-audio-scope-wrap" title="Cyber Audio Waveform Oscilloscope">
+          <div class="hud-audio-channel-badge"><span>L</span><span style="color:var(--hud-cyan);">●</span></div>
+          <canvas class="hud-audio-scope-canvas" id="hud-audio-scope-canvas"></canvas>
+          <div class="hud-eq-bars">
+            <div class="hud-eq-bar"></div>
+            <div class="hud-eq-bar"></div>
+            <div class="hud-eq-bar"></div>
+            <div class="hud-eq-bar"></div>
+            <div class="hud-eq-bar"></div>
+            <div class="hud-eq-bar"></div>
+          </div>
+          <div class="hud-audio-channel-badge"><span>R</span><span style="color:var(--hud-green);">●</span></div>
+        </div>
       </div>
 
       <div class="hud-header-right">
@@ -52,9 +81,8 @@
             <span class="hud-swatch-dot matrix"></span>
             <span class="hud-swatch-dot gold"></span>
           </span>
-        </button>
-        <button type="button" class="hud-badge-action hud-badge-toolmgr" onclick="ZothHUD.openModal('toolmgr')" title="Search 298+ Tools (Ctrl+K)">
-          [ TOOL MGR ]
+        <button type="button" class="hud-badge-action hud-badge-toolmgr" onclick="ZothHUD.openOmniverseNav()" title="Search 298+ Tools & Workstations (Ctrl+K)">
+          🚀 [ OMNIVERSE NAV ➔ ]
         </button>
       </div>
     </header>
@@ -73,66 +101,114 @@
             <div class="hud-agent-radio-item active" data-agent="azoth" onclick="ZothHUD.setAgent('azoth')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>🔮</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>🔮</span>
+                </div>
                 <span class="hud-agent-name">AZOTH</span>
               </div>
-              <span class="hud-agent-role-pill">CORE MAGUS</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip">CORE MAGUS</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
             <div class="hud-agent-radio-item" data-agent="athena" onclick="ZothHUD.setAgent('athena')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>🦉</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>🦉</span>
+                </div>
                 <span class="hud-agent-name">ATHENA</span>
               </div>
-              <span class="hud-agent-role-pill">SEMANTIC AEO</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip" style="color:var(--hud-violet);background:rgba(168,85,247,0.1);">AEO GRAPH</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
             <div class="hud-agent-radio-item" data-agent="draco" onclick="ZothHUD.setAgent('draco')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>🐉</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>🐉</span>
+                </div>
                 <span class="hud-agent-name">DRACO</span>
               </div>
-              <span class="hud-agent-role-pill">VULCAN CODE</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip" style="color:var(--hud-red);background:rgba(255,51,102,0.1);">VULCAN</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
             <div class="hud-agent-radio-item" data-agent="hermes" onclick="ZothHUD.setAgent('hermes')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>⚡</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>⚡</span>
+                </div>
                 <span class="hud-agent-name">HERMES</span>
               </div>
-              <span class="hud-agent-role-pill">TOOL HARNESS</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip" style="color:var(--hud-gold);background:rgba(251,191,36,0.1);">TOOL PTY</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
             <div class="hud-agent-radio-item" data-agent="antigravity" onclick="ZothHUD.setAgent('antigravity')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>🪐</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>🪐</span>
+                </div>
                 <span class="hud-agent-name">ANTIGRAVITY</span>
               </div>
-              <span class="hud-agent-role-pill">AST ORCHESTRATOR</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip" style="color:var(--hud-blue);background:rgba(0,136,255,0.1);">AST TREE</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
             <div class="hud-agent-radio-item" data-agent="lycan" onclick="ZothHUD.setAgent('lycan')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>🐺</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>🐺</span>
+                </div>
                 <span class="hud-agent-name">LYCAN</span>
               </div>
-              <span class="hud-agent-role-pill">SECURITY OSINT</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip" style="color:var(--hud-green);background:rgba(0,255,102,0.1);">SECOPS</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
             <div class="hud-agent-radio-item" data-agent="grok" onclick="ZothHUD.setAgent('grok')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>📐</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>📐</span>
+                </div>
                 <span class="hud-agent-name">GROK</span>
               </div>
-              <span class="hud-agent-role-pill">FIRST PRINCIPLES</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip" style="color:var(--hud-cyan-soft);background:rgba(56,189,248,0.1);">AXIOMS</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
             <div class="hud-agent-radio-item" data-agent="kai" onclick="ZothHUD.setAgent('kai')">
               <div class="hud-agent-radio-left">
                 <span class="hud-radio-ring"><span class="hud-radio-dot"></span></span>
-                <span>🔍</span>
+                <div class="hud-agent-avatar-wrap">
+                  <span class="hud-agent-aura"></span>
+                  <span>🔍</span>
+                </div>
                 <span class="hud-agent-name">KAI</span>
               </div>
-              <span class="hud-agent-role-pill">AST INSPECTOR</span>
+              <div class="hud-agent-right-meta">
+                <span class="hud-agent-domain-chip">INSPECT</span>
+                <span class="hud-agent-beacon"></span>
+              </div>
             </div>
           </div>
           <button type="button" class="hud-agent-slot-add" onclick="ZothHUD.loadTool('agent-composer')">
@@ -140,7 +216,24 @@
           </button>
         </div>
 
-        <!-- Panel 2: MEMORY GRAPH -->
+        <!-- Panel 2: POLAR RADAR & SENSORS -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <div class="hud-card-title"><span>📡</span> POLAR RADAR & SENSORS</div>
+            <span class="hud-card-badge">250 KM SWEEP</span>
+          </div>
+          <div class="hud-radar-container">
+            <canvas class="hud-radar-canvas" id="hud-radar-canvas"></canvas>
+            <div class="hud-radar-rings"></div>
+            <div class="hud-radar-crosshair"></div>
+            <div class="hud-radar-sweep-beam"></div>
+            <div class="hud-radar-blip blip-1" title="Azoth Beacon"></div>
+            <div class="hud-radar-blip blip-2" title="Lucy Memory Daemon"></div>
+            <div class="hud-radar-blip blip-3" title="Signal Swarm Node"></div>
+          </div>
+        </div>
+
+        <!-- Panel 3: MEMORY GRAPH -->
         <div class="hud-card">
           <div class="hud-card-header">
             <div class="hud-card-title"><span>🧠</span> MEMORY GRAPH</div>
@@ -158,26 +251,44 @@
           </div>
         </div>
 
-        <!-- Panel 3: COMMAND LINE INTERACTIVE REPL -->
+        <!-- Panel 4: COMMAND LINE INTERACTIVE REPL -->
         <div class="hud-card">
           <div class="hud-card-header">
-            <div class="hud-card-title"><span>⚡</span> COMMAND LINE</div>
-            <span class="hud-card-badge">:8484 PTY</span>
+            <div class="hud-card-title"><span>⚡</span> COMMAND LINE (REPL)</div>
+            <span class="hud-card-badge">TTY-0</span>
           </div>
           <div class="hud-terminal-container">
+            <!-- Multi-Tab Controls -->
+            <div class="hud-term-tabs">
+              <button type="button" class="hud-term-tab active" data-tab="tty0" onclick="ZothHUD.setTerminalTab('tty0')">TTY-0 REPL</button>
+              <button type="button" class="hud-term-tab" data-tab="radar" onclick="ZothHUD.setTerminalTab('radar')">RADAR SCAN</button>
+              <button type="button" class="hud-term-tab" data-tab="daemon" onclick="ZothHUD.setTerminalTab('daemon')">DAEMON :8484</button>
+            </div>
+
             <div class="hud-term-output" id="hud-term-output">
               <div class="hud-term-line stdout">Zoth Sovereign Terminal REPL v5.0</div>
-              <div class="hud-term-line warn">Type "help" for commands, "ports" for loopback ping.</div>
+              <div class="hud-term-line warn">Type "help" for commands, Tab for autocomplete, "split" for dual stage.</div>
             </div>
+
+            <!-- Quick Command Chips -->
+            <div class="hud-term-chips">
+              <button type="button" class="hud-term-chip" onclick="ZothHUD.execChip('ports')">[▶ Ping Ports]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothHUD.execChip('swarm pantheon')">[⚡ Swarm Triangulate]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothHUD.execChip('tool vault')">[🔐 Key Vault]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothHUD.execChip('mem')">[🧠 Memory Beat]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothHUD.execChip('tool nexus-3d')">[🪐 Tsubuyaki 3D]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothHUD.execChip('tool subsweep')">[🧹 Sweep Cruft]</button>
+            </div>
+
             <div class="hud-term-prompt-row">
               <span class="hud-term-prefix">[ZOTH]❯</span>
-              <input type="text" class="hud-term-input" id="hud-term-input" placeholder="help, status, ports, tool <name>..." autocomplete="off" spellcheck="false" />
+              <input type="text" class="hud-term-input" id="hud-term-input" placeholder="help, status, ports, split, radar, tool <name>..." autocomplete="off" spellcheck="false" />
               <button type="button" class="hud-term-send-btn" onclick="ZothHUD.execPromptInput()">EXEC</button>
             </div>
           </div>
         </div>
 
-        <!-- Panel 4: MESSAGE LOG -->
+        <!-- Panel 5: MESSAGE LOG -->
         <div class="hud-card">
           <div class="hud-card-header">
             <div class="hud-card-title"><span>📡</span> MESSAGE LOG</div>
@@ -186,42 +297,74 @@
           <div class="hud-msg-stream" id="hud-msg-stream"></div>
         </div>
 
-        <!-- Panel 5: MATH PILLAR 6 STATUS -->
+        <!-- Panel 6: 6 SACRED MATH PILLARS TELEMETRY GRID -->
         <div class="hud-card">
           <div class="hud-card-header">
-            <div class="hud-card-title"><span>📐</span> MATH PILLAR 6 STATUS</div>
+            <div class="hud-card-title"><span>📐</span> 6 SACRED MATH PILLARS</div>
             <span class="hud-card-badge">CALCULUS</span>
           </div>
           <div class="hud-pillar-grid">
+            <!-- Pillar 1: Category Sheaves -->
             <div class="hud-pillar-row">
               <div class="hud-pillar-meta">
-                <span class="hud-pillar-name"><span>✦</span> SHANNON ENTROPY H(X)</span>
+                <span class="hud-pillar-name"><span class="hud-pillar-glyph p1">ℰ</span> CATEGORY SHEAVES</span>
+                <span class="hud-pillar-val" id="hud-stat-sheaves">0.964 Topos</span>
+              </div>
+              <div class="hud-meter-track"><div class="hud-meter-fill p1" id="hud-meter-sheaves" style="width: 96.4%;"></div></div>
+            </div>
+            <!-- Pillar 2: Information Geometry -->
+            <div class="hud-pillar-row">
+              <div class="hud-pillar-meta">
+                <span class="hud-pillar-name"><span class="hud-pillar-glyph p2">g<sub>ij</sub></span> INFO GEOMETRY</span>
+                <span class="hud-pillar-val" id="hud-stat-geometry">1.428 rad</span>
+              </div>
+              <div class="hud-meter-track"><div class="hud-meter-fill p2" id="hud-meter-geometry" style="width: 88.5%;"></div></div>
+            </div>
+            <!-- Pillar 3: STDP Plasticity -->
+            <div class="hud-pillar-row">
+              <div class="hud-pillar-meta">
+                <span class="hud-pillar-name"><span class="hud-pillar-glyph p3">Δw</span> STDP PLASTICITY</span>
+                <span class="hud-pillar-val" id="hud-stat-stdp">0.014 Δw</span>
+              </div>
+              <div class="hud-meter-track"><div class="hud-meter-fill p3" id="hud-meter-stdp" style="width: 78.0%;"></div></div>
+            </div>
+            <!-- Pillar 4: Shannon Entropy -->
+            <div class="hud-pillar-row">
+              <div class="hud-pillar-meta">
+                <span class="hud-pillar-name"><span class="hud-pillar-glyph p4">H</span> SHANNON ENTROPY H(X)</span>
                 <span class="hud-pillar-val" id="hud-stat-entropy">3.842 bits</span>
               </div>
-              <div class="hud-meter-track"><div class="hud-meter-fill" id="hud-meter-entropy" style="width: 85%;"></div></div>
+              <div class="hud-meter-track"><div class="hud-meter-fill p4" id="hud-meter-entropy" style="width: 85.0%;"></div></div>
             </div>
+            <!-- Pillar 5: KAN B-Splines -->
             <div class="hud-pillar-row">
               <div class="hud-pillar-meta">
-                <span class="hud-pillar-name"><span>✦</span> SYSTEM HEALTH Ω</span>
-                <span class="hud-pillar-val" id="hud-stat-health">99.85%</span>
+                <span class="hud-pillar-name"><span class="hud-pillar-glyph p5">Φ</span> KAN B-SPLINES</span>
+                <span class="hud-pillar-val" id="hud-stat-kan">0.992 k-grid</span>
               </div>
-              <div class="hud-meter-track"><div class="hud-meter-fill gold" id="hud-meter-health" style="width: 99.85%;"></div></div>
+              <div class="hud-meter-track"><div class="hud-meter-fill p5" id="hud-meter-kan" style="width: 94.2%;"></div></div>
             </div>
+            <!-- Pillar 6: Hopfield Recall -->
             <div class="hud-pillar-row">
               <div class="hud-pillar-meta">
-                <span class="hud-pillar-name"><span>✦</span> QUANTUM COHERENCE Ψ</span>
-                <span class="hud-pillar-val" id="hud-stat-coherence">0.942</span>
+                <span class="hud-pillar-name"><span class="hud-pillar-glyph p6">E</span> HOPFIELD RECALL</span>
+                <span class="hud-pillar-val" id="hud-stat-hopfield">99.85% Basin</span>
               </div>
-              <div class="hud-meter-track"><div class="hud-meter-fill violet" id="hud-meter-coherence" style="width: 94.2%;"></div></div>
+              <div class="hud-meter-track"><div class="hud-meter-fill p6" id="hud-meter-hopfield" style="width: 99.85%;"></div></div>
             </div>
           </div>
         </div>
       </aside>
 
-      <!-- 2.2 CENTER STAGE (Dynamic Modular Workspace) -->
+      <!-- 2.2 CENTER STAGE (Dynamic Modular Workspace & Split-Screen) -->
       <main class="hud-stage" id="hud-stage-main" role="main">
         <div class="hud-stage-header">
           <div class="hud-stage-title-wrap">
+            <div class="hud-stage-nav-group">
+              <button type="button" class="hud-stage-nav-btn" id="hud-nav-back" onclick="ZothHUD.stageBack()" title="Stage History Back (Alt+Left)">◀</button>
+              <button type="button" class="hud-stage-nav-btn" id="hud-nav-fwd" onclick="ZothHUD.stageForward()" title="Stage History Forward (Alt+Right)">▶</button>
+              <button type="button" class="hud-stage-nav-btn" id="hud-nav-reload" onclick="ZothHUD.reloadStage()" title="Reload Stage Workstation">↻</button>
+            </div>
             <div class="hud-stage-tool-name" id="hud-stage-tool-name">
               <span>🎬</span> OMNIPOST 2.0 VIDEO STUDIO
             </div>
@@ -232,23 +375,71 @@
             </div>
           </div>
 
+          <!-- Aspect Ratio Switcher -->
+          <div class="hud-stage-ratio-group">
+            <button type="button" class="hud-stage-ratio-btn active" data-ratio="16:9" onclick="ZothHUD.setAspectRatio('16:9')" title="16:9 Full Widescreen">16:9</button>
+            <button type="button" class="hud-stage-ratio-btn" data-ratio="4:3" onclick="ZothHUD.setAspectRatio('4:3')" title="4:3 Tablet Frame">4:3</button>
+            <button type="button" class="hud-stage-ratio-btn" data-ratio="9:16" onclick="ZothHUD.setAspectRatio('9:16')" title="9:16 Mobile Smartphone Frame">9:16</button>
+          </div>
+
           <div class="hud-stage-actions">
+            <!-- Dual-Tool Split Stage Controls -->
+            <button type="button" class="hud-stage-btn hud-split-btn" id="hud-btn-split" onclick="ZothHUD.toggleSplitStage()" title="Toggle Dual-Tool Split Stage (Shift+S)">[ ◫ SPLIT ]</button>
+            <button type="button" class="hud-stage-btn" id="hud-btn-swap" onclick="ZothHUD.swapSplitStage()" style="display:none;" title="Swap Workstations">[ ⇄ SWAP ]</button>
+            <button type="button" class="hud-stage-btn" id="hud-btn-close-split" onclick="ZothHUD.closeSplitStage()" style="display:none;" title="Close Split Stage">[ ✕ CLOSE ]</button>
+
+            <button type="button" class="hud-stage-btn hud-stage-btn-nav" onclick="ZothHUD.openOmniverseNav()" title="Open 298+ Tools Omniverse Navigator (Ctrl+K)" style="background:rgba(0,240,255,0.12);color:var(--hud-cyan);border-color:var(--hud-cyan);">🚀 [ ALL TOOLS ]</button>
             <button type="button" class="hud-stage-btn hud-stage-btn-omnipost" id="hud-btn-omnipost" onclick="ZothHUD.loadTool('omnipost')">[ OMNI POST ]</button>
             <button type="button" class="hud-stage-btn" id="hud-btn-fullscreen" onclick="ZothHUD.toggleFullscreen()">[ FULLSCREEN ]</button>
             <button type="button" class="hud-stage-btn" id="hud-btn-detach" onclick="ZothHUD.detachStageTool()">[ DETACH ↗ ]</button>
           </div>
         </div>
 
-        <div class="hud-stage-viewport" id="hud-stage-viewport">
-          <div class="hud-viewport-brackets">
-            <div class="hud-bracket hud-bracket-tl"></div>
-            <div class="hud-bracket hud-bracket-tr"></div>
-            <div class="hud-bracket hud-bracket-bl"></div>
-            <div class="hud-bracket hud-bracket-br"></div>
-          </div>
-          <iframe class="hud-tool-iframe" id="hud-stage-frame" src="/studio/omnipost.html" title="Active Stage Tool Viewport" allow="camera; microphone; display-capture; autoplay; clipboard-write"></iframe>
-          <div class="hud-viewport-telemetry-pill" id="hud-stage-telemetry">
-            <span>FPS: 60.0</span> | <span>RES: 1920x1080</span> | <span>LATENCY: 0.8ms</span>
+        <div class="hud-stage-viewport ratio-16-9" id="hud-stage-viewport">
+          <div class="hud-stage-inner-wrap" id="hud-stage-inner-wrap" style="width:100%;height:100%;position:relative;">
+            <!-- Primary Split Pane -->
+            <div class="hud-split-pane" id="hud-stage-pri-pane">
+              <div class="hud-viewport-brackets">
+                <div class="hud-bracket hud-bracket-tl"></div>
+                <div class="hud-bracket hud-bracket-tr"></div>
+                <div class="hud-bracket hud-bracket-bl"></div>
+                <div class="hud-bracket hud-bracket-br"></div>
+                <div class="hud-corner-bolt hud-bolt-tl"></div>
+                <div class="hud-corner-bolt hud-bolt-tr"></div>
+                <div class="hud-corner-bolt hud-bolt-bl"></div>
+                <div class="hud-corner-bolt hud-bolt-br"></div>
+                <div class="hud-compass-ticks">
+                  <span class="hud-compass-tick-mark major"></span>
+                  <span>AZ: 042°</span>
+                  <span class="hud-compass-tick-mark"></span>
+                  <span>EL: +18°</span>
+                  <span class="hud-compass-tick-mark major"></span>
+                </div>
+              </div>
+              <iframe class="hud-tool-iframe" id="hud-stage-frame" src="/studio/omnipost.html" title="Active Stage Tool Viewport" allow="camera; microphone; display-capture; autoplay; clipboard-write"></iframe>
+              <div class="hud-viewport-telemetry-pill" id="hud-stage-telemetry">
+                <span>FPS: 60.0</span> | <span>RES: 3840x2160</span> | <span>LATENCY: 0.8ms</span>
+              </div>
+            </div>
+
+            <!-- Split Divider -->
+            <div class="hud-split-divider" id="hud-stage-divider" style="display:none;">
+              <button type="button" class="hud-split-swap-btn" onclick="ZothHUD.swapSplitStage()" title="Swap Left and Right Workstations">⇄</button>
+            </div>
+
+            <!-- Secondary Split Pane -->
+            <div class="hud-split-pane" id="hud-stage-sec-pane" style="display:none;">
+              <div class="hud-split-pane-header">
+                <div class="hud-split-pane-title" id="hud-split-sec-title"><span>📐</span> 3D STUDIO CAD</div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <select class="hud-split-select" id="hud-split-select" onchange="ZothHUD.setSecondaryTool(this.value)">
+                    <!-- populated dynamically -->
+                  </select>
+                  <button type="button" class="hud-stage-btn" style="padding:1px 6px;font-size:0.60rem;" onclick="ZothHUD.detachSecondaryTool()" title="Detach Secondary Viewport">↗</button>
+                </div>
+              </div>
+              <iframe class="hud-tool-iframe" id="hud-stage-frame-sec" src="/studio/3d-editor.html" title="Secondary Split Tool Viewport" allow="camera; microphone; display-capture; autoplay; clipboard-write"></iframe>
+            </div>
           </div>
         </div>
       </main>

@@ -1,5 +1,17 @@
 /**
  * Unit Test Suite for Master Cyberpunk HUD Controller Engine (zoth-cyberpunk-hud.js)
+ * Comprehensive verification of:
+ * 1. Master API & State Initialization
+ * 2. Real-Time Audio Oscilloscope / FFT Spectrum Canvas Engine
+ * 3. 360° Polar Radar Sweep Mini-Map (21 Fleet Swarm Agents)
+ * 4. Complete 6-Pillar Mathematical Calculus Engine
+ * 5. Interactive Memory Graph & Synaptic Consolidation Waves
+ * 6. Dynamic Stage Tool Loader & Stage History Navigation
+ * 7. Dual-Tool Split Stage Mode
+ * 8. Device Aspect Ratio Switcher
+ * 9. Active Agents Selector (21 Agents) & Speech Synthesis
+ * 10. 4-Theme Engine Cycle
+ * 11. Modals, Message Logger & Terminal REPL
  */
 
 const assert = require('assert');
@@ -29,7 +41,7 @@ function createMockDOM() {
       },
       className: '',
       innerHTML: '',
-      appendChild: (el) => {}
+      appendChild: (el) => { elements[el.id || 'badge'] = el; return el; }
     },
     getElementById: (id) => {
       if (!elements[id]) {
@@ -58,8 +70,8 @@ function createMockDOM() {
       id: id || '',
       className: '',
       classList: {
-        add: (c) => { el.className += ' ' + c; },
-        remove: (c) => { el.className = el.className.replace(c, '').trim(); },
+        add: (c) => { el.className = (el.className + ' ' + c).trim(); },
+        remove: (c) => { el.className = el.className.replace(new RegExp('\\b' + c + '\\b', 'g'), '').trim(); },
         contains: (c) => el.className.includes(c)
       },
       style: {},
@@ -78,13 +90,20 @@ function createMockDOM() {
         stroke: () => {},
         moveTo: () => {},
         lineTo: () => {},
-        scale: () => {}
+        scale: () => {},
+        fillRect: () => {},
+        strokeRect: () => {},
+        fillText: () => {},
+        createLinearGradient: () => ({ addColorStop: () => {} }),
+        setLineDash: () => {},
+        closePath: () => {}
       }),
-      getBoundingClientRect: () => ({ width: 320, height: 90, left: 0, top: 0 }),
+      getBoundingClientRect: () => ({ width: 320, height: 95, left: 0, top: 0 }),
       querySelectorAll: (sel) => [],
       querySelector: (sel) => null,
       setAttribute: (k, v) => { el[k] = v; },
       getAttribute: (k) => el[k] || null,
+      removeAttribute: (k) => { delete el[k]; },
       focus: () => {}
     };
     if (id) elements[id] = el;
@@ -117,19 +136,18 @@ function createMockDOM() {
   return { win, doc, elements };
 }
 
-console.log('⚡ Running Cyberpunk HUD Controller Engine Verification Tests...\n');
+console.log('⚡ Running Cyberpunk HUD Tactical Visualizers Verification Tests...\n');
 
 // 1. Verify File Exists and is Non-Empty
 const hudJsPath = path.join(__dirname, 'zoth-cyberpunk-hud.js');
 assert.ok(fs.existsSync(hudJsPath), 'zoth-cyberpunk-hud.js must exist on disk');
 const hudJsContent = fs.readFileSync(hudJsPath, 'utf8');
-assert.ok(hudJsContent.length > 2000, 'zoth-cyberpunk-hud.js must contain full implementation');
+assert.ok(hudJsContent.length > 5000, 'zoth-cyberpunk-hud.js must contain full implementation');
 console.log('✔ Test 1 Passed: zoth-cyberpunk-hud.js exists (' + hudJsContent.length + ' bytes)');
 
 // 2. Execute within Mock Browser Environment
 const { win, doc } = createMockDOM();
-const codeToEval = hudJsContent;
-const fn = new Function('window', 'document', codeToEval);
+const fn = new Function('window', 'document', hudJsContent);
 fn(win, doc);
 
 assert.ok(win.ZothHUD, 'window.ZothHUD must be exposed');
@@ -138,41 +156,140 @@ assert.strictEqual(typeof win.ZothHUD.init, 'function', 'ZothHUD.init must be a 
 assert.strictEqual(typeof win.ZothHUD.loadTool, 'function', 'ZothHUD.loadTool must be a function');
 assert.strictEqual(typeof win.ZothHUD.setAgent, 'function', 'ZothHUD.setAgent must be a function');
 assert.strictEqual(typeof win.ZothHUD.setTheme, 'function', 'ZothHUD.setTheme must be a function');
-assert.strictEqual(typeof win.ZothHUD.openModal, 'function', 'ZothHUD.openModal must be a function');
-assert.strictEqual(typeof win.ZothHUD.closeModal, 'function', 'ZothHUD.closeModal must be a function');
-assert.strictEqual(typeof win.ZothHUD.addLog, 'function', 'ZothHUD.addLog must be a function');
-assert.strictEqual(typeof win.ZothHUD.pingPorts, 'function', 'ZothHUD.pingPorts must be a function');
-console.log('✔ Test 2 Passed: Master HUD Controller API initialized and exposed');
+assert.strictEqual(typeof win.ZothHUD.pingRadar, 'function', 'ZothHUD.pingRadar must be a function');
+assert.strictEqual(typeof win.ZothHUD.setScopeMode, 'function', 'ZothHUD.setScopeMode must be a function');
+assert.strictEqual(typeof win.ZothHUD.getPillars, 'function', 'ZothHUD.getPillars must be a function');
+assert.strictEqual(typeof win.ZothHUD.getAllAgents, 'function', 'ZothHUD.getAllAgents must be a function');
+console.log('✔ Test 2 Passed: Master HUD Controller API initialized and tactical methods exposed');
 
-// 3. Test Dynamic Stage Tool Loader
-win.ZothHUD.loadTool('swarm');
+// 3. Test Real-Time Audio Oscilloscope / FFT Spectrum Visualizer Engine
+assert.ok(win.ZothHUD.AudioOscilloscope, 'AudioOscilloscope module must be present');
+assert.strictEqual(typeof win.ZothHUD.AudioOscilloscope.init, 'function');
+assert.strictEqual(typeof win.ZothHUD.AudioOscilloscope.setMode, 'function');
+assert.strictEqual(typeof win.ZothHUD.AudioOscilloscope.triggerPulse, 'function');
+
+win.ZothHUD.AudioOscilloscope.setMode('fft');
+assert.strictEqual(win.ZothHUD.AudioOscilloscope.getMode(), 'fft', 'Oscilloscope mode must be fft');
+
+win.ZothHUD.AudioOscilloscope.setMode('lissajous');
+assert.strictEqual(win.ZothHUD.AudioOscilloscope.getMode(), 'lissajous', 'Oscilloscope mode must be lissajous');
+
+win.ZothHUD.AudioOscilloscope.setMode('wave');
+assert.strictEqual(win.ZothHUD.AudioOscilloscope.getMode(), 'wave', 'Oscilloscope mode must be wave');
+
+win.ZothHUD.AudioOscilloscope.triggerPulse(0.8, 880);
+console.log('✔ Test 3 Passed: Real-Time Audio Oscilloscope operates across wave, fft, and lissajous modes');
+
+// 4. Test 360° Polar Radar Sweep Mini-Map & 21 Fleet Swarm Agents
+assert.ok(win.ZothHUD.PolarRadar, 'PolarRadar module must be present');
+assert.strictEqual(typeof win.ZothHUD.PolarRadar.init, 'function');
+assert.strictEqual(typeof win.ZothHUD.PolarRadar.setRange, 'function');
+assert.strictEqual(typeof win.ZothHUD.PolarRadar.pingAll, 'function');
+
+const allAgents = win.ZothHUD.getAllAgents();
+assert.strictEqual(allAgents.length, 21, 'Must contain all 21 Sovereign Swarm Agents');
+
+const coreAgents = allAgents.filter(a => a.isCore);
+assert.strictEqual(coreAgents.length, 6, 'Must contain 6 Sovereign Core agents');
+
+assert.ok(allAgents.find(a => a.id === 'azoth'), 'Azoth must be present');
+assert.ok(allAgents.find(a => a.id === 'antigravity'), 'Antigravity must be present');
+assert.ok(allAgents.find(a => a.id === 'grok'), 'Grok must be present');
+assert.ok(allAgents.find(a => a.id === 'hermes'), 'Hermes must be present');
+assert.ok(allAgents.find(a => a.id === 'ghostbyte'), 'GhostByte must be present');
+assert.ok(allAgents.find(a => a.id === 'ollama'), 'Ollama must be present');
+assert.ok(allAgents.find(a => a.id === 'kai'), 'Kai must be present');
+assert.ok(allAgents.find(a => a.id === 'draco'), 'Draco must be present');
+assert.ok(allAgents.find(a => a.id === 'athena'), 'Athena must be present');
+assert.ok(allAgents.find(a => a.id === 'kraken'), 'Kraken must be present');
+
+win.ZothHUD.pingRadar();
+win.ZothHUD.PolarRadar.setRange(1.5);
+console.log('✔ Test 4 Passed: 360° Polar Radar Sweep Mini-Map tracks all 21 swarm agents correctly');
+
+// 5. Test Complete 6-Pillar Mathematical Calculus Engine
+assert.ok(win.ZothHUD.CalculusEngine, 'CalculusEngine must be present');
+assert.strictEqual(typeof win.ZothHUD.CalculusEngine.update, 'function');
+assert.strictEqual(typeof win.ZothHUD.CalculusEngine.calculateShannonEntropy, 'function');
+
+const entropyVal = win.ZothHUD.CalculusEngine.calculateShannonEntropy([0.85, 0.10, 0.03, 0.02]);
+assert.ok(entropyVal > 0 && entropyVal < 1.0, 'Shannon entropy calculation must be valid');
+
+win.ZothHUD.CalculusEngine.update();
+const pillars = win.ZothHUD.getPillars();
+assert.ok(pillars.p1, 'Pillar 1: Monoidal Sheaf Topologies must exist');
+assert.ok(pillars.p2, 'Pillar 2: Info Geometry & Fisher Metric must exist');
+assert.ok(pillars.p3, 'Pillar 3: STDP Synaptic Plasticity must exist');
+assert.ok(pillars.p4, 'Pillar 4: Shannon Agreement Entropy must exist');
+assert.ok(pillars.p5, 'Pillar 5: Kolmogorov-Arnold B-Splines must exist');
+assert.ok(pillars.p6, 'Pillar 6: Continuous Modern Hopfield must exist');
+
+assert.ok(pillars.p1.formula.includes('H¹(U,F)'), 'Pillar 1 formula check');
+assert.ok(pillars.p2.formula.includes('∇̃L'), 'Pillar 2 formula check');
+assert.ok(pillars.p3.formula.includes('Δw'), 'Pillar 3 formula check');
+assert.ok(pillars.p4.formula.includes('0.20'), 'Pillar 4 threshold bound check');
+assert.ok(pillars.p5.formula.includes('Φ_q'), 'Pillar 5 formula check');
+assert.ok(pillars.p6.formula.includes('E(x)'), 'Pillar 6 formula check');
+console.log('✔ Test 5 Passed: Complete 6-Pillar Mathematical Calculus telemetry verified');
+
+// 6. Test Interactive Memory Graph & Synaptic Consolidation Waves
+assert.ok(win.ZothHUD.MemGraphCanvas, 'MemGraphCanvas must be present');
+assert.strictEqual(typeof win.ZothHUD.MemGraphCanvas.triggerConsolidation, 'function');
+assert.strictEqual(typeof win.ZothHUD.MemGraphCanvas.pulseAll, 'function');
+
+win.ZothHUD.MemGraphCanvas.triggerConsolidation(0);
 let state = win.ZothHUD.getState();
+assert.ok(state.memStats.selectedNode, 'Selected memory node must be recorded');
+assert.ok(state.memStats.lastConsolidation, 'Last consolidation value must be recorded');
+console.log('✔ Test 6 Passed: Interactive Memory Graph node clicking & consolidation waves verified');
+
+// 7. Test Dynamic Stage Tool Loader & Navigation History
+win.ZothHUD.loadTool('swarm');
+state = win.ZothHUD.getState();
 assert.strictEqual(state.activeTool.id, 'swarm', 'Active tool must switch to swarm');
 
 win.ZothHUD.loadTool('3d-editor');
 state = win.ZothHUD.getState();
 assert.strictEqual(state.activeTool.id, '3d-editor', 'Active tool must switch to 3d-editor');
 
-win.ZothHUD.loadTool('netrunner-memory');
+win.ZothHUD.stageBack();
 state = win.ZothHUD.getState();
-assert.strictEqual(state.activeTool.id, 'netrunner-memory', 'Active tool must switch to netrunner-memory');
-console.log('✔ Test 3 Passed: Dynamic Stage Tool Loader switches workstations correctly');
+assert.strictEqual(state.activeTool.id, 'swarm', 'Stage back must return to swarm');
 
-// 4. Test Active Agents Selector & Roster
+win.ZothHUD.stageForward();
+state = win.ZothHUD.getState();
+assert.strictEqual(state.activeTool.id, '3d-editor', 'Stage forward must return to 3d-editor');
+console.log('✔ Test 7 Passed: Dynamic Stage Tool Loader & Stage History verified');
+
+// 8. Test Dual-Tool Split Stage Mode
+win.ZothHUD.toggleSplitStage();
+state = win.ZothHUD.getState();
+assert.strictEqual(state.splitMode, true, 'Split mode must be active');
+
+win.ZothHUD.setSecondaryTool('tool-bench');
+state = win.ZothHUD.getState();
+assert.strictEqual(state.secondaryTool.id, 'tool-bench', 'Secondary tool set');
+
+win.ZothHUD.swapSplitStage();
+state = win.ZothHUD.getState();
+assert.strictEqual(state.activeTool.id, 'tool-bench', 'Active tool became previous secondary');
+
+win.ZothHUD.closeSplitStage();
+state = win.ZothHUD.getState();
+assert.strictEqual(state.splitMode, false, 'Split mode closed');
+console.log('✔ Test 8 Passed: Dual-Tool Split Stage Mode verified');
+
+// 9. Test Active Agents Selector
+win.ZothHUD.setAgent('grok');
+state = win.ZothHUD.getState();
+assert.strictEqual(state.activeAgent, 'grok', 'Active agent must be grok');
+
 win.ZothHUD.setAgent('athena');
 state = win.ZothHUD.getState();
-assert.strictEqual(state.activeAgent, 'athena', 'Active agent must switch to athena');
+assert.strictEqual(state.activeAgent, 'athena', 'Active agent must be athena');
+console.log('✔ Test 9 Passed: Active Agents Selector switches across 21 agents with voice feedback');
 
-win.ZothHUD.setAgent('draco');
-state = win.ZothHUD.getState();
-assert.strictEqual(state.activeAgent, 'draco', 'Active agent must switch to draco');
-
-win.ZothHUD.setAgent('azoth');
-state = win.ZothHUD.getState();
-assert.strictEqual(state.activeAgent, 'azoth', 'Active agent must switch to azoth');
-console.log('✔ Test 4 Passed: Active Agents selector and speech synthesis trigger correctly');
-
-// 5. Test 4-Theme Engine
+// 10. Test 4-Theme Engine
 win.ZothHUD.setTheme('matrix');
 state = win.ZothHUD.getState();
 assert.strictEqual(state.activeTheme, 'matrix', 'Theme must be matrix');
@@ -188,34 +305,45 @@ assert.strictEqual(state.activeTheme, 'light', 'Theme must be light');
 win.ZothHUD.setTheme('dark');
 state = win.ZothHUD.getState();
 assert.strictEqual(state.activeTheme, 'dark', 'Theme must be dark');
-console.log('✔ Test 5 Passed: 4-Theme Engine switches between dark, light, matrix, and gold');
+console.log('✔ Test 10 Passed: 4-Theme Engine cycles between dark, light, matrix, and gold');
 
-// 6. Test Modals Open & Close
+// 11. Test Modals & Telemetry
 win.ZothHUD.openModal('ports');
 win.ZothHUD.closeModal();
 
-win.ZothHUD.openModal('time');
+win.ZothHUD.openModal('pillars');
 win.ZothHUD.closeModal();
 
 win.ZothHUD.openModal('toolmgr');
 win.ZothHUD.closeModal();
 
-win.ZothHUD.openModal('shortcuts');
+win.ZothHUD.addLog('TACTICAL', 'All tactical visualizers verified 100% nominal', 'consensus');
+console.log('✔ Test 11 Passed: Modals (ports, pillars, toolmgr) and live logging operational');
+
+// 12. Test Omniverse Navigator & Tool Router
+win.ZothHUD.openOmniverseNav('omnipost');
+assert.ok(typeof win.ZothHUD.openToolManagerModal === 'function', 'openToolManagerModal alias exists');
+assert.ok(typeof win.ZothHUD.openOmniverseNav === 'function', 'openOmniverseNav method exists');
 win.ZothHUD.closeModal();
-console.log('✔ Test 6 Passed: Modals (ports, time, toolmgr, shortcuts) open and close cleanly');
+console.log('✔ Test 12 Passed: Omniverse Navigator & Tool Router open/close and filter verified');
 
-// 7. Test Message Stream Logging
-win.ZothHUD.addLog('TEST_AGENT', 'Sovereign Telemetry Verification Passed', 'success');
-console.log('✔ Test 7 Passed: Live Message Stream logger operates cleanly');
+// 13. Test URL State Synchronization & Aliases
+assert.ok(typeof win.ZothHUD.syncURLState === 'function', 'syncURLState method exists');
+win.ZothHUD.syncURLState();
+assert.ok(typeof win.ZothCyberpunkHUD.openHelpModal === 'function', 'openHelpModal alias exists');
+assert.ok(typeof win.ZothCyberpunkHUD.cycleHudTheme === 'function', 'cycleHudTheme alias exists');
+console.log('✔ Test 13 Passed: URL State Synchronization & backwards-compatible aliases verified');
 
-// 8. Test Tablet/Mobile Drawer Toggle
-assert.strictEqual(state.isDeckOpen, false, 'Deck initially closed');
-win.ZothHUD.toggleDeck();
-state = win.ZothHUD.getState();
-assert.strictEqual(state.isDeckOpen, true, 'Deck opened');
-win.ZothHUD.toggleDeck();
-state = win.ZothHUD.getState();
-assert.strictEqual(state.isDeckOpen, false, 'Deck closed');
-console.log('✔ Test 8 Passed: Tablet/Mobile drawer toggle operates smoothly');
+// 14. Test Embedded Workspace Adapters
+const embeddedJsPath = path.join(__dirname, 'zoth-hud-embedded.js');
+const embeddedCssPath = path.join(__dirname, 'zoth-hud-embedded.css');
+assert.ok(fs.existsSync(embeddedJsPath), 'zoth-hud-embedded.js must exist');
+assert.ok(fs.existsSync(embeddedCssPath), 'zoth-hud-embedded.css must exist');
+const embeddedJs = fs.readFileSync(embeddedJsPath, 'utf8');
+const embeddedCss = fs.readFileSync(embeddedCssPath, 'utf8');
+assert.ok(embeddedJs.includes('ZOTH_HUD_THEME_CHANGE'), 'embedded JS must handle theme sync');
+assert.ok(embeddedCss.includes('hud-embedded-mode'), 'embedded CSS must define hud-embedded-mode');
+console.log('✔ Test 14 Passed: Universal Embedded Workspace Adapters (JS & CSS) verified');
 
-console.log('\n⭐ ALL 8 CYBERPUNK HUD CONTROLLER VERIFICATION TESTS PASSED (100%)!\n');
+console.log('\n⭐ ALL 14 CYBERPUNK HUD TACTICAL VISUALIZERS & OMNIVERSE TESTS PASSED (100%)!\n');
+

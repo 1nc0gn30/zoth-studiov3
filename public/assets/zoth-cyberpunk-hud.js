@@ -1,28 +1,24 @@
 /**
- * ⚡ ZOTH STUDIO — MASTER CYBERPUNK VIDEO GAME HUD CONTROLLER ENGINE (v5.0 SOVEREIGN)
+ * ⚡ ZOTH STUDIO — MASTER CYBERPUNK VIDEO GAME HUD CONTROLLER ENGINE (v5.5 SOVEREIGN)
  * 
- * Capabilities:
- * 1. Dynamic Stage Tool Loader:
- *    - Maintains catalog of all 23+ primary Zoth Studio workstations + 298 verified registry tools.
- *    - Instant 1-click switching of active tool in Center Stage without full page reload.
- *    - Updates Stage Header (Tool Name, taxonomy tags, runtime pill, [ OMNI POST ], [ FULLSCREEN ], [ DETACH ]).
- * 2. Left Deck Interactive Components:
- *    - 'ACTIVE AGENTS' roster selector with custom cyber radio buttons, multi-agent voice synthesis, and context.
- *    - 'MEMORY GRAPH' mini canvas visualizer: animated synaptic node network, pulsating axons & particle flow.
- *    - 'COMMAND LINE' interactive terminal REPL: history buffer, local commands ('help', 'status', 'ports',
- *      'agent <name>', 'tool <name>', 'swarm', 'mem', 'clear', 'theme <name>', 'calc <expr>') and loopback execution to :8484.
- *    - 'MESSAGE LOG': auto-scrolling live event stream with ambient heartbeats.
- *    - 'MATH PILLAR 6 STATUS': real-time gauge computing Shannon entropy H(X), loopback latency, and system health.
- * 3. Top Header Modals & Telemetry:
- *    - '[ PORTS ]': Popover / modal showing real-time loopback status for :8088, :8484, :8787, :8788, :5225, :8767, :11434 with 1-click ping check.
- *    - '[ TIME ]': Live chronometer display (UTC, Local, Unix Epoch) + cron task scheduler view with manual triggers.
- *    - '[ THEMES ]': Instant 4-theme cycle (dark, light, matrix, gold).
- *    - '[ TOOL MGR ]': Searchable modal overlay listing all 298+ tools with category filter pills and 1-click 'Load into Stage' buttons.
- *    - '(?)': Operator quick guide & keyboard shortcuts modal.
- * 4. Bottom Quick-Dock:
- *    - Quick launch triggers for '[ SWARM ]', '[ MEMORY ]', '[ WEB GEN ]', '[ PETS ]', '[ VAULT ]' with live dock telemetry.
- * 5. Responsive Drawer & Mobile Sheets:
- *    - Tablet/mobile drawer toggle and slide-up modal sheets with touch gesture handling.
+ * Interactive Radar, Oscilloscope & 6-Pillar Calculus Architecture:
+ * 1. Real-Time Audio Oscilloscope / FFT Spectrum Canvas:
+ *    - Live 60 FPS audio visualizer reacting to Web Audio synthesizer beeps, voice memos, clicks, and keystrokes.
+ *    - Modes: Waveform Oscilloscope (Time Domain), FFT Spectrum (Frequency Equalizer), Lissajous (Phase Orbital).
+ * 2. 360° Polar Radar Sweep Mini-Map:
+ *    - Interactive 2D polar radar canvas showing all 21 swarm agents positioned by domain angle and distance.
+ *    - Rotating green/cyan radar sweep beam with blip glow fading, clickable agent blips that attune the active agent.
+ * 3. Complete 6-Pillar Mathematical Calculus Engine:
+ *    - Real-time simulation and telemetry with micro-fluctuations for all 6 pillars:
+ *      • Pillar 1: Monoidal Sheaf Topologies (Cohomology H¹(U,F) = 0.000)
+ *      • Pillar 2: Info Geometry & Fisher Metric (Natural Gradient ∇̃L)
+ *      • Pillar 3: STDP Synaptic Plasticity (Δw = 0.842 e^-Δt/τ)
+ *      • Pillar 4: Shannon Agreement Entropy (H(P) = 0.124 bits < 0.20 threshold)
+ *      • Pillar 5: Kolmogorov-Arnold B-Splines (Φ_q Parameterized)
+ *      • Pillar 6: Continuous Modern Hopfield Recall (E(x) = -β^-1 ln Σ exp)
+ * 4. Interactive Memory Graph Upgrades:
+ *    - Clickable memory nodes in 2D canvas with radial consolidation waves, axon brightening, and synaptic inspector.
+ * 5. Dynamic Stage Tool Loader, Dual-Tool Split Stage, Navigation History, Terminal REPL, 4 Themes & Modals.
  */
 
 (function (window, document) {
@@ -34,14 +30,28 @@
   }
 
   /* =============================================================================
-     1. CYBER AUDIO FX & PROCEDURAL SYNTHESIZER
+     1. CYBER AUDIO FX, PROCEDURAL SYNTHESIZER & REAL-TIME OSCILLOSCOPE
      ============================================================================= */
   var audioCtx = null;
+  var analyserNode = null;
+  var masterGainNode = null;
+
   function getAudioContext() {
     if (!audioCtx) {
       var AudioClass = window.AudioContext || window.webkitAudioContext;
       if (AudioClass) {
         audioCtx = new AudioClass();
+        try {
+          analyserNode = audioCtx.createAnalyser();
+          analyserNode.fftSize = 256;
+          analyserNode.smoothingTimeConstant = 0.82;
+          
+          masterGainNode = audioCtx.createGain();
+          masterGainNode.gain.setValueAtTime(0.85, audioCtx.currentTime);
+          
+          masterGainNode.connect(analyserNode);
+          analyserNode.connect(audioCtx.destination);
+        } catch (e) {}
       }
     }
     if (audioCtx && audioCtx.state === 'suspended') {
@@ -58,6 +68,8 @@
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
 
+      var dest = masterGainNode || ctx.destination;
+
       if (type === 'chirp' || type === 'hover') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(880, now);
@@ -65,9 +77,10 @@
         gain.gain.setValueAtTime(0.04, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(dest);
         osc.start(now);
         osc.stop(now + 0.05);
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.4, 880);
       } else if (type === 'select' || type === 'click') {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(520, now);
@@ -75,9 +88,10 @@
         gain.gain.setValueAtTime(0.08, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(dest);
         osc.start(now);
         osc.stop(now + 0.07);
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.65, 520);
       } else if (type === 'switch' || type === 'tool') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(320, now);
@@ -86,19 +100,21 @@
         gain.gain.setValueAtTime(0.06, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(dest);
         osc.start(now);
         osc.stop(now + 0.14);
-      } else if (type === 'ping') {
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.8, 480);
+      } else if (type === 'ping' || type === 'radar') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(1200, now);
         osc.frequency.setValueAtTime(1600, now + 0.05);
         gain.gain.setValueAtTime(0.07, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(dest);
         osc.start(now);
         osc.stop(now + 0.11);
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.9, 1400);
       } else if (type === 'error') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(220, now);
@@ -106,9 +122,10 @@
         gain.gain.setValueAtTime(0.1, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(dest);
         osc.start(now);
         osc.stop(now + 0.17);
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(1.0, 110);
       } else if (type === 'boot') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(220, now);
@@ -116,14 +133,25 @@
         gain.gain.setValueAtTime(0.08, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(dest);
         osc.start(now);
         osc.stop(now + 0.3);
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(1.0, 440);
+      } else if (type === 'wave' || type === 'ripple') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(640, now);
+        osc.frequency.exponentialRampToValueAtTime(320, now + 0.18);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(dest);
+        osc.start(now);
+        osc.stop(now + 0.22);
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.75, 320);
       }
     } catch (e) {}
   }
 
-  // Multi-Agent Speech Synthesis Engine
   function speakAgentVoice(agentId, text) {
     if (!window.speechSynthesis) return;
     try {
@@ -156,58 +184,266 @@
         utterance.pitch = 1.0;
         utterance.rate = 1.0;
       }
+      
+      if (AudioOscilloscope) {
+        AudioOscilloscope.triggerPulse(0.7, 500);
+      }
       window.speechSynthesis.speak(utterance);
     } catch (e) {}
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     1.1 REAL-TIME AUDIO OSCILLOSCOPE / FFT SPECTRUM VISUALIZER ENGINE
+     ───────────────────────────────────────────────────────────────────────────── */
+  var AudioOscilloscope = {
+    canvas: null,
+    ctx: null,
+    mode: 'wave', // 'wave' | 'fft' | 'lissajous'
+    animId: null,
+    pulseEnergy: 0,
+    pulseFreq: 440,
+    timePhase: 0,
+    timeData: null,
+    freqData: null,
+    width: 200,
+    height: 38,
+
+    init: function (canvasEl) {
+      if (!canvasEl) return;
+      this.canvas = canvasEl;
+      this.ctx = canvasEl.getContext('2d');
+      this.timeData = new Uint8Array(128);
+      this.freqData = new Uint8Array(64);
+      this.resize();
+      this.bindEvents();
+      this.startLoop();
+    },
+
+    resize: function () {
+      if (!this.canvas) return;
+      var rect = this.canvas.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      this.width = rect.width || 180;
+      this.height = rect.height || 36;
+      this.canvas.width = this.width * dpr;
+      this.canvas.height = this.height * dpr;
+      if (this.ctx) {
+        this.ctx.scale(dpr, dpr);
+      }
+    },
+
+    bindEvents: function () {
+      var self = this;
+      if (!this.canvas) return;
+
+      this.canvas.addEventListener('click', function () {
+        self.cycleMode();
+        playCyberSFX('chirp');
+      });
+
+      document.addEventListener('keydown', function () {
+        self.triggerPulse(0.28, 600 + Math.random() * 300);
+      });
+
+      document.addEventListener('mousedown', function () {
+        self.triggerPulse(0.35, 400 + Math.random() * 400);
+      });
+
+      window.addEventListener('resize', function () {
+        self.resize();
+      });
+    },
+
+    setMode: function (newMode) {
+      if (['wave', 'fft', 'lissajous'].indexOf(newMode) !== -1) {
+        this.mode = newMode;
+      }
+    },
+
+    getMode: function () {
+      return this.mode;
+    },
+
+    cycleMode: function () {
+      var modes = ['wave', 'fft', 'lissajous'];
+      var idx = modes.indexOf(this.mode);
+      this.mode = modes[(idx + 1) % modes.length];
+      if (ZothHUD && ZothHUD.addLog) {
+        ZothHUD.addLog('SCOPE', 'Oscilloscope Mode: ' + this.mode.toUpperCase(), 'system');
+      }
+    },
+
+    triggerPulse: function (intensity, freq) {
+      this.pulseEnergy = Math.min(1.0, this.pulseEnergy + (intensity || 0.5));
+      if (freq) this.pulseFreq = freq;
+    },
+
+    startLoop: function () {
+      var self = this;
+      var raf = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
+      function loop() {
+        self.render();
+        self.animId = raf(loop);
+      }
+      loop();
+    },
+
+    render: function () {
+      if (!this.ctx) return;
+      var ctx = this.ctx;
+      var w = this.width;
+      var h = this.height;
+      var cy = h / 2;
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
+      ctx.lineWidth = 0.5;
+      ctx.moveTo(0, cy);
+      ctx.lineTo(w, cy);
+      ctx.moveTo(w / 2, 0);
+      ctx.lineTo(w / 2, h);
+      ctx.stroke();
+
+      this.timePhase += 0.08;
+      this.pulseEnergy *= 0.94;
+
+      var hasRealAudio = false;
+      if (analyserNode) {
+        try {
+          if (this.mode === 'fft') {
+            analyserNode.getByteFrequencyData(this.freqData);
+            for (var f = 0; f < this.freqData.length; f++) {
+              if (this.freqData[f] > 0) { hasRealAudio = true; break; }
+            }
+          } else {
+            analyserNode.getByteTimeDomainData(this.timeData);
+            for (var t = 0; t < this.timeData.length; t++) {
+              if (Math.abs(this.timeData[t] - 128) > 2) { hasRealAudio = true; break; }
+            }
+          }
+        } catch (e) {}
+      }
+
+      var theme = STATE.activeTheme || 'dark';
+      var primaryColor = (theme === 'gold') ? '#fbbf24' : (theme === 'matrix' ? '#00ff66' : (theme === 'light' ? '#0071e3' : '#00f0ff'));
+      var accentColor = (theme === 'gold') ? '#ffd700' : (theme === 'matrix' ? '#34d399' : (theme === 'light' ? '#0284c7' : '#00ff66'));
+
+      if (this.mode === 'wave') {
+        ctx.beginPath();
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 1.4;
+        ctx.shadowColor = primaryColor;
+        ctx.shadowBlur = 6;
+
+        var points = 48;
+        for (var i = 0; i < points; i++) {
+          var x = (i / (points - 1)) * w;
+          var y = cy;
+          if (hasRealAudio && this.timeData) {
+            var dataIdx = Math.floor((i / points) * this.timeData.length);
+            var v = (this.timeData[dataIdx] - 128) / 128.0;
+            y = cy + v * (h * 0.42);
+          } else {
+            var synthVal = Math.sin(this.timePhase + i * 0.35) * (3.0 + this.pulseEnergy * (h * 0.38)) +
+                           Math.cos(this.timePhase * 1.5 + i * 0.7) * (1.5 + this.pulseEnergy * 4.0);
+            y = cy + synthVal;
+          }
+
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+      } else if (this.mode === 'fft') {
+        var numBars = 20;
+        var barWidth = (w - (numBars - 1) * 2) / numBars;
+
+        for (var b = 0; b < numBars; b++) {
+          var barHeight = 2;
+          if (hasRealAudio && this.freqData) {
+            var fIdx = Math.floor((b / numBars) * (this.freqData.length / 2));
+            barHeight = (this.freqData[fIdx] / 255) * (h - 6);
+          } else {
+            var factor = Math.sin(this.timePhase * 1.2 + b * 0.45) * 0.5 + 0.5;
+            barHeight = 2 + (factor * 6) + (this.pulseEnergy * (h - 8) * Math.exp(-b * 0.06));
+          }
+          barHeight = Math.max(2, Math.min(h - 4, barHeight));
+
+          var bx = b * (barWidth + 2);
+          var by = h - barHeight - 2;
+
+          var grad = ctx.createLinearGradient(bx, by, bx, h);
+          grad.addColorStop(0, primaryColor);
+          grad.addColorStop(1, accentColor);
+
+          ctx.fillStyle = grad;
+          ctx.fillRect(bx, by, barWidth, barHeight);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(bx, by - 1.5, barWidth, 1.2);
+        }
+
+      } else if (this.mode === 'lissajous') {
+        ctx.beginPath();
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 1.2;
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = 5;
+
+        var cx = w / 2;
+        var rx = Math.min(cx - 8, (h / 2 - 4) * 2.2);
+        var ry = (h / 2) - 4;
+        var lPoints = 64;
+
+        for (var lp = 0; lp <= lPoints; lp++) {
+          var tAngle = (lp / lPoints) * Math.PI * 2;
+          var modA = 2 + (hasRealAudio ? 1 : 0);
+          var modB = 3 + (this.pulseEnergy > 0.2 ? 1 : 0);
+          var px = cx + Math.sin(modA * tAngle + this.timePhase) * (rx * (0.4 + this.pulseEnergy * 0.5));
+          var py = cy + Math.cos(modB * tAngle) * (ry * (0.4 + this.pulseEnergy * 0.5));
+
+          if (lp === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.font = '700 8px monospace';
+      ctx.fillStyle = primaryColor;
+      ctx.fillText('[OSC: ' + this.mode.toUpperCase() + ']', 4, 9);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText('60FPS', w - 30, 9);
+    }
+  };
+
   /* =============================================================================
-     2. MASTER DATA CATALOGS (AGENTS, WORKSTATIONS, PORTS, CRON JOBS)
+     2. MASTER DATA CATALOGS (21 AGENTS, WORKSTATIONS, PORTS, CRON JOBS)
      ============================================================================= */
 
-  var AGENTS_ROSTER = [
+  var ALL_21_AGENTS = [
+    // 1. Sovereign Command Core (6 Core Agents)
     {
       id: 'azoth',
       name: 'AZOTH',
       role: 'CORE MAGUS',
       desc: 'Hermetic Sovereign AI Core & Alchemical Synthesis Engine',
       domain: 'Grand Synthesis',
-      color: '#00f0ff',
-      icon: '🔮',
+      quadrant: 'Sovereign Core',
+      angleDeg: 0,
+      distR: 0.28,
+      color: '#fbbf24',
+      icon: '⚗️',
       harness: 'Google Antigravity agy CLI',
+      isCore: true,
       greeting: 'Master Azoth online. Quintessence telemetry nominal. Standing by for sovereign orchestration.'
-    },
-    {
-      id: 'athena',
-      name: 'ATHENA',
-      role: 'SEMANTIC AEO',
-      desc: 'Semantic Knowledge Graph & AEO Knowledge Curator',
-      domain: 'Knowledge & Search',
-      color: '#c084fc',
-      icon: '🦉',
-      harness: 'Vector Knowledge Oracle',
-      greeting: 'Athena initialized. Neural triples and semantic index aligned.'
-    },
-    {
-      id: 'draco',
-      name: 'DRACO',
-      role: 'VULCAN CODE',
-      desc: 'Hardware Bridge, Low-Level Rust & Micro-Controller Flasher',
-      domain: 'Silicon & Compilers',
-      color: '#ef4444',
-      icon: '🐉',
-      harness: 'Native Tool Harness',
-      greeting: 'Draco armed. Hardware registers and partition tables ready for compilation.'
-    },
-    {
-      id: 'hermes',
-      name: 'HERMES',
-      role: 'TOOL HARNESS',
-      desc: 'Autonomous Tool Harness & Subprocess Dispatcher',
-      domain: 'Local Execution',
-      color: '#f59e0b',
-      icon: '⚡',
-      harness: 'Subprocess PTY Bridge (:8484)',
-      greeting: 'Hermes ready. Execution pipelines and command bus standing by.'
     },
     {
       id: 'antigravity',
@@ -215,45 +451,294 @@
       role: 'AST ORCHESTRATOR',
       desc: 'Lead Abstract Syntax Tree Orchestrator & Systems Architect',
       domain: 'Systems Engineering',
+      quadrant: 'Sovereign Core',
+      angleDeg: 18,
+      distR: 0.46,
       color: '#7c9cff',
-      icon: '🪐',
+      icon: '🛰️',
       harness: 'AGY Autonomous Daemon',
+      isCore: true,
       greeting: 'Antigravity active. AST multi-agent tree decomposed and synchronized.'
-    },
-    {
-      id: 'lycan',
-      name: 'LYCAN',
-      role: 'SECURITY OSINT',
-      desc: 'Argon2id Enclave, Vulnerability Scanner & Security Fuzzer',
-      domain: 'SecOps & Cryptography',
-      color: '#10b981',
-      icon: '🐺',
-      harness: 'Parrot SecOps Toolchain',
-      greeting: 'Lycan prowling. Cryptographic enclave locked, threat model zero-trust.'
     },
     {
       id: 'grok',
       name: 'GROK',
       role: 'FIRST PRINCIPLES',
-      desc: 'Astrolabe Truth & First-Principles Mathematical Arbiter',
+      desc: 'Speed Reasoning Engine & Axiomatic Mathematical Arbiter',
       domain: 'Mathematics & Logic',
-      color: '#34d399',
-      icon: '📐',
+      quadrant: 'Sovereign Core',
+      angleDeg: 36,
+      distR: 0.58,
+      color: '#00d4aa',
+      icon: '🚀',
       harness: 'xAI Grok CLI Interface',
+      isCore: true,
       greeting: 'Grok synchronized. Axiomatic verification engine running.'
     },
+    {
+      id: 'hermes',
+      name: 'HERMES',
+      role: 'TOOL HARNESS',
+      desc: 'Autonomous Tool Harness & Subprocess PTY Dispatcher',
+      domain: 'Local Execution',
+      quadrant: 'Sovereign Core',
+      angleDeg: 54,
+      distR: 0.50,
+      color: '#ffaa40',
+      icon: '⚡',
+      harness: 'Subprocess PTY Bridge (:8484)',
+      isCore: true,
+      greeting: 'Hermes ready. Execution pipelines and command bus standing by.'
+    },
+    {
+      id: 'ghostbyte',
+      name: 'GHOSTBYTE',
+      role: 'RED TEAM SPECTRE',
+      desc: 'Offensive Security & Zero-Day Exploit Sentinel',
+      domain: 'SecOps & Fuzzing',
+      quadrant: 'Sovereign Core',
+      angleDeg: 72,
+      distR: 0.65,
+      color: '#c084fc',
+      icon: '👾',
+      harness: 'Parrot SecOps Toolchain',
+      isCore: true,
+      greeting: 'GhostByte prowling. Zero-day invariant scanner operational.'
+    },
+    {
+      id: 'ollama',
+      name: 'OLLAMA',
+      role: 'AIR-GAPPED COMPUTE',
+      desc: 'Local Air-Gapped Sovereign Neural Inference Runner',
+      domain: 'Neural Inference',
+      quadrant: 'Sovereign Core',
+      angleDeg: 90,
+      distR: 0.72,
+      color: '#f59e0b',
+      icon: '🦙',
+      harness: 'Local Ollama (:11434)',
+      isCore: true,
+      greeting: 'Ollama node linked. Air-gapped neural compute ready.'
+    },
+
+    // 2. Synthesis & Silicon Sentinels (5 Agents)
     {
       id: 'kai',
       name: 'KAI',
       role: 'AST INSPECTOR',
-      desc: 'Workspace File Hierarchy & Heuristic Scanner',
+      desc: 'Phoenix Spirit · Workspace File Hierarchy & Code Scanner',
       domain: 'Code Audit',
+      quadrant: 'Synthesis & Silicon',
+      angleDeg: 108,
+      distR: 0.58,
       color: '#00f0ff',
-      icon: '🔍',
+      icon: '🦅',
       harness: 'Chrome DevTools MCP',
       greeting: 'Kai linked. AST heuristics and static invariants verified.'
+    },
+    {
+      id: 'draco',
+      name: 'DRACO',
+      role: 'VULCAN CODE',
+      desc: 'Celestial Dragon · Hardware Bridge, Rust & Micro-Controllers',
+      domain: 'Silicon & Compilers',
+      quadrant: 'Synthesis & Silicon',
+      angleDeg: 126,
+      distR: 0.66,
+      color: '#ff8833',
+      icon: '🐲',
+      harness: 'Native Hardware Toolchain',
+      greeting: 'Draco armed. Hardware registers ready for compilation.'
+    },
+    {
+      id: 'ignis',
+      name: 'IGNIS',
+      role: 'AST OPTIMIZER',
+      desc: 'Flame Tiger · Refactor Specialist & Dead Code Pruner',
+      domain: 'Refactor & Tree',
+      quadrant: 'Synthesis & Silicon',
+      angleDeg: 144,
+      distR: 0.74,
+      color: '#ff5533',
+      icon: '🐅',
+      harness: 'Tree-Sitter Optimizer',
+      greeting: 'Ignis ignited. Dead code sweep and AST pruning ready.'
+    },
+    {
+      id: 'lycan',
+      name: 'LYCAN',
+      role: 'SECURITY OSINT',
+      desc: 'Guardian Wolf · OWASP Perimeter & Argon2id Keyrings',
+      domain: 'SecOps & Enclave',
+      quadrant: 'Synthesis & Silicon',
+      angleDeg: 162,
+      distR: 0.60,
+      color: '#3b82f6',
+      icon: '🐺',
+      harness: 'Parrot OSINT Engine',
+      greeting: 'Lycan standing guard. Cryptographic perimeter locked.'
+    },
+    {
+      id: 'athena',
+      name: 'ATHENA',
+      role: 'SEMANTIC AEO',
+      desc: 'Wise Owl · Semantic Knowledge Graph & AEO Schema Oracle',
+      domain: 'Knowledge & Search',
+      quadrant: 'Synthesis & Silicon',
+      angleDeg: 180,
+      distR: 0.48,
+      color: '#00d4aa',
+      icon: '🦉',
+      harness: 'Vector Knowledge Oracle',
+      greeting: 'Athena initialized. Neural triples and semantic index aligned.'
+    },
+
+    // 3. Familiars & Mascots (5 Agents)
+    {
+      id: 'kitsune',
+      name: 'KITSUNE',
+      role: 'UI AESTHETICS',
+      desc: 'Nine-Tailed Fox · Creative Taste & Design Token Arbiter',
+      domain: 'Design Systems',
+      quadrant: 'Familiars & Mascots',
+      angleDeg: 198,
+      distR: 0.68,
+      color: '#10b981',
+      icon: '🦊',
+      harness: 'Design Token Validator',
+      greeting: 'Kitsune attentive. UI hierarchy and token harmony pristine.'
+    },
+    {
+      id: 'pixel-neko',
+      name: 'PIXEL-NEKO',
+      role: 'REGISTRY SYNC',
+      desc: 'Cyber Cat · Registry Indexer & 298 Tool Manifest Syncer',
+      domain: 'Package Registry',
+      quadrant: 'Familiars & Mascots',
+      angleDeg: 216,
+      distR: 0.76,
+      color: '#ff007a',
+      icon: '🐱',
+      harness: 'Registry Manifest Daemon',
+      greeting: 'Pixel-Neko active. 298 tool manifests synchronized.'
+    },
+    {
+      id: 'pixel-shiba',
+      name: 'PIXEL-SHIBA',
+      role: 'VAULT WARDEN',
+      desc: 'Guard Dog · BYOK Key Vault Warden & Salt Derivation',
+      domain: 'Vault Keyrings',
+      quadrant: 'Familiars & Mascots',
+      angleDeg: 234,
+      distR: 0.70,
+      color: '#f59e0b',
+      icon: '🐕',
+      harness: 'Argon2id Enclave Bridge',
+      greeting: 'Pixel-Shiba barking ready. BYOK vault secured.'
+    },
+    {
+      id: 'radical-minion',
+      name: 'RADICAL-MINION',
+      role: 'SCHEMA HERALD',
+      desc: 'Hermes Herald · Function Caller & JSON-Schema Validator',
+      domain: 'Contracts & Tooling',
+      quadrant: 'Familiars & Mascots',
+      angleDeg: 252,
+      distR: 0.56,
+      color: '#22c55e',
+      icon: '⚡',
+      harness: 'Schema Contract Harness',
+      greeting: 'Radical Minion standing by. JSON-schema contracts verified.'
+    },
+    {
+      id: 'aquila',
+      name: 'AQUILA',
+      role: 'EDGE ROUTING',
+      desc: 'Sky Eagle · Netlify Edge Functions & CDN DNS Sentinel',
+      domain: 'Edge Infrastructure',
+      quadrant: 'Familiars & Mascots',
+      angleDeg: 270,
+      distR: 0.80,
+      color: '#22d3ee',
+      icon: '🦅',
+      harness: 'Edge DNS Controller',
+      greeting: 'Aquila soaring. Edge routes and serverless functions clear.'
+    },
+
+    // 4. Deep Abyssal & Temporal Sentinels (5 Agents)
+    {
+      id: 'leviathan',
+      name: 'LEVIATHAN',
+      role: 'VECTOR MEMORY',
+      desc: 'Abyssal Serpent · 1024d Vector DB & HNSW Graph Indexer',
+      domain: 'Lucy Memory Daemon',
+      quadrant: 'Deep Abyssal',
+      angleDeg: 288,
+      distR: 0.84,
+      color: '#6366f1',
+      icon: '🐉',
+      harness: 'Lucy Vector Store (:8788)',
+      greeting: 'Leviathan pulsing. HNSW vector index primed.'
+    },
+    {
+      id: 'onyx',
+      name: 'ONYX',
+      role: 'FUZZ SENTINEL',
+      desc: 'Black Panther · Boundary Fuzzer & Penetration Test Harness',
+      domain: 'Security Fuzzing',
+      quadrant: 'Deep Abyssal',
+      angleDeg: 306,
+      distR: 0.76,
+      color: '#a855f7',
+      icon: '🐆',
+      harness: 'SecOps Penetration Harness',
+      greeting: 'Onyx stalking. Boundary fuzzing algorithms active.'
+    },
+    {
+      id: 'chronos',
+      name: 'CHRONOS',
+      role: 'DAG NAVIGATOR',
+      desc: 'Time Stag · Event Bus Time-Travel & DAG Version Sorter',
+      domain: 'Temporal DAG',
+      quadrant: 'Deep Abyssal',
+      angleDeg: 324,
+      distR: 0.64,
+      color: '#ec4899',
+      icon: '🦌',
+      harness: 'DAG History Engine',
+      greeting: 'Chronos synchronized. Event bus timeline mapped.'
+    },
+    {
+      id: 'aether',
+      name: 'AETHER',
+      role: 'SWARM CONDUCTOR',
+      desc: 'Cosmic Manta · Swarm Topology Mesh & Dynamic Load Balancer',
+      domain: 'Mesh Orchestration',
+      quadrant: 'Deep Abyssal',
+      angleDeg: 342,
+      distR: 0.52,
+      color: '#00f0ff',
+      icon: '🛸',
+      harness: 'Swarm Mesh Conductor',
+      greeting: 'Aether resonating. Multi-agent mesh balanced.'
+    },
+    {
+      id: 'kraken',
+      name: 'KRAKEN',
+      role: 'SSE SENTINEL',
+      desc: 'Deep Cephalopod · SSE Stream Multiplexer & Packet Sniffer',
+      domain: 'Event Streams',
+      quadrant: 'Deep Abyssal',
+      angleDeg: 354,
+      distR: 0.82,
+      color: '#06b6d4',
+      icon: '🐙',
+      harness: 'SSE Stream Multiplexer',
+      greeting: 'Kraken listening. Live SSE packet streams nominal.'
     }
   ];
+
+  var AGENTS_ROSTER = ALL_21_AGENTS;
 
   // 25+ Primary Studio Workstations
   var PRIMARY_WORKSTATIONS = [
@@ -603,28 +1088,354 @@
   var STATE = {
     activeAgent: 'azoth',
     activeTool: PRIMARY_WORKSTATIONS[0],
+    secondaryTool: PRIMARY_WORKSTATIONS[1],
+    splitMode: false,
+    aspectRatio: '16:9',
+    stageHistory: [PRIMARY_WORKSTATIONS[0].id],
+    stageHistoryIndex: 0,
+    activeTermTab: 'tty0',
     activeTheme: initialTheme,
     isDeckOpen: false,
     isFullscreen: false,
     terminalHistory: [],
     historyIndex: -1,
     mathStats: {
-      entropy: 3.842,
-      latency: 0.74,
-      health: 99.85,
-      plasticity: 0.012,
-      coherence: 0.942
+      entropy: '0.124',
+      latency: '0.74',
+      health: '99.85',
+      plasticity: '0.842',
+      coherence: '0.942',
+      cohomology: '0.000',
+      fisherMetric: '4.821',
+      splinePhi: '0.996',
+      hopfieldEnergy: '-14.28'
+    },
+    pillarsData: {
+      p1: { name: 'Monoidal Sheaf Topologies', formula: 'H¹(U,F) = 0.000', value: '0.000', unit: 'obstruction', status: 'EXACT' },
+      p2: { name: 'Info Geometry & Fisher Metric', formula: '∇̃L = F⁻¹∇L [4.821]', value: '4.821', unit: 'det(F)', status: 'GEOMETRIC' },
+      p3: { name: 'STDP Synaptic Plasticity', formula: 'Δw = 0.842 e^-Δt/τ', value: '0.842', unit: 'potentiation', status: 'HEBBIAN' },
+      p4: { name: 'Shannon Agreement Entropy', formula: 'H(P) = 0.124 bits < 0.20', value: '0.124', unit: 'bits', status: 'BOUNDED' },
+      p5: { name: 'Kolmogorov-Arnold B-Splines', formula: 'Φ_q Parameterized [0.996]', value: '0.996', unit: 'smoothness', status: 'SPLINE' },
+      p6: { name: 'Continuous Modern Hopfield', formula: 'E(x) = -14.28 nats', value: '-14.28', unit: 'nats', status: 'RECALL' }
     },
     memStats: {
       nodes: 128,
       synapses: 512,
       density: 0.84,
-      latency: '0.82ms'
+      latency: '0.82ms',
+      selectedNode: null,
+      lastConsolidation: null
     }
   };
 
   /* =============================================================================
-     4. MEMORY GRAPH ANIMATED CANVAS ENGINE
+     4. 360° POLAR RADAR SWEEP MINI-MAP ENGINE
+     ============================================================================= */
+  var PolarRadar = {
+    canvas: null,
+    ctx: null,
+    sweepAngle: 0,
+    sweepSpeed: 0.035,
+    rangeScale: 1.0,
+    width: 220,
+    height: 220,
+    animId: null,
+    hoveredAgent: null,
+    blips: [],
+
+    init: function (canvasEl) {
+      if (!canvasEl) return;
+      this.canvas = canvasEl;
+      this.ctx = canvasEl.getContext('2d');
+      this.resize();
+      this.initBlips();
+      this.bindEvents();
+      this.startLoop();
+    },
+
+    resize: function () {
+      if (!this.canvas) return;
+      var rect = this.canvas.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      this.width = rect.width || 220;
+      this.height = rect.height || 220;
+      this.canvas.width = this.width * dpr;
+      this.canvas.height = this.height * dpr;
+      if (this.ctx) {
+        this.ctx.scale(dpr, dpr);
+      }
+    },
+
+    initBlips: function () {
+      this.blips = ALL_21_AGENTS.map(function (agent) {
+        return {
+          id: agent.id,
+          name: agent.name,
+          role: agent.role,
+          icon: agent.icon,
+          color: agent.color,
+          domain: agent.domain,
+          quadrant: agent.quadrant,
+          angleRad: (agent.angleDeg * Math.PI) / 180,
+          distR: agent.distR,
+          intensity: 0.15,
+          pingRadius: 0,
+          isCore: !!agent.isCore
+        };
+      });
+    },
+
+    bindEvents: function () {
+      var self = this;
+      if (!this.canvas) return;
+
+      this.canvas.addEventListener('mousemove', function (e) {
+        var rect = self.canvas.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        var my = e.clientY - rect.top;
+        var cx = self.width / 2;
+        var cy = self.height / 2;
+        var radius = Math.min(cx, cy) - 12;
+
+        var closest = null;
+        var closestDist = 12;
+
+        for (var i = 0; i < self.blips.length; i++) {
+          var b = self.blips[i];
+          var bx = cx + Math.cos(b.angleRad) * (b.distR * radius * self.rangeScale);
+          var by = cy + Math.sin(b.angleRad) * (b.distR * radius * self.rangeScale);
+          var dx = mx - bx;
+          var dy = my - by;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < closestDist) {
+            closest = b;
+            closestDist = dist;
+          }
+        }
+        self.hoveredAgent = closest;
+        self.canvas.style.cursor = closest ? 'pointer' : 'crosshair';
+      });
+
+      this.canvas.addEventListener('mouseleave', function () {
+        self.hoveredAgent = null;
+      });
+
+      this.canvas.addEventListener('click', function () {
+        if (self.hoveredAgent) {
+          ZothHUD.setAgent(self.hoveredAgent.id);
+          self.hoveredAgent.intensity = 1.0;
+          self.hoveredAgent.pingRadius = 2.0;
+          playCyberSFX('ping');
+        } else {
+          self.pingAll();
+          playCyberSFX('ping');
+        }
+      });
+
+      window.addEventListener('resize', function () {
+        self.resize();
+      });
+    },
+
+    pingAll: function () {
+      for (var i = 0; i < this.blips.length; i++) {
+        this.blips[i].intensity = 0.95;
+        this.blips[i].pingRadius = 1.0;
+      }
+    },
+
+    setRange: function (scale) {
+      this.rangeScale = Math.max(0.4, Math.min(2.0, scale));
+    },
+
+    startLoop: function () {
+      var self = this;
+      var raf = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
+      function loop() {
+        self.render();
+        self.animId = raf(loop);
+      }
+      loop();
+    },
+
+    render: function () {
+      if (!this.ctx) return;
+      var ctx = this.ctx;
+      var w = this.width;
+      var h = this.height;
+      var cx = w / 2;
+      var cy = h / 2;
+      var maxR = Math.min(cx, cy) - 14;
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.fillStyle = 'rgba(2, 6, 12, 0.95)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, maxR + 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      var theme = STATE.activeTheme || 'dark';
+      var radarCyan = (theme === 'gold') ? '#fbbf24' : (theme === 'matrix' ? '#00ff66' : (theme === 'light' ? '#0071e3' : '#00f0ff'));
+      var radarGreen = (theme === 'gold') ? '#ffd700' : (theme === 'matrix' ? '#00ff66' : (theme === 'light' ? '#059669' : '#00ff66'));
+
+      var ringSteps = [0.25, 0.50, 0.75, 1.0];
+      for (var r = 0; r < ringSteps.length; r++) {
+        var stepR = maxR * ringSteps[r];
+        ctx.beginPath();
+        ctx.arc(cx, cy, stepR, 0, Math.PI * 2);
+        ctx.strokeStyle = (r === ringSteps.length - 1) ? radarCyan : 'rgba(0, 240, 255, 0.16)';
+        ctx.lineWidth = (r === ringSteps.length - 1) ? 1.4 : 0.8;
+        if (r === 1 || r === 2) {
+          ctx.setLineDash([3, 4]);
+        } else {
+          ctx.setLineDash([]);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.font = '600 7px monospace';
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.35)';
+        ctx.fillText(Math.round(ringSteps[r] * 1024) + 'k', cx + 2, cy - stepR + 8);
+      }
+
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.22)';
+      ctx.lineWidth = 0.8;
+      ctx.moveTo(cx, cy - maxR);
+      ctx.lineTo(cx, cy + maxR);
+      ctx.moveTo(cx - maxR, cy);
+      ctx.lineTo(cx + maxR, cy);
+
+      var diag = maxR * 0.707;
+      ctx.moveTo(cx - diag, cy - diag);
+      ctx.lineTo(cx + diag, cy + diag);
+      ctx.moveTo(cx - diag, cy + diag);
+      ctx.lineTo(cx + diag, cy - diag);
+      ctx.stroke();
+
+      ctx.font = '800 8px monospace';
+      ctx.fillStyle = radarCyan;
+      ctx.textAlign = 'center';
+      ctx.fillText('000° [N]', cx, cy - maxR - 2);
+      ctx.fillText('180° [S]', cx, cy + maxR + 9);
+      ctx.textAlign = 'right';
+      ctx.fillText('270° [W]', cx - maxR - 2, cy + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText('090° [E]', cx + maxR + 2, cy + 3);
+      ctx.textAlign = 'start';
+
+      this.sweepAngle += this.sweepSpeed;
+      if (this.sweepAngle >= Math.PI * 2) {
+        this.sweepAngle -= Math.PI * 2;
+      }
+
+      var coneSteps = 24;
+      var coneAngle = Math.PI / 4;
+      for (var c = 0; c < coneSteps; c++) {
+        var startA = this.sweepAngle - (coneAngle * (c + 1) / coneSteps);
+        var endA = this.sweepAngle - (coneAngle * c / coneSteps);
+        var alpha = (1 - (c / coneSteps)) * 0.28;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, maxR, startA, endA);
+        ctx.closePath();
+        ctx.fillStyle = (theme === 'gold') ? 'rgba(251, 191, 36, ' + alpha + ')' :
+                        (theme === 'matrix' ? 'rgba(0, 255, 102, ' + alpha + ')' : 'rgba(0, 240, 255, ' + alpha + ')');
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(this.sweepAngle) * maxR, cy + Math.sin(this.sweepAngle) * maxR);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.6;
+      ctx.shadowColor = radarCyan;
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      for (var i = 0; i < this.blips.length; i++) {
+        var blip = this.blips[i];
+        var blipX = cx + Math.cos(blip.angleRad) * (blip.distR * maxR * this.rangeScale);
+        var blipY = cy + Math.sin(blip.angleRad) * (blip.distR * maxR * this.rangeScale);
+
+        var angleDiff = Math.abs(this.sweepAngle - blip.angleRad);
+        if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+        if (angleDiff < 0.12) {
+          blip.intensity = 1.0;
+          blip.pingRadius = 2.0;
+        }
+
+        blip.intensity = Math.max(0.2, blip.intensity * 0.965);
+
+        var isActive = (blip.id === STATE.activeAgent);
+        var isHovered = (this.hoveredAgent && this.hoveredAgent.id === blip.id);
+
+        if (isActive) {
+          ctx.strokeStyle = '#ffd700';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(blipX - 7, blipY - 7, 14, 14);
+
+          ctx.beginPath();
+          ctx.arc(blipX, blipY, 9 + Math.sin(this.sweepAngle * 3) * 2, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+          ctx.stroke();
+        }
+
+        if (blip.pingRadius > 0) {
+          blip.pingRadius += 0.4;
+          var pingAlpha = Math.max(0, 1 - (blip.pingRadius / 14));
+          ctx.beginPath();
+          ctx.arc(blipX, blipY, blip.pingRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = blip.color;
+          ctx.globalAlpha = pingAlpha;
+          ctx.lineWidth = 0.9;
+          ctx.stroke();
+          ctx.globalAlpha = 1.0;
+          if (blip.pingRadius > 14) blip.pingRadius = 0;
+        }
+
+        var dotR = (blip.isCore ? 3.8 : 2.8) + (blip.intensity * 1.5) + (isHovered ? 2 : 0);
+        ctx.beginPath();
+        ctx.arc(blipX, blipY, dotR, 0, Math.PI * 2);
+        ctx.fillStyle = blip.color;
+        ctx.shadowColor = blip.color;
+        ctx.shadowBlur = 8 * blip.intensity;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        if (isActive || isHovered || blip.intensity > 0.75) {
+          ctx.font = '700 7.5px monospace';
+          ctx.fillStyle = isActive ? '#ffd700' : '#ffffff';
+          ctx.fillText(blip.name, blipX + 6, blipY - 3);
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = radarCyan;
+      ctx.shadowColor = radarCyan;
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.font = '700 7.5px monospace';
+      ctx.fillStyle = radarCyan;
+      ctx.fillText('FLEET: 21 SWARM', 8, 14);
+      ctx.fillStyle = radarGreen;
+      ctx.fillText('RADAR: 360° ACTIVE', 8, 24);
+
+      var curAgent = ALL_21_AGENTS.find(function (a) { return a.id === STATE.activeAgent; });
+      if (curAgent) {
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('TARGET: ' + curAgent.name, w - 85, h - 8);
+      }
+    }
+  };
+
+  /* =============================================================================
+     5. INTERACTIVE MEMORY GRAPH ANIMATED CANVAS ENGINE (UPGRADED)
      ============================================================================= */
   var MemGraphCanvas = {
     canvas: null,
@@ -632,9 +1443,14 @@
     nodes: [],
     edges: [],
     particles: [],
+    waves: [],
     animId: null,
     mouseX: -1000,
     mouseY: -1000,
+    hoveredNode: null,
+    selectedNode: null,
+    width: 320,
+    height: 95,
 
     init: function (canvasEl) {
       if (!canvasEl) return;
@@ -650,56 +1466,61 @@
       if (!this.canvas) return;
       var rect = this.canvas.getBoundingClientRect();
       var dpr = window.devicePixelRatio || 1;
-      this.canvas.width = (rect.width || 320) * dpr;
-      this.canvas.height = (rect.height || 90) * dpr;
+      this.width = rect.width || 320;
+      this.height = rect.height || 95;
+      this.canvas.width = this.width * dpr;
+      this.canvas.height = this.height * dpr;
       if (this.ctx) {
         this.ctx.scale(dpr, dpr);
       }
-      this.width = rect.width || 320;
-      this.height = rect.height || 90;
     },
 
     buildGraph: function () {
       this.nodes = [];
       this.edges = [];
       this.particles = [];
-      var numNodes = 18;
-      var colors = ['#00f0ff', '#fbbf24', '#c084fc', '#00ff66'];
+      this.waves = [];
+      var numNodes = 21;
 
       for (var i = 0; i < numNodes; i++) {
+        var agent = ALL_21_AGENTS[i % ALL_21_AGENTS.length];
         this.nodes.push({
-          x: Math.random() * (this.width - 20) + 10,
-          y: Math.random() * (this.height - 20) + 10,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          radius: Math.random() * 2.5 + 2,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          baseRadius: Math.random() * 2.5 + 2,
-          pulse: Math.random() * Math.PI * 2
+          id: i,
+          agentId: agent.id,
+          agentName: agent.name,
+          role: agent.role,
+          x: Math.random() * (this.width - 24) + 12,
+          y: Math.random() * (this.height - 24) + 12,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          radius: agent.isCore ? 3.6 : 2.6,
+          baseRadius: agent.isCore ? 3.6 : 2.6,
+          color: agent.color,
+          pulse: Math.random() * Math.PI * 2,
+          consolidated: true,
+          cosineSim: (0.91 + Math.random() * 0.08).toFixed(3)
         });
       }
 
-      // Connect proximal nodes with axon edges
       for (var a = 0; a < this.nodes.length; a++) {
         for (var b = a + 1; b < this.nodes.length; b++) {
           var dx = this.nodes[a].x - this.nodes[b].x;
           var dy = this.nodes[a].y - this.nodes[b].y;
           var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 65) {
-            this.edges.push({ from: a, to: b, dist: dist });
+          if (dist < 68) {
+            this.edges.push({ from: a, to: b, dist: dist, active: false, weight: (0.6 + Math.random() * 0.4).toFixed(2) });
           }
         }
       }
 
-      // Spawn traveling synaptic signal particles
-      for (var p = 0; p < 8; p++) {
+      for (var p = 0; p < 12; p++) {
         if (this.edges.length > 0) {
           var edge = this.edges[Math.floor(Math.random() * this.edges.length)];
           this.particles.push({
             from: edge.from,
             to: edge.to,
             progress: Math.random(),
-            speed: Math.random() * 0.015 + 0.008,
+            speed: Math.random() * 0.018 + 0.009,
             color: this.nodes[edge.from].color
           });
         }
@@ -709,33 +1530,106 @@
     bindEvents: function () {
       var self = this;
       if (!this.canvas) return;
+
       this.canvas.addEventListener('mousemove', function (e) {
         var rect = self.canvas.getBoundingClientRect();
         self.mouseX = e.clientX - rect.left;
         self.mouseY = e.clientY - rect.top;
+
+        var closest = null;
+        var minDist = 14;
+        for (var i = 0; i < self.nodes.length; i++) {
+          var n = self.nodes[i];
+          var dx = self.mouseX - n.x;
+          var dy = self.mouseY - n.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < minDist) {
+            closest = n;
+            minDist = dist;
+          }
+        }
+        self.hoveredNode = closest;
+        self.canvas.style.cursor = closest ? 'pointer' : 'default';
       });
+
       this.canvas.addEventListener('mouseleave', function () {
         self.mouseX = -1000;
         self.mouseY = -1000;
+        self.hoveredNode = null;
       });
+
       this.canvas.addEventListener('click', function () {
-        self.pulseAll();
-        playCyberSFX('chirp');
+        if (self.hoveredNode) {
+          self.triggerConsolidation(self.hoveredNode.id);
+          ZothHUD.setAgent(self.hoveredNode.agentId);
+        } else {
+          self.pulseAll();
+          self.triggerConsolidation(Math.floor(Math.random() * self.nodes.length));
+        }
+        playCyberSFX('wave');
       });
+
       window.addEventListener('resize', function () {
         self.resize();
       });
+    },
+
+    triggerConsolidation: function (nodeIdx) {
+      if (nodeIdx < 0 || nodeIdx >= this.nodes.length) nodeIdx = 0;
+      var targetNode = this.nodes[nodeIdx];
+      this.selectedNode = targetNode;
+
+      this.waves.push({
+        x: targetNode.x,
+        y: targetNode.y,
+        radius: 2,
+        maxRadius: 140,
+        alpha: 1.0,
+        color: targetNode.color
+      });
+
+      targetNode.radius = targetNode.baseRadius * 2.8;
+
+      var self = this;
+      this.edges.forEach(function (e) {
+        if (e.from === nodeIdx || e.to === nodeIdx) {
+          e.active = true;
+          self.particles.push({
+            from: e.from,
+            to: e.to,
+            progress: 0,
+            speed: 0.035,
+            color: '#ffffff'
+          });
+          setTimeout(function () { e.active = false; }, 1800);
+        }
+      });
+
+      STATE.memStats.selectedNode = targetNode.agentName + ' [#' + targetNode.id + ']';
+      STATE.memStats.lastConsolidation = targetNode.cosineSim;
+
+      if (ZothHUD && ZothHUD.addLog) {
+        ZothHUD.addLog('MEMORY', 'Synaptic consolidation wave propagated on node #' + targetNode.id + ' (' + targetNode.agentName + ') [Sim: ' + targetNode.cosineSim + ']', 'daemon');
+      }
     },
 
     pulseAll: function () {
       for (var i = 0; i < this.nodes.length; i++) {
         this.nodes[i].radius = this.nodes[i].baseRadius * 2.2;
       }
+      this.waves.push({
+        x: this.width / 2,
+        y: this.height / 2,
+        radius: 4,
+        maxRadius: 180,
+        alpha: 0.8,
+        color: '#00f0ff'
+      });
     },
 
     startLoop: function () {
       var self = this;
-      var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
+      var raf = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
       function loop() {
         self.render();
         self.animId = raf(loop);
@@ -746,34 +1640,51 @@
     render: function () {
       if (!this.ctx) return;
       var ctx = this.ctx;
-      ctx.clearRect(0, 0, this.width, this.height);
+      var w = this.width;
+      var h = this.height;
 
-      // Update & Draw Nodes
+      ctx.clearRect(0, 0, w, h);
+
+      for (var wi = this.waves.length - 1; wi >= 0; wi--) {
+        var wave = this.waves[wi];
+        wave.radius += 2.8;
+        wave.alpha = Math.max(0, 1 - (wave.radius / wave.maxRadius));
+
+        ctx.beginPath();
+        ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = wave.color;
+        ctx.lineWidth = 1.5 * wave.alpha;
+        ctx.globalAlpha = wave.alpha * 0.7;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+
+        if (wave.radius >= wave.maxRadius) {
+          this.waves.splice(wi, 1);
+        }
+      }
+
       for (var i = 0; i < this.nodes.length; i++) {
         var n = this.nodes[i];
         n.x += n.vx;
         n.y += n.vy;
         n.pulse += 0.04;
 
-        if (n.x < 5 || n.x > this.width - 5) n.vx *= -1;
-        if (n.y < 5 || n.y > this.height - 5) n.vy *= -1;
+        if (n.x < 8 || n.x > w - 8) n.vx *= -1;
+        if (n.y < 8 || n.y > h - 8) n.vy *= -1;
 
-        // Mouse repelling
         var mdx = n.x - this.mouseX;
         var mdy = n.y - this.mouseY;
         var mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        if (mdist < 40) {
-          n.x += (mdx / mdist) * 1.5;
-          n.y += (mdy / mdist) * 1.5;
+        if (mdist < 35) {
+          n.x += (mdx / mdist) * 1.2;
+          n.y += (mdy / mdist) * 1.2;
         }
 
-        // Return radius to normal
         if (n.radius > n.baseRadius) {
-          n.radius -= 0.05;
+          n.radius -= 0.04;
         }
       }
 
-      // Draw Axon Edges
       for (var e = 0; e < this.edges.length; e++) {
         var edge = this.edges[e];
         var nA = this.nodes[edge.from];
@@ -785,17 +1696,16 @@
         var dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < 75) {
-          var alpha = (1 - dist / 75) * 0.45;
+          var alpha = (1 - dist / 75) * (edge.active ? 0.95 : 0.42);
           ctx.beginPath();
           ctx.moveTo(nA.x, nA.y);
           ctx.lineTo(nB.x, nB.y);
-          ctx.strokeStyle = 'rgba(0, 240, 255, ' + alpha + ')';
-          ctx.lineWidth = 0.9;
+          ctx.strokeStyle = edge.active ? '#ffffff' : 'rgba(0, 240, 255, ' + alpha + ')';
+          ctx.lineWidth = edge.active ? 1.8 : 0.8;
           ctx.stroke();
         }
       }
 
-      // Draw Synaptic Data Particle Packets
       for (var p = 0; p < this.particles.length; p++) {
         var part = this.particles[p];
         part.progress += part.speed;
@@ -823,20 +1733,28 @@
         }
       }
 
-      // Draw Synaptic Nodes
       for (var j = 0; j < this.nodes.length; j++) {
         var node = this.nodes[j];
-        var dynamicR = node.radius + Math.sin(node.pulse) * 0.6;
+        var dynamicR = node.radius + Math.sin(node.pulse) * 0.5;
+        var isNodeHovered = (this.hoveredNode && this.hoveredNode.id === node.id);
+        var isNodeActive = (STATE.activeAgent === node.agentId);
+
+        if (isNodeActive) {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, dynamicR * 2.4, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ffd700';
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
+        }
 
         ctx.beginPath();
-        ctx.arc(node.x, node.y, dynamicR, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, dynamicR + (isNodeHovered ? 2 : 0), 0, Math.PI * 2);
         ctx.fillStyle = node.color;
         ctx.shadowColor = node.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = isNodeHovered ? 12 : 8;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Outer pulse halo
         ctx.beginPath();
         ctx.arc(node.x, node.y, dynamicR * 1.8, 0, Math.PI * 2);
         ctx.strokeStyle = node.color;
@@ -845,16 +1763,33 @@
         ctx.stroke();
         ctx.globalAlpha = 1.0;
       }
+
+      if (this.hoveredNode) {
+        var hn = this.hoveredNode;
+        var tx = Math.min(w - 110, Math.max(10, hn.x - 50));
+        var ty = Math.max(16, hn.y - 14);
+
+        ctx.fillStyle = 'rgba(4, 7, 18, 0.92)';
+        ctx.strokeStyle = hn.color;
+        ctx.lineWidth = 1;
+        ctx.fillRect(tx, ty - 12, 105, 24);
+        ctx.strokeRect(tx, ty - 12, 105, 24);
+
+        ctx.font = '700 7.5px monospace';
+        ctx.fillStyle = hn.color;
+        ctx.fillText('#' + hn.id + ' ' + hn.agentName, tx + 4, ty - 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('SIM: ' + hn.cosineSim + ' | 1024d', tx + 4, ty + 8);
+      }
     }
   };
 
   /* =============================================================================
-     5. MATH PILLAR 6 STATUS & SHANNON ENTROPY TELEMETRY GAUGE
+     6. COMPLETE 6-PILLAR MATHEMATICAL CALCULUS ENGINE
      ============================================================================= */
-  var MathTelemetry = {
+  var CalculusEngine = {
     timer: null,
 
-    // Shannon entropy: H(X) = - sum(p_i * log2(p_i))
     calculateShannonEntropy: function (probabilities) {
       var h = 0;
       for (var i = 0; i < probabilities.length; i++) {
@@ -866,53 +1801,97 @@
       return h;
     },
 
+    getPillars: function () {
+      return STATE.pillarsData;
+    },
+
     update: function () {
-      // Generate simulated dynamic discrete probability distribution
       var raw = [
-        Math.random() * 0.4 + 0.2,
-        Math.random() * 0.3 + 0.1,
-        Math.random() * 0.2 + 0.05,
-        Math.random() * 0.1 + 0.05
+        0.88 + Math.random() * 0.05,
+        0.06 + Math.random() * 0.02,
+        0.04 + Math.random() * 0.02,
+        0.02 + Math.random() * 0.01
       ];
       var sum = raw.reduce(function (a, b) { return a + b; }, 0);
       var probs = raw.map(function (v) { return v / sum; });
 
-      var h = this.calculateShannonEntropy(probs);
-      var latency = (0.65 + Math.random() * 0.25).toFixed(2);
-      var health = (99.75 + Math.random() * 0.2).toFixed(2);
-      var plasticity = (0.010 + Math.random() * 0.005).toFixed(3);
-      var coherence = (0.935 + Math.random() * 0.04).toFixed(3);
+      var shannonEntropy = this.calculateShannonEntropy(probs);
+      var health = (99.80 + Math.random() * 0.18).toFixed(2);
+      var latency = (0.68 + Math.random() * 0.16).toFixed(2);
+
+      var p1Cohomology = (0.000 + (Math.random() - 0.5) * 0.0004).toFixed(3);
+      var p2FisherMetric = (4.810 + Math.random() * 0.035).toFixed(3);
+      var p3STDP = (0.840 + Math.random() * 0.015).toFixed(3);
+      var p4Entropy = shannonEntropy.toFixed(3);
+      var p5SplinePhi = (0.994 + Math.random() * 0.005).toFixed(3);
+      var p6Hopfield = (-14.24 - Math.random() * 0.12).toFixed(2);
 
       STATE.mathStats = {
-        entropy: h.toFixed(3),
+        entropy: p4Entropy,
         latency: latency,
         health: health,
-        plasticity: plasticity,
-        coherence: coherence
+        plasticity: p3STDP,
+        coherence: (0.942 + (Math.random() - 0.5) * 0.01).toFixed(3),
+        cohomology: p1Cohomology,
+        fisherMetric: p2FisherMetric,
+        splinePhi: p5SplinePhi,
+        hopfieldEnergy: p6Hopfield
       };
 
-      // Update DOM if rendered
+      STATE.pillarsData = {
+        p1: { name: 'Monoidal Sheaf Topologies', formula: 'H¹(U,F) = ' + p1Cohomology, value: p1Cohomology, unit: 'obstruction', status: 'EXACT' },
+        p2: { name: 'Info Geometry & Fisher Metric', formula: '∇̃L = F⁻¹∇L [' + p2FisherMetric + ']', value: p2FisherMetric, unit: 'det(F)', status: 'GEOMETRIC' },
+        p3: { name: 'STDP Synaptic Plasticity', formula: 'Δw = ' + p3STDP + ' e^-Δt/τ', value: p3STDP, unit: 'potentiation', status: 'HEBBIAN' },
+        p4: { name: 'Shannon Agreement Entropy', formula: 'H(P) = ' + p4Entropy + ' bits < 0.20', value: p4Entropy, unit: 'bits', status: 'BOUNDED' },
+        p5: { name: 'Kolmogorov-Arnold B-Splines', formula: 'Φ_q Parameterized [' + p5SplinePhi + ']', value: p5SplinePhi, unit: 'smoothness', status: 'SPLINE' },
+        p6: { name: 'Continuous Modern Hopfield', formula: 'E(x) = ' + p6Hopfield + ' nats', value: p6Hopfield, unit: 'nats', status: 'RECALL' }
+      };
+
+      this.syncDOM();
+    },
+
+    syncDOM: function () {
+      var p = STATE.pillarsData;
+      var s = STATE.mathStats;
+
+      var p1El = document.getElementById('hud-pillar-1-val');
+      if (p1El) p1El.textContent = p.p1.value;
+
+      var p2El = document.getElementById('hud-pillar-2-val');
+      if (p2El) p2El.textContent = p.p2.value;
+
+      var p3El = document.getElementById('hud-pillar-3-val');
+      if (p3El) p3El.textContent = p.p3.value;
+
+      var p4El = document.getElementById('hud-pillar-4-val');
+      if (p4El) p4El.textContent = p.p4.value + ' bits';
+
+      var p5El = document.getElementById('hud-pillar-5-val');
+      if (p5El) p5El.textContent = p.p5.value;
+
+      var p6El = document.getElementById('hud-pillar-6-val');
+      if (p6El) p6El.textContent = p.p6.value + ' nats';
+
       var entEl = document.getElementById('hud-stat-entropy');
-      if (entEl) entEl.textContent = h.toFixed(3) + ' bits';
+      if (entEl) entEl.textContent = s.entropy + ' bits';
 
       var latEl = document.getElementById('hud-stat-latency');
-      if (latEl) latEl.textContent = latency + 'ms';
+      if (latEl) latEl.textContent = s.latency + 'ms';
 
       var hlthEl = document.getElementById('hud-stat-health');
-      if (hlthEl) hlthEl.textContent = health + '%';
+      if (hlthEl) hlthEl.textContent = s.health + '%';
 
       var cohEl = document.getElementById('hud-stat-coherence');
-      if (cohEl) cohEl.textContent = coherence;
+      if (cohEl) cohEl.textContent = s.coherence;
 
-      // Update Progress Meters
       var fillEnt = document.getElementById('hud-meter-entropy');
-      if (fillEnt) fillEnt.style.width = Math.min(100, (h / 4.0) * 100) + '%';
+      if (fillEnt) fillEnt.style.width = Math.min(100, (parseFloat(s.entropy) / 0.5) * 100) + '%';
 
       var fillHlth = document.getElementById('hud-meter-health');
-      if (fillHlth) fillHlth.style.width = health + '%';
+      if (fillHlth) fillHlth.style.width = s.health + '%';
 
       var fillCoh = document.getElementById('hud-meter-coherence');
-      if (fillCoh) fillCoh.style.width = (parseFloat(coherence) * 100) + '%';
+      if (fillCoh) fillCoh.style.width = (parseFloat(s.coherence) * 100) + '%';
     },
 
     start: function () {
@@ -920,12 +1899,21 @@
       this.update();
       this.timer = setInterval(function () {
         self.update();
-      }, 2500);
+      }, 2000);
+    },
+
+    stop: function () {
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     }
   };
 
+  var MathTelemetry = CalculusEngine;
+
   /* =============================================================================
-     6. INTERACTIVE COMMAND LINE TERMINAL REPL
+     7. INTERACTIVE COMMAND LINE TERMINAL REPL (ADVANCED MULTI-TAB)
      ============================================================================= */
   var TerminalREPL = {
     outputEl: null,
@@ -963,6 +1951,13 @@
             self.historyIdx = self.history.length;
             self.inputEl.value = '';
           }
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          var current = self.inputEl.value.trim();
+          var suggestions = ZothHUD.getAutocompleteSuggestions(current);
+          if (suggestions && suggestions.length > 0) {
+            self.inputEl.value = suggestions[0];
+          }
         }
       });
     },
@@ -996,14 +1991,19 @@
           this.printLine('── ZOTH HUD TERMINAL REPL COMMANDS ──', 'warn');
           this.printLine('  help                : Show this operator reference');
           this.printLine('  status              : Print system, active agent & tool diagnostics');
-          this.printLine('  ports               : Loopback port telemetry & ping ping check');
-          this.printLine('  agent <name>        : Switch active sovereign agent (azoth, athena, draco, etc.)');
+          this.printLine('  radar [ping|zoom]   : Inspect 360° Polar Radar mini-map of 21 agents');
+          this.printLine('  scope [wave|fft|xy] : Set Audio Oscilloscope mode (wave, fft, lissajous)');
+          this.printLine('  pillars             : Display complete 6-Pillar Mathematical Calculus telemetry');
+          this.printLine('  split [swap|close]  : Dual-tool split stage mode toggle/swap/close');
+          this.printLine('  agent <name>        : Switch active sovereign agent (azoth, grok, athena, etc.)');
           this.printLine('  tool <name>         : Load tool into Center Stage (omnipost, 3d, swarm, etc.)');
           this.printLine('  swarm [mode]        : Launch 3D Swarm Arena (solo | strike | pantheon)');
-          this.printLine('  mem | memory        : Trigger synaptic vector scan & node recall');
+          this.printLine('  mem | memory        : Trigger synaptic vector scan & consolidation wave');
           this.printLine('  theme <name>        : Set 4-theme engine (dark | light | matrix | gold)');
+          this.printLine('  aspect <16:9|4:3>   : Set stage aspect ratio');
+          this.printLine('  tab <tty0|radar>    : Switch terminal view tab');
           this.printLine('  calc <expr>         : Compute mathematical expression & Shannon entropy');
-          this.printLine('  ping <port>         : Ping local loopback port');
+          this.printLine('  ports               : Loopback port telemetry & ping check');
           this.printLine('  clear | cls         : Clear terminal buffer');
           break;
 
@@ -1011,10 +2011,88 @@
           this.printLine('── SOVEREIGN HUD TELEMETRY STATUS ──', 'success');
           this.printLine('  Agent    : ' + STATE.activeAgent.toUpperCase() + ' (Selected)');
           this.printLine('  Tool     : ' + STATE.activeTool.name + ' (' + STATE.activeTool.url + ')');
+          this.printLine('  Split    : ' + (STATE.splitMode ? 'ACTIVE (' + STATE.secondaryTool.name + ')' : 'OFF'));
           this.printLine('  Theme    : ' + STATE.activeTheme.toUpperCase());
-          this.printLine('  Entropy  : ' + STATE.mathStats.entropy + ' bits [H(X)]');
+          this.printLine('  Radar    : 360° Polar Sweep [21 Fleet Nominal]');
+          this.printLine('  Osc      : Mode ' + AudioOscilloscope.getMode().toUpperCase() + ' [60 FPS]');
+          this.printLine('  Pillar 4 : ' + STATE.mathStats.entropy + ' bits [Shannon Bound < 0.20]');
           this.printLine('  Latency  : ' + STATE.mathStats.latency + ' ms (Loopback 127.0.0.1:8484)');
           this.printLine('  Health   : ' + STATE.mathStats.health + '% (All 7 Daemons Nominal)');
+          break;
+
+        case 'radar':
+          if (arg === 'ping') {
+            PolarRadar.pingAll();
+            this.printLine('360° Polar Radar: High-intensity sweep ping transmitted to all 21 agents.', 'success');
+            playCyberSFX('ping');
+          } else if (arg.startsWith('zoom')) {
+            var zVal = parseFloat(arg.split(' ')[1]) || 1.0;
+            PolarRadar.setRange(zVal);
+            this.printLine('Radar range scale set to: ' + zVal + 'x', 'success');
+          } else {
+            this.printLine('── 360° POLAR RADAR MINI-MAP TELEMETRY ──', 'warn');
+            this.printLine('  Total Fleet : 21 Agents (6 Core, 5 Silicon, 5 Familiars, 5 Abyssal)');
+            this.printLine('  Sweep Speed : ' + PolarRadar.sweepSpeed.toFixed(3) + ' rad/frame (60 FPS)');
+            this.printLine('  Active Lock : ' + STATE.activeAgent.toUpperCase());
+          }
+          break;
+
+        case 'scope':
+        case 'oscilloscope':
+          if (['wave', 'fft', 'lissajous', 'xy'].indexOf(arg) !== -1) {
+            var targetMode = (arg === 'xy') ? 'lissajous' : arg;
+            AudioOscilloscope.setMode(targetMode);
+            this.printLine('Oscilloscope visualizer mode set to: ' + targetMode.toUpperCase(), 'success');
+          } else {
+            AudioOscilloscope.cycleMode();
+            this.printLine('Oscilloscope mode cycled to: ' + AudioOscilloscope.getMode().toUpperCase(), 'success');
+          }
+          break;
+
+        case 'pillars':
+        case 'calculus':
+          this.printLine('── 6-PILLAR MATHEMATICAL CALCULUS TELEMETRY ──', 'warn');
+          var p = STATE.pillarsData;
+          this.printLine('  Pillar 1: Monoidal Sheaf Topologies      -> ' + p.p1.formula, 'stdout');
+          this.printLine('  Pillar 2: Info Geometry & Fisher Metric  -> ' + p.p2.formula, 'stdout');
+          this.printLine('  Pillar 3: STDP Synaptic Plasticity       -> ' + p.p3.formula, 'stdout');
+          this.printLine('  Pillar 4: Shannon Agreement Entropy      -> ' + p.p4.formula, 'stdout');
+          this.printLine('  Pillar 5: Kolmogorov-Arnold B-Splines    -> ' + p.p5.formula, 'stdout');
+          this.printLine('  Pillar 6: Continuous Modern Hopfield     -> ' + p.p6.formula, 'stdout');
+          break;
+
+        case 'split':
+          if (arg === 'swap') {
+            ZothHUD.swapSplitStage();
+            this.printLine('Split Stage panes swapped.', 'success');
+          } else if (arg === 'close') {
+            ZothHUD.closeSplitStage();
+            this.printLine('Split Stage closed. Returned to single stage.', 'success');
+          } else if (arg) {
+            ZothHUD.setSecondaryTool(arg);
+            this.printLine('Secondary split stage tool set to: ' + arg, 'success');
+          } else {
+            ZothHUD.toggleSplitStage();
+            this.printLine('Dual-Tool Split Stage toggled: ' + (STATE.splitMode ? 'ENABLED' : 'DISABLED'), 'success');
+          }
+          break;
+
+        case 'aspect':
+          if (arg && ['16:9', '4:3', '9:16'].indexOf(arg) !== -1) {
+            ZothHUD.setAspectRatio(arg);
+            this.printLine('Stage aspect ratio set to: ' + arg, 'success');
+          } else {
+            this.printLine('Usage: aspect <16:9 | 4:3 | 9:16>', 'error');
+          }
+          break;
+
+        case 'tab':
+          if (arg && ['tty0', 'radar', 'daemon'].indexOf(arg.toLowerCase()) !== -1) {
+            ZothHUD.setTerminalTab(arg.toLowerCase());
+            this.printLine('Terminal view tab switched to: ' + arg.toUpperCase(), 'success');
+          } else {
+            this.printLine('Usage: tab <tty0 | radar | daemon>', 'error');
+          }
           break;
 
         case 'ports':
@@ -1028,23 +2106,23 @@
 
         case 'agent':
           if (!arg) {
-            this.printLine('Usage: agent <azoth | athena | draco | hermes | antigravity | lycan | grok | kai>', 'error');
+            this.printLine('Usage: agent <name> (e.g. azoth, grok, athena, draco, hermes, antigravity, lycan, etc.)', 'error');
             return;
           }
-          var targetAgent = AGENTS_ROSTER.find(function (a) {
+          var targetAgent = ALL_21_AGENTS.find(function (a) {
             return a.id === arg.toLowerCase() || a.name.toLowerCase() === arg.toLowerCase();
           });
           if (targetAgent) {
             ZothHUD.setAgent(targetAgent.id);
-            this.printLine('Agent context switched to ' + targetAgent.name + ' [' + targetAgent.role + ']', 'success');
+            this.printLine('Agent context attuned to ' + targetAgent.name + ' [' + targetAgent.role + ']', 'success');
           } else {
-            this.printLine('Unknown agent: ' + arg + '. Available: azoth, athena, draco, hermes, antigravity, lycan, grok, kai', 'error');
+            this.printLine('Unknown agent: ' + arg + '. 21 agents available in radar roster.', 'error');
           }
           break;
 
         case 'tool':
           if (!arg) {
-            this.printLine('Usage: tool <omnipost | 3d-editor | nexus-3d | swarm | webgen | tool-bench | memory | consensus | math-pillars | vision-link | vault | ...>', 'error');
+            this.printLine('Usage: tool <name> (e.g. omnipost, 3d-editor, swarm, webgen, tool-bench, etc.)', 'error');
             return;
           }
           var targetTool = PRIMARY_WORKSTATIONS.find(function (t) {
@@ -1067,14 +2145,14 @@
 
         case 'mem':
         case 'memory':
-          MemGraphCanvas.pulseAll();
-          playCyberSFX('ping');
+          MemGraphCanvas.triggerConsolidation(0);
+          playCyberSFX('wave');
           this.printLine('── SYNAPTIC VECTOR MEMORY SCAN ──', 'warn');
           this.printLine('  Active Synapses : ' + STATE.memStats.synapses);
           this.printLine('  Vector Nodes    : ' + STATE.memStats.nodes);
           this.printLine('  Recall Density  : ' + STATE.memStats.density);
           this.printLine('  Lucy Vector Lat : ' + STATE.memStats.latency);
-          ZothHUD.addLog('MEMORY', 'Synaptic memory graph vacuum and vector recall completed', 'daemon');
+          ZothHUD.addLog('MEMORY', 'Synaptic memory consolidation wave executed', 'daemon');
           break;
 
         case 'theme':
@@ -1092,27 +2170,24 @@
             return;
           }
           try {
-            // Safe mathematical evaluation
             var sanitized = arg.replace(/\^/g, '**').replace(/PI/g, 'Math.PI').replace(/E/g, 'Math.E')
               .replace(/sin\(/g, 'Math.sin(').replace(/cos\(/g, 'Math.cos(').replace(/sqrt\(/g, 'Math.sqrt(')
               .replace(/log\(/g, 'Math.log(').replace(/log2\(/g, 'Math.log2(');
             
-            // Limit characters to safe math
             if (/[^0-9+\-*/().\s,MathpicoseqrtlgE]/.test(sanitized)) {
               throw new Error('Disallowed characters in calculation');
             }
             var res = Function('"use strict"; return (' + sanitized + ')')();
             this.printLine('Result: ' + res, 'success');
             
-            // Calculate Shannon entropy for the result string
             var strRes = String(res);
             var freqs = {};
             for (var c = 0; c < strRes.length; c++) {
               freqs[strRes[c]] = (freqs[strRes[c]] || 0) + 1;
             }
             var pArr = Object.values(freqs).map(function (v) { return v / strRes.length; });
-            var ent = MathTelemetry.calculateShannonEntropy(pArr);
-            this.printLine('Symbol Shannon Entropy H(Res) = ' + ent.toFixed(4) + ' bits', 'stdout');
+            var ent = CalculusEngine.calculateShannonEntropy(pArr);
+            this.printLine('Shannon Entropy H(Res) = ' + ent.toFixed(4) + ' bits', 'stdout');
           } catch (err) {
             this.printLine('Calc error: ' + err.message, 'error');
           }
@@ -1138,7 +2213,6 @@
           break;
 
         default:
-          // Try executing via local Operator Daemon :8484
           this.printLine('Dispatching to Zoth Daemon (:8484)...', 'stdout');
           fetch('http://127.0.0.1:8484/api/terminal/exec', {
             method: 'POST',
@@ -1162,7 +2236,7 @@
   };
 
   /* =============================================================================
-     7. LIVE MESSAGE STREAM & AMBIENT HEARTBEATS
+     8. LIVE MESSAGE STREAM & AMBIENT HEARTBEATS
      ============================================================================= */
   var MessageStream = {
     containerEl: null,
@@ -1203,7 +2277,6 @@
       this.containerEl.appendChild(item);
       this.containerEl.scrollTop = this.containerEl.scrollHeight;
 
-      // Keep stream under 100 entries
       while (this.containerEl.children.length > 100) {
         this.containerEl.removeChild(this.containerEl.firstChild);
       }
@@ -1212,11 +2285,11 @@
     startAmbientHeartbeats: function () {
       var self = this;
       var ambientEvents = [
-        { tag: 'SYSTEM', text: 'Telemetry sync: 7/7 local loopback daemons reporting 100% nominal', type: 'system' },
-        { tag: 'CONSENSUS', text: 'Consensus Arena arbitration round completed: AST invariants verified', type: 'consensus' },
-        { tag: 'DAEMON', text: 'Lucy Vector Memory (:8788) synaptic vacuum prune: 512 active synapses', type: 'daemon' },
+        { tag: 'RADAR', text: '360° Polar sweep: 21 swarm agents tracking nominal on all 4 quadrants', type: 'system' },
+        { tag: 'CALCULUS', text: 'Pillar 1-6 Calculus convergence: H(P) = 0.124 bits < 0.20 threshold bound', type: 'consensus' },
+        { tag: 'MEMORY', text: 'Lucy Vector Memory (:8788) synaptic vacuum prune: 512 active synapses', type: 'daemon' },
         { tag: 'AZOTH', text: 'Hermetic Quintessence coherence index: 0.942. No AST drift detected', type: 'azoth' },
-        { tag: 'SIGNAL', text: 'Signal Swarm Mobile Bridge (:8787) heartbeats steady on port 8787', type: 'daemon' }
+        { tag: 'AUDIO', text: 'Web Audio Oscilloscope 60 FPS carrier synchronized with synthesizer bus', type: 'system' }
       ];
 
       var idx = 0;
@@ -1224,12 +2297,12 @@
         var ev = ambientEvents[idx % ambientEvents.length];
         self.add(ev.tag, ev.text, ev.type);
         idx++;
-      }, 14000);
+      }, 12000);
     }
   };
 
   /* =============================================================================
-     8. TOP HEADER MODALS & POPOVERS (PORTS, TIME, THEMES, TOOL MGR, SHORTCUTS)
+     9. TOP HEADER MODALS & POPOVERS (PORTS, TIME, THEMES, TOOL MGR, SHORTCUTS)
      ============================================================================= */
   var Modals = {
     activeModal: null,
@@ -1300,6 +2373,9 @@
       } else if (modalId === 'toolmgr') {
         title.innerHTML = '<span style="color:var(--hud-cyan)">🛠</span> MASTER TOOL MANAGER (298+ VERIFIED TOOLS)';
         body.innerHTML = this.renderToolMgrBody(filterParam);
+      } else if (modalId === 'pillars') {
+        title.innerHTML = '<span style="color:var(--hud-gold)">📐</span> COMPLETE 6-PILLAR MATHEMATICAL CALCULUS';
+        body.innerHTML = this.renderPillarsBody();
       } else if (modalId === 'shortcuts' || modalId === 'help') {
         title.innerHTML = '<span style="color:var(--hud-gold)">❓</span> OPERATOR GUIDE & KEYBOARD SHORTCUTS';
         body.innerHTML = this.renderShortcutsBody();
@@ -1311,7 +2387,6 @@
       dialog.appendChild(body);
       backdrop.appendChild(dialog);
 
-      // Close on backdrop click
       backdrop.addEventListener('click', function (e) {
         if (e.target === backdrop) Modals.close();
       });
@@ -1319,6 +2394,31 @@
       document.body.appendChild(backdrop);
       this.bindModalEvents(backdrop, modalId);
       return backdrop;
+    },
+
+    renderPillarsBody: function () {
+      var p = STATE.pillarsData;
+      var html = '<div style="display:flex;flex-direction:column;gap:12px;">' +
+        '<div style="font-size:0.75rem;color:var(--hud-text-secondary);line-height:1.4;">' +
+          'Live mathematical invariants for all 6 pillars governing Zoth Studio multi-agent consensus and topology.' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:10px;">';
+
+      var keys = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+      keys.forEach(function (k) {
+        var item = p[k];
+        html += '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);clip-path:var(--hud-clip-sm);padding:10px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+            '<strong style="font-family:var(--hud-font-display);font-size:0.75rem;color:var(--hud-gold);">' + item.name.toUpperCase() + '</strong>' +
+            '<span style="font-size:0.60rem;background:rgba(0,240,255,0.1);color:var(--hud-cyan);padding:2px 6px;border-radius:2px;">' + item.status + '</span>' +
+          '</div>' +
+          '<div style="font-family:var(--hud-font-mono);font-size:0.72rem;color:var(--hud-cyan);margin-top:2px;">' + item.formula + '</div>' +
+          '<div style="font-size:0.64rem;color:var(--hud-text-muted);margin-top:4px;">Value: <strong>' + item.value + '</strong> (' + item.unit + ')</div>' +
+        '</div>';
+      });
+
+      html += '</div></div>';
+      return html;
     },
 
     renderPortsBody: function () {
@@ -1427,28 +2527,33 @@
 
     renderToolMgrBody: function (initialQuery) {
       var html = '<div style="display:flex;flex-direction:column;gap:12px;">' +
-        '<div style="display:flex;gap:8px;">' +
-          '<input type="text" class="hud-term-input hud-modal-search-input" placeholder="Search 298+ tools by name, taxonomy, runtime or tag..." value="' + (initialQuery || '') + '" style="background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 12px;font-size:0.78rem;clip-path:var(--hud-clip-sm);flex:1;" />' +
+        '<div style="display:flex;gap:8px;align-items:center;">' +
+          '<input type="text" class="hud-term-input hud-modal-search-input" placeholder="Search 298+ tools by name, taxonomy, runtime or tag (Ctrl+K)..." value="' + (initialQuery || '') + '" style="background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 12px;font-size:0.78rem;clip-path:var(--hud-clip-sm);flex:1;" />' +
+          '<div style="font-family:var(--hud-font-mono);font-size:0.70rem;color:var(--hud-cyan);background:rgba(0,240,255,0.08);border:1px solid var(--hud-border);padding:8px 12px;clip-path:var(--hud-clip-sm);white-space:nowrap;" id="hud-toolmgr-count">298 TOOLS</div>' +
         '</div>' +
 
         '<div class="hud-category-pills" style="display:flex;flex-wrap:wrap;gap:4px;">' +
           '<button class="hud-tool-tag gold active" data-cat="all" onclick="Modals.filterCat(this, \'all\')">ALL (298+)</button>' +
-          '<button class="hud-tool-tag" data-cat="creative" onclick="Modals.filterCat(this, \'creative\')">Creative (51)</button>' +
-          '<button class="hud-tool-tag" data-cat="ai" onclick="Modals.filterCat(this, \'ai\')">AI & LLM (26)</button>' +
-          '<button class="hud-tool-tag" data-cat="webapps" onclick="Modals.filterCat(this, \'webapps\')">Web Apps (75)</button>' +
-          '<button class="hud-tool-tag" data-cat="services" onclick="Modals.filterCat(this, \'services\')">Services (52)</button>' +
-          '<button class="hud-tool-tag" data-cat="learning" onclick="Modals.filterCat(this, \'learning\')">Learning (19)</button>' +
-          '<button class="hud-tool-tag" data-cat="automation" onclick="Modals.filterCat(this, \'automation\')">Automation (14)</button>' +
-          '<button class="hud-tool-tag" data-cat="security" onclick="Modals.filterCat(this, \'security\')">Security (9)</button>' +
-          '<button class="hud-tool-tag" data-cat="games" onclick="Modals.filterCat(this, \'games\')">Games (8)</button>' +
-          '<button class="hud-tool-tag" data-cat="python" onclick="Modals.filterCat(this, \'python\')">Python (7)</button>' +
-          '<button class="hud-tool-tag" data-cat="crypto" onclick="Modals.filterCat(this, \'crypto\')">Crypto (3)</button>' +
+          '<button class="hud-tool-tag" data-cat="primary" onclick="Modals.filterCat(this, \'primary\')">👑 Primary (25)</button>' +
+          '<button class="hud-tool-tag" data-cat="ai" onclick="Modals.filterCat(this, \'ai\')">🌐 Swarms & AI (26)</button>' +
+          '<button class="hud-tool-tag" data-cat="creative" onclick="Modals.filterCat(this, \'creative\')">🎨 3D & Media (51)</button>' +
+          '<button class="hud-tool-tag" data-cat="learning" onclick="Modals.filterCat(this, \'learning\')">🧠 Cognitive & Math (19)</button>' +
+          '<button class="hud-tool-tag" data-cat="automation" onclick="Modals.filterCat(this, \'automation\')">⚙️ Compilers & Tools (14)</button>' +
+          '<button class="hud-tool-tag" data-cat="webapps" onclick="Modals.filterCat(this, \'webapps\')">⚡ Web Apps & AX (75)</button>' +
+          '<button class="hud-tool-tag" data-cat="services" onclick="Modals.filterCat(this, \'services\')">💼 Services (52)</button>' +
+          '<button class="hud-tool-tag" data-cat="security" onclick="Modals.filterCat(this, \'security\')">🔐 Vault & Security (9)</button>' +
+          '<button class="hud-tool-tag" data-cat="games" onclick="Modals.filterCat(this, \'games\')">🐾 Pets & Games (8)</button>' +
         '</div>' +
 
-        '<div id="hud-toolmgr-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:8px;max-height:55vh;overflow-y:auto;padding-right:4px;">';
+        '<div id="hud-toolmgr-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(310px, 1fr));gap:10px;max-height:55vh;overflow-y:auto;padding-right:4px;">';
 
-      // Combine Primary Workstations + global TOOL_DETAILS if available
-      var toolsToRender = PRIMARY_WORKSTATIONS.slice();
+      var toolsToRender = [];
+      PRIMARY_WORKSTATIONS.forEach(function (pw) {
+        var copy = Object.assign({}, pw);
+        copy.isPrimary = true;
+        toolsToRender.push(copy);
+      });
+
       if (window.TOOL_DETAILS && Array.isArray(window.TOOL_DETAILS)) {
         window.TOOL_DETAILS.forEach(function (td) {
           if (!toolsToRender.find(function (t) { return t.id === td.id; })) {
@@ -1462,24 +2567,37 @@
               catSlug: td.catSlug,
               tags: (td.tags || '').split(',').map(function (s) { return s.trim().toUpperCase(); }),
               runtime: td.runtimeList ? td.runtimeList[0] : 'node',
-              contract: td.contract || 'SCHEMA VALIDATED'
+              contract: td.contract || 'SCHEMA VALIDATED',
+              isPrimary: false
             });
           }
         });
       }
 
       toolsToRender.forEach(function (tool) {
-        html += '<div class="hud-toolmgr-card" data-id="' + tool.id + '" data-name="' + tool.name.toLowerCase() + '" data-cat="' + (tool.catSlug || 'general') + '" data-desc="' + tool.desc.toLowerCase() + '" style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);clip-path:var(--hud-clip-sm);padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;">' +
+        var catSlug = tool.catSlug || 'general';
+        if (tool.isPrimary) catSlug += ' primary';
+
+        html += '<div class="hud-toolmgr-card" data-id="' + tool.id + '" data-name="' + tool.name.toLowerCase() + '" data-cat="' + catSlug + '" data-desc="' + tool.desc.toLowerCase() + '" style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);clip-path:var(--hud-clip-sm);padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;">' +
           '<div>' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">' +
-              '<strong style="font-family:var(--hud-font-display);font-size:0.75rem;color:var(--hud-text-primary);">' + tool.name + '</strong>' +
-              '<span class="hud-tool-tag" style="font-size:0.55rem;">' + (tool.runtime || 'web') + '</span>' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">' +
+              '<div style="display:flex;align-items:center;gap:6px;">' +
+                (tool.isPrimary ? '<span style="color:var(--hud-gold);font-size:0.80rem;" title="Flagship Primary Workstation">👑</span>' : '') +
+                '<strong style="font-family:var(--hud-font-display);font-size:0.78rem;color:var(--hud-text-primary);">' + tool.name + '</strong>' +
+              '</div>' +
+              '<span class="hud-tool-tag" style="font-size:0.55rem;background:rgba(0,240,255,0.08);color:var(--hud-cyan);">' + (tool.runtime || 'web') + '</span>' +
             '</div>' +
-            '<div style="font-size:0.65rem;color:var(--hud-text-secondary);line-height:1.3;max-height:2.6em;overflow:hidden;">' + tool.desc + '</div>' +
+            '<div style="font-size:0.66rem;color:var(--hud-text-secondary);line-height:1.35;max-height:2.7em;overflow:hidden;">' + tool.desc + '</div>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;border-top:1px dashed rgba(255,255,255,0.05);padding-top:4px;">' +
+
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:2px;border-top:1px dashed rgba(255,255,255,0.05);padding-top:6px;">' +
             '<span style="font-size:0.55rem;color:var(--hud-gold);font-family:var(--hud-font-mono);">' + (tool.contract || 'VERIFIED') + '</span>' +
-            '<button class="hud-stage-btn" onclick="ZothHUD.loadTool(\'' + tool.id + '\'); Modals.close();" style="padding:2px 8px;font-size:0.62rem;background:var(--hud-cyan);color:var(--hud-text-on-accent);font-weight:800;">LOAD STAGE ↗</button>' +
+            '<div style="display:flex;align-items:center;gap:4px;">' +
+              '<button class="hud-stage-btn" onclick="ZothHUD.loadTool(\'' + tool.id + '\'); Modals.close();" style="padding:3px 8px;font-size:0.62rem;background:var(--hud-cyan);color:var(--hud-text-on-accent);font-weight:800;" title="Load into Primary Center Stage">⚡ PRIMARY</button>' +
+              '<button class="hud-stage-btn" onclick="ZothHUD.loadTool(\'' + tool.id + '\'); if(!ZothHUD.getState().splitMode) ZothHUD.toggleSplitStage(); Modals.close();" style="padding:3px 6px;font-size:0.60rem;" title="Mount in Split Left Viewport">◫ L</button>' +
+              '<button class="hud-stage-btn" onclick="ZothHUD.setSecondaryTool(\'' + tool.id + '\'); if(!ZothHUD.getState().splitMode) ZothHUD.toggleSplitStage(); Modals.close();" style="padding:3px 6px;font-size:0.60rem;" title="Mount in Split Right Viewport">◫ R</button>' +
+              '<a href="' + tool.url + '" target="_blank" class="hud-stage-btn" style="padding:3px 6px;font-size:0.60rem;text-decoration:none;" title="Open standalone in new tab">↗</a>' +
+            '</div>' +
           '</div>' +
         '</div>';
       });
@@ -1491,7 +2609,7 @@
     renderShortcutsBody: function () {
       return '<div style="display:flex;flex-direction:column;gap:12px;">' +
         '<div style="font-size:0.74rem;color:var(--hud-text-secondary);line-height:1.4;">' +
-          'Zoth Studio Cyberpunk Video Game HUD is an authentic 100% sovereign operator cockpit. Zero page reloads, zero cloud dependencies, full local telemetry.' +
+          'Zoth Studio Cyberpunk Video Game HUD: 360° Polar Radar, Real-Time Audio Oscilloscope, and 6-Pillar Mathematical Calculus.' +
         '</div>' +
         '<table style="width:100%;border-collapse:collapse;font-family:var(--hud-font-mono);font-size:0.72rem;">' +
           '<tr style="border-bottom:1px solid var(--hud-border-subtle);">' +
@@ -1500,9 +2618,13 @@
           '</tr>' +
           '<tr><td style="padding:6px;"><code>1 - 9</code></td><td style="padding:6px;">Instant 1-click stage tool switch</td></tr>' +
           '<tr><td style="padding:6px;"><code>Shift + T</code></td><td style="padding:6px;">Cycle 4 Themes (Dark, Light, Matrix, Gold)</td></tr>' +
+          '<tr><td style="padding:6px;"><code>Shift + S</code></td><td style="padding:6px;">Toggle Dual-Tool Split Stage Mode</td></tr>' +
           '<tr><td style="padding:6px;"><code>Shift + D</code></td><td style="padding:6px;">Toggle Left Telemetry Deck Drawer</td></tr>' +
+          '<tr><td style="padding:6px;"><code>Shift + R</code></td><td style="padding:6px;">Ping All 21 Agents on 360° Polar Radar</td></tr>' +
+          '<tr><td style="padding:6px;"><code>Shift + O</code></td><td style="padding:6px;">Cycle Audio Oscilloscope Mode (Wave / FFT / Phase)</td></tr>' +
           '<tr><td style="padding:6px;"><code>Ctrl + K</code></td><td style="padding:6px;">Open Master Tool Manager (298+ Tools)</td></tr>' +
           '<tr><td style="padding:6px;"><code>` / Esc</code></td><td style="padding:6px;">Focus Command Line Terminal REPL</td></tr>' +
+          '<tr><td style="padding:6px;"><code>Alt + ◀ / ▶</code></td><td style="padding:6px;">Navigate Stage History (Back / Forward)</td></tr>' +
           '<tr><td style="padding:6px;"><code>F11</code></td><td style="padding:6px;">Toggle Fullscreen Cockpit Viewport</td></tr>' +
         '</table>' +
       '</div>';
@@ -1527,14 +2649,18 @@
       var grid = document.getElementById('hud-toolmgr-grid');
       if (!grid) return;
       var cards = grid.querySelectorAll('.hud-toolmgr-card');
+      var visibleCount = 0;
       cards.forEach(function (c) {
-        var cardCat = c.getAttribute('data-cat');
-        if (catSlug === 'all' || cardCat === catSlug) {
+        var cardCat = c.getAttribute('data-cat') || '';
+        if (catSlug === 'all' || cardCat.indexOf(catSlug) !== -1) {
           c.style.display = 'flex';
+          visibleCount++;
         } else {
           c.style.display = 'none';
         }
       });
+      var countBadge = document.getElementById('hud-toolmgr-count');
+      if (countBadge) countBadge.textContent = visibleCount + ' TOOLS';
       playCyberSFX('chirp');
     },
 
@@ -1542,37 +2668,77 @@
       var grid = overlay.querySelector('#hud-toolmgr-grid');
       if (!grid) return;
       var cards = grid.querySelectorAll('.hud-toolmgr-card');
+      var visibleCount = 0;
       cards.forEach(function (c) {
         var name = c.getAttribute('data-name') || '';
         var desc = c.getAttribute('data-desc') || '';
         var id = c.getAttribute('data-id') || '';
-        if (!query || name.includes(query) || desc.includes(query) || id.includes(query)) {
+        if (!query || name.indexOf(query) !== -1 || desc.indexOf(query) !== -1 || id.indexOf(query) !== -1) {
           c.style.display = 'flex';
+          visibleCount++;
         } else {
           c.style.display = 'none';
         }
       });
+      var countBadge = overlay.querySelector('#hud-toolmgr-count') || document.getElementById('hud-toolmgr-count');
+      if (countBadge) countBadge.textContent = visibleCount + ' TOOLS';
     }
   };
 
   /* =============================================================================
-     9. MASTER CONTROLLER PUBLIC API (window.ZothHUD)
+     10. MASTER CONTROLLER PUBLIC API (window.ZothHUD / window.ZothCyberpunkHUD)
      ============================================================================= */
   var ZothHUD = {
     initialized: false,
+    AudioOscilloscope: AudioOscilloscope,
+    PolarRadar: PolarRadar,
+    CalculusEngine: CalculusEngine,
+    MathTelemetry: CalculusEngine,
+    MemGraphCanvas: MemGraphCanvas,
 
     init: function () {
       if (this.initialized) return;
       this.initialized = true;
 
-      // 1. Mount or bind HUD DOM
+      // 0. Parse URL Query Parameters for deep-linking
+      var urlParams = (typeof window !== 'undefined' && window.location && window.location.search) ? new URLSearchParams(window.location.search) : null;
+      if (urlParams) {
+        var qTheme = urlParams.get('theme');
+        var qAgent = urlParams.get('agent');
+        var qTool = urlParams.get('tool');
+        var qSplit = urlParams.get('split');
+
+        if (qTheme && ['dark', 'light', 'matrix', 'gold'].indexOf(qTheme) !== -1) {
+          STATE.activeTheme = qTheme;
+        }
+        if (qAgent && ALL_21_AGENTS.find(function (a) { return a.id === qAgent; })) {
+          STATE.activeAgent = qAgent;
+        }
+        if (qTool) {
+          var t = PRIMARY_WORKSTATIONS.find(function (x) { return x.id === qTool; });
+          if (t) STATE.activeTool = t;
+        }
+        if (qSplit) {
+          var st = PRIMARY_WORKSTATIONS.find(function (x) { return x.id === qSplit; });
+          if (st) {
+            STATE.secondaryTool = st;
+            STATE.splitMode = true;
+          }
+        }
+      }
+
       this.ensureHUDLayout();
 
-      // 2. Initialize Subsystems
-      var canvasEl = document.getElementById('hud-mem-canvas');
+      var scopeCanvas = document.getElementById('hud-audio-oscilloscope') || document.getElementById('hud-audio-scope-canvas') || document.querySelector('.hud-oscilloscope-canvas, .hud-audio-scope-canvas');
+      if (scopeCanvas) AudioOscilloscope.init(scopeCanvas);
+
+      var radarCanvas = document.getElementById('hud-polar-radar') || document.getElementById('hud-radar-canvas') || document.querySelector('.hud-radar-canvas');
+      if (radarCanvas) PolarRadar.init(radarCanvas);
+
+      var canvasEl = document.getElementById('hud-mem-canvas') || document.querySelector('.hud-mem-canvas');
       if (canvasEl) MemGraphCanvas.init(canvasEl);
 
-      MathTelemetry.start();
+      CalculusEngine.start();
 
       var termOutput = document.getElementById('hud-term-output');
       var termInput = document.getElementById('hud-term-input');
@@ -1581,24 +2747,28 @@
       var msgContainer = document.getElementById('hud-msg-stream');
       if (msgContainer) MessageStream.init(msgContainer);
 
-      // 3. Bind Keyboard Shortcuts & Handlers
       this.bindShortcuts();
       this.bindDOMEvents();
 
-      // 4. Initial Tool & Agent Load
       this.loadTool(STATE.activeTool.id, true);
+      if (STATE.splitMode && STATE.secondaryTool) {
+        this.setSecondaryTool(STATE.secondaryTool.id);
+        var divider = document.getElementById('hud-stage-divider');
+        var secPane = document.getElementById('hud-stage-sec-pane');
+        if (divider) divider.style.display = 'flex';
+        if (secPane) secPane.style.display = 'flex';
+      }
       this.setAgent(STATE.activeAgent, true);
       this.setTheme(STATE.activeTheme);
+      this.syncURLState();
 
-      // 5. Initial Log Stream Greeting
-      this.addLog('AZOTH', 'Cyberpunk HUD Engine v5.0 initialized. Standing by.', 'azoth');
-      this.addLog('SYSTEM', 'Zero root scroll cockpit locked at 100vh. Daemons 7/7 online.', 'system');
+      this.addLog('AZOTH', 'Cyberpunk HUD Engine v5.5 initialized. Polar Radar & Oscilloscope nominal.', 'azoth');
+      this.addLog('SYSTEM', '6-Pillar Mathematical Calculus active. Zero root scroll cockpit locked.', 'system');
 
       playCyberSFX('boot');
     },
 
     ensureHUDLayout: function () {
-      // Check if .hud-app-shell already exists
       var existingShell = document.querySelector('.hud-app-shell');
       if (existingShell) {
         document.documentElement.classList.add('hud-mode');
@@ -1606,7 +2776,6 @@
         return;
       }
 
-      // Construct standalone HUD DOM if called on a bare page
       document.documentElement.classList.add('hud-mode');
       document.body.classList.add('cyberpunk-hud');
 
@@ -1636,6 +2805,13 @@
             '<button type="button" class="hud-deck-toggle-btn" onclick="ZothHUD.toggleDeck()" title="Toggle Operations Deck" aria-label="Toggle Deck"><span>☰</span> DECK</button>' +
           '</div>' +
 
+          '<!-- Top Header Real-Time Audio Oscilloscope Visualizer -->' +
+          '<div class="hud-header-center" style="display:flex;align-items:center;gap:8px;">' +
+            '<div class="hud-oscilloscope-container" style="background:rgba(0,0,0,0.4);border:1px solid var(--hud-border);padding:2px 4px;clip-path:var(--hud-clip-sm);display:flex;align-items:center;">' +
+              '<canvas class="hud-oscilloscope-canvas" id="hud-audio-oscilloscope" width="180" height="34" title="Click to cycle Oscilloscope Mode (Waveform / FFT / Phase)"></canvas>' +
+            '</div>' +
+          '</div>' +
+
           '<div class="hud-header-right">' +
             '<button type="button" class="hud-badge-action hud-badge-ports" onclick="ZothHUD.openModal(\'ports\')" title="Loopback Ports Status">' +
               '<span class="hud-led green"></span>[ PORTS ]' +
@@ -1662,13 +2838,29 @@
         '<div class="hud-workspace">' +
           '<!-- LEFT OPERATIONS & TELEMETRY DECK -->' +
           '<aside class="hud-deck hud-custom-scroll" id="hud-deck-panel" role="complementary">' +
-            '<!-- Panel 1: ACTIVE AGENTS -->' +
+
+            '<!-- Panel 1: 360° POLAR RADAR MINI-MAP -->' +
+            '<div class="hud-card">' +
+              '<div class="hud-card-header">' +
+                '<div class="hud-card-title"><span>📡</span> 360° POLAR RADAR</div>' +
+                '<span class="hud-card-badge">21 FLEET</span>' +
+              '</div>' +
+              '<div class="hud-radar-canvas-container" style="display:flex;justify-content:center;padding:4px 0;position:relative;">' +
+                '<canvas class="hud-radar-canvas" id="hud-polar-radar" width="220" height="220"></canvas>' +
+              '</div>' +
+              '<div class="hud-radar-controls" style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.62rem;font-family:var(--hud-font-mono);border-top:1px dashed rgba(255,255,255,0.06);">' +
+                '<span style="color:var(--hud-cyan);cursor:pointer;" onclick="ZothHUD.pingRadar()">[ ⚡ PING ALL ]</span>' +
+                '<span style="color:var(--hud-gold);cursor:pointer;" onclick="ZothHUD.setScopeMode()">[ 🔊 SCOPE: <strong id="hud-scope-mode-lbl">WAVE</strong> ]</span>' +
+              '</div>' +
+            '</div>' +
+
+            '<!-- Panel 2: ACTIVE AGENTS ROSTER -->' +
             '<div class="hud-card">' +
               '<div class="hud-card-header">' +
                 '<div class="hud-card-title"><span>🔮</span> ACTIVE AGENTS</div>' +
                 '<span class="hud-card-badge">21 AGENTS</span>' +
               '</div>' +
-              '<div class="hud-agents-roster" id="hud-agents-roster">' +
+              '<div class="hud-agents-roster" id="hud-agents-roster" style="max-height:160px;overflow-y:auto;">' +
                 this.getAgentsRosterHTML() +
               '</div>' +
               '<button type="button" class="hud-agent-slot-add" onclick="ZothHUD.loadTool(\'agent-composer\')">' +
@@ -1676,7 +2868,7 @@
               '</button>' +
             '</div>' +
 
-            '<!-- Panel 2: MEMORY GRAPH -->' +
+            '<!-- Panel 3: MEMORY GRAPH -->' +
             '<div class="hud-card">' +
               '<div class="hud-card-header">' +
                 '<div class="hud-card-title"><span>🧠</span> MEMORY GRAPH</div>' +
@@ -1687,14 +2879,14 @@
                 '<div class="hud-mem-grid-wireframe"></div>' +
               '</div>' +
               '<div class="hud-mem-stats-row">' +
-                '<div class="hud-stat-cell"><span class="hud-stat-lbl">NODES</span><span class="hud-stat-val" id="hud-mem-nodes">128</span></div>' +
+                '<div class="hud-stat-cell"><span class="hud-stat-lbl">NODES</span><span class="hud-stat-val" id="hud-mem-nodes">21 Live</span></div>' +
                 '<div class="hud-stat-cell"><span class="hud-stat-lbl">SYNAPSES</span><span class="hud-stat-val" id="hud-mem-synapses">512</span></div>' +
                 '<div class="hud-stat-cell"><span class="hud-stat-lbl">DENSITY</span><span class="hud-stat-val" id="hud-mem-density">0.84</span></div>' +
                 '<div class="hud-stat-cell"><span class="hud-stat-lbl">LATENCY</span><span class="hud-stat-val" id="hud-mem-lat">0.82ms</span></div>' +
               '</div>' +
             '</div>' +
 
-            '<!-- Panel 3: COMMAND LINE REPL -->' +
+            '<!-- Panel 4: COMMAND LINE REPL -->' +
             '<div class="hud-card">' +
               '<div class="hud-card-header">' +
                 '<div class="hud-card-title"><span>⚡</span> COMMAND LINE</div>' +
@@ -1702,18 +2894,18 @@
               '</div>' +
               '<div class="hud-terminal-container">' +
                 '<div class="hud-term-output" id="hud-term-output">' +
-                  '<div class="hud-term-line stdout">Zoth Sovereign Terminal REPL v5.0</div>' +
-                  '<div class="hud-term-line warn">Type "help" for commands, "ports" for loopback ping.</div>' +
+                  '<div class="hud-term-line stdout">Zoth Sovereign Terminal REPL v5.5</div>' +
+                  '<div class="hud-term-line warn">Type "help" for commands, "radar" for 360° fleet scan.</div>' +
                 '</div>' +
                 '<div class="hud-term-prompt-row">' +
                   '<span class="hud-term-prefix">[ZOTH]❯</span>' +
-                  '<input type="text" class="hud-term-input" id="hud-term-input" placeholder="help, status, ports, tool <name>..." autocomplete="off" spellcheck="false" />' +
+                  '<input type="text" class="hud-term-input" id="hud-term-input" placeholder="help, radar, scope, pillars, agent..." autocomplete="off" spellcheck="false" />' +
                   '<button type="button" class="hud-term-send-btn" onclick="ZothHUD.execPromptInput()">EXEC</button>' +
                 '</div>' +
               '</div>' +
             '</div>' +
 
-            '<!-- Panel 4: MESSAGE LOG -->' +
+            '<!-- Panel 5: MESSAGE LOG -->' +
             '<div class="hud-card">' +
               '<div class="hud-card-header">' +
                 '<div class="hud-card-title"><span>📡</span> MESSAGE LOG</div>' +
@@ -1722,36 +2914,58 @@
               '<div class="hud-msg-stream" id="hud-msg-stream"></div>' +
             '</div>' +
 
-            '<!-- Panel 5: MATH PILLAR 6 STATUS -->' +
+            '<!-- Panel 6: COMPLETE 6-PILLAR MATHEMATICAL CALCULUS -->' +
             '<div class="hud-card">' +
               '<div class="hud-card-header">' +
-                '<div class="hud-card-title"><span>📐</span> MATH PILLAR 6 STATUS</div>' +
-                '<span class="hud-card-badge">CALCULUS</span>' +
+                '<div class="hud-card-title"><span>📐</span> 6-PILLAR CALCULUS</div>' +
+                '<button type="button" class="hud-stage-btn" onclick="ZothHUD.openModal(\'pillars\')" style="padding:1px 6px;font-size:0.58rem;">INSPECT</button>' +
               '</div>' +
               '<div class="hud-pillar-grid">' +
                 '<div class="hud-pillar-row">' +
                   '<div class="hud-pillar-meta">' +
-                    '<span class="hud-pillar-name"><span>✦</span> SHANNON ENTROPY H(X)</span>' +
-                    '<span class="hud-pillar-val" id="hud-stat-entropy">3.842 bits</span>' +
+                    '<span class="hud-pillar-name"><span>✦</span> 1. SHEAF COHOMOLOGY</span>' +
+                    '<span class="hud-pillar-val" id="hud-pillar-1-val">H¹(U,F) = 0.000</span>' +
                   '</div>' +
-                  '<div class="hud-meter-track"><div class="hud-meter-fill" id="hud-meter-entropy" style="width: 85%;"></div></div>' +
+                  '<div class="hud-meter-track"><div class="hud-meter-fill" style="width: 100%;"></div></div>' +
                 '</div>' +
                 '<div class="hud-pillar-row">' +
                   '<div class="hud-pillar-meta">' +
-                    '<span class="hud-pillar-name"><span>✦</span> SYSTEM HEALTH Ω</span>' +
-                    '<span class="hud-pillar-val" id="hud-stat-health">99.85%</span>' +
+                    '<span class="hud-pillar-name"><span>✦</span> 2. FISHER METRIC</span>' +
+                    '<span class="hud-pillar-val" id="hud-pillar-2-val">∇̃L = 4.821</span>' +
                   '</div>' +
-                  '<div class="hud-meter-track"><div class="hud-meter-fill gold" id="hud-meter-health" style="width: 99.85%;"></div></div>' +
+                  '<div class="hud-meter-track"><div class="hud-meter-fill gold" style="width: 96.4%;"></div></div>' +
                 '</div>' +
                 '<div class="hud-pillar-row">' +
                   '<div class="hud-pillar-meta">' +
-                    '<span class="hud-pillar-name"><span>✦</span> QUANTUM COHERENCE Ψ</span>' +
-                    '<span class="hud-pillar-val" id="hud-stat-coherence">0.942</span>' +
+                    '<span class="hud-pillar-name"><span>✦</span> 3. STDP PLASTICITY</span>' +
+                    '<span class="hud-pillar-val" id="hud-pillar-3-val">Δw = 0.842</span>' +
                   '</div>' +
-                  '<div class="hud-meter-track"><div class="hud-meter-fill violet" id="hud-meter-coherence" style="width: 94.2%;"></div></div>' +
+                  '<div class="hud-meter-track"><div class="hud-meter-fill" style="width: 84.2%;"></div></div>' +
+                '</div>' +
+                '<div class="hud-pillar-row">' +
+                  '<div class="hud-pillar-meta">' +
+                    '<span class="hud-pillar-name"><span>✦</span> 4. SHANNON ENTROPY</span>' +
+                    '<span class="hud-pillar-val" id="hud-pillar-4-val">0.124 bits</span>' +
+                  '</div>' +
+                  '<div class="hud-meter-track"><div class="hud-meter-fill violet" id="hud-meter-entropy" style="width: 24.8%;"></div></div>' +
+                '</div>' +
+                '<div class="hud-pillar-row">' +
+                  '<div class="hud-pillar-meta">' +
+                    '<span class="hud-pillar-name"><span>✦</span> 5. KAN B-SPLINES</span>' +
+                    '<span class="hud-pillar-val" id="hud-pillar-5-val">Φ_q = 0.996</span>' +
+                  '</div>' +
+                  '<div class="hud-meter-track"><div class="hud-meter-fill gold" style="width: 99.6%;"></div></div>' +
+                '</div>' +
+                '<div class="hud-pillar-row">' +
+                  '<div class="hud-pillar-meta">' +
+                    '<span class="hud-pillar-name"><span>✦</span> 6. MODERN HOPFIELD</span>' +
+                    '<span class="hud-pillar-val" id="hud-pillar-6-val">E(x) = -14.28</span>' +
+                  '</div>' +
+                  '<div class="hud-meter-track"><div class="hud-meter-fill" style="width: 95%;"></div></div>' +
                 '</div>' +
               '</div>' +
             '</div>' +
+
           '</aside>' +
 
           '<!-- CENTER STAGE -->' +
@@ -1811,7 +3025,7 @@
 
     getAgentsRosterHTML: function () {
       var html = '';
-      AGENTS_ROSTER.forEach(function (agent) {
+      ALL_21_AGENTS.forEach(function (agent) {
         var isActive = (agent.id === STATE.activeAgent);
         html += '<div class="hud-agent-radio-item ' + (isActive ? 'active' : '') + '" data-agent="' + agent.id + '" onclick="ZothHUD.setAgent(\'' + agent.id + '\')">' +
           '<div class="hud-agent-radio-left">' +
@@ -1826,9 +3040,6 @@
     },
 
     bindDOMEvents: function () {
-      var self = this;
-
-      // Clock tick in header
       var clockEl = document.getElementById('hud-header-clock');
       function tickClock() {
         if (!clockEl) clockEl = document.getElementById('hud-header-clock');
@@ -1849,7 +3060,6 @@
     bindShortcuts: function () {
       var self = this;
       window.addEventListener('keydown', function (e) {
-        // Do not intercept if typing in an input/textarea
         var tag = (e.target.tagName || '').toLowerCase();
         var isInput = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
 
@@ -1865,6 +3075,12 @@
         } else if (e.key === 'd' && e.shiftKey && !isInput) {
           e.preventDefault();
           self.toggleDeck();
+        } else if (e.key === 'r' && e.shiftKey && !isInput) {
+          e.preventDefault();
+          self.pingRadar();
+        } else if (e.key === 'o' && e.shiftKey && !isInput) {
+          e.preventDefault();
+          self.setScopeMode();
         } else if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           self.openModal('toolmgr');
@@ -1876,7 +3092,20 @@
       });
     },
 
-    // ── Dynamic Stage Tool Loader ──
+    syncURLState: function () {
+      if (typeof window === 'undefined' || !window.history || !window.history.replaceState) return;
+      try {
+        var params = new URLSearchParams();
+        if (STATE.activeTool && STATE.activeTool.id) params.set('tool', STATE.activeTool.id);
+        if (STATE.splitMode && STATE.secondaryTool && STATE.secondaryTool.id) params.set('split', STATE.secondaryTool.id);
+        if (STATE.activeTheme && STATE.activeTheme !== 'dark') params.set('theme', STATE.activeTheme);
+        if (STATE.activeAgent && STATE.activeAgent !== 'azoth') params.set('agent', STATE.activeAgent);
+        var qStr = params.toString();
+        var newUrl = window.location.pathname + (qStr ? '?' + qStr : '') + window.location.hash;
+        window.history.replaceState(null, '', newUrl);
+      } catch (e) {}
+    },
+
     loadTool: function (toolId, isInitial) {
       var tool = PRIMARY_WORKSTATIONS.find(function (t) { return t.id === toolId; });
       if (!tool && window.TOOL_DETAILS) {
@@ -1900,19 +3129,24 @@
       }
 
       STATE.activeTool = tool;
-      if (!isInitial) playCyberSFX('switch');
+      if (!isInitial) {
+        STATE.stageHistory = STATE.stageHistory.slice(0, STATE.stageHistoryIndex + 1);
+        STATE.stageHistory.push(tool.id);
+        STATE.stageHistoryIndex = STATE.stageHistory.length - 1;
+        playCyberSFX('switch');
+      }
 
-      // 1. Update Stage Frame
       var frame = document.getElementById('hud-stage-frame');
       if (frame) {
+        var cleanUrl = tool.url;
+        var sep = cleanUrl.indexOf('?') === -1 ? '?' : '&';
+        var embedUrl = cleanUrl + sep + 'embed=1&in_hud=1&theme=' + encodeURIComponent(STATE.activeTheme);
         var currentSrc = frame.src || '';
-        var targetOrigin = (window.location && window.location.origin) ? window.location.origin : '';
-        if (currentSrc !== (targetOrigin + tool.url) && (!currentSrc || !currentSrc.endsWith(tool.url))) {
-          frame.src = tool.url;
+        if (!currentSrc || currentSrc.indexOf(cleanUrl) === -1) {
+          frame.src = embedUrl;
         }
       }
 
-      // 2. Update Stage Header
       var titleEl = document.getElementById('hud-stage-tool-name');
       if (titleEl) {
         var catIcon = '🛠';
@@ -1937,7 +3171,6 @@
         tagsEl.innerHTML = tagsHtml;
       }
 
-      // 3. Update Bottom Dock Active State
       var dockTabs = document.querySelectorAll('.hud-dock-tab');
       dockTabs.forEach(function (tab) {
         var tabTool = tab.getAttribute('data-tool');
@@ -1948,21 +3181,183 @@
         }
       });
 
-      // 4. Log Message
+      this.syncURLState();
+
       if (!isInitial) {
         this.addLog('STAGE', 'Active tool mounted: ' + tool.name + ' (' + tool.url + ')', 'system');
       }
     },
 
-    // ── Active Agent Selector ──
+    setSecondaryTool: function (toolId) {
+      var tool = PRIMARY_WORKSTATIONS.find(function (t) { return t.id === toolId; });
+      if (tool) {
+        STATE.secondaryTool = tool;
+        var secFrame = document.getElementById('hud-stage-frame-sec');
+        if (secFrame) {
+          var cleanUrl = tool.url;
+          var sep = cleanUrl.indexOf('?') === -1 ? '?' : '&';
+          var embedUrl = cleanUrl + sep + 'embed=1&in_hud=1&theme=' + encodeURIComponent(STATE.activeTheme);
+          secFrame.src = embedUrl;
+        }
+        var secTitle = document.getElementById('hud-split-sec-title');
+        if (secTitle) secTitle.innerHTML = '<span>📐</span> ' + tool.name.toUpperCase();
+        this.syncURLState();
+        playCyberSFX('switch');
+      }
+    },
+
+    toggleSplitStage: function () {
+      STATE.splitMode = !STATE.splitMode;
+      var divider = document.getElementById('hud-stage-divider');
+      var secPane = document.getElementById('hud-stage-sec-pane');
+      var btnSwap = document.getElementById('hud-btn-swap');
+      var btnClose = document.getElementById('hud-btn-close-split');
+      var splitBtn = document.getElementById('hud-btn-split');
+
+      if (divider) divider.style.display = STATE.splitMode ? 'flex' : 'none';
+      if (secPane) secPane.style.display = STATE.splitMode ? 'flex' : 'none';
+      if (btnSwap) btnSwap.style.display = STATE.splitMode ? 'inline-flex' : 'none';
+      if (btnClose) btnClose.style.display = STATE.splitMode ? 'inline-flex' : 'none';
+      if (splitBtn) {
+        if (STATE.splitMode) splitBtn.classList.add('active');
+        else splitBtn.classList.remove('active');
+      }
+
+      if (STATE.splitMode && !STATE.secondaryTool) {
+        this.setSecondaryTool('3d-editor');
+      }
+
+      this.syncURLState();
+      playCyberSFX('switch');
+      this.addLog('STAGE', 'Split Stage Mode: ' + (STATE.splitMode ? 'ACTIVE' : 'DISABLED'), 'system');
+    },
+
+    swapSplitStage: function () {
+      var temp = STATE.activeTool;
+      STATE.activeTool = STATE.secondaryTool;
+      STATE.secondaryTool = temp;
+
+      if (STATE.activeTool) this.loadTool(STATE.activeTool.id);
+      if (STATE.secondaryTool) this.setSecondaryTool(STATE.secondaryTool.id);
+      this.syncURLState();
+      playCyberSFX('switch');
+    },
+
+    closeSplitStage: function () {
+      STATE.splitMode = false;
+      var divider = document.getElementById('hud-stage-divider');
+      var secPane = document.getElementById('hud-stage-sec-pane');
+      var btnSwap = document.getElementById('hud-btn-swap');
+      var btnClose = document.getElementById('hud-btn-close-split');
+      var splitBtn = document.getElementById('hud-btn-split');
+
+      if (divider) divider.style.display = 'none';
+      if (secPane) secPane.style.display = 'none';
+      if (btnSwap) btnSwap.style.display = 'none';
+      if (btnClose) btnClose.style.display = 'none';
+      if (splitBtn) splitBtn.classList.remove('active');
+
+      this.syncURLState();
+      playCyberSFX('chirp');
+    },
+
+    stageBack: function () {
+      if (STATE.stageHistoryIndex > 0) {
+        STATE.stageHistoryIndex--;
+        var targetId = STATE.stageHistory[STATE.stageHistoryIndex];
+        var tool = PRIMARY_WORKSTATIONS.find(function (t) { return t.id === targetId; });
+        if (tool) {
+          this.loadTool(tool.id, true);
+          playCyberSFX('switch');
+        }
+      }
+    },
+
+    stageForward: function () {
+      if (STATE.stageHistoryIndex < STATE.stageHistory.length - 1) {
+        STATE.stageHistoryIndex++;
+        var targetId = STATE.stageHistory[STATE.stageHistoryIndex];
+        var tool = PRIMARY_WORKSTATIONS.find(function (t) { return t.id === targetId; });
+        if (tool) {
+          this.loadTool(tool.id, true);
+          playCyberSFX('switch');
+        }
+      }
+    },
+
+    reloadStage: function () {
+      var frame = document.getElementById('hud-stage-frame');
+      if (frame && STATE.activeTool) {
+        var cleanUrl = STATE.activeTool.url;
+        var sep = cleanUrl.indexOf('?') === -1 ? '?' : '&';
+        frame.src = cleanUrl + sep + 'embed=1&in_hud=1&theme=' + encodeURIComponent(STATE.activeTheme);
+      }
+      playCyberSFX('chirp');
+    },
+
+    setAspectRatio: function (ratio) {
+      if (['16:9', '4:3', '9:16'].indexOf(ratio) !== -1) {
+        STATE.aspectRatio = ratio;
+        var viewport = document.getElementById('hud-stage-viewport');
+        if (viewport) {
+          viewport.classList.remove('ratio-16-9', 'ratio-4-3', 'ratio-9-16');
+          viewport.classList.add('ratio-' + ratio.replace(':', '-'));
+        }
+        var btns = document.querySelectorAll('.hud-stage-ratio-btn');
+        btns.forEach(function (b) {
+          if (b.getAttribute('data-ratio') === ratio) {
+            b.classList.add('active');
+          } else {
+            b.classList.remove('active');
+          }
+        });
+        playCyberSFX('chirp');
+      }
+    },
+
+    setTerminalTab: function (tab) {
+      if (['tty0', 'radar', 'daemon'].indexOf(tab) !== -1) {
+        STATE.activeTermTab = tab;
+        var tabs = document.querySelectorAll('.hud-term-tab');
+        tabs.forEach(function (t) {
+          if (t.getAttribute('data-tab') === tab) {
+            t.classList.add('active');
+          } else {
+            t.classList.remove('active');
+          }
+        });
+        playCyberSFX('chirp');
+      }
+    },
+
+    execChip: function (chipCmd) {
+      TerminalREPL.execute(chipCmd);
+    },
+
+    mountLauncherBadge: function () {
+      var existing = document.getElementById('hud-floating-launcher-badge');
+      if (existing) return;
+      var badge = document.createElement('div');
+      badge.id = 'hud-floating-launcher-badge';
+      badge.className = 'hud-floating-badge';
+      badge.innerHTML = '⚡ HUD';
+      badge.onclick = function () { window.location.href = '/studio/cyberpunk-hud.html'; };
+      document.body.appendChild(badge);
+    },
+
+    getAutocompleteSuggestions: function (input) {
+      var commands = ['help', 'status', 'radar', 'scope', 'pillars', 'split', 'agent', 'tool', 'swarm', 'mem', 'theme', 'aspect', 'tab', 'ports', 'calc', 'ping', 'clear'];
+      var lower = (input || '').toLowerCase().trim();
+      return commands.filter(function (c) { return c.startsWith(lower); });
+    },
+
     setAgent: function (agentId, isInitial) {
-      var agent = AGENTS_ROSTER.find(function (a) { return a.id === agentId; });
-      if (!agent) agent = AGENTS_ROSTER[0];
+      var agent = ALL_21_AGENTS.find(function (a) { return a.id === agentId; });
+      if (!agent) agent = ALL_21_AGENTS[0];
 
       STATE.activeAgent = agent.id;
       if (!isInitial) playCyberSFX('select');
 
-      // Update Radio item active class
       var items = document.querySelectorAll('.hud-agent-radio-item');
       items.forEach(function (item) {
         if (item.getAttribute('data-agent') === agent.id) {
@@ -1972,17 +3367,15 @@
         }
       });
 
-      // Pulse memory graph
       MemGraphCanvas.pulseAll();
+      this.syncURLState();
 
-      // Voice synthesis announcement
       if (!isInitial) {
         speakAgentVoice(agent.id, agent.greeting);
         this.addLog(agent.name, agent.greeting, 'azoth');
       }
     },
 
-    // ── 4-Theme Engine ──
     setTheme: function (themeName) {
       if (['dark', 'light', 'matrix', 'gold'].indexOf(themeName) === -1) {
         themeName = 'dark';
@@ -2001,12 +3394,22 @@
         }
       } catch (e) {}
 
-      // Dispatch theme event
+      // Broadcast theme change to all embedded iframes
+      var iframes = document.querySelectorAll('iframe.hud-tool-iframe, iframe.hud-stage-frame, iframe.hud-stage-split-frame, #hud-stage-frame, #hud-stage-frame-sec');
+      iframes.forEach(function (ifr) {
+        try {
+          if (ifr.contentWindow && ifr.contentWindow.postMessage) {
+            ifr.contentWindow.postMessage({ type: 'ZOTH_HUD_THEME_CHANGE', theme: themeName }, '*');
+          }
+        } catch (e) {}
+      });
+
       if (typeof window !== 'undefined' && window.dispatchEvent) {
         try {
           window.dispatchEvent(new CustomEvent('zoth:theme-change', { detail: { theme: themeName } }));
         } catch (e) {}
       }
+      this.syncURLState();
       playCyberSFX('chirp');
     },
 
@@ -2018,7 +3421,32 @@
       this.addLog('THEME', 'Theme cycled to: ' + next.toUpperCase(), 'system');
     },
 
-    // ── Tablet/Mobile Deck Drawer Toggle ──
+    // Backwards-compatible aliases
+    openOmniverseNav: function (filterParam) { this.openModal('toolmgr', filterParam); },
+    openToolManagerModal: function (filterParam) { this.openModal('toolmgr', filterParam); },
+    openPortsModal: function () { this.openModal('ports'); },
+    openHelpModal: function () { this.openModal('shortcuts'); },
+    cycleHudTheme: function () { this.cycleTheme(); },
+    toggleLeftDeck: function () { this.toggleDeck(); },
+    switchTool: function (toolId) { this.loadTool(toolId); },
+
+    pingRadar: function () {
+      PolarRadar.pingAll();
+      playCyberSFX('ping');
+      this.addLog('RADAR', '360° Polar sweep ping transmitted across all 21 agents', 'system');
+    },
+
+    setScopeMode: function (mode) {
+      if (mode) {
+        AudioOscilloscope.setMode(mode);
+      } else {
+        AudioOscilloscope.cycleMode();
+      }
+      var lbl = document.getElementById('hud-scope-mode-lbl');
+      if (lbl) lbl.textContent = AudioOscilloscope.getMode().toUpperCase();
+      playCyberSFX('chirp');
+    },
+
     toggleDeck: function () {
       STATE.isDeckOpen = !STATE.isDeckOpen;
       var deck = document.getElementById('hud-deck-panel');
@@ -2032,7 +3460,6 @@
       playCyberSFX('chirp');
     },
 
-    // ── Fullscreen & Detach Viewport ──
     toggleFullscreen: function () {
       var viewport = document.getElementById('hud-stage-viewport');
       if (!document.fullscreenElement) {
@@ -2055,7 +3482,6 @@
       }
     },
 
-    // ── Port Ping Check ──
     pingPorts: function () {
       playCyberSFX('ping');
       var listEl = document.getElementById('hud-ports-list');
@@ -2072,7 +3498,6 @@
       });
       if (listEl) {
         listEl.innerHTML = '';
-        var self = this;
         PORTS_TOPOLOGY.forEach(function (p) {
           var row = document.createElement('div');
           row.className = 'hud-port-row';
@@ -2091,14 +3516,11 @@
       this.addLog('PORTS', 'Loopback 7-port ping verification completed [100% nominal]', 'daemon');
     },
 
-    // ── Cron Task Manual Trigger ──
     triggerCron: function (jobName) {
       playCyberSFX('ping');
       this.addLog('CRON', 'Manual trigger executed for task: ' + jobName, 'daemon');
-      alert('Cron Task [' + jobName + '] manually executed via Zoth Daemon.');
     },
 
-    // ── Terminal REPL Execution from UI ──
     execPromptInput: function () {
       var input = document.getElementById('hud-term-input');
       if (input && input.value.trim()) {
@@ -2108,7 +3530,6 @@
       }
     },
 
-    // ── Public Helper & Modal Wrappers ──
     openModal: function (modalId, filterParam) {
       Modals.open(modalId, filterParam);
     },
@@ -2121,6 +3542,14 @@
       MessageStream.add(tag, text, type);
     },
 
+    getAllAgents: function () {
+      return ALL_21_AGENTS.slice();
+    },
+
+    getPillars: function () {
+      return CalculusEngine.getPillars();
+    },
+
     getState: function () {
       return Object.assign({}, STATE);
     }
@@ -2130,7 +3559,6 @@
   window.ZothCyberpunkHUD = ZothHUD;
   window.ZothHUD = ZothHUD;
 
-  // Auto-init on DOMContentLoaded or immediately
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       ZothHUD.init();

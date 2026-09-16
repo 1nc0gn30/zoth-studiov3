@@ -276,6 +276,21 @@
     }
 
     applyTheme(curTheme);
+
+    // Cyberpunk HUD Embedded Workspace Auto-Adapter
+    try {
+      var isEmbeddedInHUD = (window.self !== window.top) || window.location.search.indexOf('embed=1') !== -1 || window.location.search.indexOf('in_hud=1') !== -1;
+      if (isEmbeddedInHUD) {
+        document.documentElement.classList.add('hud-embedded-mode');
+        if (document.body) document.body.classList.add('in-hud', 'hud-embedded-view');
+
+        window.addEventListener('message', function (ev) {
+          if (ev && ev.data && ev.data.type === 'ZOTH_HUD_THEME_CHANGE' && ev.data.theme) {
+            applyTheme(ev.data.theme);
+          }
+        });
+      }
+    } catch (e) {}
   }
 
   if (document.readyState === "loading") {
@@ -290,3 +305,4 @@
     mountThemeUI();
   }
 })();
+

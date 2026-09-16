@@ -84,9 +84,9 @@
           <span>[ THEMES: <strong id="hudThemeLabel">DARK</strong> ]</span>
         </button>
 
-        <!-- Tool Manager Button -->
-        <button type="button" class="hud-badge-action hud-badge-toolmgr" onclick="ZothCyberpunkHUD.openToolManagerModal()" title="Open Tool Catalog &amp; Workstations Manager (Ctrl+K)">
-          <span>[ TOOL MGR ➔ ]</span>
+        <!-- Tool Manager / Omniverse Nav Button -->
+        <button type="button" class="hud-badge-action hud-badge-toolmgr" onclick="ZothCyberpunkHUD.openOmniverseNav()" title="Open 298+ Tools Omniverse Navigator &amp; Workstations Router (Ctrl+K)">
+          <span>🚀 [ OMNIVERSE NAV ➔ ]</span>
         </button>
       </div>
     </header>
@@ -158,15 +158,33 @@
             <span class="hud-card-badge">TTY-0</span>
           </div>
           <div class="hud-terminal-container">
+            <!-- Multi-Tab Controls -->
+            <div class="hud-term-tabs">
+              <button type="button" class="hud-term-tab active" data-tab="tty0" onclick="ZothCyberpunkHUD.setTerminalTab('tty0')">TTY-0 REPL</button>
+              <button type="button" class="hud-term-tab" data-tab="radar" onclick="ZothCyberpunkHUD.setTerminalTab('radar')">RADAR SCAN</button>
+              <button type="button" class="hud-term-tab" data-tab="daemon" onclick="ZothCyberpunkHUD.setTerminalTab('daemon')">DAEMON :8484</button>
+            </div>
+
             <div class="hud-term-output hud-custom-scroll" id="hudTermOutput">
               <div class="hud-term-line stdout">● Zoth Sovereign Cockpit TTY-0 Initialized.</div>
               <div class="hud-term-line success">✔ 21 Agents Listening on loopback bus (:8484)</div>
-              <div class="hud-term-line stdout">Type "help" to view available HUD commands.</div>
+              <div class="hud-term-line warn">Type "help" for commands, Tab for autocomplete, "split" for dual stage.</div>
             </div>
+
+            <!-- Quick Command Chips -->
+            <div class="hud-term-chips">
+              <button type="button" class="hud-term-chip" onclick="ZothCyberpunkHUD.execChip('ports')">[▶ Ping Ports]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothCyberpunkHUD.execChip('swarm pantheon')">[⚡ Swarm Triangulate]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothCyberpunkHUD.execChip('tool vault')">[🔐 Key Vault]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothCyberpunkHUD.execChip('mem')">[🧠 Memory Beat]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothCyberpunkHUD.execChip('tool nexus-3d')">[🪐 Tsubuyaki 3D]</button>
+              <button type="button" class="hud-term-chip" onclick="ZothCyberpunkHUD.execChip('tool subsweep')">[🧹 Sweep Cruft]</button>
+            </div>
+
             <div class="hud-term-prompt-row">
               <span class="hud-term-prefix">zoth-hud $</span>
-              <input type="text" id="hudTermInput" class="hud-term-input" placeholder="help, status, tool, exec..." autocomplete="off" spellcheck="false" />
-              <button type="button" id="hudTermSendBtn" class="hud-term-send-btn">EXEC</button>
+              <input type="text" id="hudTermInput" class="hud-term-input" placeholder="help, status, ports, split, radar, tool <name>..." autocomplete="off" spellcheck="false" />
+              <button type="button" id="hudTermSendBtn" class="hud-term-send-btn" onclick="ZothCyberpunkHUD.execPromptInput()">EXEC</button>
             </div>
           </div>
         </section>
@@ -234,8 +252,14 @@
 
         <!-- Stage Header Strip (44px) -->
         <div class="hud-stage-header">
-          <!-- Left: Tool Name, Tags, Options -->
+          <!-- Left: Stage Nav + Tool Name + Tags -->
           <div class="hud-stage-title-wrap">
+            <div class="hud-stage-nav-group">
+              <button type="button" class="hud-stage-nav-btn" id="hud-nav-back" onclick="ZothCyberpunkHUD.stageBack()" title="Previous Stage Workstation (Alt+Left)">◀</button>
+              <button type="button" class="hud-stage-nav-btn" id="hud-nav-fwd" onclick="ZothCyberpunkHUD.stageForward()" title="Next Stage Workstation (Alt+Right)">▶</button>
+              <button type="button" class="hud-stage-nav-btn" id="hud-nav-reload" onclick="ZothCyberpunkHUD.reloadStage()" title="Reload Stage Workstation">↻</button>
+            </div>
+
             <strong class="hud-stage-tool-name" id="hudStageToolName">
               🎬 OmniPost 2.0 Video Studio
             </strong>
@@ -246,13 +270,38 @@
             </div>
           </div>
 
-          <!-- Right: [ OMNI POST ], [ TOOL BENCH ], [ FULLSCREEN ], [ DETACH ] -->
+          <!-- Right: Aspect Ratio, Split, Fullscreen, Detach -->
           <div class="hud-stage-actions">
+            <!-- Aspect Ratio Switcher -->
+            <div class="hud-stage-ratio-group">
+              <button type="button" class="hud-stage-ratio-btn active" data-ratio="16:9" onclick="ZothCyberpunkHUD.setAspectRatio('16:9')" title="16:9 Full Widescreen">16:9</button>
+              <button type="button" class="hud-stage-ratio-btn" data-ratio="4:3" onclick="ZothCyberpunkHUD.setAspectRatio('4:3')" title="4:3 Tablet Frame">4:3</button>
+              <button type="button" class="hud-stage-ratio-btn" data-ratio="9:16" onclick="ZothCyberpunkHUD.setAspectRatio('9:16')" title="9:16 Mobile Smartphone Frame">9:16</button>
+            </div>
+
+            <!-- Dual-Tool Split Stage Controls -->
+            <button type="button" class="hud-stage-btn hud-split-btn" id="hud-btn-split" onclick="ZothCyberpunkHUD.toggleSplitStage()" title="Toggle Dual-Tool Split Stage (Shift+S)">
+              <span>◫</span>
+              <span>[ SPLIT ]</span>
+            </button>
+            <button type="button" class="hud-stage-btn" id="hud-btn-swap" onclick="ZothCyberpunkHUD.swapSplitStage()" style="display:none;" title="Swap Workstations">
+              <span>⇄</span>
+              <span>[ SWAP ]</span>
+            </button>
+            <button type="button" class="hud-stage-btn" id="hud-btn-close-split" onclick="ZothCyberpunkHUD.closeSplitStage()" style="display:none;" title="Close Split Stage">
+              <span>✕</span>
+              <span>[ CLOSE ]</span>
+            </button>
+
+            <button type="button" class="hud-stage-btn hud-stage-btn-nav" onclick="ZothCyberpunkHUD.openOmniverseNav()" title="Open 298+ Tools Omniverse Navigator (Ctrl+K)" style="background:rgba(0,240,255,0.12);color:var(--hud-cyan);border-color:var(--hud-cyan);">
+              <span>🚀</span>
+              <span>[ ALL TOOLS ]</span>
+            </button>
             <button type="button" id="btnStageOmniPost" class="hud-stage-btn hud-stage-btn-omnipost" onclick="ZothCyberpunkHUD.switchTool('omnipost')" title="Switch to OmniPost Video Studio">
               <span>🎬</span>
               <span>[ OMNI POST ]</span>
             </button>
-            <button type="button" id="btnStageBench" class="hud-stage-btn" onclick="ZothCyberpunkHUD.switchTool('bench')" title="Switch to Tool Bench Harness">
+            <button type="button" id="btnStageBench" class="hud-stage-btn" onclick="ZothCyberpunkHUD.switchTool('tool-bench')" title="Switch to Tool Bench Harness">
               <span>🛠️</span>
               <span>[ TOOL BENCH ]</span>
             </button>
@@ -268,23 +317,47 @@
         </div>
 
         <!-- Modular Stage Viewport (100% Height Host Container) -->
-        <div class="hud-stage-viewport">
-          <!-- Cyberpunk Corner Reticle Brackets -->
-          <div class="hud-viewport-brackets" aria-hidden="true">
-            <span class="hud-bracket hud-bracket-tl"></span>
-            <span class="hud-bracket hud-bracket-tr"></span>
-            <span class="hud-bracket hud-bracket-bl"></span>
-            <span class="hud-bracket hud-bracket-br"></span>
-          </div>
+        <div class="hud-stage-viewport ratio-16-9" id="hud-stage-viewport">
+          <div class="hud-stage-inner-wrap" id="hud-stage-inner-wrap" style="width:100%;height:100%;position:relative;">
+            <!-- Primary Split Pane -->
+            <div class="hud-split-pane" id="hud-stage-pri-pane">
+              <!-- Cyberpunk Corner Reticle Brackets -->
+              <div class="hud-viewport-brackets" aria-hidden="true">
+                <span class="hud-bracket hud-bracket-tl"></span>
+                <span class="hud-bracket hud-bracket-tr"></span>
+                <span class="hud-bracket hud-bracket-bl"></span>
+                <span class="hud-bracket hud-bracket-br"></span>
+              </div>
 
-          <!-- Active Tool iFrame Workspace -->
-          <iframe class="hud-tool-iframe" id="hudStageIframe" src="/studio/omnipost.html" title="Zoth Studio Dynamic Tool Stage"></iframe>
+              <!-- Active Tool iFrame Workspace -->
+              <iframe class="hud-tool-iframe" id="hudStageIframe" src="/studio/omnipost.html" title="Zoth Studio Dynamic Tool Stage"></iframe>
 
-          <!-- Coordinate Watermark Overlay -->
-          <div class="hud-viewport-telemetry-pill">
-            <span>STAGE: LOCAL 127.0.0.1</span>
-            <span>FPS: 60.0</span>
-            <span>E2EE ENCLAVE</span>
+              <!-- Coordinate Watermark Overlay -->
+              <div class="hud-viewport-telemetry-pill">
+                <span>STAGE: LOCAL 127.0.0.1</span>
+                <span>FPS: 60.0</span>
+                <span>E2EE ENCLAVE</span>
+              </div>
+            </div>
+
+            <!-- Split Divider -->
+            <div class="hud-split-divider" id="hud-stage-divider" style="display:none;">
+              <button type="button" class="hud-split-swap-btn" onclick="ZothCyberpunkHUD.swapSplitStage()" title="Swap Left and Right Workstations">⇄</button>
+            </div>
+
+            <!-- Secondary Split Pane -->
+            <div class="hud-split-pane" id="hud-stage-sec-pane" style="display:none;">
+              <div class="hud-split-pane-header">
+                <div class="hud-split-pane-title" id="hud-split-sec-title"><span>📐</span> 3D STUDIO CAD</div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <select class="hud-split-select" id="hud-split-select" onchange="ZothCyberpunkHUD.setSecondaryTool(this.value)">
+                    <!-- populated dynamically -->
+                  </select>
+                  <button type="button" class="hud-stage-btn" style="padding:1px 6px;font-size:0.60rem;" onclick="ZothCyberpunkHUD.detachSecondaryTool()" title="Detach Secondary Viewport">↗</button>
+                </div>
+              </div>
+              <iframe class="hud-tool-iframe" id="hud-stage-frame-sec" src="/studio/3d-editor.html" title="Secondary Split Tool Viewport"></iframe>
+            </div>
           </div>
         </div>
 
