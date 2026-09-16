@@ -3410,9 +3410,9 @@
       if (!canvas || typeof THREE === 'undefined') return;
 
       const PHI = 1.618033988749895;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      const width = rect.width || 600;
-      const height = rect.height || 440;
+      const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : { width: 600, height: 440 };
+      const width = Math.max(rect.width || 600, 64);
+      const height = Math.max(rect.height || 440, 64);
 
       hyperScene = new THREE.Scene();
       hyperScene.fog = new THREE.FogExp2(0x050508, 0.07);
@@ -3589,10 +3589,14 @@
           if (wireframeBox) wireframeBox.rotation.z = Math.sin(t * 0.8) * 0.05;
         }
 
-        if (hyperComposer) {
-          hyperComposer.render();
-        } else {
-          hyperRenderer.render(hyperScene, hyperCamera);
+        const rw = hyperRenderer && hyperRenderer.domElement ? hyperRenderer.domElement.width : 0;
+        const rh = hyperRenderer && hyperRenderer.domElement ? hyperRenderer.domElement.height : 0;
+        if (rw > 0 && rh > 0) {
+          if (hyperComposer) {
+            hyperComposer.render();
+          } else if (hyperRenderer) {
+            hyperRenderer.render(hyperScene, hyperCamera);
+          }
         }
       }
       hyperRafId = requestAnimationFrame(animate);

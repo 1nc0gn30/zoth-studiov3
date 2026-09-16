@@ -1647,8 +1647,8 @@
         const host = document.getElementById('arena-canvas');
         if (!host) return;
 
-        const width = host.clientWidth || window.innerWidth || 800;
-        const height = host.clientHeight || 520;
+        const width = Math.max(host.clientWidth || window.innerWidth || 800, 64);
+        const height = Math.max(host.clientHeight || window.innerHeight || 520, 64);
 
         scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x020306, 0.012);
@@ -1972,12 +1972,13 @@
       function onResize() {
         const host = document.getElementById('arena-canvas');
         if (!host || !camera || !renderer) return;
-        const w = host.clientWidth || window.innerWidth || 800;
-        const h = host.clientHeight || 520;
+        const w = Math.max(host.clientWidth || window.innerWidth || 800, 64);
+        const h = Math.max(host.clientHeight || window.innerHeight || 520, 64);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
         if (composer) composer.setSize(w, h);
+        if (bloomPass && typeof bloomPass.setSize === 'function') bloomPass.setSize(w, h);
       }
 
       // Visibility lifecycle management (0% CPU when tab hidden)
@@ -2008,14 +2009,6 @@
         if (now - lastFpsTime >= 500) {
           const avgDelta = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length;
           const rollingFps = Math.round(1000 / Math.max(1, avgDelta));
-          const fpsEl = document.getElementById('arena-fps');
-          if (fpsEl) {
-            const isLocked = rollingFps >= 57;
-            const lockStatus = isLocked ? '🔒 60 FPS Locked' : `${rollingFps} FPS`;
-            fpsEl.innerHTML = `<span style="color:${isLocked ? 'var(--emerald)' : (rollingFps >= 45 ? 'var(--cyan)' : 'var(--amber)')}; font-weight:700;">● ${rollingFps} FPS</span> · ${lockStatus}`;
-          }
-
-          // Adaptive Auto-scaling Policy (Locked to 60 FPS)
           if (autoLodEnabled && (now - lastLodAdjustmentTime > 2500)) {
             // Frame drop detected: Step down LOD tier to recover 60 FPS
             if (rollingFps < 52 && currentLodTierIndex > 0) {

@@ -4140,8 +4140,8 @@
       scene = new THREE.Scene();
       scene.fog = new THREE.FogExp2(0x030611, 0.025);
 
-      const w = container.clientWidth || 800;
-      const h = container.clientHeight || 480;
+      const w = Math.max(container.clientWidth || window.innerWidth || 800, 64);
+      const h = Math.max(container.clientHeight || window.innerHeight || 480, 64);
 
       camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
       camera.position.set(0, 7.5, 12.5);
@@ -4313,12 +4313,13 @@
     function onArenaResize() {
       const container = document.getElementById('arena-canvas');
       if (!container || !renderer || !camera) return;
-      const w = container.clientWidth || 800;
-      const h = container.clientHeight || 480;
+      const w = Math.max(container.clientWidth || window.innerWidth || 800, 64);
+      const h = Math.max(container.clientHeight || window.innerHeight || 480, 64);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
       if (swarmComposer) swarmComposer.setSize(w, h);
+      if (swarmBloomPass && typeof swarmBloomPass.setSize === 'function') swarmBloomPass.setSize(w, h);
     }
 
     function animate() {
@@ -4337,18 +4338,20 @@
         const targetPos = computeAgentFormationPosition(key, idx, totalAgents, t);
         unit.group.position.lerp(targetPos, dt * (3.2 * simSpeed));
 
-        unit.updateShield(dt, t);
+        if (typeof unit.updateShield === 'function') unit.updateShield(dt, t);
         if (unit.baseRing) unit.baseRing.rotation.z += 0.015 * simSpeed;
         if (unit.halo) unit.halo.rotation.z -= 0.01 * simSpeed;
       });
 
       // 2. Update Central Quantum Nexus Core
       if (nexusMesh) {
-        nexusMesh.core.rotation.y += 0.012 * simSpeed;
-        nexusMesh.core.rotation.x += 0.008 * simSpeed;
-        nexusMesh.cage.rotation.y -= 0.008 * simSpeed;
-        nexusMesh.ring.rotation.z += 0.015 * simSpeed;
-        nexusMesh.ring2.rotation.z -= 0.012 * simSpeed;
+        if (nexusMesh.core) {
+          nexusMesh.core.rotation.y += 0.012 * simSpeed;
+          nexusMesh.core.rotation.x += 0.008 * simSpeed;
+        }
+        if (nexusMesh.cage) nexusMesh.cage.rotation.y -= 0.008 * simSpeed;
+        if (nexusMesh.ring) nexusMesh.ring.rotation.z += 0.015 * simSpeed;
+        if (nexusMesh.ring2) nexusMesh.ring2.rotation.z -= 0.012 * simSpeed;
       }
 
       // 3. Update Boids Flocking Simulation
@@ -4418,10 +4421,14 @@
       }
 
       // 7. Render Scene
-      if (swarmComposer) {
-        swarmComposer.render();
-      } else if (renderer && scene && camera) {
-        renderer.render(scene, camera);
+      const rw = renderer && renderer.domElement ? renderer.domElement.width : 0;
+      const rh = renderer && renderer.domElement ? renderer.domElement.height : 0;
+      if (rw > 0 && rh > 0) {
+        if (swarmComposer) {
+          swarmComposer.render();
+        } else if (renderer && scene && camera) {
+          renderer.render(scene, camera);
+        }
       }
     }
 
