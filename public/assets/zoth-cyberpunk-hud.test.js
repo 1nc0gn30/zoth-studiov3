@@ -63,7 +63,8 @@ function createMockDOM() {
     },
     querySelectorAll: (sel) => {
       return Object.values(elements).filter(el => {
-        if (sel.startsWith('.')) return el.classList && el.classList.contains(sel.slice(1));
+        if (!el) return false;
+        if (sel.startsWith('.')) return el.classList && typeof el.classList.contains === 'function' && el.classList.contains(sel.slice(1));
         if (sel.startsWith('#')) return el.id === sel.slice(1);
         return false;
       });
@@ -101,9 +102,11 @@ function createMockDOM() {
       },
       style: {},
       children: [],
+      get firstChild() { return this.children[0] || null; },
       appendChild: (child) => { el.children.push(child); return child; },
       removeChild: (child) => {
-        const idx = el.children.indexOf(child);
+        const target = child || el.children[0];
+        const idx = el.children.indexOf(target);
         if (idx !== -1) el.children.splice(idx, 1);
       },
       addEventListener: (ev, cb) => {},
@@ -138,16 +141,30 @@ function createMockDOM() {
 
   const win = {
     document: doc,
-    location: { origin: 'http://127.0.0.1:8088', pathname: '/studio/cyberpunk-hud.html' },
+    location: {
+      origin: 'http://127.0.0.1:8088',
+      pathname: '/studio/cyberpunk-hud.html',
+      search: '',
+      hash: ''
+    },
+    history: {
+      pushState: () => {},
+      replaceState: () => {}
+    },
     localStorage: {
-      getItem: (k) => store[k] !== undefined ? store[k] : null,
-      setItem: (k, v) => { store[k] = String(v); }
+      getItem: (k) => store[k] || null,
+      setItem: (k, v) => { store[k] = String(v); },
+      removeItem: (k) => { delete store[k]; }
     },
     speechSynthesis: {
       cancel: () => {},
-      speak: () => {}
+      speak: (u) => {}
     },
-    SpeechSynthesisUtterance: function (text) { this.text = text; },
+    SpeechSynthesisUtterance: function (text) {
+      this.text = text;
+      this.rate = 1;
+      this.pitch = 1;
+    },
     addEventListener: (ev, cb) => {
       listeners[ev] = listeners[ev] || [];
       listeners[ev].push(cb);
@@ -165,7 +182,13 @@ function createMockDOM() {
 console.log('⚡ Running Cyberpunk HUD Tactical Visualizers Verification Tests...\n');
 
 // 1. Verify File Exists and is Non-Empty
-const hudJsPath = path.join(__dirname, 'zoth-cyberpunk-hud.js');
+const possiblePaths = [
+  path.join(__dirname, 'zoth-cyberpunk-hud.js'),
+  path.join(__dirname, 'public/assets/zoth-cyberpunk-hud.js'),
+  path.join(process.cwd(), 'public/assets/zoth-cyberpunk-hud.js'),
+  path.join(process.cwd(), 'zoth-cyberpunk-hud.js')
+];
+const hudJsPath = possiblePaths.find(p => fs.existsSync(p)) || possiblePaths[0];
 assert.ok(fs.existsSync(hudJsPath), 'zoth-cyberpunk-hud.js must exist on disk');
 const hudJsContent = fs.readFileSync(hudJsPath, 'utf8');
 assert.ok(hudJsContent.length > 5000, 'zoth-cyberpunk-hud.js must contain full implementation');
@@ -870,7 +893,39 @@ win.ZothHUD.TerminalRepl.execute('kiroshi 1.25');
 
 console.log('✔ Test 27 Passed: POV Cockpit Vitals Engine, Multi-Factor Neural Load, Sandevistan 10s Cooldown & Kiroshi Zoom verified');
 
-console.log('\n⭐ ALL 27 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES, GROK, A11Y, WEB AUDIO SYNTH & POV COCKPIT VITALS TESTS PASSED (100%)!\n');
+// 28. Test Comprehensive Workstation Switcher & Overlap Prevention
+const allWorkstations = [
+  'omnipost', '3d-editor', 'nexus-3d', 'swarm', 'webgen', 'tool-bench',
+  'netrunner-memory', 'consensus', 'math-pillars', 'vision-link', 'cockpit',
+  'vos-sandbox', 'subsweep', 'agent-composer', 'edge-forge', 'bus-monitor',
+  'signal-bridge', 'vault', 'web3-hub', 'pets', 'adytum', 'ai-webgpu',
+  'tool-nexus', 'fusion-arena', '3d-logo'
+];
+
+for (let i = 0; i < allWorkstations.length; i++) {
+  const toolId = allWorkstations[i];
+  win.ZothHUD.loadTool(toolId);
+  const activeTool = win.ZothHUD.getState().activeTool;
+  assert.strictEqual(activeTool.id, toolId, 'Active tool must be set to ' + toolId);
+  const frame = doc.getElementById('hud-stage-frame');
+  assert.ok(frame.src && frame.src.indexOf(activeTool.url) !== -1, 'Iframe src must contain ' + activeTool.url);
+  assert.ok(frame.src && frame.src.indexOf('embed=1') !== -1, 'Iframe src must have embed=1 param');
+  assert.strictEqual(doc.body['data-hud-mode'], 'tool', 'Body data-hud-mode must be "tool"');
+}
+
+// Test Dashboard Switch
+win.ZothHUD.loadTool('dashboard');
+assert.strictEqual(win.ZothHUD.getState().activeTool.id, 'dashboard', 'Active tool must be dashboard');
+assert.strictEqual(doc.body['data-hud-mode'], 'dashboard', 'Body data-hud-mode must be "dashboard"');
+
+// Switch back to Swarm
+win.ZothHUD.loadTool('swarm');
+assert.strictEqual(win.ZothHUD.getState().activeTool.id, 'swarm', 'Active tool must switch back to swarm');
+assert.strictEqual(doc.body['data-hud-mode'], 'tool', 'Body data-hud-mode must return to "tool"');
+
+console.log('✔ Test 28 Passed: Comprehensive 25+ Workstations Mounting, Dashboard Mode Toggle & Overlap Prevention verified');
+
+console.log('\n⭐ ALL 28 CYBERPUNK HUD TACTICAL VISUALIZERS, WORKSTATION MOUNTING, BREATHING ROOM, HERMES, GROK & POV VITALS TESTS PASSED (100%)!\n');
 process.exit(0);
 
 

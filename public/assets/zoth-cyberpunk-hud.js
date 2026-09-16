@@ -3474,8 +3474,13 @@
       this.containerEl.appendChild(item);
       this.containerEl.scrollTop = this.containerEl.scrollHeight;
 
-      while (this.containerEl.children.length > 100) {
-        this.containerEl.removeChild(this.containerEl.firstChild);
+      while (this.containerEl.children && this.containerEl.children.length > 100) {
+        var first = this.containerEl.firstChild || this.containerEl.children[0];
+        if (first && this.containerEl.removeChild) {
+          this.containerEl.removeChild(first);
+        } else {
+          break;
+        }
       }
     },
 
@@ -4652,9 +4657,11 @@
           '</main>' +
         '</div>' +
 
-        '<!-- BOTTOM QUICK-DOCK (46px) -->' +
+        '<!-- BOTTOM QUICK-DOCK (50px) -->' +
         '<footer class="hud-dock" role="contentinfo">' +
           '<div class="hud-dock-tabs" id="hud-dock-tabs">' +
+            '<button type="button" class="hud-dock-tab active" data-tool="dashboard" onclick="ZothHUD.loadTool(\'dashboard\')"><span>⌂</span> [ DASH ]</button>' +
+            '<button type="button" class="hud-dock-tab" data-tool="omnipost" onclick="ZothHUD.loadTool(\'omnipost\')"><span>🎬</span> [ OMNIPOST ]</button>' +
             '<button type="button" class="hud-dock-tab" data-tool="swarm" onclick="ZothHUD.loadTool(\'swarm\')"><span>🌐</span> [ SWARM ]</button>' +
             '<button type="button" class="hud-dock-tab" data-tool="netrunner-memory" onclick="ZothHUD.loadTool(\'netrunner-memory\')"><span>🧠</span> [ MEMORY ]</button>' +
             '<button type="button" class="hud-dock-tab" data-tool="webgen" onclick="ZothHUD.loadTool(\'webgen\')"><span>⚡</span> [ WEB GEN ]</button>' +
@@ -5074,6 +5081,14 @@
           contract: 'SOVEREIGN'
         };
 
+        var shell = document.querySelector('.hud-app-shell') || document.body;
+        if (shell) {
+          shell.setAttribute('data-hud-mode', 'dashboard');
+          shell.setAttribute('data-hud-tool', 'dashboard');
+          shell.setAttribute('data-hud-cat', 'dashboard');
+        }
+        document.body.setAttribute('data-hud-mode', 'dashboard');
+
         var dash = document.getElementById('hud-dashboard');
         if (dash) {
           dash.hidden = false;
@@ -5086,7 +5101,7 @@
         var titleEl = document.getElementById('hud-stage-tool-name');
         if (iconEl) iconEl.textContent = '⌂';
         if (labelEl) labelEl.textContent = 'DASHBOARD OVERVIEW';
-        if (titleEl && !labelEl) titleEl.innerHTML = '<span>⌂</span> DASHBOARD OVERVIEW';
+        if (titleEl && !labelEl) titleEl.innerHTML = '<span class="hud-stage-tool-icon">⌂</span> <span class="hud-stage-tool-label">DASHBOARD OVERVIEW</span> <span class="hud-dropdown-caret">▾</span>';
 
         var tagsEl = document.getElementById('hud-stage-tags');
         if (tagsEl) {
@@ -5148,6 +5163,14 @@
         tool = PRIMARY_WORKSTATIONS[0];
       }
 
+      var shell = document.querySelector('.hud-app-shell') || document.body;
+      if (shell) {
+        shell.setAttribute('data-hud-mode', 'tool');
+        shell.setAttribute('data-hud-tool', tool.id);
+        shell.setAttribute('data-hud-cat', (tool.catSlug || tool.category || 'workstation').toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+      }
+      document.body.setAttribute('data-hud-mode', 'tool');
+
       STATE.activeTool = tool;
       if (!isInitial) {
         STATE.stageHistory = STATE.stageHistory.slice(0, STATE.stageHistoryIndex + 1);
@@ -5157,14 +5180,11 @@
       }
 
       var frame = document.getElementById('hud-stage-frame');
-      if (frame) {
+      if (frame && tool.url) {
         var cleanUrl = tool.url;
         var sep = cleanUrl.indexOf('?') === -1 ? '?' : '&';
         var embedUrl = cleanUrl + sep + 'embed=1&in_hud=1&theme=' + encodeURIComponent(STATE.activeTheme);
-        var currentSrc = frame.src || '';
-        if (!currentSrc || currentSrc.indexOf(cleanUrl) === -1) {
-          frame.src = embedUrl;
-        }
+        frame.src = embedUrl;
       }
 
       var catIcon = '🛠';
@@ -5182,7 +5202,7 @@
       if (iconEl) iconEl.textContent = catIcon;
       if (labelEl) labelEl.textContent = (tool.name || tool.shortName || tool.id).toUpperCase();
       if (titleEl && !labelEl) {
-        titleEl.innerHTML = '<span>' + catIcon + '</span> ' + (tool.name || tool.shortName || tool.id).toUpperCase();
+        titleEl.innerHTML = '<span class="hud-stage-tool-icon">' + catIcon + '</span> <span class="hud-stage-tool-label">' + (tool.name || tool.shortName || tool.id).toUpperCase() + '</span> <span class="hud-dropdown-caret">▾</span>';
       }
 
       var tagsEl = document.getElementById('hud-stage-tags');
