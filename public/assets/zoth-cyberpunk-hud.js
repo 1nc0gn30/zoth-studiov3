@@ -1074,6 +1074,195 @@
   ];
 
   /* =============================================================================
+     2.3 TOOL-SPECIFIC CONTEXT & ACTION PROFILES
+     ============================================================================= */
+  var TOOL_CONTEXT_PROFILES = {
+    'omnipost': {
+      title: '🎬 OMNIPOST CONTROLS',
+      badge: '60 FPS RENDERER',
+      actions: [
+        { label: '⚡ RENDER 60FPS', action: 'render_60fps', cls: 'primary' },
+        { label: '🎵 Synth Track', action: 'synth_track', cls: 'gold' },
+        { label: '🎲 3x Thumbnails', action: 'generate_thumbnails', cls: '' },
+        { label: '💬 Captions ON/OFF', action: 'toggle_captions', cls: '' },
+        { label: '📋 Export MD/JSON', action: 'export_drafts', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Aspect:', options: [{ label: '16:9', val: '16:9' }, { label: '9:16', val: '9:16' }, { label: '1:1', val: '1:1' }], action: 'set_aspect' }
+      ],
+      telemetry: [
+        { label: 'PIPELINE', val: 'WebCodecs + Canvas2D' },
+        { label: 'AUDIO', val: '48kHz Procedural Synth' },
+        { label: 'AIRGAP', val: 'Local RAM Zero-Leak' }
+      ]
+    },
+    '3d-editor': {
+      title: '📐 3D CAD & SHADER FORGE',
+      badge: 'THREE.JS WEBGL',
+      actions: [
+        { label: '🕸 Wireframe', action: 'toggle_wireframe', cls: 'primary' },
+        { label: '+ Cube', action: 'spawn_mesh', payload: { shape: 'box' }, cls: '' },
+        { label: '+ Sphere', action: 'spawn_mesh', payload: { shape: 'sphere' }, cls: '' },
+        { label: '+ Torus', action: 'spawn_mesh', payload: { shape: 'torus' }, cls: '' },
+        { label: '📸 Snapshot', action: 'snapshot_canvas', cls: 'gold' },
+        { label: '📦 Export GLTF', action: 'export_gltf', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Camera:', options: [{ label: 'ISO', val: 'iso' }, { label: 'TOP', val: 'top' }, { label: 'FRONT', val: 'front' }], action: 'set_camera' }
+      ],
+      telemetry: [
+        { label: 'ENGINE', val: 'Three.js r128 / WebGL2' },
+        { label: 'FPS', val: '60.0 Nominal' },
+        { label: 'LIGHTING', val: 'HDR Studio Ambient' }
+      ]
+    },
+    'nexus-3d': {
+      title: '🪐 NEXUS 3D TSRAY ENGINE',
+      badge: 'PROCEDURAL 3D',
+      actions: [
+        { label: '🕸 Wireframe', action: 'toggle_wireframe', cls: 'primary' },
+        { label: '+ Cyber Spire', action: 'spawn_mesh', payload: { shape: 'spire' }, cls: 'gold' },
+        { label: '+ Torus Knot', action: 'spawn_mesh', payload: { shape: 'torus' }, cls: '' },
+        { label: '📸 Snapshot PNG', action: 'snapshot_canvas', cls: '' },
+        { label: '📦 Export GLTF', action: 'export_gltf', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Shader:', options: [{ label: 'Gold', val: 'gold' }, { label: 'Cyan', val: 'cyan' }, { label: 'Glass', val: 'glass' }], action: 'set_shader' }
+      ],
+      telemetry: [
+        { label: 'RAYMARCH', val: 'Simplex Noise Shaders' },
+        { label: 'GEOMETRY', val: 'Volumetric Meshes' },
+        { label: 'CANVAS', val: 'Double-Buffered' }
+      ]
+    },
+    'swarm': {
+      title: '🌐 SWARM FLEET & LASERS',
+      badge: '21 AGENTS :5225',
+      actions: [
+        { label: '⚡ Triangulate Lasers', action: 'triangulate_lasers', cls: 'primary' },
+        { label: '🛡 Quorum 66%', action: 'set_quorum', payload: 0.66, cls: 'gold' },
+        { label: '🌟 21 Pantheon', action: 'filter_fleet', payload: 'pantheon', cls: '' },
+        { label: '🔮 6 Core Fleet', action: 'filter_fleet', payload: 'core', cls: '' },
+        { label: '🔄 Sync Telemetry', action: 'sync_telemetry', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Speed:', options: [{ label: '1x', val: '1' }, { label: '2x', val: '2' }, { label: '⏸', val: 'pause' }], action: 'set_speed' }
+      ],
+      telemetry: [
+        { label: 'TOPOLOGY', val: 'Monoidal Sheaf Topos' },
+        { label: 'LATENCY', val: '< 1.2ms Loopback' },
+        { label: 'IPC BUS', val: 'SSE Stream Active' }
+      ]
+    },
+    'consensus': {
+      title: '⚔️ CONSENSUS ARBITRATION',
+      badge: 'SHANNON ENTROPY',
+      actions: [
+        { label: '⚔️ Arbitrate AST', action: 'arbitrate_consensus', cls: 'primary' },
+        { label: '⚖️ Synthesize Verdict', action: 'synthesize_verdict', cls: 'gold' },
+        { label: '🧬 AST Diff Mode', action: 'toggle_ast_diff', cls: '' },
+        { label: '🧪 WASM Sandbox Run', action: 'run_wasm_sandbox', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Target:', options: [{ label: 'H < 0.20b', val: '0.20' }, { label: 'H < 0.10b', val: '0.10' }], action: 'set_entropy' }
+      ],
+      telemetry: [
+        { label: 'THRESHOLD', val: 'τ = 0.85 Agreement' },
+        { label: 'ENTROPY', val: 'H(P) = 0.124 bits' },
+        { label: 'BYZANTINE', val: 'Fault-Tolerant AST' }
+      ]
+    },
+    'math-pillars': {
+      title: '📐 6 SACRED MATH PILLARS',
+      badge: 'FORMAL THEORY',
+      actions: [
+        { label: 'ℰ P1 Sheaves', action: 'focus_pillar', payload: 1, cls: '' },
+        { label: 'g_ij P2 Fisher', action: 'focus_pillar', payload: 2, cls: '' },
+        { label: 'Δw P3 STDP', action: 'focus_pillar', payload: 3, cls: '' },
+        { label: 'H(X) P4 Entropy', action: 'focus_pillar', payload: 4, cls: '' },
+        { label: 'Φ P5 KAN Spline', action: 'focus_pillar', payload: 5, cls: '' },
+        { label: 'E(x) P6 Hopfield', action: 'focus_pillar', payload: 6, cls: '' },
+        { label: '🔊 Voice Theory Memo', action: 'voice_theory', cls: 'gold' },
+        { label: '📐 Compute Invariants', action: 'validate_invariants', cls: 'primary' }
+      ],
+      dials: [],
+      telemetry: [
+        { label: 'COHOMOLOGY', val: 'H¹(U,F) = 0.000' },
+        { label: 'NATURAL GRAD', val: '∇̃L = g^{ij} ∂_j L' },
+        { label: 'HOPFIELD BASIN', val: '99.85% Recalled' }
+      ]
+    },
+    'netrunner-memory': {
+      title: '🧠 SYNAPTIC MEMORY & LUCY',
+      badge: 'DAEMON :8788',
+      actions: [
+        { label: '🧠 Consolidate Synapses', action: 'consolidate_memory', cls: 'primary' },
+        { label: '🧹 Vacuum Vector Space', action: 'vacuum_memory', cls: '' },
+        { label: '🔮 Query Oracle :8788', action: 'query_oracle', cls: 'gold' },
+        { label: '💾 Snapshot Memory DB', action: 'snapshot_memory', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Vector:', options: [{ label: '1024d Cosine', val: '1024' }, { label: '512d Fast', val: '512' }], action: 'set_vector_dim' }
+      ],
+      telemetry: [
+        { label: 'EMBEDDINGS', val: '1024d Hyper-Vector' },
+        { label: 'SYNAPSES', val: '128 Nodes / 512 Axons' },
+        { label: 'DAEMON HEALTH', val: ':8788 ONLINE (0.82ms)' }
+      ]
+    },
+    'webgen': {
+      title: '⚡ WEBGEN STUDIO & AGENT AX',
+      badge: 'ASTRO 5 / VITE',
+      actions: [
+        { label: '⚡ Synthesize Full App', action: 'synthesize_web', cls: 'primary' },
+        { label: '🚀 Test Serverless Fn', action: 'test_serverless', cls: 'gold' },
+        { label: '🛡 JSON-Schema Contract', action: 'validate_schema', cls: '' },
+        { label: '📦 Export Bundle ZIP', action: 'export_bundle', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Framework:', options: [{ label: 'Astro 5', val: 'astro' }, { label: 'Vite React', val: 'vite' }, { label: 'Next 15', val: 'next' }], action: 'set_framework' }
+      ],
+      telemetry: [
+        { label: 'ENGINE', val: 'Local AST Compiler' },
+        { label: 'SERVERLESS', val: 'Netlify Functions Mock' },
+        { label: 'SANDBOX', val: 'Airgapped WASM' }
+      ]
+    },
+    'vault': {
+      title: '🔐 ARGON2ID KEY VAULT',
+      badge: 'AIRGAP HARDENED',
+      actions: [
+        { label: '🔐 Lock & Encrypt', action: 'lock_vault', cls: 'primary' },
+        { label: '🔓 Decrypt Workspace', action: 'unlock_vault', cls: 'gold' },
+        { label: '🔑 Generate Keypair', action: 'gen_keypair', cls: '' },
+        { label: '🛡 Zeroize Memory', action: 'zeroize_memory', cls: 'green' }
+      ],
+      dials: [
+        { label: 'Hardness:', options: [{ label: '64MB Std', val: '64' }, { label: '128MB Military', val: '128' }], action: 'set_hardness' }
+      ],
+      telemetry: [
+        { label: 'ARGON2ID', val: 't=3, m=65536, p=4' },
+        { label: 'STORE', val: 'Encrypted IndexedDB' },
+        { label: 'AIRGAP AUDIT', val: '100% Zero-Leak' }
+      ]
+    },
+    'subsweep': {
+      title: '🧹 SUBSWEEP REPO JANITOR',
+      badge: 'CRUFT SWEEPER',
+      actions: [
+        { label: '🔍 Deep Scan Cruft', action: 'scan_cruft', cls: 'primary' },
+        { label: '🛡 Dry Run Sweep', action: 'dry_run_sweep', cls: 'gold' },
+        { label: '🧹 Sweep Orphan Blobs', action: 'sweep_orphans', cls: 'green' }
+      ],
+      dials: [],
+      telemetry: [
+        { label: 'HEURISTIC', val: 'Artifacts & Temp Zips' },
+        { label: 'SAFETY', val: 'Git Status Verified' }
+      ]
+    }
+  };
+
+  /* =============================================================================
      3. MASTER ENGINE STATE
      ============================================================================= */
   var initialTheme = 'dark';
@@ -2868,6 +3057,11 @@
               '</button>' +
             '</div>' +
 
+            '<!-- Panel 2.5: TOOL-SPECIFIC HUD OPERATIONS CARD -->' +
+            '<div class="hud-card hud-tool-context-card" id="hud-tool-context-card">' +
+              '<!-- Dynamically populated by renderToolContextCard -->' +
+            '</div>' +
+
             '<!-- Panel 3: MEMORY GRAPH -->' +
             '<div class="hud-card">' +
               '<div class="hud-card-header">' +
@@ -3181,11 +3375,99 @@
         }
       });
 
+      this.renderToolContextCard(tool.id);
       this.syncURLState();
 
       if (!isInitial) {
         this.addLog('STAGE', 'Active tool mounted: ' + tool.name + ' (' + tool.url + ')', 'system');
       }
+    },
+
+    getToolContextProfile: function (toolId) {
+      if (TOOL_CONTEXT_PROFILES && TOOL_CONTEXT_PROFILES[toolId]) return TOOL_CONTEXT_PROFILES[toolId];
+      var tool = PRIMARY_WORKSTATIONS.find(function (t) { return t.id === toolId; }) || { name: (toolId || 'TOOL').toUpperCase(), category: 'WORKSTATION' };
+      return {
+        title: '🛠 ' + (tool.name || toolId).toUpperCase() + ' CONTROLS',
+        badge: (tool.category || 'WORKSTATION').toUpperCase(),
+        actions: [
+          { label: '▶ Run Simulation', action: 'run_sim', cls: 'primary' },
+          { label: '🛡 Inspect Schema', action: 'inspect_schema', cls: 'gold' },
+          { label: '↗ Open Standalone', action: 'detach_tool', cls: 'green' }
+        ],
+        dials: [],
+        telemetry: [
+          { label: 'STATUS', val: 'Active in Center Stage' },
+          { label: 'RUNTIME', val: 'Localhost Sovereign' }
+        ]
+      };
+    },
+
+    renderToolContextCard: function (toolId) {
+      var card = document.getElementById('hud-tool-context-card') || document.getElementById('hudToolContextCard');
+      if (!card) return;
+
+      var profile = this.getToolContextProfile(toolId);
+      var html = '<div class="hud-card-header">' +
+        '<div class="hud-card-title"><span>⚡</span> ' + profile.title + '</div>' +
+        '<span class="hud-card-badge">' + profile.badge + '</span>' +
+      '</div>';
+
+      html += '<div class="hud-tool-context-actions-grid">';
+      (profile.actions || []).forEach(function (act) {
+        var payloadParam = act.payload ? JSON.stringify(act.payload).replace(/"/g, '&quot;') : 'null';
+        html += '<button type="button" class="hud-tool-act-btn ' + (act.cls || '') + '" onclick="ZothHUD.sendToolAction(\'' + act.action + '\', ' + payloadParam + ')">' + act.label + '</button>';
+      });
+      html += '</div>';
+
+      if (profile.dials && profile.dials.length > 0) {
+        profile.dials.forEach(function (dial) {
+          html += '<div class="hud-tool-context-dials-row">' +
+            '<span class="hud-tool-dial-label">' + dial.label + '</span>';
+          dial.options.forEach(function (opt, idx) {
+            html += '<button type="button" class="hud-tool-dial-chip ' + (idx === 0 ? 'active' : '') + '" onclick="ZothHUD.sendToolAction(\'' + dial.action + '\', { ratio: \'' + opt.val + '\', val: \'' + opt.val + '\' }); var chips = this.parentElement.querySelectorAll(\'.hud-tool-dial-chip\'); for(var i=0; i<chips.length; i++){chips[i].classList.remove(\'active\');} this.classList.add(\'active\');">' + opt.label + '</button>';
+          });
+          html += '</div>';
+        });
+      }
+
+      if (profile.telemetry && profile.telemetry.length > 0) {
+        html += '<div class="hud-tool-context-telemetry-box">';
+        profile.telemetry.forEach(function (t) {
+          html += '<div class="tele-row"><span>' + t.label + ':</span><span class="tele-val">' + t.val + '</span></div>';
+        });
+        html += '</div>';
+      }
+
+      card.innerHTML = html;
+    },
+
+    sendToolAction: function (actionName, payload) {
+      playCyberSFX('tool');
+      var msg = {
+        type: 'ZOTH_TOOL_ACTION',
+        action: actionName,
+        payload: payload || {},
+        sender: 'ZOTH_HUD',
+        timestamp: Date.now()
+      };
+
+      var iframes = document.querySelectorAll('iframe.hud-tool-iframe, iframe.hud-stage-frame, iframe.hud-stage-split-frame, #hud-stage-frame, #hud-stage-frame-sec');
+      iframes.forEach(function (ifr) {
+        try {
+          if (ifr.contentWindow && ifr.contentWindow.postMessage) {
+            ifr.contentWindow.postMessage(msg, '*');
+          }
+        } catch (e) {}
+      });
+
+      if (typeof window !== 'undefined' && window.dispatchEvent) {
+        try {
+          window.dispatchEvent(new CustomEvent('zoth:hud-action', { detail: { action: actionName, payload: payload } }));
+        } catch (e) {}
+      }
+
+      var toolName = STATE.activeTool ? STATE.activeTool.name : 'HUD';
+      this.addLog(toolName.toUpperCase(), 'Action dispatched: ' + actionName.replace(/_/g, ' ').toUpperCase(), 'system');
     },
 
     setSecondaryTool: function (toolId) {

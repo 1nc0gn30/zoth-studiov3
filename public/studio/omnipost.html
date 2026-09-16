@@ -30,6 +30,9 @@
 <link href="/assets/zoth-preview.css" rel="stylesheet"/>
 <link href="/assets/zoth-liquid-bg.css" rel="stylesheet"/>
 <link href="/assets/zoth-grade-a.css" rel="stylesheet"/>
+<link href="/assets/zoth-theme.css?v=12" rel="stylesheet"/>
+<link href="/assets/zoth-hud-embedded.css" rel="stylesheet"/>
+<script src="/assets/zoth-hud-embedded.js"></script>
 <style>
       :root {
         /* Layout / product chrome only — do not pin --text / --bg / display fonts. */
@@ -8914,6 +8917,31 @@ An autonomous local-first engine that solves cloud API dependencies..." style="w
         if (typeof updateVgiHud === 'function') updateVgiHud();
         if (typeof updateRevisionBadgeCount === 'function') updateRevisionBadgeCount();
         if (typeof autoSaveDraftSnapshot === 'function') autoSaveDraftSnapshot('Session Init');
+
+        // Cyberpunk HUD Action Bridge
+        if (window.ZothEmbeddedAdapter) {
+          window.ZothEmbeddedAdapter.onAction('render_60fps', function () {
+            if (typeof renderThumbnailCanvas === 'function') renderThumbnailCanvas();
+            if (typeof renderKeyframeSlides === 'function') renderKeyframeSlides();
+            var tabShorts = document.querySelector('[data-tab="tab-shorts"]');
+            if (tabShorts) tabShorts.click();
+          });
+          window.ZothEmbeddedAdapter.onAction('synth_track', function () {
+            if (window.ZothMusicEngine) {
+              if (window.ZothMusicEngine.isPlaying) window.ZothMusicEngine.stopTrack();
+              else window.ZothMusicEngine.playTrack('neon_overdrive');
+            }
+          });
+          window.ZothEmbeddedAdapter.onAction('generate_thumbnails', function () {
+            var tabThumb = document.querySelector('[data-tab="tab-thumb-forge"]');
+            if (tabThumb) tabThumb.click();
+            if (typeof renderThumbnailCanvas === 'function') renderThumbnailCanvas();
+          });
+          window.ZothEmbeddedAdapter.onAction('export_drafts', function () {
+            var dlBtn = document.getElementById('btn-download-md');
+            if (dlBtn) dlBtn.click();
+          });
+        }
       })();
     </script>
 <script src="/assets/zoth-preview.js"></script>

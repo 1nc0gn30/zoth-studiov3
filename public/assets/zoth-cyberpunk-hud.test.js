@@ -104,7 +104,8 @@ function createMockDOM() {
       setAttribute: (k, v) => { el[k] = v; },
       getAttribute: (k) => el[k] || null,
       removeAttribute: (k) => { delete el[k]; },
-      focus: () => {}
+      focus: () => {},
+      click: () => {}
     };
     if (id) elements[id] = el;
     return el;
@@ -343,7 +344,56 @@ const embeddedJs = fs.readFileSync(embeddedJsPath, 'utf8');
 const embeddedCss = fs.readFileSync(embeddedCssPath, 'utf8');
 assert.ok(embeddedJs.includes('ZOTH_HUD_THEME_CHANGE'), 'embedded JS must handle theme sync');
 assert.ok(embeddedCss.includes('hud-embedded-mode'), 'embedded CSS must define hud-embedded-mode');
-console.log('✔ Test 14 Passed: Universal Embedded Workspace Adapters (JS & CSS) verified');
+assert.ok(embeddedCss.includes('header.bar'), 'embedded CSS must suppress header.bar');
+assert.ok(embeddedCss.includes('footer.site'), 'embedded CSS must suppress footer.site');
+assert.ok(embeddedCss.includes('omni-guided-steps'), 'embedded CSS must suppress omni-guided-steps');
+console.log('✔ Test 14 Passed: Universal Embedded Workspace Adapters & Navbar/Footer Cleaner verified');
 
-console.log('\n⭐ ALL 14 CYBERPUNK HUD TACTICAL VISUALIZERS & OMNIVERSE TESTS PASSED (100%)!\n');
+// 15. Test Tool-Specific HUD Context Operations Card & Telemetry
+assert.ok(typeof win.ZothHUD.getToolContextProfile === 'function', 'getToolContextProfile method exists');
+assert.ok(typeof win.ZothHUD.renderToolContextCard === 'function', 'renderToolContextCard method exists');
+assert.ok(typeof win.ZothHUD.sendToolAction === 'function', 'sendToolAction method exists');
+
+const omniProfile = win.ZothHUD.getToolContextProfile('omnipost');
+assert.ok(omniProfile, 'OmniPost tool profile must exist');
+assert.strictEqual(omniProfile.badge, '60 FPS RENDERER');
+assert.ok(omniProfile.actions.some(a => a.action === 'render_60fps'), 'Must have render_60fps action');
+assert.ok(omniProfile.actions.some(a => a.action === 'synth_track'), 'Must have synth_track action');
+
+const cadProfile = win.ZothHUD.getToolContextProfile('3d-editor');
+assert.ok(cadProfile, '3D Editor CAD tool profile must exist');
+assert.strictEqual(cadProfile.badge, 'THREE.JS WEBGL');
+assert.ok(cadProfile.actions.some(a => a.action === 'toggle_wireframe'), 'Must have toggle_wireframe action');
+
+win.ZothHUD.renderToolContextCard('omnipost');
+win.ZothHUD.renderToolContextCard('3d-editor');
+win.ZothHUD.renderToolContextCard('swarm');
+win.ZothHUD.renderToolContextCard('consensus');
+win.ZothHUD.renderToolContextCard('math-pillars');
+win.ZothHUD.renderToolContextCard('netrunner-memory');
+win.ZothHUD.renderToolContextCard('webgen');
+win.ZothHUD.renderToolContextCard('vault');
+console.log('✔ Test 15 Passed: Tool-Specific HUD Context Card & 10 Workstation Profiles verified');
+
+// 16. Test Bi-Directional Action Bridge & Embedded Action Execution
+const { win: childWin, doc: childDoc } = createMockDOM();
+const childAdapterFn = new Function('window', 'document', embeddedJs);
+childAdapterFn(childWin, childDoc);
+
+assert.ok(childWin.ZothEmbeddedAdapter, 'ZothEmbeddedAdapter must be exposed in embedded window');
+let actionReceived = false;
+let actionPayload = null;
+childWin.ZothEmbeddedAdapter.onAction('render_60fps', (payload) => {
+  actionReceived = true;
+  actionPayload = payload;
+});
+
+childWin.ZothEmbeddedAdapter.handleHUDAction('render_60fps', { fps: 60, mode: 'shorts' });
+assert.strictEqual(actionReceived, true, 'Custom action callback must execute');
+assert.strictEqual(actionPayload.fps, 60, 'Payload must pass accurately through action bridge');
+
+win.ZothHUD.sendToolAction('render_60fps', { fps: 60 });
+console.log('✔ Test 16 Passed: Bi-Directional Action Bridge & Event Dispatch verified');
+
+console.log('\n⭐ ALL 16 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE & ACTION BRIDGE TESTS PASSED (100%)!\n');
 
