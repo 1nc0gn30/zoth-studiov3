@@ -35,13 +35,30 @@
   var audioCtx = null;
   var analyserNode = null;
   var masterGainNode = null;
+  var userHasInteracted = false;
 
-  function getAudioContext() {
-    if (!audioCtx) {
+  function unlockAudioContext() {
+    userHasInteracted = true;
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(function () {});
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pointerdown', unlockAudioContext, { once: true, passive: true });
+    window.addEventListener('keydown', unlockAudioContext, { once: true, passive: true });
+    window.addEventListener('touchstart', unlockAudioContext, { once: true, passive: true });
+  }
+
+  function getAudioContext(force) {
+    if (!userHasInteracted && !force) {
+      return null;
+    }
+    if (!audioCtx && (userHasInteracted || force)) {
       var AudioClass = window.AudioContext || window.webkitAudioContext;
       if (AudioClass) {
-        audioCtx = new AudioClass();
         try {
+          audioCtx = new AudioClass();
           analyserNode = audioCtx.createAnalyser();
           analyserNode.fftSize = 256;
           analyserNode.smoothingTimeConstant = 0.82;
@@ -54,7 +71,7 @@
         } catch (e) {}
       }
     }
-    if (audioCtx && audioCtx.state === 'suspended') {
+    if (audioCtx && audioCtx.state === 'suspended' && userHasInteracted) {
       audioCtx.resume().catch(function () {});
     }
     return audioCtx;
@@ -62,8 +79,20 @@
 
   function playCyberSFX(type) {
     try {
-      var ctx = getAudioContext();
-      if (!ctx) return;
+      if (!userHasInteracted) {
+        if (AudioOscilloscope) {
+          if (type === 'chirp' || type === 'hover') AudioOscilloscope.triggerPulse(0.4, 880);
+          else if (type === 'select' || type === 'click') AudioOscilloscope.triggerPulse(0.65, 520);
+          else if (type === 'switch' || type === 'tool') AudioOscilloscope.triggerPulse(0.8, 480);
+          else if (type === 'ping' || type === 'radar') AudioOscilloscope.triggerPulse(0.9, 1400);
+          else if (type === 'error') AudioOscilloscope.triggerPulse(1.0, 110);
+          else if (type === 'boot') AudioOscilloscope.triggerPulse(1.0, 440);
+          else if (type === 'wave' || type === 'ripple') AudioOscilloscope.triggerPulse(0.75, 320);
+        }
+        return;
+      }
+      var ctx = getAudioContext(true);
+      if (!ctx || ctx.state === 'suspended') return;
       var now = ctx.currentTime;
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();

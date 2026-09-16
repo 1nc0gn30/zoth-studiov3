@@ -376,19 +376,30 @@
   }
 
   function pingHealth() {
-    var checks = [
-      { port: '8088', url: '/studio/cyberpunk-hud.html' },
-      { port: '8484', url: 'http://127.0.0.1:8484/api/health' },
-      { port: '8788', url: 'http://127.0.0.1:8788/v1/memories?limit=1' },
-      { port: '11434', url: 'http://127.0.0.1:11434/api/tags' }
-    ];
     window.ZothHudIntel.health = window.ZothHudIntel.health || {};
+    var isHttp = window.location.protocol === 'http:';
+    var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    var checks = [
+      { port: '8088', url: '/studio/cyberpunk-hud.html', localOnly: false },
+      { port: '8484', url: 'http://127.0.0.1:8484/api/health', localOnly: true },
+      { port: '8788', url: 'http://127.0.0.1:8788/health', localOnly: true },
+      { port: '11434', url: 'http://127.0.0.1:11434/api/tags', localOnly: true }
+    ];
+
     checks.forEach(function (c) {
+      if (c.localOnly && (!isLocal || !isHttp)) {
+        // In cloud / HTTPS preview, mark local daemons as standby rather than triggering mixed content warnings
+        window.ZothHudIntel.health[c.port] = null;
+        paintHealth();
+        return;
+      }
+
       var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
       var t = setTimeout(function () { if (ctrl) ctrl.abort(); }, 1600);
-      fetch(c.url, { signal: ctrl ? ctrl.signal : undefined, mode: c.port === '8088' ? 'same-origin' : 'cors' })
+      fetch(c.url, { signal: ctrl ? ctrl.signal : undefined, mode: c.port === '8088' ? 'same-origin' : 'no-cors' })
         .then(function (r) {
-          window.ZothHudIntel.health[c.port] = !!r.ok;
+          window.ZothHudIntel.health[c.port] = c.port === '8088' ? !!r.ok : (r.type === 'opaque' || r.ok);
         })
         .catch(function () {
           window.ZothHudIntel.health[c.port] = c.port === '8088' ? true : false;

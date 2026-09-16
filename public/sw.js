@@ -46,11 +46,22 @@ self.addEventListener('activate', (event) => {
 
 // Fetch: Stale-While-Revalidate for local assets, Network-First for API/dynamic
 self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
+  if (!event.request || !event.request.url) return;
+  
+  let url;
+  try {
+    url = new URL(event.request.url);
+  } catch (err) {
+    return;
+  }
 
-  // Skip non-GET requests and WebSocket/SSE/API requests
-  if (req.method !== 'GET' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/v1/')) {
+  // Skip non-HTTP schemes (chrome-extension:, etc.)
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return;
+  }
+
+  // Skip non-GET requests and WebSocket/SSE/API endpoints
+  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/v1/')) {
     return;
   }
 
@@ -58,17 +69,17 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin) {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
-        return cache.match(req).then((cachedResponse) => {
-          const fetchPromise = fetch(req).then((networkResponse) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          const fetchPromise = fetch(event.request).then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
-              cache.put(req, networkResponse.clone());
+              cache.put(event.request, networkResponse.clone()).catch(() => {});
             }
             return networkResponse;
           }).catch(() => cachedResponse);
 
           return cachedResponse || fetchPromise;
         });
-      })
+      }).catch(() => fetch(event.request))
     );
   }
 });
