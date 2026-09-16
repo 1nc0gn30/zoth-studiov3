@@ -169,6 +169,12 @@ The Cockpit is fully keyboard-navigable for maximum power-user ergonomics:
 - **Message Dispatching**: Communicates across the stage iframe boundary via `postMessage({ type: 'ZOTH_TOOL_ACTION', action, payload })`.
 - **Zero-Friction Execution**: Workstations register handlers via `ZothEmbeddedAdapter.onAction(action, callback)` and execute canvas renders, mesh manipulations, and exports without full-page reloads.
 
+#### 5. Grok Intelligence Layer & Stage Self-Healing Watchdog (`zoth-hud-intel.js`)
+- **Intelligence Dashboard Mode (`showDashboard()`)**: High-level tactical command surface providing instant overview of workstations, learned recents, and live port health checks (`:8484`, `:8788`, `:8088`, `:11434`).
+- **Dynamic Learned Recents Dock (`#hud-dock-learned`)**: Tracks tool dwell times, open frequency, and dynamically surfaces the operator's most frequent workstations directly on the HUD dock.
+- **Auto-Acclimation Engine (`acclimate(toolId)`)**: Automatically synchronizes the active Sovereign Agent (`webgen` ➔ `hermes`, `netrunner-memory` ➔ `leviathan`, `math-pillars` ➔ `grok`, `consensus` ➔ `draco`, etc.), presets aspect ratios, and customizes tactical dial telemetry.
+- **Stage Self-Healing Watchdog (`#hud-stage-heal`, `retryStage()`, `healNow()`)**: Monitors iframe mount handshakes; automatically triggers graceful retry loops and fallback dashboard routing upon mount delays or error events.
+
 ---
 
 ## ⌨️ 6. Global Keyboard Shortcuts
@@ -209,7 +215,8 @@ The Cockpit communicates exclusively over local loopback connections with zero c
 
 - **`public/assets/zoth-cyberpunk-hud.css`**: Master Cyberpunk CSS system with 4 high-contrast themes and responsive drawers.
 - **`public/assets/zoth-cyberpunk-hud.js`**: Master HUD controller engine (Polar Radar, Audio Scope, 6 Pillars, Memory Graph, Split Stage, Omniverse Navigator).
+- **`public/assets/zoth-hud-intel.js`**: Grok Intelligence Layer (Dashboard mode, Learned Recents dock, auto-acclimation, stage self-healing watchdog).
 - **`public/assets/zoth-hud-embedded.css`**: Aggressive header/footer cleaner for embedded workstations.
 - **`public/assets/zoth-hud-embedded.js`**: Universal embedded adapter and bi-directional action bridge.
-- **`public/assets/zoth-cyberpunk-hud.test.js`**: 17-suite automated test suite verifying all visualizers and agent bridges (100% pass rate).
+- **`public/assets/zoth-cyberpunk-hud.test.js`**: 18-suite automated test suite verifying all visualizers, Hermes dispatch, and Grok intelligence layer (100% pass rate).
 

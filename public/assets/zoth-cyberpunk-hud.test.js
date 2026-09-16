@@ -23,6 +23,8 @@ function createMockDOM() {
   const elements = {};
   const listeners = {};
 
+  const store = { 'zoth-hud-theme': 'dark' };
+
   const doc = {
     readyState: 'complete',
     documentElement: {
@@ -41,7 +43,9 @@ function createMockDOM() {
       },
       className: '',
       innerHTML: '',
-      appendChild: (el) => { elements[el.id || 'badge'] = el; return el; }
+      appendChild: (el) => { elements[el.id || 'badge'] = el; return el; },
+      setAttribute: (k, v) => { doc.body[k] = v; },
+      getAttribute: (k) => doc.body[k] || null
     },
     getElementById: (id) => {
       if (!elements[id]) {
@@ -50,10 +54,16 @@ function createMockDOM() {
       return elements[id];
     },
     querySelectorAll: (sel) => {
-      return [];
+      return Object.values(elements).filter(el => {
+        if (sel.startsWith('.')) return el.classList && el.classList.contains(sel.slice(1));
+        if (sel.startsWith('#')) return el.id === sel.slice(1);
+        return false;
+      });
     },
     querySelector: (sel) => {
-      return null;
+      if (sel.startsWith('#')) return doc.getElementById(sel.slice(1));
+      const list = doc.querySelectorAll(sel);
+      return list.length ? list[0] : createElement('div', 'query-' + sel.replace(/[^a-zA-Z0-9]/g, '-'));
     },
     createElement: (tag) => {
       return createElement(tag);
@@ -100,7 +110,7 @@ function createMockDOM() {
       }),
       getBoundingClientRect: () => ({ width: 320, height: 95, left: 0, top: 0 }),
       querySelectorAll: (sel) => [],
-      querySelector: (sel) => null,
+      querySelector: (sel) => createElement('div'),
       setAttribute: (k, v) => { el[k] = v; },
       getAttribute: (k) => el[k] || null,
       removeAttribute: (k) => { delete el[k]; },
@@ -115,8 +125,8 @@ function createMockDOM() {
     document: doc,
     location: { origin: 'http://127.0.0.1:8088', pathname: '/studio/cyberpunk-hud.html' },
     localStorage: {
-      getItem: (k) => 'dark',
-      setItem: (k, v) => {}
+      getItem: (k) => store[k] !== undefined ? store[k] : null,
+      setItem: (k, v) => { store[k] = String(v); }
     },
     speechSynthesis: {
       cancel: () => {},
@@ -131,7 +141,7 @@ function createMockDOM() {
     requestAnimationFrame: (cb) => 1,
     setInterval: (cb, ms) => 1,
     clearInterval: () => {},
-    fetch: () => Promise.resolve({ json: () => Promise.resolve({}) })
+    fetch: () => Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
   };
 
   return { win, doc, elements };
@@ -403,7 +413,44 @@ win.ZothHUD.TerminalRepl.execute('hermes status');
 win.ZothHUD.TerminalRepl.execute('hermes optimize audio 60fps');
 console.log('✔ Test 17 Passed: Hermes Agent Integration, Dispatch & REPL Autocomplete verified');
 
-console.log('\n⭐ ALL 17 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE, HERMES & ACTION BRIDGE TESTS PASSED (100%)!\n');
+// 18. Test Grok Intelligence Layer, Dashboard Mode, Auto-Acclimation & Self-Healing Watchdog
+const intelJs = fs.readFileSync(path.join(__dirname, 'zoth-hud-intel.js'), 'utf8');
+assert.ok(intelJs.length > 500, 'zoth-hud-intel.js must exist and have content');
+const intelFn = new Function('window', 'document', intelJs);
+intelFn(win, doc);
+
+assert.ok(win.ZothHudIntel, 'ZothHudIntel must be exposed on window');
+assert.strictEqual(win.ZothHudIntel.ready, true, 'ZothHudIntel ready status must be true');
+assert.ok(typeof win.ZothHudIntel.showDashboard === 'function', 'showDashboard method exists');
+assert.ok(typeof win.ZothHudIntel.acclimate === 'function', 'acclimate method exists');
+assert.ok(typeof win.ZothHudIntel.retryStage === 'function', 'retryStage method exists');
+assert.ok(typeof win.ZothHudIntel.healNow === 'function', 'healNow method exists');
+
+win.ZothHudIntel.showDashboard();
+win.ZothHUD.loadTool('webgen');
+assert.strictEqual(win.ZothHUD.getState().activeAgent, 'hermes', 'WebGen must auto-acclimate active agent to hermes');
+
+win.ZothHUD.loadTool('netrunner-memory');
+assert.strictEqual(win.ZothHUD.getState().activeAgent, 'leviathan', 'Netrunner Memory must auto-acclimate active agent to leviathan');
+
+win.ZothHUD.loadTool('math-pillars');
+assert.strictEqual(win.ZothHUD.getState().activeAgent, 'grok', 'Math Pillars must auto-acclimate active agent to grok');
+
+win.ZothHUD.loadTool('consensus');
+assert.strictEqual(win.ZothHUD.getState().activeAgent, 'draco', 'Consensus Arena must auto-acclimate active agent to draco');
+
+win.ZothHUD.loadTool('dashboard');
+
+const learnedData = win.ZothHudIntel.learn();
+assert.ok(learnedData.recents.includes('webgen'), 'Learned recents must track webgen');
+assert.ok(learnedData.recents.includes('netrunner-memory'), 'Learned recents must track netrunner-memory');
+assert.ok(learnedData.recents.includes('math-pillars'), 'Learned recents must track math-pillars');
+
+win.ZothHudIntel.retryStage();
+win.ZothHudIntel.healNow();
+console.log('✔ Test 18 Passed: Grok Intelligence Layer, Dashboard Mode, Auto-Acclimation & Self-Healing Watchdog verified');
+
+console.log('\n⭐ ALL 18 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE, HERMES, GROK INTEL & ACTION BRIDGE TESTS PASSED (100%)!\n');
 process.exit(0);
 
 
