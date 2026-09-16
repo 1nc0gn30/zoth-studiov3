@@ -2559,6 +2559,8 @@
       }
       if (modalEl) {
         modalEl.classList.add('is-open');
+        modalEl.removeAttribute('hidden');
+        modalEl.hidden = false;
         this.activeModal = modalEl;
         if (modalId === 'toolmgr') {
           var searchInput = modalEl.querySelector('.hud-modal-search-input');
@@ -2574,11 +2576,28 @@
     close: function () {
       if (this.activeModal) {
         this.activeModal.classList.remove('is-open');
+        this.activeModal.setAttribute('hidden', 'true');
+        this.activeModal.hidden = true;
         this.activeModal = null;
         playCyberSFX('chirp');
       }
-      var allModals = document.querySelectorAll('.hud-modal-overlay');
-      allModals.forEach(function (m) { m.classList.remove('is-open'); });
+      var allModals = document.querySelectorAll('.hud-modal-overlay, .hud-modal-backdrop, [role="dialog"], .hud-sheet-backdrop, .hud-sheet-drawer');
+      allModals.forEach(function (m) { 
+        m.classList.remove('is-open'); 
+        if (m.classList.contains('hud-modal-backdrop') || m.classList.contains('hud-sheet-backdrop')) {
+          m.hidden = true;
+          m.setAttribute('hidden', 'true');
+        }
+      });
+      // Also close static modals if present in DOM
+      ['hudPortsModal', 'hudToolMgrModal', 'hudHelpModal', 'hudMobileSheet', 'hudSheetDrawer', 'hudSheetBackdrop'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.hidden = true;
+          el.setAttribute('hidden', 'true');
+          el.classList.remove('is-open');
+        }
+      });
     },
 
     createModal: function (modalId, filterParam) {
@@ -2588,6 +2607,8 @@
 
       var dialog = document.createElement('div');
       dialog.className = 'hud-modal-dialog hud-modal-card hud-custom-scroll';
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
 
       var header = document.createElement('div');
       header.className = 'hud-modal-header';
@@ -2597,8 +2618,13 @@
 
       var closeBtn = document.createElement('button');
       closeBtn.className = 'hud-modal-close-btn';
+      closeBtn.setAttribute('type', 'button');
+      closeBtn.setAttribute('aria-label', 'Close modal');
       closeBtn.innerHTML = '✕';
-      closeBtn.onclick = function () { Modals.close(); };
+      closeBtn.onclick = function (e) { 
+        e.stopPropagation();
+        Modals.close(); 
+      };
 
       var body = document.createElement('div');
       body.className = 'hud-modal-body';
@@ -2629,8 +2655,14 @@
       dialog.appendChild(body);
       backdrop.appendChild(dialog);
 
+      // Close when clicking directly on the backdrop outside the dialog card
       backdrop.addEventListener('click', function (e) {
-        if (e.target === backdrop) Modals.close();
+        if (e.target === backdrop || !dialog.contains(e.target)) {
+          Modals.close();
+        }
+      });
+      dialog.addEventListener('click', function (e) {
+        e.stopPropagation();
       });
 
       document.body.appendChild(backdrop);
@@ -3873,6 +3905,18 @@
       Modals.close();
     },
 
+    openPortsModal: function () { Modals.open('ports'); },
+    closePortsModal: function () { Modals.close(); },
+    openToolManagerModal: function (q) { Modals.open('toolmgr', q); },
+    closeToolManagerModal: function () { Modals.close(); },
+    openHelpModal: function () { Modals.open('shortcuts'); },
+    closeHelpModal: function () { Modals.close(); },
+    openThemesModal: function () { Modals.open('themes'); },
+    closeThemesModal: function () { Modals.close(); },
+    openPillarsModal: function () { Modals.open('pillars'); },
+    closePillarsModal: function () { Modals.close(); },
+    closeMobileSheet: function () { Modals.close(); },
+
     addLog: function (tag, text, type) {
       MessageStream.add(tag, text, type);
     },
@@ -3892,6 +3936,24 @@
     TerminalREPL: TerminalREPL,
     TerminalRepl: TerminalREPL
   };
+
+  // Global Outside-Click & Escape Key Modal Closer
+  if (typeof document !== 'undefined') {
+    document.addEventListener('click', function (e) {
+      if (e.target && (e.target.classList.contains('hud-modal-backdrop') || e.target.classList.contains('hud-sheet-backdrop') || e.target.classList.contains('hud-modal-overlay'))) {
+        Modals.close();
+      }
+      if (e.target && (e.target.classList.contains('hud-modal-close-btn') || (e.target.closest && e.target.closest('.hud-modal-close-btn')))) {
+        Modals.close();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        Modals.close();
+      }
+    });
+  }
 
   // Expose globally
   window.ZothCyberpunkHUD = ZothHUD;
