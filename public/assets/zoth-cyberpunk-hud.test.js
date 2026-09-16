@@ -29,23 +29,31 @@ function createMockDOM() {
     readyState: 'complete',
     documentElement: {
       classList: {
-        add: (c) => {},
-        remove: (c) => {}
+        add: (c) => { doc.documentElement.className = (doc.documentElement.className + ' ' + c).trim(); },
+        remove: (c) => { doc.documentElement.className = doc.documentElement.className.replace(new RegExp('\\b' + c + '\\b', 'g'), '').trim(); },
+        contains: (c) => doc.documentElement.className.includes(c)
       },
       setAttribute: (k, v) => { doc.documentElement[k] = v; },
       getAttribute: (k) => doc.documentElement[k] || 'dark',
+      removeAttribute: (k) => { delete doc.documentElement[k]; },
+      style: {
+        setProperty: (k, v) => { doc.documentElement.styleProps = doc.documentElement.styleProps || {}; doc.documentElement.styleProps[k] = v; },
+        getPropertyValue: (k) => (doc.documentElement.styleProps && doc.documentElement.styleProps[k]) || ''
+      },
       className: ''
     },
     body: {
       classList: {
-        add: (c) => {},
-        remove: (c) => {}
+        add: (c) => { doc.body.className = (doc.body.className + ' ' + c).trim(); },
+        remove: (c) => { doc.body.className = doc.body.className.replace(new RegExp('\\b' + c + '\\b', 'g'), '').trim(); },
+        contains: (c) => doc.body.className.includes(c)
       },
       className: '',
       innerHTML: '',
       appendChild: (el) => { elements[el.id || 'badge'] = el; return el; },
       setAttribute: (k, v) => { doc.body[k] = v; },
-      getAttribute: (k) => doc.body[k] || null
+      getAttribute: (k) => doc.body[k] || null,
+      removeAttribute: (k) => { delete doc.body[k]; }
     },
     getElementById: (id) => {
       if (!elements[id]) {
@@ -82,7 +90,14 @@ function createMockDOM() {
       classList: {
         add: (c) => { el.className = (el.className + ' ' + c).trim(); },
         remove: (c) => { el.className = el.className.replace(new RegExp('\\b' + c + '\\b', 'g'), '').trim(); },
-        contains: (c) => el.className.includes(c)
+        contains: (c) => el.className.includes(c),
+        toggle: (c, force) => {
+          const has = el.className.includes(c);
+          const shouldAdd = typeof force === 'boolean' ? force : !has;
+          if (shouldAdd) el.className = (el.className + ' ' + c).trim();
+          else el.className = el.className.replace(new RegExp('\\b' + c + '\\b', 'g'), '').trim();
+          return shouldAdd;
+        }
       },
       style: {},
       children: [],
@@ -583,7 +598,173 @@ assert.strictEqual(dashEl.classList.contains('is-open'), true, 'hud-dashboard mu
 win.ZothHUD.loadTool('omnipost');
 console.log('✔ Test 22 Passed: Dashboard Surface Toggle & Bottom Dock Navigation verified');
 
-console.log('\n⭐ ALL 22 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES & GROK TESTS PASSED (100%)!\n');
+// ==========================================
+// TEST 23: CyberAudioSynth Sound Generator, Waveforms & Mute Persistence
+// ==========================================
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth, 'object', 'CyberAudioSynth must be an object');
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth.play, 'function', 'CyberAudioSynth.play must be a function');
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth.trigger, 'function', 'CyberAudioSynth.trigger must be a function');
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth.beep, 'function', 'CyberAudioSynth.beep must be a function');
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth.toggleMute, 'function', 'CyberAudioSynth.toggleMute must be a function');
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth.setMuted, 'function', 'CyberAudioSynth.setMuted must be a function');
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth.isMutedStatus, 'function', 'CyberAudioSynth.isMutedStatus must be a function');
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth.persist, 'function', 'CyberAudioSynth.persist must be a function');
+
+// Test SFX triggers across new sound types
+assert.doesNotThrow(() => win.ZothHUD.playSFX('visor'), 'Visor SFX must not throw');
+assert.doesNotThrow(() => win.ZothHUD.playSFX('zoom'), 'Zoom SFX must not throw');
+assert.doesNotThrow(() => win.ZothHUD.playSFX('sandevistan'), 'Sandevistan SFX must not throw');
+assert.doesNotThrow(() => win.ZothHUD.playSFX('overdrive'), 'Overdrive SFX must not throw');
+assert.doesNotThrow(() => win.ZothHUD.playSFX('neural'), 'Neural SFX must not throw');
+assert.doesNotThrow(() => win.ZothHUD.playSFX('contrast'), 'Contrast SFX must not throw');
+assert.doesNotThrow(() => win.ZothHUD.CyberAudioSynth.beep(880, 0.05, 'sawtooth'), 'Beep must not throw');
+
+// Test mute toggle and persistence
+win.ZothHUD.CyberAudioSynth.setMuted(true);
+assert.strictEqual(win.ZothHUD.CyberAudioSynth.isMutedStatus(), true, 'Synth should report muted');
+assert.strictEqual(win.ZothHUD.isMuted(), true, 'ZothHUD.isMuted should return true');
+assert.strictEqual(win.localStorage.getItem('zoth_hud_muted'), 'true', 'Mute state must be saved to localStorage');
+
+win.ZothHUD.CyberAudioSynth.setMuted(false);
+assert.strictEqual(win.ZothHUD.CyberAudioSynth.isMutedStatus(), false, 'Synth should report unmuted');
+assert.strictEqual(win.ZothHUD.isMuted(), false, 'ZothHUD.isMuted should return false');
+assert.strictEqual(win.localStorage.getItem('zoth_hud_muted'), 'false', 'Unmuted state must be saved to localStorage');
+
+console.log('✔ Test 23 Passed: CyberAudioSynth Sound Generator, Waveforms & Mute Persistence verified');
+
+// ==========================================
+// TEST 24: Kiroshi POV Visor Mode, Sandevistan Overdrive & Neural Load Vitals
+// ==========================================
+assert.strictEqual(typeof win.ZothHUD.toggleKiroshiVisor, 'function', 'toggleKiroshiVisor must be a function');
+assert.strictEqual(typeof win.ZothHUD.cycleKiroshiZoom, 'function', 'cycleKiroshiZoom must be a function');
+assert.strictEqual(typeof win.ZothHUD.getKiroshiState, 'function', 'getKiroshiState must be a function');
+assert.strictEqual(typeof win.ZothHUD.triggerSandevistan, 'function', 'triggerSandevistan must be a function');
+assert.strictEqual(typeof win.ZothHUD.isSandevistanActive, 'function', 'isSandevistanActive must be a function');
+assert.strictEqual(typeof win.ZothHUD.getNeuralVitals, 'function', 'getNeuralVitals must be a function');
+assert.strictEqual(typeof win.ZothHUD.updateNeuralVitals, 'function', 'updateNeuralVitals must be a function');
+
+// Test Kiroshi Visor Toggle & Zoom
+assert.strictEqual(win.ZothHUD.getKiroshiState().active, false, 'Kiroshi visor initially inactive');
+const visorOn = win.ZothHUD.toggleKiroshiVisor();
+assert.strictEqual(visorOn, true, 'toggleKiroshiVisor should return true when enabled');
+assert.strictEqual(win.ZothHUD.getKiroshiState().active, true, 'Kiroshi state active must be true');
+assert.strictEqual(doc.body.classList.contains('hud-kiroshi-active'), true, 'body must have hud-kiroshi-active class');
+
+const zoom1 = win.ZothHUD.cycleKiroshiZoom();
+assert.strictEqual(zoom1, 1.25, 'First zoom cycle should be 1.25x');
+assert.strictEqual(win.ZothHUD.getKiroshiState().zoom, 1.25, 'Kiroshi state zoom must be 1.25');
+
+const zoom2 = win.ZothHUD.cycleKiroshiZoom();
+assert.strictEqual(zoom2, 1.5, 'Second zoom cycle should be 1.5x');
+
+const zoom3 = win.ZothHUD.cycleKiroshiZoom();
+assert.strictEqual(zoom3, 1.0, 'Third zoom cycle should reset to 1.0x');
+
+const visorOff = win.ZothHUD.toggleKiroshiVisor();
+assert.strictEqual(visorOff, false, 'toggleKiroshiVisor should return false when disabled');
+assert.strictEqual(win.ZothHUD.getKiroshiState().active, false, 'Kiroshi state active must be false');
+assert.strictEqual(doc.body.classList.contains('hud-kiroshi-active'), false, 'body must remove hud-kiroshi-active class');
+
+// Test Sandevistan Overdrive & Neural Load Vitals
+assert.strictEqual(win.ZothHUD.isSandevistanActive(), false, 'Sandevistan initially inactive');
+const sandevistanOn = win.ZothHUD.triggerSandevistan(1000);
+assert.strictEqual(sandevistanOn, true, 'triggerSandevistan must return true');
+assert.strictEqual(win.ZothHUD.isSandevistanActive(), true, 'Sandevistan must be active');
+assert.strictEqual(win.ZothHUD.getNeuralVitals().active, true, 'Neural vitals active must be true');
+
+const updatedVitals = win.ZothHUD.updateNeuralVitals({ synRate: 99.4, coreClock: 5.2, neuralLoad: 92 });
+assert.strictEqual(updatedVitals.synRate, 99.4, 'synRate must update');
+assert.strictEqual(updatedVitals.coreClock, 5.2, 'coreClock must update');
+assert.strictEqual(updatedVitals.neuralLoad, 92, 'neuralLoad must update');
+
+console.log('✔ Test 24 Passed: Kiroshi POV Visor Mode, Sandevistan Overdrive & Neural Load Vitals verified');
+
+// ==========================================
+// TEST 25: Video Game Keyboard Shortcuts, High-Contrast WCAG AAA Mode, Theater Stage & A11y Live Announcer
+// ==========================================
+assert.strictEqual(typeof win.ZothHUD.toggleHighContrast, 'function', 'toggleHighContrast must be a function');
+assert.strictEqual(typeof win.ZothHUD.isHighContrast, 'function', 'isHighContrast must be a function');
+assert.strictEqual(typeof win.ZothHUD.toggleFullscreenStage, 'function', 'toggleFullscreenStage must be a function');
+assert.strictEqual(typeof win.ZothHUD.isTheaterMode, 'function', 'isTheaterMode must be a function');
+assert.strictEqual(typeof win.ZothHUD.isFullscreenStage, 'function', 'isFullscreenStage must be a function');
+assert.strictEqual(typeof win.ZothHUD.announce, 'function', 'announce must be a function');
+assert.strictEqual(typeof win.ZothHUD.getLastAnnouncement, 'function', 'getLastAnnouncement must be a function');
+assert.strictEqual(typeof win.ZothHUD.cycleWorkstation, 'function', 'cycleWorkstation must be a function');
+assert.strictEqual(typeof win.ZothHUD.nextWorkstation, 'function', 'nextWorkstation must be a function');
+assert.strictEqual(typeof win.ZothHUD.prevWorkstation, 'function', 'prevWorkstation must be a function');
+assert.strictEqual(typeof win.ZothHUD.focusTerminal, 'function', 'focusTerminal must be a function');
+assert.strictEqual(typeof win.ZothHUD.focusMemory, 'function', 'focusMemory must be a function');
+assert.strictEqual(typeof win.ZothHUD.openShortcutsModal, 'function', 'openShortcutsModal must be a function');
+
+// Test High-Contrast Mode & Persistence
+assert.strictEqual(win.ZothHUD.isHighContrast(), false, 'High contrast initially false');
+const hcOn = win.ZothHUD.toggleHighContrast();
+assert.strictEqual(hcOn, true, 'toggleHighContrast returns true when enabled');
+assert.strictEqual(win.ZothHUD.isHighContrast(), true, 'isHighContrast must be true');
+assert.strictEqual(doc.body.classList.contains('hud-high-contrast'), true, 'body has hud-high-contrast class');
+assert.strictEqual(win.localStorage.getItem('zoth_hud_high_contrast'), 'true', 'High contrast saved in localStorage');
+
+const hcOff = win.ZothHUD.toggleHighContrast();
+assert.strictEqual(hcOff, false, 'toggleHighContrast returns false when disabled');
+assert.strictEqual(win.ZothHUD.isHighContrast(), false, 'isHighContrast must be false');
+assert.strictEqual(doc.body.classList.contains('hud-high-contrast'), false, 'body removes hud-high-contrast class');
+
+// Test Theater / Fullscreen Stage Mode
+assert.strictEqual(win.ZothHUD.isTheaterMode(), false, 'Theater mode initially false');
+const theaterOn = win.ZothHUD.toggleFullscreenStage();
+assert.strictEqual(theaterOn, true, 'toggleFullscreenStage returns true when enabled');
+assert.strictEqual(win.ZothHUD.isTheaterMode(), true, 'isTheaterMode must be true');
+assert.strictEqual(win.ZothHUD.isFullscreenStage(), true, 'isFullscreenStage must be true');
+assert.strictEqual(doc.body.classList.contains('hud-theater-mode'), true, 'body has hud-theater-mode class');
+
+const theaterOff = win.ZothHUD.toggleFullscreenStage();
+assert.strictEqual(theaterOff, false, 'toggleFullscreenStage returns false when disabled');
+assert.strictEqual(win.ZothHUD.isTheaterMode(), false, 'isTheaterMode must be false');
+assert.strictEqual(doc.body.classList.contains('hud-theater-mode'), false, 'body removes hud-theater-mode class');
+
+// Test A11y Live Announcer
+const a11yEl = doc.getElementById('hud-a11y-announcer');
+win.ZothHUD.announce('Neural bridge synchronized with Agent AZOTH', 'polite');
+assert.strictEqual(win.ZothHUD.getLastAnnouncement(), 'Neural bridge synchronized with Agent AZOTH', 'Announcement must be stored');
+assert.strictEqual(a11yEl.textContent, 'Neural bridge synchronized with Agent AZOTH', 'Announcer DOM element textContent must update');
+
+// Test Workstation Cycle & Modal Openers
+win.ZothHUD.loadTool('omnipost');
+const currentTool = win.ZothHUD.getState().activeTool.id;
+win.ZothHUD.nextWorkstation();
+const nextTool = win.ZothHUD.getState().activeTool.id;
+assert.notStrictEqual(currentTool, nextTool, 'nextWorkstation must advance tool');
+
+win.ZothHUD.prevWorkstation();
+assert.strictEqual(win.ZothHUD.getState().activeTool.id, currentTool, 'prevWorkstation must return to previous tool');
+
+win.ZothHUD.openShortcutsModal();
+assert.ok(doc.getElementById('hud-modal-shortcuts'), 'Shortcuts modal element must exist');
+win.ZothHUD.closeModal();
+
+// Test REPL Commands
+win.ZothHUD.TerminalRepl.execute('visor');
+assert.strictEqual(win.ZothHUD.getKiroshiState().active, true, 'REPL visor command must toggle visor');
+
+win.ZothHUD.TerminalRepl.execute('zoom');
+assert.strictEqual(win.ZothHUD.getKiroshiState().zoom, 1.25, 'REPL zoom command must cycle zoom');
+
+win.ZothHUD.TerminalRepl.execute('sandevistan');
+assert.strictEqual(win.ZothHUD.isSandevistanActive(), true, 'REPL sandevistan command must trigger overdrive');
+
+win.ZothHUD.TerminalRepl.execute('contrast');
+assert.strictEqual(win.ZothHUD.isHighContrast(), true, 'REPL contrast command must toggle contrast');
+
+win.ZothHUD.TerminalRepl.execute('theater');
+assert.strictEqual(win.ZothHUD.isTheaterMode(), true, 'REPL theater command must toggle theater mode');
+
+win.ZothHUD.TerminalRepl.execute('vitals');
+win.ZothHUD.TerminalRepl.execute('shortcuts');
+win.ZothHUD.closeModal();
+
+console.log('✔ Test 25 Passed: Video Game Keyboard Shortcuts, High-Contrast WCAG AAA Mode, Theater Stage & A11y Live Announcer verified');
+
+console.log('\n⭐ ALL 25 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES, GROK, A11Y & EXPANDABLE WORKSTATIONS TESTS PASSED (100%)!\n');
 process.exit(0);
 
 

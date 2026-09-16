@@ -77,111 +77,410 @@
     return audioCtx;
   }
 
-  function playCyberSFX(type) {
-    try {
-      if (typeof STATE !== 'undefined' && STATE && STATE.isMuted) {
-        return;
+  /**
+   * CyberAudioSynth: Lightweight Zero-Dependency Procedural Web Audio API Sound Generator
+   */
+  var CyberAudioSynth = {
+    ctx: null,
+    analyser: null,
+    masterGain: null,
+    userUnlocked: false,
+    storageKey: 'zoth_hud_sfx',
+
+    init: function () {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          var saved = window.localStorage.getItem(this.storageKey) || 
+                      window.localStorage.getItem('zoth_hud_muted') || 
+                      window.localStorage.getItem('zoth-hud-muted');
+          if (saved === 'muted' || saved === 'true' || saved === '0' || saved === 'false') {
+            if (typeof STATE !== 'undefined' && STATE) STATE.isMuted = true;
+          }
+        }
+      } catch (e) {}
+      if (audioCtx) {
+        this.ctx = audioCtx;
+        this.analyser = analyserNode;
+        this.masterGain = masterGainNode;
       }
-      if (!userHasInteracted) {
+      this.updateUI();
+    },
+
+    getAudioContext: function (force) {
+      return getAudioContext(force);
+    },
+
+    unlock: function () {
+      unlockAudioContext();
+    },
+
+    isMuted: function () {
+      if (typeof STATE !== 'undefined' && STATE && typeof STATE.isMuted === 'boolean') {
+        return STATE.isMuted;
+      }
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          var sfxPref = window.localStorage.getItem(this.storageKey) || 
+                        window.localStorage.getItem('zoth_hud_muted') || 
+                        window.localStorage.getItem('zoth-hud-muted');
+          return sfxPref === 'muted' || sfxPref === 'true' || sfxPref === '0';
+        }
+      } catch (e) {}
+      return false;
+    },
+
+    isMutedStatus: function () {
+      return this.isMuted();
+    },
+
+    persist: function () {
+      return this.setMuted(this.isMuted());
+    },
+
+    setMuted: function (muted) {
+      if (typeof STATE !== 'undefined' && STATE) {
+        STATE.isMuted = !!muted;
+      }
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(this.storageKey, muted ? 'muted' : 'unmuted');
+          window.localStorage.setItem('zoth_hud_muted', String(!!muted));
+        }
+      } catch (e) {}
+      this.updateUI();
+      return !!muted;
+    },
+
+    toggleMute: function () {
+      var muted = !this.isMuted();
+      this.setMuted(muted);
+      if (!muted) {
+        this.play('select');
+      }
+      if (typeof ZothHUD !== 'undefined' && ZothHUD && ZothHUD.addLog) {
+        ZothHUD.addLog('AUDIO', 'Cyber SFX audio bus ' + (muted ? 'MUTED' : 'UNMUTED'), 'system');
+      }
+      return muted;
+    },
+
+    updateUI: function () {
+      if (typeof document === 'undefined') return;
+      var muted = this.isMuted();
+      var iconEl = document.getElementById('hud-audio-icon');
+      var btn = document.getElementById('hud-btn-sfx-toggle');
+      if (iconEl) iconEl.textContent = muted ? '🔇' : '🔊';
+      if (btn) {
+        btn.title = muted ? 'Unmute Cyber Sound FX' : 'Mute Cyber Sound FX';
+        btn.setAttribute('aria-pressed', String(!muted));
+      }
+    },
+
+    play: function (type) {
+      try {
+        if (this.isMuted()) {
+          return false;
+        }
+
+        // Pulse the oscilloscope visualizer even before audio context unlock
         if (AudioOscilloscope) {
-          if (type === 'chirp' || type === 'hover') AudioOscilloscope.triggerPulse(0.4, 880);
-          else if (type === 'select' || type === 'click') AudioOscilloscope.triggerPulse(0.65, 520);
+          if (type === 'click') AudioOscilloscope.triggerPulse(0.5, 1400);
+          else if (type === 'lock') AudioOscilloscope.triggerPulse(0.75, 1760);
+          else if (type === 'sandevistan' || type === 'overdrive') AudioOscilloscope.triggerPulse(1.0, 240);
+          else if (type === 'warning') AudioOscilloscope.triggerPulse(0.9, 960);
+          else if (type === 'warp') AudioOscilloscope.triggerPulse(0.85, 440);
+          else if (type === 'chirp' || type === 'hover') AudioOscilloscope.triggerPulse(0.4, 880);
+          else if (type === 'select') AudioOscilloscope.triggerPulse(0.65, 520);
           else if (type === 'switch' || type === 'tool') AudioOscilloscope.triggerPulse(0.8, 480);
           else if (type === 'ping' || type === 'radar') AudioOscilloscope.triggerPulse(0.9, 1400);
           else if (type === 'error') AudioOscilloscope.triggerPulse(1.0, 110);
           else if (type === 'boot') AudioOscilloscope.triggerPulse(1.0, 440);
           else if (type === 'wave' || type === 'ripple') AudioOscilloscope.triggerPulse(0.75, 320);
+          else if (type === 'zoom') AudioOscilloscope.triggerPulse(0.7, 1600);
+          else if (type === 'neural') AudioOscilloscope.triggerPulse(0.8, 900);
+          else AudioOscilloscope.triggerPulse(0.5, 600);
         }
-        return;
-      }
-      var ctx = getAudioContext(true);
-      if (!ctx || ctx.state === 'suspended') return;
-      var now = ctx.currentTime;
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
 
-      var dest = masterGainNode || ctx.destination;
+        if (!userHasInteracted) {
+          return true;
+        }
 
-      if (type === 'chirp' || type === 'hover') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.04);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start(now);
-        osc.stop(now + 0.05);
-        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.4, 880);
-      } else if (type === 'select' || type === 'click') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(520, now);
-        osc.frequency.exponentialRampToValueAtTime(1040, now + 0.06);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start(now);
-        osc.stop(now + 0.07);
-        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.65, 520);
-      } else if (type === 'switch' || type === 'tool') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(320, now);
-        osc.frequency.exponentialRampToValueAtTime(640, now + 0.08);
-        osc.frequency.exponentialRampToValueAtTime(960, now + 0.12);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start(now);
-        osc.stop(now + 0.14);
-        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.8, 480);
-      } else if (type === 'ping' || type === 'radar') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1200, now);
-        osc.frequency.setValueAtTime(1600, now + 0.05);
-        gain.gain.setValueAtTime(0.07, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start(now);
-        osc.stop(now + 0.11);
-        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.9, 1400);
-      } else if (type === 'error') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, now);
-        osc.frequency.exponentialRampToValueAtTime(110, now + 0.15);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start(now);
-        osc.stop(now + 0.17);
-        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(1.0, 110);
-      } else if (type === 'boot') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(220, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start(now);
-        osc.stop(now + 0.3);
-        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(1.0, 440);
-      } else if (type === 'wave' || type === 'ripple') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(640, now);
-        osc.frequency.exponentialRampToValueAtTime(320, now + 0.18);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
-        osc.connect(gain);
-        gain.connect(dest);
-        osc.start(now);
-        osc.stop(now + 0.22);
-        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.75, 320);
+        var ctx = getAudioContext(true);
+        if (!ctx || ctx.state === 'suspended') return false;
+        var now = ctx.currentTime;
+        var dest = masterGainNode || ctx.destination;
+
+        // 1. CLICK: Crisp high-tech blip
+        if (type === 'click') {
+          var oscClick = ctx.createOscillator();
+          var gainClick = ctx.createGain();
+          oscClick.type = 'triangle';
+          oscClick.frequency.setValueAtTime(1400, now);
+          oscClick.frequency.exponentialRampToValueAtTime(450, now + 0.035);
+          gainClick.gain.setValueAtTime(0.08, now);
+          gainClick.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+          oscClick.connect(gainClick);
+          gainClick.connect(dest);
+          oscClick.start(now);
+          oscClick.stop(now + 0.045);
+        }
+        // 2. LOCK: Dual-tone target acquisition chirp
+        else if (type === 'lock') {
+          var oscL1 = ctx.createOscillator();
+          var oscL2 = ctx.createOscillator();
+          var gainL1 = ctx.createGain();
+          var gainL2 = ctx.createGain();
+
+          oscL1.type = 'sine';
+          oscL1.frequency.setValueAtTime(880, now);
+          oscL1.frequency.exponentialRampToValueAtTime(1760, now + 0.03);
+
+          oscL2.type = 'triangle';
+          oscL2.frequency.setValueAtTime(1320, now);
+          oscL2.frequency.exponentialRampToValueAtTime(2640, now + 0.03);
+
+          gainL1.gain.setValueAtTime(0.06, now);
+          gainL1.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+
+          gainL2.gain.setValueAtTime(0.04, now);
+          gainL2.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+
+          oscL1.connect(gainL1);
+          gainL1.connect(dest);
+          oscL2.connect(gainL2);
+          gainL2.connect(dest);
+
+          oscL1.start(now);
+          oscL2.start(now);
+          oscL1.stop(now + 0.075);
+          oscL2.stop(now + 0.075);
+        }
+        // 3. SANDEVISTAN: Resonant lowpass frequency sweep whoosh
+        else if (type === 'sandevistan' || type === 'overdrive') {
+          var oscSande = ctx.createOscillator();
+          var filterSande = ctx.createBiquadFilter();
+          var gainSande = ctx.createGain();
+
+          oscSande.type = 'sawtooth';
+          oscSande.frequency.setValueAtTime(360, now);
+          oscSande.frequency.exponentialRampToValueAtTime(45, now + 0.85);
+
+          filterSande.type = 'lowpass';
+          filterSande.Q.setValueAtTime(7.5, now);
+          filterSande.frequency.setValueAtTime(3600, now);
+          filterSande.frequency.exponentialRampToValueAtTime(90, now + 0.85);
+
+          gainSande.gain.setValueAtTime(0.001, now);
+          gainSande.gain.exponentialRampToValueAtTime(0.14, now + 0.05);
+          gainSande.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+
+          oscSande.connect(filterSande);
+          filterSande.connect(gainSande);
+          gainSande.connect(dest);
+
+          oscSande.start(now);
+          oscSande.stop(now + 0.95);
+        }
+        // 4. WARNING: Pulsed alarm beep for high neural load
+        else if (type === 'warning') {
+          var oscWarn = ctx.createOscillator();
+          var gainWarn = ctx.createGain();
+
+          oscWarn.type = 'sawtooth';
+          oscWarn.frequency.setValueAtTime(960, now);
+          oscWarn.frequency.setValueAtTime(960, now + 0.06);
+          oscWarn.frequency.setValueAtTime(1280, now + 0.12);
+
+          gainWarn.gain.setValueAtTime(0.09, now);
+          gainWarn.gain.setValueAtTime(0.001, now + 0.05);
+          gainWarn.gain.setValueAtTime(0.09, now + 0.07);
+          gainWarn.gain.setValueAtTime(0.001, now + 0.11);
+          gainWarn.gain.setValueAtTime(0.11, now + 0.13);
+          gainWarn.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+          oscWarn.connect(gainWarn);
+          gainWarn.connect(dest);
+
+          oscWarn.start(now);
+          oscWarn.stop(now + 0.24);
+        }
+        // 5. WARP: Holographic workstation switch chord
+        else if (type === 'warp') {
+          var freqs = [293.66, 369.99, 440.00]; // Cyber triad (D, F#, A)
+          freqs.forEach(function (f) {
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(f, now);
+            o.frequency.exponentialRampToValueAtTime(f * 1.15, now + 0.18);
+            g.gain.setValueAtTime(0.045, now);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+            o.connect(g);
+            g.connect(dest);
+            o.start(now);
+            o.stop(now + 0.24);
+          });
+        }
+        // Backwards compatibility legacy sound definitions
+        else if (type === 'chirp' || type === 'hover') {
+          var oscC = ctx.createOscillator();
+          var gainC = ctx.createGain();
+          oscC.type = 'sine';
+          oscC.frequency.setValueAtTime(880, now);
+          oscC.frequency.exponentialRampToValueAtTime(1760, now + 0.04);
+          gainC.gain.setValueAtTime(0.04, now);
+          gainC.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+          oscC.connect(gainC);
+          gainC.connect(dest);
+          oscC.start(now);
+          oscC.stop(now + 0.05);
+        } else if (type === 'select') {
+          var oscSel = ctx.createOscillator();
+          var gainSel = ctx.createGain();
+          oscSel.type = 'triangle';
+          oscSel.frequency.setValueAtTime(520, now);
+          oscSel.frequency.exponentialRampToValueAtTime(1040, now + 0.06);
+          gainSel.gain.setValueAtTime(0.08, now);
+          gainSel.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
+          oscSel.connect(gainSel);
+          gainSel.connect(dest);
+          oscSel.start(now);
+          oscSel.stop(now + 0.07);
+        } else if (type === 'switch' || type === 'tool') {
+          var oscSw = ctx.createOscillator();
+          var gainSw = ctx.createGain();
+          oscSw.type = 'sawtooth';
+          oscSw.frequency.setValueAtTime(320, now);
+          oscSw.frequency.exponentialRampToValueAtTime(640, now + 0.08);
+          oscSw.frequency.exponentialRampToValueAtTime(960, now + 0.12);
+          gainSw.gain.setValueAtTime(0.06, now);
+          gainSw.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
+          oscSw.connect(gainSw);
+          gainSw.connect(dest);
+          oscSw.start(now);
+          oscSw.stop(now + 0.14);
+        } else if (type === 'ping' || type === 'radar') {
+          var oscP = ctx.createOscillator();
+          var gainP = ctx.createGain();
+          oscP.type = 'sine';
+          oscP.frequency.setValueAtTime(1200, now);
+          oscP.frequency.setValueAtTime(1600, now + 0.05);
+          gainP.gain.setValueAtTime(0.07, now);
+          gainP.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+          oscP.connect(gainP);
+          gainP.connect(dest);
+          oscP.start(now);
+          oscP.stop(now + 0.11);
+        } else if (type === 'error') {
+          var oscE = ctx.createOscillator();
+          var gainE = ctx.createGain();
+          oscE.type = 'sawtooth';
+          oscE.frequency.setValueAtTime(220, now);
+          oscE.frequency.exponentialRampToValueAtTime(110, now + 0.15);
+          gainE.gain.setValueAtTime(0.1, now);
+          gainE.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+          oscE.connect(gainE);
+          gainE.connect(dest);
+          oscE.start(now);
+          oscE.stop(now + 0.17);
+        } else if (type === 'boot') {
+          var oscB = ctx.createOscillator();
+          var gainB = ctx.createGain();
+          oscB.type = 'sine';
+          oscB.frequency.setValueAtTime(220, now);
+          oscB.frequency.exponentialRampToValueAtTime(880, now + 0.25);
+          gainB.gain.setValueAtTime(0.08, now);
+          gainB.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+          oscB.connect(gainB);
+          gainB.connect(dest);
+          oscB.start(now);
+          oscB.stop(now + 0.3);
+        } else if (type === 'wave' || type === 'ripple') {
+          var oscW = ctx.createOscillator();
+          var gainW = ctx.createGain();
+          oscW.type = 'sine';
+          oscW.frequency.setValueAtTime(640, now);
+          oscW.frequency.exponentialRampToValueAtTime(320, now + 0.18);
+          gainW.gain.setValueAtTime(0.06, now);
+          gainW.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+          oscW.connect(gainW);
+          gainW.connect(dest);
+          oscW.start(now);
+          oscW.stop(now + 0.22);
+        } else if (type === 'zoom') {
+          var oscZ = ctx.createOscillator();
+          var gainZ = ctx.createGain();
+          oscZ.type = 'sine';
+          oscZ.frequency.setValueAtTime(800, now);
+          oscZ.frequency.exponentialRampToValueAtTime(1600, now + 0.08);
+          gainZ.gain.setValueAtTime(0.05, now);
+          gainZ.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+          oscZ.connect(gainZ);
+          gainZ.connect(dest);
+          oscZ.start(now);
+          oscZ.stop(now + 0.1);
+        } else if (type === 'neural') {
+          var oscN = ctx.createOscillator();
+          var gainN = ctx.createGain();
+          oscN.type = 'triangle';
+          oscN.frequency.setValueAtTime(580, now);
+          oscN.frequency.exponentialRampToValueAtTime(1160, now + 0.14);
+          gainN.gain.setValueAtTime(0.07, now);
+          gainN.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+          oscN.connect(gainN);
+          gainN.connect(dest);
+          oscN.start(now);
+          oscN.stop(now + 0.17);
+        } else {
+          var oscDef = ctx.createOscillator();
+          var gainDef = ctx.createGain();
+          oscDef.type = 'sine';
+          oscDef.frequency.setValueAtTime(600, now);
+          gainDef.gain.setValueAtTime(0.05, now);
+          gainDef.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+          oscDef.connect(gainDef);
+          gainDef.connect(dest);
+          oscDef.start(now);
+          oscDef.stop(now + 0.06);
+        }
+        return true;
+      } catch (e) {
+        return false;
       }
-    } catch (e) {}
+    },
+
+    trigger: function (type, options) {
+      return this.play(type);
+    },
+
+    beep: function (freq, duration, type) {
+      if (this.isMuted()) return false;
+      try {
+        var ctx = getAudioContext(true);
+        if (!ctx) {
+          if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.5, freq || 440);
+          return true;
+        }
+        var now = ctx.currentTime || 0;
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq || 440, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + (duration || 0.1));
+        osc.connect(gain);
+        gain.connect(masterGainNode || ctx.destination);
+        osc.start(now);
+        osc.stop(now + (duration || 0.1) + 0.01);
+        if (AudioOscilloscope) AudioOscilloscope.triggerPulse(0.5, freq || 440);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+  };
+
+  function playCyberSFX(type) {
+    return CyberAudioSynth.play(type);
   }
 
   function speakAgentVoice(agentId, text) {
@@ -1315,11 +1614,20 @@
      3. MASTER ENGINE STATE
      ============================================================================= */
   var initialTheme = 'dark';
+  var initialMuted = false;
   try {
     if (document.documentElement && document.documentElement.getAttribute('data-theme')) {
       initialTheme = document.documentElement.getAttribute('data-theme');
     } else if (typeof window !== 'undefined' && window.localStorage) {
       initialTheme = window.localStorage.getItem('zoth_theme') || 'dark';
+    }
+    if (typeof window !== 'undefined' && window.localStorage) {
+      var sfxPref = window.localStorage.getItem('zoth_hud_sfx') || 
+                    window.localStorage.getItem('zoth_hud_muted') || 
+                    window.localStorage.getItem('zoth-hud-muted');
+      if (sfxPref === 'muted' || sfxPref === 'true' || sfxPref === '0' || sfxPref === 'false') {
+        initialMuted = true;
+      }
     }
   } catch (e) {}
 
@@ -1335,7 +1643,42 @@
     activeTheme: initialTheme,
     deviceMode: 'auto',
     effectiveDevice: 'desktop',
-    isMuted: false,
+    isMuted: initialMuted,
+    isHighContrast: false,
+    kiroshiVisor: false,
+    kiroshiZoom: 1.0,
+    sandevistanActive: false,
+    sandevistanTimer: null,
+    isTheaterMode: false,
+    lastAnnouncement: '',
+    neuralVitals: {
+      load: 52.4,
+      neuralLoad: 52.4,
+      temp: 37.0,
+      dilation: 1.0,
+      status: 'NOMINAL',
+      synRate: 94.2,
+      coreClock: 3.6,
+      active: false
+    },
+    vitals: {
+      neuralLoad: 52.4,
+      neuralStatus: 'NOMINAL',
+      isWarning: false,
+      lastWarningTime: 0,
+      kiroshiZoom: 1.0,
+      kiroshiIndex: 0,
+      sandevistan: {
+        active: false,
+        charge: 100.0,
+        ready: true,
+        durationSec: 4,
+        startTime: 0,
+        endTime: 0,
+        cooldownDuration: 10000,
+        cooldownStartTime: 0
+      }
+    },
     activeMobileTab: 'stage',
     activeTabletView: 'stage',
     activeMobileSheet: null,
@@ -2136,6 +2479,10 @@
 
       var fillCoh = document.getElementById('hud-meter-coherence');
       if (fillCoh) fillCoh.style.width = (parseFloat(s.coherence) * 100) + '%';
+
+      if (typeof VitalsEngine !== 'undefined' && VitalsEngine && VitalsEngine.updateDOM) {
+        VitalsEngine.updateDOM();
+      }
     },
 
     start: function () {
@@ -2155,6 +2502,459 @@
   };
 
   var MathTelemetry = CalculusEngine;
+
+  /* =============================================================================
+     6.5 POV COCKPIT VITALS, CYBERPSYCHOSIS GAUGE & CYBERWARE OVERDRIVE (SANDEVISTAN / KIROSHI)
+     ============================================================================= */
+  var VitalsEngine = {
+    timer: null,
+    lastWarningLog: 0,
+    lastWarningSfx: 0,
+
+    init: function () {
+      this.updateDOM();
+    },
+
+    computeNeuralLoad: function () {
+      if (STATE.vitals && typeof STATE.vitals.neuralLoad === 'number') {
+        var forcedLoad = Math.max(0.0, Math.min(100.0, STATE.vitals.neuralLoad));
+        var isForcedWarn = forcedLoad > 85.0;
+        return {
+          load: forcedLoad,
+          percentage: forcedLoad,
+          warning: isForcedWarn,
+          isWarning: isForcedWarn,
+          status: isForcedWarn ? 'CRITICAL_PSYCHOSIS' : (forcedLoad > 70.0 ? 'ELEVATED' : 'NOMINAL'),
+          breakdown: {
+            base: 26.0,
+            agents: 15.8,
+            memory: 11.8,
+            tool: 4.0,
+            split: 0.0,
+            overdrive: 0.0,
+            entropy: 0.7
+          },
+          valueOf: function () { return this.load; }
+        };
+      }
+      var baseLoad = 26.0;
+
+      // 1. Active Agents count & complexity load
+      var agentCount = ALL_21_AGENTS.length;
+      var agentFactor = agentCount * 0.75; // ~15.75%
+      var coreBonus = (['azoth', 'antigravity', 'grok', 'hermes'].indexOf(STATE.activeAgent) !== -1) ? 6.0 : 3.0;
+
+      // 2. Memory query & consolidation density load
+      var memDensity = (STATE.memStats && typeof STATE.memStats.density === 'number') ? STATE.memStats.density : 0.84;
+      var memFactor = memDensity * 14.0; // ~11.76%
+
+      // 3. Tool complexity factor
+      var activeToolId = (STATE.activeTool && STATE.activeTool.id) ? STATE.activeTool.id : 'dashboard';
+      var toolComplexity = 4.0;
+      if (['omnipost', '3d-editor', 'nexus-3d', 'swarm'].indexOf(activeToolId) !== -1) {
+        toolComplexity = 16.0;
+      } else if (['consensus', 'netrunner-memory', 'math-pillars', 'tool-bench', 'vault'].indexOf(activeToolId) !== -1) {
+        toolComplexity = 10.0;
+      } else if (['webgen', 'pets', 'pets-studio', 'vos-sandbox'].indexOf(activeToolId) !== -1) {
+        toolComplexity = 7.0;
+      }
+
+      // 4. Split Mode Strain
+      var splitStrain = STATE.splitMode ? 10.0 : 0.0;
+
+      // 5. Sandevistan Overdrive Strain (+28% during active time dilation)
+      var sandeStrain = (STATE.vitals && STATE.vitals.sandevistan && STATE.vitals.sandevistan.active) ? 28.0 : 0.0;
+
+      // 6. Mathematical Entropy Factor
+      var entropyVal = (STATE.mathStats && parseFloat(STATE.mathStats.entropy)) || 0.124;
+      var entropyStrain = Math.min(8.0, entropyVal * 6.0);
+
+      // 7. Micro-Jitter (dynamic smooth fluctuation)
+      var now = Date.now();
+      var jitter = Math.sin(now / 1400) * 3.2 + Math.cos(now / 800) * 1.8;
+
+      var rawLoad = baseLoad + agentFactor + coreBonus + memFactor + toolComplexity + splitStrain + sandeStrain + entropyStrain + jitter;
+      var finalLoad = Math.max(5.0, Math.min(100.0, rawLoad));
+
+      var isWarn = finalLoad > 85.0;
+      var status = isWarn ? 'CRITICAL_PSYCHOSIS' : (finalLoad > 70.0 ? 'ELEVATED' : 'NOMINAL');
+
+      if (!STATE.vitals) {
+        STATE.vitals = {};
+      }
+      STATE.vitals.neuralLoad = parseFloat(finalLoad.toFixed(1));
+      STATE.vitals.neuralStatus = status;
+      STATE.vitals.isWarning = isWarn;
+
+      // Handle Warning Alarm & Log
+      if (isWarn) {
+        if (now - this.lastWarningSfx > 4500) {
+          this.lastWarningSfx = now;
+          CyberAudioSynth.play('warning');
+        }
+        if (now - this.lastWarningLog > 12000) {
+          this.lastWarningLog = now;
+          if (ZothHUD && ZothHUD.addLog) {
+            ZothHUD.addLog('VITALS', '⚠️ CRITICAL NEURAL LOAD [' + STATE.vitals.neuralLoad + '%] — Cyberpsychosis threshold exceeded (>85%)', 'error');
+          }
+        }
+      }
+
+      return {
+        load: STATE.vitals.neuralLoad,
+        percentage: STATE.vitals.neuralLoad,
+        status: status,
+        warning: isWarn,
+        isWarning: isWarn,
+        breakdown: {
+          base: baseLoad,
+          agents: parseFloat((agentFactor + coreBonus).toFixed(1)),
+          memory: parseFloat(memFactor.toFixed(1)),
+          tool: parseFloat(toolComplexity.toFixed(1)),
+          split: splitStrain,
+          sandevistan: sandeStrain,
+          jitter: parseFloat(jitter.toFixed(1))
+        },
+        valueOf: function () { return this.load; },
+        toString: function () { return this.load.toFixed(1) + '%'; }
+      };
+    },
+
+    updateSandevistan: function () {
+      if (!STATE.vitals || !STATE.vitals.sandevistan) return;
+      var s = STATE.vitals.sandevistan;
+      var now = Date.now();
+
+      // Check if active duration has expired
+      if (s.active && now >= s.endTime) {
+        s.active = false;
+        s.cooldownStartTime = now;
+        s.charge = 0;
+        s.ready = false;
+
+        // Remove active visual class
+        if (typeof document !== 'undefined') {
+          if (document.documentElement) document.documentElement.classList.remove('sandevistan-active');
+          if (document.body) document.body.classList.remove('sandevistan-active');
+          var shell = document.querySelector('.hud-app-shell');
+          if (shell) shell.classList.remove('sandevistan-active');
+          var vp = document.getElementById('hud-stage-viewport');
+          if (vp) vp.classList.remove('sandevistan-active');
+        }
+
+        if (ZothHUD && ZothHUD.addLog) {
+          ZothHUD.addLog('SANDEVISTAN', 'Overdrive cycle ended. Cyberware entering 10s thermal cooldown...', 'system');
+        }
+      }
+
+      // If cooling down / recharging
+      if (!s.active && !s.ready) {
+        var elapsed = now - s.cooldownStartTime;
+        var rechargePercent = Math.min(100.0, (elapsed / s.cooldownDuration) * 100.0);
+        s.charge = parseFloat(rechargePercent.toFixed(1));
+
+        if (rechargePercent >= 100.0) {
+          s.charge = 100.0;
+          s.ready = true;
+          CyberAudioSynth.play('lock');
+          if (ZothHUD && ZothHUD.addLog) {
+            ZothHUD.addLog('SANDEVISTAN', '⚡ Sandevistan cyberware fully recharged [100% READY]', 'system');
+          }
+        }
+      }
+    },
+
+    triggerSandevistan: function (durationSec) {
+      if (!STATE.vitals) STATE.vitals = {};
+      if (!STATE.vitals.sandevistan) {
+        STATE.vitals.sandevistan = {
+          active: false,
+          charge: 100,
+          ready: true,
+          durationSec: 4,
+          cooldownDuration: 10000,
+          startTime: 0,
+          endTime: 0,
+          cooldownStartTime: 0
+        };
+      }
+
+      var s = STATE.vitals.sandevistan;
+      var dur = (typeof durationSec === 'number' && durationSec > 0) ? durationSec : 4;
+
+      if (!s.ready || s.active) {
+        CyberAudioSynth.play('error');
+        if (ZothHUD && ZothHUD.addLog) {
+          ZothHUD.addLog('SANDEVISTAN', 'Cannot engage: Cyberware thermal recharge at ' + s.charge.toFixed(0) + '%', 'warn');
+        }
+        return false;
+      }
+
+      var now = Date.now();
+      s.active = true;
+      s.ready = false;
+      s.charge = 0;
+      s.durationSec = dur;
+      s.startTime = now;
+      s.endTime = now + (dur * 1000);
+
+      // Add visual class
+      if (typeof document !== 'undefined') {
+        if (document.documentElement) document.documentElement.classList.add('sandevistan-active');
+        if (document.body) document.body.classList.add('sandevistan-active');
+        var shell = document.querySelector('.hud-app-shell');
+        if (shell) shell.classList.add('sandevistan-active');
+        var vp = document.getElementById('hud-stage-viewport');
+        if (vp) vp.classList.add('sandevistan-active');
+      }
+
+      CyberAudioSynth.play('sandevistan');
+      if (AudioOscilloscope) AudioOscilloscope.triggerPulse(1.0, 240);
+
+      if (ZothHUD && ZothHUD.addLog) {
+        ZothHUD.addLog('SANDEVISTAN', '⚡ TIME DILATION ENGAGED: Sandevistan Overdrive active for ' + dur + 's [10x Neural Overclock]', 'azoth');
+      }
+
+      this.updateDOM();
+      return true;
+    },
+
+    getSandevistanState: function () {
+      if (!STATE.vitals || !STATE.vitals.sandevistan) {
+        return { active: false, charge: 100, ready: true, remainingSec: 0, cooldownSec: 0, durationSec: 4 };
+      }
+      var s = STATE.vitals.sandevistan;
+      var now = Date.now();
+      var remainingSec = s.active ? Math.max(0, (s.endTime - now) / 1000) : 0;
+      var cooldownSec = (!s.active && !s.ready) ? Math.max(0, (s.cooldownDuration - (now - s.cooldownStartTime)) / 1000) : 0;
+
+      return {
+        active: s.active,
+        charge: s.charge,
+        ready: s.ready,
+        remainingSec: parseFloat(remainingSec.toFixed(1)),
+        cooldownSec: parseFloat(cooldownSec.toFixed(1)),
+        durationSec: s.durationSec
+      };
+    },
+
+    setKiroshiZoom: function (scale) {
+      if (!STATE.vitals) STATE.vitals = {};
+      var numScale = (typeof scale === 'string') ? parseFloat(scale.replace(/x/i, '')) : parseFloat(scale);
+      if (isNaN(numScale) || numScale <= 0) numScale = 1.0;
+
+      var validScales = [1.0, 1.25, 1.5];
+      var closest = validScales.reduce(function (prev, curr) {
+        return (Math.abs(curr - numScale) < Math.abs(prev - numScale) ? curr : prev);
+      });
+
+      STATE.vitals.kiroshiZoom = closest;
+      STATE.vitals.kiroshiIndex = validScales.indexOf(closest);
+      STATE.kiroshiZoom = closest;
+
+      if (typeof document !== 'undefined') {
+        var vp = document.getElementById('hud-stage-viewport');
+        var innerWrap = document.getElementById('hud-stage-inner-wrap');
+        var iframes = document.querySelectorAll('.hud-tool-iframe, #hud-stage-frame, #hud-stage-frame-sec');
+
+        if (document.documentElement) {
+          document.documentElement.style.setProperty('--hud-kiroshi-scale', String(closest));
+          document.documentElement.setAttribute('data-kiroshi-zoom', closest + 'x');
+        }
+        if (document.body) {
+          document.body.setAttribute('data-kiroshi-zoom', closest + 'x');
+        }
+
+        [vp, innerWrap].forEach(function (el) {
+          if (el) {
+            el.classList.remove('kiroshi-zoom-1x', 'kiroshi-zoom-125x', 'kiroshi-zoom-15x');
+            if (closest === 1.25) el.classList.add('kiroshi-zoom-125x');
+            else if (closest === 1.5) el.classList.add('kiroshi-zoom-15x');
+            else el.classList.add('kiroshi-zoom-1x');
+          }
+        });
+
+        iframes.forEach(function (ifr) {
+          ifr.style.transform = (closest === 1.0) ? '' : 'scale(' + closest + ')';
+          ifr.style.transformOrigin = 'center center';
+          ifr.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+        });
+
+        // Update active chip button states
+        var zoomBtns = document.querySelectorAll('[data-zoom]');
+        zoomBtns.forEach(function (b) {
+          var bVal = parseFloat(b.getAttribute('data-zoom'));
+          if (bVal === closest) b.classList.add('active');
+          else b.classList.remove('active');
+        });
+      }
+
+      CyberAudioSynth.play('lock');
+      if (ZothHUD && ZothHUD.addLog) {
+        ZothHUD.addLog('KIROSHI', 'Ocular Optics Zoom set to ' + closest + 'x [Target telemetry locked]', 'system');
+      }
+
+      this.updateDOM();
+      return closest;
+    },
+
+    toggleKiroshiZoom: function () {
+      var validScales = [1.0, 1.25, 1.5];
+      var currScale = (STATE.vitals && typeof STATE.vitals.kiroshiZoom === 'number') ? STATE.vitals.kiroshiZoom : (STATE.kiroshiZoom || 1.0);
+      var currIdx = validScales.indexOf(currScale);
+      if (currIdx === -1) currIdx = 0;
+      var nextIdx = (currIdx + 1) % validScales.length;
+      return this.setKiroshiZoom(validScales[nextIdx]);
+    },
+
+    getKiroshiState: function () {
+      var scale = (STATE.vitals && typeof STATE.vitals.kiroshiZoom === 'number') ? STATE.vitals.kiroshiZoom : (STATE.kiroshiZoom || 1.0);
+      var index = (STATE.vitals && typeof STATE.vitals.kiroshiIndex === 'number') ? STATE.vitals.kiroshiIndex : [1.0, 1.25, 1.5].indexOf(scale);
+      var isVisor = (typeof STATE.kiroshiVisor === 'boolean') ? STATE.kiroshiVisor : false;
+      return {
+        scale: scale,
+        zoom: scale,
+        label: scale + 'x',
+        active: isVisor || scale > 1.0,
+        index: index >= 0 ? index : 0,
+        valueOf: function () { return this.scale; }
+      };
+    },
+
+    updateDOM: function () {
+      if (typeof document === 'undefined') return;
+
+      // 1. Neural Load & Cyberpsychosis UI
+      var loadObj = this.computeNeuralLoad();
+      var loadValEl = document.getElementById('hud-neural-load-val');
+      var loadFillEl = document.getElementById('hud-neural-load-fill');
+      var statusLbl = document.getElementById('hud-neural-status-lbl');
+      var warningBadge = document.getElementById('hud-cyberpsychosis-badge');
+      var vitalsCard = document.getElementById('hud-vitals-card');
+
+      if (loadValEl) loadValEl.textContent = loadObj.load.toFixed(1) + '%';
+      if (loadFillEl) {
+        loadFillEl.style.width = loadObj.load.toFixed(1) + '%';
+        if (loadObj.warning) {
+          loadFillEl.style.background = 'linear-gradient(90deg, #ff0055, #ff3366)';
+          loadFillEl.style.boxShadow = '0 0 12px #ff0055';
+        } else if (loadObj.status === 'ELEVATED') {
+          loadFillEl.style.background = 'linear-gradient(90deg, #fbbf24, #f59e0b)';
+          loadFillEl.style.boxShadow = '0 0 10px #fbbf24';
+        } else {
+          loadFillEl.style.background = 'linear-gradient(90deg, var(--hud-cyan), var(--hud-green))';
+          loadFillEl.style.boxShadow = '0 0 10px var(--hud-accent-glow)';
+        }
+      }
+
+      if (warningBadge) {
+        if (loadObj.warning) {
+          warningBadge.textContent = '⚠️ CYBERPSYCHOSIS';
+          warningBadge.style.color = '#ff0055';
+          warningBadge.style.borderColor = '#ff0055';
+        } else if (loadObj.status === 'ELEVATED') {
+          warningBadge.textContent = 'ELEVATED';
+          warningBadge.style.color = 'var(--hud-gold)';
+          warningBadge.style.borderColor = 'var(--hud-gold)';
+        } else {
+          warningBadge.textContent = 'NOMINAL';
+          warningBadge.style.color = 'var(--hud-cyan)';
+          warningBadge.style.borderColor = 'var(--hud-border)';
+        }
+      }
+
+      if (vitalsCard) {
+        if (loadObj.warning) vitalsCard.classList.add('hud-cyberpsychosis-alert');
+        else vitalsCard.classList.remove('hud-cyberpsychosis-alert');
+      }
+
+      // 2. Sandevistan UI
+      this.updateSandevistan();
+      var sandeState = this.getSandevistanState();
+      var sandeStatusEl = document.getElementById('hud-sande-status');
+      var sandeFillEl = document.getElementById('hud-sande-charge-fill');
+      var sandeBtn = document.getElementById('hud-sande-btn');
+      var sandeStageBtn = document.getElementById('hud-btn-sandevistan');
+
+      if (sandeStatusEl) {
+        if (sandeState.active) {
+          sandeStatusEl.textContent = 'OVERDRIVE ACTIVE (' + sandeState.remainingSec.toFixed(1) + 's)';
+          sandeStatusEl.style.color = 'var(--hud-gold)';
+        } else if (sandeState.ready) {
+          sandeStatusEl.textContent = '100% READY';
+          sandeStatusEl.style.color = 'var(--hud-green)';
+        } else {
+          sandeStatusEl.textContent = 'RECHARGING (' + sandeState.charge.toFixed(0) + '%)';
+          sandeStatusEl.style.color = 'var(--hud-text-muted)';
+        }
+      }
+
+      if (sandeFillEl) {
+        sandeFillEl.style.width = sandeState.charge.toFixed(1) + '%';
+        if (sandeState.active) {
+          sandeFillEl.style.background = 'linear-gradient(90deg, #ffd700, #ff5533)';
+        } else if (sandeState.ready) {
+          sandeFillEl.style.background = 'linear-gradient(90deg, #00ff66, #00f0ff)';
+        } else {
+          sandeFillEl.style.background = 'linear-gradient(90deg, #3b82f6, #6366f1)';
+        }
+      }
+
+      [sandeBtn, sandeStageBtn].forEach(function (btn) {
+        if (!btn) return;
+        if (sandeState.active) {
+          btn.textContent = '⚡ DILATION ACTIVE (' + sandeState.remainingSec.toFixed(1) + 's)';
+          btn.style.background = 'linear-gradient(90deg, #ff0055, #fbbf24)';
+          btn.style.color = '#000';
+        } else if (sandeState.ready) {
+          btn.textContent = '⚡ ENGAGE OVERDRIVE (4s)';
+          btn.style.background = 'var(--hud-cyan)';
+          btn.style.color = '#000';
+        } else {
+          btn.textContent = '⏳ RECHARGING ' + sandeState.charge.toFixed(0) + '%';
+          btn.style.background = 'rgba(255,255,255,0.06)';
+          btn.style.color = 'var(--hud-text-muted)';
+        }
+      });
+
+      // 3. Kiroshi UI
+      var kiroState = this.getKiroshiState();
+      var kiroValEl = document.getElementById('hud-kiroshi-val');
+      var kiroBtn = document.getElementById('hud-btn-kiroshi');
+      if (kiroValEl) {
+        kiroValEl.textContent = kiroState.scale.toFixed(2).replace(/\.00$/, '.0') + 'X ' + (kiroState.active ? '[OCULAR LOCK]' : '[STANDARD]');
+        kiroValEl.style.color = kiroState.active ? 'var(--hud-gold)' : 'var(--hud-cyan)';
+      }
+      if (kiroBtn) {
+        kiroBtn.textContent = '[ 👁️ ' + kiroState.label.toUpperCase() + ' ]';
+        if (kiroState.active) {
+          kiroBtn.classList.add('active');
+        } else {
+          kiroBtn.classList.remove('active');
+        }
+      }
+
+      // 4. Viewport Telemetry Pill
+      var telePill = document.getElementById('hud-stage-telemetry');
+      if (telePill) {
+        var fpsVal = sandeState.active ? (240.0 + (Math.random() * 2 - 1)).toFixed(1) : (60.0 + (Math.random() * 0.4 - 0.2)).toFixed(1);
+        var resVal = (STATE.aspectRatio === '9:16') ? '1080x1920' : (STATE.aspectRatio === '4:3' ? '2048x1536' : '3840x2160');
+        var latVal = (sandeState.active ? '0.08ms' : '0.8ms');
+
+        var teleContent = '';
+        if (sandeState.active) {
+          teleContent += '<span style="color:var(--hud-gold);font-weight:800;">⚡ SANDEVISTAN 10X</span> | ';
+        }
+        if (kiroState.active) {
+          teleContent += '<span style="color:var(--hud-cyan);font-weight:800;">KIROSHI: ' + kiroState.label.toUpperCase() + '</span> | ';
+        }
+        teleContent += '<span>FPS: ' + fpsVal + '</span> | <span>RES: ' + resVal + '</span> | <span>LATENCY: ' + latVal + '</span>';
+        telePill.innerHTML = teleContent;
+      }
+    }
+  };
+
+  var POVTelemetry = VitalsEngine;
 
   /* =============================================================================
      7. INTERACTIVE COMMAND LINE TERMINAL REPL (ADVANCED MULTI-TAB)
@@ -2235,10 +3035,17 @@
           this.printLine('── ZOTH HUD TERMINAL REPL COMMANDS ──', 'warn');
           this.printLine('  help                : Show this operator reference');
           this.printLine('  status              : Print system, active agent & tool diagnostics');
+          this.printLine('  vitals              : POV cockpit status & Cyberpsychosis / Neural Load Meter');
+          this.printLine('  sandevistan [dur]   : Trigger Sandevistan neural overdrive (10x overclock, 240 FPS)');
+          this.printLine('  kiroshi [1|1.25|1.5]: Set/cycle Kiroshi Optics Zoom & targeting telemetry');
+          this.printLine('  sfx <sound>         : Test cyberware sound synth (click, lock, sandevistan, warning, warp)');
           this.printLine('  radar [ping|zoom]   : Inspect 360° Polar Radar mini-map of 21 agents');
           this.printLine('  scope [wave|fft|xy] : Set Audio Oscilloscope mode (wave, fft, lissajous)');
           this.printLine('  pillars             : Display complete 6-Pillar Mathematical Calculus telemetry');
           this.printLine('  split [swap|close]  : Dual-tool split stage mode toggle/swap/close');
+          this.printLine('  horizon [on|off]    : Toggle Kiroshi optical artificial horizon ladder (Shift+K)');
+          this.printLine('  crt [on|off]        : Toggle CRT curvature & phosphor scanlines (Shift+C)');
+          this.printLine('  hicon [on|off]      : Toggle high-contrast tactical mode (Shift+H)');
           this.printLine('  agent <name>        : Switch active sovereign agent (azoth, grok, athena, etc.)');
           this.printLine('  tool <name>         : Load tool into Center Stage (omnipost, 3d, swarm, etc.)');
           this.printLine('  swarm [mode]        : Launch 3D Swarm Arena (solo | strike | pantheon)');
@@ -2249,6 +3056,7 @@
           this.printLine('  tab <tty0|radar>    : Switch terminal view tab');
           this.printLine('  calc <expr>         : Compute mathematical expression & Shannon entropy');
           this.printLine('  ports               : Loopback port telemetry & ping check');
+          this.printLine('  mute [on|off]       : Toggle or set sound FX mute state');
           this.printLine('  clear | cls         : Clear terminal buffer');
           break;
 
@@ -2497,8 +3305,119 @@
         case 'mute':
         case 'sound':
         case 'audio':
-          var isNowMuted = ZothHUD.toggleMute();
-          this.printLine('✔ Sound FX bus ' + (isNowMuted ? 'MUTED 🔇' : 'UNMUTED 🔊'), 'success');
+          if (arg === 'on' || arg === 'unmute') {
+            ZothHUD.setMuted(false);
+            this.printLine('✔ Sound FX bus UNMUTED 🔊', 'success');
+          } else if (arg === 'off' || arg === 'mute') {
+            ZothHUD.setMuted(true);
+            this.printLine('✔ Sound FX bus MUTED 🔇', 'warn');
+          } else {
+            var isNowMuted = ZothHUD.toggleMute();
+            this.printLine('✔ Sound FX bus ' + (isNowMuted ? 'MUTED 🔇' : 'UNMUTED 🔊'), 'success');
+          }
+          break;
+
+        case 'sandy':
+        case 'sandevistan':
+        case 'sande':
+        case 'overdrive':
+          if (arg === 'off') {
+            ZothHUD.toggleSandevistan(false);
+            this.printLine('⚡ Sandevistan overdrive disengaged.', 'warn');
+          } else {
+            var numDur = parseFloat(arg);
+            var durMs = (!isNaN(numDur) && numDur > 0) ? (numDur < 50 ? numDur * 1000 : numDur) : 5000;
+            var ok = ZothHUD.triggerSandevistan(durMs);
+            if (ok) {
+              this.printLine('⚡ SANDEVISTAN SPEED OVERDRIVE: ENGAGED [' + (durMs/1000) + 's DILATION · 240 FPS OVERCLOCK]', 'success');
+            } else {
+              this.printLine('⚠️ Sandevistan thermal recharge active.', 'error');
+            }
+          }
+          break;
+
+        case 'visor':
+        case 'pov':
+          var isVisor = ZothHUD.toggleKiroshiVisor(arg === 'on' ? true : arg === 'off' ? false : undefined);
+          this.printLine('👁️ KIROSHI POV VISOR MODE: ' + (isVisor ? 'ACTIVE' : 'STANDBY'), isVisor ? 'success' : 'warn');
+          break;
+
+        case 'kiroshi':
+        case 'zoom':
+          if (arg === '1' || arg === '1.0' || arg === '1x') {
+            ZothHUD.cycleKiroshiZoom();
+            this.printLine('👁️ Kiroshi Optics Zoom set to 1.0x [STANDARD VIEWPORT]', 'success');
+          } else if (arg === '1.25' || arg === '1.25x') {
+            ZothHUD.cycleKiroshiZoom();
+            this.printLine('👁️ Kiroshi Optics Zoom set to 1.25x [TARGET LOCK MAGNIFIED]', 'success');
+          } else if (arg === '1.5' || arg === '1.5x') {
+            ZothHUD.cycleKiroshiZoom();
+            this.printLine('👁️ Kiroshi Optics Zoom set to 1.5x [PRECISION OCULAR SCAN]', 'success');
+          } else {
+            var newScale = ZothHUD.cycleKiroshiZoom();
+            this.printLine('👁️ Kiroshi Optics Zoom cycled to: ' + newScale + 'x', 'success');
+          }
+          break;
+
+        case 'theater':
+        case 'stage-fullscreen':
+        case 'fullscreen-stage':
+          var isTh = ZothHUD.toggleFullscreenStage(arg === 'on' ? true : arg === 'off' ? false : undefined);
+          this.printLine('⛶ FULLSCREEN THEATER STAGE: ' + (isTh ? 'EXPANDED' : 'COLLAPSED'), isTh ? 'success' : 'warn');
+          break;
+
+        case 'shortcuts':
+        case 'guide':
+        case 'keys':
+          ZothHUD.openShortcutsModal();
+          this.printLine('⌨️ Operator guide & keyboard command center opened.', 'success');
+          break;
+
+        case 'horizon':
+        case 'attitude':
+          var isHoriz = ZothHUD.toggleHorizon(arg === 'on' ? true : arg === 'off' ? false : undefined);
+          this.printLine('🧭 KIROSHI OPTICAL ARTIFICIAL HORIZON: ' + (isHoriz ? 'ONLINE' : 'OFFLINE'), isHoriz ? 'success' : 'warn');
+          break;
+
+        case 'vitals':
+        case 'neural':
+        case 'load':
+          var vObj = VitalsEngine.computeNeuralLoad();
+          var sObj = VitalsEngine.getSandevistanState();
+          var kObj = VitalsEngine.getKiroshiState();
+          this.printLine('── POV COCKPIT VITALS & NEURAL LOAD ──', vObj.warning ? 'error' : 'warn');
+          this.printLine('  Neural Load     : ' + vObj.load.toFixed(1) + '% [' + vObj.status + ']', vObj.warning ? 'error' : 'success');
+          this.printLine('  Cyberpsychosis  : ' + (vObj.warning ? '⚠️ CRITICAL ALERT (>85%)' : 'NOMINAL (Threshold: 85%)'), vObj.warning ? 'error' : 'stdout');
+          this.printLine('  Sandevistan     : ' + (sObj.active ? '⚡ ACTIVE (' + sObj.remainingSec.toFixed(1) + 's)' : (sObj.ready ? '100% READY' : 'RECHARGING ' + sObj.charge.toFixed(0) + '%')), 'stdout');
+          this.printLine('  Kiroshi Zoom    : ' + kObj.label + ' ' + (kObj.active ? '[MAGNIFIED]' : '[STANDARD]'), 'stdout');
+          this.printLine('  Load Breakdown  : Agents +' + vObj.breakdown.agents + '%, Memory +' + vObj.breakdown.memory + '%, Tool +' + vObj.breakdown.tool + '%', 'stdout');
+          break;
+
+        case 'sfx':
+        case 'play':
+          if (!arg) {
+            this.printLine('── PROCEDURAL CYBERWARE AUDIO SYNTH ──', 'warn');
+            this.printLine('  Available SFX: click, lock, sandevistan, warning, warp, chirp, select, ping, boot, error', 'stdout');
+            this.printLine('  Usage: sfx <sound_name> (e.g. sfx warp or sfx sandevistan)', 'cyan');
+          } else {
+            var soundName = arg.toLowerCase();
+            var okPlay = ZothHUD.playSFX(soundName);
+            this.printLine('🎵 Cyberware Audio Synth: played procedural wave [' + soundName + ']', 'success');
+          }
+          break;
+
+        case 'crt':
+        case 'scanlines':
+        case 'curvature':
+          var isCrt = ZothHUD.toggleCRT(arg === 'on' ? true : arg === 'off' ? false : undefined);
+          this.printLine('📺 CRT CURVATURE & PHOSPHOR SCANLINES: ' + (isCrt ? 'ENABLED' : 'DISABLED'), 'success');
+          break;
+
+        case 'hicon':
+        case 'highcontrast':
+        case 'contrast':
+          var isHiCon = ZothHUD.toggleHighContrast(arg === 'on' ? true : arg === 'off' ? false : undefined);
+          this.printLine('👁️ HIGH-CONTRAST TACTICAL MODE: ' + (isHiCon ? 'ENGAGED' : 'DISENGAGED'), 'success');
           break;
 
         case 'clear':
@@ -3550,6 +4469,48 @@
               '</div>' +
             '</div>' +
 
+            '<!-- Panel 1.5: POV COCKPIT VITALS, CYBERPSYCHOSIS & CYBERWARE OVERDRIVE -->' +
+            '<div class="hud-card hud-vitals-card" id="hud-vitals-card">' +
+              '<div class="hud-card-header">' +
+                '<div class="hud-card-title"><span>❤️‍🔥</span> POV COCKPIT VITALS</div>' +
+                '<span class="hud-card-badge" id="hud-cyberpsychosis-badge">NOMINAL</span>' +
+              '</div>' +
+              '<div class="hud-vitals-body" style="padding:6px 8px;display:flex;flex-direction:column;gap:6px;">' +
+                '<div class="hud-vitals-neural-section">' +
+                  '<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.62rem;font-family:var(--hud-font-mono);">' +
+                    '<span style="color:var(--hud-text-secondary);">NEURAL LOAD / PSYCHOSIS</span>' +
+                    '<span style="font-weight:800;color:var(--hud-cyan);" id="hud-neural-load-val">52.4%</span>' +
+                  '</div>' +
+                  '<div class="hud-meter-track" style="height:5px;margin-top:3px;">' +
+                    '<div class="hud-meter-fill" id="hud-neural-load-fill" style="width:52.4%;"></div>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="hud-vitals-sande-section" style="border-top:1px dashed rgba(255,255,255,0.06);padding-top:4px;">' +
+                  '<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.60rem;font-family:var(--hud-font-mono);">' +
+                    '<span style="color:var(--hud-gold);">⚡ SANDEVISTAN CYBERWARE</span>' +
+                    '<span style="font-weight:700;color:var(--hud-green);" id="hud-sande-status">100% READY</span>' +
+                  '</div>' +
+                  '<div class="hud-meter-track" style="height:4px;margin-top:2px;">' +
+                    '<div class="hud-meter-fill" id="hud-sande-charge-fill" style="width:100%;background:linear-gradient(90deg, #00ff66, #00f0ff);"></div>' +
+                  '</div>' +
+                  '<div style="margin-top:4px;">' +
+                    '<button type="button" class="hud-stage-btn" id="hud-sande-btn" onclick="ZothHUD.triggerSandevistan()" style="width:100%;padding:3px 6px;font-size:0.60rem;font-weight:800;background:var(--hud-cyan);color:#000;">⚡ ENGAGE OVERDRIVE (4s)</button>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="hud-vitals-kiroshi-section" style="border-top:1px dashed rgba(255,255,255,0.06);padding-top:4px;display:flex;align-items:center;justify-content:space-between;">' +
+                  '<div>' +
+                    '<div style="font-size:0.58rem;color:var(--hud-text-muted);">KIROSHI OPTICS</div>' +
+                    '<div style="font-family:var(--hud-font-mono);font-size:0.65rem;font-weight:800;color:var(--hud-cyan);" id="hud-kiroshi-val">1.0X [STANDARD]</div>' +
+                  '</div>' +
+                  '<div class="hud-kiroshi-chips" style="display:flex;gap:3px;">' +
+                    '<button type="button" class="hud-stage-btn active" data-zoom="1" onclick="ZothHUD.setKiroshiZoom(1.0)" style="padding:1px 5px;font-size:0.56rem;">1.0X</button>' +
+                    '<button type="button" class="hud-stage-btn" data-zoom="1.25" onclick="ZothHUD.setKiroshiZoom(1.25)" style="padding:1px 5px;font-size:0.56rem;">1.25X</button>' +
+                    '<button type="button" class="hud-stage-btn" data-zoom="1.5" onclick="ZothHUD.setKiroshiZoom(1.5)" style="padding:1px 5px;font-size:0.56rem;">1.5X</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
             '<!-- Panel 2: ACTIVE AGENTS ROSTER -->' +
             '<div class="hud-card">' +
               '<div class="hud-card-header">' +
@@ -3684,6 +4645,8 @@
               '</div>' +
 
               '<div class="hud-stage-actions">' +
+                '<button type="button" class="hud-stage-btn" id="hud-btn-sandevistan" onclick="ZothHUD.triggerSandevistan()" title="Engage Sandevistan Overdrive (Shift+Z or S)">[ ⚡ SANDE ]</button>' +
+                '<button type="button" class="hud-stage-btn" id="hud-btn-kiroshi" onclick="ZothHUD.toggleKiroshiZoom()" title="Cycle Kiroshi Optics Zoom (Z)">[ 👁️ 1.0X ]</button>' +
                 '<button type="button" class="hud-stage-btn hud-stage-btn-omnipost" id="hud-btn-omnipost" onclick="ZothHUD.loadTool(\'omnipost\')">[ OMNI POST ]</button>' +
                 '<button type="button" class="hud-stage-btn" id="hud-btn-fullscreen" onclick="ZothHUD.toggleFullscreen()">[ FULLSCREEN ]</button>' +
                 '<button type="button" class="hud-stage-btn" id="hud-btn-detach" onclick="ZothHUD.detachStageTool()">[ DETACH ↗ ]</button>' +
@@ -3916,47 +4879,185 @@
     bindShortcuts: function () {
       var self = this;
       window.addEventListener('keydown', function (e) {
+        var key = e.key;
         var tag = (e.target.tagName || '').toLowerCase();
         var isInput = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
 
-        if (e.key >= '1' && e.key <= '9' && !isInput && !e.ctrlKey && !e.altKey && !e.metaKey) {
-          var idx = parseInt(e.key, 10) - 1;
-          if (PRIMARY_WORKSTATIONS[idx]) {
-            e.preventDefault();
-            self.loadTool(PRIMARY_WORKSTATIONS[idx].id);
-          }
-        } else if (e.key === 't' && e.shiftKey && !isInput) {
+        // Escape: Close any open modal or dropdown or sheet or theater mode
+        if (key === 'Escape' || e.keyCode === 27) {
           e.preventDefault();
-          self.cycleTheme();
-        } else if ((e.key === 'v' || e.key === 'V') && e.shiftKey && !isInput) {
+          self.closeToolDropdown();
+          self.closeModal();
+          self.closeMobileSheet();
+          if (STATE.isDeckOpen && (STATE.effectiveDevice === 'tablet' || STATE.effectiveDevice === 'mobile')) {
+            self.closeDeck();
+          }
+          return;
+        }
+
+        // When user is typing in an input field, do not trigger single-key hotkeys
+        if (isInput) {
+          return;
+        }
+
+        // '?' or 'Shift+/' : Operator Guide & Shortcuts Modal
+        if (key === '?' || (key === '/' && e.shiftKey)) {
+          e.preventDefault();
+          self.openModal('shortcuts');
+          return;
+        }
+
+        // '1' - '9' : Direct switch to first 9 swarm agents
+        if (key >= '1' && key <= '9' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          var idx = parseInt(key, 10) - 1;
+          if (ALL_21_AGENTS[idx]) {
+            e.preventDefault();
+            self.setAgent(ALL_21_AGENTS[idx].id);
+          }
+          return;
+        }
+
+        // '[' and ']' : Cycle previous / next workstation
+        if (key === '[' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.cycleWorkstation(-1);
+          return;
+        }
+        if (key === ']' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.cycleWorkstation(1);
+          return;
+        }
+
+        // 'V' or 'v' (without Shift/Ctrl/Cmd/Alt): Toggle Kiroshi POV Visor Mode
+        if ((key === 'v' || key === 'V') && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleKiroshiVisor();
+          return;
+        }
+        // Shift + V: Device Profile Modal
+        if ((key === 'v' || key === 'V') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
           e.preventDefault();
           self.openModal('device');
-        } else if ((e.key === 'm' || e.key === 'M') && !isInput && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          return;
+        }
+
+        // 'S' or 's' (without Shift/Ctrl/Cmd/Alt): Trigger Sandevistan Overdrive
+        if ((key === 's' || key === 'S') && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.triggerSandevistan();
+          return;
+        }
+        // Shift + S: Dual-Tool Split Stage
+        if ((key === 's' || key === 'S') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleSplitStage();
+          return;
+        }
+
+        // 'Z' or 'z': Cycle Kiroshi Optics Zoom
+        if ((key === 'z' || key === 'Z') && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.cycleKiroshiZoom();
+          return;
+        }
+
+        // 'M' or 'm': Focus Memory Search
+        if ((key === 'm' || key === 'M') && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.focusMemory();
+          return;
+        }
+        // Shift + M: Toggle Cyber Sound FX
+        if ((key === 'm' || key === 'M') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
           e.preventDefault();
           self.toggleMute();
-        } else if (e.key === 'd' && e.shiftKey && !isInput) {
+          return;
+        }
+
+        // 'T' or 't' (without Shift) OR '/': Focus Command Terminal / REPL
+        if (((key === 't' || key === 'T') && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) ||
+            (key === '/' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey)) {
+          e.preventDefault();
+          self.focusTerminal();
+          return;
+        }
+        // Shift + T: Cycle Themes
+        if ((key === 't' || key === 'T') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.cycleTheme();
+          return;
+        }
+
+        // 'H' or 'h' (or Shift+D): Toggle Operations Deck
+        if (((key === 'h' || key === 'H') && !e.ctrlKey && !e.altKey && !e.metaKey) ||
+            (key === 'd' && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey)) {
           e.preventDefault();
           self.toggleDeck();
-        } else if (e.key === 'r' && e.shiftKey && !isInput) {
+          return;
+        }
+
+        // 'F' or 'f': Fullscreen Stage / Theater Mode
+        if ((key === 'f' || key === 'F') && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleFullscreenStage();
+          return;
+        }
+
+        // Shift + Z: Sandevistan Speed Overdrive Glitch Toggle
+        if ((key === 'z' || key === 'Z') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleSandevistan();
+          return;
+        }
+
+        // Shift + K: Kiroshi Optical Horizon Ladder Toggle
+        if ((key === 'k' || key === 'K') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleHorizon();
+          return;
+        }
+
+        // Shift + C: CRT Curvature & Phosphor Scanlines FX Toggle
+        if ((key === 'c' || key === 'C') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleCRT();
+          return;
+        }
+
+        // Shift + H: High-Contrast Tactical Mode Toggle
+        if ((key === 'h' || key === 'H') && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleHighContrast();
+          return;
+        }
+
+        // Shift + R: Ping Radar
+        if (key === 'r' && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
           e.preventDefault();
           self.pingRadar();
-        } else if (e.key === 'o' && e.shiftKey && !isInput) {
+          return;
+        }
+
+        // Shift + O: Set Scope Mode
+        if (key === 'o' && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
           e.preventDefault();
           self.setScopeMode();
-        } else if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
+          return;
+        }
+
+        // Ctrl + K / Cmd + K: Open Tool Manager
+        if ((key === 'k' || key === 'K') && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           self.openModal('toolmgr');
-        } else if ((e.key === '`' || e.key === 'Escape') && !isInput) {
+          return;
+        }
+
+        // ` (Backtick): Focus terminal
+        if (key === '`') {
           e.preventDefault();
-          if (e.key === 'Escape') {
-            self.closeToolDropdown();
-            self.closeModal();
-            self.closeMobileSheet();
-            self.closeDeck();
-          } else {
-            var input = document.getElementById('hud-term-input');
-            if (input) input.focus();
-          }
+          self.focusTerminal();
+          return;
         }
       });
     },
@@ -4128,6 +5229,7 @@
 
       if (!isInitial) {
         this.addLog('STAGE', 'Active tool mounted: ' + tool.name + ' (' + tool.url + ')', 'system');
+        this.announce('Workstation mounted: ' + tool.name);
       }
     },
 
@@ -4376,7 +5478,7 @@
     },
 
     getAutocompleteSuggestions: function (input) {
-      var commands = ['help', 'status', 'radar', 'scope', 'pillars', 'split', 'hermes', 'agent', 'tool', 'swarm', 'mem', 'theme', 'aspect', 'tab', 'ports', 'calc', 'ping', 'clear'];
+      var commands = ['help', 'status', 'vitals', 'sandevistan', 'sande', 'sandy', 'overdrive', 'kiroshi', 'zoom', 'sfx', 'play', 'mute', 'audio', 'sound', 'radar', 'scope', 'pillars', 'split', 'hermes', 'agent', 'tool', 'swarm', 'mem', 'theme', 'aspect', 'tab', 'ports', 'calc', 'ping', 'visor', 'horizon', 'contrast', 'theater', 'shortcuts', 'clear'];
       var lower = (input || '').toLowerCase().trim();
       return commands.filter(function (c) { return c.startsWith(lower); });
     },
@@ -4403,6 +5505,7 @@
       if (!isInitial) {
         speakAgentVoice(agent.id, agent.greeting);
         this.addLog(agent.name, agent.greeting, 'azoth');
+        this.announce('Active swarm agent switched to ' + agent.name + ' (' + agent.role + ')');
       }
     },
 
@@ -4441,6 +5544,7 @@
       }
       this.syncURLState();
       playCyberSFX('chirp');
+      this.announce('HUD theme switched to ' + themeName);
     },
 
     cycleTheme: function () {
@@ -4620,21 +5724,358 @@
       playCyberSFX('chirp');
     },
 
+    CyberAudioSynth: CyberAudioSynth,
+
+    playSfx: function (type) {
+      return CyberAudioSynth.play(type);
+    },
+
+    playSFX: function (type) {
+      return CyberAudioSynth.play(type);
+    },
+
+    VitalsEngine: VitalsEngine,
+    POVTelemetry: VitalsEngine,
+
+    getNeuralLoad: function () {
+      return VitalsEngine.computeNeuralLoad();
+    },
+
     toggleMute: function () {
-      STATE.isMuted = !STATE.isMuted;
-      var iconEl = document.getElementById('hud-audio-icon');
-      var btn = document.getElementById('hud-btn-sfx-toggle');
-      if (iconEl) iconEl.textContent = STATE.isMuted ? '🔇' : '🔊';
-      if (btn) btn.title = STATE.isMuted ? 'Unmute Cyber Sound FX' : 'Mute Cyber Sound FX';
-      if (!STATE.isMuted) {
-        playCyberSFX('select');
-      }
-      this.addLog('AUDIO', 'Cyber SFX audio bus ' + (STATE.isMuted ? 'MUTED' : 'UNMUTED'), 'system');
-      return STATE.isMuted;
+      return CyberAudioSynth.toggleMute();
+    },
+
+    setMuted: function (muted) {
+      return CyberAudioSynth.setMuted(muted);
     },
 
     isMuted: function () {
-      return !!STATE.isMuted;
+      return CyberAudioSynth.isMuted();
+    },
+
+    announce: function (message, priority) {
+      if (!message) return '';
+      STATE.lastAnnouncement = message;
+      if (typeof document === 'undefined') return message;
+      var el = document.getElementById('hud-a11y-announcer');
+      if (!el && document.body) {
+        el = document.createElement('div');
+        el.id = 'hud-a11y-announcer';
+        el.className = 'hud-sr-only sr-only';
+        el.setAttribute('aria-live', priority || 'polite');
+        el.setAttribute('aria-atomic', 'true');
+        document.body.appendChild(el);
+      }
+      if (el) {
+        el.setAttribute('aria-live', priority || 'polite');
+        el.setAttribute('aria-atomic', 'true');
+        el.textContent = message;
+      }
+      return message;
+    },
+
+    getLastAnnouncement: function () {
+      return STATE.lastAnnouncement || '';
+    },
+
+    toggleHighContrast: function (force) {
+      if (typeof force === 'boolean') {
+        STATE.isHighContrast = force;
+      } else {
+        STATE.isHighContrast = !STATE.isHighContrast;
+      }
+
+      var btn = document.getElementById('hud-btn-hicon');
+      if (btn) {
+        if (STATE.isHighContrast) btn.classList.add('active');
+        else btn.classList.remove('active');
+      }
+
+      if (typeof document !== 'undefined') {
+        if (document.documentElement) {
+          if (STATE.isHighContrast) {
+            document.documentElement.classList.add('hud-high-contrast', 'hud-high-contrast-mode');
+            document.documentElement.setAttribute('data-high-contrast', 'true');
+          } else {
+            document.documentElement.classList.remove('hud-high-contrast', 'hud-high-contrast-mode');
+            document.documentElement.setAttribute('data-high-contrast', 'false');
+          }
+        }
+        if (document.body) {
+          if (STATE.isHighContrast) {
+            document.body.classList.add('hud-high-contrast', 'hud-high-contrast-mode');
+          } else {
+            document.body.classList.remove('hud-high-contrast', 'hud-high-contrast-mode');
+          }
+        }
+      }
+
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('zoth_hud_high_contrast', String(STATE.isHighContrast));
+          window.localStorage.setItem('zoth-hud-high-contrast', String(STATE.isHighContrast));
+        }
+      } catch (e) {}
+
+      playCyberSFX('contrast');
+      this.addLog('TACTICAL', 'High Contrast Mode ' + (STATE.isHighContrast ? 'ENGAGED (WCAG AAA)' : 'DISENGAGED'), 'system');
+      this.announce('High Contrast Mode ' + (STATE.isHighContrast ? 'enabled' : 'disabled'));
+      return STATE.isHighContrast;
+    },
+
+    isHighContrast: function () {
+      return !!STATE.isHighContrast;
+    },
+
+    toggleKiroshiVisor: function (force) {
+      if (typeof force === 'boolean') {
+        STATE.kiroshiVisor = force;
+      } else {
+        STATE.kiroshiVisor = !STATE.kiroshiVisor;
+      }
+
+      var ladder = document.getElementById('kiroshi-horizon-ladder');
+      if (ladder) {
+        if (STATE.kiroshiVisor) ladder.classList.remove('is-hidden');
+        else ladder.classList.add('is-hidden');
+      }
+
+      var btn = document.getElementById('hud-btn-horizon');
+      if (btn) {
+        if (STATE.kiroshiVisor) btn.classList.add('active');
+        else btn.classList.remove('active');
+      }
+
+      if (typeof document !== 'undefined') {
+        if (document.documentElement) {
+          if (STATE.kiroshiVisor) {
+            document.documentElement.setAttribute('data-kiroshi-visor', 'active');
+          } else {
+            document.documentElement.removeAttribute('data-kiroshi-visor');
+          }
+        }
+        if (document.body) {
+          if (STATE.kiroshiVisor) {
+            document.body.classList.add('hud-kiroshi-active');
+          } else {
+            document.body.classList.remove('hud-kiroshi-active');
+          }
+        }
+      }
+
+      playCyberSFX(STATE.kiroshiVisor ? 'visor' : 'chirp');
+      this.addLog('KIROSHI', 'Kiroshi Optics Artificial Horizon & Flight Ladder ' + (STATE.kiroshiVisor ? 'ONLINE' : 'HIDDEN'), 'consensus');
+      this.announce('Kiroshi Optics POV Visor ' + (STATE.kiroshiVisor ? 'engaged at ' + STATE.kiroshiZoom + 'x zoom' : 'disengaged'));
+      return STATE.kiroshiVisor;
+    },
+
+    toggleHorizon: function (force) {
+      return this.toggleKiroshiVisor(force);
+    },
+
+    toggleVisor: function (force) {
+      return this.toggleKiroshiVisor(force);
+    },
+
+    toggleCRT: function (force) {
+      var body = (typeof document !== 'undefined') ? document.body : null;
+      var isCrtActive = body ? body.classList.contains('hud-crt-curvature') : false;
+      var nextState = (typeof force === 'boolean') ? force : !isCrtActive;
+
+      if (body) {
+        if (nextState) body.classList.add('hud-crt-curvature');
+        else body.classList.remove('hud-crt-curvature');
+      }
+
+      var btn = document.getElementById('hud-btn-crt');
+      if (btn) {
+        if (nextState) btn.classList.add('active');
+        else btn.classList.remove('active');
+      }
+
+      playCyberSFX('chirp');
+      this.addLog('DISPLAY', 'CRT Curvature & Phosphor Scanline Filter ' + (nextState ? 'ENABLED' : 'DISABLED'), 'system');
+      return nextState;
+    },
+
+    isKiroshiVisor: function () {
+      return !!STATE.kiroshiVisor;
+    },
+
+    cycleKiroshiZoom: function () {
+      return VitalsEngine.toggleKiroshiZoom();
+    },
+
+    toggleKiroshiZoom: function () {
+      return VitalsEngine.toggleKiroshiZoom();
+    },
+
+    setKiroshiZoom: function (scale) {
+      return VitalsEngine.setKiroshiZoom(scale);
+    },
+
+    getKiroshiZoom: function () {
+      return VitalsEngine.getKiroshiState().scale;
+    },
+
+    cycleZoom: function () {
+      return VitalsEngine.toggleKiroshiZoom();
+    },
+
+    getKiroshiState: function () {
+      return VitalsEngine.getKiroshiState();
+    },
+
+    triggerSandevistan: function (durationSec) {
+      var dur = (typeof durationSec === 'number' && durationSec > 50) ? (durationSec / 1000) : durationSec;
+      return VitalsEngine.triggerSandevistan(dur);
+    },
+
+    getSandevistanState: function () {
+      return VitalsEngine.getSandevistanState();
+    },
+
+    toggleSandevistan: function (force) {
+      if (typeof force === 'boolean') {
+        if (force) return this.triggerSandevistan();
+        if (STATE.vitals && STATE.vitals.sandevistan) {
+          STATE.vitals.sandevistan.active = false;
+        }
+        if (document.body) document.body.classList.remove('sandevistan-active');
+        playCyberSFX('chirp');
+        return false;
+      }
+      var s = VitalsEngine.getSandevistanState();
+      if (s.active) {
+        return this.toggleSandevistan(false);
+      } else {
+        return this.triggerSandevistan();
+      }
+    },
+
+    triggerOverdrive: function (durationSec) {
+      return this.triggerSandevistan(durationSec);
+    },
+
+    isSandevistanActive: function () {
+      return VitalsEngine.getSandevistanState().active;
+    },
+
+    getNeuralVitals: function () {
+      var loadObj = VitalsEngine.computeNeuralLoad();
+      var sande = VitalsEngine.getSandevistanState();
+      var vitals = STATE.vitals || {};
+      return Object.assign({
+        load: (typeof vitals.neuralLoad === 'number') ? vitals.neuralLoad : loadObj.load,
+        neuralLoad: (typeof vitals.neuralLoad === 'number') ? vitals.neuralLoad : loadObj.load,
+        synRate: (typeof vitals.synRate === 'number') ? vitals.synRate : 98.4,
+        coreClock: (typeof vitals.coreClock === 'number') ? vitals.coreClock : 4.8,
+        status: loadObj.status,
+        warning: loadObj.warning,
+        active: sande.active,
+        activeOverdrive: sande.active,
+        sandevistan: sande,
+        kiroshi: VitalsEngine.getKiroshiState()
+      }, vitals);
+    },
+
+    updateNeuralVitals: function (updates) {
+      if (updates && typeof updates === 'object') {
+        if (!STATE.vitals) STATE.vitals = {};
+        if (!STATE.neuralVitals) STATE.neuralVitals = {};
+        Object.assign(STATE.vitals, updates);
+        Object.assign(STATE.neuralVitals, updates);
+      }
+      return this.getNeuralVitals();
+    },
+
+    toggleFullscreenStage: function (force) {
+      if (typeof force === 'boolean') {
+        STATE.isTheaterMode = force;
+      } else {
+        STATE.isTheaterMode = !STATE.isTheaterMode;
+      }
+
+      if (typeof document !== 'undefined') {
+        if (document.documentElement) {
+          document.documentElement.setAttribute('data-theater-mode', String(STATE.isTheaterMode));
+        }
+        if (document.body) {
+          if (STATE.isTheaterMode) {
+            document.body.classList.add('hud-theater-mode', 'hud-fullscreen-stage');
+          } else {
+            document.body.classList.remove('hud-theater-mode', 'hud-fullscreen-stage');
+          }
+        }
+      }
+
+      playCyberSFX('tool');
+      this.addLog('STAGE', 'Theater / Fullscreen Stage Mode ' + (STATE.isTheaterMode ? 'EXPANDED' : 'COLLAPSED'), 'system');
+      this.announce('Theater stage mode ' + (STATE.isTheaterMode ? 'expanded to full viewport' : 'restored to cockpit'));
+      return STATE.isTheaterMode;
+    },
+
+    toggleTheaterMode: function (force) {
+      return this.toggleFullscreenStage(force);
+    },
+
+    isTheaterMode: function () {
+      return !!STATE.isTheaterMode;
+    },
+
+    isFullscreenStage: function () {
+      return !!STATE.isTheaterMode;
+    },
+
+    cycleWorkstation: function (direction) {
+      var dir = (direction === -1) ? -1 : 1;
+      var currentIdx = -1;
+      var currentId = STATE.activeTool ? STATE.activeTool.id : '';
+      for (var i = 0; i < PRIMARY_WORKSTATIONS.length; i++) {
+        if (PRIMARY_WORKSTATIONS[i].id === currentId) {
+          currentIdx = i;
+          break;
+        }
+      }
+      if (currentIdx === -1) currentIdx = 0;
+      var nextIdx = (currentIdx + dir + PRIMARY_WORKSTATIONS.length) % PRIMARY_WORKSTATIONS.length;
+      var nextStation = PRIMARY_WORKSTATIONS[nextIdx];
+      this.loadTool(nextStation.id);
+      return nextStation;
+    },
+
+    nextWorkstation: function () {
+      return this.cycleWorkstation(1);
+    },
+
+    prevWorkstation: function () {
+      return this.cycleWorkstation(-1);
+    },
+
+    focusTerminal: function () {
+      if (!STATE.isDeckOpen && (STATE.effectiveDevice === 'tablet' || STATE.effectiveDevice === 'mobile')) {
+        this.toggleDeck();
+      }
+      var input = document.getElementById('hud-term-input') || document.getElementById('hud-mobile-term-input');
+      if (input && input.focus) {
+        input.focus();
+      }
+      playCyberSFX('chirp');
+      this.announce('Focused Command Terminal REPL');
+      return true;
+    },
+
+    focusMemory: function () {
+      if (MemGraphCanvas && typeof MemGraphCanvas.triggerConsolidation === 'function') {
+        MemGraphCanvas.triggerConsolidation(0);
+      }
+      playCyberSFX('wave');
+      this.announce('Memory Graph focused and synaptic wave pulsed');
+      return true;
+    },
+
+    openShortcutsModal: function () {
+      this.openModal('shortcuts');
     },
 
     execMobilePromptInput: function () {
