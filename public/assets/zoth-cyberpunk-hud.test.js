@@ -450,7 +450,92 @@ win.ZothHudIntel.retryStage();
 win.ZothHudIntel.healNow();
 console.log('✔ Test 18 Passed: Grok Intelligence Layer, Dashboard Mode, Auto-Acclimation & Self-Healing Watchdog verified');
 
-console.log('\n⭐ ALL 18 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE, HERMES, GROK INTEL & ACTION BRIDGE TESTS PASSED (100%)!\n');
+// 19. Test Multi-Device Responsive Cockpit Engine (Desktop, Tablet, Phone)
+assert.strictEqual(typeof win.ZothHUD.setDeviceMode, 'function', 'setDeviceMode must be a function');
+assert.strictEqual(typeof win.ZothHUD.getDeviceMode, 'function', 'getDeviceMode must be a function');
+assert.strictEqual(typeof win.ZothHUD.getEffectiveDevice, 'function', 'getEffectiveDevice must be a function');
+
+win.ZothHUD.setDeviceMode('desktop');
+assert.strictEqual(win.ZothHUD.getDeviceMode(), 'desktop', 'Device mode must be desktop');
+assert.strictEqual(win.ZothHUD.getEffectiveDevice(), 'desktop', 'Effective device must be desktop');
+assert.strictEqual(doc.documentElement.getAttribute('data-device'), 'desktop', 'documentElement data-device must be desktop');
+
+win.ZothHUD.setDeviceMode('tablet');
+assert.strictEqual(win.ZothHUD.getDeviceMode(), 'tablet', 'Device mode must be tablet');
+assert.strictEqual(win.ZothHUD.getEffectiveDevice(), 'tablet', 'Effective device must be tablet');
+assert.strictEqual(doc.documentElement.getAttribute('data-device'), 'tablet', 'documentElement data-device must be tablet');
+
+win.ZothHUD.setDeviceMode('mobile');
+assert.strictEqual(win.ZothHUD.getDeviceMode(), 'mobile', 'Device mode must be mobile');
+assert.strictEqual(win.ZothHUD.getEffectiveDevice(), 'mobile', 'Effective device must be mobile');
+assert.strictEqual(doc.documentElement.getAttribute('data-device'), 'mobile', 'documentElement data-device must be mobile');
+
+win.ZothHUD.setDeviceMode('auto');
+assert.strictEqual(win.ZothHUD.getDeviceMode(), 'auto', 'Device mode must be auto');
+
+win.ZothHUD.openDeviceModal();
+assert.ok(doc.getElementById('hud-modal-device'), 'Device modal must be created');
+win.ZothHUD.closeModal();
+
+console.log('✔ Test 19 Passed: Multi-Device Responsive Cockpit Engine (Desktop, Tablet, Phone) verified');
+
+// 20. Test Tablet Tactical Bar, Mobile Bottom Sheets & Audio Mute Controller
+assert.strictEqual(typeof win.ZothHUD.setTabletView, 'function', 'setTabletView must be a function');
+win.ZothHUD.setTabletView('telemetry');
+assert.strictEqual(win.ZothHUD.getState().activeTabletView, 'telemetry', 'Tablet view must be telemetry');
+assert.strictEqual(win.ZothHUD.getState().isDeckOpen, true, 'Deck must open on telemetry view');
+
+win.ZothHUD.setTabletView('stage');
+assert.strictEqual(win.ZothHUD.getState().activeTabletView, 'stage', 'Tablet view must be stage');
+assert.strictEqual(win.ZothHUD.getState().isDeckOpen, false, 'Deck must close on stage view');
+
+assert.strictEqual(typeof win.ZothHUD.setMobileTab, 'function', 'setMobileTab must be a function');
+assert.strictEqual(typeof win.ZothHUD.openMobileSheet, 'function', 'openMobileSheet must be a function');
+assert.strictEqual(typeof win.ZothHUD.closeMobileSheet, 'function', 'closeMobileSheet must be a function');
+
+win.ZothHUD.setMobileTab('swarm');
+assert.strictEqual(win.ZothHUD.getState().activeMobileTab, 'swarm', 'Mobile tab must be swarm');
+
+win.ZothHUD.openMobileSheet('tools');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSheet, 'tools', 'Mobile sheet must be tools');
+win.ZothHUD.closeMobileSheet();
+
+win.ZothHUD.openMobileSheet('repl');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSheet, 'repl', 'Mobile sheet must be repl');
+win.ZothHUD.closeMobileSheet();
+
+win.ZothHUD.openMobileSheet('telemetry');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSheet, 'telemetry', 'Mobile sheet must be telemetry');
+win.ZothHUD.closeMobileSheet();
+
+assert.strictEqual(typeof win.ZothHUD.toggleMute, 'function', 'toggleMute must be a function');
+assert.strictEqual(typeof win.ZothHUD.isMuted, 'function', 'isMuted must be a function');
+assert.strictEqual(win.ZothHUD.isMuted(), false, 'Default sound is unmuted');
+
+const mutedState = win.ZothHUD.toggleMute();
+assert.strictEqual(mutedState, true, 'Sound must be muted');
+assert.strictEqual(win.ZothHUD.isMuted(), true, 'isMuted must return true');
+
+win.ZothHUD.toggleMute();
+assert.strictEqual(win.ZothHUD.isMuted(), false, 'Sound must be unmuted again');
+
+// Test REPL device and mute commands
+win.ZothHUD.TerminalRepl.execute('device tablet');
+assert.strictEqual(win.ZothHUD.getDeviceMode(), 'tablet', 'REPL command must set tablet mode');
+
+win.ZothHUD.TerminalRepl.execute('device mobile');
+assert.strictEqual(win.ZothHUD.getDeviceMode(), 'mobile', 'REPL command must set mobile mode');
+
+win.ZothHUD.TerminalRepl.execute('mute');
+assert.strictEqual(win.ZothHUD.isMuted(), true, 'REPL mute command must mute sound');
+
+win.ZothHUD.TerminalRepl.execute('audio');
+assert.strictEqual(win.ZothHUD.isMuted(), false, 'REPL audio command must unmute sound');
+
+win.ZothHUD.setDeviceMode('desktop');
+console.log('✔ Test 20 Passed: Tablet Tactical Bar, Mobile Bottom Sheets & Audio Mute Controller verified');
+
+console.log('\n⭐ ALL 20 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES & GROK TESTS PASSED (100%)!\n');
 process.exit(0);
 
 

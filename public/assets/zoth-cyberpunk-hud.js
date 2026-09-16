@@ -79,6 +79,9 @@
 
   function playCyberSFX(type) {
     try {
+      if (typeof STATE !== 'undefined' && STATE && STATE.isMuted) {
+        return;
+      }
       if (!userHasInteracted) {
         if (AudioOscilloscope) {
           if (type === 'chirp' || type === 'hover') AudioOscilloscope.triggerPulse(0.4, 880);
@@ -1330,6 +1333,12 @@
     stageHistoryIndex: 0,
     activeTermTab: 'tty0',
     activeTheme: initialTheme,
+    deviceMode: 'auto',
+    effectiveDevice: 'desktop',
+    isMuted: false,
+    activeMobileTab: 'stage',
+    activeTabletView: 'stage',
+    activeMobileSheet: null,
     isDeckOpen: false,
     isFullscreen: false,
     terminalHistory: [],
@@ -2466,6 +2475,32 @@
             });
           break;
 
+        case 'device':
+        case 'dev':
+          if (!arg) {
+            this.printLine('── COCKPIT DEVICE PROFILE ──', 'warn');
+            this.printLine('  Configured Mode  : ' + STATE.deviceMode.toUpperCase(), 'stdout');
+            this.printLine('  Effective Device : ' + STATE.effectiveDevice.toUpperCase(), 'success');
+            this.printLine('  Usage: device <desktop | tablet | mobile | auto>', 'cyan');
+            ZothHUD.openModal('device');
+          } else {
+            var targetDev = arg.toLowerCase();
+            if (['desktop', 'tablet', 'mobile', 'auto'].indexOf(targetDev) === -1) {
+              this.printLine('Invalid mode. Choose: desktop, tablet, mobile, auto', 'error');
+              return;
+            }
+            ZothHUD.setDeviceMode(targetDev);
+            this.printLine('✔ Device profile switched to: ' + targetDev.toUpperCase(), 'success');
+          }
+          break;
+
+        case 'mute':
+        case 'sound':
+        case 'audio':
+          var isNowMuted = ZothHUD.toggleMute();
+          this.printLine('✔ Sound FX bus ' + (isNowMuted ? 'MUTED 🔇' : 'UNMUTED 🔊'), 'success');
+          break;
+
         case 'clear':
         case 'cls':
           this.clear();
@@ -2561,7 +2596,306 @@
   };
 
   /* =============================================================================
-     9. TOP HEADER MODALS & POPOVERS (PORTS, TIME, THEMES, TOOL MGR, SHORTCUTS)
+     8.5 MULTI-DEVICE RESPONSIVE ENGINES (DESKTOP, TABLET, PHONE)
+     ============================================================================= */
+
+  var DeviceEngine = {
+    init: function () {
+      this.update();
+      var self = this;
+      if (typeof window !== 'undefined') {
+        window.addEventListener('resize', function () {
+          if (STATE.deviceMode === 'auto') {
+            self.update();
+          }
+        }, { passive: true });
+        window.addEventListener('orientationchange', function () {
+          if (STATE.deviceMode === 'auto') {
+            setTimeout(function () { self.update(); }, 120);
+          }
+        }, { passive: true });
+      }
+    },
+
+    detect: function () {
+      if (typeof window === 'undefined') return 'desktop';
+      var w = window.innerWidth || 1200;
+      if (w <= 768) return 'mobile';
+      if (w <= 1199) return 'tablet';
+      return 'desktop';
+    },
+
+    update: function () {
+      var dev = (STATE.deviceMode === 'auto') ? this.detect() : STATE.deviceMode;
+      STATE.effectiveDevice = dev;
+
+      if (typeof document !== 'undefined') {
+        if (document.documentElement) {
+          document.documentElement.setAttribute('data-device', dev);
+        }
+        if (document.body) {
+          document.body.setAttribute('data-device', dev);
+          document.body.classList.remove('device-desktop', 'device-tablet', 'device-mobile');
+          document.body.classList.add('device-' + dev);
+        }
+      }
+
+      this.updateUI();
+
+      if (typeof window !== 'undefined' && window.dispatchEvent) {
+        try {
+          var ev = new CustomEvent('zoth:device-change', {
+            detail: {
+              device: dev,
+              mode: STATE.deviceMode,
+              width: typeof window !== 'undefined' ? window.innerWidth : 1200,
+              height: typeof window !== 'undefined' ? window.innerHeight : 800
+            }
+          });
+          window.dispatchEvent(ev);
+        } catch (e) {}
+      }
+    },
+
+    setMode: function (mode) {
+      if (['auto', 'desktop', 'tablet', 'mobile'].indexOf(mode) === -1) return;
+      STATE.deviceMode = mode;
+      this.update();
+      playCyberSFX('select');
+      ZothHUD.addLog('DEVICE', 'Cockpit responsive profile set to: ' + mode.toUpperCase() + ' (Effective: ' + STATE.effectiveDevice.toUpperCase() + ')', 'system');
+    },
+
+    updateUI: function () {
+      var iconEl = document.getElementById('hud-device-icon');
+      var labelEl = document.getElementById('hud-device-label');
+      var badgeEl = document.getElementById('hud-badge-device');
+
+      var icon = '💻';
+      var label = 'DESKTOP';
+      if (STATE.effectiveDevice === 'tablet') {
+        icon = '📱';
+        label = 'TABLET';
+      } else if (STATE.effectiveDevice === 'mobile') {
+        icon = '📱';
+        label = 'MOBILE';
+      }
+
+      if (iconEl) iconEl.textContent = icon;
+      if (labelEl) labelEl.textContent = (STATE.deviceMode === 'auto') ? (label + ' (AUTO)') : label;
+      if (badgeEl) badgeEl.title = 'Device Viewport: ' + STATE.effectiveDevice.toUpperCase() + (STATE.deviceMode === 'auto' ? ' [Auto-Detect]' : ' [Forced]');
+    }
+  };
+
+  var TabletController = {
+    setView: function (viewId) {
+      STATE.activeTabletView = viewId;
+
+      var pills = document.querySelectorAll('.hud-tablet-pill');
+      pills.forEach(function (p) {
+        if (p.getAttribute('data-tab') === viewId) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+
+      if (viewId === 'stage') {
+        ZothHUD.closeDeck();
+      } else {
+        var deck = document.getElementById('hud-deck-panel');
+        var backdrop = document.getElementById('hud-deck-backdrop');
+        if (deck) {
+          deck.classList.add('is-open');
+          STATE.isDeckOpen = true;
+          if (backdrop) backdrop.classList.add('is-open');
+
+          var targetCard = null;
+          if (viewId === 'swarm') targetCard = deck.querySelector('.hud-card:nth-of-type(1)');
+          else if (viewId === 'telemetry') targetCard = deck.querySelector('.hud-card:nth-of-type(2)');
+          else if (viewId === 'memory') targetCard = deck.querySelector('.hud-card:nth-of-type(4)');
+          else if (viewId === 'repl') targetCard = deck.querySelector('.hud-card:nth-of-type(5)');
+          else if (viewId === 'pillars') targetCard = deck.querySelector('.hud-card:nth-of-type(7)');
+
+          if (targetCard && targetCard.scrollIntoView) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }
+      playCyberSFX('select');
+    }
+  };
+
+  var MobileSheets = {
+    activeSheet: null,
+
+    open: function (sheetId) {
+      var drawer = document.getElementById('hud-sheet-drawer');
+      var backdrop = document.getElementById('hud-sheet-backdrop');
+      var titleEl = document.getElementById('hud-sheet-title');
+      var bodyEl = document.getElementById('hud-sheet-body');
+      if (!drawer || !backdrop || !bodyEl) return;
+
+      this.activeSheet = sheetId;
+      STATE.activeMobileSheet = sheetId;
+      STATE.activeMobileTab = sheetId;
+      this.updateTabHighlight(sheetId);
+
+      var titleText = 'COMMAND SHEET';
+      var contentHtml = '';
+
+      if (sheetId === 'tools') {
+        titleText = '🛠️ MASTER TOOLS (298+)';
+        contentHtml = Modals.renderToolMgrBody();
+      } else if (sheetId === 'swarm') {
+        titleText = '🔮 21 SWARM AGENTS FLEET';
+        contentHtml = this.renderMobileSwarmBody();
+      } else if (sheetId === 'repl') {
+        titleText = '⚡ SOVEREIGN TERMINAL REPL';
+        contentHtml = this.renderMobileReplBody();
+      } else if (sheetId === 'telemetry') {
+        titleText = '📊 LIVE TELEMETRY & 6 PILLARS';
+        contentHtml = this.renderMobileTelemetryBody();
+      }
+
+      if (titleEl) titleEl.innerHTML = titleText;
+      bodyEl.innerHTML = contentHtml;
+
+      backdrop.hidden = false;
+      backdrop.removeAttribute('hidden');
+      backdrop.classList.add('is-open');
+
+      drawer.hidden = false;
+      drawer.removeAttribute('hidden');
+      drawer.classList.add('is-open');
+
+      if (sheetId === 'tools') {
+        Modals.bindModalEvents(bodyEl, 'toolmgr');
+      }
+
+      playCyberSFX('select');
+    },
+
+    close: function () {
+      var drawer = document.getElementById('hud-sheet-drawer');
+      var backdrop = document.getElementById('hud-sheet-backdrop');
+      if (drawer) {
+        drawer.classList.remove('is-open');
+        setTimeout(function () {
+          drawer.hidden = true;
+          drawer.setAttribute('hidden', 'true');
+        }, 280);
+      }
+      if (backdrop) {
+        backdrop.classList.remove('is-open');
+        setTimeout(function () {
+          backdrop.hidden = true;
+          backdrop.setAttribute('hidden', 'true');
+        }, 280);
+      }
+      this.activeSheet = null;
+      STATE.activeMobileSheet = null;
+      STATE.activeMobileTab = 'stage';
+      this.updateTabHighlight('stage');
+      playCyberSFX('chirp');
+    },
+
+    updateTabHighlight: function (tabId) {
+      var tabs = document.querySelectorAll('.hud-mobile-tab');
+      tabs.forEach(function (tab) {
+        if (tab.getAttribute('data-tab') === tabId) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+    },
+
+    renderMobileSwarmBody: function () {
+      var html = '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        '<div style="font-size:0.72rem;color:var(--hud-text-secondary);">' +
+          'Attune to any of the 21 sovereign agents to steer neural heuristics and execution pipelines.' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr;gap:8px;max-height:58vh;overflow-y:auto;padding-right:4px;">';
+
+      ALL_21_AGENTS.forEach(function (ag) {
+        var isCurrent = (STATE.activeAgent === ag.id);
+        html += '<div class="hud-agent-radio-item ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setAgent(\'' + ag.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';clip-path:var(--hud-clip-sm);cursor:pointer;">' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<span style="font-size:1.1rem;">' + (ag.icon || '🔮') + '</span>' +
+            '<div>' +
+              '<div style="font-family:var(--hud-font-display);font-size:0.80rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';">' + ag.name + '</div>' +
+              '<div style="font-size:0.62rem;color:var(--hud-text-muted);">' + ag.role + ' · ' + ag.domain + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+            (isCurrent ? '<span style="font-size:0.58rem;background:var(--hud-cyan);color:#000;padding:2px 6px;border-radius:2px;font-weight:800;">ACTIVE</span>' : '<span style="font-size:0.58rem;color:var(--hud-cyan);border:1px solid var(--hud-border);padding:2px 6px;border-radius:2px;">ATTUNE</span>') +
+          '</div>' +
+        '</div>';
+      });
+
+      html += '</div></div>';
+      return html;
+    },
+
+    renderMobileReplBody: function () {
+      var html = '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        '<div class="hud-term-chips" style="display:flex;flex-wrap:wrap;gap:6px;">' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'ports\')">[▶ Ping Ports]</button>' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'hermes status\')">[🕊 Hermes]</button>' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'swarm\')">[⚡ Swarm]</button>' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'vault\')">[🔐 Vault]</button>' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'mem\')">[🧠 Memory]</button>' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'help\')">[❓ Help]</button>' +
+        '</div>' +
+        '<div id="hud-mobile-term-output" style="background:#020306;border:1px solid var(--hud-border);border-radius:4px;padding:10px;font-family:var(--hud-font-mono);font-size:0.72rem;min-height:140px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">' +
+          '<div style="color:var(--hud-cyan);">Zoth Sovereign Terminal REPL v5.5 (Mobile TTY)</div>' +
+          '<div style="color:var(--hud-text-muted);">Tap a quick command chip or type below.</div>' +
+        '</div>' +
+        '<div class="hud-term-prompt-row" style="display:flex;gap:6px;align-items:center;">' +
+          '<span style="font-family:var(--hud-font-mono);font-size:0.75rem;color:var(--hud-gold);">❯</span>' +
+          '<input type="text" id="hud-mobile-term-input" class="hud-term-input" placeholder="help, status, ports, tool <name>..." style="flex:1;background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 10px;font-size:0.75rem;clip-path:var(--hud-clip-sm);" />' +
+          '<button type="button" class="hud-stage-btn" onclick="ZothHUD.execMobilePromptInput()" style="padding:8px 14px;background:var(--hud-cyan);color:#000;font-weight:800;font-size:0.72rem;">EXEC</button>' +
+        '</div>' +
+      '</div>';
+      return html;
+    },
+
+    renderMobileTelemetryBody: function () {
+      var p = STATE.pillarsData;
+      var html = '<div style="display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto;padding-right:4px;">' +
+        '<div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;">' +
+          '<div style="background:rgba(0,240,255,0.06);border:1px solid var(--hud-border);padding:8px;clip-path:var(--hud-clip-sm);">' +
+            '<div style="font-size:0.58rem;color:var(--hud-text-muted);">LOOPBACK STATUS</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.75rem;font-weight:800;color:var(--hud-green);margin-top:2px;">● 7 PORTS ONLINE</div>' +
+          '</div>' +
+          '<div style="background:rgba(251,191,36,0.06);border:1px solid var(--hud-border-gold);padding:8px;clip-path:var(--hud-clip-sm);">' +
+            '<div style="font-size:0.58rem;color:var(--hud-text-muted);">ACTIVE FLEET</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.75rem;font-weight:800;color:var(--hud-gold);margin-top:2px;">21 AGENTS</div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div style="font-family:var(--hud-font-hud);font-size:0.74rem;font-weight:800;color:var(--hud-gold);margin-bottom:6px;">6 SACRED MATH PILLARS</div>' +
+          '<div style="display:flex;flex-direction:column;gap:6px;">';
+
+      var keys = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+      keys.forEach(function (k) {
+        var item = p[k];
+        html += '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px 10px;clip-path:var(--hud-clip-sm);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+            '<span style="font-family:var(--hud-font-mono);font-size:0.68rem;font-weight:700;color:var(--hud-text-primary);">' + item.name + '</span>' +
+            '<span style="font-size:0.60rem;color:var(--hud-cyan);font-family:var(--hud-font-mono);">' + item.value + '</span>' +
+          '</div>' +
+          '<div style="font-family:var(--hud-font-mono);font-size:0.60rem;color:var(--hud-text-muted);margin-top:2px;">' + item.formula + '</div>' +
+        '</div>';
+      });
+
+      html += '</div></div></div>';
+      return html;
+    }
+  };
+
+  /* =============================================================================
+     9. TOP HEADER MODALS & POPOVERS (PORTS, TIME, THEMES, TOOL MGR, SHORTCUTS, DEVICE)
      ============================================================================= */
   var Modals = {
     activeModal: null,
@@ -2664,6 +2998,9 @@
       } else if (modalId === 'shortcuts' || modalId === 'help') {
         title.innerHTML = '<span style="color:var(--hud-gold)">❓</span> OPERATOR GUIDE & KEYBOARD SHORTCUTS';
         body.innerHTML = this.renderShortcutsBody();
+      } else if (modalId === 'device' || modalId === 'devicemode') {
+        title.innerHTML = '<span style="color:var(--hud-cyan)">💻</span> COCKPIT DEVICE PROFILE SELECTOR';
+        body.innerHTML = this.renderDeviceBody();
       }
 
       header.appendChild(title);
@@ -2897,6 +3234,61 @@
       return html;
     },
 
+    renderDeviceBody: function () {
+      var currentMode = STATE.deviceMode;
+      var effective = STATE.effectiveDevice;
+      var modes = [
+        {
+          id: 'auto',
+          name: '⚡ Intelligent Auto-Detect',
+          icon: '✨',
+          desc: 'Dynamically adapts responsive cockpit based on live window dimensions and touch capabilities.',
+          status: currentMode === 'auto' ? 'ACTIVE (Current: ' + effective.toUpperCase() + ')' : ''
+        },
+        {
+          id: 'desktop',
+          name: '💻 Desktop Cockpit (>= 1200px)',
+          icon: '🖥️',
+          desc: 'Full 2-column widescreen master operations deck, real-time header audio oscilloscope, dual split stage, and full 6-pillar telemetry calculus.',
+          status: currentMode === 'desktop' ? 'ACTIVE' : (effective === 'desktop' ? 'MATCHED' : '')
+        },
+        {
+          id: 'tablet',
+          name: '📱 Tablet Command (768px - 1199px)',
+          icon: '📱',
+          desc: 'Maximized stage viewport with collapsible floating operations deck drawer, touch-friendly 44px+ controls, portrait/landscape split, and floating tactical bar.',
+          status: currentMode === 'tablet' ? 'ACTIVE' : (effective === 'tablet' ? 'MATCHED' : '')
+        },
+        {
+          id: 'mobile',
+          name: '📱 Phone Tactical Deck (<= 768px)',
+          icon: '📲',
+          desc: 'One-thumb mobile experience with edge-to-edge stage, sticky 48px header, 5-button bottom tactical navigation bar, and slide-up bottom sheets.',
+          status: currentMode === 'mobile' ? 'ACTIVE' : (effective === 'mobile' ? 'MATCHED' : '')
+        }
+      ];
+
+      var html = '<div style="display:flex;flex-direction:column;gap:12px;">' +
+        '<div style="font-size:0.75rem;color:var(--hud-text-secondary);line-height:1.4;">' +
+          'Zoth Cyberpunk HUD features dedicated responsive architectures tailored specifically for <strong>Desktop</strong>, <strong>Tablet</strong>, and <strong>Mobile Phone</strong> devices. Select a mode to force preview or leave on Auto-Detect.' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:10px;">';
+
+      modes.forEach(function (m) {
+        var isSelected = (currentMode === m.id);
+        html += '<div class="hud-device-card" onclick="ZothHUD.setDeviceMode(\'' + m.id + '\'); Modals.close();" style="background:rgba(255,255,255,0.02);border:2px solid ' + (isSelected ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';clip-path:var(--hud-clip-md);padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:all 0.2s ease;">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+            '<span style="font-family:var(--hud-font-display);font-size:0.82rem;font-weight:800;color:' + (isSelected ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';">' + m.icon + ' ' + m.name + '</span>' +
+            (isSelected ? '<span style="font-size:0.60rem;background:var(--hud-cyan);color:#000;padding:2px 6px;border-radius:3px;font-weight:800;">CURRENT</span>' : (m.status ? '<span style="font-size:0.58rem;color:var(--hud-gold);border:1px solid var(--hud-border-gold);padding:1px 5px;border-radius:3px;">' + m.status + '</span>' : '')) +
+          '</div>' +
+          '<div style="font-size:0.68rem;color:var(--hud-text-secondary);line-height:1.35;">' + m.desc + '</div>' +
+        '</div>';
+      });
+
+      html += '</div></div>';
+      return html;
+    },
+
     renderShortcutsBody: function () {
       return '<div style="display:flex;flex-direction:column;gap:12px;">' +
         '<div style="font-size:0.74rem;color:var(--hud-text-secondary);line-height:1.4;">' +
@@ -2909,12 +3301,14 @@
           '</tr>' +
           '<tr><td style="padding:6px;"><code>1 - 9</code></td><td style="padding:6px;">Instant 1-click stage tool switch</td></tr>' +
           '<tr><td style="padding:6px;"><code>Shift + T</code></td><td style="padding:6px;">Cycle 4 Themes (Dark, Light, Matrix, Gold)</td></tr>' +
+          '<tr><td style="padding:6px;"><code>Shift + V</code></td><td style="padding:6px;">Open Device Profile Selector (Desktop, Tablet, Phone, Auto)</td></tr>' +
+          '<tr><td style="padding:6px;"><code>Shift + M / M</code></td><td style="padding:6px;">Toggle Cyber Sound FX (Mute / Unmute)</td></tr>' +
           '<tr><td style="padding:6px;"><code>Shift + S</code></td><td style="padding:6px;">Toggle Dual-Tool Split Stage Mode</td></tr>' +
           '<tr><td style="padding:6px;"><code>Shift + D</code></td><td style="padding:6px;">Toggle Left Telemetry Deck Drawer</td></tr>' +
           '<tr><td style="padding:6px;"><code>Shift + R</code></td><td style="padding:6px;">Ping All 21 Agents on 360° Polar Radar</td></tr>' +
           '<tr><td style="padding:6px;"><code>Shift + O</code></td><td style="padding:6px;">Cycle Audio Oscilloscope Mode (Wave / FFT / Phase)</td></tr>' +
           '<tr><td style="padding:6px;"><code>Ctrl + K</code></td><td style="padding:6px;">Open Master Tool Manager (298+ Tools)</td></tr>' +
-          '<tr><td style="padding:6px;"><code>` / Esc</code></td><td style="padding:6px;">Focus Command Line Terminal REPL</td></tr>' +
+          '<tr><td style="padding:6px;"><code>` / Esc</code></td><td style="padding:6px;">Focus Command Line Terminal REPL / Dismiss Modal</td></tr>' +
           '<tr><td style="padding:6px;"><code>Alt + ◀ / ▶</code></td><td style="padding:6px;">Navigate Stage History (Back / Forward)</td></tr>' +
           '<tr><td style="padding:6px;"><code>F11</code></td><td style="padding:6px;">Toggle Fullscreen Cockpit Viewport</td></tr>' +
         '</table>' +
@@ -2986,6 +3380,9 @@
     CalculusEngine: CalculusEngine,
     MathTelemetry: CalculusEngine,
     MemGraphCanvas: MemGraphCanvas,
+    DeviceEngine: DeviceEngine,
+    MobileSheets: MobileSheets,
+    TabletController: TabletController,
 
     init: function () {
       if (this.initialized) return;
@@ -2998,6 +3395,7 @@
         var qAgent = urlParams.get('agent');
         var qTool = urlParams.get('tool');
         var qSplit = urlParams.get('split');
+        var qDevice = urlParams.get('device');
 
         if (qTheme && ['dark', 'light', 'matrix', 'gold'].indexOf(qTheme) !== -1) {
           STATE.activeTheme = qTheme;
@@ -3016,9 +3414,13 @@
             STATE.splitMode = true;
           }
         }
+        if (qDevice && ['auto', 'desktop', 'tablet', 'mobile'].indexOf(qDevice) !== -1) {
+          STATE.deviceMode = qDevice;
+        }
       }
 
       this.ensureHUDLayout();
+      DeviceEngine.init();
 
       var scopeCanvas = document.getElementById('hud-audio-oscilloscope') || document.getElementById('hud-audio-scope-canvas') || document.querySelector('.hud-oscilloscope-canvas, .hud-audio-scope-canvas');
       if (scopeCanvas) AudioOscilloscope.init(scopeCanvas);
@@ -3053,7 +3455,7 @@
       this.setTheme(STATE.activeTheme);
       this.syncURLState();
 
-      this.addLog('AZOTH', 'Cyberpunk HUD Engine v5.5 initialized. Polar Radar & Oscilloscope nominal.', 'azoth');
+      this.addLog('AZOTH', 'Cyberpunk HUD Engine v5.5 initialized. Responsive profile: ' + STATE.effectiveDevice.toUpperCase(), 'azoth');
       this.addLog('SYSTEM', '6-Pillar Mathematical Calculus active. Zero root scroll cockpit locked.', 'system');
 
       playCyberSFX('boot');
@@ -3368,6 +3770,12 @@
         } else if (e.key === 't' && e.shiftKey && !isInput) {
           e.preventDefault();
           self.cycleTheme();
+        } else if ((e.key === 'v' || e.key === 'V') && e.shiftKey && !isInput) {
+          e.preventDefault();
+          self.openModal('device');
+        } else if ((e.key === 'm' || e.key === 'M') && !isInput && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          e.preventDefault();
+          self.toggleMute();
         } else if (e.key === 'd' && e.shiftKey && !isInput) {
           e.preventDefault();
           self.toggleDeck();
@@ -3382,8 +3790,14 @@
           self.openModal('toolmgr');
         } else if ((e.key === '`' || e.key === 'Escape') && !isInput) {
           e.preventDefault();
-          var input = document.getElementById('hud-term-input');
-          if (input) input.focus();
+          if (e.key === 'Escape') {
+            self.closeModal();
+            self.closeMobileSheet();
+            self.closeDeck();
+          } else {
+            var input = document.getElementById('hud-term-input');
+            if (input) input.focus();
+          }
         }
       });
     },
@@ -3929,10 +4343,84 @@
     openHelpModal: function () { Modals.open('shortcuts'); },
     closeHelpModal: function () { Modals.close(); },
     openThemesModal: function () { Modals.open('themes'); },
-    closeThemesModal: function () { Modals.close(); },
-    openPillarsModal: function () { Modals.open('pillars'); },
-    closePillarsModal: function () { Modals.close(); },
-    closeMobileSheet: function () { Modals.close(); },
+    closeMobileSheet: function () {
+      MobileSheets.close();
+    },
+
+    setDeviceMode: function (mode) {
+      DeviceEngine.setMode(mode);
+    },
+
+    getDeviceMode: function () {
+      return STATE.deviceMode;
+    },
+
+    getEffectiveDevice: function () {
+      return STATE.effectiveDevice;
+    },
+
+    openDeviceModal: function () {
+      Modals.open('device');
+    },
+
+    setMobileTab: function (tabId) {
+      if (tabId === 'stage') {
+        MobileSheets.close();
+      } else {
+        MobileSheets.open(tabId);
+      }
+    },
+
+    openMobileSheet: function (sheetId) {
+      MobileSheets.open(sheetId);
+    },
+
+    setTabletView: function (viewId) {
+      TabletController.setView(viewId);
+    },
+
+    closeDeck: function () {
+      STATE.isDeckOpen = false;
+      var deck = document.getElementById('hud-deck-panel');
+      if (deck) deck.classList.remove('is-open');
+      var backdrop = document.getElementById('hud-deck-backdrop');
+      if (backdrop) backdrop.classList.remove('is-open');
+      playCyberSFX('chirp');
+    },
+
+    toggleMute: function () {
+      STATE.isMuted = !STATE.isMuted;
+      var iconEl = document.getElementById('hud-audio-icon');
+      var btn = document.getElementById('hud-btn-sfx-toggle');
+      if (iconEl) iconEl.textContent = STATE.isMuted ? '🔇' : '🔊';
+      if (btn) btn.title = STATE.isMuted ? 'Unmute Cyber Sound FX' : 'Mute Cyber Sound FX';
+      if (!STATE.isMuted) {
+        playCyberSFX('select');
+      }
+      this.addLog('AUDIO', 'Cyber SFX audio bus ' + (STATE.isMuted ? 'MUTED' : 'UNMUTED'), 'system');
+      return STATE.isMuted;
+    },
+
+    isMuted: function () {
+      return !!STATE.isMuted;
+    },
+
+    execMobilePromptInput: function () {
+      var input = document.getElementById('hud-mobile-term-input');
+      if (input && input.value.trim()) {
+        var val = input.value.trim();
+        TerminalREPL.execute(val);
+        var out = document.getElementById('hud-mobile-term-output');
+        if (out) {
+          var line = document.createElement('div');
+          line.style.color = 'var(--hud-cyan)';
+          line.textContent = '[MOB]❯ ' + val;
+          out.appendChild(line);
+          out.scrollTop = out.scrollHeight;
+        }
+        input.value = '';
+      }
+    },
 
     addLog: function (tag, text, type) {
       MessageStream.add(tag, text, type);
