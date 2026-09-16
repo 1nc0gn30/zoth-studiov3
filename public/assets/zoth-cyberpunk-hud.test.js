@@ -404,5 +404,6 @@ win.ZothHUD.TerminalRepl.execute('hermes optimize audio 60fps');
 console.log('✔ Test 17 Passed: Hermes Agent Integration, Dispatch & REPL Autocomplete verified');
 
 console.log('\n⭐ ALL 17 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE, HERMES & ACTION BRIDGE TESTS PASSED (100%)!\n');
+process.exit(0);
 
 
