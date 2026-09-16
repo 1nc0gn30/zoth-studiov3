@@ -764,7 +764,113 @@ win.ZothHUD.closeModal();
 
 console.log('✔ Test 25 Passed: Video Game Keyboard Shortcuts, High-Contrast WCAG AAA Mode, Theater Stage & A11y Live Announcer verified');
 
-console.log('\n⭐ ALL 25 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES, GROK, A11Y & EXPANDABLE WORKSTATIONS TESTS PASSED (100%)!\n');
+// ==========================================
+// TEST 26: Procedural Web Audio API Synthesizer (Zero-Dependency Sound Generation)
+// ==========================================
+assert.strictEqual(typeof win.ZothHUD.CyberAudioSynth, 'object', 'CyberAudioSynth module must be exposed');
+assert.strictEqual(typeof win.ZothHUD.playSfx, 'function', 'ZothHUD.playSfx must be exposed');
+assert.strictEqual(typeof win.ZothHUD.playSFX, 'function', 'ZothHUD.playSFX alias must be exposed');
+
+// 1. Verify 5 core cyberware synthesized sound triggers
+assert.doesNotThrow(() => win.ZothHUD.playSfx('click'), 'Click SFX (triangle blip 1400->450Hz) must execute');
+assert.doesNotThrow(() => win.ZothHUD.playSfx('lock'), 'Lock SFX (dual-tone acquisition chirp 880/1320Hz) must execute');
+assert.doesNotThrow(() => win.ZothHUD.playSfx('sandevistan'), 'Sandevistan SFX (resonant lowpass sweep 3600->90Hz) must execute');
+assert.doesNotThrow(() => win.ZothHUD.playSfx('warning'), 'Warning SFX (pulsed triple-alarm 960/1280Hz) must execute');
+assert.doesNotThrow(() => win.ZothHUD.playSfx('warp'), 'Warp SFX (cyber triad D4/F#4/A4 chord) must execute');
+
+// 2. Verify all legacy & tactical sound aliases
+const allSfxNames = ['chirp', 'select', 'switch', 'tool', 'ping', 'radar', 'error', 'boot', 'wave', 'ripple', 'zoom', 'neural', 'contrast', 'overdrive'];
+allSfxNames.forEach(name => {
+  assert.doesNotThrow(() => win.ZothHUD.CyberAudioSynth.play(name), `SFX alias "${name}" must execute without throwing`);
+});
+
+// 3. Verify mute preference persistence across localStorage keys
+win.ZothHUD.setMuted(true);
+assert.strictEqual(win.ZothHUD.isMuted(), true, 'Mute must be active');
+assert.strictEqual(win.localStorage.getItem('zoth_hud_sfx'), 'muted', 'zoth_hud_sfx must persist "muted"');
+assert.strictEqual(win.localStorage.getItem('zoth_hud_muted'), 'true', 'zoth_hud_muted must persist "true"');
+
+// While muted, play() returns false
+assert.strictEqual(win.ZothHUD.CyberAudioSynth.play('click'), false, 'play() should return false when muted');
+
+win.ZothHUD.setMuted(false);
+assert.strictEqual(win.ZothHUD.isMuted(), false, 'Unmute must be active');
+assert.strictEqual(win.localStorage.getItem('zoth_hud_sfx'), 'unmuted', 'zoth_hud_sfx must persist "unmuted"');
+assert.strictEqual(win.localStorage.getItem('zoth_hud_muted'), 'false', 'zoth_hud_muted must persist "false"');
+
+console.log('✔ Test 26 Passed: Procedural Web Audio API Synthesizer (5 sound types, aliases, mute persistence) verified');
+
+// ==========================================
+// TEST 27: POV Cockpit Vitals Engine, Multi-Factor Neural Load, Sandevistan 10s Cooldown & Kiroshi Zoom
+// ==========================================
+assert.ok(win.ZothHUD.VitalsEngine, 'VitalsEngine module must be exposed');
+assert.strictEqual(typeof win.ZothHUD.getNeuralLoad, 'function', 'getNeuralLoad must be exposed');
+assert.strictEqual(typeof win.ZothHUD.triggerSandevistan, 'function', 'triggerSandevistan must be exposed');
+assert.strictEqual(typeof win.ZothHUD.getSandevistanState, 'function', 'getSandevistanState must be exposed');
+assert.strictEqual(typeof win.ZothHUD.setKiroshiZoom, 'function', 'setKiroshiZoom must be exposed');
+assert.strictEqual(typeof win.ZothHUD.toggleKiroshiZoom, 'function', 'toggleKiroshiZoom must be exposed');
+assert.strictEqual(typeof win.ZothHUD.getKiroshiZoom, 'function', 'getKiroshiZoom must be exposed');
+
+// 1. Test Multi-Factor Neural Load Computation
+const neuralLoadObj = win.ZothHUD.getNeuralLoad();
+assert.strictEqual(typeof neuralLoadObj.load, 'number', 'Neural load must return a numeric percentage');
+assert.ok(neuralLoadObj.load >= 0 && neuralLoadObj.load <= 100, 'Neural load must be bounded [0, 100]');
+assert.ok(neuralLoadObj.breakdown, 'Neural load must include telemetry factor breakdown');
+assert.ok(neuralLoadObj.breakdown.agents > 0, 'Agent count factor must be factored in');
+assert.strictEqual(typeof neuralLoadObj.warning, 'boolean', 'Warning flag must be a boolean');
+
+// 2. Test Sandevistan Overdrive Lifecycle & 10s Cooldown
+win.ZothHUD.toggleSandevistan(false);
+let sandyState = win.ZothHUD.getSandevistanState();
+assert.strictEqual(sandyState.active, false, 'Sandevistan initially inactive');
+assert.strictEqual(sandyState.ready, true, 'Sandevistan initially ready');
+
+const engaged = win.ZothHUD.triggerSandevistan(4);
+assert.strictEqual(engaged, true, 'triggerSandevistan(4) must return true on first activation');
+sandyState = win.ZothHUD.getSandevistanState();
+assert.strictEqual(sandyState.active, true, 'Sandevistan active state must be true');
+assert.strictEqual(sandyState.ready, false, 'Sandevistan ready state must be false during overdrive');
+
+// Re-engaging while active must be rejected safely
+const reEngage = win.ZothHUD.triggerSandevistan(4);
+assert.strictEqual(reEngage, false, 'Second trigger while active must return false');
+
+// Neural load should reflect Sandevistan strain (+28%)
+const boostedNeural = win.ZothHUD.getNeuralLoad();
+assert.strictEqual(boostedNeural.breakdown.sandevistan, 28, 'Neural load breakdown must include +28% Sandevistan strain');
+
+// Test cooldown cycle progression
+win.ZothHUD.VitalsEngine.updateSandevistan();
+
+// 3. Test Kiroshi Optics Zoom Levels (1.0x -> 1.25x -> 1.5x -> 1.0x)
+win.ZothHUD.setKiroshiZoom(1.0);
+assert.strictEqual(win.ZothHUD.getKiroshiZoom(), 1.0, 'Kiroshi zoom must be 1.0x');
+assert.strictEqual(doc.documentElement.styleProps['--hud-kiroshi-scale'], '1', '--hud-kiroshi-scale must be set');
+
+const zoomNext1 = win.ZothHUD.toggleKiroshiZoom();
+assert.strictEqual(zoomNext1, 1.25, 'First zoom cycle must advance to 1.25x');
+assert.strictEqual(win.ZothHUD.getKiroshiZoom(), 1.25, 'getKiroshiZoom must return 1.25');
+
+const zoomNext2 = win.ZothHUD.toggleKiroshiZoom();
+assert.strictEqual(zoomNext2, 1.5, 'Second zoom cycle must advance to 1.5x');
+assert.strictEqual(win.ZothHUD.getKiroshiZoom(), 1.5, 'getKiroshiZoom must return 1.5');
+
+const zoomNext3 = win.ZothHUD.toggleKiroshiZoom();
+assert.strictEqual(zoomNext3, 1.0, 'Third zoom cycle must wrap around to 1.0x');
+assert.strictEqual(win.ZothHUD.getKiroshiZoom(), 1.0, 'getKiroshiZoom must return 1.0');
+
+// 4. Test REPL cyberware commands
+win.ZothHUD.TerminalRepl.execute('vitals');
+win.ZothHUD.TerminalRepl.execute('sfx lock');
+win.ZothHUD.TerminalRepl.execute('sfx sandevistan');
+win.ZothHUD.TerminalRepl.execute('sfx warning');
+win.ZothHUD.TerminalRepl.execute('sfx warp');
+win.ZothHUD.TerminalRepl.execute('sandy');
+win.ZothHUD.TerminalRepl.execute('kiroshi 1.25');
+
+console.log('✔ Test 27 Passed: POV Cockpit Vitals Engine, Multi-Factor Neural Load, Sandevistan 10s Cooldown & Kiroshi Zoom verified');
+
+console.log('\n⭐ ALL 27 CYBERPUNK HUD TACTICAL VISUALIZERS, RESPONSIVE DEVICE PROFILES, HERMES, GROK, A11Y, WEB AUDIO SYNTH & POV COCKPIT VITALS TESTS PASSED (100%)!\n');
 process.exit(0);
 
 

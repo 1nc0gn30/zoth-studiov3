@@ -2516,27 +2516,6 @@
     },
 
     computeNeuralLoad: function () {
-      if (STATE.vitals && typeof STATE.vitals.neuralLoad === 'number') {
-        var forcedLoad = Math.max(0.0, Math.min(100.0, STATE.vitals.neuralLoad));
-        var isForcedWarn = forcedLoad > 85.0;
-        return {
-          load: forcedLoad,
-          percentage: forcedLoad,
-          warning: isForcedWarn,
-          isWarning: isForcedWarn,
-          status: isForcedWarn ? 'CRITICAL_PSYCHOSIS' : (forcedLoad > 70.0 ? 'ELEVATED' : 'NOMINAL'),
-          breakdown: {
-            base: 26.0,
-            agents: 15.8,
-            memory: 11.8,
-            tool: 4.0,
-            split: 0.0,
-            overdrive: 0.0,
-            entropy: 0.7
-          },
-          valueOf: function () { return this.load; }
-        };
-      }
       var baseLoad = 26.0;
 
       // 1. Active Agents count & complexity load
@@ -2575,14 +2554,18 @@
 
       var rawLoad = baseLoad + agentFactor + coreBonus + memFactor + toolComplexity + splitStrain + sandeStrain + entropyStrain + jitter;
       var finalLoad = Math.max(5.0, Math.min(100.0, rawLoad));
+      var dynLoad = parseFloat(finalLoad.toFixed(1));
 
-      var isWarn = finalLoad > 85.0;
-      var status = isWarn ? 'CRITICAL_PSYCHOSIS' : (finalLoad > 70.0 ? 'ELEVATED' : 'NOMINAL');
+      var isManual = (STATE.vitals && typeof STATE.vitals.manualNeuralLoad === 'number');
+      var effLoad = isManual ? STATE.vitals.manualNeuralLoad : dynLoad;
+
+      var isWarn = effLoad > 85.0;
+      var status = isWarn ? 'CRITICAL_PSYCHOSIS' : (effLoad > 70.0 ? 'ELEVATED' : 'NOMINAL');
 
       if (!STATE.vitals) {
         STATE.vitals = {};
       }
-      STATE.vitals.neuralLoad = parseFloat(finalLoad.toFixed(1));
+      STATE.vitals.neuralLoad = effLoad;
       STATE.vitals.neuralStatus = status;
       STATE.vitals.isWarning = isWarn;
 
@@ -2613,6 +2596,7 @@
           tool: parseFloat(toolComplexity.toFixed(1)),
           split: splitStrain,
           sandevistan: sandeStrain,
+          overdrive: sandeStrain,
           jitter: parseFloat(jitter.toFixed(1))
         },
         valueOf: function () { return this.load; },
@@ -5940,8 +5924,17 @@
         if (force) return this.triggerSandevistan();
         if (STATE.vitals && STATE.vitals.sandevistan) {
           STATE.vitals.sandevistan.active = false;
+          STATE.vitals.sandevistan.ready = true;
+          STATE.vitals.sandevistan.charge = 100;
         }
-        if (document.body) document.body.classList.remove('sandevistan-active');
+        if (typeof document !== 'undefined') {
+          if (document.documentElement) document.documentElement.classList.remove('sandevistan-active');
+          if (document.body) document.body.classList.remove('sandevistan-active');
+          var shell = document.querySelector('.hud-app-shell');
+          if (shell) shell.classList.remove('sandevistan-active');
+          var vp = document.getElementById('hud-stage-viewport');
+          if (vp) vp.classList.remove('sandevistan-active');
+        }
         playCyberSFX('chirp');
         return false;
       }
@@ -5983,6 +5976,11 @@
       if (updates && typeof updates === 'object') {
         if (!STATE.vitals) STATE.vitals = {};
         if (!STATE.neuralVitals) STATE.neuralVitals = {};
+        if (typeof updates.neuralLoad === 'number') {
+          STATE.vitals.manualNeuralLoad = updates.neuralLoad;
+        } else if (typeof updates.load === 'number') {
+          STATE.vitals.manualNeuralLoad = updates.load;
+        }
         Object.assign(STATE.vitals, updates);
         Object.assign(STATE.neuralVitals, updates);
       }
