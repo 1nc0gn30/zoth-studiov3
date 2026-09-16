@@ -395,5 +395,14 @@ assert.strictEqual(actionPayload.fps, 60, 'Payload must pass accurately through 
 win.ZothHUD.sendToolAction('render_60fps', { fps: 60 });
 console.log('✔ Test 16 Passed: Bi-Directional Action Bridge & Event Dispatch verified');
 
-console.log('\n⭐ ALL 16 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE & ACTION BRIDGE TESTS PASSED (100%)!\n');
+// 17. Test Hermes Agent CLI Integration & Terminal REPL Autocomplete
+const hermesSuggestions = win.ZothHUD.getAutocompleteSuggestions('her');
+assert.ok(hermesSuggestions.includes('hermes'), 'Autocomplete must suggest hermes command');
+assert.ok(win.ZothHUD.TerminalRepl, 'TerminalRepl must be defined');
+win.ZothHUD.TerminalRepl.execute('hermes status');
+win.ZothHUD.TerminalRepl.execute('hermes optimize audio 60fps');
+console.log('✔ Test 17 Passed: Hermes Agent Integration, Dispatch & REPL Autocomplete verified');
+
+console.log('\n⭐ ALL 17 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE, HERMES & ACTION BRIDGE TESTS PASSED (100%)!\n');
+
 

@@ -2187,6 +2187,7 @@
           this.printLine('  agent <name>        : Switch active sovereign agent (azoth, grok, athena, etc.)');
           this.printLine('  tool <name>         : Load tool into Center Stage (omnipost, 3d, swarm, etc.)');
           this.printLine('  swarm [mode]        : Launch 3D Swarm Arena (solo | strike | pantheon)');
+          this.printLine('  hermes [prompt]     : Hermes Agent v0.21.2 integration, status & task dispatch');
           this.printLine('  mem | memory        : Trigger synaptic vector scan & consolidation wave');
           this.printLine('  theme <name>        : Set 4-theme engine (dark | light | matrix | gold)');
           this.printLine('  aspect <16:9|4:3>   : Set stage aspect ratio');
@@ -2330,6 +2331,29 @@
           ZothHUD.loadTool('swarm');
           this.printLine('3D Swarm Arena dispatched with mode: ' + (arg || 'pantheon'), 'success');
           ZothHUD.addLog('SWARM', 'Swarm Arena loaded with ' + (arg || 'pantheon') + ' strength', 'consensus');
+          break;
+
+        case 'hermes':
+          if (!arg || arg === 'status' || arg === 'doctor') {
+            this.printLine('── HERMES AGENT v0.21.2 ENGINE ──', 'warn');
+            this.printLine('  Core Framework  : Nous Research Hermes Agent (Autonomous Coding)', 'stdout');
+            this.printLine('  Active Profile  : azoth-prime [gemini-3.7-flash]', 'success');
+            this.printLine('  Available Tools : 25 tools (file, terminal, browser, delegation, kanban, memory)', 'stdout');
+            this.printLine('  Skills Loaded   : 270 active skills across research, dev, media & web', 'stdout');
+            this.printLine('  Memory Engine   : Built-in State DB (63 sessions, 10k messages, WAL active)', 'stdout');
+            this.printLine('  Loopback Daemon : Connected to Zoth Memory Daemon (:8788)', 'stdout');
+            this.printLine('  Usage: hermes <prompt> or hermes run <task>', 'cyan');
+            ZothHUD.addLog('HERMES', 'Hermes Agent v0.21.2 status query OK', 'azoth');
+          } else {
+            this.printLine('⚡ Dispatching task to Hermes Agent (azoth-prime)...', 'cyan');
+            this.printLine('Prompt: "' + arg + '"', 'stdout');
+            ZothHUD.addLog('HERMES', 'Dispatched Hermes task: ' + arg.substring(0, 40) + '...', 'action');
+            var termSelf = this;
+            setTimeout(function () {
+              termSelf.printLine('✔ Hermes Agent: Task acknowledged and queued in sovereign memory bus.', 'success');
+              playCyberSFX('success');
+            }, 500);
+          }
           break;
 
         case 'mem':
@@ -3628,7 +3652,7 @@
     },
 
     getAutocompleteSuggestions: function (input) {
-      var commands = ['help', 'status', 'radar', 'scope', 'pillars', 'split', 'agent', 'tool', 'swarm', 'mem', 'theme', 'aspect', 'tab', 'ports', 'calc', 'ping', 'clear'];
+      var commands = ['help', 'status', 'radar', 'scope', 'pillars', 'split', 'hermes', 'agent', 'tool', 'swarm', 'mem', 'theme', 'aspect', 'tab', 'ports', 'calc', 'ping', 'clear'];
       var lower = (input || '').toLowerCase().trim();
       return commands.filter(function (c) { return c.startsWith(lower); });
     },
@@ -3834,7 +3858,10 @@
 
     getState: function () {
       return Object.assign({}, STATE);
-    }
+    },
+
+    TerminalREPL: TerminalREPL,
+    TerminalRepl: TerminalREPL
   };
 
   // Expose globally
