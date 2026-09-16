@@ -1,0 +1,1879 @@
+/* =============================================================================
+   ⚡ ZOTH STUDIO — MASTER CYBERPUNK VIDEO GAME HUD SYSTEM (v5.0 SOVEREIGN)
+   =============================================================================
+   Architectural Blueprint & Whiteboard Reference:
+   
+   1. TOP HEADER (54px fixed):
+      - Left: Logo '⚡ ZOTH STUDIO' + Help button '(?)'
+      - Right: '[ PORTS ]', '[ TIME ]', '[ THEMES ]', '[ TOOL MGR ]'
+   
+   2. LEFT OPERATIONS & TELEMETRY DECK (340px-380px fixed width, full height):
+      - 'ACTIVE AGENTS' roster with radio selector: '(•) AZOTH', '( ) ATHENA', '( ) DRACO', '( ) HERMES', '( ) [ + Slot ]'
+      - 'MEMORY GRAPH' mini canvas / synaptic telemetry card
+      - 'COMMAND LINE' interactive terminal REPL panel with prompt and output
+      - 'MESSAGE LOG' real-time event & message stream
+      - 'MAIN PILLAR 6 STATUS' live math/system telemetry gauge
+   
+   3. CENTER STAGE (Dynamic Modular Workspace):
+      - Stage Header: '(NAME OF TOOL, TAGS, OTHER OPTIONS)' on left,
+        '[ OMNI POST ]' / '[ FULLSCREEN ]' / '[ DETACH ]' actions on right
+      - Modular Stage Viewport: 100% height container where the active tool renders
+   
+   4. BOTTOM QUICK-DOCK (46px fixed):
+      - Quick launch tabs: '[ SWARM ]', '[ MEMORY ]', '[ WEB GEN ]', '[ PETS ]', '[ VAULT ]'
+   
+   5. ZERO ROOT SCROLL COCKPIT:
+      - 100vh / 100dvh fixed desktop cockpit, overflow hidden on body/root.
+   
+   6. 4 COMPLETE THEMES:
+      - 'dark'   : Midnight Void (#030408, Neon Cyan #00f0ff, Amber Gold #fbbf24)
+      - 'light'  : Solar Light (Pristine White #ffffff, Slate #0f172a, Cobalt #0071e3)
+      - 'matrix' : Phosphor CRT (#000000, Phosphor Green #00ff66, Share Tech Mono)
+      - 'gold'   : Hermetic Gold (#050300, 24K Alchemical Gold #ffd700, Cinzel)
+   
+   7. RESPONSIVE BREAKPOINTS:
+      - Desktop (>= 1101px) : Full 2-column fixed cockpit grid.
+      - Tablet (769px-1100px): Collapsible left deck via HUD drawer toggle.
+      - Mobile (<= 768px)   : Full-width stage + slide-up sheets for Agents/Terminal/Logs.
+   ============================================================================= */
+
+/* =============================================================================
+   1. Dynamic Font Imports for HUD Aesthetics
+   ============================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Syne:wght@700;800;900&display=swap');
+
+/* =============================================================================
+   2. Theme Color Palettes & CSS Custom Properties (4 Themes)
+   ============================================================================= */
+
+/* 2.1 Dark Theme (Default Dark Void) */
+:root,
+html[data-theme="dark"],
+html.theme-dark,
+body[data-theme="dark"],
+body.theme-dark {
+  --hud-theme: "dark";
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --hud-bg: #030408;
+  --hud-bg-elevated: #060914;
+  --hud-deck-bg: rgba(6, 9, 20, 0.94);
+  --hud-card-bg: rgba(10, 15, 32, 0.88);
+  --hud-card-solid: #0a0f20;
+  --hud-header-bg: rgba(4, 6, 14, 0.95);
+  --hud-dock-bg: rgba(4, 6, 14, 0.95);
+  --hud-viewport-bg: #020306;
+  --hud-input-bg: #040712;
+
+  /* High-Contrast Cyberpunk Palette */
+  --hud-cyan: #00f0ff;
+  --hud-cyan-soft: #38bdf8;
+  --hud-gold: #fbbf24;
+  --hud-gold-bright: #ffd700;
+  --hud-green: #00ff66;
+  --hud-magenta: #ff007f;
+  --hud-violet: #a855f7;
+  --hud-red: #ff3366;
+  --hud-blue: #0088ff;
+
+  /* Borders & Accents */
+  --hud-border: rgba(0, 240, 255, 0.22);
+  --hud-border-subtle: rgba(255, 255, 255, 0.08);
+  --hud-border-strong: rgba(0, 240, 255, 0.65);
+  --hud-border-glow: rgba(0, 240, 255, 0.35);
+  --hud-border-gold: rgba(251, 191, 36, 0.45);
+  --hud-accent: #00f0ff;
+  --hud-accent-glow: rgba(0, 240, 255, 0.3);
+
+  /* Typography Colors */
+  --hud-text-primary: #ffffff;
+  --hud-text-body: #f1f5f9;
+  --hud-text-secondary: #94a3b8;
+  --hud-text-muted: #64748b;
+  --hud-text-dim: #475569;
+  --hud-text-on-accent: #02040a;
+
+  /* Fonts */
+  --hud-font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --hud-font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+  --hud-font-display: "Orbitron", "Syne", sans-serif;
+  --hud-font-hud: "Orbitron", "JetBrains Mono", monospace;
+
+  /* Dimensions */
+  --hud-header-h: 54px;
+  --hud-dock-h: 46px;
+  --hud-deck-w: 360px;
+  --hud-stage-header-h: 44px;
+
+  /* Scanlines & Shadows */
+  --hud-scanline-color: rgba(0, 240, 255, 0.04);
+  --hud-shadow-ambient: 0 10px 40px rgba(0, 0, 0, 0.85);
+  --hud-shadow-glow: 0 0 24px rgba(0, 240, 255, 0.25);
+  --hud-shadow-gold: 0 0 20px rgba(251, 191, 36, 0.25);
+
+  scrollbar-color: rgba(0, 240, 255, 0.35) rgba(4, 7, 16, 0.8);
+}
+
+/* 2.2 Light Theme (Solar Light / Swiss Architectural Cyber) */
+html[data-theme="light"],
+html.theme-light,
+body[data-theme="light"],
+body.theme-light {
+  --hud-theme: "light";
+  color-scheme: light;
+
+  /* Backgrounds */
+  --hud-bg: #f4f6fb;
+  --hud-bg-elevated: #ffffff;
+  --hud-deck-bg: rgba(255, 255, 255, 0.96);
+  --hud-card-bg: rgba(255, 255, 255, 0.98);
+  --hud-card-solid: #ffffff;
+  --hud-header-bg: rgba(255, 255, 255, 0.98);
+  --hud-dock-bg: rgba(255, 255, 255, 0.98);
+  --hud-viewport-bg: #eef2f8;
+  --hud-input-bg: #f8fafc;
+
+  /* High-Contrast Solar Palette */
+  --hud-cyan: #0071e3;
+  --hud-cyan-soft: #0284c7;
+  --hud-gold: #d97706;
+  --hud-gold-bright: #b45309;
+  --hud-green: #059669;
+  --hud-magenta: #c026d3;
+  --hud-violet: #7c3aed;
+  --hud-red: #dc2626;
+  --hud-blue: #2563eb;
+
+  /* Borders & Accents */
+  --hud-border: rgba(15, 23, 42, 0.14);
+  --hud-border-subtle: rgba(15, 23, 42, 0.08);
+  --hud-border-strong: rgba(0, 113, 227, 0.55);
+  --hud-border-glow: rgba(0, 113, 227, 0.18);
+  --hud-border-gold: rgba(217, 119, 6, 0.4);
+  --hud-accent: #0071e3;
+  --hud-accent-glow: rgba(0, 113, 227, 0.18);
+
+  /* Typography Colors - WCAG AAA Compliant */
+  --hud-text-primary: #0f172a;
+  --hud-text-body: #1e293b;
+  --hud-text-secondary: #475569;
+  --hud-text-muted: #64748b;
+  --hud-text-dim: #94a3b8;
+  --hud-text-on-accent: #ffffff;
+
+  /* Fonts */
+  --hud-font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --hud-font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
+  --hud-font-display: "Plus Jakarta Sans", "Orbitron", sans-serif;
+  --hud-font-hud: "Plus Jakarta Sans", "IBM Plex Mono", monospace;
+
+  /* Scanlines & Shadows */
+  --hud-scanline-color: rgba(15, 23, 42, 0.02);
+  --hud-shadow-ambient: 0 4px 20px rgba(15, 23, 42, 0.08);
+  --hud-shadow-glow: 0 0 16px rgba(0, 113, 227, 0.12);
+  --hud-shadow-gold: 0 0 16px rgba(217, 119, 6, 0.14);
+
+  scrollbar-color: rgba(15, 23, 42, 0.25) #f1f5f9;
+}
+
+/* 2.3 Matrix Theme (Phosphor CRT Terminal & 90s Cyberpunk Green) */
+html[data-theme="matrix"],
+html.theme-matrix,
+body[data-theme="matrix"],
+body.theme-matrix {
+  --hud-theme: "matrix";
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --hud-bg: #000000;
+  --hud-bg-elevated: #000a02;
+  --hud-deck-bg: rgba(0, 12, 3, 0.96);
+  --hud-card-bg: rgba(0, 16, 4, 0.90);
+  --hud-card-solid: #000e03;
+  --hud-header-bg: rgba(0, 8, 2, 0.98);
+  --hud-dock-bg: rgba(0, 8, 2, 0.98);
+  --hud-viewport-bg: #000000;
+  --hud-input-bg: #000601;
+
+  /* Matrix Phosphor Palette */
+  --hud-cyan: #00ff66;
+  --hud-cyan-soft: #33ff88;
+  --hud-gold: #a3e635;
+  --hud-gold-bright: #bef264;
+  --hud-green: #00ff66;
+  --hud-magenta: #00cc44;
+  --hud-violet: #00aa33;
+  --hud-red: #ff3344;
+  --hud-blue: #00dd55;
+
+  /* Borders & Accents */
+  --hud-border: rgba(0, 255, 102, 0.35);
+  --hud-border-subtle: rgba(0, 255, 102, 0.14);
+  --hud-border-strong: rgba(0, 255, 102, 0.85);
+  --hud-border-glow: rgba(0, 255, 102, 0.45);
+  --hud-border-gold: rgba(163, 230, 53, 0.5);
+  --hud-accent: #00ff66;
+  --hud-accent-glow: rgba(0, 255, 102, 0.45);
+
+  /* Typography Colors */
+  --hud-text-primary: #eaffea;
+  --hud-text-body: #b6f5b6;
+  --hud-text-secondary: #6ee7b7;
+  --hud-text-muted: #34d399;
+  --hud-text-dim: #15803d;
+  --hud-text-on-accent: #001202;
+
+  /* Fonts */
+  --hud-font-sans: "Share Tech Mono", "IBM Plex Mono", monospace;
+  --hud-font-mono: "Share Tech Mono", "IBM Plex Mono", monospace;
+  --hud-font-display: "Share Tech Mono", monospace;
+  --hud-font-hud: "Share Tech Mono", monospace;
+
+  /* Scanlines & Shadows */
+  --hud-scanline-color: rgba(0, 255, 102, 0.08);
+  --hud-shadow-ambient: 0 10px 40px rgba(0, 0, 0, 0.95);
+  --hud-shadow-glow: 0 0 24px rgba(0, 255, 102, 0.4);
+  --hud-shadow-gold: 0 0 20px rgba(163, 230, 53, 0.35);
+
+  scrollbar-color: rgba(0, 255, 102, 0.5) #000902;
+}
+
+/* 2.4 Gold Theme (Hermetic Alchemical Amber & 24K Celestial Obsidian) */
+html[data-theme="gold"],
+html.theme-gold,
+body[data-theme="gold"],
+body.theme-gold {
+  --hud-theme: "gold";
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --hud-bg: #050300;
+  --hud-bg-elevated: #0d0801;
+  --hud-deck-bg: rgba(16, 10, 2, 0.96);
+  --hud-card-bg: rgba(22, 14, 4, 0.90);
+  --hud-card-solid: #160e04;
+  --hud-header-bg: rgba(10, 6, 1, 0.98);
+  --hud-dock-bg: rgba(10, 6, 1, 0.98);
+  --hud-viewport-bg: #030200;
+  --hud-input-bg: #080501;
+
+  /* Alchemical Gold Palette */
+  --hud-cyan: #ffd700;
+  --hud-cyan-soft: #fde047;
+  --hud-gold: #fbbf24;
+  --hud-gold-bright: #ffd700;
+  --hud-green: #34d399;
+  --hud-magenta: #f59e0b;
+  --hud-violet: #d97706;
+  --hud-red: #ef4444;
+  --hud-blue: #eab308;
+
+  /* Borders & Accents */
+  --hud-border: rgba(251, 191, 36, 0.35);
+  --hud-border-subtle: rgba(251, 191, 36, 0.12);
+  --hud-border-strong: rgba(255, 215, 0, 0.8);
+  --hud-border-glow: rgba(251, 191, 36, 0.4);
+  --hud-border-gold: rgba(255, 215, 0, 0.7);
+  --hud-accent: #fbbf24;
+  --hud-accent-glow: rgba(251, 191, 36, 0.4);
+
+  /* Typography Colors */
+  --hud-text-primary: #fff6dc;
+  --hud-text-body: #f3e6c4;
+  --hud-text-secondary: #d4b26f;
+  --hud-text-muted: #a1824a;
+  --hud-text-dim: #71582c;
+  --hud-text-on-accent: #150c02;
+
+  /* Fonts */
+  --hud-font-sans: "Fraunces", "Plus Jakarta Sans", serif;
+  --hud-font-mono: "IBM Plex Mono", "JetBrains Mono", monospace;
+  --hud-font-display: "Cinzel", "Fraunces", serif;
+  --hud-font-hud: "Cinzel", "IBM Plex Mono", monospace;
+
+  /* Scanlines & Shadows */
+  --hud-scanline-color: rgba(251, 191, 36, 0.05);
+  --hud-shadow-ambient: 0 10px 40px rgba(0, 0, 0, 0.95);
+  --hud-shadow-glow: 0 0 24px rgba(251, 191, 36, 0.35);
+  --hud-shadow-gold: 0 0 24px rgba(255, 215, 0, 0.4);
+
+  scrollbar-color: rgba(251, 191, 36, 0.45) #0c0801;
+}
+
+/* =============================================================================
+   3. Zero Root Scroll Cockpit Core System
+   ============================================================================= */
+html.hud-mode,
+html.hud-mode body,
+body.cyberpunk-hud,
+body.cockpit-hud-body {
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  background-color: var(--hud-bg) !important;
+  color: var(--hud-text-body) !important;
+  font-family: var(--hud-font-sans) !important;
+  position: relative !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Hide universal site footer if rendered in standalone cockpit */
+body.cyberpunk-hud footer.site,
+body.cockpit-hud-body footer.site {
+  display: none !important;
+}
+
+/* Universal Chamfer Polygon Clip-Paths */
+:root {
+  --hud-clip-sm: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  --hud-clip-md: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  --hud-clip-lg: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  --hud-clip-tr-bl: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  --hud-clip-tl-br: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  --hud-clip-notch: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px));
+  --hud-clip-tab: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+}
+
+/* Custom Cockpit Scrollbar */
+.hud-custom-scroll::-webkit-scrollbar,
+.hud-deck::-webkit-scrollbar,
+.hud-term-output::-webkit-scrollbar,
+.hud-msg-stream::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.hud-custom-scroll::-webkit-scrollbar-track,
+.hud-deck::-webkit-scrollbar-track,
+.hud-term-output::-webkit-scrollbar-track,
+.hud-msg-stream::-webkit-scrollbar-track {
+  background: var(--hud-bg);
+}
+.hud-custom-scroll::-webkit-scrollbar-thumb,
+.hud-deck::-webkit-scrollbar-thumb,
+.hud-term-output::-webkit-scrollbar-thumb,
+.hud-msg-stream::-webkit-scrollbar-thumb {
+  background: var(--hud-border-glow);
+  border-radius: 2px;
+}
+.hud-custom-scroll::-webkit-scrollbar-thumb:hover,
+.hud-deck::-webkit-scrollbar-thumb:hover,
+.hud-term-output::-webkit-scrollbar-thumb:hover,
+.hud-msg-stream::-webkit-scrollbar-thumb:hover {
+  background: var(--hud-accent);
+}
+
+/* =============================================================================
+   4. Ambient Cyber Hologram & Scanline Overlays
+   ============================================================================= */
+.hud-app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--hud-bg);
+  box-sizing: border-box;
+}
+
+/* CRT Scanlines Layer */
+.hud-scanline-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    var(--hud-scanline-color) 50%
+  );
+  background-size: 100% 4px;
+  opacity: 0.65;
+}
+
+/* Ambient Radial Cyber Glow */
+.hud-ambient-glow {
+  position: fixed;
+  top: -20%;
+  left: 20%;
+  width: 60vw;
+  height: 60vh;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--hud-accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: hudGlowPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes hudGlowPulse {
+  0% { transform: scale(0.95); opacity: 0.25; }
+  100% { transform: scale(1.1); opacity: 0.45; }
+}
+
+/* =============================================================================
+   5. Top Header (54px Fixed)
+   ============================================================================= */
+.hud-header {
+  height: var(--hud-header-h, 54px);
+  min-height: var(--hud-header-h, 54px);
+  max-height: var(--hud-header-h, 54px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--hud-header-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--hud-border);
+  position: relative;
+  z-index: 100;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Header Cyber Accent Line */
+.hud-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    var(--hud-cyan) 20%, 
+    var(--hud-gold) 50%, 
+    var(--hud-green) 80%, 
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+/* Header Left: Logo + Help */
+.hud-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.hud-logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--hud-border-strong);
+  padding: 5px 12px;
+  clip-path: var(--hud-clip-sm);
+  box-shadow: 0 0 12px var(--hud-accent-glow);
+  transition: all 0.2s ease;
+}
+html[data-theme="light"] .hud-logo-badge {
+  background: rgba(0, 113, 227, 0.08);
+}
+html[data-theme="matrix"] .hud-logo-badge {
+  background: rgba(0, 255, 102, 0.12);
+}
+html[data-theme="gold"] .hud-logo-badge {
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.hud-brand:hover .hud-logo-badge {
+  background: var(--hud-accent);
+  box-shadow: 0 0 20px var(--hud-accent);
+}
+.hud-brand:hover .hud-logo-badge .hud-brand-text,
+.hud-brand:hover .hud-logo-badge .hud-logo-icon {
+  color: var(--hud-text-on-accent) !important;
+}
+
+.hud-logo-icon {
+  font-size: 1.05rem;
+  color: var(--hud-gold);
+  text-shadow: 0 0 8px var(--hud-gold);
+  line-height: 1;
+}
+
+.hud-brand-text {
+  font-family: var(--hud-font-display);
+  font-size: 0.88rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--hud-text-primary);
+  text-transform: uppercase;
+}
+
+.hud-brand-tag {
+  font-family: var(--hud-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--hud-cyan);
+  background: rgba(0, 240, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+}
+
+.hud-help-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--hud-border);
+  color: var(--hud-text-secondary);
+  font-family: var(--hud-font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: var(--hud-clip-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hud-help-btn:hover {
+  background: var(--hud-gold);
+  color: #05060a;
+  border-color: var(--hud-gold);
+  box-shadow: 0 0 12px var(--hud-gold);
+  transform: scale(1.05);
+}
+
+/* Tablet & Mobile Deck Drawer Toggle Button */
+.hud-deck-toggle-btn {
+  display: none;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid var(--hud-border);
+  color: var(--hud-cyan);
+  font-family: var(--hud-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  clip-path: var(--hud-clip-sm);
+  cursor: pointer;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.hud-deck-toggle-btn:hover {
+  background: var(--hud-cyan);
+  color: var(--hud-text-on-accent);
+}
+
+/* Header Right Actions: [ PORTS ], [ TIME ], [ THEMES ], [ TOOL MGR ] */
+.hud-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-badge-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--hud-card-bg);
+  border: 1px solid var(--hud-border);
+  padding: 5px 10px;
+  clip-path: var(--hud-clip-sm);
+  font-family: var(--hud-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--hud-text-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.hud-badge-action:hover {
+  border-color: var(--hud-accent);
+  box-shadow: 0 0 12px var(--hud-accent-glow);
+  transform: translateY(-1px);
+}
+
+/* Ports Badge */
+.hud-badge-ports {
+  color: var(--hud-green);
+  border-color: rgba(0, 255, 102, 0.3);
+}
+.hud-badge-ports:hover {
+  border-color: var(--hud-green);
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
+}
+
+/* Time Clock Badge */
+.hud-badge-time {
+  color: var(--hud-cyan);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+/* Themes Selector Button */
+.hud-badge-themes {
+  color: var(--hud-gold);
+  border-color: var(--hud-border-gold);
+  position: relative;
+}
+.hud-badge-themes:hover {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: var(--hud-gold);
+}
+
+.hud-theme-swatches {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.hud-swatch-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.hud-swatch-dot.dark { background: #00f0ff; }
+.hud-swatch-dot.light { background: #ffffff; }
+.hud-swatch-dot.matrix { background: #00ff66; }
+.hud-swatch-dot.gold { background: #fbbf24; }
+
+/* Tool Manager Button */
+.hud-badge-toolmgr {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: var(--hud-border-strong);
+  color: var(--hud-cyan);
+}
+.hud-badge-toolmgr:hover {
+  background: var(--hud-cyan);
+  color: var(--hud-text-on-accent);
+}
+
+/* LED Status Indicator Dots */
+.hud-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+}
+.hud-led::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: inherit;
+  opacity: 0.4;
+  animation: hudLedPulse 2s infinite ease-in-out;
+}
+.hud-led.green { background: #00ff66; box-shadow: 0 0 8px #00ff66; }
+.hud-led.cyan { background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
+.hud-led.amber { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+.hud-led.red { background: #ff3366; box-shadow: 0 0 8px #ff3366; }
+
+@keyframes hudLedPulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.6); opacity: 0.1; }
+}
+
+/* =============================================================================
+   6. Main Workspace Grid (Desktop 2-Column Cockpit)
+   ============================================================================= */
+.hud-workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--hud-deck-w, 360px) minmax(0, 1fr);
+  height: calc(100vh - var(--hud-header-h, 54px) - var(--hud-dock-h, 46px));
+  height: calc(100dvh - var(--hud-header-h, 54px) - var(--hud-dock-h, 46px));
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* =============================================================================
+   7. Left Operations & Telemetry Deck (340px-380px Fixed Width)
+   ============================================================================= */
+.hud-deck {
+  width: var(--hud-deck-w, 360px);
+  min-width: 340px;
+  max-width: 380px;
+  height: 100%;
+  background: var(--hud-deck-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid var(--hud-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 50;
+  box-shadow: 6px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Cyber Deck Panels General Card */
+.hud-card {
+  background: var(--hud-card-bg);
+  border: 1px solid var(--hud-border);
+  clip-path: var(--hud-clip-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  box-shadow: var(--hud-shadow-ambient);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.hud-card:hover {
+  border-color: var(--hud-border-strong);
+  box-shadow: var(--hud-shadow-glow);
+}
+
+/* Card Header Strip with Corner Brackets */
+.hud-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--hud-border-subtle);
+  position: relative;
+}
+
+.hud-card-title {
+  font-family: var(--hud-font-hud);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--hud-gold);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-card-badge {
+  font-family: var(--hud-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--hud-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--hud-border);
+  padding: 1px 6px;
+  clip-path: var(--hud-clip-sm);
+}
+
+/* ── Panel 1: ACTIVE AGENTS Roster ── */
+.hud-agents-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hud-agent-radio-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--hud-border-subtle);
+  clip-path: var(--hud-clip-sm);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  color: var(--hud-text-body);
+  user-select: none;
+}
+
+.hud-agent-radio-item:hover {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--hud-border);
+  transform: translateX(2px);
+}
+
+.hud-agent-radio-item.active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--hud-cyan);
+  box-shadow: inset 0 0 14px rgba(0, 240, 255, 0.2);
+}
+html[data-theme="light"] .hud-agent-radio-item.active {
+  background: rgba(0, 113, 227, 0.12);
+  border-color: var(--hud-cyan);
+}
+html[data-theme="matrix"] .hud-agent-radio-item.active {
+  background: rgba(0, 255, 102, 0.18);
+  border-color: var(--hud-green);
+}
+html[data-theme="gold"] .hud-agent-radio-item.active {
+  background: rgba(251, 191, 36, 0.18);
+  border-color: var(--hud-gold);
+}
+
+.hud-agent-radio-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Custom Cyber Radio Indicator: (•) vs ( ) */
+.hud-radio-ring {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--hud-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.hud-agent-radio-item.active .hud-radio-ring {
+  border-color: var(--hud-cyan);
+  box-shadow: 0 0 8px var(--hud-cyan);
+}
+.hud-radio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hud-cyan);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hud-agent-radio-item.active .hud-radio-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hud-agent-name {
+  font-family: var(--hud-font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--hud-text-primary);
+}
+
+.hud-agent-role-pill {
+  font-family: var(--hud-font-mono);
+  font-size: 0.60rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  clip-path: var(--hud-clip-sm);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--hud-text-secondary);
+}
+
+/* Add Slot Button */
+.hud-agent-slot-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px dashed var(--hud-border);
+  clip-path: var(--hud-clip-sm);
+  color: var(--hud-text-muted);
+  font-family: var(--hud-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hud-agent-slot-add:hover {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+/* ── Panel 2: MEMORY GRAPH Synaptic Telemetry ── */
+.hud-mem-canvas-container {
+  width: 100%;
+  height: 90px;
+  background: var(--hud-input-bg);
+  border: 1px solid var(--hud-border-subtle);
+  clip-path: var(--hud-clip-sm);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-mem-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Grid Matrix Wireframe Overlay in Canvas */
+.hud-mem-grid-wireframe {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(var(--hud-border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--hud-border-subtle) 1px, transparent 1px);
+  background-size: 16px 16px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.hud-mem-stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.hud-stat-cell {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--hud-border-subtle);
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.hud-stat-lbl {
+  font-family: var(--hud-font-mono);
+  font-size: 0.58rem;
+  color: var(--hud-text-muted);
+  text-transform: uppercase;
+}
+.hud-stat-val {
+  font-family: var(--hud-font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--hud-cyan);
+}
+
+/* ── Panel 3: COMMAND LINE Interactive Terminal REPL ── */
+.hud-terminal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hud-term-output {
+  background: var(--hud-input-bg);
+  border: 1px solid var(--hud-border-subtle);
+  clip-path: var(--hud-clip-sm);
+  padding: 8px 10px;
+  font-family: var(--hud-font-mono);
+  font-size: 0.70rem;
+  line-height: 1.45;
+  color: var(--hud-text-secondary);
+  height: 84px;
+  max-height: 84px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hud-term-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.hud-term-line.cmd { color: var(--hud-cyan); font-weight: 700; }
+.hud-term-line.stdout { color: var(--hud-text-body); }
+.hud-term-line.success { color: var(--hud-green); }
+.hud-term-line.warn { color: var(--hud-gold); }
+.hud-term-line.error { color: var(--hud-red); }
+
+.hud-term-prompt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--hud-input-bg);
+  border: 1px solid var(--hud-border);
+  clip-path: var(--hud-clip-sm);
+  padding: 4px 8px;
+}
+.hud-term-prompt-row:focus-within {
+  border-color: var(--hud-cyan);
+  box-shadow: 0 0 10px var(--hud-accent-glow);
+}
+
+.hud-term-prefix {
+  font-family: var(--hud-font-mono);
+  font-size: 0.70rem;
+  font-weight: 800;
+  color: var(--hud-green);
+  user-select: none;
+}
+
+.hud-term-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--hud-font-mono);
+  font-size: 0.72rem;
+  color: var(--hud-text-primary);
+  padding: 0;
+}
+.hud-term-input::placeholder {
+  color: var(--hud-text-dim);
+}
+
+.hud-term-send-btn {
+  background: var(--hud-cyan);
+  color: var(--hud-text-on-accent);
+  border: none;
+  font-family: var(--hud-font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  clip-path: var(--hud-clip-sm);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.hud-term-send-btn:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
+}
+
+/* ── Panel 4: MESSAGE LOG Real-Time Stream ── */
+.hud-msg-stream {
+  background: var(--hud-input-bg);
+  border: 1px solid var(--hud-border-subtle);
+  clip-path: var(--hud-clip-sm);
+  padding: 6px 8px;
+  height: 90px;
+  max-height: 90px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  scrollbar-width: thin;
+}
+
+.hud-msg-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-family: var(--hud-font-mono);
+  font-size: 0.66rem;
+  line-height: 1.35;
+  padding: 2px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.04);
+}
+
+.hud-msg-time {
+  color: var(--hud-text-muted);
+  font-size: 0.60rem;
+  flex-shrink: 0;
+}
+
+.hud-msg-tag {
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.hud-msg-tag.azoth { color: var(--hud-cyan); }
+.hud-msg-tag.system { color: var(--hud-green); }
+.hud-msg-tag.consensus { color: var(--hud-gold); }
+.hud-msg-tag.daemon { color: var(--hud-violet); }
+.hud-msg-tag.alert { color: var(--hud-red); }
+
+.hud-msg-text {
+  color: var(--hud-text-body);
+  word-break: break-word;
+}
+
+/* ── Panel 5: MAIN PILLAR 6 STATUS Math Telemetry Gauge ── */
+.hud-pillar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hud-pillar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud-pillar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--hud-font-mono);
+  font-size: 0.62rem;
+}
+
+.hud-pillar-name {
+  color: var(--hud-text-body);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-pillar-val {
+  color: var(--hud-gold);
+  font-weight: 800;
+}
+
+.hud-meter-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hud-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--hud-cyan), var(--hud-green));
+  box-shadow: 0 0 8px var(--hud-accent-glow);
+  transition: width 0.4s ease;
+}
+.hud-meter-fill.gold {
+  background: linear-gradient(90deg, var(--hud-gold), var(--hud-gold-bright));
+}
+.hud-meter-fill.violet {
+  background: linear-gradient(90deg, var(--hud-violet), var(--hud-magenta));
+}
+
+/* =============================================================================
+   8. Center Stage (Dynamic Modular Workspace)
+   ============================================================================= */
+.hud-stage {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--hud-viewport-bg);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Stage Header Strip (44px) */
+.hud-stage-header {
+  height: var(--hud-stage-header-h, 44px);
+  min-height: var(--hud-stage-header-h, 44px);
+  max-height: var(--hud-stage-header-h, 44px);
+  background: var(--hud-card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-sizing: border-box;
+  z-index: 20;
+}
+
+/* Stage Header Left: Tool Name, Tags, Options */
+.hud-stage-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.hud-stage-tool-name {
+  font-family: var(--hud-font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--hud-text-primary);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-stage-tags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.hud-tool-tag {
+  font-family: var(--hud-font-mono);
+  font-size: 0.60rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  clip-path: var(--hud-clip-sm);
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--hud-border);
+  color: var(--hud-cyan);
+  white-space: nowrap;
+}
+.hud-tool-tag.gold {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: var(--hud-border-gold);
+  color: var(--hud-gold);
+}
+.hud-tool-tag.green {
+  background: rgba(0, 255, 102, 0.1);
+  border-color: rgba(0, 255, 102, 0.3);
+  color: var(--hud-green);
+}
+
+/* Stage Header Right Actions: [ OMNI POST ], [ FULLSCREEN ], [ DETACH ] */
+.hud-stage-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.hud-stage-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--hud-border);
+  color: var(--hud-text-body);
+  font-family: var(--hud-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  clip-path: var(--hud-clip-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.hud-stage-btn:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--hud-cyan);
+  color: var(--hud-text-primary);
+  box-shadow: 0 0 10px var(--hud-accent-glow);
+  transform: translateY(-1px);
+}
+
+.hud-stage-btn-omnipost {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: var(--hud-border-gold);
+  color: var(--hud-gold);
+}
+.hud-stage-btn-omnipost:hover {
+  background: var(--hud-gold);
+  color: #05060a;
+  border-color: var(--hud-gold);
+  box-shadow: 0 0 14px var(--hud-gold);
+}
+
+/* Modular Stage Viewport (100% Height Host Container) */
+.hud-stage-viewport {
+  flex: 1;
+  width: 100%;
+  height: calc(100% - var(--hud-stage-header-h, 44px));
+  position: relative;
+  overflow: hidden;
+  background: var(--hud-viewport-bg);
+  box-sizing: border-box;
+}
+
+/* Reticle & Brackets Frame Overlay */
+.hud-viewport-brackets {
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-bracket {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--hud-border-strong);
+  opacity: 0.7;
+}
+.hud-bracket-tl { top: 0; left: 0; border-top: 2px solid; border-left: 2px solid; }
+.hud-bracket-tr { top: 0; right: 0; border-top: 2px solid; border-right: 2px solid; }
+.hud-bracket-bl { bottom: 0; left: 0; border-bottom: 2px solid; border-left: 2px solid; }
+.hud-bracket-br { bottom: 0; right: 0; border-bottom: 2px solid; border-right: 2px solid; }
+
+/* Stage Host Elements: iFrame, Canvas, or HTML Workspace */
+.hud-tool-iframe,
+.hud-tool-canvas,
+.hud-tool-workspace {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  display: block;
+  background: transparent;
+  position: absolute;
+  inset: 0;
+}
+
+/* Telemetry Coordinate Watermark Overlay */
+.hud-viewport-telemetry-pill {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  background: rgba(3, 5, 12, 0.85);
+  border: 1px solid var(--hud-border);
+  padding: 3px 8px;
+  clip-path: var(--hud-clip-sm);
+  font-family: var(--hud-font-mono);
+  font-size: 0.60rem;
+  color: var(--hud-cyan);
+  pointer-events: none;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =============================================================================
+   9. Bottom Quick-Dock (46px Fixed)
+   ============================================================================= */
+.hud-dock {
+  height: var(--hud-dock-h, 46px);
+  min-height: var(--hud-dock-h, 46px);
+  max-height: var(--hud-dock-h, 46px);
+  background: var(--hud-dock-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: relative;
+  z-index: 90;
+  box-sizing: border-box;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Bottom Quick Launch Tabs: [ SWARM ], [ MEMORY ], [ WEB GEN ], [ PETS ], [ VAULT ] */
+.hud-dock-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.hud-dock-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.hud-dock-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hud-border-subtle);
+  clip-path: var(--hud-clip-sm);
+  font-family: var(--hud-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--hud-text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  white-space: nowrap;
+}
+
+.hud-dock-tab:hover {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: var(--hud-border);
+  color: var(--hud-text-primary);
+  transform: translateY(-2px);
+}
+
+.hud-dock-tab.active {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: var(--hud-cyan);
+  color: #ffffff;
+  box-shadow: 0 0 14px var(--hud-accent-glow);
+}
+html[data-theme="light"] .hud-dock-tab.active {
+  background: rgba(0, 113, 227, 0.15);
+  border-color: var(--hud-cyan);
+  color: var(--hud-cyan);
+}
+html[data-theme="matrix"] .hud-dock-tab.active {
+  background: rgba(0, 255, 102, 0.2);
+  border-color: var(--hud-green);
+  color: #ffffff;
+}
+html[data-theme="gold"] .hud-dock-tab.active {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: var(--hud-gold);
+  color: #ffffff;
+}
+
+/* Active Neon Indicator Bar Under Tab */
+.hud-dock-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: var(--hud-accent);
+  box-shadow: 0 0 8px var(--hud-accent);
+}
+
+/* Dock Right Telemetry Status */
+.hud-dock-telemetry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--hud-font-mono);
+  font-size: 0.65rem;
+  color: var(--hud-text-muted);
+}
+
+.hud-dock-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* =============================================================================
+   10. Slide-Up Sheets System for Tablet / Mobile HUD Operations
+   ============================================================================= */
+.hud-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9990;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s;
+}
+.hud-sheet-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hud-sheet-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 82vh;
+  background: var(--hud-deck-bg);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-top: 1px solid var(--hud-border);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85);
+  z-index: 9995;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.hud-sheet-drawer.is-open {
+  transform: translateY(0);
+}
+
+.hud-sheet-handle-bar {
+  width: 100%;
+  padding: 10px 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+.hud-sheet-handle-pill {
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--hud-text-muted);
+  opacity: 0.4;
+}
+
+.hud-sheet-header {
+  padding: 8px 18px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--hud-border-subtle);
+}
+
+.hud-sheet-body {
+  padding: 14px 18px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =============================================================================
+   11. Responsive Layout Breakpoints
+   ============================================================================= */
+
+/* ── Tablet Cockpit Layout (769px - 1100px) ── */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .hud-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hud-deck-toggle-btn {
+    display: inline-flex;
+  }
+
+  .hud-deck {
+    position: fixed;
+    top: var(--hud-header-h, 54px);
+    bottom: var(--hud-dock-h, 46px);
+    left: 0;
+    width: 360px;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+    z-index: 95;
+  }
+
+  .hud-deck.is-open {
+    transform: translateX(0);
+  }
+}
+
+/* ── Mobile Cockpit Layout (<= 768px) ── */
+@media (max-width: 768px) {
+  :root {
+    --hud-header-h: 48px;
+    --hud-dock-h: 50px;
+  }
+
+  .hud-header {
+    padding: 0 10px;
+  }
+
+  .hud-badge-ports,
+  .hud-badge-time {
+    display: none !important;
+  }
+
+  .hud-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .hud-deck {
+    display: none; /* Accessible via mobile slide-up sheets */
+  }
+
+  .hud-deck-toggle-btn {
+    display: inline-flex;
+  }
+
+  .hud-stage-header {
+    padding: 0 10px;
+  }
+
+  .hud-stage-tags {
+    display: none;
+  }
+
+  .hud-dock {
+    padding: 0 8px;
+  }
+
+  .hud-dock-telemetry {
+    display: none;
+  }
+
+  .hud-dock-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .hud-dock-tab {
+    padding: 6px 10px;
+    font-size: 0.68rem;
+  }
+}
+
+/* =============================================================================
+   12. Cyberpunk HUD Modals & Dialogs (Ports, Tool Manager, Help)
+   ============================================================================= */
+.hud-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 5, 12, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.hud-modal-backdrop[hidden] {
+  display: none !important;
+}
+
+.hud-modal-dialog {
+  background: var(--hud-card-solid);
+  border: 1px solid var(--hud-border-strong);
+  clip-path: var(--hud-clip-md);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px var(--hud-accent-glow);
+  width: min(720px, 94vw);
+  max-height: min(85vh, 760px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: hudModalEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes hudModalEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.hud-modal-header {
+  padding: 14px 18px;
+  background: var(--hud-header-bg);
+  border-bottom: 1px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hud-modal-title {
+  font-family: var(--hud-font-hud);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--hud-gold);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-modal-close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--hud-border);
+  color: var(--hud-text-secondary);
+  font-family: var(--hud-font-mono);
+  font-size: 0.82rem;
+  font-weight: 800;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: var(--hud-clip-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hud-modal-close-btn:hover {
+  background: var(--hud-red);
+  color: #ffffff;
+  border-color: var(--hud-red);
+}
+
+.hud-modal-body {
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hud-modal-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--hud-input-bg);
+  border: 1px solid var(--hud-border);
+  clip-path: var(--hud-clip-sm);
+  padding: 6px 12px;
+}
+.hud-modal-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--hud-font-mono);
+  font-size: 0.78rem;
+  color: var(--hud-text-primary);
+}
+
+.hud-tool-mgr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.hud-tool-mgr-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--hud-border-subtle);
+  clip-path: var(--hud-clip-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.hud-tool-mgr-card:hover {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--hud-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 0 14px var(--hud-accent-glow);
+}
+.hud-tool-mgr-card.active {
+  border-color: var(--hud-gold);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.hud-tool-mgr-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hud-tool-mgr-icon {
+  font-size: 1.1rem;
+}
+.hud-tool-mgr-title {
+  font-family: var(--hud-font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--hud-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hud-tool-mgr-desc {
+  font-size: 0.68rem;
+  color: var(--hud-text-secondary);
+  line-height: 1.35;
+  margin: 0;
+}
+.hud-tool-mgr-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.hud-tool-mgr-launch {
+  font-family: var(--hud-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--hud-cyan);
+}
+
+/* Ports Topology Grid */
+.hud-ports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+.hud-port-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--hud-border-subtle);
+  clip-path: var(--hud-clip-sm);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.hud-port-num {
+  font-family: var(--hud-font-mono);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--hud-cyan);
+}
+.hud-port-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hud-port-service {
+  font-family: var(--hud-font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--hud-text-primary);
+}
+.hud-port-desc {
+  font-size: 0.64rem;
+  color: var(--hud-text-muted);
+}
+.hud-port-status {
+  font-family: var(--hud-font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  clip-path: var(--hud-clip-sm);
+  background: rgba(0, 255, 102, 0.1);
+  border: 1px solid rgba(0, 255, 102, 0.3);
+  color: var(--hud-green);
+}
+
+/* Help Shortcuts List */
+.hud-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+}
+.hud-shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--hud-border-subtle);
+  padding: 6px 10px;
+  clip-path: var(--hud-clip-sm);
+  font-size: 0.76rem;
+  color: var(--hud-text-secondary);
+}
+.hud-shortcut-item kbd {
+  font-family: var(--hud-font-mono);
+  font-size: 0.70rem;
+  font-weight: 800;
+  color: var(--hud-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--hud-border);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* =============================================================================
+   13. Motion Safeguards (prefers-reduced-motion)
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+

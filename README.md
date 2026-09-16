@@ -411,6 +411,7 @@ All services execute strictly on local loopback with zero external cloud telemet
 
 | Module / Surface | Route | Architectural Guide | Key Engineering Focus |
 |:---|:---|:---|:---|
+| **Cyberpunk Video Game HUD** | `/studio/cockpit.html` | [`public/docs/cyberpunk-hud.md`](public/docs/cyberpunk-hud.md) | 1:1 Whiteboard layout, zero-root-scroll cockpit, dynamic tool stage, synaptic canvas, interactive TTY-0 |
 | **Home & Azoth Sanctum** | `/` & `/zoth/` | [`public/docs/home-sanctum.md`](public/docs/home-sanctum.md) | Hero telemetry, 3D WebGL sanctum, AST consensus tiebreaker |
 | **Studio & Cockpits** | `/studio/` | [`public/studio/README.md`](public/studio/README.md) | 21 specialized workstations, IDE, tool bench, swarm radar |
 | **Pets & 3D Sanctuary** | `/pets/` | [`public/pets/README.md`](public/pets/README.md) | 24 companion spirits, PBR shaders, procedural audio DSP, SOUL specs |
