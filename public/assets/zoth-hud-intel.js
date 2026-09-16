@@ -29,7 +29,15 @@
     swarm: 'azoth',
     'bus-monitor': 'aether',
     'agent-composer': 'antigravity',
-    'vision-link': 'kai'
+    'vision-link': 'kai',
+    ide: 'antigravity',
+    models: 'grok',
+    'notes-reviewer': 'kai',
+    'netlify-ax': 'hermes',
+    'pets-studio': 'azoth',
+    docs: 'athena',
+    signal: 'aether',
+    agents: 'azoth'
   };
 
   function loadLearn() {
@@ -164,7 +172,7 @@
     PRIMARY_FALLBACK().forEach(function (t) {
       tiles.push(t);
     });
-    var recents = LEARN.recents.slice(0, 6);
+    var recents = LEARN.recents.slice(0, 8);
     var health = window.ZothHudIntel.health || {};
     var healthHtml = ['8484', '8788', '8088', '11434'].map(function (p) {
       var ok = health[p];
@@ -178,16 +186,25 @@
           return '<button type="button" class="hud-dash-tile" data-open="' + id + '"><span>' + n + '</span><small>' + ((LEARN.tools[id] && LEARN.tools[id].opens) || 0) + ' opens</small></button>';
         }).join('')
       : '<p class="hud-dash-empty">No recents yet. Open a workstation from the dock or All Tools.</p>';
-    var allHtml = tiles.slice(0, 16).map(function (t) {
-      return '<button type="button" class="hud-dash-tile" data-open="' + t.id + '"><strong>' + (t.shortName || t.name) + '</strong><small>' + (t.category || '') + '</small></button>';
+    var groups = {};
+    tiles.forEach(function (t) {
+      var g = t.category || 'Workstations';
+      groups[g] = groups[g] || [];
+      groups[g].push(t);
+    });
+    var groupedHtml = Object.keys(groups).map(function (g) {
+      var inner = groups[g].map(function (t) {
+        return '<button type="button" class="hud-dash-tile" data-open="' + t.id + '"><strong>' + (t.shortName || t.name) + '</strong><small>' + g + '</small></button>';
+      }).join('');
+      return '<div class="hud-dash-section"><div class="hud-dash-label">' + g.toUpperCase() + ' (' + groups[g].length + ')</div><div class="hud-dash-grid">' + inner + '</div></div>';
     }).join('');
     el.innerHTML =
       '<div class="hud-dash-head">' +
-        '<div><div class="hud-dash-kicker">COMMAND SURFACE</div><h2>Dashboard</h2><p>Pick a tool. The HUD acclimates around it — deck, agent, and recents learn as you work.</p></div>' +
+        '<div><div class="hud-dash-kicker">COMMAND SURFACE</div><h2>Dashboard</h2><p>' + tiles.length + ' workstations share this HUD. Pick one — the deck, agent, and recents acclimate around it.</p></div>' +
         '<div class="hud-dash-health">' + healthHtml + '<button type="button" class="hud-stage-btn" id="hud-dash-heal">HEAL</button></div>' +
       '</div>' +
       '<div class="hud-dash-section"><div class="hud-dash-label">LEARNED RECENTS</div><div class="hud-dash-grid">' + recentHtml + '</div></div>' +
-      '<div class="hud-dash-section"><div class="hud-dash-label">WORKSTATIONS & TOOLS</div><div class="hud-dash-grid">' + allHtml + '</div></div>';
+      groupedHtml;
     el.querySelectorAll('[data-open]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = btn.getAttribute('data-open');
@@ -199,25 +216,13 @@
   }
 
   function PRIMARY_FALLBACK() {
-    var names = [
-      { id: 'omnipost', name: 'OmniPost', shortName: 'OmniPost', category: 'Creative' },
-      { id: 'webgen', name: 'WebGen Studio', shortName: 'WebGen', category: 'Web' },
-      { id: 'netrunner-memory', name: 'Lucy Memory', shortName: 'Memory', category: 'AI' },
-      { id: 'vault', name: 'Keyring Vault', shortName: 'Vault', category: 'Security' },
-      { id: '3d-editor', name: '3D CAD Studio', shortName: '3D CAD', category: 'Creative' },
-      { id: 'nexus-3d', name: 'Cyber Nexus 3D', shortName: 'Nexus 3D', category: 'Creative' },
-      { id: 'consensus', name: 'Consensus Arena', shortName: 'Consensus', category: 'AI' },
-      { id: 'swarm', name: 'Swarm Commander', shortName: 'Swarm', category: 'AI' },
-      { id: 'pets', name: 'Pet Sanctuary', shortName: 'Pets', category: 'Familiars' },
-      { id: 'tool-bench', name: 'Tool Bench', shortName: 'Bench', category: 'Tools' },
-      { id: 'signal-bridge', name: 'Signal Bridge', shortName: 'Signal', category: 'Comms' },
-      { id: 'math-pillars', name: '6-Pillar Calculus', shortName: 'Math', category: 'Learning' },
-      { id: 'vos-sandbox', name: 'vOS Sandbox', shortName: 'vOS', category: 'Web' },
-      { id: 'agent-composer', name: 'Agent Composer', shortName: 'Composer', category: 'AI' },
-      { id: 'subsweep', name: 'Subsweep OSINT', shortName: 'Subsweep', category: 'SecOps' },
-      { id: 'edge-forge', name: 'Edge Forge', shortName: 'Forge', category: 'Dev' }
-    ];
-    return names;
+    if (window.ZOTH_HUD_WORKSTATIONS && window.ZOTH_HUD_WORKSTATIONS.length) {
+      return window.ZOTH_HUD_WORKSTATIONS.slice();
+    }
+    if (window.ZOTH_PRIMARY_WORKSTATIONS && window.ZOTH_PRIMARY_WORKSTATIONS.length) {
+      return window.ZOTH_PRIMARY_WORKSTATIONS.slice();
+    }
+    return [];
   }
 
   function findTool(id) {
@@ -304,6 +309,26 @@
     if (hud.addLog) {
       hud.addLog('HUD', 'Acclimated to ' + (tool.name || toolId) + '. Agent ' + (wantAgent || st.activeAgent || 'azoth') + '.', 'system');
     }
+  }
+
+  function rebuildWorkstationDock() {
+    var tabs = document.getElementById('hud-dock-tabs');
+    if (!tabs) return;
+    var dash = tabs.querySelector('[data-tool="dashboard"]');
+    var learned = document.getElementById('hud-dock-learned');
+    var stations = PRIMARY_FALLBACK();
+    var html = '';
+    if (dash) html += dash.outerHTML;
+    html += '<div class="hud-dock-learned" id="hud-dock-learned">' + (learned ? learned.innerHTML : '') + '</div>';
+    stations.forEach(function (t) {
+      html += '<button type="button" class="hud-dock-tab" data-tool="' + t.id + '">' + (t.shortName || t.name) + '</button>';
+    });
+    tabs.innerHTML = html;
+    tabs.querySelectorAll('.hud-dock-tab[data-tool]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (window.ZothHUD) window.ZothHUD.loadTool(btn.getAttribute('data-tool'));
+      });
+    });
   }
 
   function rebuildLearnedDock() {
@@ -481,6 +506,7 @@
       ensureDashboard();
       ensureHeal();
       watchIframe();
+      rebuildWorkstationDock();
       rebuildLearnedDock();
       pingHealth();
       if (!window._hudHealPulse) {

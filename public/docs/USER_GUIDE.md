@@ -26,6 +26,8 @@
 | **Argon2id Vault Daemon** | `http://127.0.0.1:8787/` | Hardware-isolated zero-leak key store (Rust RPC daemon) | **Zero-Leak Loopback** |
 | **Cognitive Memory Daemon** | `http://127.0.0.1:8788/` | Dual-layer memory engine, STDP synaptic links & Lucy Oracle | **Private Loopback** |
 | **Local LLM (Ollama)** | `http://127.0.0.1:11434/` | Offline `zoth-micro`, Qwen 2.5 Coder, SmolLM2, Hermes 3 | Private Loopback |
+| **Signal swarm bridge** | `http://127.0.0.1:8765/` | Tagged conversation memory + SSE | Private Loopback |
+| **SimpleX web bridge** | `http://127.0.0.1:8767/` | Same router as Signal (`process_swarm_command`) | Private Loopback |
 
 ---
 

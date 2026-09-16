@@ -1,200 +1,177 @@
-# Zoth Studio — Master Operator Architecture & Documentation
+<div align="center">
 
-> **Local-First Autonomous AI Workstation & Multi-Agent Swarm OS**  
-> *Sovereign Execution · Zero Cloud Telemetry · Encrypted Argon2id BYOK Vault*
+# <img src="public/assets/brand/zoth-golden-z-192.png" width="48" height="48" style="border-radius: 8px; vertical-align: middle; border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.35);" /> 🌌 ZOTH STUDIO: CORE APP & WORKSTATION SUITE (v3.2.0)
+### *Sovereign Local-First AI Agent Workstation Suite, Cyberpunk HUD & Autonomous Web Foundry*
+
+[![Version](https://img.shields.io/badge/version-3.2.0%20Sovereign-00f0ff?style=for-the-badge&logo=target&logoColor=white)](https://github.com/1nc0gn30/zoth-studio)
+[![Hermes Agent](https://img.shields.io/badge/hermes%20agent-v0.21.2%20(Nous)-fbbf24?style=for-the-badge&logo=probot&logoColor=black)](public/docs/hermes-agent.md)
+[![License](https://img.shields.io/badge/license-MIT%20%2F%20Apache%202.0-e8c872?style=for-the-badge&logo=apache&logoColor=black)](../LICENSE)
+[![Loopback](https://img.shields.io/badge/loopback-100%25%20Zero--Telemetry-34d399?style=for-the-badge&logo=safari&logoColor=white)](http://127.0.0.1:8088/)
+[![Swarm](https://img.shields.io/badge/swarm-21%20Pantheon%20Agents-a855f7?style=for-the-badge&logo=probot&logoColor=white)](http://127.0.0.1:8088/agents/)
+[![HUD Cockpit](https://img.shields.io/badge/cockpit-Cyberpunk%20HUD%20(:8088)-00f0ff?style=for-the-badge&logo=electron&logoColor=white)](http://127.0.0.1:8088/studio/cyberpunk-hud.html)
+[![Vault](https://img.shields.io/badge/vault-Argon2id%20%2B%20XChaCha20%20(:8787)-f472b6?style=for-the-badge&logo=rust&logoColor=white)](http://127.0.0.1:8088/vault/)
+[![Memory](https://img.shields.io/badge/memory-Biomorphic%20STDP%20(:8788)-10b981?style=for-the-badge&logo=brainz&logoColor=white)](http://127.0.0.1:8088/memory/)
+
+<br>
+
+<p align="center">
+  <img src="../docs-and-architecture/assets/zoth_studio_banner_1785757680832.png" alt="Zoth Studio Core App Banner" width="100%" style="border-radius: 16px; border: 1px solid rgba(0,240,255,0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,240,255,0.2);" />
+</p>
+
+<!-- Live Animated Telemetry HUD -->
+<p align="center">
+  <img src="../docs-and-architecture/assets/zoth-telemetry-banner.svg" alt="Live Telemetry HUD" width="100%" />
+</p>
+
+<p align="center">
+  <strong><a href="http://127.0.0.1:8088/studio/cyberpunk-hud.html">🎮 Launch Cyberpunk HUD</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/docs/readmes.html">📚 Interactive README Library</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/studio/omnipost.html">🎬 OmniPost Video Studio</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/studio/3d-editor.html">🪐 Nexus 3D CAD</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/studio/swarm.html">⚡ Swarm Arena</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/memory/">🧠 STDP Memory</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/docs/">📖 Docs Hub</a></strong>
+</p>
+
+</div>
+
+<p align="center"><img src="../docs-and-architecture/assets/zoth-cyber-divider.svg" width="100%" /></p>
+
+## 🛡️ Core App Overview & Scope
+
+`core-app` is the primary frontend workstation suite, CLI execution cockpit, and Unix PTY harness for **Zoth Studio**. It provides 28+ zero-cloud, client-side web workstations serving the entire 21-agent Pantheon, WebGen autonomous code synthesis, real-time 3D spatial monitoring, the **AI Math Pillars Theory Academy**, the **12-Formula #つぶやきProcessing Topology Lab**, and the **Cyberpunk Video Game HUD Cockpit**.
+
+### Directory Structure & Subsystems:
+- **`bin/zoth`**: High-performance Python 3 CLI & Curses TUI symlinked globally to `~/.local/bin/zoth`.
+- **`public/studio/`**: 28+ static web workstations, CAD viewports, video studio, consensus crucible, and sandboxes.
+- **`public/assets/`**:
+  - `zoth-cyberpunk-hud.js` & `zoth-cyberpunk-hud.css`: Master 2-column tactical video game HUD engine.
+  - `zoth-hud-embedded.js` & `zoth-hud-embedded.css`: Universal embedded workspace adapter and bi-directional action bridge.
+  - `zoth-theme.css`: 4-Theme engine (`dark`, `light`, `matrix`, `gold`) with WCAG AA contrast.
+- **`public/docs/`**: Comprehensive markdown architectural manuals, theory proofs, and agent guides.
+- **`tools/`**: Local Unix PTY engine (`pty.fork`), DuckyScript compiler, and loopback agent orchestrator (`:8484`).
 
 ---
 
-## 1. System Philosophy & Local-First Doctrine
+## 🎮 Cyberpunk HUD Cockpit & Embedded Workstation Engine
 
-Zoth Studio is built on a non-negotiable architectural invariant: **operator sovereignty**. Traditional AI platforms force users to send sensitive proprietary code, API keys, database credentials, and internal transcripts to third-party cloud servers. Zoth Studio inverses this paradigm by running the entire workstation, multi-agent communication bus, memory graph, and credential vault strictly on local hardware.
+The Cyberpunk HUD creates a tactical desktop operations environment:
 
+```mermaid
+flowchart LR
+    subgraph HUD["🎮 Cyberpunk HUD Cockpit (:8088)"]
+        A["Top Header: Clock, Ports, Themes, Omniverse Nav"]
+        B["Left Operations Deck: Agents Roster, Radar, Memory, TTY-0, 6 Pillars"]
+        C["#hud-tool-context-card: Tool Operations Deck (Dials & Actions)"]
+        D["Center Stage Viewport: Embedded Workstation iframe"]
+    end
+
+    subgraph WORKSTATION["🛠️ Embedded Workstation (e.g. omnipost.html)"]
+        E["zoth-hud-embedded.css: Strips legacy navbars & footers (100% space)"]
+        F["zoth-hud-embedded.js: Action Bridge & postMessage Handler"]
+        G["Active Canvas / Video WebCodecs / 3D CAD Editor"]
+    end
+
+    C -->|"postMessage(ZOTH_TOOL_ACTION)"| F
+    F -->|"Trigger Tool Function"| G
+    A -->|"Switch Tool"| D
+    D --> E
+
+    style HUD fill:#050811,stroke:#00f0ff,stroke-width:2px,color:#fff
+    style WORKSTATION fill:#090703,stroke:#fbbf24,stroke-width:2px,color:#fff
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                   LOCAL OPERATOR HOST (127.0.0.1)                     │
-│                                                                        │
-│   ┌─────────────────────┐    ┌─────────────────────────────────────┐   │
-│   │   Web Studio Hub    │    │       Operator Cockpit & Deck       │   │
-│   │     Port :8088      │    │              Port :8484             │   │
-│   │  (Static Interface) │    │      (Swarm Bus & Interactive)      │   │
-│   └──────────┬──────────┘    └──────────────────┬──────────────────┘   │
-│              │                                  │                      │
-│              ▼                                  ▼                      │
-│   ┌─────────────────────┐    ┌─────────────────────────────────────┐   │
-│   │ 47+ Sovereign Tools │◄───┤ 21-Agent Pantheon & Consensus Arena │   │
-│   │ (AST/OSINT/WebGen)  │    │ (3-Agent Triangulation & Entropy)   │   │
-│   └──────────┬──────────┘    └──────────────────┬──────────────────┘   │
-│              │                                  │                      │
-│              ▼                                  ▼                      │
-│   ┌─────────────────────┐    ┌─────────────────────────────────────┐   │
-│   │ Argon2id Vault (:8787)   │ Local Neural Engine (Ollama :11434) │   │
-│   │  (XChaCha20 Enclave)│    │ (Qwen2.5 / Llama3 / SmolLM2)        │   │
-│   └─────────────────────┘    └─────────────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────────────┘
-```
+
+### Key Capabilities:
+1. **Zero-Root Scroll Cockpit**: 100vh desktop layout with chamfered sci-fi borders, scanning LEDs, and animated holographic atmosphere.
+2. **360° Polar Radar Sweep**: Tracks 21 swarm agents across 4 celestial quadrants with click-to-attune agent selection.
+3. **Real-Time Audio Scope**: 60 FPS Web Audio oscilloscope featuring Waveform, FFT Spectrum, and XY Lissajous modes.
+4. **Dual-Tool Split Stage**: Side-by-side split screen (`[ ◫ SPLIT ]`) for simultaneous editing and previewing.
+5. **Tool-Specific Operations Deck**: Dynamically reskins when any tool loads, presenting quick dials tailored to that workstation.
 
 ---
 
-## 2. Port Topology & Network Binding Matrix
+## 🕊️ Hermes Agent CLI & Terminal REPL Integration
 
-All Zoth services bind to loopback (`127.0.0.1`) by default. No ports are exposed publicly without authenticated TLS or WireGuard/Tailscale encapsulation.
+The HUD TTY-0 Terminal REPL connects directly to **Nous Research Hermes Agent (v0.21.2)**:
 
-| Port & Binding | Protocol | Security Boundary | Role & Subsystem |
-| :--- | :--- | :--- | :--- |
-| `http://127.0.0.1:8088/` | HTTP/1.1 | Local / Tunnel-Safe | Static Studio Hub, documentation, 3D showcases, AEO knowledge graph. |
-| `http://127.0.0.1:8484/` | HTTP + WS | Private Loopback | Autonomous Swarm Operator Deck, multi-agent chat, live terminal PTY dock. |
-| `http://127.0.0.1:8787/` | HTTP REST | Private Loopback | `zoth-vault-daemon`: Zero-knowledge Argon2id key derivation & XChaCha20 crypto. |
-| `http://127.0.0.1:11434/`| HTTP REST | Private Loopback | Local Ollama inference: `qwen2.5-coder:1.5b`, `llama3.3`, `smollm2:360m`. |
-| `ws://127.0.0.1:5225/`  | WebSocket | Private Loopback | Headless SimpleX protocol daemon for metadata-free post-quantum E2EE. |
-| `http://127.0.0.1:8767/` | HTTP/SSE | Private Loopback | SimpleX Web Bridge API synchronizing SQLite `bridge.db` with the Web UI. |
-| `http://127.0.0.1:8989/` | HTTP/WS | Private Loopback | Swarm Bus Live Mirror streaming on-disk IPC messages from `agent-comms/`. |
+| Command | Action & Telemetry Output |
+|:---|:---|
+| `hermes status` | Inspects Hermes v0.21.2 engine, active `azoth-prime` profile, and loaded skills (270+). |
+| `hermes doctor` | Runs complete diagnostics on tool availability, SQLite state DB, and memory daemon. |
+| `hermes <task>` | Dispatches autonomous subagent tasks with real-time feedback in the HUD message stream. |
+| `split` / `split swap` | Toggles and swaps dual-tool split stage mode between two workstations. |
+| `radar ping` / `radar zoom` | Broadcasts sweep ping to all 21 swarm agents and scales radar range. |
+| `scope wave` / `scope fft` | Toggles real-time audio oscilloscope between waveform and frequency FFT modes. |
+| `pillars` | Computes live values across all 6 mathematical calculus pillars. |
+| `theme <name>` | Switches 4-theme engine (`dark`, `light`, `matrix`, `gold`). |
 
----
-
-## 3. The 4 Transmutation Rites
-
-Software synthesis in Zoth follows the four hermetic purification rites:
-
-1. **Solve (*Calcinatio*)**: Decomposes natural language operator requests into deterministic Abstract Syntax Tree (AST) blueprints without ambiguity.
-2. **Separate (*Sublimatio*)**: Dispatches requests across 3 independent frontier models in parallel to eliminate hallucinations before execution.
-3. **Purify (*Purificatio*)**: Isolates all secrets and credentials in the local Argon2id vault, stripping out telemetry and external tracking.
-4. **Coagulate (*Coagulatio*)**: Synthesizes clean, verified, production-hardened applications complete with unit tests and deployment manifests.
+> [!NOTE]
+> Pressing **`Tab`** in the HUD Terminal REPL activates smart auto-completion across all commands.
 
 ---
 
-## 4. Sovereign CLI & Interactive Cockpit (`zoth`)
+## 🛠️ Complete Workstation Inventory (`public/studio/`)
 
-Zoth Studio ships with a native command-line binary (`zoth`) and a curses-based interactive Terminal User Interface (TUI).
+<div align="center">
 
-### Core CLI Commands
+| Workstation | Direct URL | Runtime | Primary Function |
+|:---|:---|:---:|:---|
+| **Cyberpunk HUD Cockpit** | [`/studio/cyberpunk-hud.html`](http://127.0.0.1:8088/studio/cyberpunk-hud.html) | `HTML5 / JS` | Flagship 2-column video game cockpit & stage loader |
+| **OmniPost 2.0 Video** | [`/studio/omnipost.html`](http://127.0.0.1:8088/studio/omnipost.html) | `WebCodecs / Canvas` | 60 FPS client-side video studio & synth music creator |
+| **Nexus 3D CAD Editor** | [`/studio/3d-editor.html`](http://127.0.0.1:8088/studio/3d-editor.html) | `Three.js / WebGL` | CAD-grade 3D viewport, mesh deformer, GLTF exporter |
+| **Swarm Arena** | [`/studio/swarm.html`](http://127.0.0.1:8088/studio/swarm.html) | `WebGL 2D/3D` | 21-Agent kinetic spatial swarm & laser triangulation |
+| **Consensus Crucible** | [`/studio/consensus.html`](http://127.0.0.1:8088/studio/consensus.html) | `Wasm / AST Parser` | 3-Model dialectic arbitration ($H < 0.20$ bits) |
+| **AI Math Pillars Academy**| [`/studio/math-pillars.html`](http://127.0.0.1:8088/studio/math-pillars.html) | `KaTeX / Canvas` | 6 Sacred Mathematical Pillars interactive proofs |
+| **Netrunner Memory** | [`/studio/netrunner-memory.html`](http://127.0.0.1:8088/studio/netrunner-memory.html)| `SSE / REST` | Biomorphic STDP synaptic weight graph & memory link |
+| **WebGen Studio** | [`/studio/webgen.html`](http://127.0.0.1:8088/studio/webgen.html) | `Vite / Astro` | Full-stack autonomous site synthesizer & ZIP exporter |
+| **Tool Nexus Explorer** | [`/studio/tool-nexus.html`](http://127.0.0.1:8088/studio/tool-nexus.html) | `JSON / JS` | Searchable index of 298+ tools with contract inspector |
+| **Keymaster Vault** | [`/vault/index.html`](http://127.0.0.1:8088/vault/) | `Rust / Argon2id` | Cryptographic secret storage & XChaCha20 cipher |
+| **Pet Dex Sanctuary** | [`/pets/studio.html`](http://127.0.0.1:8088/pets/studio.html) | `Three.js / Audio` | 24 alchemical companion spirits & summon commands |
+| **SubSweep Cleaner** | [`/studio/subsweep.html`](http://127.0.0.1:8088/studio/subsweep.html) | `Node.js` | Workspace cruft cleaner & dev artifact pruner |
+
+</div>
+
+---
+
+## 🧪 Verification & Automated Testing
+
+The Core App includes an automated 17-suite test harness verifying all HUD visualizers, adapters, and agent bridges:
 
 ```bash
-# Start all 3 background stacks (:8484, :8088, :8787)
-zoth start
-
-# Check real-time server matrix and loopback latency
-zoth status
-
-# Launch full-screen interactive Terminal User Interface (TUI)
-zoth tui
-
-# Execute comprehensive dependency and security health audit
-zoth doctor
-
-# List all registered sovereign tools (supports category filtering)
-zoth list -c "Security Operations & OSINT"
-
-# Run tool pipeline (dry-run by default; execute with --confirm)
-zoth run local_null_ai_subsweep --confirm --domain example.com
-
-# Stop all background daemons cleanly
-zoth stop
+# Execute the comprehensive HUD verification suite
+node public/assets/zoth-cyberpunk-hud.test.js
 ```
 
-### Shell Autocompletion
+```
+⚡ Running Cyberpunk HUD Tactical Visualizers Verification Tests...
 
-Tab-completion scripts for Bash and Zsh are located in `scripts/completions/`:
+✔ Test 1 Passed: zoth-cyberpunk-hud.js exists (159KB)
+✔ Test 2 Passed: Master HUD Controller API initialized and tactical methods exposed
+✔ Test 3 Passed: Real-Time Audio Oscilloscope operates across wave, fft, and lissajous modes
+✔ Test 4 Passed: 360° Polar Radar Sweep Mini-Map tracks all 21 swarm agents correctly
+✔ Test 5 Passed: Complete 6-Pillar Mathematical Calculus telemetry verified
+✔ Test 6 Passed: Interactive Memory Graph node clicking & consolidation waves verified
+✔ Test 7 Passed: Dynamic Stage Tool Loader & Stage History verified
+✔ Test 8 Passed: Dual-Tool Split Stage Mode verified
+✔ Test 9 Passed: Active Agents Selector switches across 21 agents with voice feedback
+✔ Test 10 Passed: 4-Theme Engine cycles between dark, light, matrix, and gold
+✔ Test 11 Passed: Modals (ports, pillars, toolmgr) and live logging operational
+✔ Test 12 Passed: Omniverse Navigator & Tool Router open/close and filter verified
+✔ Test 13 Passed: URL State Synchronization & backwards-compatible aliases verified
+✔ Test 14 Passed: Universal Embedded Workspace Adapters & Navbar/Footer Cleaner verified
+✔ Test 15 Passed: Tool-Specific HUD Context Card & 10 Workstation Profiles verified
+✔ Test 16 Passed: Bi-Directional Action Bridge & Event Dispatch verified
+✔ Test 17 Passed: Hermes Agent Integration, Dispatch & REPL Autocomplete verified
 
-```bash
-# Bash:
-source /path/to/zoth-studio/scripts/completions/zoth.bash
-
-# Zsh (in ~/.zshrc):
-fpath=(/path/to/zoth-studio/scripts/completions $fpath)
-autoload -Uz compinit && compinit
+⭐ ALL 17 CYBERPUNK HUD TACTICAL VISUALIZERS, OMNIVERSE, HERMES & ACTION BRIDGE TESTS PASSED (100%)!
 ```
 
 ---
 
-## 5. The 47-Tool Sovereign Arsenal
+## 📜 Documentation Guides
 
-The Zoth Orchestrator (`orchestrator.py`) chains 47 specialized tools divided into 7 functional domains:
-
-1. **Security & OSINT (7 Tools)**: `subsweep`, `cisa-grc-study-portal`, `Local-Business-Lead-Scanner`, `cloud_enum`, `0trace`, `commix`, `arp-scan`.
-2. **AST & Code Audit (7 Tools)**: `ast-validator`, `header-audit`, `blueprint-validator`, `owasp-linter`, `churchofmalware`, `reaper-scanner`, `envguard-pro`.
-3. **AI & Swarm Orchestration (7 Tools)**: `orchestrator`, `zoth-swarm-router`, `consensus-engine`, `ollama-runner`, `hermes-agent`, `prompt-compiler`, `agent-bus-bridge`.
-4. **3D Graphics & Shaders (6 Tools)**: `nexus-3d`, `swarm-arena-3d`, `zoth-world-engine`, `three-orb-renderer`, `shader-forge`, `ascii-raytracer`.
-5. **Media & Video Studio (7 Tools)**: `omnipost`, `comic-engine`, `speech-synth`, `audiocraft-bridge`, `video-composer`, `spectrogram-viz`, `caption-forge`.
-6. **DevOps & Automation (7 Tools)**: `webgen-studio`, `vos-wasm-runner`, `git-sync-daemon`, `docker-compose-gen`, `nginx-vhost-forge`, `cron-manager`, `privacy-gate`.
-7. **Cryptography & Vault (6 Tools)**: `vault-daemon`, `argon2id-derive`, `xchacha20-crypto`, `simplex-bridge`, `signal-cli-bridge`, `solana-wallet-core`.
-
----
-
-## 6. Swarm Bus Protocol & Consensus Arbitration
-
-### On-Disk File IPC (`agent-comms/`)
-Agents synchronize without cloud queues by writing structured JSON packets to `agent-comms/`:
-- `*.request.json` — Outgoing operator tasks and task delegations.
-- `*.proposal.json` — Parallel draft outputs from competing agent harnesses.
-- `*.lock` — Mutex locks preventing race conditions during code writes.
-- `*.result.json` — Verified execution outputs and test summaries.
-
-### Shannon Entropy Consensus Arbitration
-When three models evaluate an architecture:
-$$\Delta H = -\sum_{i=1}^{N} p(x_i) \log_2 p(x_i)$$
-If entropy exceeds threshold ($\Delta H > 0.45$), the Consensus Battle Arena triggers triangulation:
-1. Candidate ASTs are extracted from all three responses.
-2. Identical nodes are accepted into the canonical AST.
-3. Conflicting branches are sent to the Security Reviewer (Draco) for taint analysis.
-4. The finalized AST is compiled and executed.
-
----
-
-## 7. Argon2id BYOK Vault Daemon (`:8787`)
-
-The vault daemon provides zero-knowledge memory enclaves on `127.0.0.1:8787`.
-
-### Cryptographic Invariants
-- **Key Derivation**: Argon2id ($m=65536\text{ KB}, t=3, p=4$).
-- **Symmetric Cipher**: XChaCha20-Poly1305 with 192-bit nonces.
-- **Master Password**: Never persisted to disk; held only in page-locked RAM (`mlock`).
-
-### REST API Endpoints
-- `POST /v1/vault/derive` — Derives a 256-bit symmetric session key from passphrase + salt.
-- `POST /v1/vault/encrypt` — Encrypts plaintext API key into ciphertext + nonce + auth tag.
-- `POST /v1/vault/decrypt` — Decrypts in-memory payload with ephemeral session token.
-- `GET /v1/vault/status` — Returns daemon lock status, active key slots, and memory footprint.
-
----
-
-## 8. 21-Agent Sovereign Pantheon Reference
-
-| Agent | Job Role | Primary Levers & Specialization |
-| :--- | :--- | :--- |
-| **Azoth** | Lead System Architect | Meta-orchestration, multi-agent dispatch, terminal synthesis |
-| **Athena** | Project Planner | Task decomposition, milestone verification, DAG scheduling |
-| **Antigravity** | Automation Specialist | Autonomous code refactoring, test execution, cron scheduling |
-| **Hermes** | Deep Researcher | Documentation indexing, web scraping, AEO & schema synthesis |
-| **Draco** | Security Reviewer | Static AST taint checking, OWASP audit, zero-leak verification |
-| **Kitsune** | Visual & 3D Designer | Glassmorphism UI, Three.js shaders, 60fps canvas animation |
-| **Grok** | Reasoning Engine | First-principles logic, mathematical proofs, dialectic consensus |
-| **Ollama** | Local Neural Engine | 100% offline neural inference on local silicon with zero cloud egress |
-| **Ignis** | Fast Prototyper | Rapid single-file HTML/JS prototypes and instant mockups |
-| **Chronos** | Time-Series Analyst | Event stream replay, performance profiling, latency reduction |
-| **Onyx** | Database Architect | SQLite relational schemas, vector index tuning, durable migrations |
-| **Aether** | Network Engineer | Loopback bindings, WireGuard bridges, DNS routing invariants |
-| **Aquila** | Surveillance & OSINT | Passive reconnaissance, DNS enumeration, SSL cert log audits |
-| **Leviathan** | Systems Engineer | Kernel tuning, process isolation, PTY terminal multiplexing |
-| **Vulcan** | Compiler Specialist | WASM toolchain compilation, C/Rust bindings, native binaries |
-| **Siren** | Audio & Speech | Edge-TTS neural voices, 432Hz synthesizer, audio spectrograms |
-| **Solon** | Compliance Officer | License enforcement, GRC auditing, privacy gate validation |
-| **Echo** | Telemetry Sentry | Sub-millisecond daemon latency checks, heartbeat monitoring |
-| **Kai** | Execution Specialist | High-throughput background queue processing and bash jobs |
-| **Zephyr** | Web3 & Solana | SPL token balances, Solana DeFi telemetry, multi-chain wallets |
-| **Minerva** | Documentation Scribe | Machine-readable `llms.txt`, Markdown manuals, API contracts |
-
----
-
-## 9. Installation & Packaging
-
-- **Debian / Ubuntu / Parrot OS**: `sudo dpkg -i zoth-studio_2.6.0_all.deb`
-- **Linux Universal**: `chmod +x Zoth_Studio-v2.6.0-x86_64.AppImage && ./Zoth_Studio-v2.6.0-x86_64.AppImage`
-- **Windows**: Unzip `zoth-studio-windows-x86_64.zip` and run `install.ps1`
-- **Android**: Install `zoth-studio-android.apk` for mobile SimpleX/Signal bridge control
-
----
-
-## 10. License & Attributions
-
-Zoth Studio is released under the **MIT License**.  
-Developed by **NullAI Tech** (`https://nullai.tech/`). Local sovereign execution — zero telemetry.
+- 🕊️ **[Hermes Agent Architecture Guide](public/docs/hermes-agent.md)**
+- 🎮 **[Cyberpunk HUD Cockpit Manual](public/docs/cyberpunk-hud.md)**
+- 🏛️ **[Home & Sanctum Architecture](public/docs/home-sanctum.md)**
+- 🧠 **[Biomorphic Memory & CLS Theory](public/docs/README.md)**
+- 🎨 **[Brand & Visual Identity Spec](public/brand/README.md)**

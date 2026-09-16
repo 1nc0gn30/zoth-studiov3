@@ -25,10 +25,11 @@
 
 <p align="center">
   <strong><a href="http://127.0.0.1:8088/studio/cyberpunk-hud.html">🎮 Launch Cyberpunk HUD</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/docs/readmes.html">📚 Interactive README Library</a></strong> •
   <strong><a href="http://127.0.0.1:8088/studio/omnipost.html">🎬 OmniPost Video Studio</a></strong> •
-  <strong><a href="http://127.0.0.1:8088/studio/3d-editor.html">🪐 Nexus 3D CAD Viewport</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/studio/3d-editor.html">🪐 Nexus 3D CAD</a></strong> •
   <strong><a href="http://127.0.0.1:8088/studio/swarm.html">⚡ Swarm Arena</a></strong> •
-  <strong><a href="http://127.0.0.1:8088/memory/">🧠 STDP Memory Matrix</a></strong> •
+  <strong><a href="http://127.0.0.1:8088/memory/">🧠 STDP Memory</a></strong> •
   <strong><a href="http://127.0.0.1:8088/docs/">📖 Docs Hub</a></strong>
 </p>
 

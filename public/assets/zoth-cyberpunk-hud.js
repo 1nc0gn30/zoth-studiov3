@@ -1082,6 +1082,23 @@
     }
   ];
 
+  (function mergeWorkstationRegistry() {
+    var extra = (typeof window !== 'undefined' && window.ZOTH_HUD_WORKSTATIONS) ? window.ZOTH_HUD_WORKSTATIONS : [];
+    var byId = {};
+    PRIMARY_WORKSTATIONS.forEach(function (t) { byId[t.id] = t; });
+    extra.forEach(function (t) {
+      if (!t || !t.id) return;
+      if (!byId[t.id]) {
+        PRIMARY_WORKSTATIONS.push(t);
+        byId[t.id] = t;
+      } else {
+        if (t.url && !byId[t.id].url) byId[t.id].url = t.url;
+        if (t.shortName) byId[t.id].shortName = byId[t.id].shortName || t.shortName;
+      }
+    });
+    if (typeof window !== 'undefined') window.ZOTH_PRIMARY_WORKSTATIONS = PRIMARY_WORKSTATIONS;
+  })();
+
   // Port Status Topology
   var PORTS_TOPOLOGY = [
     { port: 8088, name: 'Web Host', desc: 'Zoth Studio Static & Apex Server', status: 'online', latency: '0.4ms', url: 'http://127.0.0.1:8088' },

@@ -11,6 +11,38 @@
 (function (win, doc) {
   'use strict';
 
+  var FALLBACK_PATH_MAP = {
+    '/studio/vos-sandbox.html': 'vos-sandbox',
+    '/studio/webgen.html': 'webgen',
+    '/studio/netlify-ax.html': 'netlify-ax',
+    '/studio/swarm.html': 'swarm',
+    '/studio/consensus.html': 'consensus',
+    '/studio/agent-composer.html': 'agent-composer',
+    '/studio/vision-link.html': 'vision-link',
+    '/studio/ide.html': 'ide',
+    '/studio/tool-bench.html': 'tool-bench',
+    '/studio/math-pillars.html': 'math-pillars',
+    '/studio/bus-monitor.html': 'bus-monitor',
+    '/studio/models.html': 'models',
+    '/studio/notes-reviewer.html': 'notes-reviewer',
+    '/studio/omnipost.html': 'omnipost',
+    '/studio/nexus-3d.html': 'nexus-3d',
+    '/studio/3d-editor.html': '3d-editor',
+    '/studio/netrunner-memory.html': 'netrunner-memory',
+    '/studio/web3-hub.html': 'web3-hub',
+    '/studio/edge-forge.html': 'edge-forge',
+    '/studio/subsweep.html': 'subsweep',
+    '/studio/fusion-arena.html': 'fusion-arena',
+    '/studio/signal-bridge.html': 'signal',
+    '/vault/': 'vault',
+    '/adytum/': 'adytum',
+    '/signal/': 'signal',
+    '/docs/': 'docs',
+    '/pets/': 'pets',
+    '/pets/pet-studio.html': 'pets-studio',
+    '/agents/': 'agents'
+  };
+
   var isEmbedded = false;
   try {
     isEmbedded = (win.self !== win.top) || 
@@ -178,8 +210,28 @@
       ZothEmbeddedAdapter.sendToHUD('ZOTH_TOOL_MOUNTED', { title: doc.title });
 
     } else {
-      // Standalone mode: mount floating launcher badge
+      if (redirectStandaloneIntoHud()) return;
       mountStandaloneHUDLauncher();
+    }
+  }
+
+  function redirectStandaloneIntoHud() {
+    try {
+      if (win.location.search.indexOf('standalone=1') !== -1) return false;
+      var path = win.location.pathname || '';
+      if (/\/studio\/(cockpit|cyberpunk-hud)\.html$/.test(path)) return false;
+      if (path === '/studio/' || path === '/studio/index.html') return false;
+      var map = win.ZOTH_HUD_PATH_TO_TOOL || FALLBACK_PATH_MAP;
+      var id = map[path] || map[path.replace(/\/index\.html$/, '/')];
+      if (!id) {
+        var file = path.substring(path.lastIndexOf('/') + 1).replace(/\.html$/, '');
+        if (path.indexOf('/studio/') === 0 && file && file !== 'index') id = file;
+      }
+      if (!id) return false;
+      win.location.replace('/studio/cyberpunk-hud.html?tool=' + encodeURIComponent(id));
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -193,7 +245,7 @@
     var banner = doc.createElement('div');
     banner.className = 'hud-standalone-launcher-banner';
     banner.innerHTML = '' +
-      '<a href="/studio/cockpit.html?tool=' + encodeURIComponent(toolId) + '" class="hud-launch-cockpit-btn" title="Open this tool inside the Cyberpunk HUD Cockpit">' +
+      '<a href="/studio/cyberpunk-hud.html?tool=' + encodeURIComponent(toolId) + '" class="hud-launch-cockpit-btn" title="Open this tool inside the Cyberpunk HUD">' +
         '<span class="hud-launch-icon">⚡</span>' +
         '<span class="hud-launch-text">OPEN IN CYBERPUNK HUD</span>' +
         '<span class="hud-launch-tag">COCKPIT ➔</span>' +

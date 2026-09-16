@@ -447,7 +447,27 @@ html[data-theme="light"] .shortcut-row kbd {
 }
 </style>
 <link href="/assets/zoth-hud-embedded.css" rel="stylesheet"/>
-<script src="/assets/zoth-hud-embedded.js"></script>
+<script src="/assets/zoth-hud-workstations.js?v=1"></script>
+<script src="/assets/zoth-hud-embedded.js?v=2"></script>
+<script>
+(function () {
+  var HUD = "/studio/cyberpunk-hud.html";
+  var map = window.ZOTH_HUD_PATH_TO_TOOL || {};
+  function rewrite(a) {
+    var href = a.getAttribute("href") || "";
+    if (href.indexOf("/studio/cockpit.html") === 0 && href.indexOf("tool=") === -1) {
+      a.setAttribute("href", HUD);
+      return;
+    }
+    if (href.indexOf("/studio/cyberpunk-hud.html") === 0) return;
+    var id = map[href] || map[href.replace(/index\.html$/, "")];
+    if (id) a.setAttribute("href", HUD + "?tool=" + encodeURIComponent(id));
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("a.ws-card, a.quick-jump-pill").forEach(rewrite);
+  });
+})();
+</script>
 </head>
 <body class="studio-hub">
 <a class="skip skip-to-content" href="#main-content">Skip to main content</a>
