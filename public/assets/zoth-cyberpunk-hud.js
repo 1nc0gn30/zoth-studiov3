@@ -4549,7 +4549,7 @@
 
       filtered.forEach(function (ag) {
         var isCurrent = (STATE.activeAgent === ag.id);
-        html += '<div class="hud-agent-radio-item ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setAgent(\'' + ag.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:' + (isCurrent ? 'rgba(0,240,255,0.08)' : 'rgba(255,255,255,0.02)') + ';border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';clip-path:var(--hud-clip-sm);cursor:pointer;">' +
+        html += '<div class="hud-agent-radio-item ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setAgent(\'' + ag.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;">' +
           '<div style="display:flex;align-items:center;gap:12px;">' +
             '<div style="position:relative;width:34px;height:34px;border-radius:50%;background:rgba(0,240,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';">' +
               '<span style="font-size:1.15rem;">' + (ag.icon || '🔮') + '</span>' +
@@ -4595,88 +4595,120 @@
 
     renderMobileMemoryBody: function () {
       var memData = STATE.memoryData || { totalNodes: 420, workingBuffer: 8, consolidationHealth: '99.8%', lastPulse: 'Just now' };
-      var html = '<div style="display:flex;flex-direction:column;gap:12px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
-        '<div style="background:rgba(0,240,255,0.06);border:1px solid var(--hud-border);padding:10px 12px;clip-path:var(--hud-clip-sm);display:flex;justify-content:space-between;align-items:center;">' +
+      var html =
+        '<div style="display:flex;flex-direction:column;gap:12px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
+
+        // Status header
+        '<div style="background:rgba(0,240,255,0.06);border:1px solid var(--hud-border);padding:10px 12px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">' +
           '<div>' +
-            '<div style="font-size:0.60rem;color:var(--hud-text-muted);letter-spacing:0.05em;">LUCY DAEMON STATUS (:8788)</div>' +
-            '<div style="font-family:var(--hud-font-mono);font-size:0.80rem;font-weight:800;color:var(--hud-green);margin-top:2px;">● LIVE KNOWLEDGE GRAPH</div>' +
+            '<div style="font-size:0.58rem;color:var(--hud-text-muted);letter-spacing:0.05em;text-transform:uppercase;">LUCY MEMORY DAEMON (:8788)</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.80rem;font-weight:800;color:var(--hud-green);margin-top:2px;display:flex;align-items:center;gap:6px;">' +
+              '<span class="hud-status-dot" style="width:7px;height:7px;"></span> LIVE KNOWLEDGE GRAPH' +
+            '</div>' +
           '</div>' +
           '<button type="button" class="hud-stage-btn" onclick="ZothHUD.pulseSynapticGraph();" style="padding:6px 12px;background:var(--hud-cyan);color:#000;font-weight:800;font-size:0.68rem;">⚡ CONSOLIDATE</button>' +
         '</div>' +
 
+        // Stat cards
         '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;">' +
-          '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px;text-align:center;border-radius:4px;">' +
-            '<div style="font-size:0.55rem;color:var(--hud-text-muted);">TOTAL NODES</div>' +
-            '<div style="font-family:var(--hud-font-mono);font-size:0.85rem;font-weight:800;color:var(--hud-cyan);margin-top:2px;">' + (memData.totalNodes || 420) + '</div>' +
+          '<div class="hud-mem-stat">' +
+            '<div class="hud-mem-stat-label">TOTAL NODES</div>' +
+            '<div class="hud-mem-stat-value cyan">' + (memData.totalNodes || 420) + '</div>' +
           '</div>' +
-          '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px;text-align:center;border-radius:4px;">' +
-            '<div style="font-size:0.55rem;color:var(--hud-text-muted);">WORKING BUF</div>' +
-            '<div style="font-family:var(--hud-font-mono);font-size:0.85rem;font-weight:800;color:var(--hud-gold);margin-top:2px;">' + (memData.workingBuffer || 8) + '</div>' +
+          '<div class="hud-mem-stat">' +
+            '<div class="hud-mem-stat-label">WORKING BUF</div>' +
+            '<div class="hud-mem-stat-value gold">' + (memData.workingBuffer || 8) + '</div>' +
           '</div>' +
-          '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px;text-align:center;border-radius:4px;">' +
-            '<div style="font-size:0.55rem;color:var(--hud-text-muted);">HEALTH</div>' +
-            '<div style="font-family:var(--hud-font-mono);font-size:0.85rem;font-weight:800;color:var(--hud-green);margin-top:2px;">' + (memData.consolidationHealth || '99.8%') + '</div>' +
+          '<div class="hud-mem-stat">' +
+            '<div class="hud-mem-stat-label">HEALTH</div>' +
+            '<div class="hud-mem-stat-value green">' + (memData.consolidationHealth || '99.8%') + '</div>' +
           '</div>' +
         '</div>' +
 
+        // Working buffer
         '<div>' +
-          '<div style="font-family:var(--hud-font-hud);font-size:0.70rem;color:var(--hud-gold);font-weight:800;margin-bottom:6px;">ACTIVE WORKING BUFFER</div>' +
-          '<div style="display:flex;flex-direction:column;gap:6px;">' +
-            '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px 10px;border-radius:4px;">' +
+          '<div style="font-family:var(--hud-font-hud);font-size:0.68rem;color:var(--hud-gold);font-weight:800;margin-bottom:6px;letter-spacing:0.06em;">◈ ACTIVE WORKING BUFFER</div>' +
+          '<div style="display:flex;flex-direction:column;gap:5px;">' +
+            '<div class="hud-mem-buffer-item">' +
               '<div style="display:flex;justify-content:space-between;align-items:center;">' +
                 '<span style="font-size:0.70rem;font-weight:700;color:var(--hud-text-primary);">Sovereign HUD Responsive Architecture</span>' +
-                '<span style="font-size:0.55rem;color:var(--hud-cyan);background:rgba(0,240,255,0.1);padding:1px 5px;border-radius:2px;">CORE</span>' +
+                '<span class="hud-mem-buffer-tag core">CORE</span>' +
               '</div>' +
               '<div style="font-size:0.60rem;color:var(--hud-text-muted);margin-top:2px;">Multi-device layout engine synced with live loopback daemons.</div>' +
             '</div>' +
-            '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px 10px;border-radius:4px;">' +
+            '<div class="hud-mem-buffer-item">' +
               '<div style="display:flex;justify-content:space-between;align-items:center;">' +
                 '<span style="font-size:0.70rem;font-weight:700;color:var(--hud-text-primary);">Athena Graph Consensus Invariants</span>' +
-                '<span style="font-size:0.55rem;color:var(--hud-gold);background:rgba(251,191,36,0.1);padding:1px 5px;border-radius:2px;">AEO</span>' +
+                '<span class="hud-mem-buffer-tag aeo">AEO</span>' +
               '</div>' +
               '<div style="font-size:0.60rem;color:var(--hud-text-muted);margin-top:2px;">21-agent DAG consensus cycle completed at step 428.</div>' +
+            '</div>' +
+            '<div class="hud-mem-buffer-item">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+                '<span style="font-size:0.70rem;font-weight:700;color:var(--hud-text-primary);">Tool Nexus Schema Registry</span>' +
+                '<span class="hud-mem-buffer-tag sys">SYS</span>' +
+              '</div>' +
+              '<div style="font-size:0.60rem;color:var(--hud-text-muted);margin-top:2px;">298+ validated tool contracts indexed and live.</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
 
-        '<div style="margin-top:4px;">' +
-          '<div style="font-family:var(--hud-font-hud);font-size:0.70rem;color:var(--hud-cyan);font-weight:800;margin-bottom:6px;">STORE NEW INSIGHT INTO MEMORY</div>' +
+        // Store insight
+        '<div>' +
+          '<div style="font-family:var(--hud-font-hud);font-size:0.68rem;color:var(--hud-cyan);font-weight:800;margin-bottom:6px;letter-spacing:0.06em;">▸ STORE NEW INSIGHT</div>' +
           '<div style="display:flex;gap:6px;">' +
-            '<input type="text" id="hud-mobile-mem-input" placeholder="Type insight or telemetry note..." onkeydown="if(event.key===\'Enter\') ZothHUD.injectMemoryInsight();" style="flex:1;background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 10px;font-size:0.72rem;clip-path:var(--hud-clip-sm);color:var(--hud-text-primary);" />' +
+            '<input type="text" id="hud-mobile-mem-input" placeholder="Type insight or telemetry note..." onkeydown="if(event.key===\'Enter\') ZothHUD.injectMemoryInsight();" style="flex:1;background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 10px;font-size:0.72rem;border-radius:4px;color:var(--hud-text-primary);" />' +
             '<button type="button" class="hud-stage-btn" onclick="ZothHUD.injectMemoryInsight();" style="padding:8px 12px;background:var(--hud-gold);color:#000;font-weight:800;font-size:0.70rem;">+ STORE</button>' +
           '</div>' +
         '</div>' +
-      '</div>';
+
+        '</div>';
       return html;
     },
 
     renderMobileTelemetryBody: function () {
       var p = STATE.pillarsData;
-      var html = '<div style="display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto;padding-right:4px;">' +
+      var html =
+        '<div style="display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto;padding-right:4px;">' +
+
+        // Status header row
         '<div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;">' +
-          '<div style="background:rgba(0,240,255,0.06);border:1px solid var(--hud-border);padding:8px;clip-path:var(--hud-clip-sm);">' +
-            '<div style="font-size:0.58rem;color:var(--hud-text-muted);">LOOPBACK STATUS</div>' +
-            '<div style="font-family:var(--hud-font-mono);font-size:0.75rem;font-weight:800;color:var(--hud-green);margin-top:2px;">● 7 PORTS ONLINE</div>' +
+          '<div style="background:rgba(0,240,255,0.06);border:1px solid var(--hud-border);padding:8px 10px;border-radius:5px;">' +
+            '<div style="font-size:0.56rem;color:var(--hud-text-muted);text-transform:uppercase;letter-spacing:0.05em;">LOOPBACK STATUS</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.76rem;font-weight:800;color:var(--hud-green);margin-top:2px;display:flex;align-items:center;gap:5px;">' +
+              '<span class="hud-status-dot" style="width:6px;height:6px;"></span> 7 PORTS ONLINE' +
+            '</div>' +
           '</div>' +
-          '<div style="background:rgba(251,191,36,0.06);border:1px solid var(--hud-border-gold);padding:8px;clip-path:var(--hud-clip-sm);">' +
-            '<div style="font-size:0.58rem;color:var(--hud-text-muted);">ACTIVE FLEET</div>' +
-            '<div style="font-family:var(--hud-font-mono);font-size:0.75rem;font-weight:800;color:var(--hud-gold);margin-top:2px;">21 AGENTS</div>' +
+          '<div style="background:rgba(251,191,36,0.06);border:1px solid var(--hud-border-gold);padding:8px 10px;border-radius:5px;">' +
+            '<div style="font-size:0.56rem;color:var(--hud-text-muted);text-transform:uppercase;letter-spacing:0.05em;">ACTIVE FLEET</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.76rem;font-weight:800;color:var(--hud-gold);margin-top:2px;">21 AGENTS</div>' +
           '</div>' +
         '</div>' +
+
+        // 6 pillars
         '<div>' +
-          '<div style="font-family:var(--hud-font-hud);font-size:0.74rem;font-weight:800;color:var(--hud-gold);margin-bottom:6px;">6 SACRED MATH PILLARS</div>' +
+          '<div style="font-family:var(--hud-font-hud);font-size:0.68rem;font-weight:800;color:var(--hud-gold);margin-bottom:6px;letter-spacing:0.06em;">◈ 6 SACRED MATH PILLARS</div>' +
           '<div style="display:flex;flex-direction:column;gap:6px;">';
 
+      var pillarColors = { p1: 'var(--hud-pillar-1)', p2: 'var(--hud-pillar-2)', p3: 'var(--hud-pillar-3)', p4: 'var(--hud-pillar-4)', p5: 'var(--hud-pillar-5)', p6: 'var(--hud-pillar-6)' };
+      var pillarWidths = { p1: '88%', p2: '74%', p3: '91%', p4: '62%', p5: '79%', p6: '83%' };
       var keys = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+
       keys.forEach(function (k) {
         var item = p[k];
-        html += '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px 10px;clip-path:var(--hud-clip-sm);">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-            '<span style="font-family:var(--hud-font-mono);font-size:0.68rem;font-weight:700;color:var(--hud-text-primary);">' + item.name + '</span>' +
-            '<span style="font-size:0.60rem;color:var(--hud-cyan);font-family:var(--hud-font-mono);">' + item.value + '</span>' +
-          '</div>' +
-          '<div style="font-family:var(--hud-font-mono);font-size:0.60rem;color:var(--hud-text-muted);margin-top:2px;">' + item.formula + '</div>' +
-        '</div>';
+        var clr = pillarColors[k] || 'var(--hud-cyan)';
+        var pct = pillarWidths[k] || '70%';
+        html +=
+          '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);padding:8px 10px;border-radius:5px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+              '<span style="font-family:var(--hud-font-mono);font-size:0.67rem;font-weight:700;color:var(--hud-text-primary);">' + item.name + '</span>' +
+              '<span style="font-size:0.60rem;color:' + clr + ';font-family:var(--hud-font-mono);white-space:nowrap;margin-left:8px;">' + item.value + '</span>' +
+            '</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.58rem;color:var(--hud-text-muted);margin-top:1px;">' + item.formula + '</div>' +
+            '<div class="hud-pillar-bar-track" style="margin-top:5px;">' +
+              '<div class="hud-pillar-bar-fill" style="width:' + pct + ';background:' + clr + ';"></div>' +
+            '</div>' +
+          '</div>';
       });
 
       html += '</div></div></div>';
@@ -4695,7 +4727,7 @@
 
         // 1. Theme Palette Selector
         '<div class="hud-quick-section">' +
-          '<div class="hud-quick-section-title" style="font-family:var(--hud-font-hud);font-size:0.70rem;color:var(--hud-gold);font-weight:800;letter-spacing:0.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
+          '<div class="hud-quick-section-label">' +
             '<span>🎨</span> 4 THEME PALETTES (CYBERPUNK MATRIX)' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;">' +
@@ -4720,7 +4752,7 @@
 
         // 2. Cyber HUD FX & Sound Toggles
         '<div class="hud-quick-section">' +
-          '<div class="hud-quick-section-title" style="font-family:var(--hud-font-hud);font-size:0.70rem;color:var(--hud-gold);font-weight:800;letter-spacing:0.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
+          '<div class="hud-quick-section-label">' +
             '<span>⚡</span> SENSORY & POV FX' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;">' +
@@ -4758,7 +4790,7 @@
         // 3. Loopback Daemons Topology
         '<div class="hud-quick-section">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
-            '<div class="hud-quick-section-title" style="font-family:var(--hud-font-hud);font-size:0.70rem;color:var(--hud-gold);font-weight:800;letter-spacing:0.06em;">' +
+            '<div class="hud-quick-section-label">' +
               '🔌 LOCAL LOOPBACK DAEMONS' +
             '</div>' +
             '<button type="button" class="hud-stage-btn" onclick="ZothHUD.pingPorts();" style="padding:2px 8px;font-size:0.60rem;background:var(--hud-cyan);color:#000;font-weight:800;">⚡ PING ALL</button>' +
@@ -4766,12 +4798,12 @@
           '<div style="display:flex;flex-direction:column;gap:6px;">';
 
       PORTS_TOPOLOGY.forEach(function (p) {
-        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);border-radius:4px;">' +
+        html += '<div class="hud-port-row">' +
           '<div style="display:flex;align-items:center;gap:8px;">' +
             '<span class="hud-led green"></span>' +
             '<div>' +
-              '<div style="font-size:0.72rem;font-weight:700;color:var(--hud-text-primary);font-family:var(--hud-font-mono);">:' + p.port + ' ' + p.name + '</div>' +
-              '<div style="font-size:0.58rem;color:var(--hud-text-muted);">' + p.desc + '</div>' +
+              '<div class="hud-port-number">:' + p.port + ' ' + p.name + '</div>' +
+              '<div class="hud-port-desc">' + p.desc + '</div>' +
             '</div>' +
           '</div>' +
           '<a href="' + p.url + '" target="_blank" class="hud-stage-btn" style="padding:2px 6px;font-size:0.58rem;">OPEN ↗</a>' +
@@ -4782,7 +4814,7 @@
 
         // 4. Device Viewport Mode Switcher
         '<div class="hud-quick-section">' +
-          '<div class="hud-quick-section-title" style="font-family:var(--hud-font-hud);font-size:0.70rem;color:var(--hud-gold);font-weight:800;letter-spacing:0.06em;margin-bottom:8px;">' +
+          '<div class="hud-quick-section-label">' +
             '📱 VIEWPORT DEVICE EMULATION' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:6px;">' +
