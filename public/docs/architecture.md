@@ -21,7 +21,7 @@ Zoth Studio is built on a non-negotiable architectural invariant: **operator sov
 │              │                                  │                      │
 │              ▼                                  ▼                      │
 │   ┌─────────────────────┐    ┌─────────────────────────────────────┐   │
-│   │ 47+ Sovereign Tools │◄───┤ 21-Agent Pantheon & Consensus Arena │   │
+│   │ 298+ Sovereign Tool │◄───┤ 21-Agent Pantheon & Consensus Arena │   │
 │   │ (AST/OSINT/WebGen)  │    │ (3-Agent Triangulation & Entropy)   │   │
 │   └──────────┬──────────┘    └──────────────────┬──────────────────┘   │
 │              │                                  │                      │
@@ -41,12 +41,14 @@ All Zoth services bind to loopback (`127.0.0.1`) by default. No ports are expose
 
 | Port & Binding | Protocol | Security Boundary | Role & Subsystem |
 | :--- | :--- | :--- | :--- |
-| `http://127.0.0.1:8088/` | HTTP/1.1 | Local / Tunnel-Safe | Static Studio Hub, documentation, 3D showcases, AEO knowledge graph. |
+| `http://127.0.0.1:8088/` | HTTP/1.1 | Local / Tunnel-Safe | Static Studio Hub, Cyberpunk HUD Cockpit, documentation, 3D showcases. |
 | `http://127.0.0.1:8484/` | HTTP + WS | Private Loopback | Autonomous Swarm Operator Deck, multi-agent chat, live terminal PTY dock. |
+| `http://127.0.0.1:8788/` | HTTP REST / SSE | Private Loopback | Lucy Biomorphic STDP Memory Daemon, dual-layer narrative & graph API. |
 | `http://127.0.0.1:8787/` | HTTP REST | Private Loopback | `zoth-vault-daemon`: Zero-knowledge Argon2id key derivation & XChaCha20 crypto. |
-| `http://127.0.0.1:11434/`| HTTP REST | Private Loopback | Local Ollama inference: `qwen2.5-coder:1.5b`, `llama3.3`, `smollm2:360m`. |
+| `http://127.0.0.1:8765/` | HTTP / SSE | Private Loopback | Signal Swarm Bridge daemon with tagged conversation memory & SSE. |
+| `http://127.0.0.1:8767/` | HTTP / SSE | Private Loopback | SimpleX Web Bridge API synchronizing SQLite `bridge.db` with the Web UI. |
 | `ws://127.0.0.1:5225/`  | WebSocket | Private Loopback | Headless SimpleX protocol daemon for metadata-free post-quantum E2EE. |
-| `http://127.0.0.1:8767/` | HTTP/SSE | Private Loopback | SimpleX Web Bridge API synchronizing SQLite `bridge.db` with the Web UI. |
+| `http://127.0.0.1:11434/`| HTTP REST | Private Loopback | Local Ollama inference: `zoth-micro`, `qwen2.5-coder`, `hermes3`. |
 | `http://127.0.0.1:8989/` | HTTP/WS | Private Loopback | Swarm Bus Live Mirror streaming on-disk IPC messages from `agent-comms/`. |
 
 ---

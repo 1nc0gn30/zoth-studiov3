@@ -7,7 +7,7 @@
 [![Cockpit Surface](https://img.shields.io/badge/surface-studio%2Fcockpit.html-00f0ff?style=for-the-badge&logo=target&logoColor=white)](http://127.0.0.1:8088/studio/cockpit.html)
 [![Themes](https://img.shields.io/badge/themes-Dark%20%7C%20Light%20%7C%20Matrix%20%7C%20Gold-fbbf24?style=for-the-badge&logo=safari&logoColor=white)](http://127.0.0.1:8088/studio/cockpit.html)
 [![Zero Root Scroll](https://img.shields.io/badge/layout-Zero%20Root%20Scroll%20100vh-34d399?style=for-the-badge&logo=w3c&logoColor=white)](http://127.0.0.1:8088/studio/cockpit.html)
-[![Tool Registry](https://img.shields.io/badge/tools-14%2B%20Modular%20Suites-a855f7?style=for-the-badge&logo=webgl&logoColor=white)](http://127.0.0.1:8088/studio/cockpit.html)
+[![Tool Registry](https://img.shields.io/badge/tools-298%2B%20Tools%20%7C%2028%2B%20Suites-a855f7?style=for-the-badge&logo=webgl&logoColor=white)](http://127.0.0.1:8088/studio/cockpit.html)
 
 <br>
 

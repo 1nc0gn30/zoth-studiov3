@@ -20,7 +20,7 @@
 
 | Surface | Port / URL | Function | Security & Isolation Doctrine |
 | :--- | :--- | :--- | :--- |
-| **Public Hub** | `http://127.0.0.1:8088/` | Static brochures, 23+ creative suites, 3D showcases, AEO graph | Public / Tunnel Safe |
+| **Public Hub & HUD** | `http://127.0.0.1:8088/` | Static brochures, Cyberpunk HUD, 28+ creative suites, 3D showcases | Public / Tunnel Safe |
 | **Operator Deck** | `http://127.0.0.1:8484/` | Multi-model chat harness, terminal dock, swarm arbitration engine | **Loopback Only** (`127.0.0.1`) |
 | **ESP32-S3 Serial Bridge** | `http://127.0.0.1:8585/` | Hardware Web HUD, serial monitor & TTS audio server | Private Loopback |
 | **Argon2id Vault Daemon** | `http://127.0.0.1:8787/` | Hardware-isolated zero-leak key store (Rust RPC daemon) | **Zero-Leak Loopback** |
@@ -31,20 +31,25 @@
 
 ---
 
-## 🎛️ 2. Operator Command Deck (`:8484`)
+## 🎛️ 2. Operator Command Deck & HUD Shortcuts
 
 ### ⚡ Interactive Keyboard Shortcuts
 * `Enter`: Send message or execute active slash command.
 * `Shift + Enter`: Multi-line prompt formatting in chat composer.
 * `↑ ArrowUp`: When input is empty, loads your previous prompt for instant editing and re-running.
-* `⌘K / Ctrl+K`: Focus the composer dock.
+* `⌘K / Ctrl+K`: Focus the composer dock or open the global Command Palette across 298+ tools.
 * `⌘N / Ctrl+N`: Start a fresh multi-agent session.
 * `Alt + P`: Open 24 Cyber Pet Companion selector.
 * `Alt + V`: Open Zero-Knowledge Argon2id Vault unseal modal.
+* `Shift + K`: Toggle Kiroshi POV Visor mode with targeting reticle and optical zoom.
+* `Shift + X`: Trigger Sandevistan Overdrive (10s boosted frame pacing & chromatic aberration).
+* `Shift + S`: Toggle Dual-Tool Split Stage side-by-side mode.
+* `Shift + M`: Mute / Unmute Procedural Cyber Audio Synthesizer.
+* `Shift + T`: Cycle 4-theme engine (`dark`, `matrix`, `gold`, `light`).
 
 ### 📜 Master Slash Commands
 * `/doctor`: Run automated system dependency audit and diagnostic scan (`orchestrator.py doctor`).
-* `/scan`: Re-index and verify all 47+ local tool manifests (`orchestrator.py scan`).
+* `/scan`: Re-index and verify all 298+ local tool manifests (`orchestrator.py scan`).
 * `/github [repos|dispatch]`: Query GitHub Octokit REST endpoints or trigger Actions workflows.
 * `/models`: Switch neural providers (Ollama `zoth-micro`, `qwen2.5-coder:1.5b`, `smollm2:360m`, OpenAI, Groq, Cerebras).
 * `/pet <name>`: Engage specialized companion cyber pets (`azoth`, `kai`, `draco`, `ignis`, `athena`, `lycan`, `lucy`).

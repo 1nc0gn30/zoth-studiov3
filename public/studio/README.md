@@ -6,7 +6,7 @@ Welcome to the **Zoth Studio Workstation Suite**, the premier local-first, zero-
 
 ## 🌟 Executive Overview
 
-Zoth Studio provides 21 purpose-built, high-performance visual workstations designed for sovereign operators, AI engineers, and autonomous agent swarms. Every station operates strictly on local hardware via loopback APIs, ensuring **100% data sovereignty, zero telemetry, and zero cloud lock-in**.
+Zoth Studio provides 28+ purpose-built, high-performance visual workstations designed for sovereign operators, AI engineers, and autonomous agent swarms. Every station operates strictly on local hardware via loopback APIs, ensuring **100% data sovereignty, zero telemetry, and zero cloud lock-in**.
 
 ```
                            ┌────────────────────────┐
@@ -31,31 +31,42 @@ Zoth Studio provides 21 purpose-built, high-performance visual workstations desi
 
 ---
 
-## 🧭 Complete Workstation Inventory (21 Sovereign Stations)
+## 🧭 Complete Workstation Inventory (28+ Sovereign Stations)
 
 | # | Workstation | URL Path | Core Capabilities & Architecture |
 |---|---|---|---|
-| 1 | **Workstations Hub** | `/studio/index.html` | Master catalog, telemetry HUD strip, 21 station cards with category filtering. |
-| 2 | **The Cockpit** | `/studio/cockpit.html` | 21-Agent autonomous swarm command deck, real-time memory sync, quick goals, emergency killswitches. |
-| 3 | **Tool Bench 2.0 & Sim Suite** | `/studio/tool-bench.html` | 7-module validated tool harness, zero-latency HTTP mock, token throughput velocity, socket packet inspector. |
-| 4 | **3D Swarm Arena & Radar** | `/studio/swarm.html` | Kinetic WebGL 3D arena (Craig Reynolds flocking boids, helix/sphere/torus modes), real-time dialogue feed. |
-| 5 | **Sovereign Operator IDE** | `/studio/ide.html` | Multi-pane file tree, multi-tab code editor, real-time Tree-Sitter/V8 AST inspector, Shannon entropy meter, interactive PTY terminal. |
-| 6 | **Consensus Battle Arena** | `/studio/consensus.html` | 3-Agent triangulation arena, AST synthesis, dialectical debate resolution. |
-| 7 | **WebGen Studio** | `/studio/webgen.html` | Universal interactive PTY terminal, live frontend foundry, template generators. |
-| 8 | **vOS Wasm Sandbox** | `/studio/vos-sandbox.html` | In-browser WebContainer, micro-Linux environment, sandbox file system. |
-| 9 | **Nexus 3D Omniverse** | `/studio/nexus-3d.html` | WebGL CAD modeling, procedural AI meshes, spatial kinematic animations. |
-| 10 | **OmniPost 2.0 Video** | `/studio/omnipost.html` | 60 FPS HTML5 Canvas video compositor, timeline sequencer, social motion export. |
-| 11 | **AI Math Pillars** | `/studio/math-pillars.html` | Interactive visualizations for Linear Algebra, STDP Hebbian learning, Riemannian manifolds, and Shannon entropy. |
-| 12 | **SimpleX ↔ Matrix Bridge** | `/secure-comms/` | Zero-knowledge end-to-end encrypted messaging gateway. |
-| 13 | **Signal Swarm Bridge** | `/signal/` | Mobile phone operator command deck, voice dispatch, SSE real-time stream. |
-| 14 | **Web3 & Solana DeFi Hub** | `/studio/web3-hub.html` | Non-custodial multi-chain wallets, live Solana RPC matrices, transaction builder. |
-| 15 | **Master Azoth Sanctum** | `/zoth/` | Sovereign alchemical AI core, cognitive state inspector, multi-modal synthesis. |
-| 16 | **21-Agent Pantheon** | `/agents/` | Complete directory of 21 model archetypes, system prompts, role specializations. |
-| 17 | **Memory Whitespace** | `/memory/` | Biomorphic associative vector graph, Lucy Oracle semantic retrieval. |
-| 18 | **Zoth World 3D Sanctum** | `/zoth-world.html` | Immersive 3D WebGL multiverse sanctum and living spatial swarm. |
-| 19 | **Adytum Cryptographic Gateway** | `/adytum/` | Offline hardware security layer, cryptographic seed generator, zero-airgap key vaults. |
-| 20 | **Companion Pets 3D** | `/pets/` | Volumetric mascot spirits (Azoth, Kitsu, Hermes, Lucy), custom soundboards, desktop companions. |
-| 21 | **Sovereign Vault** | `/vault/` | Argon2id & XChaCha20-Poly1305 encrypted BYOK keyring and token store. |
+| 1 | **Cyberpunk HUD Cockpit** | `/studio/cyberpunk-hud.html` | Flagship 2-column video game cockpit, split stage, radar, audio scope, and REPL. |
+| 2 | **Workstations Hub** | `/studio/index.html` | Master catalog, telemetry HUD strip, 28+ station cards with category filtering. |
+| 3 | **The Cockpit** | `/studio/cockpit.html` | 21-Agent autonomous swarm command deck, real-time memory sync, quick goals, emergency killswitches. |
+| 4 | **Tool Nexus Explorer** | `/studio/tool-nexus.html` | Searchable catalog of 298+ tools with JSON-Schema contract validation and direct dispatch. |
+| 5 | **Tool Bench 2.0 & Sim Suite** | `/studio/tool-bench.html` | 7-module validated tool harness, zero-latency HTTP mock, token throughput velocity, socket packet inspector. |
+| 6 | **3D Swarm Arena & Radar** | `/studio/swarm.html` | Kinetic WebGL 3D arena (Craig Reynolds flocking boids, helix/sphere/torus modes), real-time dialogue feed. |
+| 7 | **Sovereign Operator IDE** | `/studio/ide.html` | Multi-pane file tree, multi-tab code editor, real-time Tree-Sitter/V8 AST inspector, Shannon entropy meter, interactive PTY terminal. |
+| 8 | **Consensus Battle Arena v2** | `/studio/consensus.html` | 3-Agent triangulation arena, AST synthesis, dialectical debate resolution ($H < 0.20$ bits). |
+| 9 | **WebGen Studio** | `/studio/webgen.html` | Universal interactive PTY terminal, live frontend foundry, 8-step template generators. |
+| 10 | **vOS Wasm Sandbox** | `/studio/vos-sandbox.html` | In-browser WebContainer, micro-Linux environment, sandbox file system. |
+| 11 | **Nexus 3D Omniverse** | `/studio/nexus-3d.html` | WebGL CAD modeling, procedural AI meshes, spatial kinematic animations, GLTF/USDZ export. |
+| 12 | **3D CAD Mesh Deformer** | `/studio/3d-editor.html` | CAD-grade 3D mesh deformer, vertex position inspector, and normal vector visualizer. |
+| 13 | **OmniPost 2.0 Video** | `/studio/omnipost.html` | 60 FPS HTML5 Canvas video compositor, multi-platform preview cards, AI tone shifter, WebCodecs export. |
+| 14 | **AI Math Pillars** | `/studio/math-pillars.html` | Interactive visualizations for Linear Algebra, STDP Hebbian learning, Riemannian manifolds, and Shannon entropy. |
+| 15 | **Netrunner Memory Studio** | `/studio/netrunner-memory.html` | Biomorphic STDP synaptic graph, Lucy (:8788) sync, Obsidian export, and 3D cyberspace world. |
+| 16 | **Peer Bus & Swarm Bridge** | `/studio/peer-bus.html` | Multi-agent file bus coordination, live event stream, broadcast dispatch. |
+| 17 | **Connectors & Loopback Bridge**| `/studio/connectors.html` | Integration hub for local daemons (:8788, :8787, :8765, :8767, :11434). |
+| 18 | **Bus Monitor Telemetry** | `/studio/bus-monitor.html` | Real-time message throughput, latency waterfall, and packet telemetry. |
+| 19 | **Edge Function Forge** | `/studio/edge-forge.html` | Serverless V8 isolate editor, rate limiters, Solana RPC connectors. |
+| 20 | **SubSweep Reconnaissance** | `/studio/subsweep.html` | OSINT attack surface scanner, CT log probe, and TLS cryptographic auditor. |
+| 21 | **Vision Link Spatial HUD** | `/studio/vision-link.html` | Webcam hand gesture recognition, 3D holographic overlays, and air typing keyboard. |
+| 22 | **AI Model Foundry** | `/studio/models.html` | Local model benchmark arena with latency waterfall & prompt testing. |
+| 23 | **Visual DAG Agent Composer** | `/studio/agent-composer.html` | Node graph editor with bezier connecting wires and playbook exporter. |
+| 24 | **SimpleX ↔ Matrix Bridge** | `/secure-comms/` | Zero-knowledge end-to-end encrypted messaging gateway. |
+| 25 | **Signal Swarm Bridge** | `/signal/` | Mobile phone operator command deck, voice dispatch, SSE real-time stream. |
+| 26 | **Web3 & Solana DeFi Hub** | `/studio/web3-hub.html` | Non-custodial multi-chain wallets, live Solana RPC matrices, transaction builder. |
+| 27 | **Master Azoth Sanctum** | `/zoth/` | Sovereign alchemical AI core, cognitive state inspector, multi-modal synthesis. |
+| 28 | **21-Agent Pantheon** | `/agents/` | Complete directory of 21 model archetypes, system prompts, role specializations. |
+| 29 | **Memory Whitespace** | `/memory/` | Biomorphic associative vector graph, Lucy Oracle semantic retrieval. |
+| 30 | **Adytum Cryptographic Gateway**| `/adytum/` | Offline hardware security layer, cryptographic seed generator, zero-airgap key vaults. |
+| 31 | **Companion Pets 3D & Dex** | `/pets/` | Volumetric mascot spirits (Azoth, Kitsu, Hermes, Lucy), custom soundboards, desktop companions. |
+| 32 | **Sovereign Vault** | `/vault/` | Argon2id & XChaCha20-Poly1305 encrypted BYOK keyring and token store. |
 
 ---
 
