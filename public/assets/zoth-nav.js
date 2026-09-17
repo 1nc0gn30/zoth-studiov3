@@ -1351,19 +1351,10 @@
       });
     }
 
-    // Topbar Scroll Blur Listener & Back-to-Top Button
-    var backToTop = document.getElementById("zoth-back-to-top");
-    if (!backToTop) {
-      backToTop = document.createElement("button");
-      backToTop.id = "zoth-back-to-top";
-      backToTop.className = "zoth-back-to-top";
-      backToTop.title = "Back to Top";
-      backToTop.innerHTML = "↑";
-      backToTop.addEventListener("click", function() {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        if (window.ZothAudioFX) window.ZothAudioFX.playClick(900, 0.05);
-      });
-      document.body.appendChild(backToTop);
+    // Clean up any legacy back-to-top floating button from DOM
+    var legacyBackToTop = document.getElementById("zoth-back-to-top");
+    if (legacyBackToTop && legacyBackToTop.parentNode) {
+      legacyBackToTop.parentNode.removeChild(legacyBackToTop);
     }
 
     if (!topbar.dataset.scrollBound) {
@@ -1380,12 +1371,6 @@
           var maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
           var pct = Math.min(100, Math.max(0, (window.scrollY / maxScroll) * 100));
           scrollProgress.style.width = pct + "%";
-        }
-
-        if (window.scrollY > 300) {
-          backToTop.classList.add("visible");
-        } else {
-          backToTop.classList.remove("visible");
         }
       };
       window.addEventListener("scroll", onScroll, { passive: true });
