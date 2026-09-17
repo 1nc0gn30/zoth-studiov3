@@ -4311,8 +4311,55 @@
 
   var MobileSheets = {
     activeSheet: null,
+    touchStartY: 0,
+    touchDeltaY: 0,
+    isDragging: false,
+
+    initTouchGestures: function () {
+      var drawer = document.getElementById('hud-sheet-drawer') || document.getElementById('hudSheetDrawer');
+      if (!drawer || drawer._touchBound) return;
+      drawer._touchBound = true;
+
+      var self = this;
+      var handle = drawer.querySelector('.hud-sheet-handle-wrap') || drawer.querySelector('.hud-sheet-header') || drawer;
+
+      if (handle && handle.addEventListener) {
+        handle.addEventListener('touchstart', function (e) {
+          if (!drawer.classList.contains('is-open')) return;
+          if (e.touches && e.touches[0]) {
+            self.touchStartY = e.touches[0].clientY;
+            self.touchDeltaY = 0;
+            self.isDragging = true;
+            drawer.style.transition = 'none';
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', function (e) {
+          if (!self.isDragging) return;
+          if (e.touches && e.touches[0]) {
+            var currentY = e.touches[0].clientY;
+            self.touchDeltaY = currentY - self.touchStartY;
+            if (self.touchDeltaY > 0) {
+              drawer.style.transform = 'translateY(' + self.touchDeltaY + 'px)';
+            }
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchend', function () {
+          if (!self.isDragging) return;
+          self.isDragging = false;
+          drawer.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+          if (self.touchDeltaY > 75) {
+            self.close();
+          } else {
+            drawer.style.transform = 'translateY(0)';
+          }
+        }, { passive: true });
+      }
+    },
 
     open: function (sheetId) {
+      this.initTouchGestures();
       var drawer = document.getElementById('hud-sheet-drawer') || document.getElementById('hudSheetDrawer');
       var backdrop = document.getElementById('hud-sheet-backdrop') || document.getElementById('hudSheetBackdrop');
       var titleEl = document.getElementById('hud-sheet-title') || document.getElementById('hudSheetTitle');
@@ -4362,7 +4409,12 @@
 
       drawer.hidden = false;
       drawer.removeAttribute('hidden');
+      drawer.style.transform = '';
       drawer.classList.add('is-open');
+
+      if (typeof document !== 'undefined' && document.body && document.body.classList) {
+        document.body.classList.add('hud-sheet-open');
+      }
 
       if (sheetId === 'tools') {
         Modals.bindModalEvents(bodyEl, 'toolmgr');
@@ -4375,6 +4427,7 @@
       var drawer = document.getElementById('hud-sheet-drawer') || document.getElementById('hudSheetDrawer');
       var backdrop = document.getElementById('hud-sheet-backdrop') || document.getElementById('hudSheetBackdrop');
       if (drawer) {
+        drawer.style.transform = '';
         drawer.classList.remove('is-open');
         setTimeout(function () {
           drawer.hidden = true;
@@ -4387,6 +4440,9 @@
           backdrop.hidden = true;
           backdrop.setAttribute('hidden', 'true');
         }, 280);
+      }
+      if (typeof document !== 'undefined' && document.body && document.body.classList) {
+        document.body.classList.remove('hud-sheet-open');
       }
       this.activeSheet = null;
       STATE.activeMobileSheet = null;
@@ -4752,45 +4808,61 @@
     renderMobileWorkstationsBody: function () {
       var activeId = STATE.activeTool ? STATE.activeTool.id : 'omnipost';
       var workstations = [
-        { id: 'dashboard', name: 'Dashboard Overview', icon: '⌂', tag: 'COMMAND', desc: 'Central studio overview & health telemetry' },
-        { id: 'omnipost', name: 'OmniPost Video Studio', icon: '🎬', tag: 'MEDIA', desc: 'Sovereign multi-channel automated video pipeline' },
-        { id: 'swarm', name: '3D Swarm Arena', icon: '🌐', tag: 'AGENTS', desc: 'Three.js 21-Agent spatial visualization arena' },
-        { id: 'netrunner-memory', name: 'Synaptic Memory', icon: '🧠', tag: 'MEMORY', desc: 'Lucy :8788 memory whitespace & knowledge graph' },
-        { id: 'webgen', name: 'WebGen Autonomous Studio', icon: '⚡', tag: 'BUILDER', desc: 'Full-stack AI website and application generator' },
-        { id: 'pets', name: 'Cyber Mascot Dex', icon: '💎', tag: 'PETS', desc: 'Hermes companion pet sprites & animations' },
-        { id: 'vault', name: 'Sovereign Crypto Vault', icon: '🔐', tag: 'SECURITY', desc: 'Argon2id credential & enclave keyring manager' },
-        { id: '3d-editor', name: '3D CAD Scene Editor', icon: '📐', tag: 'CAD', desc: 'Procedural mesh, camera, and lighting studio' },
-        { id: 'consensus', name: 'Consensus Crucible', icon: '⚔️', tag: 'DEBATE', desc: 'Multi-agent adversarial evaluation and voting arena' }
+        { id: 'dashboard',        name: 'Dashboard Overview',        icon: '⌂',  tag: 'COMMAND',  tagClass: 'gold',   desc: 'Central studio overview & health telemetry',                   accent: 'var(--hud-gold)' },
+        { id: 'omnipost',         name: 'OmniPost Video Studio',     icon: '🎬', tag: 'MEDIA',    tagClass: '',       desc: 'Sovereign multi-channel automated video pipeline',              accent: '#ff6b9d' },
+        { id: 'swarm',            name: '3D Swarm Arena',            icon: '🌐', tag: 'AGENTS',   tagClass: 'purple', desc: 'Three.js 21-Agent spatial visualization arena',                accent: '#c77dff' },
+        { id: 'netrunner-memory', name: 'Synaptic Memory',           icon: '🧠', tag: 'MEMORY',   tagClass: 'green',  desc: 'Lucy :8788 memory whitespace & knowledge graph',               accent: 'var(--hud-green)' },
+        { id: 'webgen',           name: 'WebGen Autonomous Studio',  icon: '⚡', tag: 'BUILDER',  tagClass: 'cyan',   desc: 'Full-stack AI website and application generator',               accent: 'var(--hud-cyan)' },
+        { id: 'pets',             name: 'Cyber Mascot Dex',          icon: '💎', tag: 'PETS',     tagClass: 'orange', desc: 'Hermes companion pet sprites & animations',                    accent: '#ffab40' },
+        { id: 'vault',            name: 'Sovereign Crypto Vault',    icon: '🔐', tag: 'SECURITY', tagClass: 'red',    desc: 'Argon2id credential & enclave keyring manager',                 accent: '#ff4757' },
+        { id: '3d-editor',        name: '3D CAD Scene Editor',       icon: '📐', tag: 'CAD',      tagClass: '',       desc: 'Procedural mesh, camera, and lighting studio',                  accent: 'var(--hud-cyan)' },
+        { id: 'consensus',        name: 'Consensus Crucible',        icon: '⚔️', tag: 'DEBATE',   tagClass: 'gold',   desc: 'Multi-agent adversarial evaluation and voting arena',           accent: 'var(--hud-gold)' }
       ];
 
-      var html = '<div style="display:flex;flex-direction:column;gap:10px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
-        '<div style="font-size:0.72rem;color:var(--hud-text-secondary);">' +
-          'Select any flagship sovereign workstation to load instantly into the main viewport.' +
-        '</div>' +
-        '<div style="display:grid;grid-template-columns:1fr;gap:10px;">';
+      var html = '<div style="display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
+        '<div style="font-size:0.70rem;color:var(--hud-text-muted);padding-bottom:4px;letter-spacing:0.04em;font-family:var(--hud-font-mono);">SELECT FLAGSHIP WORKSTATION</div>';
 
       workstations.forEach(function (ws) {
         var isCurrent = (activeId === ws.id);
-        html += '<div class="hud-ws-card ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.loadTool(\'' + ws.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px;background:' + (isCurrent ? 'rgba(0,240,255,0.08)' : 'rgba(255,255,255,0.02)') + ';border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';clip-path:var(--hud-clip-sm);cursor:pointer;gap:12px;min-height:52px;">' +
-          '<div style="display:flex;align-items:flex-start;gap:12px;min-width:0;flex:1;">' +
-            '<span style="font-size:1.4rem;flex-shrink:0;margin-top:1px;">' + ws.icon + '</span>' +
-            '<div style="min-width:0;flex:1;">' +
-              '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-                '<span style="font-family:var(--hud-font-display);font-size:0.84rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';">' + ws.name + '</span>' +
-                '<span class="hud-tool-tag ' + (ws.tag === 'MEDIA' || ws.tag === 'BUILDER' ? 'cyan' : (ws.tag === 'SECURITY' || ws.tag === 'COMMAND' ? 'gold' : 'green')) + '" style="font-size:0.55rem;padding:1px 5px;">' + ws.tag + '</span>' +
+        var tagStyle = '';
+        if (ws.tagClass === 'red') tagStyle = ' style="color:#ff4757;border-color:rgba(255,71,87,0.3);background:rgba(255,71,87,0.08);"';
+        else if (ws.tagClass === 'cyan') tagStyle = ' style="color:var(--hud-cyan);border-color:rgba(0,240,255,0.3);background:rgba(0,240,255,0.08);"';
+        else if (ws.tagClass === '') tagStyle = '';
+
+        html +=
+          '<div class="hud-ws-card ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.loadTool(\'' + ws.id + '\'); ZothHUD.closeMobileSheet();" style="' +
+            'display:flex;align-items:center;justify-content:space-between;' +
+            'padding:12px 16px;' +
+            'background:' + (isCurrent ? 'rgba(0,240,255,0.07)' : 'rgba(255,255,255,0.025)') + ';' +
+            'border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';' +
+            'clip-path:var(--hud-clip-sm);gap:12px;min-height:56px;' +
+            (isCurrent ? 'box-shadow:0 0 12px rgba(0,240,255,0.1);' : '') +
+          '">' +
+            // Left: accent-colored icon circle + text
+            '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+              '<div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">' + ws.icon + '</div>' +
+              '<div style="min-width:0;flex:1;">' +
+                '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">' +
+                  '<span style="font-family:var(--hud-font-display);font-size:0.84rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';line-height:1.2;">' + ws.name + '</span>' +
+                  '<span class="hud-tool-tag ' + ws.tagClass + '"' + tagStyle + ' style="font-size:0.52rem;padding:1px 5px;">' + ws.tag + '</span>' +
+                '</div>' +
+                '<div style="font-size:0.67rem;color:var(--hud-text-muted);margin-top:3px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ws.desc + '</div>' +
               '</div>' +
-              '<div style="font-size:0.68rem;color:var(--hud-text-muted);margin-top:3px;line-height:1.4;white-space:normal;word-break:break-word;">' + ws.desc + '</div>' +
             '</div>' +
-          '</div>' +
-          '<div style="flex-shrink:0;margin-top:2px;">' +
-            (isCurrent ? '<span style="font-size:0.60rem;background:var(--hud-cyan);color:#000;padding:4px 8px;border-radius:2px;font-weight:800;">ACTIVE</span>' : '<span style="font-size:0.60rem;color:var(--hud-cyan);border:1px solid var(--hud-border);padding:3px 8px;border-radius:2px;">LOAD ➔</span>') +
-          '</div>' +
-        '</div>';
+            // Right: status indicator
+            '<div style="flex-shrink:0;">' +
+              (isCurrent ?
+                '<span style="font-size:0.58rem;background:var(--hud-cyan);color:#000;padding:4px 9px;border-radius:2px;font-weight:800;font-family:var(--hud-font-mono);letter-spacing:0.05em;">LIVE</span>' :
+                '<span style="font-size:0.60rem;color:var(--hud-text-muted);border:1px solid var(--hud-border-subtle);padding:3px 9px;border-radius:2px;font-family:var(--hud-font-mono);">LOAD ➔</span>'
+              ) +
+            '</div>' +
+          '</div>';
       });
 
-      html += '</div></div>';
+      html += '</div>';
       return html;
     }
+
   };
 
   /* =============================================================================
@@ -5054,25 +5126,25 @@
 
     renderToolMgrBody: function (initialQuery) {
       var html = '<div style="display:flex;flex-direction:column;gap:12px;">' +
-        '<div style="display:flex;gap:8px;align-items:center;">' +
-          '<input type="text" class="hud-term-input hud-modal-search-input" placeholder="Search 298+ tools by name, taxonomy, runtime or tag (Ctrl+K)..." value="' + (initialQuery || '') + '" style="background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 12px;font-size:0.78rem;clip-path:var(--hud-clip-sm);flex:1;" />' +
-          '<div style="font-family:var(--hud-font-mono);font-size:0.70rem;color:var(--hud-cyan);background:rgba(0,240,255,0.08);border:1px solid var(--hud-border);padding:8px 12px;clip-path:var(--hud-clip-sm);white-space:nowrap;" id="hud-toolmgr-count">298 TOOLS</div>' +
+        '<div class="hud-toolmgr-search-row">' +
+          '<input type="text" class="hud-term-input hud-modal-search-input" placeholder="⌕ Search 298+ tools — name, tag, runtime, category..." value="' + (initialQuery || '') + '" style="background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 12px;font-size:0.78rem;clip-path:var(--hud-clip-sm);flex:1;" />' +
+          '<div class="hud-toolmgr-count-badge" id="hud-toolmgr-count">298 TOOLS</div>' +
         '</div>' +
 
-        '<div class="hud-category-pills" style="display:flex;flex-wrap:wrap;gap:4px;">' +
+        '<div class="hud-toolmgr-cats">' +
           '<button class="hud-tool-tag gold active" data-cat="all" onclick="Modals.filterCat(this, \'all\')">ALL (298+)</button>' +
-          '<button class="hud-tool-tag" data-cat="primary" onclick="Modals.filterCat(this, \'primary\')">👑 Primary (25)</button>' +
-          '<button class="hud-tool-tag" data-cat="ai" onclick="Modals.filterCat(this, \'ai\')">🌐 Swarms & AI (26)</button>' +
-          '<button class="hud-tool-tag" data-cat="creative" onclick="Modals.filterCat(this, \'creative\')">🎨 3D & Media (51)</button>' +
-          '<button class="hud-tool-tag" data-cat="learning" onclick="Modals.filterCat(this, \'learning\')">🧠 Cognitive & Math (19)</button>' +
-          '<button class="hud-tool-tag" data-cat="automation" onclick="Modals.filterCat(this, \'automation\')">⚙️ Compilers & Tools (14)</button>' +
-          '<button class="hud-tool-tag" data-cat="webapps" onclick="Modals.filterCat(this, \'webapps\')">⚡ Web Apps & AX (75)</button>' +
-          '<button class="hud-tool-tag" data-cat="services" onclick="Modals.filterCat(this, \'services\')">💼 Services (52)</button>' +
-          '<button class="hud-tool-tag" data-cat="security" onclick="Modals.filterCat(this, \'security\')">🔐 Vault & Security (9)</button>' +
-          '<button class="hud-tool-tag" data-cat="games" onclick="Modals.filterCat(this, \'games\')">🐾 Pets & Games (8)</button>' +
+          '<button class="hud-tool-tag" data-cat="primary" onclick="Modals.filterCat(this, \'primary\')">👑 Primary</button>' +
+          '<button class="hud-tool-tag purple" data-cat="ai" onclick="Modals.filterCat(this, \'ai\')">🌐 Swarms &amp; AI</button>' +
+          '<button class="hud-tool-tag" style="color:#ff6b9d;border-color:rgba(255,107,157,0.3);background:rgba(255,107,157,0.08);" data-cat="creative" onclick="Modals.filterCat(this, \'creative\')">🎨 3D &amp; Media</button>' +
+          '<button class="hud-tool-tag green" data-cat="learning" onclick="Modals.filterCat(this, \'learning\')">🧠 Cognitive</button>' +
+          '<button class="hud-tool-tag" data-cat="automation" onclick="Modals.filterCat(this, \'automation\')">⚙️ Compilers</button>' +
+          '<button class="hud-tool-tag" data-cat="webapps" onclick="Modals.filterCat(this, \'webapps\')">⚡ Web Apps</button>' +
+          '<button class="hud-tool-tag" data-cat="services" onclick="Modals.filterCat(this, \'services\')">💼 Services</button>' +
+          '<button class="hud-tool-tag" style="color:#ff4757;border-color:rgba(255,71,87,0.3);background:rgba(255,71,87,0.08);" data-cat="security" onclick="Modals.filterCat(this, \'security\')">🔐 Vault &amp; Sec</button>' +
+          '<button class="hud-tool-tag orange" data-cat="games" onclick="Modals.filterCat(this, \'games\')">🐾 Pets &amp; Games</button>' +
         '</div>' +
 
-        '<div id="hud-toolmgr-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(min(280px, 100%), 1fr));gap:10px;max-height:55vh;overflow-y:auto;padding-right:4px;">';
+        '<div id="hud-toolmgr-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(min(260px, 100%), 1fr));gap:10px;max-height:55vh;overflow-y:auto;padding-right:4px;">';
 
       var toolsToRender = [];
       PRIMARY_WORKSTATIONS.forEach(function (pw) {
@@ -5118,34 +5190,54 @@
         else if (idSafe.includes('signal')) icon = '📡';
         else if (idSafe.includes('web3') || idSafe.includes('solana')) icon = '🪙';
 
-        html += '<div class="hud-toolmgr-card" data-id="' + tool.id + '" data-name="' + nameSafe.replace(/"/g, '&quot;') + '" data-cat="' + catSlug + '" data-desc="' + descSafe.replace(/"/g, '&quot;') + '" style="background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);clip-path:var(--hud-clip-sm);padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-height:96px;">' +
-          '<div>' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;flex-wrap:wrap;">' +
-              '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">' +
-                '<span style="font-size:1.1rem;flex-shrink:0;">' + icon + '</span>' +
-                (tool.isPrimary ? '<span style="color:var(--hud-gold);font-size:0.85rem;" title="Flagship Primary Workstation">👑</span>' : '') +
-                '<strong style="font-family:var(--hud-font-display);font-size:0.82rem;color:var(--hud-text-primary);line-height:1.3;white-space:normal;word-break:break-word;">' + (tool.name || tool.id) + '</strong>' +
-              '</div>' +
-              '<span class="hud-tool-tag" style="font-size:0.55rem;background:rgba(0,240,255,0.08);color:var(--hud-cyan);border:1px solid rgba(0,240,255,0.2);flex-shrink:0;">' + (tool.runtime || 'web').toUpperCase() + '</span>' +
-            '</div>' +
-            '<div style="font-size:0.70rem;color:var(--hud-text-secondary);line-height:1.4;margin-top:4px;white-space:normal;word-break:break-word;">' + (tool.desc || 'Sovereign workstation tool.') + '</div>' +
-          '</div>' +
+        // Category badge color class
+        var catBadgeClass = 'hud-tool-tag';
+        if (catSlug.includes('ai') || catSlug.includes('swarm')) catBadgeClass += ' purple';
+        else if (catSlug.includes('security')) catBadgeClass += ''; // red inline
+        else if (catSlug.includes('creative') || catSlug.includes('media')) catBadgeClass += ''; // pink inline
+        else if (catSlug.includes('learning') || catSlug.includes('cognitive')) catBadgeClass += ' green';
+        else if (catSlug.includes('games') || catSlug.includes('pets')) catBadgeClass += ' orange';
+        else if (tool.isPrimary) catBadgeClass += ' gold';
 
-          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:6px;border-top:1px dashed rgba(255,255,255,0.08);padding-top:8px;">' +
-            '<span style="font-size:0.58rem;color:var(--hud-gold);font-family:var(--hud-font-mono);">' + (tool.contract || 'VERIFIED') + '</span>' +
-            '<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">' +
-              '<button type="button" class="hud-stage-btn" onclick="ZothHUD.loadTool(\'' + tool.id + '\'); ZothHUD.closeModal();" style="padding:4px 8px;font-size:0.64rem;background:var(--hud-cyan);color:var(--hud-text-on-accent);font-weight:800;" title="Load into Primary Center Stage">⚡ LOAD</button>' +
-              '<button type="button" class="hud-stage-btn" onclick="ZothHUD.loadTool(\'' + tool.id + '\'); if(!ZothHUD.getState().splitMode) ZothHUD.toggleSplitStage(); ZothHUD.closeModal();" style="padding:4px 6px;font-size:0.60rem;" title="Mount in Split Left Viewport">◫ L</button>' +
-              '<button type="button" class="hud-stage-btn" onclick="ZothHUD.setSecondaryTool(\'' + tool.id + '\'); if(!ZothHUD.getState().splitMode) ZothHUD.toggleSplitStage(); ZothHUD.closeModal();" style="padding:4px 6px;font-size:0.60rem;" title="Mount in Split Right Viewport">◫ R</button>' +
-              '<a href="' + (tool.url || '/studio/webgen.html?tool=' + tool.id) + '" target="_blank" class="hud-stage-btn" style="padding:4px 7px;font-size:0.60rem;text-decoration:none;" title="Open standalone in new tab">↗</a>' +
+        var cardClass = 'hud-toolmgr-card' + (tool.isPrimary ? ' primary' : '');
+        var contractLabel = (tool.contract || 'SCHEMA VERIFIED');
+        var descText = (tool.desc || 'Sovereign workstation tool.');
+        // Truncate desc to 100 chars
+        if (descText.length > 100) descText = descText.substring(0, 98) + '…';
+
+        html +=
+          '<div class="' + cardClass + '" data-id="' + tool.id + '" data-name="' + nameSafe.replace(/"/g, '&quot;') + '" data-cat="' + catSlug + '" data-desc="' + descSafe.replace(/"/g, '&quot;') + '">' +
+            // Header row: icon + name + runtime badge
+            '<div class="hud-toolmgr-card-header">' +
+              '<div class="hud-toolmgr-card-icon">' + icon + '</div>' +
+              '<div class="hud-toolmgr-card-meta">' +
+                '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                  (tool.isPrimary ? '<span style="color:var(--hud-gold);font-size:0.78rem;" title="Flagship Primary Workstation">👑</span>' : '') +
+                  '<span class="hud-toolmgr-card-name">' + (tool.name || tool.id) + '</span>' +
+                '</div>' +
+                '<div class="hud-toolmgr-card-desc">' + descText + '</div>' +
+              '</div>' +
+              '<span class="hud-toolmgr-card-runtime">' + (tool.runtime || 'WEB').toUpperCase() + '</span>' +
             '</div>' +
-          '</div>' +
-        '</div>';
+            // Footer: contract label + status dot + actions
+            '<div class="hud-toolmgr-card-footer">' +
+              '<span class="hud-status-dot" title="Tool Online"></span>' +
+              '<span class="hud-toolmgr-card-contract">' + contractLabel + '</span>' +
+              '<div class="hud-toolmgr-card-actions">' +
+                '<button type="button" class="hud-stage-btn" onclick="ZothHUD.loadTool(\'' + tool.id + '\'); ZothHUD.closeModal();" style="padding:4px 10px;font-size:0.63rem;background:var(--hud-cyan);color:#000;font-weight:800;letter-spacing:0.04em;" title="Load into Primary Center Stage">⚡ LOAD</button>' +
+                '<button type="button" class="hud-stage-btn" onclick="ZothHUD.loadTool(\'' + tool.id + '\'); if(!ZothHUD.getState().splitMode) ZothHUD.toggleSplitStage(); ZothHUD.closeModal();" style="padding:4px 7px;font-size:0.60rem;" title="Mount in Split Left Viewport" aria-label="Split left">◫L</button>' +
+                '<button type="button" class="hud-stage-btn" onclick="ZothHUD.setSecondaryTool(\'' + tool.id + '\'); if(!ZothHUD.getState().splitMode) ZothHUD.toggleSplitStage(); ZothHUD.closeModal();" style="padding:4px 7px;font-size:0.60rem;" title="Mount in Split Right Viewport" aria-label="Split right">◫R</button>' +
+                '<a href="' + (tool.url || '/studio/webgen.html?tool=' + tool.id) + '" target="_blank" class="hud-stage-btn" style="padding:4px 8px;font-size:0.60rem;text-decoration:none;" title="Open standalone in new tab" aria-label="Open in tab">↗</a>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
       });
 
       html += '</div></div>';
       return html;
     },
+
+
 
     renderDeviceBody: function () {
       var currentMode = STATE.deviceMode;
