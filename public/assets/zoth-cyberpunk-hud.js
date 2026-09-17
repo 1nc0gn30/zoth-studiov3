@@ -3536,6 +3536,7 @@
           this.printLine('  hicon [on|off]      : Toggle high-contrast tactical mode (Shift+H)');
           this.printLine('  agent <name>        : Switch active sovereign agent (azoth, grok, athena, etc.)');
           this.printLine('  tool <name>         : Load tool into Center Stage (omnipost, 3d, swarm, etc.)');
+          this.printLine('  simplex [cmd|send]  : SimpleX Chat Gateway (:5225) status, pulse, and guardrail dispatcher');
           this.printLine('  hermes [prompt]     : Hermes Agent & Signal Bridge (:8765) live status & dispatch');
           this.printLine('  signal [status|poll]: Query Signal Swarm Bridge live daemon (:8765)');
           this.printLine('  mem | memory        : Live Lucy Biomorphic Vector Memory (:8788) status & beat');
@@ -3736,6 +3737,77 @@
           ZothHUD.loadTool('swarm');
           this.printLine('3D Swarm Arena dispatched with mode: ' + (arg || 'pantheon'), 'success');
           ZothHUD.addLog('SWARM', 'Swarm Arena loaded with ' + (arg || 'pantheon') + ' strength', 'consensus');
+        case 'simplex':
+          if (!arg || arg === 'status') {
+            this.printLine('── SIMPLEX CHAT GATEWAY & GUARDRAIL STATUS ──', 'warn');
+            this.printLine('  Gateway WS      : ws://127.0.0.1:5225 [PORT 5225]', 'stdout');
+            this.printLine('  Default Contact : @4 (neal_1)', 'stdout');
+            this.printLine('  CLI Command     : zoth-simplex (or zoth-notify)', 'success');
+            this.printLine('  Daemon Commands : simplex start [int] [guardrail] | simplex stop | simplex pulse', 'stdout');
+            ZothHUD.addLog('SIMPLEX', 'SimpleX Gateway online on port 5225', 'consensus');
+          } else if (arg.startsWith('send ')) {
+            var sendMsg = arg.substring(5).trim();
+            this.printLine('⚡ Transmitting SimpleX message to @4 (neal_1)...', 'cyan');
+            this.printLine('Content: "' + sendMsg + '"', 'stdout');
+            if (typeof WebSocket !== 'undefined') {
+              try {
+                var ws = new WebSocket('ws://127.0.0.1:5225');
+                ws.onopen = function () {
+                  var payload = {
+                    corrId: 'hud-send-' + Date.now(),
+                    cmd: '/_send @4 json ' + JSON.stringify([{ msgContent: { type: 'text', text: sendMsg } }])
+                  };
+                  ws.send(JSON.stringify(payload));
+                  setTimeout(function () { ws.close(); }, 500);
+                  self.printLine('✔ SimpleX: Message delivered to @4 (neal_1)!', 'success');
+                  playCyberSFX('success');
+                };
+                ws.onerror = function (err) {
+                  self.printLine('⚠️ SimpleX WebSocket error. Is daemon running on :5225?', 'error');
+                };
+              } catch (e) {
+                self.printLine('⚠️ SimpleX send failed: ' + e.message, 'error');
+              }
+            }
+          } else if (arg.startsWith('pulse') || arg.startsWith('once')) {
+            var guard = arg.replace(/^(pulse|once)\s*/, '').trim();
+            this.printLine('⚡ Dispatching SimpleX Swarm Pulse (Guardrail: ' + (guard || 'None') + ')...', 'cyan');
+            if (typeof WebSocket !== 'undefined') {
+              try {
+                var wsP = new WebSocket('ws://127.0.0.1:5225');
+                wsP.onopen = function () {
+                  var reportText = '⚡ [Zoth HUD Pulse - ' + new Date().toISOString() + (guard ? ' | Guardrail: ' + guard : '') + ']\n' +
+                    '• Stage: ' + (STATE.activeTool ? STATE.activeTool.name : 'Cockpit') + '\n' +
+                    '• Agent: ' + STATE.activeAgent.toUpperCase() + '\n' +
+                    '• Theme: ' + STATE.activeTheme.toUpperCase() + '\n' +
+                    '• Memory: ' + STATE.memStats.nodes + ' Nodes | ' + STATE.memStats.synapses + ' Synapses\n' +
+                    '• Vitals: ' + STATE.mathStats.health + '% Health | ' + STATE.mathStats.entropy + ' bits Entropy';
+                  var payloadP = {
+                    corrId: 'hud-pulse-' + Date.now(),
+                    cmd: '/_send @4 json ' + JSON.stringify([{ msgContent: { type: 'text', text: reportText } }])
+                  };
+                  wsP.send(JSON.stringify(payloadP));
+                  setTimeout(function () { wsP.close(); }, 500);
+                  self.printLine('✔ SimpleX Pulse transmitted to @4!', 'success');
+                  playCyberSFX('success');
+                };
+              } catch (e) {
+                self.printLine('Pulse dispatch error: ' + e.message, 'error');
+              }
+            }
+          } else if (arg.startsWith('start')) {
+            this.printLine('⚡ To start background monitor daemon with guardrails, run in shell:', 'warn');
+            this.printLine('  zoth-simplex start --interval 15 --guardrail "your prompt" --daemon', 'success');
+            this.printLine('  (Or: zoth-notify start -i 20 -g "errors only" -d)', 'stdout');
+          } else if (arg === 'stop') {
+            this.printLine('⚡ To stop background monitor daemon, run in shell:', 'warn');
+            this.printLine('  zoth-simplex stop', 'success');
+          } else if (arg === 'contacts') {
+            this.printLine('── SIMPLEX CONTACT DIRECTORY ──', 'warn');
+            this.printLine('  Contact ID: 4 | Name: neal_1 | Target: @4', 'success');
+          } else {
+            this.printLine('SimpleX commands: simplex [status|send <msg>|pulse <guardrail>|start|stop|contacts]', 'error');
+          }
           break;
 
         case 'signal':

@@ -275,6 +275,36 @@
           window.ZothCyberpunkHUD.openHelpModal();
         }
       }
+    },
+    {
+      id: 'action-simplex-pulse',
+      name: 'SimpleX: Send Swarm Pulse / Status Update',
+      desc: 'Transmit live system vitals & AGY progress pulse to SimpleX chat (@4 / neal_1)',
+      icon: '💬',
+      category: 'Messaging & Swarm',
+      badge: 'ACTION',
+      action: function () {
+        if (window.ZothHUD && window.ZothHUD.TerminalRepl && window.ZothHUD.TerminalRepl.execute) {
+          window.ZothHUD.TerminalRepl.execute('simplex pulse');
+        } else if (window.TerminalREPL && window.TerminalREPL.execute) {
+          window.TerminalREPL.execute('simplex pulse');
+        }
+      }
+    },
+    {
+      id: 'action-simplex-status',
+      name: 'SimpleX: Check Gateway & Guardrail Status',
+      desc: 'Inspect SimpleX daemon (:5225), active contacts, and guardrail monitor status',
+      icon: '📡',
+      category: 'Messaging & Swarm',
+      badge: 'ACTION',
+      action: function () {
+        if (window.ZothHUD && window.ZothHUD.TerminalRepl && window.ZothHUD.TerminalRepl.execute) {
+          window.ZothHUD.TerminalRepl.execute('simplex status');
+        } else if (window.TerminalREPL && window.TerminalREPL.execute) {
+          window.TerminalREPL.execute('simplex status');
+        }
+      }
     }
   ];
 
