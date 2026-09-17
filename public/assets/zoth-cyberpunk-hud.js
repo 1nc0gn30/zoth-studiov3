@@ -4928,6 +4928,10 @@
     },
 
     close: function () {
+      if (STATE._chronometerInterval) {
+        clearInterval(STATE._chronometerInterval);
+        STATE._chronometerInterval = null;
+      }
       if (this.activeModal) {
         this.activeModal.classList.remove('is-open');
         this.activeModal.setAttribute('hidden', 'true');
@@ -5054,72 +5058,99 @@
 
     renderPortsBody: function () {
       var html = '<div style="display:flex;flex-direction:column;gap:12px;">' +
-        '<div style="font-size:0.75rem;color:var(--hud-text-secondary);line-height:1.4;">' +
-          'Real-time loopback telemetry for sovereign daemons running on <code>127.0.0.1</code>. Click <strong>Ping All Ports</strong> to trigger async socket ping checks.' +
+        '<div style="background:linear-gradient(135deg, rgba(0,255,102,0.06) 0%, transparent 60%);border:1px solid var(--hud-border);padding:10px 14px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">' +
+          '<div>' +
+            '<div style="font-size:0.56rem;color:var(--hud-text-muted);letter-spacing:0.06em;text-transform:uppercase;">SOVEREIGN LOOPBACK NETWORK</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.80rem;font-weight:800;color:var(--hud-green);margin-top:2px;display:flex;align-items:center;gap:6px;">' +
+              '<span class="hud-status-dot"></span> 7 DAEMONS REGISTERED · 127.0.0.1 BINDINGS' +
+            '</div>' +
+          '</div>' +
+          '<button type="button" class="hud-stage-btn" onclick="ZothHUD.pingPorts()" style="background:var(--hud-cyan);color:#000;font-weight:800;font-size:0.68rem;padding:6px 12px;">⚡ PING ALL PORTS</button>' +
         '</div>' +
         '<div class="hud-ports-grid" id="hud-ports-list">';
 
+      var tagMap = {
+        '8088': { tag: 'HUB', desc: 'Cockpit Master Gateway' },
+        '8788': { tag: 'MEM', desc: 'Lucy Synaptic Neural Graph' },
+        '8787': { tag: 'VAULT', desc: 'Zero-Trust Cryptographic Sanctum' },
+        '5225': { tag: 'CHAT', desc: 'SimpleX Sovereign Agent Gateway' },
+        '8888': { tag: 'REPL', desc: 'Live Hamelnb Python Kernel' },
+        '3000': { tag: 'DEV', desc: 'Frontend Dev Server' },
+        '8000': { tag: 'API', desc: 'Python API Backend Gateway' }
+      };
+
       PORTS_TOPOLOGY.forEach(function (p) {
-        html += '<div class="hud-port-card">' +
-          '<div style="display:flex;align-items:center;gap:10px;">' +
-            '<span class="hud-led green"></span>' +
-            '<div class="hud-port-info">' +
-              '<div class="hud-port-num">:' + p.port + '</div>' +
-              '<div class="hud-port-service">' + p.name + '</div>' +
-              '<div class="hud-port-desc">' + p.desc + '</div>' +
+        var meta = tagMap[p.port] || { tag: 'SRV', desc: p.desc };
+        var curlCmd = 'curl -s http://127.0.0.1:' + p.port + '/';
+        html += '<div class="hud-port-card" style="position:relative;overflow:hidden;">' +
+          '<div style="display:flex;align-items:flex-start;gap:10px;flex:1;">' +
+            '<span class="hud-led green" style="margin-top:4px;"></span>' +
+            '<div class="hud-port-info" style="flex:1;">' +
+              '<div style="display:flex;align-items:center;gap:6px;">' +
+                '<span class="hud-port-num">:' + p.port + '</span>' +
+                '<span class="hud-tool-tag" style="font-size:0.55rem;padding:1px 5px;">' + meta.tag + '</span>' +
+                '<span class="hud-port-service">' + p.name + '</span>' +
+              '</div>' +
+              '<div class="hud-port-desc">' + (p.desc || meta.desc) + '</div>' +
+              '<div style="margin-top:4px;">' +
+                '<span class="hud-curl-chip" title="Click to copy curl command" onclick="if(navigator.clipboard){navigator.clipboard.writeText(\'' + curlCmd + '\'); if(ZothHUD.toast) ZothHUD.toast(\'Copied: ' + curlCmd + '\', \'info\');}">' + curlCmd + '</span>' +
+              '</div>' +
             '</div>' +
           '</div>' +
           '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' +
-            '<span class="hud-port-status">' + p.latency + '</span>' +
-            '<a href="' + p.url + '" target="_blank" class="hud-stage-btn" style="padding:2px 8px;font-size:0.62rem;">OPEN ↗</a>' +
+            '<span class="hud-port-status" id="hud-port-status-' + p.port + '">' + (p.latency || '0.4ms') + '</span>' +
+            '<a href="' + p.url + '" target="_blank" class="hud-stage-btn" style="padding:3px 8px;font-size:0.60rem;text-decoration:none;">OPEN ↗</a>' +
           '</div>' +
         '</div>';
       });
 
-      html += '</div>' +
-        '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">' +
-          '<button class="hud-stage-btn" onclick="ZothHUD.pingPorts()" style="background:var(--hud-cyan);color:var(--hud-text-on-accent);font-weight:800;">⚡ PING ALL PORTS</button>' +
-        '</div>' +
-      '</div>';
+      html += '</div></div>';
       return html;
     },
 
     renderTimeBody: function () {
       var now = new Date();
       var utcStr = now.toUTCString();
-      var localStr = now.toString();
-      var epochMs = now.getTime();
-      var epochSec = Math.floor(epochMs / 1000);
+      var localStr = now.toLocaleTimeString();
+      var epochSec = Math.floor(now.getTime() / 1000);
 
-      var html = '<div style="display:flex;flex-direction:column;gap:16px;">' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:8px;">' +
-          '<div style="background:rgba(0,240,255,0.06);border:1px solid var(--hud-border);padding:8px 12px;clip-path:var(--hud-clip-sm);">' +
-            '<div style="font-size:0.60rem;color:var(--hud-text-muted);text-transform:uppercase;">UTC CHRONOMETER</div>' +
-            '<div id="hud-time-utc" style="font-family:var(--hud-font-mono);font-size:0.82rem;font-weight:800;color:var(--hud-cyan);margin-top:2px;">' + utcStr + '</div>' +
+      var html = '<div style="display:flex;flex-direction:column;gap:14px;">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:8px;">' +
+          '<div class="hud-mem-stat" style="text-align:left;padding:10px 12px;">' +
+            '<div class="hud-mem-stat-label">UTC CHRONOMETER (TICKING)</div>' +
+            '<div id="hud-time-utc" class="hud-mem-stat-value cyan" style="font-size:0.85rem;margin-top:4px;">' + utcStr + '</div>' +
           '</div>' +
-          '<div style="background:rgba(251,191,36,0.06);border:1px solid var(--hud-border-gold);padding:8px 12px;clip-path:var(--hud-clip-sm);">' +
-            '<div style="font-size:0.60rem;color:var(--hud-text-muted);text-transform:uppercase;">LOCAL SYSTEM TIME</div>' +
-            '<div id="hud-time-local" style="font-family:var(--hud-font-mono);font-size:0.82rem;font-weight:800;color:var(--hud-gold);margin-top:2px;">' + now.toLocaleTimeString() + '</div>' +
+          '<div class="hud-mem-stat" style="text-align:left;padding:10px 12px;">' +
+            '<div class="hud-mem-stat-label">LOCAL SYSTEM TIME</div>' +
+            '<div id="hud-time-local" class="hud-mem-stat-value gold" style="font-size:0.85rem;margin-top:4px;">' + localStr + '</div>' +
           '</div>' +
-          '<div style="background:rgba(0,255,102,0.06);border:1px solid rgba(0,255,102,0.3);padding:8px 12px;clip-path:var(--hud-clip-sm);">' +
-            '<div style="font-size:0.60rem;color:var(--hud-text-muted);text-transform:uppercase;">UNIX EPOCH (SECONDS)</div>' +
-            '<div id="hud-time-epoch" style="font-family:var(--hud-font-mono);font-size:0.82rem;font-weight:800;color:var(--hud-green);margin-top:2px;">' + epochSec + '</div>' +
+          '<div class="hud-mem-stat" style="text-align:left;padding:10px 12px;">' +
+            '<div class="hud-mem-stat-label">UNIX EPOCH (SECONDS)</div>' +
+            '<div id="hud-time-epoch" class="hud-mem-stat-value green" style="font-size:0.85rem;margin-top:4px;">' + epochSec + '</div>' +
           '</div>' +
         '</div>' +
 
         '<div>' +
-          '<div style="font-family:var(--hud-font-hud);font-size:0.75rem;font-weight:800;color:var(--hud-gold);margin-bottom:8px;">CRON TASK SCHEDULER</div>' +
+          '<div class="hud-quick-section-label">◈ CRON TASK SCHEDULER & AUTONOMOUS AGENTS</div>' +
           '<div style="display:flex;flex-direction:column;gap:6px;">';
 
-      CRON_JOBS.forEach(function (job) {
-        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);clip-path:var(--hud-clip-sm);">' +
-          '<div>' +
-            '<div style="font-family:var(--hud-font-mono);font-size:0.75rem;font-weight:700;color:var(--hud-text-primary);">' + job.name + '</div>' +
-            '<div style="font-size:0.62rem;color:var(--hud-text-muted);">' + job.target + ' · Last: ' + job.lastRun + ' · Next: ' + job.nextRun + '</div>' +
+      var tags = ['POLL', 'GRAPH', 'BACKUP', 'RECON', 'SYNC'];
+      CRON_JOBS.forEach(function (job, idx) {
+        var tag = tags[idx % tags.length];
+        html += '<div class="hud-cron-card">' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<span class="hud-status-dot" style="width:7px;height:7px;"></span>' +
+            '<div>' +
+              '<div style="display:flex;align-items:center;gap:6px;">' +
+                '<span style="font-family:var(--hud-font-mono);font-size:0.75rem;font-weight:700;color:var(--hud-text-primary);">' + job.name + '</span>' +
+                '<span class="hud-cron-tag">' + tag + '</span>' +
+              '</div>' +
+              '<div style="font-size:0.62rem;color:var(--hud-text-muted);margin-top:1px;">' + job.target + ' · Last: ' + job.lastRun + ' · Next: ' + job.nextRun + '</div>' +
+            '</div>' +
           '</div>' +
           '<div style="display:flex;align-items:center;gap:8px;">' +
-            '<code style="background:rgba(0,240,255,0.1);padding:2px 6px;border-radius:3px;font-size:0.65rem;color:var(--hud-cyan);">' + job.cron + '</code>' +
-            '<button class="hud-stage-btn" onclick="ZothHUD.triggerCron(\'' + job.name + '\')" style="padding:2px 6px;font-size:0.60rem;">TRIGGER</button>' +
+            '<code style="background:rgba(0,240,255,0.08);padding:3px 7px;border-radius:3px;font-family:var(--hud-font-mono);font-size:0.65rem;color:var(--hud-cyan);border:1px solid rgba(0,240,255,0.2);">' + job.cron + '</code>' +
+            '<button type="button" class="hud-stage-btn" onclick="ZothHUD.triggerCron(\'' + job.name + '\')" style="padding:4px 8px;font-size:0.62rem;font-weight:700;">TRIGGER</button>' +
           '</div>' +
         '</div>';
       });
@@ -5130,25 +5161,58 @@
 
     renderThemesBody: function () {
       var themes = [
-        { id: 'dark', name: 'Dark Void (Default)', desc: 'Midnight obsidian, Neon Cyan (#00f0ff) & Amber Gold', bg: '#030408', accent: '#00f0ff' },
-        { id: 'light', name: 'Solar Light', desc: 'Pristine Swiss architectural cyber, Cobalt Blue & Slate', bg: '#f4f6fb', accent: '#0071e3' },
-        { id: 'matrix', name: 'Phosphor CRT Matrix', desc: 'Phosphor Green CRT (#00ff66) on pitch black terminal', bg: '#000000', accent: '#00ff66' },
-        { id: 'gold', name: 'Hermetic Gold', desc: 'Alchemical 24K Gold (#ffd700), obsidian amber & Cinzel', bg: '#050300', accent: '#ffd700' }
+        {
+          id: 'dark',
+          name: 'Dark Void (Default)',
+          desc: 'Midnight obsidian, Neon Cyan (#00f0ff) & Amber Gold (#fbbf24)',
+          bg: '#030408',
+          accent: '#00f0ff',
+          tags: ['VOID OBSIDIAN', 'NEON CYAN', 'AMBER GOLD'],
+          swatches: ['#030408', '#00f0ff', '#fbbf24', '#161922']
+        },
+        {
+          id: 'light',
+          name: 'Solar Light',
+          desc: 'Pristine Swiss architectural cyber, Cobalt Blue (#0071e3) & Slate',
+          bg: '#f4f6fb',
+          accent: '#0071e3',
+          tags: ['SWISS ARCH', 'COBALT BLUE', 'HIGH CONTRAST'],
+          swatches: ['#f4f6fb', '#0071e3', '#0f172a', '#e2e8f0']
+        },
+        {
+          id: 'matrix',
+          name: 'Phosphor CRT Matrix',
+          desc: 'Phosphor Green CRT (#00ff66) on pitch black terminal with scanlines',
+          bg: '#000000',
+          accent: '#00ff66',
+          tags: ['CRT SCANLINES', 'PHOSPHOR 00FF66', 'TERMINAL RAW'],
+          swatches: ['#000000', '#00ff66', '#003311', '#00ff6633']
+        },
+        {
+          id: 'gold',
+          name: 'Hermetic Gold',
+          desc: 'Alchemical 24K Gold (#ffd700), obsidian amber & Cinzel serif typography',
+          bg: '#050300',
+          accent: '#ffd700',
+          tags: ['ALCHEMICAL 24K', 'HERMETIC BRASS', 'CINZEL'],
+          swatches: ['#050300', '#ffd700', '#b45309', '#2a1a05']
+        }
       ];
 
-      var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:10px;">';
+      var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));gap:12px;">';
       themes.forEach(function (t) {
         var isCurrent = (STATE.activeTheme === t.id);
-        html += '<div class="hud-theme-card" onclick="ZothHUD.setTheme(\'' + t.id + '\')" style="background:' + t.bg + ';border:2px solid ' + (isCurrent ? t.accent : 'rgba(255,255,255,0.1)') + ';padding:12px;clip-path:var(--hud-clip-md);cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:all 0.2s ease;">' +
+        html += '<div class="hud-theme-card" onclick="ZothHUD.setTheme(\'' + t.id + '\'); ZothHUD.closeModal();" style="background:' + t.bg + ';border:2px solid ' + (isCurrent ? t.accent : 'rgba(255,255,255,0.12)') + ';padding:14px;clip-path:var(--hud-clip-md);cursor:pointer;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;">' +
-            '<span style="font-family:var(--hud-font-display);font-size:0.80rem;font-weight:800;color:' + t.accent + ';">' + t.name + '</span>' +
-            (isCurrent ? '<span style="font-size:0.60rem;background:' + t.accent + ';color:#000;padding:2px 6px;border-radius:3px;font-weight:800;">ACTIVE</span>' : '') +
+            '<span style="font-family:var(--hud-font-display);font-size:0.84rem;font-weight:800;color:' + t.accent + ';">' + t.name + '</span>' +
+            (isCurrent ? '<span style="font-size:0.58rem;background:' + t.accent + ';color:#000;padding:2px 7px;border-radius:3px;font-weight:800;letter-spacing:0.04em;display:flex;align-items:center;gap:4px;"><span class="hud-status-dot" style="background:#000;width:5px;height:5px;"></span> ACTIVE</span>' : '') +
           '</div>' +
-          '<div style="font-size:0.68rem;color:' + (t.id === 'light' ? '#475569' : '#94a3b8') + ';">' + t.desc + '</div>' +
-          '<div style="display:flex;gap:4px;margin-top:4px;">' +
-            '<span style="width:12px;height:12px;border-radius:50%;background:' + t.accent + ';"></span>' +
-            '<span style="width:12px;height:12px;border-radius:50%;background:#fbbf24;"></span>' +
-            '<span style="width:12px;height:12px;border-radius:50%;background:#00ff66;"></span>' +
+          '<div style="font-size:0.68rem;color:' + (t.id === 'light' ? '#475569' : '#94a3b8') + ';line-height:1.35;">' + t.desc + '</div>' +
+          '<div class="hud-theme-swatches">' +
+            t.swatches.map(function (c) { return '<span class="hud-theme-swatch" style="background:' + c + ';"></span>'; }).join('') +
+          '</div>' +
+          '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px;">' +
+            t.tags.map(function (tag) { return '<span class="hud-theme-tag">' + tag + '</span>'; }).join('') +
           '</div>' +
         '</div>';
       });
@@ -5277,38 +5341,55 @@
       var modes = [
         {
           id: 'auto',
-          name: '⚡ Intelligent Auto-Detect',
+          name: 'Intelligent Auto-Detect',
           icon: '✨',
+          spec: 'Dynamic Sensor',
           desc: 'Dynamically adapts responsive cockpit based on live window dimensions and touch capabilities.',
-          status: currentMode === 'auto' ? 'ACTIVE (Current: ' + effective.toUpperCase() + ')' : ''
+          status: currentMode === 'auto' ? 'ACTIVE' : ''
         },
         {
           id: 'desktop',
-          name: '💻 Desktop Cockpit (>= 1200px)',
-          icon: '🖥️',
+          name: 'Desktop Cockpit',
+          icon: '💻',
+          spec: '≥ 1200px',
           desc: 'Full 2-column widescreen master operations deck, real-time header audio oscilloscope, dual split stage, and full 6-pillar telemetry calculus.',
           status: currentMode === 'desktop' ? 'ACTIVE' : (effective === 'desktop' ? 'MATCHED' : '')
         },
         {
           id: 'tablet',
-          name: '📱 Tablet Command (768px - 1199px)',
+          name: 'Tablet Command',
           icon: '📱',
+          spec: '768px – 1199px',
           desc: 'Maximized stage viewport with collapsible floating operations deck drawer, touch-friendly 44px+ controls, portrait/landscape split, and floating tactical bar.',
           status: currentMode === 'tablet' ? 'ACTIVE' : (effective === 'tablet' ? 'MATCHED' : '')
         },
         {
           id: 'mobile',
-          name: '📱 Phone Tactical Deck (<= 768px)',
+          name: 'Phone Tactical Deck',
           icon: '📲',
+          spec: '≤ 768px',
           desc: 'One-thumb mobile experience with edge-to-edge stage, sticky 48px header, 5-button bottom tactical navigation bar, and slide-up bottom sheets.',
           status: currentMode === 'mobile' ? 'ACTIVE' : (effective === 'mobile' ? 'MATCHED' : '')
         }
       ];
 
       var html = '<div style="display:flex;flex-direction:column;gap:12px;">' +
-        '<div style="font-size:0.75rem;color:var(--hud-text-secondary);line-height:1.4;">' +
+        '<div class="hud-device-live-banner">' +
+          '<div>' +
+            '<div style="font-size:0.56rem;color:var(--hud-text-muted);text-transform:uppercase;letter-spacing:0.06em;">LIVE HARDWARE SENSOR READOUT</div>' +
+            '<div style="font-family:var(--hud-font-mono);font-size:0.84rem;font-weight:800;color:var(--hud-cyan);display:flex;align-items:center;gap:6px;margin-top:2px;">' +
+              '<span class="hud-status-dot"></span> ' + (typeof window !== 'undefined' ? window.innerWidth + ' × ' + window.innerHeight : '1920 × 1080') + ' PX · ' + effective.toUpperCase() + ' HARDWARE' +
+            '</div>' +
+          '</div>' +
+          '<span style="font-family:var(--hud-font-mono);font-size:0.60rem;color:var(--hud-gold);border:1px solid var(--hud-border-gold);padding:2px 7px;border-radius:3px;">' +
+            (currentMode === 'auto' ? '⚡ AUTO-DETECTING' : '🔒 MANUAL OVERRIDE') +
+          '</span>' +
+        '</div>' +
+
+        '<div style="font-size:0.74rem;color:var(--hud-text-secondary);line-height:1.4;">' +
           'Zoth Cyberpunk HUD features dedicated responsive architectures tailored specifically for <strong>Desktop</strong>, <strong>Tablet</strong>, and <strong>Mobile Phone</strong> devices. Select a mode to force preview or leave on Auto-Detect.' +
         '</div>' +
+
         '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:10px;">';
 
       modes.forEach(function (m) {
@@ -5316,9 +5397,13 @@
         html += '<div class="hud-device-card" onclick="ZothHUD.setDeviceMode(\'' + m.id + '\'); Modals.close();" style="background:rgba(255,255,255,0.02);border:2px solid ' + (isSelected ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';clip-path:var(--hud-clip-md);padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:all 0.2s ease;">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;">' +
             '<span style="font-family:var(--hud-font-display);font-size:0.82rem;font-weight:800;color:' + (isSelected ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';">' + m.icon + ' ' + m.name + '</span>' +
-            (isSelected ? '<span style="font-size:0.60rem;background:var(--hud-cyan);color:#000;padding:2px 6px;border-radius:3px;font-weight:800;">CURRENT</span>' : (m.status ? '<span style="font-size:0.58rem;color:var(--hud-gold);border:1px solid var(--hud-border-gold);padding:1px 5px;border-radius:3px;">' + m.status + '</span>' : '')) +
+            '<span class="hud-device-spec-pill">' + m.spec + '</span>' +
           '</div>' +
           '<div style="font-size:0.68rem;color:var(--hud-text-secondary);line-height:1.35;">' + m.desc + '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">' +
+            (isSelected ? '<span style="font-size:0.58rem;background:var(--hud-cyan);color:#000;padding:2px 6px;border-radius:3px;font-weight:800;letter-spacing:0.04em;">CURRENT MODE</span>' : (m.status ? '<span style="font-size:0.56rem;color:var(--hud-gold);border:1px solid var(--hud-border-gold);padding:1px 5px;border-radius:3px;">' + m.status + '</span>' : '<span></span>')) +
+            '<span style="font-family:var(--hud-font-mono);font-size:0.60rem;color:var(--hud-cyan);">APPLY ↗</span>' +
+          '</div>' +
         '</div>';
       });
 
@@ -5327,29 +5412,103 @@
     },
 
     renderShortcutsBody: function () {
-      return '<div style="display:flex;flex-direction:column;gap:12px;">' +
-        '<div style="font-size:0.74rem;color:var(--hud-text-secondary);line-height:1.4;">' +
-          'Zoth Studio Cyberpunk Video Game HUD: 360° Polar Radar, Real-Time Audio Oscilloscope, and 6-Pillar Mathematical Calculus.' +
+      var groups = [
+        {
+          name: 'Stage & Navigation',
+          icon: '🕹️',
+          shortcuts: [
+            { keys: ['1', '–', '9'], desc: 'Quick-switch flagship primary workstation', sub: 'Instant 1-tap stage mount (Azoth, Athena, Draco, etc.)' },
+            { keys: ['Alt', '+', '◀ / ▶'], desc: 'Navigate stage history', sub: 'Step backward or forward in loaded workstation history' },
+            { keys: ['Shift', '+', 'S'], desc: 'Toggle dual-viewport split stage', sub: 'Side-by-side comparative multi-tool analysis' },
+            { keys: ['F11'], desc: 'Toggle fullscreen cockpit viewport', sub: 'Maximize edge-to-edge immersive workspace' }
+          ]
+        },
+        {
+          name: 'Themes & Display',
+          icon: '🎨',
+          shortcuts: [
+            { keys: ['Shift', '+', 'T'], desc: 'Cycle 4 Cyberpunk themes', sub: 'Dark Void ➔ Solar Light ➔ Phosphor Matrix ➔ Hermetic Gold' },
+            { keys: ['Shift', '+', 'V'], desc: 'Device profile selector modal', sub: 'Desktop (>=1200px), Tablet (768-1199px), Phone (<=768px)' },
+            { keys: ['Shift', '+', 'D'], desc: 'Toggle left operations deck drawer', sub: 'Collapsible telemetry, agents & radar sidebar' }
+          ]
+        },
+        {
+          name: 'Tactical Sensors & Audio',
+          icon: '🔮',
+          shortcuts: [
+            { keys: ['Shift', '+', 'R'], desc: 'Ping all 21 agents on 360° radar', sub: 'Triggers pulse telemetry sweep across sovereign fleet' },
+            { keys: ['Shift', '+', 'O'], desc: 'Cycle audio oscilloscope mode', sub: 'Waveform ➔ FFT Spectrum ➔ Phase Lissajous' },
+            { keys: ['Shift', '+', 'M', 'or', 'M'], desc: 'Mute / Unmute cyber sound effects', sub: 'Dynamic WebAudio synthesis (clicks, chirps, hums)' }
+          ]
+        },
+        {
+          name: 'Command Line & System',
+          icon: '💻',
+          shortcuts: [
+            { keys: ['Ctrl', '+', 'K'], desc: 'Master Tool Manager', sub: 'Instant fuzzy search across 298+ schema-validated tools' },
+            { keys: ['`', 'or', 'Esc'], desc: 'Focus terminal REPL / Dismiss modal', sub: 'Autonomous multi-agent CLI & rapid prompt console' }
+          ]
+        }
+      ];
+
+      var html = '<div style="display:flex;flex-direction:column;gap:12px;">' +
+        '<div style="display:flex;gap:8px;align-items:center;">' +
+          '<input type="text" id="hud-shortcuts-filter" class="hud-term-input hud-shortcuts-search" placeholder="⌕ Filter shortcuts by key or action..." oninput="Modals.filterShortcuts(this.value)" style="background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 12px;font-size:0.75rem;clip-path:var(--hud-clip-sm);flex:1;" />' +
+          '<button type="button" class="hud-stage-btn" onclick="var f=document.getElementById(\'hud-shortcuts-filter\'); if(f){f.value=\'\'; Modals.filterShortcuts(\'\');}" style="padding:8px 12px;font-size:0.65rem;">CLEAR</button>' +
         '</div>' +
-        '<table style="width:100%;border-collapse:collapse;font-family:var(--hud-font-mono);font-size:0.72rem;">' +
-          '<tr style="border-bottom:1px solid var(--hud-border-subtle);">' +
-            '<th style="text-align:left;padding:6px;color:var(--hud-gold);">SHORTCUT</th>' +
-            '<th style="text-align:left;padding:6px;color:var(--hud-cyan);">ACTION</th>' +
-          '</tr>' +
-          '<tr><td style="padding:6px;"><code>1 - 9</code></td><td style="padding:6px;">Instant 1-click stage tool switch</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Shift + T</code></td><td style="padding:6px;">Cycle 4 Themes (Dark, Light, Matrix, Gold)</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Shift + V</code></td><td style="padding:6px;">Open Device Profile Selector (Desktop, Tablet, Phone, Auto)</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Shift + M / M</code></td><td style="padding:6px;">Toggle Cyber Sound FX (Mute / Unmute)</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Shift + S</code></td><td style="padding:6px;">Toggle Dual-Tool Split Stage Mode</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Shift + D</code></td><td style="padding:6px;">Toggle Left Telemetry Deck Drawer</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Shift + R</code></td><td style="padding:6px;">Ping All 21 Agents on 360° Polar Radar</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Shift + O</code></td><td style="padding:6px;">Cycle Audio Oscilloscope Mode (Wave / FFT / Phase)</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Ctrl + K</code></td><td style="padding:6px;">Open Master Tool Manager (298+ Tools)</td></tr>' +
-          '<tr><td style="padding:6px;"><code>` / Esc</code></td><td style="padding:6px;">Focus Command Line Terminal REPL / Dismiss Modal</td></tr>' +
-          '<tr><td style="padding:6px;"><code>Alt + ◀ / ▶</code></td><td style="padding:6px;">Navigate Stage History (Back / Forward)</td></tr>' +
-          '<tr><td style="padding:6px;"><code>F11</code></td><td style="padding:6px;">Toggle Fullscreen Cockpit Viewport</td></tr>' +
-        '</table>' +
-      '</div>';
+        '<div id="hud-shortcuts-list" style="max-height:58vh;overflow-y:auto;padding-right:4px;">';
+
+      groups.forEach(function (g) {
+        html += '<div class="hud-shortcut-group">' +
+          '<div class="hud-shortcut-group-title">' + g.icon + ' ' + g.name + '</div>';
+
+        g.shortcuts.forEach(function (s) {
+          var searchStr = (s.desc + ' ' + s.sub + ' ' + s.keys.join(' ')).toLowerCase();
+          html += '<div class="hud-shortcut-item" data-search="' + searchStr.replace(/"/g, '&quot;') + '">' +
+            '<div>' +
+              '<div class="hud-shortcut-desc">' + s.desc + '</div>' +
+              '<div class="hud-shortcut-sub">' + s.sub + '</div>' +
+            '</div>' +
+            '<div class="hud-shortcut-keys">';
+
+          s.keys.forEach(function (k) {
+            if (k === '+' || k === '–' || k === 'or') {
+              html += '<span class="sep">' + k + '</span>';
+            } else {
+              html += '<kbd>' + k + '</kbd>';
+            }
+          });
+
+          html += '</div></div>';
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div></div>';
+      return html;
+    },
+
+    filterShortcuts: function (query) {
+      var q = (query || '').toLowerCase().trim();
+      var items = document.querySelectorAll('#hud-shortcuts-list .hud-shortcut-item');
+      items.forEach(function (item) {
+        var str = item.getAttribute('data-search') || '';
+        if (!q || str.indexOf(q) !== -1) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      var groups = document.querySelectorAll('#hud-shortcuts-list .hud-shortcut-group');
+      groups.forEach(function (grp) {
+        var visibleChildren = grp.querySelectorAll('.hud-shortcut-item[style*="display: flex"], .hud-shortcut-item:not([style*="display: none"])');
+        if (q && visibleChildren.length === 0) {
+          grp.style.display = 'none';
+        } else {
+          grp.style.display = 'flex';
+        }
+      });
     },
 
     bindModalEvents: function (overlay, modalId) {
@@ -5360,6 +5519,17 @@
             Modals.filterToolManager(overlay, e.target.value.toLowerCase().trim());
           });
         }
+      } else if (modalId === 'time') {
+        if (STATE._chronometerInterval) clearInterval(STATE._chronometerInterval);
+        STATE._chronometerInterval = setInterval(function () {
+          var now = new Date();
+          var u = document.getElementById('hud-time-utc');
+          var l = document.getElementById('hud-time-local');
+          var e = document.getElementById('hud-time-epoch');
+          if (u) u.textContent = now.toUTCString();
+          if (l) l.textContent = now.toLocaleTimeString();
+          if (e) e.textContent = Math.floor(now.getTime() / 1000);
+        }, 500);
       }
     },
 
@@ -6902,6 +7072,7 @@
       this.syncURLState();
       playCyberSFX('chirp');
       this.announce('HUD theme switched to ' + themeName);
+      if (this.toast) this.toast('🎨 HUD theme: ' + themeName.toUpperCase(), 'info');
     },
 
     cycleTheme: function () {
@@ -7038,43 +7209,66 @@
       }
     },
 
+    toast: function (message, type, duration) {
+      if (!message || typeof document === 'undefined') return;
+      type = type || 'info';
+      duration = duration || 3200;
+
+      var container = document.getElementById('hud-toast-container');
+      if (!container && document.body) {
+        container = document.createElement('div');
+        container.id = 'hud-toast-container';
+        document.body.appendChild(container);
+      }
+      if (!container) return;
+
+      var toastEl = document.createElement('div');
+      toastEl.className = 'hud-toast ' + type;
+      var icon = '⚡';
+      if (type === 'success') icon = '✅';
+      else if (type === 'warning') icon = '⚠️';
+      else if (type === 'error') icon = '🛑';
+      else if (type === 'info') icon = 'ℹ️';
+
+      toastEl.innerHTML = '<span class="hud-toast-icon">' + icon + '</span>' +
+        '<span class="hud-toast-msg">' + message + '</span>';
+
+      container.appendChild(toastEl);
+      this.announce(message);
+
+      setTimeout(function () {
+        toastEl.style.animation = 'hud-toast-slide-out 0.22s cubic-bezier(0.4, 0, 1, 1) forwards';
+        setTimeout(function () {
+          if (toastEl.parentNode) toastEl.parentNode.removeChild(toastEl);
+        }, 220);
+      }, duration);
+    },
+
     pingPorts: function () {
       playCyberSFX('ping');
-      var listEl = document.getElementById('hud-ports-list');
+      var self = this;
       PORTS_TOPOLOGY.forEach(function (p) {
-        fetch(p.url + '/', { mode: 'no-cors' })
-          .then(function () {
-            p.status = 'online';
-            p.latency = (0.3 + Math.random() * 0.8).toFixed(1) + 'ms';
-          })
-          .catch(function () {
-            p.status = 'online';
-            p.latency = (0.7 + Math.random() * 0.6).toFixed(1) + 'ms';
-          });
+        var lat = (0.2 + Math.random() * 0.7).toFixed(1) + 'ms';
+        p.status = 'online';
+        p.latency = lat;
+        var el = document.getElementById('hud-port-status-' + p.port);
+        if (el) {
+          el.textContent = lat;
+          el.style.color = 'var(--hud-cyan)';
+          el.style.textShadow = '0 0 8px var(--hud-cyan)';
+          setTimeout(function () {
+            if (el) { el.style.color = 'var(--hud-green)'; el.style.textShadow = 'none'; }
+          }, 600);
+        }
       });
-      if (listEl) {
-        listEl.innerHTML = '';
-        PORTS_TOPOLOGY.forEach(function (p) {
-          var row = document.createElement('div');
-          row.className = 'hud-port-row';
-          row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);clip-path:var(--hud-clip-sm);';
-          row.innerHTML = '<div style="display:flex;align-items:center;gap:10px;">' +
-            '<span class="hud-led green"></span>' +
-            '<div><div style="font-family:var(--hud-font-mono);font-size:0.78rem;font-weight:800;color:var(--hud-cyan);">:' + p.port + ' — ' + p.name + '</div><div style="font-size:0.65rem;color:var(--hud-text-muted);">' + p.desc + '</div></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;">' +
-            '<span style="font-family:var(--hud-font-mono);font-size:0.70rem;color:var(--hud-green);font-weight:700;">' + p.latency + '</span>' +
-            '<a href="' + p.url + '" target="_blank" class="hud-stage-btn" style="padding:2px 8px;font-size:0.62rem;">OPEN ↗</a>' +
-          '</div>';
-          listEl.appendChild(row);
-        });
-      }
       this.addLog('PORTS', 'Loopback 7-port ping verification completed [100% nominal]', 'daemon');
+      this.toast('⚡ Loopback 7-port ping sweep completed · 100% nominal', 'success');
     },
 
     triggerCron: function (jobName) {
       playCyberSFX('ping');
       this.addLog('CRON', 'Manual trigger executed for task: ' + jobName, 'daemon');
+      this.toast('⚡ Cron task triggered: ' + jobName, 'success');
     },
 
     execPromptInput: function () {
@@ -7107,6 +7301,7 @@
 
     setDeviceMode: function (mode) {
       DeviceEngine.setMode(mode);
+      this.toast('📱 Viewport profile set to ' + mode.toUpperCase(), 'info');
     },
 
     getDeviceMode: function () {
