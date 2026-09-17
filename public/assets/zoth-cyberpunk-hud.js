@@ -4423,10 +4423,23 @@
       playCyberSFX('select');
     },
 
+    toggleExpand: function () {
+      var drawer = document.getElementById('hud-sheet-drawer') || document.getElementById('hudSheetDrawer');
+      if (!drawer) return;
+      drawer.classList.toggle('expanded');
+      var isExp = drawer.classList.contains('expanded');
+      var expBtn = drawer.querySelector('.hud-sheet-expand-btn');
+      if (expBtn) expBtn.innerHTML = isExp ? '⤡' : '⤢';
+      playCyberSFX('click');
+    },
+
     close: function () {
       var drawer = document.getElementById('hud-sheet-drawer') || document.getElementById('hudSheetDrawer');
       var backdrop = document.getElementById('hud-sheet-backdrop') || document.getElementById('hudSheetBackdrop');
       if (drawer) {
+        drawer.classList.remove('expanded');
+        var expBtn = drawer.querySelector('.hud-sheet-expand-btn');
+        if (expBtn) expBtn.innerHTML = '⤢';
         drawer.style.transform = '';
         drawer.classList.remove('is-open');
         setTimeout(function () {
@@ -4467,59 +4480,61 @@
       var themes = [
         {
           id: 'dark',
-          name: 'DARK VOID (CYBERPUNK NEON)',
+          name: 'DARK VOID (NEON CYAN)',
           accent: '#00f0ff',
-          bg: '#050814',
+          bg: '#030408',
           badge: 'CYAN NEON',
-          desc: 'Midnight space void with high-contrast cyan laser optics and electric amber HUD telemetry.'
+          desc: 'Midnight space void with high-contrast cyan laser optics and electric amber HUD telemetry.',
+          swatches: ['#030408', '#00f0ff', '#fbbf24', '#161922']
         },
         {
           id: 'matrix',
-          name: 'MATRIX MAINFRAME (CRT PHOSPHOR)',
+          name: 'MATRIX CRT (PHOSPHOR GREEN)',
           accent: '#00ff66',
-          bg: '#021206',
-          badge: 'PHOSPHOR GREEN',
-          desc: 'Authentic 90s cyberdeck CRT terminal phosphor glow with ambient digital rain stream.'
+          bg: '#000000',
+          badge: 'PHOSPHOR',
+          desc: 'Authentic 90s cyberdeck CRT terminal phosphor glow with ambient digital rain stream.',
+          swatches: ['#000000', '#00ff66', '#003311', '#00ff6633']
         },
         {
           id: 'gold',
-          name: 'ALCHEMICAL SANCTUM (AZOTH GOLD)',
-          accent: '#fbbf24',
-          bg: '#140e02',
-          badge: 'IMPERIAL GOLD',
-          desc: 'Sacred hermetic alchemical gold on obsidian black with warm amber reflections.'
+          name: 'HERMETIC GOLD (24K BRASS)',
+          accent: '#ffd700',
+          bg: '#050300',
+          badge: 'HERMETIC',
+          desc: 'Sacred hermetic alchemical gold on obsidian black with warm amber reflections.',
+          swatches: ['#050300', '#ffd700', '#b45309', '#2a1a05']
         },
         {
           id: 'light',
-          name: 'SOLAR LAB (HIGH CONTRAST LIGHT)',
-          accent: '#2563eb',
-          bg: '#f8fafc',
-          badge: 'CLEAN LAB',
-          desc: 'Daytime research laboratory mode with honest paper-white contrast and sapphire typography.'
+          name: 'SOLAR LIGHT (SWISS ARCH)',
+          accent: '#0071e3',
+          bg: '#f4f6fb',
+          badge: 'SWISS LAB',
+          desc: 'Daytime research laboratory mode with honest paper-white contrast and sapphire typography.',
+          swatches: ['#f4f6fb', '#0071e3', '#0f172a', '#e2e8f0']
         }
       ];
 
       var html = '<div style="display:flex;flex-direction:column;gap:10px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
-        '<div style="font-size:0.72rem;color:var(--hud-text-secondary);">' +
-          'Select any of the 4 complete visual themes. Changes background, font aesthetics, optics, and ambient atmosphere instantly.' +
+        '<div style="font-size:0.72rem;color:var(--hud-text-secondary);line-height:1.4;">' +
+          'Tap any theme to instantly morph color palettes, CRT scanlines, and tactile soundscape.' +
         '</div>' +
         '<div style="display:grid;grid-template-columns:1fr;gap:10px;">';
 
       themes.forEach(function (t) {
         var isCurrent = (currentTheme === t.id);
-        html += '<div class="hud-ws-card ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setTheme(\'' + t.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px;background:' + (isCurrent ? 'rgba(0,240,255,0.08)' : 'rgba(255,255,255,0.02)') + ';border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';clip-path:var(--hud-clip-sm);cursor:pointer;gap:12px;min-height:52px;">' +
-          '<div style="display:flex;align-items:flex-start;gap:12px;min-width:0;flex:1;">' +
-            '<span style="width:20px;height:20px;border-radius:50%;background:' + t.accent + ';box-shadow:0 0 10px ' + t.accent + ';display:inline-block;flex-shrink:0;margin-top:2px;"></span>' +
-            '<div style="min-width:0;flex:1;">' +
-              '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-                '<span style="font-family:var(--hud-font-display);font-size:0.84rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';">' + t.name + '</span>' +
-                '<span class="hud-tool-tag ' + (t.id === 'dark' ? 'cyan' : (t.id === 'matrix' ? 'green' : (t.id === 'gold' ? 'gold' : 'blue'))) + '" style="font-size:0.55rem;padding:1px 5px;">' + t.badge + '</span>' +
-              '</div>' +
-              '<div style="font-size:0.68rem;color:var(--hud-text-muted);margin-top:3px;line-height:1.4;white-space:normal;word-break:break-word;">' + t.desc + '</div>' +
+        html += '<div class="hud-theme-card ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setTheme(\'' + t.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:' + t.bg + ';border:2px solid ' + (isCurrent ? t.accent : 'rgba(255,255,255,0.12)') + ';clip-path:var(--hud-clip-sm);cursor:pointer;position:relative;overflow:hidden;">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+            '<div style="display:flex;align-items:center;gap:8px;">' +
+              '<span style="font-family:var(--hud-font-display);font-size:0.82rem;font-weight:800;color:' + t.accent + ';">' + t.name + '</span>' +
+              '<span class="hud-theme-tag">' + t.badge + '</span>' +
             '</div>' +
+            (isCurrent ? '<span style="font-size:0.58rem;background:' + t.accent + ';color:#000;padding:2px 7px;border-radius:3px;font-weight:800;letter-spacing:0.04em;display:flex;align-items:center;gap:4px;"><span class="hud-status-dot" style="background:#000;width:5px;height:5px;"></span> ACTIVE</span>' : '<span style="font-size:0.58rem;color:var(--hud-cyan);border:1px solid var(--hud-border);padding:2px 6px;border-radius:3px;">APPLY ➔</span>') +
           '</div>' +
-          '<div style="flex-shrink:0;margin-top:2px;">' +
-            (isCurrent ? '<span style="font-size:0.60rem;background:var(--hud-cyan);color:#000;padding:4px 8px;border-radius:2px;font-weight:800;">ACTIVE</span>' : '<span style="font-size:0.60rem;color:var(--hud-cyan);border:1px solid var(--hud-border);padding:3px 8px;border-radius:2px;">APPLY ➔</span>') +
+          '<div style="font-size:0.67rem;color:' + (t.id === 'light' ? '#475569' : '#94a3b8') + ';line-height:1.35;">' + t.desc + '</div>' +
+          '<div class="hud-theme-swatches" style="margin-top:2px;">' +
+            t.swatches.map(function (c) { return '<span class="hud-theme-swatch" style="background:' + c + ';width:14px;height:14px;"></span>'; }).join('') +
           '</div>' +
         '</div>';
       });
@@ -4573,20 +4588,21 @@
       var html = '<div style="display:flex;flex-direction:column;gap:10px;">' +
         '<div class="hud-term-chips" style="display:flex;flex-wrap:wrap;gap:6px;">' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'ports\')">[▶ Ping Ports]</button>' +
-          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'hermes status\')">[🕊 Hermes]</button>' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'debate sovereign autonomy vs cloud rental\')">[💬 Debate]</button>' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'swarm\')">[⚡ Swarm]</button>' +
+          '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'hermes status\')">[🕊 Hermes]</button>' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'vault\')">[🔐 Vault]</button>' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'mem\')">[🧠 Memory]</button>' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'clear\')">[🧹 Clear]</button>' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'help\')">[❓ Help]</button>' +
         '</div>' +
-        '<div id="hud-mobile-term-output" style="background:#020306;border:1px solid var(--hud-border);border-radius:4px;padding:10px;font-family:var(--hud-font-mono);font-size:0.72rem;min-height:140px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">' +
-          '<div style="color:var(--hud-cyan);">Zoth Sovereign Terminal REPL v5.5 (Mobile TTY)</div>' +
-          '<div style="color:var(--hud-text-muted);">Tap a quick command chip or type below. Type "help" for full command matrix.</div>' +
+        '<div id="hud-mobile-term-output" style="background:#020306;border:1px solid var(--hud-border);border-radius:4px;padding:10px;font-family:var(--hud-font-mono);font-size:0.72rem;min-height:150px;max-height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">' +
+          '<div style="color:var(--hud-cyan);">Zoth Sovereign Terminal REPL v5.6 (Mobile TTY)</div>' +
+          '<div style="color:var(--hud-text-muted);">Tap a quick command chip or type below. Try "debate &lt;topic&gt;" or "swarm".</div>' +
         '</div>' +
         '<div class="hud-term-prompt-row" style="display:flex;gap:6px;align-items:center;">' +
           '<span style="font-family:var(--hud-font-mono);font-size:0.75rem;color:var(--hud-gold);">❯</span>' +
-          '<input type="text" id="hud-mobile-term-input" class="hud-term-input" placeholder="help, ports, swarm, tool <name>..." onkeydown="if(event.key===\'Enter\') ZothHUD.execMobilePromptInput();" style="flex:1;background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 10px;font-size:0.75rem;clip-path:var(--hud-clip-sm);color:var(--hud-text-primary);" />' +
+          '<input type="text" id="hud-mobile-term-input" class="hud-term-input" placeholder="debate, ports, swarm, tool <name>..." onkeydown="if(event.key===\'Enter\') ZothHUD.execMobilePromptInput();" style="flex:1;background:var(--hud-input-bg);border:1px solid var(--hud-border);padding:8px 10px;font-size:0.75rem;clip-path:var(--hud-clip-sm);color:var(--hud-text-primary);" />' +
           '<button type="button" class="hud-stage-btn" onclick="ZothHUD.execMobilePromptInput()" style="padding:8px 14px;background:var(--hud-cyan);color:#000;font-weight:800;font-size:0.72rem;">EXEC</button>' +
         '</div>' +
       '</div>';
@@ -7297,6 +7313,9 @@
     openThemesModal: function () { Modals.open('themes'); },
     closeMobileSheet: function () {
       MobileSheets.close();
+    },
+    toggleSheetExpand: function () {
+      MobileSheets.toggleExpand();
     },
 
     setDeviceMode: function (mode) {
