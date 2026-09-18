@@ -7048,6 +7048,31 @@
         breadcrumbEl.textContent = 'STAGE // ' + catIcon + ' ' + (tool.shortName || tool.name || tool.id).toUpperCase();
       }
 
+      var microToolEl = document.getElementById('hudMicroToolName') || document.getElementById('hudMicroToolText');
+      if (microToolEl) {
+        microToolEl.textContent = (tool.shortName || tool.name || tool.id).toUpperCase();
+      }
+
+      if (frame) {
+        var cleanEmbedded = function () {
+          try {
+            var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+            if (doc) {
+              if (doc.documentElement) doc.documentElement.classList.add('in-hud');
+              if (doc.body) doc.body.classList.add('in-hud');
+              if (doc.head && !doc.getElementById('hud-cleaner-css')) {
+                var st = doc.createElement('style');
+                st.id = 'hud-cleaner-css';
+                st.textContent = 'header, nav, .site-header, .topbar, .bar, .reg-bar, header.bar, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav { display: none !important; } body, html { padding-top: 0 !important; padding-bottom: 0 !important; margin-top: 0 !important; }';
+                doc.head.appendChild(st);
+              }
+            }
+          } catch (e) {}
+        };
+        frame.addEventListener('load', cleanEmbedded);
+        cleanEmbedded();
+      }
+
       var mobileWs = document.getElementById('hudMobileWsName') || document.getElementById('hud-mobile-ws-name');
       if (mobileWs) {
         mobileWs.textContent = catIcon + ' ' + (tool.shortName || tool.name || tool.id).toUpperCase();
