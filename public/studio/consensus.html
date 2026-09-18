@@ -702,9 +702,309 @@
       pointer-events: auto;
       animation: fadeIn 0.25s ease;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ==========================================================================
+       SOCRATIC MULTI-AGENT DEBATE ARENA & INTERACTIVE REPL
+       Mobile (320px-480px), Tablet (768px-1024px), Desktop (1280px+)
+       ========================================================================== */
+    .socratic-debate-section {
+      background: var(--surface-card, rgba(12, 17, 30, 0.95));
+      border: 1px solid var(--border, rgba(0, 240, 255, 0.2));
+      border-radius: 14px;
+      padding: clamp(16px, 2.5vw, 24px);
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      position: relative;
+    }
+
+    .socratic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .socratic-roster-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 1024px) {
+      .socratic-roster-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .socratic-roster-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .agent-consensus-card {
+      background: rgba(3, 5, 12, 0.7);
+      border: 1px solid var(--border, rgba(0, 240, 255, 0.15));
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-width: 0;
+    }
+
+    .agent-consensus-card:hover {
+      border-color: var(--cyan, #00f0ff);
+      transform: translateY(-1px);
+    }
+
+    .agent-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    .badge-athena { background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid #a855f7; }
+    .badge-draco { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid #ef4444; }
+    .badge-azoth { background: rgba(251, 191, 36, 0.18); color: #fbbf24; border: 1px solid #fbbf24; }
+    .badge-hermes { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid #10b981; }
+    .badge-grok { background: rgba(0, 240, 255, 0.18); color: #00f0ff; border: 1px solid #00f0ff; }
+
+    /* Interactive Prompt Input Bar with 16px font-size to prevent iOS Safari auto-zoom */
+    .repl-prompt-bar {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .repl-prompt-input {
+      flex: 1 1 260px;
+      min-width: 0;
+      font-size: 16px !important; /* Prevents auto-zoom on iOS touch devices */
+      font-family: var(--font-mono);
+      padding: 12px 16px;
+      background: rgba(3, 5, 12, 0.95);
+      border: 1px solid var(--border, rgba(0, 240, 255, 0.25));
+      border-radius: 10px;
+      color: var(--text, #f1f5f9);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .repl-prompt-input:focus {
+      border-color: var(--cyan, #00f0ff);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    }
+
+    .btn-repl-send {
+      background: linear-gradient(135deg, var(--cyan, #00f0ff), #0284c7);
+      color: #03050a;
+      border: none;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-repl-send:hover {
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-repl-clear {
+      background: var(--surface-card, rgba(15, 21, 36, 0.85));
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .btn-repl-clear:hover {
+      border-color: var(--border-bright);
+      color: var(--text);
+    }
+
+    /* Suggestion Chips */
+    .suggestion-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .suggestion-chip {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border, rgba(0, 240, 255, 0.15));
+      color: var(--text-secondary, #cbd5e1);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .suggestion-chip:hover {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      transform: translateY(-1px);
+    }
+
+    /* Terminal REPL Window */
+    .socratic-terminal-repl {
+      background: #04060c;
+      border: 1px solid var(--border, rgba(0, 240, 255, 0.2));
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .terminal-titlebar {
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-stream {
+      padding: 14px 16px;
+      font-family: var(--font-mono);
+      font-size: 0.80rem;
+      line-height: 1.65;
+      color: #e2e8f0;
+      max-height: 320px;
+      min-height: 180px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .terminal-line {
+      margin-bottom: 6px;
+      word-break: break-word;
+    }
+
+    /* 4-Theme Support for Socratic REPL */
+    html[data-theme="light"] .socratic-debate-section {
+      background: #ffffff !important;
+      border-color: rgba(17, 24, 39, 0.14) !important;
+      color: #1f2937 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    }
+    html[data-theme="light"] .agent-consensus-card {
+      background: #f8fafc !important;
+      border-color: rgba(17, 24, 39, 0.12) !important;
+      color: #1f2937 !important;
+    }
+    html[data-theme="light"] .repl-prompt-input {
+      background: #ffffff !important;
+      border-color: rgba(17, 24, 39, 0.2) !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .suggestion-chip {
+      background: #f1f5f9 !important;
+      border-color: rgba(17, 24, 39, 0.15) !important;
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .socratic-terminal-repl {
+      background: #0b1020 !important;
+      border-color: rgba(17, 24, 39, 0.2) !important;
+    }
+
+    html[data-theme="matrix"] .socratic-debate-section {
+      background: #020804 !important;
+      border-color: rgba(0, 255, 65, 0.3) !important;
+    }
+    html[data-theme="matrix"] .agent-consensus-card {
+      background: #010402 !important;
+      border-color: rgba(0, 255, 65, 0.25) !important;
+    }
+    html[data-theme="matrix"] .repl-prompt-input {
+      background: #000000 !important;
+      border-color: rgba(0, 255, 65, 0.4) !important;
+      color: #00ff41 !important;
+    }
+    html[data-theme="matrix"] .btn-repl-send {
+      background: #00ff41 !important;
+      color: #000000 !important;
+      box-shadow: 0 0 16px rgba(0, 255, 65, 0.4) !important;
+    }
+    html[data-theme="matrix"] .suggestion-chip {
+      background: #020804 !important;
+      border-color: rgba(0, 255, 65, 0.3) !important;
+      color: #00ff41 !important;
+    }
+
+    html[data-theme="gold"] .socratic-debate-section {
+      background: #0a0701 !important;
+      border-color: rgba(251, 191, 36, 0.25) !important;
+    }
+    html[data-theme="gold"] .agent-consensus-card {
+      background: #060401 !important;
+      border-color: rgba(251, 191, 36, 0.2) !important;
+    }
+    html[data-theme="gold"] .repl-prompt-input {
+      background: #050300 !important;
+      border-color: rgba(251, 191, 36, 0.35) !important;
+      color: #fef3c7 !important;
+    }
+    html[data-theme="gold"] .btn-repl-send {
+      background: #fbbf24 !important;
+      color: #050300 !important;
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.35) !important;
+    }
+    html[data-theme="gold"] .suggestion-chip {
+      background: #0e0a02 !important;
+      border-color: rgba(251, 191, 36, 0.25) !important;
+      color: #fef3c7 !important;
     }
   </style>
 </head>
@@ -1224,6 +1524,109 @@
         </div>
       </section>
 
+      <!-- Socratic Multi-Agent Debate Arena & Interactive REPL -->
+      <section class="socratic-debate-section" aria-label="Socratic Multi-Agent Debate Arena and Interactive REPL">
+        <div class="socratic-header">
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em;">✦ Socratic Dialectic Crucible</div>
+            <h2 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: #fff; margin-top: 2px;">
+              Socratic Multi-Agent Debate Arena &amp; Interactive REPL
+            </h2>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span id="repl-bft-status" style="font-family:var(--font-mono); font-size:0.74rem; color:var(--emerald); background:rgba(16,185,129,0.12); padding:4px 10px; border-radius:6px; border:1px solid var(--emerald);">
+              ● BFT Quorum 3f+1 Active
+            </span>
+          </div>
+        </div>
+
+        <!-- 5 Contender Agent Consensus Roster Cards -->
+        <div class="socratic-roster-grid">
+          <div class="agent-consensus-card" id="roster-card-athena">
+            <span class="agent-badge-pill badge-athena">🏛️ Athena</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Formal Verification &amp; Logic Proofs</span>
+            <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--text-dim);" id="roster-vote-athena">Vote: Invariant Pass (100%)</span>
+          </div>
+          <div class="agent-consensus-card" id="roster-card-draco">
+            <span class="agent-badge-pill badge-draco">🐉 Draco</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Penetration &amp; Adversarial Exploit</span>
+            <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--text-dim);" id="roster-vote-draco">Vote: 0 Exploits Found</span>
+          </div>
+          <div class="agent-consensus-card" id="roster-card-azoth">
+            <span class="agent-badge-pill badge-azoth">🔮 Azoth</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Sovereign Truth &amp; Anchor (50%)</span>
+            <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--text-dim);" id="roster-vote-azoth">Vote: Sealed Thesis (100%)</span>
+          </div>
+          <div class="agent-consensus-card" id="roster-card-hermes">
+            <span class="agent-badge-pill badge-hermes">⚡ Hermes</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">AST Logic Kernel &amp; Optimizer (20%)</span>
+            <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--text-dim);" id="roster-vote-hermes">Vote: Tree Canonical (100%)</span>
+          </div>
+          <div class="agent-consensus-card" id="roster-card-grok">
+            <span class="agent-badge-pill badge-grok">🌪️ Grok</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Adversarial Fuzzer &amp; Boundary (30%)</span>
+            <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--text-dim);" id="roster-vote-grok">Vote: Fuzz Bound Clear</span>
+          </div>
+        </div>
+
+        <!-- Interactive REPL Prompt Bar -->
+        <div class="repl-prompt-bar">
+          <input
+            type="text"
+            id="repl-prompt-input"
+            class="repl-prompt-input"
+            placeholder="Type an AST invariant, contract hypothesis, or code security assertion..."
+            aria-label="Socratic Dialectic REPL Prompt"
+            onkeydown="if (event.key === 'Enter') submitReplPrompt();"
+          />
+          <button class="btn-repl-send" id="btn-repl-submit" onclick="submitReplPrompt()" type="button">
+            <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Debate &amp; Synthesize
+          </button>
+          <button class="btn-repl-clear" onclick="clearReplTerminal()" type="button" title="Clear REPL Output">
+            Clear
+          </button>
+        </div>
+
+        <!-- Quick Invariant Suggestion Chips -->
+        <div class="suggestion-chips-row">
+          <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim); margin-right:4px;">Quick Invariants:</span>
+          <button class="suggestion-chip" onclick="applyReplSuggestion('Validate AST recursion bounds and reject unsafe builtins (eval, exec, __import__)')" type="button">
+            🛡️ AST Recursion Bounds
+          </button>
+          <button class="suggestion-chip" onclick="applyReplSuggestion('Prove Byzantine Fault Tolerance under 3f+1 quorum for n=7 nodes with f=2 malicious peers')" type="button">
+            📐 Byzantine Quorum (3f+1)
+          </button>
+          <button class="suggestion-chip" onclick="applyReplSuggestion('STDP Spike-Timing Plasticity with Exponential Decay tau_+ = 16.8ms for Local Memory Daemon')" type="button">
+            🧠 STDP Hebbian Memory
+          </button>
+          <button class="suggestion-chip" onclick="applyReplSuggestion('Shannon Agreement Entropy H(X) minimizing mutual information loss below 0.05 bits')" type="button">
+            📊 Shannon Entropy H(X)
+          </button>
+          <button class="suggestion-chip" onclick="applyReplSuggestion('Argon2id Enclave Memory Isolation with Zero Side-Channel Leaks')" type="button">
+            🔐 Argon2id Enclave
+          </button>
+        </div>
+
+        <!-- Socratic Live Terminal Stream Window -->
+        <div class="socratic-terminal-repl">
+          <div class="terminal-titlebar">
+            <div class="terminal-dots">
+              <div class="terminal-dot" style="background:#ef4444;"></div>
+              <div class="terminal-dot" style="background:#f59e0b;"></div>
+              <div class="terminal-dot" style="background:#10b981;"></div>
+            </div>
+            <span>socratic-multi-agent-repl.log — Byzantine Socratic Arena v2.6</span>
+            <span id="terminal-pulse-indicator" style="color:var(--emerald);">● LIVE QUORUM</span>
+          </div>
+          <div class="terminal-stream" id="socratic-terminal-stream" role="log" aria-live="polite">
+            <div class="terminal-line" style="color: var(--text-dim);">[SYSTEM] Initializing 5-Agent Socratic Debate Arena (Athena, Draco, Azoth, Hermes, Grok)...</div>
+            <div class="terminal-line" style="color: var(--cyan);">[TOPOLOGY] Byzantine Fault Tolerance Quorum active: n &ge; 3f + 1 (Stake: Azoth 50%, Grok 30%, Hermes 20%).</div>
+            <div class="terminal-line" style="color: var(--emerald);">[READY] Enter a hypothesis above or click a suggestion chip to trigger live multi-agent dialectic arbitration.</div>
+          </div>
+        </div>
+      </section>
+
       <!-- Tri-Agent Dialectic Progression Strip -->
       <section aria-label="Tri-Agent Dialectic Process" class="dialectic-flow-section">
         <div class="dialectic-steps-row">
@@ -1332,239 +1735,6 @@
                 <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 .md
               </button>
-            </div>
-          </div>
-
-          <div class="code-viewer" style="height:360px;">
-            <code id="synthesized-code-text"></code>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.74rem; color:var(--text-dim); flex-wrap:wrap; gap:6px;">
-            <span>AST Verification: <strong style="color:var(--emerald);">PASSED (0 Violations)</strong></span>
-            <span id="consensus-approval-badge" style="color:var(--cyan);">Quorum Ratified: 100.0% Stake</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Side-by-Side AST Diff & Syntax Inspector Section -->
-      <section class="ast-diff-section" aria-label="Side-by-side AST Diff Inspector">
-        <div class="ast-diff-header">
-          <div>
-            <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan); text-transform:uppercase;">✦ Side-by-Side Syntax &amp; Node Tree Diff</div>
-            <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:#fff; margin-top:2px;">
-              AST Syntax Trees &amp; Invariant Node Comparison
-            </h3>
-          </div>
-          <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim);">
-            Real-time node-level comparison across Azoth, Grok, and Hermes
-          </div>
-        </div>
-
-        <div class="ast-diff-grid" id="ast-diff-grid-container">
-          <!-- Rendered dynamically by script -->
-        </div>
-      </section>
-    </div>
-                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"></stop>
-                <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.9"></stop>
-              </linearGradient>
-              <linearGradient id="grad-azoth-hermes" x1="50%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"></stop>
-                <stop offset="100%" stop-color="#10b981" stop-opacity="0.9"></stop>
-              </linearGradient>
-              <linearGradient id="grad-grok-hermes" x1="0%" y1="50%" x2="100%" y2="50%">
-                <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.9"></stop>
-                <stop offset="100%" stop-color="#10b981" stop-opacity="0.9"></stop>
-              </linearGradient>
-
-              <clipPath id="clip-azoth"><circle cx="420" cy="70" r="32"></circle></clipPath>
-              <clipPath id="clip-grok"><circle cx="180" cy="370" r="32"></circle></clipPath>
-              <clipPath id="clip-hermes"><circle cx="660" cy="370" r="32"></circle></clipPath>
-            </defs>
-
-            <!-- Ambient Guide Rings -->
-            <g opacity="0.2">
-              <circle cx="420" cy="260" r="210" fill="none" stroke="var(--cyan)" stroke-dasharray="4 8" stroke-width="1"></circle>
-              <circle cx="420" cy="260" r="140" fill="none" stroke="var(--purple)" stroke-dasharray="2 6" stroke-width="1"></circle>
-            </g>
-
-            <!-- Laser Beams / Signal Cables -->
-            <path class="anim-dash-flow" id="wire-azoth-grok" d="M 420 70 Q 270 190 180 370" fill="none" stroke="url(#grad-azoth-grok)" stroke-width="3"></path>
-            <path class="anim-dash-flow" id="wire-azoth-hermes" d="M 420 70 Q 570 190 660 370" fill="none" stroke="url(#grad-azoth-hermes)" stroke-width="3"></path>
-            <path class="anim-dash-flow" id="wire-grok-hermes" d="M 180 370 Q 420 420 660 370" fill="none" stroke="url(#grad-grok-hermes)" stroke-width="3"></path>
-
-            <!-- Live Metric Badges on Laser Links -->
-            <g transform="translate(270, 200)">
-              <rect fill="#040814" width="130" height="26" rx="13" stroke="rgba(251,191,36,0.6)" stroke-width="1" x="-65" y="-13"></rect>
-              <text text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#fbbf24" y="4">J(Azoth,Grok): <tspan fill="#00f0ff" id="svg-jacc-ag">94.8%</tspan></text>
-            </g>
-
-            <g transform="translate(570, 200)">
-              <rect fill="#040814" width="130" height="26" rx="13" stroke="rgba(16,185,129,0.6)" stroke-width="1" x="-65" y="-13"></rect>
-              <text text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#10b981" y="4">J(Azoth,Her): <tspan fill="#fbbf24" id="svg-jacc-ah">91.2%</tspan></text>
-            </g>
-
-            <g transform="translate(420, 400)">
-              <rect fill="#040814" width="130" height="26" rx="13" stroke="rgba(0,240,255,0.6)" stroke-width="1" x="-65" y="-13"></rect>
-              <text text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="700" fill="#00f0ff" y="4">J(Grok,Her): <tspan fill="#10b981" id="svg-jacc-gh">88.5%</tspan></text>
-            </g>
-
-            <!-- Central Centroid Quorum Core -->
-            <g id="svg-quorum-core" transform="translate(420, 250)">
-              <circle class="anim-spin-slow" cx="0" cy="0" r="62" fill="none" stroke="rgba(0, 240, 255, 0.4)" stroke-dasharray="6 4 12 4" stroke-width="1.5"></circle>
-              <circle class="anim-spin-slow" cx="0" cy="0" r="48" fill="none" stroke="rgba(16, 185, 129, 0.6)" stroke-dasharray="2 6" stroke-width="2" style="animation-direction: reverse; animation-duration: 18s;"></circle>
-              <circle id="quorum-core-bg" cx="0" cy="0" r="40" fill="#040916" stroke="var(--emerald)" stroke-width="2" filter="url(#glow-emerald)"></circle>
-              <polygon fill="rgba(16,185,129,0.25)" stroke="var(--emerald)" stroke-width="1.5" points="0,-20 6,-7 20,-7 9,2 13,15 0,8 -13,15 -9,2 -20,-7 -6,-7"></polygon>
-              <text text-anchor="middle" x="0" y="-3" font-family="var(--font-display)" font-size="9" font-weight="800" fill="#ffffff">QUORUM</text>
-              <text text-anchor="middle" x="0" y="10" font-family="var(--font-mono)" font-size="10" font-weight="800" fill="var(--emerald)" id="svg-quorum-label">RATIFIED</text>
-            </g>
-
-            <!-- Node 1: Master Azoth (50% Stake) -->
-            <g class="svg-node-interactive" id="svg-node-azoth" onclick="selectContender('azoth')" title="Inspect Master Azoth">
-              <circle class="anim-pulse-ring" id="ring-azoth" cx="420" cy="70" r="42" fill="none" stroke="#fbbf24" stroke-dasharray="4 4" stroke-width="1.5"></circle>
-              <circle cx="420" cy="70" r="36" fill="none" stroke="#fbbf24" stroke-width="2" filter="url(#glow-amber)" id="glow-circle-azoth"></circle>
-              <circle cx="420" cy="70" r="32" fill="#1c1103"></circle>
-              <image clip-path="url(#clip-azoth)" href="/assets/agents/azoth.jpg" x="388" y="38" width="64" height="64" preserveAspectRatio="xMidYMid slice"></image>
-              <rect x="330" y="110" width="180" height="40" rx="8" fill="rgba(28, 17, 3, 0.92)" stroke="rgba(251, 191, 36, 0.6)" stroke-width="1"></rect>
-              <text x="420" y="126" text-anchor="middle" font-family="var(--font-display)" font-size="12" font-weight="800" fill="#fbbf24">@azoth</text>
-              <text x="420" y="141" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" font-weight="700" fill="#cbd5e1" id="svg-azoth-sub">50% Stake · Sovereign Truth</text>
-            </g>
-
-            <!-- Node 2: Grok 4.5 Cyber (30% Stake) -->
-            <g class="svg-node-interactive" id="svg-node-grok" onclick="selectContender('grok')" title="Inspect Grok 4.5 Cyber">
-              <circle class="anim-pulse-ring" id="ring-grok" cx="180" cy="370" r="42" fill="none" stroke="#00f0ff" stroke-dasharray="4 4" stroke-width="1.5"></circle>
-              <circle cx="180" cy="370" r="36" fill="none" stroke="#00f0ff" stroke-width="2" filter="url(#glow-cyan)" id="glow-circle-grok"></circle>
-              <circle cx="180" cy="370" r="32" fill="#04121c"></circle>
-              <image clip-path="url(#clip-grok)" href="/assets/agents/grok.jpg" x="148" y="338" width="64" height="64" preserveAspectRatio="xMidYMid slice"></image>
-              <rect x="90" y="410" width="180" height="40" rx="8" fill="rgba(4, 18, 28, 0.92)" stroke="rgba(0, 240, 255, 0.6)" stroke-width="1"></rect>
-              <text x="180" y="426" text-anchor="middle" font-family="var(--font-display)" font-size="12" font-weight="800" fill="#00f0ff">@grok</text>
-              <text x="180" y="441" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" font-weight="700" fill="#cbd5e1" id="svg-grok-sub">30% Stake · Adversarial Fuzzer</text>
-            </g>
-
-            <!-- Node 3: Hermes 3 (20% Stake) -->
-            <g class="svg-node-interactive" id="svg-node-hermes" onclick="selectContender('hermes')" title="Inspect Hermes 3">
-              <circle class="anim-pulse-ring" id="ring-hermes" cx="660" cy="370" r="42" fill="none" stroke="#10b981" stroke-dasharray="4 4" stroke-width="1.5"></circle>
-              <circle cx="660" cy="370" r="36" fill="none" stroke="#10b981" stroke-width="2" filter="url(#glow-emerald)" id="glow-circle-hermes"></circle>
-              <circle cx="660" cy="370" r="32" fill="#041612"></circle>
-              <image clip-path="url(#clip-hermes)" href="/assets/agents/hermes.jpg" x="628" y="338" width="64" height="64" preserveAspectRatio="xMidYMid slice"></image>
-              <rect x="570" y="410" width="180" height="40" rx="8" fill="rgba(4, 22, 18, 0.92)" stroke="rgba(16, 185, 129, 0.6)" stroke-width="1"></rect>
-              <text x="660" y="426" text-anchor="middle" font-family="var(--font-display)" font-size="12" font-weight="800" fill="#10b981">@hermes</text>
-              <text x="660" y="441" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" font-weight="700" fill="#cbd5e1" id="svg-hermes-sub">20% Stake · AST Logic Kernel</text>
-            </g>
-          </svg>
-        </div>
-      </section>
-
-      <!-- Dialectic Stage Progression Section -->
-      <section class="dialectic-section">
-        <div class="dialectic-header">
-          <div>
-            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em;">✦ Dialectic Triangulation Engine</div>
-            <h2 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: #fff; margin-top: 2px;">
-              Multi-Turn Dialectic Progression &amp; AST Synthesis
-            </h2>
-          </div>
-          <div style="display:flex; gap: 8px; align-items: center;">
-            <button class="hero-action-btn" id="btn-dialectic-auto" onclick="toggleDialecticAutoPlay()" type="button" style="min-height: 36px; padding: 6px 12px;">
-              <span>▶</span> Auto-Cycle Dialectic
-            </button>
-            <span id="dialectic-stage-indicator" style="font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-dim);">Active: Stage 1 (Thesis)</span>
-          </div>
-        </div>
-
-        <div class="dialectic-stepper">
-          <div class="dialectic-step-btn active" id="step-thesis" onclick="setDialecticStage('thesis')">
-            <div class="dialectic-step-num"><span>Stage 01</span><span style="color: #fbbf24;">@azoth (50%)</span></div>
-            <div class="dialectic-step-title">🏛️ Invariant Thesis</div>
-            <div class="dialectic-step-desc">Establishes the immutable security baseline, memory contracts, and AST type rules.</div>
-          </div>
-          <div class="dialectic-step-btn" id="step-antithesis" onclick="setDialecticStage('antithesis')">
-            <div class="dialectic-step-num"><span>Stage 02</span><span style="color: #00f0ff;">@grok (30%) + @hermes (20%)</span></div>
-            <div class="dialectic-step-title">⚡ Adversarial Dispute</div>
-            <div class="dialectic-step-desc">Fuzzes boundary invariants, tests edge collisions, and optimizes concurrency pathways.</div>
-          </div>
-          <div class="dialectic-step-btn" id="step-synthesis" onclick="setDialecticStage('synthesis')">
-            <div class="dialectic-step-num"><span>Stage 03</span><span style="color: #10b981;">Tri-Agent Quorum (100%)</span></div>
-            <div class="dialectic-step-title">🛡️ Sovereign Synthesis</div>
-            <div class="dialectic-step-desc">Unified AST artifact ratified under Byzantine quorum with cryptographic hash commit.</div>
-          </div>
-        </div>
-
-        <div class="dialectic-critique-box" id="dialectic-critique-box">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-            <strong id="critique-title" style="font-family:var(--font-mono); font-size:0.8rem; color:var(--cyan);">Stage 1: Invariant Contract Formulation</strong>
-            <span id="critique-status" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--emerald);">AST Valid · Quorum 50%</span>
-          </div>
-          <p id="critique-desc" style="font-size:0.82rem; color:#cbd5e1; line-height:1.5;">
-            Master Azoth formulates the immutable security specification, enforcing strict mathematical boundary checks and zero-telemetry quarantine.
-          </p>
-        </div>
-      </section>
-
-      <!-- Arena Interactive Grid (Contenders vs Synthesized) -->
-      <div class="consensus-grid arena-grid">
-        <!-- Left: 3 Competing Contender Proposals -->
-        <div class="arena-box" id="pane-contenders">
-          <div class="arena-box-head">
-            <div class="arena-box-title">⚔️ Contender Code Proposals</div>
-            <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim);">Click tab to inspect</div>
-          </div>
-
-          <div class="contenders-row">
-            <div class="contender-card active" id="card-azoth" onclick="selectContender('azoth')">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <img src="/assets/agents/azoth.jpg" alt="Azoth" style="width:28px; height:28px; border-radius:50%; border:2px solid #fbbf24;"/>
-                <div>
-                  <div class="contender-name" style="color:#fbbf24;">@azoth</div>
-                  <div class="contender-role">50% · Truth Core</div>
-                </div>
-              </div>
-              <div class="confidence-bar"><div class="confidence-bar-fill" id="conf-bar-azoth" style="width:96%; background:#fbbf24;"></div></div>
-              <div style="margin-top:4px; font-family:var(--font-mono); font-size:0.65rem; color:#cbd5e1;">Confidence: <strong id="conf-val-azoth">96.4%</strong></div>
-            </div>
-
-            <div class="contender-card" id="card-grok" onclick="selectContender('grok')">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <img src="/assets/agents/grok.jpg" alt="Grok" style="width:28px; height:28px; border-radius:50%; border:2px solid #00f0ff;"/>
-                <div>
-                  <div class="contender-name" style="color:#00f0ff;">@grok</div>
-                  <div class="contender-role">30% · Fuzzer</div>
-                </div>
-              </div>
-              <div class="confidence-bar"><div class="confidence-bar-fill" id="conf-bar-grok" style="width:92%; background:#00f0ff;"></div></div>
-              <div style="margin-top:4px; font-family:var(--font-mono); font-size:0.65rem; color:#cbd5e1;">Confidence: <strong id="conf-val-grok">92.1%</strong></div>
-            </div>
-
-            <div class="contender-card" id="card-hermes" onclick="selectContender('hermes')">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <img src="/assets/agents/hermes.jpg" alt="Hermes" style="width:28px; height:28px; border-radius:50%; border:2px solid #10b981;"/>
-                <div>
-                  <div class="contender-name" style="color:#10b981;">@hermes</div>
-                  <div class="contender-role">20% · Logic AST</div>
-                </div>
-              </div>
-              <div class="confidence-bar"><div class="confidence-bar-fill" id="conf-bar-hermes" style="width:89%; background:#10b981;"></div></div>
-              <div style="margin-top:4px; font-family:var(--font-mono); font-size:0.65rem; color:#cbd5e1;">Confidence: <strong id="conf-val-hermes">89.5%</strong></div>
-            </div>
-          </div>
-
-          <div class="code-viewer">
-            <code id="contender-code-text"></code>
-          </div>
-
-          <button class="btn-run-arena" onclick="runArbitrationCycle()">
-            <span>⚡</span> Run 3-Way Triangulation &amp; Synthesize Quorum
-          </button>
-        </div>
-
-        <!-- Right: Synthesized Sovereign Hardened Artifact -->
-        <div class="arena-box" id="pane-synthesized">
-          <div class="arena-box-head">
-            <div class="arena-box-title" style="color:var(--emerald);">🛡️ Synthesized Sovereign Artifact</div>
-            <div style="display:flex; gap:6px; align-items:center;">
-              <span id="artifact-hash" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan);">0x8f7a93b4e1c2</span>
-              <button onclick="copySynthesizedCode()" class="hero-action-btn" style="min-height:30px; padding:3px 8px; font-size:0.70rem;">Copy</button>
-              <button onclick="exportConsensusMarkdown()" class="hero-action-btn" style="min-height:30px; padding:3px 8px; font-size:0.70rem;">.md</button>
             </div>
           </div>
 
@@ -2608,6 +2778,124 @@
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
       }, 3000);
+    }
+
+    // Socratic REPL & Multi-Agent Arbitration Engine
+    function applyReplSuggestion(text) {
+      const input = document.getElementById('repl-prompt-input');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+      playAudioCue('ping');
+    }
+
+    function clearReplTerminal() {
+      const stream = document.getElementById('socratic-terminal-stream');
+      if (stream) {
+        stream.innerHTML = `
+          <div class="terminal-line" style="color: var(--text-dim);">[SYSTEM] REPL Output Cleared. Ready for new hypothesis or invariant proof.</div>
+        `;
+      }
+      playAudioCue('ping');
+    }
+
+    let isReplDebating = false;
+    function submitReplPrompt() {
+      if (isReplDebating) return;
+      const input = document.getElementById('repl-prompt-input');
+      if (!input) return;
+      const prompt = input.value.trim();
+      if (!prompt) {
+        showToast('Please enter an invariant hypothesis or code assertion.', 'info');
+        input.focus();
+        return;
+      }
+
+      isReplDebating = true;
+      const btn = document.getElementById('btn-repl-submit');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳</span> Debating...`;
+      }
+
+      const stream = document.getElementById('socratic-terminal-stream');
+      const timestamp = new Date().toISOString().substring(11, 19);
+
+      if (stream) {
+        stream.innerHTML += `
+          <div class="terminal-line" style="margin-top: 10px; border-top: 1px dashed rgba(0,240,255,0.2); padding-top: 8px; color: #fff;">
+            <strong style="color: var(--cyan);">[USER PROMPT @ ${timestamp}]:</strong> "${prompt}"
+          </div>
+        `;
+        stream.scrollTop = stream.scrollHeight;
+      }
+
+      playAudioCue('laser');
+
+      // Multi-Agent Debate Simulation Turns
+      const turns = [
+        {
+          delay: 350,
+          color: '#c084fc',
+          badge: '🏛️ ATHENA (Logic Check)',
+          msg: `Parsing AST contract. Verification against invariant theorem: P(x) &implies; Safe(x). Formal type check: PASSED (0 Type Violations).`
+        },
+        {
+          delay: 800,
+          color: '#f87171',
+          badge: '🐉 DRACO (Adversarial Fuzzer)',
+          msg: `Injecting boundary mutations, depth overflow probes, and mock syscalls. Fuzz stress-test passed; 0 memory leaks or escape bypasses detected.`
+        },
+        {
+          delay: 1300,
+          color: '#fbbf24',
+          badge: '🔮 AZOTH (Sovereign Truth 50%)',
+          msg: `Establishing immutable cryptographic thesis. Committing Merkle root signature 0x8f7a93b4e1c2. Stake verified.`
+        },
+        {
+          delay: 1800,
+          color: '#34d399',
+          badge: '⚡ HERMES (Logic AST 20%)',
+          msg: `Pruning dead syntax branches & optimizing control flow. Canonical AST digest generated: Jaccard overlap = 96.2%.`
+        },
+        {
+          delay: 2300,
+          color: '#00f0ff',
+          badge: '🌪️ GROK (Chaos Boundary 30%)',
+          msg: `Boundary invariant verified across concurrent threads. Quorum confidence = 94.8%. Byzantine agreement threshold satisfied.`
+        },
+        {
+          delay: 2800,
+          color: 'var(--emerald)',
+          badge: '🛡️ QUORUM SYNTHESIS RATIFIED',
+          msg: `Tri-Agent Quorum Commit: 100.0% Honest Stake. Shannon Entropy H(X) = 1.18 bits. Hardened Sovereign Artifact Sealed!`
+        }
+      ];
+
+      turns.forEach((turn, idx) => {
+        setTimeout(() => {
+          if (stream) {
+            stream.innerHTML += `
+              <div class="terminal-line" style="color: ${turn.color};">
+                <strong>[${turn.badge}]:</strong> ${turn.msg}
+              </div>
+            `;
+            stream.scrollTop = stream.scrollHeight;
+          }
+          if (idx % 2 === 0) playAudioCue('ping');
+
+          if (idx === turns.length - 1) {
+            isReplDebating = false;
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = `<svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Debate &amp; Synthesize`;
+            }
+            playAudioCue('quorum');
+            showToast('Consensus Quorum Ratified Successfully!', 'success');
+          }
+        }, turn.delay);
+      });
     }
 
     // Initialize

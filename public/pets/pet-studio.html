@@ -682,6 +682,7 @@
         padding: 8px 12px;
         gap: 6px;
         width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
         box-sizing: border-box;
         border-radius: 16px;
         max-height: 45vh;
@@ -689,10 +690,10 @@
       }
 
       .pet-select {
-        min-height: 42px;
-        font-size: 15px;
+        min-height: 44px;
+        font-size: 16px; /* Prevents auto-zoom on iOS */
         width: 100%;
-        padding: 6px 10px;
+        padding: 8px 12px;
       }
 
       .vibes-group {
@@ -702,10 +703,10 @@
       }
 
       .vibe-chip {
-        min-height: 38px;
-        min-width: 38px;
-        padding: 6px 12px;
-        font-size: 0.74rem;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 14px;
+        font-size: 0.78rem;
         flex-shrink: 0;
       }
 
@@ -713,13 +714,14 @@
         display: flex !important;
         width: 100%;
         justify-content: space-between;
+        gap: 6px;
       }
 
       .cam-presets-row .btn-tool {
         flex: 1;
-        min-height: 36px;
-        font-size: 0.72rem;
-        padding: 4px 6px;
+        min-height: 44px;
+        font-size: 0.76rem;
+        padding: 6px 8px;
       }
 
       .tool-btns {
@@ -730,20 +732,28 @@
       }
 
       .btn-tool {
-        min-height: 38px;
-        min-width: 38px;
-        padding: 6px 8px;
-        font-size: 0.74rem;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 10px;
+        font-size: 0.76rem;
         justify-content: center;
+      }
+
+      #studio-pet-forge-modal input,
+      #studio-pet-forge-modal select,
+      #studio-pet-forge-modal textarea {
+        font-size: 16px !important;
+        min-height: 44px;
       }
     }
 
     @media (max-width: 480px) {
       .tool-btns {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
       }
       .tool-btns button {
-        font-size: 0.70rem;
+        font-size: 0.74rem;
+        min-height: 44px;
       }
     }
 
@@ -1343,12 +1353,13 @@
 <!-- Top Navigation Bar -->
 <main id="main-content" role="main">
 <!-- Mobile Drawer -->
-<!-- Mobile-Only Desktop Insight Banner -->
 <div class="mobile-desktop-insight" role="note">
 <span class="insight-icon">💡</span>
 <div class="insight-text">
 <strong>Mobile Focused Mode Active</strong>
 <span>Optimized for touch &amp; speed. Want full PBR volumetric shaders &amp; 3D OBJ export? Open this studio on desktop.</span>
+</div>
+<button aria-label="Dismiss insight" class="insight-close" onclick="this.parentElement.style.display='none'" type="button">✕</button>
 </div>
 <!-- Mobile Dossier Toggle Button -->
 <button class="mobile-dossier-toggle" id="btn-mobile-dossier-toggle" onclick="document.body.classList.toggle('dossier-collapsed')" type="button">
@@ -2306,14 +2317,20 @@
     }
     animate();
 
-    // Responsive Resize Handler
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+    // Responsive Resize & Orientation Handler
+    function handleStudioResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(w, h);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      if (composer) composer.setSize(window.innerWidth, window.innerHeight);
-    });
+      if (composer) composer.setSize(w, h);
+    }
+    window.addEventListener("resize", handleStudioResize, { passive: true });
+    window.addEventListener("orientationchange", () => {
+      setTimeout(handleStudioResize, 120);
+    }, { passive: true });
 
     // Integrate Custom Pets on Load in pet-studio
     try {
