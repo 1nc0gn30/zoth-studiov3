@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ZOTH STUDIO: WINDOWS COMPILATION & PACKAGING PIPELINE v2.6.0
+# ZOTH STUDIO: WINDOWS COMPILATION & PACKAGING PIPELINE v12.0.0
 # Generates:
-#   1. dist-windows/zoth-studio-v2.6.0-windows-x86_64.zip (Portable ZIP)
+#   1. dist-windows/zoth-studio-v12.0.0-windows-x86_64.zip (Portable ZIP)
 #   2. dist-windows/zoth-windows-x86_64.exe (Standalone Windows Self-Extracting Executable)
 # ==============================================================================
 set -euo pipefail
@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST_DIR="$ROOT/dist-windows"
 BUILD_DIR="$(mktemp -d -t zoth-win-staging-XXXXXX)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
-VERSION="${ZOTH_VERSION:-3.0.0}"
+VERSION="${ZOTH_VERSION:-12.0.0}"
 PKG_NAME="zoth-studio"
 VARIANT="${VARIANT:-regular}"
 if [[ "$VARIANT" == "extreme" ]]; then
@@ -136,9 +136,9 @@ echo "🪟 Step 4: Generating Windows Launchers (zoth.bat, zoth.cmd, zoth.ps1)..
 cat << 'EOF' > "$STAGE/zoth.bat"
 @echo off
 setlocal enabledelayedexpansion
-title Zoth Studio v2.6.0 - Local-First AI Agent Powerhouse
+title Zoth Studio v12.0.0 - Local-First AI Agent Powerhouse
 echo ============================================================
-echo   ZOTH STUDIO v2.6.0 (Windows Edition)
+echo   ZOTH STUDIO v12.0.0 (Windows Edition)
 echo   Local-First AI Agent Powerhouse & WebGL Omniverse
 echo ============================================================
 echo.
@@ -194,11 +194,11 @@ if "%1"=="-v" goto version
 goto end
 
 :version
-echo zoth-studio 2.6.0 (Windows x86_64)
+echo zoth-studio 12.0.0 (Windows x86_64)
 goto end
 
 :help
-echo Zoth Studio v2.6.0 (Local-First AI Stack - Windows)
+echo Zoth Studio v12.0.0 (Local-First AI Stack - Windows)
 echo Usage:
 echo   zoth                  Start operator deck on http://127.0.0.1:8484/
 echo   zoth serve            Start dashboard server
@@ -227,7 +227,7 @@ $AppDir = $PSScriptRoot
 $env:PYTHONPATH = "$AppDir\orchestrator;$env:PYTHONPATH"
 
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "⚡ ZOTH STUDIO v2.6.0 (Windows Edition)" -ForegroundColor Cyan
+Write-Host "⚡ ZOTH STUDIO v12.0.0 (Windows Edition)" -ForegroundColor Cyan
 Write-Host "Local-First Sovereign AI Agent Stack & WebGL Omniverse" -ForegroundColor DarkGray
 Write-Host "============================================================" -ForegroundColor Cyan
 
@@ -239,7 +239,7 @@ if ($Help) {
 }
 
 if ($Version) {
-    Write-Host "zoth-studio 2.6.0 (Windows x86_64)" -ForegroundColor Green
+    Write-Host "zoth-studio 12.0.0 (Windows x86_64)" -ForegroundColor Green
     exit 0
 }
 
@@ -270,7 +270,7 @@ EOF
 # Copy quick start instructions
 cat << 'EOF' > "$STAGE/README-WINDOWS.txt"
 ==============================================================================
-ZOTH STUDIO v2.6.0 — WINDOWS QUICK START
+ZOTH STUDIO v12.0.0 — WINDOWS QUICK START
 ==============================================================================
 
 Welcome to Zoth Studio! Everything runs 100% locally on your machine.

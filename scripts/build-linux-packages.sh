@@ -2,9 +2,9 @@
 # ==============================================================================
 # Zoth Studio — Linux Universal Binary & Package Builder
 # Builds:
-#   1) zoth-studio_2.6.0_all.deb (Debian/Ubuntu/Parrot/Kali native package)
+#   1) zoth-studio_12.0.0_all.deb (Debian/Ubuntu/Parrot/Kali native package)
 #   2) zoth-linux-x86_64.run (Universal self-extracting single binary executable)
-#   3) zoth-studio-v2.6.0-linux-x86_64.tar.gz (Portable tarball)
+#   3) zoth-studio-v12.0.0-linux-x86_64.tar.gz (Portable tarball)
 # ==============================================================================
 set -euo pipefail
 
@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST_DIR="$ROOT/dist-linux"
 BUILD_DIR="$(mktemp -d -t zoth-build-staging-XXXXXX)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
-VERSION="${ZOTH_VERSION:-3.0.0}"
+VERSION="${ZOTH_VERSION:-12.0.0}"
 PKG_NAME="zoth-studio"
 VARIANT="${VARIANT:-regular}"
 if [[ "$VARIANT" == "extreme" ]]; then
@@ -170,7 +170,7 @@ case "${1:-}" in
     exec "$APP_ROOT/scripts/deps-debian.sh" "${@:2}"
     ;;
   --help|-h)
-    echo "Zoth Studio v2.6.0 (Local-First AI Stack)"
+    echo "Zoth Studio v12.0.0 (Local-First AI Stack)"
     echo "Usage:"
     echo "  zoth          Start operator deck on http://127.0.0.1:8484/"
     echo "  zoth --hub    Also start public hub on http://127.0.0.1:8088/"
@@ -180,7 +180,7 @@ case "${1:-}" in
     exit 0
     ;;
   --version|-v)
-    echo "zoth-studio 2.6.0"
+    echo "zoth-studio 12.0.0"
     exit 0
     ;;
   *)
@@ -287,7 +287,7 @@ cat << 'EOF' > "$RUN_FILE"
 # ==============================================================================
 set -euo pipefail
 
-VERSION="2.6.0"
+VERSION="12.0.0"
 APP_NAME="zoth-studio"
 
 if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
@@ -344,7 +344,7 @@ base64 "$TAR_FILE" >> "$RUN_FILE"
 chmod +x "$RUN_FILE"
 echo "✓ Generated: $RUN_FILE"
 
-# Build 4: Linux AppImage (Zoth_Studio-2.6.0-x86_64.AppImage)
+# Build 4: Linux AppImage (Zoth_Studio-12.0.0-x86_64.AppImage)
 echo "📦 Step 6: Building Linux AppImage (Zoth_Studio-v$VERSION-x86_64.AppImage)..."
 APPDIR="$BUILD_DIR/AppDir"
 mkdir -p "$APPDIR/usr/lib/$PKG_NAME" "$APPDIR/usr/bin"
@@ -371,7 +371,7 @@ mksquashfs "$APPDIR" "$SQFS_FILE" -comp xz -noappend -quiet 2>/dev/null || mksqu
 cat << 'EOF' > "$APPIMAGE_FILE"
 #!/usr/bin/env bash
 # ==============================================================================
-# Zoth Studio — Universal Linux AppImage v2.6.0
+# Zoth Studio — Universal Linux AppImage v12.0.0
 # ==============================================================================
 set -euo pipefail
 
@@ -379,14 +379,14 @@ case "${1:-}" in
   --appimage-help)
     echo "Zoth Studio AppImage v2.6.0 (Local-First AI Agent Powerhouse)"
     echo "Usage:"
-    echo "  ./Zoth_Studio-v2.6.0-x86_64.AppImage            # Launch operator deck on :8484"
-    echo "  ./Zoth_Studio-v2.6.0-x86_64.AppImage --hub      # Also launch public hub on :8088"
-    echo "  ./Zoth_Studio-v2.6.0-x86_64.AppImage --appimage-extract # Extract AppDir to ./squashfs-root"
-    echo "  ./Zoth_Studio-v2.6.0-x86_64.AppImage --version  # Print version"
+    echo "  ./Zoth_Studio-v12.0.0-x86_64.AppImage            # Launch operator deck on :8484"
+    echo "  ./Zoth_Studio-v12.0.0-x86_64.AppImage --hub      # Also launch public hub on :8088"
+    echo "  ./Zoth_Studio-v12.0.0-x86_64.AppImage --appimage-extract # Extract AppDir to ./squashfs-root"
+    echo "  ./Zoth_Studio-v12.0.0-x86_64.AppImage --version  # Print version"
     exit 0
     ;;
   --appimage-version|--version|-v)
-    echo "zoth-studio 2.6.0"
+    echo "zoth-studio 12.0.0"
     exit 0
     ;;
   --appimage-extract)

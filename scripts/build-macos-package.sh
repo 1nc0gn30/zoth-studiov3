@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ZOTH STUDIO: MACOS COMPILATION & PACKAGING PIPELINE v3.0.0
+# ZOTH STUDIO: MACOS COMPILATION & PACKAGING PIPELINE v12.0.0
 # Generates:
-#   1. dist-macos/zoth-studio-v3.0.0-macos-universal.tar.gz (Universal macOS Archive)
-#   2. dist-macos/zoth-studio-v3.0.0-macos.zip (Portable macOS ZIP)
+#   1. dist-macos/zoth-studio-v12.0.0-macos-universal.tar.gz (Universal macOS Archive)
+#   2. dist-macos/zoth-studio-v12.0.0-macos.zip (Portable macOS ZIP)
 #   3. dist-macos/zoth-macos-launcher.command (Native double-clickable launcher)
 # ==============================================================================
 set -euo pipefail
@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST_DIR="$ROOT/dist-macos"
 BUILD_DIR="$(mktemp -d -t zoth-mac-staging-XXXXXX)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
-VERSION="${ZOTH_VERSION:-3.0.0}"
+VERSION="${ZOTH_VERSION:-12.0.0}"
 PKG_NAME="zoth-studio"
 VARIANT="${VARIANT:-regular}"
 if [[ "$VARIANT" == "extreme" ]]; then
@@ -74,7 +74,7 @@ cat <<'LAUNCHER' > "$STAGE/zoth-macos-launcher.command"
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 
-echo "⚡ Starting Zoth Studio v3.0.0 (macOS Universal Native)..."
+echo "⚡ Starting Zoth Studio v12.0.0 (macOS Universal Native)..."
 
 # Ensure Python 3 is installed
 if ! command -v python3 >/dev/null 2>&1; then

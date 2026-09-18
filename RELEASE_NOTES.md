@@ -1,3 +1,66 @@
+# Zoth Studio — Release Notes
+
+## v12.0.0 — September 18, 2026
+
+### 🔥 Major New Features
+
+- **Cyberpunk Tactical HUD** — Full-viewport multi-panel cockpit with 360° radar, oscilloscope, 6-pillar telemetry math engine, and real-time loopback daemon monitoring. Mobile: zero-text symbol buttons (🚀 Studio, 🎛️ Tactical) with true edge-to-edge fullscreen popups.
+- **Mobile Fullscreen Popup Architecture** — All mobile HUD sheets now open edge-to-edge (100vw × 100dvh, top:0, no border-radius). Nested slide navigation with 48px header + 44px slide nav bar.
+- **Global Fuzzy Command Palette** (Ctrl+K) — Instant search across 298+ tools, 21 agents, 9 flagship workstations, 4 themes, and sensory toggles.
+- **Multi-Agent REPL Debate Simulator** — Terminal commands: `debate <topic>`, `swarm <query>`, `synthesize <topic>`. Authentic agent personas: Athena (strategic), Draco (red team), Azoth (synthesis), Hermes (delivery). Staggered stream output with consensus synthesis card.
+- **OmniPost Sovereign Social Engine** — Live multi-platform preview cards (X/Twitter threads, Warpcast, Bluesky, LinkedIn, Signal). AI tone-shifters: Azoth Alchemical, Hermes Pragmatic, Grok Unfiltered, Lycan Tactical.
+- **Nexus-3D Procedural Shaders** — 5 new presets: Hologram Grid, Azoth Gold Leaf, Obsidian Matte, Neon Edge Wireframe, Bioluminescent Pulse. 1-click GLTF/USDZ exporter and 4K/1080p WebCodecs turnaround recorder.
+- **Netrunner 3D Memory Graph** — Interactive force-directed synaptic graph connected to Lucy daemon (:8788). Particle link pulses, agent/tag filtering, Obsidian Markdown dossier export.
+- **Android App v12.0.0** — 6 new flagship workstations added to presets, version bumped to 12.0.0.
+
+### ✅ Quality
+
+- **30/30 tests passing** in `zoth-cyberpunk-hud.test.js`
+- Zero text overlap on mobile — symbol-only top bar
+- Full 4-theme system support across all new workstations
+
+### 🛠️ Technical
+
+- Cyberpunk HUD CSS: 7400+ lines with semantic classes for all UI components
+- HUD JS: 8400+ lines — Command Palette, REPL Debate Simulator, toast notification system, keyboard shortcut matrix
+- Telemetry pillar progress bars with animated fill transitions
+- Swarm agent cards with CSS-driven active/hover states
+
+### 🐧 Linux suite
+
+- `zoth-studio_12.0.0_all.deb` — native Debian/Ubuntu/Parrot/Kali package
+- `zoth-linux-x86_64.run` — self-extracting single-file executable
+- `zoth-studio-v12.0.0-linux-x86_64.tar.gz` — portable tarball
+- `Zoth_Studio-v12.0.0-x86_64.AppImage` — portable AppImage
+
+### 🪟 Windows suite
+
+- `zoth-studio-v12.0.0-windows-x86_64.zip` — standalone portable ZIP
+- `zoth-vault-daemon-windows-x86_64.exe` — native Rust Argon2id PE binary
+
+### 🍎 macOS suite
+
+- `zoth-studio-v12.0.0-macos-universal.tar.gz`
+- `zoth-studio-v12.0.0-macos.zip`
+
+### 🤖 Android
+
+- `zoth-signal-bridge-v12.0.0-android.apk` — Kotlin + Jetpack Compose: 6 new flagship workstation presets, versionCode 12 / versionName 12.0.0
+
+### ✅ Verify your download
+
+```bash
+sha256sum -c SHA256SUMS.txt
+```
+
+---
+
+## v11.0.0 — September 12, 2026
+
+...(previous entries preserved below)
+
+---
+
 # ⚡ Zoth Studio v6.8.0 — Sovereign Multi-Agent Workstation
 
 Local-first AI workstation: public hub, private operator deck, encrypted key

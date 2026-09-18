@@ -62,7 +62,7 @@ if command -v git >/dev/null 2>&1; then
 else
   echo "Downloading standalone release bundle..."
   TMP_TAR="$(mktemp -t zoth-tar-XXXXXX.tar.gz)"
-  curl -fsSL "https://github.com/NullAITech/zoth-studio/raw/main/dist-linux/zoth-studio-v2.6.0-linux-x86_64.tar.gz" -o "$TMP_TAR"
+  curl -fsSL "https://github.com/NullAITech/zoth-studio/raw/main/dist-linux/zoth-studio-v12.0.0-linux-x86_64.tar.gz" -o "$TMP_TAR"
   tar -xzf "$TMP_TAR" -C "$DEST" --strip-components=1
   rm -f "$TMP_TAR"
 fi

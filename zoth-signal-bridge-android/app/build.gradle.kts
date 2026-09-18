@@ -11,8 +11,8 @@ android {
         applicationId = "com.example.zothsignalbridge"
         minSdk = 24
         targetSdk = 36
-        versionCode = 8
-        versionName = "6.8.0"
+        versionCode = 12
+        versionName = "12.0.0"
     }
 
     buildTypes {

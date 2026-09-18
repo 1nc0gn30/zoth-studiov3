@@ -25,7 +25,7 @@ export PYTHONPATH="$ORCH${PYTHONPATH:+:$PYTHONPATH}"
 cd "$ORCH"
 
 echo "============================================================"
-echo "⚡ ZOTH STUDIO v2.6.0 — Local-First AI Agent Powerhouse"
+echo "⚡ ZOTH STUDIO v12.0.0 — Local-First AI Agent Powerhouse"
 echo "============================================================"
 
 # Background Hub server

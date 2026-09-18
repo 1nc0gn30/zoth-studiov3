@@ -68,6 +68,60 @@ data class StudioPreset(
 object StudioPresets {
     val PRESETS = listOf(
         StudioPreset(
+            id = "cyberpunk_hud",
+            title = "Cyberpunk Tactical HUD // Omniverse Cockpit",
+            shortTitle = "Cyber HUD",
+            path = "/studio/cyberpunk-hud.html",
+            description = "Mobile fullscreen hubs, symbol top bar, 360° radar, oscilloscope & 6-pillar telemetry",
+            badge = "HUD",
+            category = StudioCategory.WORKSTATIONS
+        ),
+        StudioPreset(
+            id = "omnipost",
+            title = "OmniPost // Sovereign Social Engine",
+            shortTitle = "OmniPost",
+            path = "/studio/omnipost.html",
+            description = "Multi-platform live previews (X, Warpcast, Bluesky, LinkedIn) & AI tone-shifters",
+            badge = "POST",
+            category = StudioCategory.WORKSTATIONS
+        ),
+        StudioPreset(
+            id = "math_pillars",
+            title = "Math Pillars Academy // 6-Pillar Calculus",
+            shortTitle = "Math Pillars",
+            path = "/studio/math-pillars.html",
+            description = "Complete 6-pillar mathematical telemetry calculus engine",
+            badge = "MATH",
+            category = StudioCategory.WORKSTATIONS
+        ),
+        StudioPreset(
+            id = "netrunner_memory",
+            title = "Netrunner Memory Hub // Lucy Oracle",
+            shortTitle = "Memory Hub",
+            path = "/studio/netrunner-memory.html",
+            description = "3D synaptic force graph, biomorphic memory daemon (:8788), Obsidian dossier export",
+            badge = "MEM",
+            category = StudioCategory.WORKSTATIONS
+        ),
+        StudioPreset(
+            id = "notes_reviewer",
+            title = "Notes Reviewer // Intelligent Study Companion",
+            shortTitle = "Notes Reviewer",
+            path = "/studio/notes-reviewer.html",
+            description = "AI-powered study note review, spaced repetition, and knowledge consolidation",
+            badge = "NOTES",
+            category = StudioCategory.WORKSTATIONS
+        ),
+        StudioPreset(
+            id = "consensus",
+            title = "Multi-Agent REPL // Consensus Arena",
+            shortTitle = "Consensus",
+            path = "/studio/consensus.html",
+            description = "Socratic multi-agent debate simulator with real-time typed consensus synthesis",
+            badge = "REPL",
+            category = StudioCategory.WORKSTATIONS
+        ),
+        StudioPreset(
             id = "webgen_studio",
             title = "WebGen Studio // Live PTY & AI Builder",
             shortTitle = "WebGen",
@@ -173,7 +227,7 @@ object StudioPresets {
             title = "Nexus 3D Sculptor Engine",
             shortTitle = "Nexus 3D",
             path = "/studio/nexus-3d.html",
-            description = "3D CSG Boolean sculpts, volumetric lighting, and rune typography",
+            description = "Procedural shader presets (Hologram Grid, Azoth Gold, Obsidian Matte, Neon Wireframe), 4K turnaround recorder & GLTF exporter",
             badge = "3D",
             category = StudioCategory.WORKSTATIONS
         ),
