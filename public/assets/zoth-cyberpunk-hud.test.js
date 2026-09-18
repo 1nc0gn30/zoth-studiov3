@@ -986,7 +986,52 @@ assert.strictEqual(win.ZothHUD.getState().activeMobileSheet, null, 'Mobile sheet
 
 console.log('✔ Test 29 Passed: Mobile HUD Ergonomics, Attuned Agent Pill, Swarm Categories & Haptics verified');
 
-console.log('\n⭐ ALL 29 CYBERPUNK HUD TACTICAL VISUALIZERS, MOBILE ERGONOMICS, WORKSTATION MOUNTING & VITALS TESTS PASSED (100%)!\n');
+// ==========================================
+// TEST 30: Master Mobile Fullscreen Popups with Nested Slides (Studio & Control Hubs)
+// ==========================================
+// 1. Open Studio Fullscreen Hub
+win.ZothHUD.openMobileFullscreen('studio');
+assert.strictEqual(win.ZothHUD.getState().activeMobileHub, 'studio', 'Active mobile hub must be studio');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, 'workstations', 'Default slide must be workstations');
+assert.ok(doc.body.classList.contains('hud-fs-hub-open'), 'Body must receive hud-fs-hub-open class');
+
+// 2. Nested Slide Navigation in Studio Hub
+win.ZothHUD.setMobileFullscreenSlide('swarm');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, 'swarm', 'Slide must switch to swarm');
+
+win.ZothHUD.setMobileFullscreenSlide('tools');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, 'tools', 'Slide must switch to tools');
+
+// 3. Switch to Control Fullscreen Hub
+win.ZothHUD.switchMobileFullscreenHub();
+assert.strictEqual(win.ZothHUD.getState().activeMobileHub, 'control', 'Active mobile hub must switch to control');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, 'themes', 'Default slide in control must be themes');
+
+// 4. Nested Slide Navigation in Control Hub
+win.ZothHUD.setMobileFullscreenSlide('repl');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, 'repl', 'Slide must switch to repl');
+
+win.ZothHUD.setMobileFullscreenSlide('memory');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, 'memory', 'Slide must switch to memory');
+
+win.ZothHUD.setMobileFullscreenSlide('vitals');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, 'vitals', 'Slide must switch to vitals');
+
+// 5. Workstation Filtering
+win.ZothHUD.openMobileFullscreen('studio', 'workstations');
+win.ZothHUD.filterMobileWorkstations('omnipost');
+const wsListEl = doc.getElementById('hud-mobile-ws-list');
+assert.ok(wsListEl.innerHTML.includes('OmniPost Video Studio'), 'Filtered workstation list must contain OmniPost');
+
+// 6. Close Fullscreen Hub
+win.ZothHUD.closeMobileFullscreen();
+assert.strictEqual(win.ZothHUD.getState().activeMobileHub, null, 'Active mobile hub must be null on close');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSlide, null, 'Active mobile slide must be null on close');
+assert.ok(!doc.body.classList.contains('hud-fs-hub-open'), 'hud-fs-hub-open class must be removed');
+
+console.log('✔ Test 30 Passed: Master Mobile Fullscreen Popups with Nested Slides (Studio & Control Hubs) verified');
+
+console.log('\n⭐ ALL 30 CYBERPUNK HUD TACTICAL VISUALIZERS, FULLSCREEN MOBILE HUBS, NESTED SLIDES & VITALS TESTS PASSED (100%)!\n');
 process.exit(0);
 
 

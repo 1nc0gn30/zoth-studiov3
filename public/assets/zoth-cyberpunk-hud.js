@@ -4642,7 +4642,21 @@
                ag.id.toLowerCase().includes(term);
       });
 
+      var activeAgentObj = ALL_21_AGENTS.find(function(a) { return a.id === STATE.activeAgent; }) || ALL_21_AGENTS[0];
       var html = '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        '<!-- Hero Attuned Agent Card -->' +
+        '<div class="hud-attuned-hero-card">' +
+          '<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">' +
+            '<div style="position:relative;width:40px;height:40px;border-radius:50%;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;border:1px solid var(--hud-gold);flex-shrink:0;">' +
+              '<span id="hudMobileAgentIcon" style="font-size:1.3rem;">' + (activeAgentObj.icon || '⚗️') + '</span>' +
+            '</div>' +
+            '<div style="min-width:0;flex:1;">' +
+              '<div style="font-family:var(--hud-font-display);font-size:0.88rem;font-weight:800;color:var(--hud-gold);"><span id="hudMobileAgentName">' + activeAgentObj.name + '</span></div>' +
+              '<div style="font-size:0.62rem;color:var(--hud-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + activeAgentObj.role + ' · ' + activeAgentObj.domain + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="font-size:0.58rem;background:var(--hud-gold);color:#000;padding:3px 8px;border-radius:2px;font-weight:800;font-family:var(--hud-font-mono);letter-spacing:0.04em;flex-shrink:0;">ATTUNED</div>' +
+        '</div>' +
         '<div class="hud-modal-search-wrap" style="position:sticky;top:0;z-index:2;background:var(--hud-card-solid);padding-bottom:4px;">' +
           '<input type="text" class="hud-modal-search-input" id="hudMobileSwarmSearch" placeholder="Search 21 agents (Azoth, Athena, Hermes...)" value="' + (filter || '') + '" oninput="ZothHUD.filterMobileSwarm(this.value)" style="width:100%;box-sizing:border-box;padding:8px 12px;font-size:0.75rem;background:var(--hud-input-bg);border:1px solid var(--hud-border);color:var(--hud-text-primary);clip-path:var(--hud-clip-sm);" />' +
         '</div>' +
@@ -4953,7 +4967,82 @@
       return html;
     },
 
-    renderMobileWorkstationsBody: function () {
+    renderMobileWorkstationsBody: function (filter) {
+      var activeId = STATE.activeTool ? STATE.activeTool.id : 'omnipost';
+      var term = (filter || '').toLowerCase().trim();
+      var workstations = [
+        { id: 'dashboard',        name: 'Dashboard Overview',        icon: '⌂',  tag: 'COMMAND',  tagClass: 'gold',   desc: 'Central studio overview & health telemetry',                   accent: 'var(--hud-gold)' },
+        { id: 'omnipost',         name: 'OmniPost Video Studio',     icon: '🎬', tag: 'MEDIA',    tagClass: '',       desc: 'Sovereign multi-channel automated video pipeline',              accent: '#ff6b9d' },
+        { id: 'swarm',            name: '3D Swarm Arena',            icon: '🌐', tag: 'AGENTS',   tagClass: 'purple', desc: 'Three.js 21-Agent spatial visualization arena',                accent: '#c77dff' },
+        { id: 'netrunner-memory', name: 'Synaptic Memory',           icon: '🧠', tag: 'MEMORY',   tagClass: 'green',  desc: 'Lucy :8788 memory whitespace & knowledge graph',               accent: 'var(--hud-green)' },
+        { id: 'webgen',           name: 'WebGen Autonomous Studio',  icon: '⚡', tag: 'BUILDER',  tagClass: 'cyan',   desc: 'Full-stack AI website and application generator',               accent: 'var(--hud-cyan)' },
+        { id: 'pets',             name: 'Cyber Mascot Dex',          icon: '💎', tag: 'PETS',     tagClass: 'orange', desc: 'Hermes companion pet sprites & animations',                    accent: '#ffab40' },
+        { id: 'vault',            name: 'Sovereign Crypto Vault',    icon: '🔐', tag: 'SECURITY', tagClass: 'red',    desc: 'Argon2id credential & enclave keyring manager',                 accent: '#ff4757' },
+        { id: '3d-editor',        name: '3D CAD Scene Editor',       icon: '📐', tag: 'CAD',      tagClass: '',       desc: 'Procedural mesh, camera, and lighting studio',                  accent: 'var(--hud-cyan)' },
+        { id: 'consensus',        name: 'Consensus Crucible',        icon: '⚔️', tag: 'DEBATE',   tagClass: 'gold',   desc: 'Multi-agent adversarial evaluation and voting arena',           accent: 'var(--hud-gold)' }
+      ];
+
+      var filtered = workstations.filter(function (ws) {
+        if (!term) return true;
+        return ws.name.toLowerCase().includes(term) ||
+               ws.tag.toLowerCase().includes(term) ||
+               ws.desc.toLowerCase().includes(term) ||
+               ws.id.toLowerCase().includes(term);
+      });
+
+      var html = '<div style="display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
+        '<div class="hud-modal-search-wrap" style="position:sticky;top:0;z-index:2;background:var(--hud-card-solid);padding-bottom:4px;">' +
+          '<input type="text" class="hud-modal-search-input" id="hudMobileWsSearch" placeholder="Search 9+ Flagship Workstations..." value="' + (filter || '') + '" oninput="ZothHUD.filterMobileWorkstations(this.value)" style="width:100%;box-sizing:border-box;padding:8px 12px;font-size:0.75rem;background:var(--hud-input-bg);border:1px solid var(--hud-border);color:var(--hud-text-primary);clip-path:var(--hud-clip-sm);" />' +
+        '</div>' +
+        '<div id="hud-mobile-ws-list" style="display:flex;flex-direction:column;gap:8px;">';
+
+      filtered.forEach(function (ws) {
+        var isCurrent = (activeId === ws.id);
+        var tagStyle = '';
+        if (ws.tagClass === 'red') tagStyle = ' style="color:#ff4757;border-color:rgba(255,71,87,0.3);background:rgba(255,71,87,0.08);"';
+        else if (ws.tagClass === 'cyan') tagStyle = ' style="color:var(--hud-cyan);border-color:rgba(0,240,255,0.3);background:rgba(0,240,255,0.08);"';
+        else if (ws.tagClass === '') tagStyle = '';
+
+        html +=
+          '<div class="hud-ws-card ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.loadTool(\'' + ws.id + '\'); ZothHUD.closeMobileSheet();" style="' +
+            'display:flex;align-items:center;justify-content:space-between;' +
+            'padding:12px 16px;' +
+            'background:' + (isCurrent ? 'rgba(0,240,255,0.07)' : 'rgba(255,255,255,0.025)') + ';' +
+            'border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';' +
+            'clip-path:var(--hud-clip-sm);gap:12px;min-height:56px;cursor:pointer;' +
+            (isCurrent ? 'box-shadow:0 0 12px rgba(0,240,255,0.1);' : '') +
+          '">' +
+            '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+              '<div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">' + ws.icon + '</div>' +
+              '<div style="min-width:0;flex:1;">' +
+                '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">' +
+                  '<span style="font-family:var(--hud-font-display);font-size:0.84rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';line-height:1.2;">' + ws.name + '</span>' +
+                  '<span class="hud-tool-tag ' + ws.tagClass + '"' + tagStyle + ' style="font-size:0.52rem;padding:1px 5px;">' + ws.tag + '</span>' +
+                '</div>' +
+                '<div style="font-size:0.67rem;color:var(--hud-text-muted);margin-top:3px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ws.desc + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="flex-shrink:0;">' +
+              (isCurrent ?
+                '<span style="font-size:0.58rem;background:var(--hud-cyan);color:#000;padding:4px 9px;border-radius:2px;font-weight:800;font-family:var(--hud-font-mono);letter-spacing:0.05em;">LIVE</span>' :
+                '<span style="font-size:0.60rem;color:var(--hud-text-muted);border:1px solid var(--hud-border-subtle);padding:3px 9px;border-radius:2px;font-family:var(--hud-font-mono);">LOAD ➔</span>'
+              ) +
+            '</div>' +
+          '</div>';
+      });
+
+      if (filtered.length === 0) {
+        html += '<div style="text-align:center;padding:24px 10px;font-family:var(--hud-font-mono);font-size:0.75rem;color:var(--hud-text-muted);">No workstations matched search query</div>';
+      }
+
+      html += '</div></div>';
+      return html;
+    },
+
+    filterMobileWorkstations: function (query) {
+      var listEl = document.getElementById('hud-mobile-ws-list');
+      if (!listEl) return;
+      var term = (query || '').toLowerCase().trim();
       var activeId = STATE.activeTool ? STATE.activeTool.id : 'omnipost';
       var workstations = [
         { id: 'dashboard',        name: 'Dashboard Overview',        icon: '⌂',  tag: 'COMMAND',  tagClass: 'gold',   desc: 'Central studio overview & health telemetry',                   accent: 'var(--hud-gold)' },
@@ -4967,10 +5056,16 @@
         { id: 'consensus',        name: 'Consensus Crucible',        icon: '⚔️', tag: 'DEBATE',   tagClass: 'gold',   desc: 'Multi-agent adversarial evaluation and voting arena',           accent: 'var(--hud-gold)' }
       ];
 
-      var html = '<div style="display:flex;flex-direction:column;gap:8px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
-        '<div style="font-size:0.70rem;color:var(--hud-text-muted);padding-bottom:4px;letter-spacing:0.04em;font-family:var(--hud-font-mono);">SELECT FLAGSHIP WORKSTATION</div>';
+      var filtered = workstations.filter(function (ws) {
+        if (!term) return true;
+        return ws.name.toLowerCase().includes(term) ||
+               ws.tag.toLowerCase().includes(term) ||
+               ws.desc.toLowerCase().includes(term) ||
+               ws.id.toLowerCase().includes(term);
+      });
 
-      workstations.forEach(function (ws) {
+      var html = '';
+      filtered.forEach(function (ws) {
         var isCurrent = (activeId === ws.id);
         var tagStyle = '';
         if (ws.tagClass === 'red') tagStyle = ' style="color:#ff4757;border-color:rgba(255,71,87,0.3);background:rgba(255,71,87,0.08);"';
@@ -4983,10 +5078,9 @@
             'padding:12px 16px;' +
             'background:' + (isCurrent ? 'rgba(0,240,255,0.07)' : 'rgba(255,255,255,0.025)') + ';' +
             'border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';' +
-            'clip-path:var(--hud-clip-sm);gap:12px;min-height:56px;' +
+            'clip-path:var(--hud-clip-sm);gap:12px;min-height:56px;cursor:pointer;' +
             (isCurrent ? 'box-shadow:0 0 12px rgba(0,240,255,0.1);' : '') +
           '">' +
-            // Left: accent-colored icon circle + text
             '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
               '<div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">' + ws.icon + '</div>' +
               '<div style="min-width:0;flex:1;">' +
@@ -4997,7 +5091,6 @@
                 '<div style="font-size:0.67rem;color:var(--hud-text-muted);margin-top:3px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ws.desc + '</div>' +
               '</div>' +
             '</div>' +
-            // Right: status indicator
             '<div style="flex-shrink:0;">' +
               (isCurrent ?
                 '<span style="font-size:0.58rem;background:var(--hud-cyan);color:#000;padding:4px 9px;border-radius:2px;font-weight:800;font-family:var(--hud-font-mono);letter-spacing:0.05em;">LIVE</span>' :
@@ -5007,10 +5100,246 @@
           '</div>';
       });
 
-      html += '</div>';
-      return html;
+      if (filtered.length === 0) {
+        html = '<div style="text-align:center;padding:24px 10px;font-family:var(--hud-font-mono);font-size:0.75rem;color:var(--hud-text-muted);">No workstations matched search query</div>';
+      }
+      listEl.innerHTML = html;
     }
 
+  };
+
+  /* =============================================================================
+     8B. MASTER MOBILE FULLSCREEN HUB WITH NESTED SLIDES & PAGES
+     Powers the 2-button mobile header ([🚀 STUDIO] + [🎛️ CONTROL])
+     ============================================================================= */
+  var MobileFullscreenHub = {
+    activeHub: null,
+    activeSlide: null,
+
+    hubConfigs: {
+      studio: {
+        icon: '🚀',
+        title: 'STUDIO HUB',
+        subtitle: 'SOVEREIGN WORKSPACES & AGENT FLEET',
+        switchTarget: 'control',
+        switchLabel: '🎛️ CONTROL ➔',
+        slides: [
+          { id: 'workstations', label: '🚀 WORKSPACES', icon: '🚀' },
+          { id: 'swarm',        label: '🔮 SWARM (21)', icon: '🔮' },
+          { id: 'tools',        label: '🛠️ TOOLS (298+)', icon: '🛠️' }
+        ],
+        defaultSlide: 'workstations'
+      },
+      control: {
+        icon: '🎛️',
+        title: 'CONTROL HUB',
+        subtitle: 'TACTICAL VITALS, REPL & THEMES',
+        switchTarget: 'studio',
+        switchLabel: '🚀 STUDIO ➔',
+        slides: [
+          { id: 'themes', label: '🎨 THEMES', icon: '🎨' },
+          { id: 'repl',   label: '⚡ TERMINAL', icon: '⚡' },
+          { id: 'memory', label: '🧠 MEMORY', icon: '🧠' },
+          { id: 'vitals', label: '📊 VITALS & SFX', icon: '📊' }
+        ],
+        defaultSlide: 'themes'
+      }
+    },
+
+    open: function (hubType, slideId) {
+      var type = (hubType === 'control' || hubType === 'tactical') ? 'control' : 'studio';
+      this.activeHub = type;
+      var config = this.hubConfigs[type];
+      var slide = slideId || config.defaultSlide;
+      this.activeSlide = slide;
+
+      STATE.activeMobileSheet = slide;
+      STATE.activeMobileHub = type;
+      STATE.activeMobileSlide = slide;
+      STATE.activeMobileTab = slide;
+
+      var hubEl = document.getElementById('hud-fullscreen-hub');
+      var backdropEl = document.getElementById('hud-fullscreen-hub-backdrop');
+      var titleEl = document.getElementById('hud-fs-title');
+      var subtitleEl = document.getElementById('hud-fs-subtitle');
+      var iconEl = document.getElementById('hud-fs-icon');
+      var switchBtnLabel = document.getElementById('hud-fs-switch-label');
+
+      if (titleEl) titleEl.textContent = config.title;
+      if (subtitleEl) subtitleEl.textContent = config.subtitle;
+      if (iconEl) iconEl.textContent = config.icon;
+      if (switchBtnLabel) switchBtnLabel.textContent = config.switchLabel;
+
+      this.renderSlideNav(type, slide);
+      this.renderSlideBody(type, slide);
+
+      if (backdropEl) {
+        backdropEl.hidden = false;
+        backdropEl.removeAttribute('hidden');
+        backdropEl.classList.add('is-open');
+      }
+      if (hubEl) {
+        hubEl.hidden = false;
+        hubEl.removeAttribute('hidden');
+        hubEl.classList.add('is-open');
+      }
+
+      if (typeof document !== 'undefined' && document.body && document.body.classList) {
+        document.body.classList.add('hud-fs-hub-open');
+      }
+
+      MobileSheets.updateTabHighlight(slide);
+      playCyberHaptic(12);
+      playCyberSFX('select');
+    },
+
+    switchHub: function () {
+      var target = (this.activeHub === 'studio') ? 'control' : 'studio';
+      this.open(target);
+    },
+
+    setSlide: function (slideId) {
+      this.activeSlide = slideId;
+      STATE.activeMobileSheet = slideId;
+      STATE.activeMobileSlide = slideId;
+      STATE.activeMobileTab = slideId;
+
+      this.renderSlideNav(this.activeHub, slideId);
+      this.renderSlideBody(this.activeHub, slideId);
+
+      MobileSheets.updateTabHighlight(slideId);
+      playCyberHaptic(10);
+      playCyberSFX('click');
+    },
+
+    renderSlideNav: function (hubType, currentSlide) {
+      var navEl = document.getElementById('hud-fs-slide-nav');
+      if (!navEl) return;
+      var config = this.hubConfigs[hubType];
+      if (!config) return;
+
+      var html = '';
+      config.slides.forEach(function (s) {
+        var isActive = (s.id === currentSlide);
+        html += '<button type="button" class="hud-fs-slide-tab ' + (isActive ? 'active' : '') + '" onclick="ZothHUD.setMobileFullscreenSlide(\'' + s.id + '\')" role="tab" aria-selected="' + (isActive ? 'true' : 'false') + '">' +
+          '<span>' + s.icon + '</span><span>' + s.label + '</span>' +
+        '</button>';
+      });
+      navEl.innerHTML = html;
+    },
+
+    renderSlideBody: function (hubType, slideId) {
+      var contentEl = document.getElementById('hud-fs-slide-content');
+      if (!contentEl) return;
+
+      var html = '';
+      if (slideId === 'workstations') {
+        html = MobileSheets.renderMobileWorkstationsBody();
+      } else if (slideId === 'swarm') {
+        html = MobileSheets.renderMobileSwarmBody();
+      } else if (slideId === 'tools') {
+        html = Modals.renderToolMgrBody();
+      } else if (slideId === 'themes') {
+        html = MobileSheets.renderMobileThemesBody();
+      } else if (slideId === 'repl') {
+        html = MobileSheets.renderMobileReplBody();
+      } else if (slideId === 'memory') {
+        html = MobileSheets.renderMobileMemoryBody();
+      } else if (slideId === 'vitals') {
+        html = this.renderVitalsSlide();
+      } else {
+        html = MobileSheets.renderMobileWorkstationsBody();
+      }
+
+      contentEl.innerHTML = html;
+
+      if (slideId === 'tools') {
+        Modals.bindModalEvents(contentEl, 'toolmgr');
+      }
+    },
+
+    renderVitalsSlide: function () {
+      var isMuted = (typeof CyberAudioSynth !== 'undefined' && CyberAudioSynth.isMuted) ? CyberAudioSynth.isMuted() : false;
+      var html = '<div style="display:flex;flex-direction:column;gap:12px;max-height:65vh;overflow-y:auto;padding-right:2px;">' +
+        '<!-- SFX Master Toggle Card -->' +
+        '<div class="hud-fs-audio-card">' +
+          '<div>' +
+            '<div style="font-family:var(--hud-font-display);font-size:0.85rem;font-weight:800;color:var(--hud-text-primary);">TACTICAL SOUNDSCAPE</div>' +
+            '<div style="font-size:0.64rem;color:var(--hud-text-muted);margin-top:2px;">Web Audio API procedural sound & tactile haptics</div>' +
+          '</div>' +
+          '<button type="button" class="hud-fs-audio-btn ' + (isMuted ? 'muted' : 'unmuted') + '" onclick="ZothHUD.toggleMute(); MobileFullscreenHub.renderSlideBody(\'control\', \'vitals\');">' +
+            (isMuted ? '🔇 MUTED' : '🔊 LIVE SFX') +
+          '</button>' +
+        '</div>' +
+
+        '<!-- Cyberware Actions -->' +
+        '<div style="display:flex;flex-direction:column;gap:6px;">' +
+          '<div style="font-family:var(--hud-font-mono);font-size:0.62rem;color:var(--hud-gold);text-transform:uppercase;letter-spacing:0.06em;">CYBERWARE OVERCLOCKS</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+            '<button type="button" class="hud-term-chip" style="padding:10px;justify-content:center;" onclick="ZothHUD.TerminalRepl.execute(\'sandy\');">[⚡ Sandevistan (10s)]</button>' +
+            '<button type="button" class="hud-term-chip" style="padding:10px;justify-content:center;" onclick="ZothHUD.toggleKiroshiZoom();">[👁️ Kiroshi Zoom (' + (ZothHUD.getKiroshiZoom ? ZothHUD.getKiroshiZoom() : 1.0) + 'x)]</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<!-- 6-Pillar Calculus -->' +
+        '<div style="display:flex;flex-direction:column;gap:6px;">' +
+          '<div style="font-family:var(--hud-font-mono);font-size:0.62rem;color:var(--hud-cyan);text-transform:uppercase;letter-spacing:0.06em;">6-PILLAR TELEMETRY</div>' +
+          MobileSheets.renderMobileTelemetryBody() +
+        '</div>' +
+
+        '<!-- Loopback Ports Monitor -->' +
+        '<div style="display:flex;flex-direction:column;gap:6px;">' +
+          '<div style="font-family:var(--hud-font-mono);font-size:0.62rem;color:var(--hud-green);text-transform:uppercase;letter-spacing:0.06em;">LOCAL DAEMON PORTS</div>' +
+          '<div class="hud-port-row" style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);font-family:var(--hud-font-mono);font-size:0.68rem;">' +
+            '<span>:8088 Web Hub</span><span style="color:var(--hud-green);">[ACTIVE]</span>' +
+          '</div>' +
+          '<div class="hud-port-row" style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);font-family:var(--hud-font-mono);font-size:0.68rem;">' +
+            '<span>:8484 Peer Bus</span><span style="color:var(--hud-green);">[ACTIVE]</span>' +
+          '</div>' +
+          '<div class="hud-port-row" style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);font-family:var(--hud-font-mono);font-size:0.68rem;">' +
+            '<span>:8788 Memory Daemon</span><span style="color:var(--hud-cyan);">[LOOPBACK]</span>' +
+          '</div>' +
+          '<div class="hud-port-row" style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--hud-border-subtle);font-family:var(--hud-font-mono);font-size:0.68rem;">' +
+            '<span>:11434 Ollama Local</span><span style="color:var(--hud-gold);">[STANDBY]</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      return html;
+    },
+
+    close: function () {
+      var hubEl = document.getElementById('hud-fullscreen-hub');
+      var backdropEl = document.getElementById('hud-fullscreen-hub-backdrop');
+
+      if (hubEl) {
+        hubEl.classList.remove('is-open');
+        setTimeout(function () {
+          hubEl.hidden = true;
+          hubEl.setAttribute('hidden', 'true');
+        }, 280);
+      }
+      if (backdropEl) {
+        backdropEl.classList.remove('is-open');
+        setTimeout(function () {
+          backdropEl.hidden = true;
+          backdropEl.setAttribute('hidden', 'true');
+        }, 280);
+      }
+
+      if (typeof document !== 'undefined' && document.body && document.body.classList) {
+        document.body.classList.remove('hud-fs-hub-open');
+        document.body.classList.remove('hud-sheet-open');
+      }
+
+      this.activeHub = null;
+      this.activeSlide = null;
+      STATE.activeMobileSheet = null;
+      STATE.activeMobileHub = null;
+      STATE.activeMobileSlide = null;
+      STATE.activeMobileTab = 'stage';
+      MobileSheets.updateTabHighlight('stage');
+      playCyberSFX('chirp');
+    }
   };
 
   /* =============================================================================
@@ -7443,15 +7772,50 @@
 
     setMobileTab: function (tabId) {
       if (tabId === 'stage') {
+        MobileFullscreenHub.close();
         MobileSheets.close();
       } else {
-        MobileSheets.open(tabId);
+        this.openMobileSheet(tabId);
       }
     },
 
     openMobileSheet: function (sheetId) {
+      if (sheetId === 'workstations' || sheetId === 'tools' || sheetId === 'swarm') {
+        MobileFullscreenHub.open('studio', sheetId);
+      } else if (sheetId === 'themes' || sheetId === 'repl' || sheetId === 'memory') {
+        MobileFullscreenHub.open('control', sheetId);
+      } else {
+        MobileFullscreenHub.open('control', 'vitals');
+      }
       MobileSheets.open(sheetId);
     },
+
+    closeMobileSheet: function () {
+      MobileFullscreenHub.close();
+      MobileSheets.close();
+    },
+
+    openMobileFullscreen: function (hubType, slideId) {
+      MobileFullscreenHub.open(hubType, slideId);
+    },
+
+    closeMobileFullscreen: function () {
+      MobileFullscreenHub.close();
+    },
+
+    switchMobileFullscreenHub: function () {
+      MobileFullscreenHub.switchHub();
+    },
+
+    setMobileFullscreenSlide: function (slideId) {
+      MobileFullscreenHub.setSlide(slideId);
+    },
+
+    filterMobileWorkstations: function (query) {
+      MobileSheets.filterMobileWorkstations(query);
+    },
+
+    MobileFullscreenHub: MobileFullscreenHub,
 
     setTabletView: function (viewId) {
       TabletController.setView(viewId);
