@@ -479,7 +479,18 @@
     }
   };
 
+  function playCyberHaptic(ms) {
+    try {
+      if (typeof window !== 'undefined' && window.navigator && typeof window.navigator.vibrate === 'function') {
+        window.navigator.vibrate(ms || 12);
+      }
+    } catch (e) {}
+  }
+
   function playCyberSFX(type) {
+    if (type === 'select' || type === 'click') playCyberHaptic(10);
+    else if (type === 'lock' || type === 'sandevistan' || type === 'overdrive') playCyberHaptic(20);
+    else if (type === 'switch' || type === 'tool') playCyberHaptic(15);
     return CyberAudioSynth.play(type);
   }
 
@@ -4543,9 +4554,87 @@
       return html;
     },
 
+    activeSwarmCategory: 'all',
+
+    setSwarmCategory: function (cat) {
+      this.activeSwarmCategory = cat || 'all';
+      playCyberHaptic(10);
+      playCyberSFX('select');
+      var searchInput = document.getElementById('hudMobileSwarmSearch');
+      var query = searchInput ? searchInput.value : '';
+      this.filterMobileSwarm(query);
+      var chipEls = document.querySelectorAll('.hud-swarm-filter-chip');
+      chipEls.forEach(function (c) {
+        if (c.getAttribute('data-cat') === cat) {
+          c.classList.add('active');
+        } else {
+          c.classList.remove('active');
+        }
+      });
+    },
+
+    filterMobileSwarm: function (query) {
+      var listEl = document.getElementById('hud-mobile-swarm-list');
+      if (!listEl) return;
+      var term = (query || '').toLowerCase().trim();
+      var activeCat = this.activeSwarmCategory || 'all';
+      var filtered = ALL_21_AGENTS.filter(function (ag) {
+        // 1. Category quadrant check
+        if (activeCat !== 'all') {
+          var q = (ag.quadrant || '').toLowerCase();
+          if (activeCat === 'core' && !ag.isCore && q.indexOf('core') === -1) return false;
+          if (activeCat === 'silicon' && q.indexOf('silicon') === -1 && q.indexOf('synthesis') === -1) return false;
+          if (activeCat === 'familiars' && q.indexOf('familiar') === -1 && q.indexOf('mascot') === -1) return false;
+          if (activeCat === 'abyssal' && q.indexOf('abyssal') === -1 && q.indexOf('temporal') === -1) return false;
+        }
+        // 2. Query search check
+        if (!term) return true;
+        return (ag.name && ag.name.toLowerCase().includes(term)) ||
+               (ag.role && ag.role.toLowerCase().includes(term)) ||
+               (ag.domain && ag.domain.toLowerCase().includes(term)) ||
+               (ag.id && ag.id.toLowerCase().includes(term));
+      });
+
+      var html = '';
+      filtered.forEach(function (ag) {
+        var isCurrent = (STATE.activeAgent === ag.id);
+        html += '<div class="hud-agent-radio-item ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setAgent(\'' + ag.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;">' +
+          '<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">' +
+            '<div style="position:relative;width:34px;height:34px;border-radius:50%;background:rgba(0,240,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';flex-shrink:0;">' +
+              '<span style="font-size:1.15rem;">' + (ag.icon || '🔮') + '</span>' +
+            '</div>' +
+            '<div style="min-width:0;flex:1;">' +
+              '<div style="display:flex;align-items:center;gap:6px;">' +
+                '<span style="font-family:var(--hud-font-display);font-size:0.82rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';white-space:nowrap;">' + ag.name + '</span>' +
+                '<span class="hud-agent-domain-chip" style="font-size:0.50rem;padding:1px 4px;border-radius:2px;color:' + (ag.color || 'var(--hud-cyan)') + ';background:' + (ag.color ? ag.color + '18' : 'rgba(0,240,255,0.1)') + ';">' + ag.role + '</span>' +
+              '</div>' +
+              '<div style="font-size:0.62rem;color:var(--hud-text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ag.domain + ' · ' + (ag.quadrant || 'Sovereign') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:8px;">' +
+            (isCurrent ? '<span style="font-size:0.60rem;background:var(--hud-cyan);color:#000;padding:3px 8px;border-radius:2px;font-weight:800;">ACTIVE</span>' : '<span style="font-size:0.60rem;color:var(--hud-cyan);border:1px solid var(--hud-border);padding:3px 8px;border-radius:2px;">ATTUNE</span>') +
+          '</div>' +
+        '</div>';
+      });
+      if (filtered.length === 0) {
+        html = '<div style="text-align:center;padding:24px 10px;font-family:var(--hud-font-mono);font-size:0.75rem;color:var(--hud-text-muted);">No sovereign agents matched filter criteria</div>';
+      }
+      listEl.innerHTML = html;
+      var countEl = document.getElementById('hud-mobile-swarm-count');
+      if (countEl) countEl.textContent = 'Showing ' + filtered.length + ' of 21 agents';
+    },
+
     renderMobileSwarmBody: function (filter) {
+      var activeCat = this.activeSwarmCategory || 'all';
       var term = (filter || '').toLowerCase().trim();
       var filtered = ALL_21_AGENTS.filter(function (ag) {
+        if (activeCat !== 'all') {
+          var q = (ag.quadrant || '').toLowerCase();
+          if (activeCat === 'core' && !ag.isCore && q.indexOf('core') === -1) return false;
+          if (activeCat === 'silicon' && q.indexOf('silicon') === -1 && q.indexOf('synthesis') === -1) return false;
+          if (activeCat === 'familiars' && q.indexOf('familiar') === -1 && q.indexOf('mascot') === -1) return false;
+          if (activeCat === 'abyssal' && q.indexOf('abyssal') === -1 && q.indexOf('temporal') === -1) return false;
+        }
         if (!term) return true;
         return ag.name.toLowerCase().includes(term) ||
                ag.role.toLowerCase().includes(term) ||
@@ -4557,24 +4646,35 @@
         '<div class="hud-modal-search-wrap" style="position:sticky;top:0;z-index:2;background:var(--hud-card-solid);padding-bottom:4px;">' +
           '<input type="text" class="hud-modal-search-input" id="hudMobileSwarmSearch" placeholder="Search 21 agents (Azoth, Athena, Hermes...)" value="' + (filter || '') + '" oninput="ZothHUD.filterMobileSwarm(this.value)" style="width:100%;box-sizing:border-box;padding:8px 12px;font-size:0.75rem;background:var(--hud-input-bg);border:1px solid var(--hud-border);color:var(--hud-text-primary);clip-path:var(--hud-clip-sm);" />' +
         '</div>' +
-        '<div style="font-size:0.68rem;color:var(--hud-text-secondary);">' +
+        '<!-- Category Filter Chips -->' +
+        '<div class="hud-swarm-filter-chips">' +
+          '<button type="button" class="hud-swarm-filter-chip ' + (activeCat === 'all' ? 'active' : '') + '" data-cat="all" onclick="ZothHUD.MobileSheets.setSwarmCategory(\'all\')">ALL (21)</button>' +
+          '<button type="button" class="hud-swarm-filter-chip ' + (activeCat === 'core' ? 'active' : '') + '" data-cat="core" onclick="ZothHUD.MobileSheets.setSwarmCategory(\'core\')">👑 CORE (6)</button>' +
+          '<button type="button" class="hud-swarm-filter-chip ' + (activeCat === 'silicon' ? 'active' : '') + '" data-cat="silicon" onclick="ZothHUD.MobileSheets.setSwarmCategory(\'silicon\')">🐲 SILICON (5)</button>' +
+          '<button type="button" class="hud-swarm-filter-chip ' + (activeCat === 'familiars' ? 'active' : '') + '" data-cat="familiars" onclick="ZothHUD.MobileSheets.setSwarmCategory(\'familiars\')">🦊 MASCOTS (5)</button>' +
+          '<button type="button" class="hud-swarm-filter-chip ' + (activeCat === 'abyssal' ? 'active' : '') + '" data-cat="abyssal" onclick="ZothHUD.MobileSheets.setSwarmCategory(\'abyssal\')">🐉 ABYSSAL (5)</button>' +
+        '</div>' +
+        '<div id="hud-mobile-swarm-count" style="font-size:0.68rem;color:var(--hud-text-secondary);">' +
           'Showing ' + filtered.length + ' of 21 sovereign neural agents. Tap to attune heuristics.' +
         '</div>' +
-        '<div id="hud-mobile-swarm-list" style="display:grid;grid-template-columns:1fr;gap:8px;max-height:54vh;overflow-y:auto;padding-right:4px;">';
+        '<div id="hud-mobile-swarm-list" style="display:grid;grid-template-columns:1fr;gap:8px;max-height:50vh;overflow-y:auto;padding-right:4px;">';
 
       filtered.forEach(function (ag) {
         var isCurrent = (STATE.activeAgent === ag.id);
         html += '<div class="hud-agent-radio-item ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setAgent(\'' + ag.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;">' +
-          '<div style="display:flex;align-items:center;gap:12px;">' +
-            '<div style="position:relative;width:34px;height:34px;border-radius:50%;background:rgba(0,240,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';">' +
+          '<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">' +
+            '<div style="position:relative;width:34px;height:34px;border-radius:50%;background:rgba(0,240,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';flex-shrink:0;">' +
               '<span style="font-size:1.15rem;">' + (ag.icon || '🔮') + '</span>' +
             '</div>' +
-            '<div>' +
-              '<div style="font-family:var(--hud-font-display);font-size:0.82rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';">' + ag.name + '</div>' +
-              '<div style="font-size:0.62rem;color:var(--hud-text-muted);">' + ag.role + ' · ' + ag.domain + '</div>' +
+            '<div style="min-width:0;flex:1;">' +
+              '<div style="display:flex;align-items:center;gap:6px;">' +
+                '<span style="font-family:var(--hud-font-display);font-size:0.82rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';white-space:nowrap;">' + ag.name + '</span>' +
+                '<span class="hud-agent-domain-chip" style="font-size:0.50rem;padding:1px 4px;border-radius:2px;color:' + (ag.color || 'var(--hud-cyan)') + ';background:' + (ag.color ? ag.color + '18' : 'rgba(0,240,255,0.1)') + ';">' + ag.role + '</span>' +
+              '</div>' +
+              '<div style="font-size:0.62rem;color:var(--hud-text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ag.domain + ' · ' + (ag.quadrant || 'Sovereign') + '</div>' +
             '</div>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:8px;">' +
             (isCurrent ? '<span style="font-size:0.60rem;background:var(--hud-cyan);color:#000;padding:3px 8px;border-radius:2px;font-weight:800;">ACTIVE</span>' : '<span style="font-size:0.60rem;color:var(--hud-cyan);border:1px solid var(--hud-border);padding:3px 8px;border-radius:2px;">ATTUNE</span>') +
           '</div>' +
         '</div>';
@@ -4586,7 +4686,7 @@
 
     renderMobileReplBody: function () {
       var html = '<div style="display:flex;flex-direction:column;gap:10px;">' +
-        '<div class="hud-term-chips" style="display:flex;flex-wrap:wrap;gap:6px;">' +
+        '<div class="hud-mobile-repl-chips">' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'ports\')">[▶ Ping Ports]</button>' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'debate sovereign autonomy vs cloud rental\')">[💬 Debate]</button>' +
           '<button type="button" class="hud-term-chip" onclick="ZothHUD.execChip(\'swarm\')">[⚡ Swarm]</button>' +
@@ -7018,6 +7118,12 @@
         reticleRng.textContent = distMeters;
       }
 
+      // Mobile attuned agent pill update
+      var mobAgentIcon = document.getElementById('hudMobileAgentIcon') || document.getElementById('hud-mobile-agent-icon');
+      var mobAgentName = document.getElementById('hudMobileAgentName') || document.getElementById('hud-mobile-agent-name');
+      if (mobAgentIcon) mobAgentIcon.textContent = agent.icon || '🔮';
+      if (mobAgentName) mobAgentName.textContent = agent.name;
+
       if (VitalsEngine && typeof VitalsEngine.computeNeuralLoad === 'function') {
         VitalsEngine.computeNeuralLoad();
       }
@@ -7743,37 +7849,15 @@
     },
 
     filterMobileSwarm: function (query) {
-      MobileSheets.renderMobileSwarmBody(query);
-      var listEl = document.getElementById('hud-mobile-swarm-list');
-      if (listEl) {
-        var term = (query || '').toLowerCase().trim();
-        var filtered = ALL_21_AGENTS.filter(function (ag) {
-          if (!term) return true;
-          return ag.name.toLowerCase().includes(term) ||
-                 ag.role.toLowerCase().includes(term) ||
-                 ag.domain.toLowerCase().includes(term) ||
-                 ag.id.toLowerCase().includes(term);
-        });
-        var html = '';
-        filtered.forEach(function (ag) {
-          var isCurrent = (STATE.activeAgent === ag.id);
-          html += '<div class="hud-agent-radio-item ' + (isCurrent ? 'active' : '') + '" onclick="ZothHUD.setAgent(\'' + ag.id + '\'); ZothHUD.closeMobileSheet();" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:' + (isCurrent ? 'rgba(0,240,255,0.08)' : 'rgba(255,255,255,0.02)') + ';border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';clip-path:var(--hud-clip-sm);cursor:pointer;">' +
-            '<div style="display:flex;align-items:center;gap:12px;">' +
-              '<div style="position:relative;width:34px;height:34px;border-radius:50%;background:rgba(0,240,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid ' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-border-subtle)') + ';">' +
-                '<span style="font-size:1.15rem;">' + (ag.icon || '🔮') + '</span>' +
-              '</div>' +
-              '<div>' +
-                '<div style="font-family:var(--hud-font-display);font-size:0.82rem;font-weight:800;color:' + (isCurrent ? 'var(--hud-cyan)' : 'var(--hud-text-primary)') + ';">' + ag.name + '</div>' +
-                '<div style="font-size:0.62rem;color:var(--hud-text-muted);">' + ag.role + ' · ' + ag.domain + '</div>' +
-              '</div>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;gap:6px;">' +
-              (isCurrent ? '<span style="font-size:0.60rem;background:var(--hud-cyan);color:#000;padding:3px 8px;border-radius:2px;font-weight:800;">ACTIVE</span>' : '<span style="font-size:0.60rem;color:var(--hud-cyan);border:1px solid var(--hud-border);padding:3px 8px;border-radius:2px;">ATTUNE</span>') +
-            '</div>' +
-          '</div>';
-        });
-        listEl.innerHTML = html;
-      }
+      MobileSheets.filterMobileSwarm(query);
+    },
+
+    setMobileSwarmCategory: function (cat) {
+      MobileSheets.setSwarmCategory(cat);
+    },
+
+    playHaptic: function (ms) {
+      playCyberHaptic(ms);
     },
 
     toggleKiroshi: function (force) {

@@ -173,7 +173,14 @@ function createMockDOM() {
     requestAnimationFrame: (cb) => 1,
     setInterval: (cb, ms) => 1,
     clearInterval: () => {},
-    fetch: () => Promise.resolve({ ok: true, json: () => Promise.resolve({}) })
+    fetch: () => Promise.resolve({ ok: true, json: () => Promise.resolve({}) }),
+    navigator: {
+      vibrate: (pattern) => {
+        win._lastVibrate = pattern;
+        return true;
+      },
+      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'
+    }
   };
 
   return { win, doc, elements };
@@ -925,7 +932,61 @@ assert.strictEqual(doc.body['data-hud-mode'], 'tool', 'Body data-hud-mode must r
 
 console.log('✔ Test 28 Passed: Comprehensive 25+ Workstations Mounting, Dashboard Mode Toggle & Overlap Prevention verified');
 
-console.log('\n⭐ ALL 28 CYBERPUNK HUD TACTICAL VISUALIZERS, WORKSTATION MOUNTING, BREATHING ROOM, HERMES, GROK & POV VITALS TESTS PASSED (100%)!\n');
+// ==========================================
+// TEST 29: Mobile HUD Ergonomics, Attuned Agent Pill, Swarm Categories & Haptics
+// ==========================================
+// 1. Mobile Attuned Agent Header Pill
+win.ZothHUD.setAgent('athena');
+const mobAgentName = doc.getElementById('hudMobileAgentName');
+const mobAgentIcon = doc.getElementById('hudMobileAgentIcon');
+assert.strictEqual(mobAgentName.textContent, 'ATHENA', 'Mobile agent name pill must display ATHENA');
+assert.strictEqual(mobAgentIcon.textContent, '🦉', 'Mobile agent icon must display owl icon');
+
+win.ZothHUD.setAgent('draco');
+assert.strictEqual(mobAgentName.textContent, 'DRACO', 'Mobile agent name pill must display DRACO');
+assert.strictEqual(mobAgentIcon.textContent, '🐲', 'Mobile agent icon must display dragon icon');
+
+// 2. Mobile Swarm Categories & Sheet Filtering
+win.ZothHUD.openMobileSheet('swarm');
+assert.strictEqual(win.ZothHUD.getState().activeMobileSheet, 'swarm', 'Active mobile sheet must be swarm');
+
+// Swarm category filtering
+win.ZothHUD.setMobileSwarmCategory('core');
+const allAgentsList = win.ZothHUD.getAllAgents();
+const coreAgentsCount = allAgentsList.filter(a => a.isCore || (a.quadrant && a.quadrant.toLowerCase().includes('core'))).length;
+assert.strictEqual(coreAgentsCount, 6, 'Must filter to 6 core agents');
+
+win.ZothHUD.setMobileSwarmCategory('silicon');
+const siliconCount = allAgentsList.filter(a => (a.quadrant && (a.quadrant.toLowerCase().includes('silicon') || a.quadrant.toLowerCase().includes('synthesis')))).length;
+assert.strictEqual(siliconCount, 5, 'Must filter to 5 silicon agents');
+
+win.ZothHUD.setMobileSwarmCategory('familiars');
+const familiarCount = allAgentsList.filter(a => (a.quadrant && (a.quadrant.toLowerCase().includes('familiar') || a.quadrant.toLowerCase().includes('mascot')))).length;
+assert.strictEqual(familiarCount, 5, 'Must filter to 5 familiar/mascot agents');
+
+win.ZothHUD.setMobileSwarmCategory('abyssal');
+const abyssalCount = allAgentsList.filter(a => (a.quadrant && (a.quadrant.toLowerCase().includes('abyssal') || a.quadrant.toLowerCase().includes('temporal')))).length;
+assert.strictEqual(abyssalCount, 5, 'Must filter to 5 abyssal agents');
+
+win.ZothHUD.setMobileSwarmCategory('all');
+assert.strictEqual(allAgentsList.length, 21, 'Must reset to 21 total agents in all category');
+
+// 3. Mobile Swarm Query Filtering
+win.ZothHUD.filterMobileSwarm('athena');
+const listEl = doc.getElementById('hud-mobile-swarm-list');
+assert.ok(listEl.innerHTML.includes('ATHENA'), 'Filtered mobile swarm list must contain ATHENA');
+
+// 4. Mobile Haptic Touch Vibrations
+win.ZothHUD.playHaptic(15);
+assert.strictEqual(win._lastVibrate, 15, 'Haptic feedback must invoke navigator.vibrate with duration');
+
+// 5. Close Mobile Sheet
+win.ZothHUD.closeMobileSheet();
+assert.strictEqual(win.ZothHUD.getState().activeMobileSheet, null, 'Mobile sheet must close');
+
+console.log('✔ Test 29 Passed: Mobile HUD Ergonomics, Attuned Agent Pill, Swarm Categories & Haptics verified');
+
+console.log('\n⭐ ALL 29 CYBERPUNK HUD TACTICAL VISUALIZERS, MOBILE ERGONOMICS, WORKSTATION MOUNTING & VITALS TESTS PASSED (100%)!\n');
 process.exit(0);
 
 

@@ -36,6 +36,7 @@ Options:
   -d, --dir, --install-dir <path>
                         Custom installation directory (default: ~/.zoth)
   --bin-dir <path>      Custom binary directory (default: ~/.local/bin)
+  --security              Activate Security-Tier tools (Hacker Mode)
   -b, --branch <name>   Git branch to checkout (default: main)
   --repo <url>          Git repository URL (default: https://github.com/NullAITech/zoth-studio.git)
   --no-color            Disable ANSI color output
@@ -74,6 +75,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-color)
             USE_COLOR=0
+            shift
+            ;;
+        --security)
+            mkdir -p "$HOME/.zoth"
+            touch "$HOME/.zoth/.security_mode"
             shift
             ;;
         -h|--help)
