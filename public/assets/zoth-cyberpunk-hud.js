@@ -5146,7 +5146,59 @@
       }
     },
 
+    ensureDom: function () {
+      if (typeof document === 'undefined') return { hubEl: null, backdropEl: null };
+      var hubEl = document.getElementById('hud-fullscreen-hub');
+      var backdropEl = document.getElementById('hud-fullscreen-hub-backdrop');
+      if (!backdropEl) {
+        backdropEl = document.createElement('div');
+        backdropEl.className = 'hud-fullscreen-hub-backdrop';
+        backdropEl.id = 'hud-fullscreen-hub-backdrop';
+        backdropEl.hidden = true;
+        backdropEl.setAttribute('hidden', 'true');
+        backdropEl.onclick = function () {
+          if (window.ZothHUD && typeof window.ZothHUD.closeMobileFullscreen === 'function') {
+            window.ZothHUD.closeMobileFullscreen();
+          }
+        };
+        document.body.appendChild(backdropEl);
+      }
+      if (!hubEl) {
+        hubEl = document.createElement('aside');
+        hubEl.className = 'hud-fullscreen-hub';
+        hubEl.id = 'hud-fullscreen-hub';
+        hubEl.hidden = true;
+        hubEl.setAttribute('hidden', 'true');
+        hubEl.setAttribute('aria-modal', 'true');
+        hubEl.setAttribute('role', 'dialog');
+        hubEl.setAttribute('aria-label', 'Tactical Command Hub');
+        hubEl.innerHTML = 
+          '<div class="hud-fs-header">' +
+            '<div class="hud-fs-title-wrap">' +
+              '<span class="hud-fs-icon" id="hud-fs-icon">🚀</span>' +
+              '<div>' +
+                '<div class="hud-fs-title" id="hud-fs-title">STUDIO HUB</div>' +
+                '<div class="hud-fs-subtitle" id="hud-fs-subtitle">WORKSPACES · AGENTS · TOOLS</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="hud-fs-header-actions">' +
+              '<button type="button" class="hud-fs-switch-btn" id="hud-fs-switch-btn" onclick="ZothHUD.switchMobileFullscreenHub()" title="Switch Hub Mode">' +
+                '<span id="hud-fs-switch-label">🎛️ CONTROL ➔</span>' +
+              '</button>' +
+              '<button type="button" class="hud-fs-close-btn" onclick="ZothHUD.closeMobileFullscreen()" aria-label="Close Hub">' +
+                '<span>✕</span> CLOSE' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="hud-fs-slide-nav" id="hud-fs-slide-nav" role="tablist" aria-label="Nested Hub Slides"></div>' +
+          '<div class="hud-fs-slide-content hud-custom-scroll" id="hud-fs-slide-content"></div>';
+        document.body.appendChild(hubEl);
+      }
+      return { hubEl: hubEl, backdropEl: backdropEl };
+    },
+
     open: function (hubType, slideId) {
+      this.ensureDom();
       var type = (hubType === 'control' || hubType === 'tactical') ? 'control' : 'studio';
       this.activeHub = type;
       var config = this.hubConfigs[type];
@@ -7068,7 +7120,7 @@
               }
 
               // Direct DOM hiding for immediate eradication
-              var navEls = doc.querySelectorAll('header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, .drawer, #drawer, #mobile-drawer, .burger, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar, header[role="banner"], nav[role="navigation"]');
+              var navEls = doc.querySelectorAll('header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, .drawer, #drawer, #mobile-drawer, .burger, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .install-os-deck, .install-terminal-deck, .install-3d-stage, .download-banner, .install-notes, .install-feature-chips, .install-footer-row, .install-copy, .install-copy-3d, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar, header[role="banner"], nav[role="navigation"], [id*="install"], [class*="install"], [class*="local-install"], [id*="local-install"], .local-install, a[href*="install"], a[href*="Install"]');
               navEls.forEach(function (el) {
                 el.style.setProperty('display', 'none', 'important');
                 el.style.setProperty('visibility', 'hidden', 'important');
@@ -7081,16 +7133,32 @@
               if (doc.head && !doc.getElementById('hud-cleaner-css')) {
                 var st = doc.createElement('style');
                 st.id = 'hud-cleaner-css';
-                st.textContent = 'header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, header.bar, header.nav, header.poster-bar, header.app-header, header.site-header, header.main-header, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .drawer, #drawer, #mobile-drawer, .burger, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .install-os-deck, .install-terminal-deck, .install-3d-stage, .download-banner, .install-notes, .install-feature-chips, .install-footer-row, .install-copy, .install-copy-3d, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar, header[role="banner"], nav[role="navigation"] { display: none !important; visibility: hidden !important; height: 0 !important; min-height: 0 !important; max-height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important; } html, body, #app, #root, .app-root, .page-wrap, main, .workspace-container, .container, .page-wrapper, .site-main, .hero, .hero-stage, .poster-stage { padding-top: 0 !important; margin-top: 0 !important; }';
+                st.textContent = 'header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, header.bar, header.nav, header.poster-bar, header.app-header, header.site-header, header.main-header, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .drawer, #drawer, #mobile-drawer, .burger, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .install-os-deck, .install-terminal-deck, .install-3d-stage, .download-banner, .install-notes, .install-feature-chips, .install-footer-row, .install-copy, .install-copy-3d, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar, header[role="banner"], nav[role="navigation"], [id*="install"], [class*="install"], [class*="local-install"], [id*="local-install"], .local-install, a[href*="install"], a[href*="Install"] { display: none !important; visibility: hidden !important; height: 0 !important; min-height: 0 !important; max-height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important; } html, body, #app, #root, .app-root, .page-wrap, main, .workspace-container, .container, .page-wrapper, .site-main, .hero, .hero-stage, .poster-stage { padding-top: 0 !important; margin-top: 0 !important; }';
                 doc.head.appendChild(st);
+              }
+
+              // Continuous observer to wipe any delayed or client-side injected headers/install elements
+              if (doc.body && !doc.body.__hudCleanObs && typeof MutationObserver !== 'undefined') {
+                doc.body.__hudCleanObs = new MutationObserver(function () {
+                  var dynamicEls = doc.querySelectorAll('header, nav, #topbar, .bar, .site-header, .topbar, .navbar, #navbar, .drawer, footer, .install-stage, #install, .install-bar, .banner-install, .desktop-install, [id*="install"], [class*="install"], [class*="local-install"], .local-install');
+                  dynamicEls.forEach(function (el) {
+                    el.style.setProperty('display', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                    el.style.setProperty('height', '0px', 'important');
+                    el.setAttribute('hidden', 'true');
+                  });
+                });
+                doc.body.__hudCleanObs.observe(doc.body, { childList: true, subtree: true });
               }
             }
           } catch (e) {}
         };
         frame.addEventListener('load', cleanEmbedded);
         cleanEmbedded();
-        setTimeout(cleanEmbedded, 100);
+        setTimeout(cleanEmbedded, 50);
+        setTimeout(cleanEmbedded, 150);
         setTimeout(cleanEmbedded, 500);
+        setTimeout(cleanEmbedded, 1200);
       }
 
       var mobileWs = document.getElementById('hudMobileWsName') || document.getElementById('hud-mobile-ws-name');
