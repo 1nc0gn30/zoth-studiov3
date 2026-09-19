@@ -7063,11 +7063,25 @@
               }
               if (doc.body) {
                 doc.body.classList.add('in-hud', 'hud-embedded-view');
+                doc.body.style.setProperty('padding-top', '0px', 'important');
+                doc.body.style.setProperty('margin-top', '0px', 'important');
               }
+
+              // Direct DOM hiding for immediate eradication
+              var navEls = doc.querySelectorAll('header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, .drawer, #drawer, #mobile-drawer, .burger, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar, header[role="banner"], nav[role="navigation"]');
+              navEls.forEach(function (el) {
+                el.style.setProperty('display', 'none', 'important');
+                el.style.setProperty('visibility', 'hidden', 'important');
+                el.style.setProperty('height', '0px', 'important');
+                el.style.setProperty('min-height', '0px', 'important');
+                el.style.setProperty('overflow', 'hidden', 'important');
+                el.setAttribute('hidden', 'true');
+              });
+
               if (doc.head && !doc.getElementById('hud-cleaner-css')) {
                 var st = doc.createElement('style');
                 st.id = 'hud-cleaner-css';
-                st.textContent = 'header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, header.bar, header.nav, header.poster-bar, header.app-header, header.site-header, header.main-header, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .install-os-deck, .install-terminal-deck, .install-3d-stage, .download-banner, .install-notes, .install-feature-chips, .install-footer-row, .install-copy, .install-copy-3d, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar { display: none !important; } html, body, #app, #root, .app-root, .page-wrap, main, .workspace-container, .container { padding-top: 0 !important; margin-top: 0 !important; }';
+                st.textContent = 'header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, header.bar, header.nav, header.poster-bar, header.app-header, header.site-header, header.main-header, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .drawer, #drawer, #mobile-drawer, .burger, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .install-os-deck, .install-terminal-deck, .install-3d-stage, .download-banner, .install-notes, .install-feature-chips, .install-footer-row, .install-copy, .install-copy-3d, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar, header[role="banner"], nav[role="navigation"] { display: none !important; visibility: hidden !important; height: 0 !important; min-height: 0 !important; max-height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important; } html, body, #app, #root, .app-root, .page-wrap, main, .workspace-container, .container, .page-wrapper, .site-main, .hero, .hero-stage, .poster-stage { padding-top: 0 !important; margin-top: 0 !important; }';
                 doc.head.appendChild(st);
               }
             }
@@ -7075,6 +7089,8 @@
         };
         frame.addEventListener('load', cleanEmbedded);
         cleanEmbedded();
+        setTimeout(cleanEmbedded, 100);
+        setTimeout(cleanEmbedded, 500);
       }
 
       var mobileWs = document.getElementById('hudMobileWsName') || document.getElementById('hud-mobile-ws-name');
