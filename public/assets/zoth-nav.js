@@ -20,7 +20,7 @@
   }
   var _href = String(window.location.href || '');
   var _path = window.location.pathname || '';
-  if (/^\/workspaces\//.test(_path) || /srcdoc/i.test(_href) || _href.indexOf('about:') === 0 || /\/studio\/(cockpit|cyberpunk-hud)\.html$/.test(_path)) return;
+  if (/^\/workspaces\//.test(_path) || /srcdoc/i.test(_href) || _href.indexOf('about:') === 0 || /^\/studio\//.test(_path) || /\/studio\//.test(_href) || (document.documentElement && document.documentElement.classList.contains('hud-embedded-mode'))) return;
 
   // Dynamic Base Path Detection for Local file:// & Web HTTP
   function getAssetsBase() {
@@ -348,7 +348,7 @@
       '<div aria-hidden="true" class="foot-watermark">ZOTH</div>',
       '<div class="foot-grid">',
       '<div class="foot-brand-col">',
-      '<p class="foot-kicker">Local · loopback · no telemetry</p>',
+      '<p class="foot-kicker">Sovereign Multi-Agent Operating System</p>',
       '<a class="foot-brand-lockup" href="/">',
       '<img alt="Master Azoth" class="foot-azoth" decoding="async" height="72" loading="lazy" src="' + ASSETS_BASE + 'mascot/azoth-bust.jpg" width="72"/>',
       '<span class="foot-brand-text">',
@@ -357,7 +357,7 @@
       '</span></a>',
       '<small class="foot-brand-desc">Local-first workspace for a team of AI agents. Files stay on this machine.</small>',
       '<div class="foot-actions">',
-      '<a class="foot-btn foot-btn-on" href="/#install">Install locally</a>',
+      '<a class="foot-btn foot-btn-on" href="/studio/cockpit.html">Launch Cockpit</a>',
       '<a class="foot-btn foot-btn-ghost" href="/pricing/">Support the forge</a>',
       '</div></div>',
       '<div class="foot-col"><h3>Studio</h3>',

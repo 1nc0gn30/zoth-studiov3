@@ -113,7 +113,7 @@
   }
 
   function shouldLockTools() {
-    return isPublicHub() && isToolPath() && !forcePreview() && !onDeck();
+    return false;
   }
 
   function detectOs() {
@@ -151,36 +151,8 @@
   function css() {
     return [
       ":root{--zoth-ribbon:0px}",
-      "html.zoth-preview{--zoth-ribbon:38px;scroll-padding-top:calc(54px + 38px + 12px)}",
-      "html.zoth-preview body{padding-top:calc(54px + 38px)!important}",
-      "html.zoth-preview header.bar, html.zoth-preview header.topbar, html.zoth-preview .comic-topbar, html.zoth-preview header[role=\"banner\"], html.zoth-preview #topbar{top:38px!important}",
-      "html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(54px + 38px)!important}",
-      "#zoth-ribbon{position:fixed;top:0;left:0;right:0;z-index:100000;display:none;align-items:center;justify-content:space-between;gap:10px;",
-      "height:38px;padding:0 16px;background:rgba(10,14,26,0.96);backdrop-filter:blur(16px);color:#f7f4ee;border-bottom:1px solid rgba(0,240,255,0.35);",
-      "font-family:Inter,system-ui,sans-serif;font-size:.82rem;line-height:1;box-shadow:0 4px 20px rgba(0,0,0,0.5);box-sizing:border-box}",
-      "#zoth-ribbon.on{display:flex}",
-      "#zoth-ribbon .zoth-r-left{display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0;flex:1 1 auto}",
-      "#zoth-ribbon .zoth-r-badge{background:rgba(0,240,255,0.15);color:#00f0ff;border:1px solid rgba(0,240,255,0.4);font-family:JetBrains Mono,monospace;font-size:0.68rem;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:0.04em;flex-shrink:0}",
-      "#zoth-ribbon .zoth-r-text-desktop{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline}",
-      "#zoth-ribbon .zoth-r-text-mobile{display:none}",
-      "#zoth-ribbon .zoth-r-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}",
-      "#zoth-ribbon button.zoth-btn-install{background:linear-gradient(135deg,#e8c872,#fbbf24);color:#0a0e1a;font-family:JetBrains Mono,monospace;font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 0 10px rgba(232,200,114,0.4);transition:all .2s ease;white-space:nowrap;min-height:28px!important;max-height:30px!important;height:28px!important;width:auto!important;max-width:none!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important}",
-      "#zoth-ribbon button.zoth-btn-install:hover{transform:scale(1.04);box-shadow:0 0 16px rgba(232,200,114,0.7)}",
-      "#zoth-ribbon a.zoth-btn-social{background:rgba(255,255,255,0.08);color:#e2e8f0;font-family:JetBrains Mono,monospace;font-size:.72rem;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);text-decoration:none;transition:all .2s ease;white-space:nowrap;min-height:28px!important;max-height:30px!important;height:28px!important;line-height:1!important;display:inline-flex!important;align-items:center!important;box-sizing:border-box!important}",
-      "#zoth-ribbon a.zoth-btn-social:hover{background:rgba(255,255,255,0.15);color:#fff}",
-      "@media (max-width:760px){",
-      "#zoth-ribbon{height:40px;font-size:.74rem;padding:0 10px;gap:6px}",
-      "html.zoth-preview{--zoth-ribbon:40px;scroll-padding-top:calc(54px + 40px + 8px)}",
-      "html.zoth-preview body{padding-top:calc(54px + 40px)!important}",
-      "html.zoth-preview header.bar, html.zoth-preview header.topbar, html.zoth-preview .comic-topbar, html.zoth-preview header[role=\"banner\"], html.zoth-preview #topbar{top:40px!important}",
-      "html.zoth-preview nav.drawer, html.zoth-preview #drawer{top:calc(54px + 40px)!important}",
-      "#zoth-ribbon .zoth-hide-mobile{display:none}",
-      "#zoth-ribbon .zoth-r-badge{font-size:0.62rem;padding:2px 5px}",
-      "#zoth-ribbon .zoth-r-text-desktop{display:none}",
-      "#zoth-ribbon .zoth-r-text-mobile{display:inline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.72rem;min-width:0}",
-      "#zoth-ribbon button.zoth-btn-install{padding:3px 9px!important;font-size:.66rem!important;min-height:26px!important;max-height:28px!important;height:26px!important;width:auto!important;line-height:1!important}",
-      "}",
-      
+      "#zoth-ribbon{display:none!important}",
+      "#zoth-tool-lock{display:none!important}",
       "#zoth-modal{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(3,5,10,0.85);backdrop-filter:blur(12px)}",
       "#zoth-modal.on{display:flex;animation:zothModalFadeIn .2s ease-out}",
       "@keyframes zothModalFadeIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}",
@@ -249,23 +221,6 @@
     var os = detectOs();
     var pkg = DOWNLOAD_PACKAGES[os] || DOWNLOAD_PACKAGES.linux;
     var cmd = INSTALL_COMMANDS[os] || INSTALL_COMMANDS.linux;
-
-    var ribbon = document.createElement("div");
-    ribbon.id = "zoth-ribbon";
-    ribbon.innerHTML =
-      '<div class="zoth-r-left">' +
-        '<span class="zoth-r-badge">PREVIEW</span>' +
-        '<span class="zoth-r-text-desktop">Full sovereign multi-agent tools run on your local machine (:8484)</span>' +
-        '<span class="zoth-r-text-mobile">Local Hub (:8484)</span>' +
-      '</div>' +
-      '<div class="zoth-r-actions">' +
-        '<a href="/social/" class="zoth-btn-social zoth-hide-mobile">🎬 46 Video Demos</a>' +
-        '<button type="button" class="zoth-btn-install" data-zoth-open>' +
-          '<span class="zoth-r-text-desktop">🚀 Install Desktop App</span>' +
-          '<span class="zoth-r-text-mobile">⚡ Install</span>' +
-        '</button>' +
-      '</div>';
-    document.body.appendChild(ribbon);
 
     var secondaryLinksHtml = pkg.secondary.map(function (s) {
       return '<a href="' + s.href + '">' + s.label + '</a>';
@@ -402,48 +357,18 @@
   }
 
   function ribbon(on) {
-    ensureUi();
-    var r = document.getElementById("zoth-ribbon");
-    if (!r) return;
-    if (on) {
-      document.documentElement.classList.add("zoth-preview");
-      r.classList.add("on");
-    } else {
-      document.documentElement.classList.remove("zoth-preview");
-      r.classList.remove("on");
-    }
+    // Disabled: no preview ribbon
+    return;
   }
 
   function ensureLock() {
-    if (document.getElementById("zoth-tool-lock")) return;
-    ensureUi();
-    var lock = document.createElement("div");
-    lock.id = "zoth-tool-lock";
-    lock.setAttribute("role", "dialog");
-    lock.setAttribute("aria-modal", "true");
-    lock.setAttribute("aria-labelledby", "zoth-lock-title");
-    lock.innerHTML =
-      '<div class="lock-sheet">' +
-        '<p class="lock-kicker">Local workstation · loopback only</p>' +
-        '<h2 id="zoth-lock-title">This tool runs on your machine, not in the cloud.</h2>' +
-        '<p>zoth.nullai.tech is the public preview. Swarm, vault, signal, and studio workstations bind <code>127.0.0.1:8484</code>. Opening them here would look broken. Install Zoth Studio locally — or open the catalog while you wait.</p>' +
-        '<div class="lock-actions">' +
-          '<button type="button" class="lock-on" data-zoth-open>Install locally</button>' +
-          '<a class="lock-ghost" href="/studio/">Studio catalog</a>' +
-          '<a class="lock-ghost" href="/#install">Install section</a>' +
-          '<a class="lock-ghost" href="?preview=1">Peek static preview</a>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(lock);
-    var openBtn = lock.querySelector("[data-zoth-open]");
-    if (openBtn) openBtn.addEventListener("click", show);
+    // Disabled: no tool locking
+    return;
   }
 
   function showLock() {
-    ensureLock();
-    var lock = document.getElementById("zoth-tool-lock");
-    if (lock) lock.classList.add("on");
-    document.documentElement.classList.add("zoth-tool-locked");
+    // Disabled: no tool locking
+    return;
   }
 
   function intercept(e) {
@@ -485,8 +410,6 @@
     rewriteHubLinks();
     ensureUi();
     document.addEventListener("click", intercept, true);
-    if (isPublicHub()) ribbon(true);
-    if (shouldLockTools()) showLock();
   }
 
   window.ZothRuntime = {

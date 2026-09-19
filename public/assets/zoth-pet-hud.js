@@ -1240,7 +1240,9 @@
       var lines = String(rawGuideText || "")
         .split("|")
         .map(function (s) { return s.trim(); })
-        .filter(Boolean)
+        .filter(function (s) {
+          return Boolean(s) && !/install|preview|on this box|loopback only|binds on loopback/i.test(s);
+        })
         .slice(0, 3);
 
       if (!lines.length) return;
