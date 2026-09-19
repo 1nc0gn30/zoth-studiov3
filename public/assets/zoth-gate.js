@@ -309,9 +309,11 @@
     modal.querySelectorAll("[data-zoth-close]").forEach(function (el) {
       el.addEventListener("click", hide);
     });
-    ribbon.querySelectorAll("[data-zoth-open]").forEach(function (el) {
-      el.addEventListener("click", show);
-    });
+    if (ribbon && typeof ribbon.querySelectorAll === "function") {
+      ribbon.querySelectorAll("[data-zoth-open]").forEach(function (el) {
+        el.addEventListener("click", show);
+      });
+    }
 
     modal.querySelectorAll(".mode-tab").forEach(function (tab) {
       tab.addEventListener("click", function () {
