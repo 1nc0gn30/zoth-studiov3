@@ -231,4 +231,17 @@ echo -e "  • Operator Deck (:8484):  ${CYAN}http://127.0.0.1:8484/${RESET}"
 echo -e "  • WebGen Studio:        ${CYAN}http://127.0.0.1:8088/studio/webgen.html${RESET}"
 echo -e "  • Master Azoth:           ${CYAN}http://127.0.0.1:8088/zoth/${RESET}\n"
 
+# Resolve latest release tag for download URLs
+LATEST_TAG="v12.0.0"
+GITHUB_RELEASES="https://github.com/NullAITech/zoth-studio/releases/download"
+
+echo -e "\n${BOLD}📥 Download Links (Release ${LATEST_TAG}):${RESET}"
+echo -e "  ${CYAN}Linux AppImage:${RESET}  ${GITHUB_RELEASES}/${LATEST_TAG}/Zoth_Studio-${LATEST_TAG}-x86_64.AppImage"
+echo -e "  ${CYAN}Linux .deb:${RESET}      ${GITHUB_RELEASES}/${LATEST_TAG}/zoth-studio_${LATEST_TAG#v}_all.deb"
+echo -e "  ${CYAN}Linux .run:${RESET}     ${GITHUB_RELEASES}/${LATEST_TAG}/zoth-linux-x86_64.run"
+echo -e "  ${CYAN}Linux tarball:${RESET}  ${GITHUB_RELEASES}/${LATEST_TAG}/zoth-studio-${LATEST_TAG}-linux-x86_64.tar.gz"
+echo -e "  ${CYAN}Windows .zip:${RESET}   ${GITHUB_RELEASES}/${LATEST_TAG}/zoth-studio-${LATEST_TAG}-windows-x86_64.zip"
+echo -e "  ${CYAN}macOS tarball:${RESET}  ${GITHUB_RELEASES}/${LATEST_TAG}/zoth-studio-${LATEST_TAG}-macos-universal.tar.gz"
+echo -e "  ${CYAN}macOS .zip:${RESET}     ${GITHUB_RELEASES}/${LATEST_TAG}/zoth-studio-${LATEST_TAG}-macos.zip\\n"
+
 

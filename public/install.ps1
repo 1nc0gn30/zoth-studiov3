@@ -124,4 +124,17 @@ Write-Host "  • Operator Deck (:8484): http://127.0.0.1:8484/" -ForegroundColo
 Write-Host "  • WebGen Studio:       http://127.0.0.1:8088/studio/webgen.html" -ForegroundColor Cyan
 Write-Host "  • Master Azoth:          http://127.0.0.1:8088/zoth/`n" -ForegroundColor Cyan
 
+# Resolve latest release tag for download URLs
+$LatestTag = "v12.0.0"
+$GitHubReleases = "https://github.com/NullAITech/zoth-studio/releases/download"
+
+Write-Host "`n📥 Download Links (Release $LatestTag):" -ForegroundColor White
+Write-Host "  Linux AppImage:  $GitHubReleases/$LatestTag/Zoth_Studio-$LatestTag-x86_64.AppImage" -ForegroundColor Cyan
+Write-Host "  Linux .deb:      $GitHubReleases/$LatestTag/zoth-studio_$($LatestTag.TrimStart('v'))_all.deb" -ForegroundColor Cyan
+Write-Host "  Linux .run:      $GitHubReleases/$LatestTag/zoth-linux-x86_64.run" -ForegroundColor Cyan
+Write-Host "  Linux tarball:   $GitHubReleases/$LatestTag/zoth-studio-$LatestTag-linux-x86_64.tar.gz" -ForegroundColor Cyan
+Write-Host "  Windows .exe:    $GitHubReleases/$LatestTag/zoth-windows-x86_64.exe" -ForegroundColor Cyan
+Write-Host "  Windows .zip:    $GitHubReleases/$LatestTag/zoth-studio-$LatestTag-windows-x86_64.zip" -ForegroundColor Cyan
+Write-Host "  macOS tarball:   $GitHubReleases/$LatestTag/zoth-studio-$LatestTag-macos-universal.tar.gz`n" -ForegroundColor Cyan
+
 
