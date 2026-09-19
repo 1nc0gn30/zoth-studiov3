@@ -112,12 +112,21 @@
     float();
   }
 
+  function isMatrixTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'matrix';
+  }
+
   // ── Metric counter glow pulse ──
   function pulseMetricGlow() {
     var nums = hero.querySelectorAll('.metric-num');
     if (!nums.length) return;
     var tick = 0;
     function pulse() {
+      if (!isMatrixTheme()) {
+        nums.forEach(function(el) { el.style.textShadow = ''; });
+        requestAnimationFrame(pulse);
+        return;
+      }
       tick += 0.04;
       var glow = 0.3 + Math.sin(tick * 1.3) * 0.25 + Math.sin(tick * 2.7) * 0.1;
       nums.forEach(function (el) {
@@ -135,6 +144,10 @@
   // ── Scanline intensity on scroll ──
   function updateScanIntensity() {
     var scanlines = hero.querySelectorAll('.scanline-fine');
+    if (!isMatrixTheme()) {
+      scanlines.forEach(function(el) { el.style.opacity = '0'; });
+      return;
+    }
     var scrollY = window.scrollY || window.pageYOffset || 0;
     scanlines.forEach(function (el) {
       var intensity = Math.max(0.3, 1 - scrollY / 250);
@@ -147,6 +160,7 @@
     var holo = hero.querySelector('.holo-grid');
     if (!holo || reduceMotion) return;
     document.addEventListener('mousemove', function (e) {
+      if (!isMatrixTheme()) return;
       var rect = hero.getBoundingClientRect();
       var cx = (e.clientX - rect.left) / rect.width - 0.5;
       var cy = (e.clientY - rect.top) / rect.height - 0.5;
@@ -161,18 +175,40 @@
     if (reduceMotion) return;
     var delay = 10000 + Math.random() * 18000;
     setTimeout(function () {
-      triggerGlitch(0.6 + Math.random() * 0.4);
+      if (isMatrixTheme()) {
+        triggerGlitch(0.6 + Math.random() * 0.4);
+      }
       scheduleGlitch();
     }, delay);
   }
 
+  var stopRain = null;
+  function syncThemeState() {
+    if (isMatrixTheme()) {
+      if (!stopRain) stopRain = initMatrixRain();
+    } else {
+      if (stopRain) {
+        stopRain();
+        stopRain = null;
+      }
+      var wrap = document.querySelector('.hero .matrix-canvas-wrap');
+      if (wrap) wrap.remove();
+    }
+    updateScanIntensity();
+  }
+
   // ── Init ──
   function init() {
-    initMatrixRain();
+    syncThemeState();
     initHeroFloat();
     pulseMetricGlow();
     updateScanIntensity();
     window.addEventListener('scroll', updateScanIntensity, { passive: true });
+    window.addEventListener('zoth-theme-change', syncThemeState);
+    if (window.MutationObserver) {
+      var obs = new MutationObserver(function() { syncThemeState(); });
+      obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
     initHoloParallax();
     scheduleGlitch();
   }
