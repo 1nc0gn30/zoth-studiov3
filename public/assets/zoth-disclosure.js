@@ -52,6 +52,28 @@
       };
     });
 
+    // 2.1 Bind HUD Card Collapsibles (In-Tool Secondary Panels)
+    var hudCards = document.querySelectorAll(".hud-card.hud-card-collapsible");
+    hudCards.forEach(function (card) {
+      var header = card.querySelector(".hud-card-header");
+      if (!header) return;
+      var icon = header.querySelector(".hud-card-toggle-icon");
+      if (!icon) {
+        icon = document.createElement("span");
+        icon.className = "hud-card-toggle-icon";
+        icon.innerHTML = card.classList.contains("is-collapsed") ? "▶" : "▼";
+        header.appendChild(icon);
+      }
+      header.onclick = function () {
+        card.classList.toggle("is-collapsed");
+        var ic = header.querySelector(".hud-card-toggle-icon");
+        if (ic) {
+          ic.innerHTML = card.classList.contains("is-collapsed") ? "▶" : "▼";
+        }
+        window.dispatchEvent(new Event("resize"));
+      };
+    });
+
     // 3. Bind Master HUD buttons if present
     var expandAllBtn = document.querySelector("[data-zoth-action='expand-all']");
     var collapseAllBtn = document.querySelector("[data-zoth-action='collapse-all']");
@@ -70,18 +92,42 @@
     }
 
     // 4. Handle URL deep-linking hashes (e.g. #agents, #how-it-works, #trust)
+    function expandTargetHash(hash) {
+      if (!hash) return;
+      try {
+        var target = document.querySelector(hash);
+        if (target) {
+          var parentWrapper = target.closest(".zoth-disclosure-wrapper") || target;
+          if (parentWrapper && parentWrapper.classList.contains("zoth-disclosure-wrapper")) {
+            expandWrapper(parentWrapper);
+            setTimeout(function () {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 250);
+          }
+        }
+      } catch (e) {}
+    }
+
     if (window.location.hash) {
-      var target = document.querySelector(window.location.hash);
-      if (target) {
-        var parentWrapper = target.closest(".zoth-disclosure-wrapper") || target;
-        if (parentWrapper && parentWrapper.classList.contains("zoth-disclosure-wrapper")) {
-          expandWrapper(parentWrapper);
-          setTimeout(function () {
-            target.scrollIntoView({ behavior: "smooth", block: "start" });
-          }, 300);
+      expandTargetHash(window.location.hash);
+    }
+
+    window.addEventListener("hashchange", function () {
+      expandTargetHash(window.location.hash);
+    });
+
+    document.addEventListener("click", function (e) {
+      var link = e.target.closest("a[href*='#']");
+      if (!link) return;
+      var href = link.getAttribute("href") || "";
+      var hashIdx = href.indexOf("#");
+      if (hashIdx !== -1) {
+        var hash = href.substring(hashIdx);
+        if (hash.length > 1) {
+          expandTargetHash(hash);
         }
       }
-    }
+    });
 
     updateCounter();
   }
