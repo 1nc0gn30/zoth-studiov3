@@ -253,8 +253,47 @@
     var conceptPrompt = encodeURIComponent((s.name + ' ' + heroTitle + ' ' + (s.tagline || '') + ' ultra-detailed cinematic photography 8k').trim());
     var heroImgUrl = 'https://image.pollinations.ai/prompt/' + conceptPrompt + '?width=1200&height=630&nologo=true&seed=849201&model=flux';
 
+    function makeTopBar() {
+      if (archetype === 'local_service') {
+        return '<div style="background:rgba(52,211,153,0.12);border-bottom:1px solid rgba(52,211,153,0.25);padding:8px 30px;display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:#e2e8f0;flex-wrap:gap:10px;">' +
+          '<div>📞 <strong>Direct Dispatch:</strong> (757) 555-0199 &nbsp;·&nbsp; 📍 Serving Virginia Beach, Norfolk & Chesapeake</div>' +
+          '<div><span style="background:#34d399;color:#040d08;padding:2px 8px;border-radius:99px;font-weight:800;font-size:0.68rem;">LICENSED & INSURED</span> &nbsp;·&nbsp; ⚡ Same-Day Estimates</div>' +
+        '</div>';
+      }
+      if (archetype === 'food_restaurant') {
+        return '<div style="background:rgba(251,191,36,0.15);border-bottom:1px solid rgba(251,191,36,0.3);padding:8px 30px;display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:#fef08a;flex-wrap:wrap;gap:10px;">' +
+          '<div>🔥 <strong>Kitchen Status:</strong> OPEN &nbsp;·&nbsp; ⏱️ Pickups Ready in 10-15 mins &nbsp;·&nbsp; 📍 24th St Oceanfront</div>' +
+          '<div><span style="background:#fbbf24;color:#0d0a04;padding:2px 8px;border-radius:99px;font-weight:800;font-size:0.68rem;">100% FRESH CRAFT</span> &nbsp;·&nbsp; Mon-Sun: 11am - 10pm</div>' +
+        '</div>';
+      }
+      if (archetype === 'game_arcade') {
+        return '<div style="background:rgba(244,63,94,0.15);border-bottom:1px solid rgba(244,63,94,0.3);padding:6px 30px;display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:#fda4af;font-family:monospace;">' +
+          '<div>🏆 HIGH SCORE: 984,200 (PILOT_AZOTH) &nbsp;·&nbsp; 60 FPS ENGINE</div>' +
+          '<div>[CRT FILTER: ON] &nbsp;·&nbsp; [8-BIT SOUND: ENABLED]</div>' +
+        '</div>';
+      }
+      if (archetype === 'developer_terminal') {
+        return '<div style="background:rgba(16,185,129,0.12);border-bottom:1px solid rgba(16,185,129,0.25);padding:6px 30px;display:flex;justify-content:space-between;align-items:center;font-size:0.74rem;color:#6ee7b7;font-family:monospace;">' +
+          '<div>KERNEL: 6.8.0-PARROT-SOVEREIGN &nbsp;·&nbsp; EGRESS: 0 BYTES &nbsp;·&nbsp; BYOK: LOCKED</div>' +
+          '<div>[STATUS: ALL NODES NOMINAL]</div>' +
+        '</div>';
+      }
+      if (archetype === 'crypto_web3') {
+        return '<div style="background:rgba(192,132,252,0.12);border-bottom:1px solid rgba(192,132,252,0.25);padding:6px 20px;overflow:hidden;white-space:nowrap;font-size:0.75rem;color:#e9d5ff;font-family:monospace;">' +
+          '<span>⚡ LIVE MARQUEE: SOL $184.20 (+4.8%) &nbsp;·&nbsp; BTC $94,800 (+2.1%) &nbsp;·&nbsp; ETH $3,450 (+1.9%) &nbsp;·&nbsp; AZOTH $12.40 (+18.4%) &nbsp;·&nbsp; 24H VOL $42.8M</span>' +
+        '</div>';
+      }
+      if (archetype === 'challenge_course') {
+        return '<div style="background:rgba(56,189,248,0.12);border-bottom:1px solid rgba(56,189,248,0.25);padding:8px 30px;display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:#bae6fd;">' +
+          '<div>🔥 <strong>PUBLIC CHALLENGE:</strong> Day 18 of 30 &nbsp;·&nbsp; 60% Completed &nbsp;·&nbsp; Next Build in 4h</div>' +
+          '<div><a href="#syllabus" style="color:#38bdf8;text-decoration:none;font-weight:700;">View Roadmap ➔</a></div>' +
+        '</div>';
+      }
+      return '';
+    }
+
     function makeNav(activePage) {
-      return '<nav class="site-nav" style="display:flex;justify-content:space-between;align-items:center;padding:16px 36px;border-bottom:1px solid ' + border + ';background:rgba(8,10,18,0.94);backdrop-filter:blur(14px);position:sticky;top:0;z-index:100;">' +
+      return makeTopBar() + '<nav class="site-nav" style="display:flex;justify-content:space-between;align-items:center;padding:16px 36px;border-bottom:1px solid ' + border + ';background:rgba(8,10,18,0.94);backdrop-filter:blur(14px);position:sticky;top:0;z-index:100;">' +
         '<div style="font-family:Syne,sans-serif;font-size:1.3rem;font-weight:900;color:' + accent + ';display:flex;align-items:center;gap:8px;">' +
           '<span>' + icon + '</span> <span>' + s.name + '</span>' +
         '</div>' +
@@ -346,9 +385,256 @@
 
     // Build Truly Bespoke Domain-Specific Interactive Module HTML
     var interactiveSectionHtml = '';
+    var indexScripts = '';
 
-    // 1. Action Sports & Skateboarding
-    if ((archetype === 'action_sports_skate' || (s.domain && s.domain.includes('skate')) || (s.name && s.name.toLowerCase().includes('skate'))) && s.monetization !== '100% Free Open Access / Non-Commercial' && (!s.tagline || !s.tagline.toLowerCase().includes('zero commerce')) && (!s.heroTitle || !s.heroTitle.toLowerCase().includes('no merch'))) {
+    // 1. Local Services (Lawn Care, Landscaping, Trades)
+    if (archetype === 'local_service' || (s.domain && (s.domain.includes('lawn') || s.domain.includes('service') || s.domain.includes('landscap')))) {
+      interactiveSectionHtml = '<section class="section-wrap" id="quote-calculator">' +
+        '<div style="background:linear-gradient(145deg, #06180d, #030a06);border:1px solid ' + accent + '66;border-radius:18px;padding:32px;box-shadow:0 12px 40px rgba(0,0,0,0.6);">' +
+          '<div style="text-align:center;max-width:680px;margin:0 auto 24px;">' +
+            '<span class="badge" style="border-color:' + accent + ';color:' + accent + ';">🌿 3-Step Instant Rate Estimator</span>' +
+            '<h2 style="font-family:Syne,sans-serif;font-size:2rem;color:#ffffff;margin:8px 0 6px;">Calculate Your ' + s.name + ' Service</h2>' +
+            '<p style="color:' + textMuted + ';font-size:0.92rem;margin:0;">Select frequency, estimated yard size, and calculate your instant flat rate.</p>' +
+          '</div>' +
+          '<div style="max-width:600px;margin:0 auto;">' +
+            '<div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;">' +
+              '<button type="button" class="freq-btn" style="' + btnStyle + 'padding:10px 20px;" onclick="setFreq(\'weekly\', this)">Weekly (15% Off)</button>' +
+              '<button type="button" class="freq-btn" style="background:rgba(255,255,255,0.06);color:#ffffff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;" onclick="setFreq(\'biweekly\', this)">Bi-Weekly</button>' +
+              '<button type="button" class="freq-btn" style="background:rgba(255,255,255,0.06);color:#ffffff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;" onclick="setFreq(\'onetime\', this)">One-Time</button>' +
+            '</div>' +
+            '<div style="margin-bottom:24px;">' +
+              '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:8px;">' +
+                '<span>Estimated Lot / Turf Size:</span>' +
+                '<strong style="color:' + accent + ';" id="calcSqftDisplay">5,000 sq ft</strong>' +
+              '</div>' +
+              '<input type="range" id="calcSqftRange" min="1000" max="25000" step="500" value="5000" style="width:100%;accent-color:' + accent + ';" oninput="updateServiceCalculator()"/>' +
+              '<div style="display:flex;justify-content:space-between;font-size:0.75rem;color:' + textMuted + ';margin-top:4px;">' +
+                '<span>Townhome (1,000)</span><span>Suburban (5,000)</span><span>Acreage (25,000+)</span>' +
+              '</div>' +
+            '</div>' +
+            '<div style="background:rgba(0,0,0,0.4);border:1px solid rgba(52,211,153,0.3);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;">' +
+              '<div>' +
+                '<div style="font-size:0.8rem;color:' + textMuted + ';">Estimated Rate (Zero Contract Lock-in)</div>' +
+                '<div style="font-family:Syne,sans-serif;font-size:2rem;font-weight:900;color:' + accent + ';" id="calcPriceResult">$45.00 <span style="font-size:0.9rem;font-weight:600;color:#94a3b8;">/ visit</span></div>' +
+              '</div>' +
+              '<button style="' + btnStyle + 'padding:12px 28px;" onclick="alert(&quot;Booking date confirmed for estimated rate! Direct dispatch will call you shortly.&quot;)">Book Service Date ➔</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</section>' +
+      '<section class="section-wrap">' +
+        '<div style="text-align:center;margin-bottom:30px;">' +
+          '<span class="badge">🌿 Full Grounds Offerings</span>' +
+          '<h2 style="font-family:Syne,sans-serif;font-size:1.9rem;color:#ffffff;margin:6px 0;">Professional Property Care</h2>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">' +
+          '<div class="card">' +
+            '<div style="font-size:2rem;margin-bottom:8px;">🌱</div>' +
+            '<h3 style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:800;color:#ffffff;margin:0 0 6px;">Precision Mowing & Trimming</h3>' +
+            '<p style="font-size:0.85rem;color:' + textMuted + ';margin:0 0 12px;">Clean edge blade slicing with hard border string trimming and pavement blow-off.</p>' +
+            '<strong style="color:' + accent + ';">Starting at $35/visit</strong>' +
+          '</div>' +
+          '<div class="card">' +
+            '<div style="font-size:2rem;margin-bottom:8px;">🚜</div>' +
+            '<h3 style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:800;color:#ffffff;margin:0 0 6px;">Core Aeration & Overseeding</h3>' +
+            '<p style="font-size:0.85rem;color:' + textMuted + ';margin:0 0 12px;">Deep soil core extraction and premium tall fescue seed distribution for thick turf.</p>' +
+            '<strong style="color:' + accent + ';">Starting at $189</strong>' +
+          '</div>' +
+          '<div class="card">' +
+            '<div style="font-size:2rem;margin-bottom:8px;">🍂</div>' +
+            '<h3 style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:800;color:#ffffff;margin:0 0 6px;">Mulch Installation & Edging</h3>' +
+            '<p style="font-size:0.85rem;color:' + textMuted + ';margin:0 0 12px;">Triple-shredded dyed hardwood mulch with hand-trenched crisp garden bed edges.</p>' +
+            '<strong style="color:' + accent + ';">Starting at $75/yd</strong>' +
+          '</div>' +
+          '<div class="card">' +
+            '<div style="font-size:2rem;margin-bottom:8px;">🧹</div>' +
+            '<h3 style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:800;color:#ffffff;margin:0 0 6px;">Seasonal Leaf Cleanups</h3>' +
+            '<p style="font-size:0.85rem;color:' + textMuted + ';margin:0 0 12px;">Complete property debris vacuuming, gutter clearance, and curb hauling.</p>' +
+            '<strong style="color:' + accent + ';">Starting at $149</strong>' +
+          '</div>' +
+        '</div>' +
+      '</section>' +
+      '<section class="section-wrap" style="text-align:center;">' +
+        '<span class="badge">📍 Local Coverage Corridor</span>' +
+        '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;">' +
+          '<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(52,211,153,0.3);padding:6px 14px;border-radius:99px;font-size:0.8rem;color:#e2e8f0;">📍 Virginia Beach</span>' +
+          '<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(52,211,153,0.3);padding:6px 14px;border-radius:99px;font-size:0.8rem;color:#e2e8f0;">📍 Norfolk</span>' +
+          '<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(52,211,153,0.3);padding:6px 14px;border-radius:99px;font-size:0.8rem;color:#e2e8f0;">📍 Chesapeake</span>' +
+          '<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(52,211,153,0.3);padding:6px 14px;border-radius:99px;font-size:0.8rem;color:#e2e8f0;">📍 Suffolk</span>' +
+          '<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(52,211,153,0.3);padding:6px 14px;border-radius:99px;font-size:0.8rem;color:#e2e8f0;">📍 Portsmouth</span>' +
+          '<span style="background:rgba(255,255,255,0.06);border:1px solid rgba(52,211,153,0.3);padding:6px 14px;border-radius:99px;font-size:0.8rem;color:#e2e8f0;">📍 Newport News</span>' +
+        '</div>' +
+      '</section>';
+
+      indexScripts = [
+        '<script>',
+        'var selectedFreq = "weekly";',
+        'function setFreq(freq, btn) {',
+        '  selectedFreq = freq;',
+        '  document.querySelectorAll(".freq-btn").forEach(function(b) {',
+        '    b.style.background = "rgba(255,255,255,0.06)";',
+        '    b.style.color = "#ffffff";',
+        '  });',
+        '  btn.style.background = "' + accent + '";',
+        '  btn.style.color = "#040d08";',
+        '  updateServiceCalculator();',
+        '}',
+        'function updateServiceCalculator() {',
+        '  var range = document.getElementById("calcSqftRange");',
+        '  var disp = document.getElementById("calcSqftDisplay");',
+        '  var priceEl = document.getElementById("calcPriceResult");',
+        '  if (!range || !disp || !priceEl) return;',
+        '  var val = parseInt(range.value, 10);',
+        '  disp.textContent = val.toLocaleString() + " sq ft";',
+        '  var base = 35 + ((val - 1000) / 1000) * 2.5;',
+        '  if (selectedFreq === "weekly") base *= 0.85;',
+        '  else if (selectedFreq === "onetime") base *= 1.35;',
+        '  priceEl.innerHTML = "$" + base.toFixed(2) + " <span style=\"font-size:0.9rem;font-weight:600;color:#94a3b8;\">/ visit</span>";',
+        '}',
+        '</script>'
+      ].join('\n');
+    }
+    // 2. Food & Restaurant (Burgers, Diners, Cafes)
+    else if (archetype === 'food_restaurant' || (s.domain && (s.domain.includes('restaurant') || s.domain.includes('cafe') || s.domain.includes('food') || s.domain.includes('burger')))) {
+      interactiveSectionHtml = '<section class="section-wrap" id="menu">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">' +
+          '<div>' +
+            '<span class="badge" style="border-color:' + accent + ';color:' + accent + ';">🔥 Chef\'s Fresh Specials</span>' +
+            '<h2 style="font-family:Syne,sans-serif;font-size:1.9rem;color:#ffffff;margin:6px 0;">Popular Oceanfront Orders</h2>' +
+          '</div>' +
+          '<div id="cartHeaderBadge" style="background:' + accent + ';color:#0d0a04;padding:6px 14px;border-radius:99px;font-weight:800;font-size:0.82rem;">🛒 Cart: 0 items ($0.00)</div>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">' +
+          '<div class="card">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+              '<h3 style="font-family:Syne,sans-serif;font-size:1.2rem;font-weight:800;color:#ffffff;margin:0 0 6px;">Boom Pow Classic Smash</h3>' +
+              '<span style="font-family:monospace;font-weight:800;color:' + accent + ';font-size:1.1rem;">$12.99</span>' +
+            '</div>' +
+            '<p style="font-size:0.85rem;color:' + textMuted + ';line-height:1.4;">Double smash patty, melted cheddar, grilled onions, pickles, and signature house boom sauce on toasted brioche.</p>' +
+            '<button style="' + btnStyle + 'width:100%;padding:10px;margin-top:12px;" onclick="addToCart(&quot;Boom Pow Smash&quot;, 12.99)">+ Add to Bag</button>' +
+          '</div>' +
+          '<div class="card">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+              '<h3 style="font-family:Syne,sans-serif;font-size:1.2rem;font-weight:800;color:#ffffff;margin:0 0 6px;">Garlic Ranch Chik\'n</h3>' +
+              '<span style="font-family:monospace;font-weight:800;color:' + accent + ';font-size:1.1rem;">$13.49</span>' +
+            '</div>' +
+            '<p style="font-size:0.85rem;color:' + textMuted + ';line-height:1.4;">Extra crispy fried chick\'n cutlet, creamy garlic herb ranch, shredded iceberg, and house pickles on toasted bun.</p>' +
+            '<button style="' + btnStyle + 'width:100%;padding:10px;margin-top:12px;" onclick="addToCart(&quot;Garlic Ranch Chikn&quot;, 13.49)">+ Add to Bag</button>' +
+          '</div>' +
+          '<div class="card">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+              '<h3 style="font-family:Syne,sans-serif;font-size:1.2rem;font-weight:800;color:#ffffff;margin:0 0 6px;">Loaded Buffalo Fries</h3>' +
+              '<span style="font-family:monospace;font-weight:800;color:' + accent + ';font-size:1.1rem;">$8.99</span>' +
+            '</div>' +
+            '<p style="font-size:0.85rem;color:' + textMuted + ';line-height:1.4;">Crispy seasoned fries smothered in spicy buffalo drizzle, cheez sauce, crispy chick\'n bites, and green onions.</p>' +
+            '<button style="' + btnStyle + 'width:100%;padding:10px;margin-top:12px;" onclick="addToCart(&quot;Loaded Buffalo Fries&quot;, 8.99)">+ Add to Bag</button>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+
+      indexScripts = [
+        '<script>',
+        'var cartCount = 0;',
+        'var cartTotal = 0.0;',
+        'function addToCart(item, price) {',
+        '  cartCount++;',
+        '  cartTotal += price;',
+        '  var badge = document.getElementById("cartHeaderBadge");',
+        '  if (badge) badge.textContent = "🛒 Cart: " + cartCount + " items ($" + cartTotal.toFixed(2) + ")";',
+        '  alert("Added " + item + " to your order bag! Total: $" + cartTotal.toFixed(2));',
+        '}',
+        '</script>'
+      ].join('\n');
+    }
+    // 3. Game & Arcade (Playable Canvas, WebGL, 60 FPS)
+    else if (archetype === 'game_arcade' || (s.domain && (s.domain.includes('game') || s.domain.includes('arcade')))) {
+      interactiveSectionHtml = '<section class="section-wrap" id="game-screen">' +
+        '<div class="card" style="background:#020205;border:2px solid ' + accent + ';padding:16px;text-align:center;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:monospace;font-size:0.82rem;color:' + accent + ';">' +
+            '<span>[CONTROLS: CLICK CANVAS TO FIRE]</span>' +
+            '<span id="arcadeScore">SCORE: 00000</span>' +
+          '</div>' +
+          '<canvas id="gameCanvas" width="800" height="320" style="width:100%;max-height:320px;background:#050711;border-radius:8px;cursor:crosshair;"></canvas>' +
+          '<div style="margin-top:12px;display:flex;gap:12px;justify-content:center;">' +
+            '<button style="' + btnStyle + 'padding:10px 24px;" onclick="startMiniGame()">▶ Start / Reset Game</button>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+
+      indexScripts = [
+        '<script>',
+        'var score = 0;',
+        'var canvas = document.getElementById("gameCanvas");',
+        'var ctx = canvas ? canvas.getContext("2d") : null;',
+        'var stars = [];',
+        'for (var i = 0; i < 40; i++) stars.push({ x: Math.random() * 800, y: Math.random() * 320, s: Math.random() * 2 + 1 });',
+        'function renderGameFrame() {',
+        '  if (!ctx) return;',
+        '  ctx.fillStyle = "#050711";',
+        '  ctx.fillRect(0, 0, 800, 320);',
+        '  ctx.fillStyle = "#ffffff";',
+        '  stars.forEach(function(st) {',
+        '    st.x -= st.s;',
+        '    if (st.x < 0) st.x = 800;',
+        '    ctx.fillRect(st.x, st.y, st.s, st.s);',
+        '  });',
+        '  ctx.fillStyle = "' + accent + '";',
+        '  ctx.fillRect(60, 150, 30, 16);',
+        '  requestAnimationFrame(renderGameFrame);',
+        '}',
+        'function startMiniGame() { renderGameFrame(); }',
+        'if (canvas) renderGameFrame();',
+        '</script>'
+      ].join('\n');
+    }
+    // 4. Developer Terminal (Interactive Bash Shell)
+    else if (archetype === 'developer_terminal' || (s.domain && (s.domain.includes('terminal') || s.domain.includes('dev') || s.domain.includes('hacker')))) {
+      interactiveSectionHtml = '<section class="section-wrap">' +
+        '<div class="card" style="background:#030508;border-color:' + accent + ';font-family:monospace;padding:18px;">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">' +
+            '<span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>' +
+            '<span style="width:10px;height:10px;border-radius:50%;background:#eab308;display:inline-block;"></span>' +
+            '<span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>' +
+            '<span style="font-size:0.75rem;color:' + textMuted + ';margin-left:8px;">bash - nullai@sovereign:~</span>' +
+          '</div>' +
+          '<div id="termOutput" style="font-size:0.82rem;color:#e2e8f0;line-height:1.5;min-height:100px;max-height:220px;overflow-y:auto;">' +
+            '<div>Type <span style="color:' + accent + ';">help</span>, <span style="color:' + accent + ';">projects</span>, <span style="color:' + accent + ';">skills</span>, or <span style="color:' + accent + ';">cat bio.txt</span></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">' +
+            '<span style="color:' + accent + ';">$</span>' +
+            '<input type="text" id="termInput" style="flex:1;background:transparent;border:none;color:#ffffff;font-family:monospace;outline:none;font-size:0.85rem;" placeholder="Type command here and press Enter..." onkeydown="handleTermKey(event)"/>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+
+      indexScripts = [
+        '<script>',
+        'function handleTermKey(e) {',
+        '  if (e.key === "Enter") {',
+        '    var input = document.getElementById("termInput");',
+        '    var out = document.getElementById("termOutput");',
+        '    if (!input || !out) return;',
+        '    var cmd = input.value.trim().toLowerCase();',
+        '    input.value = "";',
+        '    var line = document.createElement("div");',
+        '    line.innerHTML = "<span style=\"color:' + accent + ';\">$ " + cmd + "</span>";',
+        '    out.appendChild(line);',
+        '    var resp = document.createElement("div");',
+        '    if (cmd === "help") resp.innerHTML = "Available: help, projects, skills, cat bio.txt, clear";',
+        '    else if (cmd === "projects") resp.innerHTML = "• zoth-studio (Multi-Agent IDE)<br/>• vault-daemon (Rust Encrypted Vault)<br/>• consensus-arena (AST Arbitrator)";',
+        '    else if (cmd === "skills") resp.innerHTML = "Rust, TypeScript, Python, WebGL, AST Parsers, Netlify AX, Linux";',
+        '    else if (cmd === "cat bio.txt") resp.innerHTML = "Sovereign developer building local-first multi-agent systems and high-performance web tooling.";',
+        '    else if (cmd === "clear") { out.innerHTML = ""; return; }',
+        '    else resp.innerHTML = "Command not found: " + cmd + ". Type help for list.";',
+        '    out.appendChild(resp);',
+        '    out.scrollTop = out.scrollHeight;',
+        '  }',
+        '}',
+        '</script>'
+      ].join('\n');
+    }
+    // 5. Action Sports & Skateboarding
+    else if ((archetype === 'action_sports_skate' || (s.domain && s.domain.includes('skate')) || (s.name && s.name.toLowerCase().includes('skate'))) && s.monetization !== '100% Free Open Access / Non-Commercial' && (!s.tagline || !s.tagline.toLowerCase().includes('zero commerce')) && (!s.heroTitle || !s.heroTitle.toLowerCase().includes('no merch'))) {
       interactiveSectionHtml = '<section class="section-wrap" style="margin-top:60px;" id="custom-builder">' +
         '<div style="background:linear-gradient(145deg, rgba(16,21,36,0.9), rgba(5,7,15,0.95));border:1px solid ' + accent + '66;border-radius:18px;padding:32px;box-shadow:0 12px 40px rgba(0,0,0,0.6);">' +
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;">' +
@@ -781,7 +1067,7 @@
     '</section>';
 
     return {
-      'index.html': wrapHtml(s.name + ' — ' + (s.tagline || 'Home'), 'index.html', indexBody),
+      'index.html': wrapHtml(s.name + ' — ' + (s.tagline || 'Home'), 'index.html', indexBody, indexScripts),
       'features.html': wrapHtml('Offerings & Catalog', 'features.html', featuresBody),
       'pricing.html': wrapHtml('Pricing & Packages', 'pricing.html', pricingBody),
       'docs.html': wrapHtml('FAQ & Specs', 'docs.html', docsBody),

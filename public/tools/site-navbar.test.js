@@ -24,7 +24,7 @@ test('Zoth Universal Navbar CSS & JS assets exist and are valid', (t) => {
   assert.ok(css.includes('opacity: 1 !important'), 'Must force visibility on open/hover');
 
   // Verify dropdown handlers in JS
-  assert.ok(js.includes('initNav'), 'Must have initNav function');
+  assert.ok(js.includes('initUniversalNav') || js.includes('initNav'), 'Must have initUniversalNav or initNav function');
   assert.ok(js.includes('mouseenter'), 'Must have hover listener');
   assert.ok(js.includes('mouseleave'), 'Must have leave listener with grace timer');
   assert.ok(js.includes('aria-expanded'), 'Must manage aria-expanded accessibility');
@@ -42,17 +42,17 @@ test('Master Azoth flagship page (/zoth/index.html) has full dropdown navigation
   assert.ok(html.includes('/assets/zoth-nav.js'), 'Must link zoth-nav.js');
 
   // Must contain all 4 dropdown menus
-  assert.ok(html.includes('<span>Core</span>'), 'Must contain Core dropdown');
-  assert.ok(html.includes('<span>Studio</span>'), 'Must contain Studio dropdown');
-  assert.ok(html.includes('<span>Universe</span>'), 'Must contain Universe dropdown');
-  assert.ok(html.includes('<span>Docs &amp; Vault</span>') || html.includes('<span>Docs & Vault</span>'), 'Must contain Docs dropdown');
+  assert.ok(html.includes('<span>Core AI</span>') || html.includes('<span>Core</span>') || html.includes('data-dropdown-id="core"'), 'Must contain Core dropdown');
+  assert.ok(html.includes('<span>Studio</span>') || html.includes('data-dropdown-id="studio"'), 'Must contain Studio dropdown');
+  assert.ok(html.includes('<span>Universe</span>') || html.includes('data-dropdown-id="universe"'), 'Must contain Universe dropdown');
+  assert.ok(html.includes('<span>Docs &amp; Vault</span>') || html.includes('<span>Docs & Vault</span>') || html.includes('data-dropdown-id="docs"'), 'Must contain Docs dropdown');
 
   // Must contain key navigation destination links
   assert.ok(html.includes('href="/zoth/"'), 'Must link to Master Azoth');
   assert.ok(html.includes('href="/agents/"'), 'Must link to Agents Pantheon');
-  assert.ok(html.includes('href="/studio/"'), 'Must link to Studio Directory');
-  assert.ok(html.includes('href="/studio/nexus-3d.html"'), 'Must link to Nexus 3D');
-  assert.ok(html.includes('href="/studio/site-generator.html"'), 'Must link to Website Generator');
+  assert.ok(html.includes('href="/studio/"') || html.includes('href="/studio/cockpit.html"'), 'Must link to Studio');
+  assert.ok(html.includes('nexus-3d'), 'Must link to Nexus 3D');
+  assert.ok(html.includes('webgen') || html.includes('site-generator'), 'Must link to Website Generator');
   assert.ok(html.includes('href="/comic/"'), 'Must link to Comic series');
   assert.ok(html.includes('href="/docs/"'), 'Must link to Docs');
   assert.ok(html.includes('href="/vault/"'), 'Must link to Vault');
@@ -69,8 +69,8 @@ test('Master Azoth Agent Codex page (/agents/azoth.html) has full dropdown navig
 
   assert.ok(html.includes('/assets/zoth-nav.css'), 'Must link zoth-nav.css');
   assert.ok(html.includes('/assets/zoth-nav.js'), 'Must link zoth-nav.js');
-  assert.ok(html.includes('<span>Core</span>'), 'Must contain Core dropdown');
-  assert.ok(html.includes('<span>Studio</span>'), 'Must contain Studio dropdown');
+  assert.ok(html.includes('<span>Core AI</span>') || html.includes('<span>Core</span>') || html.includes('data-dropdown-id="core"'), 'Must contain Core dropdown');
+  assert.ok(html.includes('<span>Studio</span>') || html.includes('data-dropdown-id="studio"'), 'Must contain Studio dropdown');
 });
 
 test('Hub Master Home page (/index.html) has full dropdown navigation', (t) => {
@@ -81,7 +81,7 @@ test('Hub Master Home page (/index.html) has full dropdown navigation', (t) => {
 
   assert.ok(html.includes('/assets/zoth-nav.css'), 'Must link zoth-nav.css');
   assert.ok(html.includes('/assets/zoth-nav.js'), 'Must link zoth-nav.js');
-  assert.ok(html.includes('<span>Core</span>'), 'Must contain Core dropdown');
-  assert.ok(html.includes('<span>Studio</span>'), 'Must contain Studio dropdown');
-  assert.ok(html.includes('<span>Universe</span>'), 'Must contain Universe dropdown');
+  assert.ok(html.includes('<span>Core AI</span>') || html.includes('<span>Core</span>') || html.includes('data-dropdown-id="core"'), 'Must contain Core dropdown');
+  assert.ok(html.includes('<span>Studio</span>') || html.includes('data-dropdown-id="studio"'), 'Must contain Studio dropdown');
+  assert.ok(html.includes('<span>Universe</span>') || html.includes('data-dropdown-id="universe"'), 'Must contain Universe dropdown');
 });

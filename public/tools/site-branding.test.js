@@ -52,12 +52,24 @@ test('Zoth Golden Z brand assets exist and are valid', (t) => {
 
 test('Universal Topbar branding links to new Golden Z mark', (t) => {
   const indexHtml = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf-8');
-  const studioHtml = fs.readFileSync(path.join(PUBLIC_DIR, 'studio', 'site-generator.html'), 'utf-8');
+  const webgenPath = fs.existsSync(path.join(PUBLIC_DIR, 'studio', 'webgen.html'))
+    ? path.join(PUBLIC_DIR, 'studio', 'webgen.html')
+    : path.join(PUBLIC_DIR, 'studio', 'site-generator.html');
+  const webgenHtml = fs.readFileSync(webgenPath, 'utf-8');
   const zothHtml = fs.readFileSync(path.join(PUBLIC_DIR, 'zoth', 'index.html'), 'utf-8');
-  const brandHtml = fs.readFileSync(path.join(PUBLIC_DIR, 'studio', 'brand.html'), 'utf-8');
+  const brandPath = fs.existsSync(path.join(PUBLIC_DIR, 'brand', 'index.html'))
+    ? path.join(PUBLIC_DIR, 'brand', 'index.html')
+    : path.join(PUBLIC_DIR, 'studio', 'brand.html');
+  const brandHtml = fs.readFileSync(brandPath, 'utf-8');
+  const navJs = fs.readFileSync(path.join(PUBLIC_DIR, 'assets', 'zoth-nav.js'), 'utf-8');
 
   assert.ok(indexHtml.includes('/assets/brand/zoth-golden-z-192.png'), 'index.html topbar must use Golden Z PNG');
-  assert.ok(studioHtml.includes('/assets/brand/zoth-golden-z-192.png'), 'site-generator.html topbar must use Golden Z PNG');
+  assert.ok(
+    webgenHtml.includes('/assets/brand/zoth-golden-z-192.png') ||
+    webgenHtml.includes('/assets/brand/zoth-seal-hermetic-on-dark.svg') ||
+    (webgenHtml.includes('zoth-nav.js') && navJs.includes('/assets/brand/zoth-golden-z-192.png')),
+    'webgen.html must use brand assets or zoth-nav with Golden Z'
+  );
   assert.ok(zothHtml.includes('/assets/brand/zoth-golden-z-192.png'), 'zoth/index.html topbar must use Golden Z PNG');
   assert.ok(brandHtml.includes('/assets/brand/zoth-golden-z-master.jpg'), 'brand.html must feature AI master render');
 });

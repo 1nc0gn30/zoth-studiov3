@@ -27,7 +27,7 @@ test('All 21 agents have valid attributes and unique IDs', () => {
 test('getAgent retrieves agents by id or number', () => {
   const agent1 = ZothSwarmOrchestrator.getAgent(1);
   assert.strictEqual(agent1.id, 'agent_copywriter');
-  assert.strictEqual(agent1.name, 'Domain Copywriter');
+  assert.strictEqual(agent1.name, 'Bespoke Domain Copywriter');
 
   const agent21 = ZothSwarmOrchestrator.getAgent('agent_netlify_ax_healer');
   assert.strictEqual(agent21.num, 21);
