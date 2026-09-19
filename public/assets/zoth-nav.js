@@ -352,7 +352,7 @@
       '<a class="foot-brand-lockup" href="/">',
       '<img alt="Master Azoth" class="foot-azoth" decoding="async" height="72" loading="lazy" src="' + ASSETS_BASE + 'mascot/azoth-bust.jpg" width="72"/>',
       '<span class="foot-brand-text">',
-      '<div class="brand-emblem-wrap foot-brand-emblem-wrap" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;position:relative;vertical-align:middle;margin-right:8px;"><img alt="Zoth 3D Golden Emblem" class="brand-emblem-img" decoding="async" height="28" loading="lazy" src="' + ASSETS_BASE + 'brand/zoth-golden-z-192.png" width="28"/><span class="brand-emblem-halo"></span></div>',
+      '<div class="brand-emblem-wrap foot-brand-emblem-wrap"><img alt="Zoth 3D Golden Emblem" class="brand-emblem-img" decoding="async" height="28" loading="lazy" src="' + ASSETS_BASE + 'brand/zoth-golden-z-192.png" width="28"/><span class="brand-emblem-halo"></span></div>',
       '<strong class="foot-brand-title">Zoth Studio</strong>',
       '</span></a>',
       '<small class="foot-brand-desc">Local-first workspace for a team of AI agents. Files stay on this machine.</small>',
