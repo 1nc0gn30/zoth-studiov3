@@ -21,6 +21,15 @@
         trigger.setAttribute("aria-expanded", wrapper.classList.contains("is-expanded") ? "true" : "false");
       }
 
+      var parentStage = wrapper.closest(".travel-scene-stage");
+      if (parentStage) {
+        if (!wrapper.classList.contains("is-expanded")) {
+          parentStage.classList.add("stage-collapsed");
+        } else {
+          parentStage.classList.remove("stage-collapsed");
+        }
+      }
+
       trigger.onclick = function (e) {
         e.preventDefault();
         toggleWrapper(wrapper);
@@ -144,6 +153,8 @@
 
   function expandWrapper(wrapper) {
     wrapper.classList.add("is-expanded");
+    var parentStage = wrapper.closest(".travel-scene-stage");
+    if (parentStage) parentStage.classList.remove("stage-collapsed");
     var trigger = wrapper.querySelector(".zoth-disclosure-trigger");
     if (trigger) trigger.setAttribute("aria-expanded", "true");
     var badge = wrapper.querySelector(".zoth-toggle-badge .badge-text");
@@ -157,10 +168,16 @@
 
   function collapseWrapper(wrapper) {
     wrapper.classList.remove("is-expanded");
+    var parentStage = wrapper.closest(".travel-scene-stage");
+    if (parentStage) parentStage.classList.add("stage-collapsed");
     var trigger = wrapper.querySelector(".zoth-disclosure-trigger");
     if (trigger) trigger.setAttribute("aria-expanded", "false");
     var badge = wrapper.querySelector(".zoth-toggle-badge .badge-text");
     if (badge) badge.textContent = "EXPAND";
+
+    setTimeout(function () {
+      window.dispatchEvent(new Event("resize"));
+    }, 150);
   }
 
   function setAllDisclosureState(expanded) {
