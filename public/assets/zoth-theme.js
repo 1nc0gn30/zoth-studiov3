@@ -6,6 +6,17 @@
 (function () {
   "use strict";
 
+  // Instant Embedded Workspace Auto-Adapter (Pre-Paint)
+  try {
+    var isEmbedded = (window.self !== window.top) || window.location.search.indexOf('embed=1') !== -1 || window.location.search.indexOf('in_hud=1') !== -1;
+    if (isEmbedded) {
+      if (document.documentElement) document.documentElement.classList.add('hud-embedded-mode', 'in-hud');
+      if (document.body) document.body.classList.add('in-hud', 'hud-embedded-view');
+    }
+  } catch (e) {
+    if (document.documentElement) document.documentElement.classList.add('hud-embedded-mode', 'in-hud');
+  }
+
   var THEMES = [
     // ✦ Studio Originals
     { id: "dark", label: "Dark Void", emoji: "🌙", accent: "#00f0ff", bg: "#05060a", category: "Studio Originals", desc: "Zoth Tron Cyber HUD & Electric Cyan", company: "Zoth Core" },

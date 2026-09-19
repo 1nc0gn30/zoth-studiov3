@@ -7058,12 +7058,16 @@
           try {
             var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
             if (doc) {
-              if (doc.documentElement) doc.documentElement.classList.add('in-hud');
-              if (doc.body) doc.body.classList.add('in-hud');
+              if (doc.documentElement) {
+                doc.documentElement.classList.add('in-hud', 'hud-embedded-mode');
+              }
+              if (doc.body) {
+                doc.body.classList.add('in-hud', 'hud-embedded-view');
+              }
               if (doc.head && !doc.getElementById('hud-cleaner-css')) {
                 var st = doc.createElement('style');
                 st.id = 'hud-cleaner-css';
-                st.textContent = 'header, nav, .site-header, .topbar, .bar, .reg-bar, header.bar, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav { display: none !important; } body, html { padding-top: 0 !important; padding-bottom: 0 !important; margin-top: 0 !important; }';
+                st.textContent = 'header, nav, #topbar, .bar, .site-header, .topbar, .reg-bar, .hub-bar, .navbar, #navbar, header.bar, header.nav, header.poster-bar, header.app-header, header.site-header, header.main-header, footer, .site-footer, #footer, .zoth-footer, .zoth-unified-nav, .dock-wrap, .floating-dock, .install-stage, #install, .install-wrap, .home-install-shell, .install-support-bar, .install-support, .banner-install, .desktop-install, .pwa-banner, .install-banner, .install-cta, .install-bar, .install-os-deck, .install-terminal-deck, .install-3d-stage, .download-banner, .install-notes, .install-feature-chips, .install-footer-row, .install-copy, .install-copy-3d, .floating-pet-hud, .pet-companion-bubble, .site, footer.site, .foot-wrap, .omni-header, .omni-title-wrap, .omni-guided-steps, .recent-workstations-bar { display: none !important; } html, body, #app, #root, .app-root, .page-wrap, main, .workspace-container, .container { padding-top: 0 !important; margin-top: 0 !important; }';
                 doc.head.appendChild(st);
               }
             }
@@ -7818,6 +7822,14 @@
     closeMobileSheet: function () {
       MobileFullscreenHub.close();
       MobileSheets.close();
+    },
+
+    openMobileCyberMenu: function () {
+      if (MobileFullscreenHub && typeof MobileFullscreenHub.open === 'function') {
+        MobileFullscreenHub.open('studio', 'workstations');
+      } else if (MobileSheets && typeof MobileSheets.open === 'function') {
+        MobileSheets.open('workstations');
+      }
     },
 
     openMobileFullscreen: function (hubType, slideId) {
