@@ -34,6 +34,8 @@
     '/studio/subsweep.html': 'subsweep',
     '/studio/fusion-arena.html': 'fusion-arena',
     '/studio/signal-bridge.html': 'signal',
+    '/studio/chronicle.html': 'chronicle',
+    '/studio/brand.html': 'brand',
     '/vault/': 'vault',
     '/adytum/': 'adytum',
     '/signal/': 'signal',

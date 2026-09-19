@@ -1,1455 +1,70 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Zoth Connectors &amp; Tool Integration Ecosystem</title>
-<meta content="Integrate local tool harnesses: PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome." name="description"/>
-<link href="https://zoth.nullai.tech/studio/connectors.html" rel="canonical"/>
-<!-- OpenGraph / Facebook -->
-<meta content="website" property="og:type"/>
-<meta content="Zoth Studio" property="og:site_name"/>
-<meta content="https://zoth.nullai.tech/studio/connectors.html" property="og:url"/>
-<meta content="Zoth Connectors &amp; Tool Integration Ecosystem" property="og:title"/>
-<meta content="Integrate local tool harnesses: PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome." property="og:description"/>
-<meta content="https://zoth.nullai.tech/assets/media/land/studio-hero.jpg" property="og:image"/>
-<!-- Twitter Cards -->
-<meta content="summary_large_image" name="twitter:card"/>
-<meta content="Zoth Connectors &amp; Tool Integration Ecosystem" name="twitter:title"/>
-<meta content="Integrate local tool harnesses: PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome." name="twitter:description"/>
-<meta content="https://zoth.nullai.tech/assets/media/land/studio-hero.jpg" name="twitter:image"/>
-<!-- OpenGraph / Facebook -->
-<!-- Twitter Cards -->
-<!-- OpenGraph / Facebook -->
-<!-- Twitter Cards -->
-<meta content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" name="robots"/>
-<link href="/assets/zoth-preview.css" rel="stylesheet">
-<style>
-        .skip-to-content, .skip-link, .skip {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-    .skip-to-content:focus, .skip-link:focus, .skip:focus {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      width: auto;
-      height: auto;
-      padding: 10px 18px;
-      margin: 0;
-      overflow: visible;
-      clip: auto;
-      white-space: normal;
-      background: #fbbf24;
-      color: #050508;
-      font-family: monospace;
-      font-size: 0.82rem;
-      font-weight: 700;
-      border-radius: 8px;
-      z-index: 100000;
-      outline: 2px solid #fff;
-    }
-
-    :root {
-  --text-primary: #ffffff;
-  --text-secondary: #cbd5e1;
-  --muted: #94a3b8;
-
-      --bg: #05070d;
-      --bg-surface: rgba(13, 17, 28, 0.82);
-      --bg-card: rgba(18, 24, 38, 0.65);
-      --border: rgba(0, 240, 255, 0.15);
-      --border-glow: rgba(0, 240, 255, 0.4);
-      --cyan: #00f0ff;
-      --magenta: #ff007a;
-      --purple: #a855f7;
-      --emerald: #10b981;
-      --amber: #f59e0b;
-      --text: #f0f6fc;
-      --text-dim: #94a3b8;
-      --font-display: 'Syne', sans-serif;
-      --font-body: 'Figtree', sans-serif;
-      --font-mono: 'IBM Plex Mono', monospace;
-
-      /* Sacred Fibonacci Spacing Tokens & Golden Ratio (Phi = 1.6180339887) */
-      --phi: 1.6180339887;
-      --phi-inv: 0.6180339887;
-      --phi-major: 61.8%;
-      --phi-minor: 38.2%;
-      --phi-split: 1.618fr 1fr;
-      --phi-split-inv: 1fr 1.618fr;
-      --phi-sidebar: 377px;
-      --phi-gutter: 233px;
-
-      /* Fibonacci Spacing Scale */
-      --fib-1: 1px;
-      --fib-2: 2px;
-      --fib-3: 3px;
-      --fib-5: 5px;
-      --fib-8: 8px;
-      --fib-13: 13px;
-      --fib-21: 21px;
-      --fib-34: 34px;
-      --fib-55: 55px;
-      --fib-89: 89px;
-      --fib-144: 144px;
-      --fib-233: 233px;
-      --fib-377: 377px;
-      --fib-610: 610px;
-
-      /* Fibonacci Border Radius Scale */
-      --fib-radius-xs: 5px;
-      --fib-radius-sm: 8px;
-      --fib-radius-md: 13px;
-      --fib-radius-lg: 21px;
-      --fib-radius-xl: 34px;
-      --fib-radius-pill: 9999px;
-
-      /* Sacred Typography Scale */
-      --fib-font-micro: 13px;
-      --fib-font-body: 16px;
-      --fib-font-subhead: 21px;
-      --fib-font-title: 34px;
-      --fib-font-hero: 55px;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      min-height: 100vh;
-      line-height: 1.618;
-      overflow-x: hidden;
-      min-width: 0;
-      width: 100%;
-    }
-
-    .ambient-mesh {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: 
-        radial-gradient(circle at 15% 20%, rgba(0, 240, 255, 0.07), transparent 40%),
-        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.06), transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03), transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .container {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: var(--fib-21, 21px) var(--fib-21, 21px) var(--fib-89, 89px);
-      position: relative;
-      z-index: 1;
-      min-width: 0;
-      box-sizing: border-box;
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: var(--fib-21, 21px);
-      margin-bottom: var(--fib-34, 34px);
-      padding-bottom: var(--fib-21, 21px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: var(--fib-13, 13px);
-    }
-
-    .brand-logo {
-      width: 44px;
-      height: 44px;
-      filter: drop-shadow(0 0 12px var(--cyan));
-    }
-
-    .brand-title {
-      font-family: var(--font-display);
-      font-size: clamp(1.4rem, 2.5vw, 1.8rem);
-      font-weight: 800;
-    }
-
-    .brand-subtitle {
-      color: var(--text-dim);
-      font-size: 0.9rem;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: var(--fib-8, 8px);
-      flex-wrap: wrap;
-    }
-
-    .nav-link {
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: var(--fib-8, 8px) var(--fib-13, 13px);
-      border-radius: var(--fib-radius-sm, 8px);
-      border: 1px solid var(--border);
-      background: var(--bg-surface);
-      transition: all 0.2s;
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .nav-link:hover {
-      color: var(--cyan);
-      border-color: var(--cyan);
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
-    }
-
-    /* Grid */
-    .connectors-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: var(--fib-21, 21px);
-      margin-top: var(--fib-21, 21px);
-      min-width: 0;
-    }
-
-    .connector-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: var(--fib-radius-lg, 21px);
-      padding: var(--fib-34, 34px) var(--fib-21, 21px);
-      display: flex;
-      flex-direction: column;
-      gap: var(--fib-21, 21px);
-      transition: all 0.25s;
-      min-width: 0;
-    }
-
-    .connector-card:hover {
-      border-color: var(--cyan);
-      box-shadow: 0 12px 35px rgba(0,0,0,0.5), 0 0 20px rgba(0, 240, 255, 0.2);
-      transform: translateY(-4px);
-    }
-
-    .card-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--fib-8, 8px);
-    }
-
-    .connector-icon {
-      font-size: 2rem;
-      padding: var(--fib-13, 13px);
-      border-radius: var(--fib-radius-md, 13px);
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid var(--border);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 48px;
-      min-height: 48px;
-    }
-
-    .badge-status {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      padding: var(--fib-5, 5px) var(--fib-13, 13px);
-      border-radius: var(--fib-radius-pill, 9999px);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-weight: 600;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--emerald);
-      border: 1px solid var(--emerald);
-      min-height: 32px;
-    }
-
-    .badge-status.mock {
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--amber);
-      border-color: var(--amber);
-    }
-
-    .pulse-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 8px currentColor;
-    }
-
-    .connector-title {
-      font-family: var(--font-display);
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.3rem;
-    }
-
-    .connector-desc {
-      color: var(--text-dim);
-      font-size: 0.88rem;
-      line-height: 1.5;
-    }
-
-    .features-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: var(--fib-8, 8px);
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--text);
-    }
-
-    .features-list li::before {
-      content: "⚡ ";
-      color: var(--cyan);
-    }
-
-    .test-box {
-      background: rgba(5, 7, 13, 0.75);
-      border: 1px solid var(--border);
-      border-radius: var(--fib-radius-md, 13px);
-      padding: var(--fib-13, 13px);
-      display: flex;
-      flex-direction: column;
-      gap: var(--fib-13, 13px);
-      min-width: 0;
-    }
-
-    .test-output {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--emerald);
-      background: #030509;
-      padding: var(--fib-8, 8px);
-      border-radius: var(--fib-radius-sm, 8px);
-      min-height: 48px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-width: 100%;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: var(--fib-8, 8px);
-      margin-top: auto;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      flex: 1;
-      min-width: 120px;
-      background: rgba(0, 240, 255, 0.1);
-      border: 1px solid var(--border);
-      color: var(--cyan);
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: var(--fib-8, 8px) var(--fib-13, 13px);
-      border-radius: var(--fib-radius-sm, 8px);
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn:hover {
-      background: var(--cyan);
-      color: #05070d;
-      box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
-    }
-
-    .btn-secondary {
-      background: rgba(168, 85, 247, 0.1);
-      color: var(--purple);
-      border-color: rgba(168, 85, 247, 0.3);
-    }
-
-    .btn-secondary:hover {
-      background: var(--purple);
-      color: var(--text-primary);
-      border-color: var(--purple);
-    }
-
-    /* Responsive Media Queries & Zero-Overflow Rules */
-    @media (max-width: 900px) {
-      .connectors-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: var(--fib-13, 13px) var(--fib-13, 13px) var(--fib-55, 55px);
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--fib-13, 13px);
-      }
-      .connector-card {
-        padding: var(--fib-21, 21px) var(--fib-13, 13px);
-      }
-      .btn-group {
-        flex-direction: column;
-      }
-      .btn {
-        width: 100%;
-      }
-    }
-  
-    /* ==========================================================================
-       Zoth Studio — High-Contrast Typography & WCAG AAA Compliance Upgrades
-       ========================================================================== */
-
-    /* Universal Body & Text Contrast */
-    body {
-      color: var(--text, #f1f5f9);
-      font-family: var(--font-body, 'Figtree', sans-serif);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Primary Workstation Titles & Brand Headers */
-    h1, .brand-title, .station-title, .forge-title h1, .recon-title h1, .composer-title h1, .hero-title, .studio-title {
-      font-family: var(--font-display, 'Syne', sans-serif) !important;
-      font-weight: 800 !important;
-      letter-spacing: -0.025em;
-      color: var(--text-primary);
-      text-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
-    }
-
-    /* Panel Headers, Section Headings & Subheadings */
-    h2, h3, .panel-header, .panel-title, .section-heading h2, .card-title, .section-title, .header-title, .quick-jump-title {
-      font-family: var(--font-display, 'Syne', sans-serif) !important;
-      font-weight: 700 !important;
-      letter-spacing: -0.015em;
-      color: var(--text-primary);
-    }
-
-    /* Metric Labels, Badges & High-Contrast Stat Values */
-    .metric-label, .stat-label, .badge-label, .ws-badge-cat, .filter-chip {
-      font-family: var(--font-display, 'Syne', sans-serif);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    .stat-value, .metric-value, .stat-number, .wf-val {
-      font-family: var(--font-mono, 'IBM Plex Mono', monospace) !important;
-      font-weight: 700 !important;
-      color: var(--text-primary);
-      text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
-    }
-
-    /* High-Contrast Descriptions & Parameters */
-    .brand-subtitle, .studio-subtitle, .ws-desc, .section-desc, .panel-desc, p.desc {
-      color: #cbd5e1;
-    }
-
-    .text-dim, .dim, .meta-label, .timestamp, .port-badge {
-      color: #94a3b8;
-    }
-
-    /* High-Contrast Code Viewers, Telemetry Feeds & Terminal Logs */
-    pre, code, textarea.code-editor, .telemetry, .log, .console, .terminal, .feed-log, .log-container, .code-block, .code-editor-area, .editor-code, .code-viewer, .stream-console {
-      font-family: var(--font-mono, 'IBM Plex Mono', monospace) !important;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      color: #38bdf8;
-    }
-
-    .tok-kw, .keyword, .kw { color: #f472b6 !important; font-weight: 600; }
-    .tok-str, .string, .str { color: #34d399 !important; }
-    .tok-num, .number, .num { color: #fbbf24 !important; font-weight: 600; }
-    .tok-comment, .comment { color: #94a3b8 !important; font-style: italic; }
-    .tok-fn, .function, .fn { color: #67e8f9 !important; font-weight: 600; }
-    .tok-var, .variable, .var { color: #f1f5f9 !important; }
-
-    /* Standout Links, Navigation Tabs & Breadcrumbs */
-    .nav-link, nav.menu a, .nav a, .tab-btn, .breadcrumb a, .quick-jump-links a, .ws-link-docs, .ws-link-launch {
-      font-weight: 600;
-      transition: all 0.2s ease;
-    }
-
-    .nav-link:hover, 
-
-    .nav-link.is-active, .nav-link.active, .tab-btn.active, nav.menu a.on, nav.menu a.is-active, .forge-tab-btn.active, .subsweep-tab-btn.active {
-      color: #00f0ff !important;
-      font-weight: 700 !important;
-      text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
-    }
-
-    /* Action Buttons High-Contrast Standout */
-    .btn-primary, .btn-action, .btn-edge, .btn-recon, .btn-gold, button.action-btn {
-      font-family: var(--font-display, 'Syne', sans-serif);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    /* Zero Horizontal Overflow Guard across Viewports */
-    html, body {
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-
-    .table-container, .code-block, .log-container, .matrix-container, .diff-container, .telemetry, .feed-log, .code-viewer pre {
-      max-width: 100%;
-      overflow-x: auto;
-      word-break: break-word;
-    }
-
-    /* ==========================================================================
-       Hardware Serial Matrix & ESP32-S3 Companion Workstation Styles
-       ========================================================================== */
-    .connector-card.hardware-full-card {
-      grid-column: 1 / -1;
-      background: linear-gradient(180deg, rgba(8, 14, 26, 0.96) 0%, rgba(4, 8, 16, 0.98) 100%);
-      border: 1px solid rgba(0, 240, 255, 0.35);
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 35px rgba(0, 240, 255, 0.15);
-      border-radius: var(--fib-radius-lg, 21px);
-      padding: var(--fib-34, 34px);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .connector-card.hardware-full-card::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #00f0ff, #34d399, #a855f7, #00f0ff);
-      background-size: 200% 100%;
-      animation: neonScan 6s linear infinite;
-    }
-
-    @keyframes neonScan {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 200% 0%; }
-    }
-
-    .hw-header-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .hw-pill {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(0, 240, 255, 0.08);
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      color: var(--cyan);
-    }
-
-    .hw-pill.emerald {
-      background: rgba(52, 211, 153, 0.12);
-      border-color: rgba(52, 211, 153, 0.35);
-      color: #34d399;
-    }
-
-    .hw-pill.amber {
-      background: rgba(245, 158, 11, 0.12);
-      border-color: rgba(245, 158, 11, 0.35);
-      color: #fbbf24;
-    }
-
-    .hw-pill.purple {
-      background: rgba(168, 85, 247, 0.12);
-      border-color: rgba(168, 85, 247, 0.35);
-      color: #c084fc;
-    }
-
-    .hw-tab-bar {
-      display: flex;
-      gap: 8px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 12px;
-      margin-top: 6px;
-      margin-bottom: 6px;
-      overflow-x: auto;
-      scrollbar-width: thin;
-    }
-
-    .hw-tab-btn {
-      background: rgba(13, 17, 28, 0.85);
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      font-weight: 600;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-      min-height: 40px;
-    }
-
-    .hw-tab-btn:hover {
-      color: var(--text-primary);
-      border-color: var(--cyan);
-      background: rgba(0, 240, 255, 0.1);
-    }
-
-    .hw-tab-btn.active {
-      background: rgba(0, 240, 255, 0.18);
-      border-color: var(--cyan);
-      color: var(--cyan);
-      box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
-    }
-
-    .hw-tab-pane {
-      display: none;
-      animation: fadeInTab 0.25s ease forwards;
-    }
-
-    .hw-tab-pane.active {
-      display: block;
-    }
-
-    @keyframes fadeInTab {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Oscilloscope Box & HUD */
-    .scope-box {
-      background: #020709;
-      border: 2px solid rgba(0, 240, 255, 0.25);
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9), 0 8px 24px rgba(0, 0, 0, 0.5);
-      position: relative;
-    }
-
-    .scope-hud-header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: #34d399;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
-      border-bottom: 1px dashed rgba(52, 211, 153, 0.2);
-    }
-
-    .scope-canvas-container {
-      position: relative;
-      width: 100%;
-      background: #010406;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid rgba(52, 211, 153, 0.2);
-    }
-
-    .scope-canvas-container canvas {
-      display: block;
-      width: 100%;
-      height: 240px;
-    }
-
-    .scope-decoder-banner {
-      margin-top: 10px;
-      background: rgba(3, 10, 16, 0.85);
-      border: 1px solid rgba(0, 240, 255, 0.2);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .scope-controls-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .ctrl-cluster {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .ctrl-label {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-dim);
-    }
-
-    .ctrl-select, .ctrl-input {
-      background: rgba(13, 17, 28, 0.9);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      padding: 6px 10px;
-      border-radius: 6px;
-      outline: none;
-    }
-
-    .ctrl-select:focus, .ctrl-input:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
-    }
-
-    .scope-btn {
-      background: rgba(0, 240, 255, 0.1);
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      color: var(--cyan);
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 36px;
-    }
-
-    .scope-btn:hover {
-      background: var(--cyan);
-      color: #05070d;
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
-    }
-
-    .scope-btn.emerald {
-      background: rgba(52, 211, 153, 0.15);
-      border-color: rgba(52, 211, 153, 0.4);
-      color: #34d399;
-    }
-    .scope-btn.emerald:hover {
-      background: #34d399;
-      color: #05070d;
-      box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
-    }
-
-    .scope-btn.purple {
-      background: rgba(168, 85, 247, 0.15);
-      border-color: rgba(168, 85, 247, 0.4);
-      color: #c084fc;
-    }
-    .scope-btn.purple:hover {
-      background: #a855f7;
-      color: var(--text-primary);
-      box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
-    }
-
-    /* Logic Analyzer Layout */
-    .logic-box {
-      background: #020709;
-      border: 2px solid rgba(0, 240, 255, 0.25);
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9);
-    }
-
-    .logic-channels-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .ch-card {
-      background: rgba(13, 17, 28, 0.85);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.15s ease;
-    }
-
-    .ch-card:hover {
-      border-color: var(--cyan);
-    }
-
-    .ch-card.muted {
-      opacity: 0.4;
-    }
-
-    .logic-canvas-container {
-      position: relative;
-      width: 100%;
-      background: #010406;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid rgba(0, 240, 255, 0.2);
-    }
-
-    .logic-canvas-container canvas {
-      display: block;
-      width: 100%;
-      height: 260px;
-    }
-
-    /* Tactile Switch Deck */
-    .tactile-deck-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      margin-top: 6px;
-    }
-
-    .tactile-module {
-      background: rgba(8, 12, 20, 0.9);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .tactile-module-title {
-      font-family: var(--font-display);
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .tactile-switch-btn {
-      position: relative;
-      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-      border: 2px solid rgba(0, 240, 255, 0.4);
-      border-radius: 10px;
-      color: var(--text-primary);
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      font-weight: 700;
-      padding: 14px 18px;
-      cursor: pointer;
-      box-shadow: 0 6px 0 #090d16, 0 10px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
-      transition: all 0.08s ease;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      user-select: none;
-      min-height: 52px;
-    }
-
-    .tactile-switch-btn:active, .tactile-switch-btn.depressed {
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #090d16, 0 4px 10px rgba(0,0,0,0.5), inset 0 2px 6px rgba(0,0,0,0.6);
-      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-      border-color: #34d399;
-      color: #34d399;
-    }
-
-    .tactile-switch-btn.micro-switch {
-      background: linear-gradient(180deg, #134e4a 0%, #062e2b 100%);
-      border-color: #34d399;
-      color: #34d399;
-      box-shadow: 0 6px 0 #031c1a, 0 10px 20px rgba(52, 211, 153, 0.2);
-    }
-    .tactile-switch-btn.micro-switch:active, .tactile-switch-btn.micro-switch.depressed {
-      background: linear-gradient(180deg, #062e2b 0%, #134e4a 100%);
-      border-color: #00f0ff;
-      color: #00f0ff;
-      box-shadow: 0 2px 0 #031c1a, 0 4px 10px rgba(0, 240, 255, 0.3);
-    }
-
-    .tactile-led {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #334155;
-      box-shadow: 0 0 2px #334155;
-      transition: all 0.15s ease;
-    }
-
-    .tactile-led.active-led {
-      background: #34d399;
-      box-shadow: 0 0 10px #34d399, 0 0 20px #34d399;
-    }
-
-    .telemetry-grid-tiles {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 8px;
-    }
-
-    .telemetry-tile {
-      background: #03060a;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .telemetry-tile-label {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .telemetry-tile-val {
-      font-family: var(--font-mono);
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: #38bdf8;
-    }
-
-    /* Packet Console Terminal */
-    .pkt-console {
-      background: #020508;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      height: 170px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .pkt-line {
-      display: flex;
-      gap: 8px;
-      align-items: baseline;
-      word-break: break-all;
-    }
-
-    .pkt-tag {
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      flex-shrink: 0;
-    }
-
-    .pkt-tag.tx {
-      background: rgba(0, 240, 255, 0.15);
-      color: #00f0ff;
-      border: 1px solid rgba(0, 240, 255, 0.3);
-    }
-
-    .pkt-tag.rx {
-      background: rgba(52, 211, 153, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(52, 211, 153, 0.3);
-    }
-
-    .pkt-tag.strobe {
-      background: rgba(244, 63, 94, 0.2);
-      color: #fb7185;
-      border: 1px solid rgba(244, 63, 94, 0.4);
-    }
-
-    /* =============================================================================
-       CONNECTORS & HARDWARE FOUNDRY — 4-THEME SYSTEM & GLASS POLISH
-       ============================================================================= */
-
-    /* Smooth transitions */
-    body, .connector-card, .hardware-full-card, .tactile-module, .scope-box, .logic-box, .test-box, .hw-tab-bar, .telemetry-tile {
-      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    /* ── LIGHT THEME OVERRIDES ────────────────────────────────────────────── */
-    html[data-theme="light"],
-    html.theme-light {
-      --bg: #f8fafc;
-      --bg-surface: #ffffff;
-      --bg-card: #f1f5f9;
-      --border: #cbd5e1;
-      --border-glow: rgba(2, 132, 199, 0.4);
-      --cyan: #0284c7;
-      --magenta: #c026d3;
-      --purple: #9333ea;
-      --emerald: #059669;
-      --amber: #d97706;
-      --text: #0f172a;
-      --text-dim: #475569;
-      --text-primary: #0f172a;
-      --text-secondary: #334155;
-      --muted: #64748b;
-    }
-    html[data-theme="light"] body,
-    html.theme-light body {
-      background: #f8fafc !important;
-      color: #0f172a !important;
-    }
-    html[data-theme="light"] .connector-card,
-    html.theme-light .connector-card {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
-    }
-    html[data-theme="light"] .connector-card:hover,
-    html.theme-light .connector-card:hover {
-      border-color: #0284c7 !important;
-      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12) !important;
-    }
-    html[data-theme="light"] .connector-title,
-    html.theme-light .connector-title {
-      color: #0f172a !important;
-    }
-    html[data-theme="light"] .connector-desc,
-    html.theme-light .connector-desc {
-      color: #475569 !important;
-    }
-    html[data-theme="light"] .hardware-full-card,
-    html.theme-light .hardware-full-card {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
-    }
-    html[data-theme="light"] .hw-tab-bar,
-    html.theme-light .hw-tab-bar {
-      background: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
-    }
-    html[data-theme="light"] .hw-tab-btn,
-    html.theme-light .hw-tab-btn {
-      color: #475569 !important;
-    }
-    html[data-theme="light"] .hw-tab-btn.active,
-    html.theme-light .hw-tab-btn.active {
-      background: #ffffff !important;
-      border-color: #0284c7 !important;
-      color: #0369a1 !important;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15) !important;
-    }
-    html[data-theme="light"] .tactile-module,
-    html.theme-light .tactile-module {
-      background: #f8fafc !important;
-      border-color: #e2e8f0 !important;
-    }
-    html[data-theme="light"] .tactile-switch-btn,
-    html.theme-light .tactile-switch-btn {
-      background: #e2e8f0 !important;
-      border-color: #cbd5e1 !important;
-      color: #0f172a !important;
-    }
-    html[data-theme="light"] .tactile-switch-btn.on,
-    html.theme-light .tactile-switch-btn.on {
-      background: #0284c7 !important;
-      color: #ffffff !important;
-    }
-    html[data-theme="light"] .scope-box,
-    html.theme-light .scope-box,
-    html[data-theme="light"] .logic-box,
-    html.theme-light .logic-box,
-    html[data-theme="light"] .test-box,
-    html.theme-light .test-box {
-      background: #f8fafc !important;
-      border-color: #cbd5e1 !important;
-    }
-    html[data-theme="light"] .test-output,
-    html.theme-light .test-output,
-    html[data-theme="light"] .pkt-console,
-    html.theme-light .pkt-console {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      color: #0f172a !important;
-    }
-    html[data-theme="light"] .telemetry-tile,
-    html.theme-light .telemetry-tile {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-    }
-    html[data-theme="light"] .telemetry-tile-val,
-    html.theme-light .telemetry-tile-val {
-      color: #0f172a !important;
-    }
-    html[data-theme="light"] .ctrl-input,
-    html[data-theme="light"] .ctrl-select,
-    html.theme-light .ctrl-input,
-    html.theme-light .ctrl-select {
-      background: #ffffff !important;
-      border-color: #cbd5e1 !important;
-      color: #0f172a !important;
-    }
-
-    /* ── MATRIX THEME OVERRIDES ───────────────────────────────────────────── */
-    html[data-theme="matrix"],
-    html.theme-matrix {
-      --bg: #000803;
-      --bg-surface: rgba(0, 18, 6, 0.92);
-      --bg-card: rgba(0, 14, 4, 0.85);
-      --border: rgba(0, 255, 102, 0.25);
-      --border-glow: rgba(0, 255, 102, 0.5);
-      --cyan: #00ff66;
-      --magenta: #00dd55;
-      --purple: #00bb44;
-      --emerald: #00ff66;
-      --amber: #55ff88;
-      --text: #00ff66;
-      --text-dim: #22aa44;
-      --text-primary: #00ff66;
-      --text-secondary: #00cc55;
-      --muted: #117733;
-    }
-    html[data-theme="matrix"] body,
-    html.theme-matrix body {
-      background: #000803 !important;
-      color: #00ff66 !important;
-      font-family: var(--font-mono) !important;
-    }
-    html[data-theme="matrix"] .connector-card,
-    html.theme-matrix .connector-card {
-      background: rgba(0, 18, 6, 0.92) !important;
-      border-color: rgba(0, 255, 102, 0.25) !important;
-      box-shadow: 0 0 20px rgba(0, 255, 102, 0.1) !important;
-    }
-    html[data-theme="matrix"] .connector-card:hover,
-    html.theme-matrix .connector-card:hover {
-      border-color: #00ff66 !important;
-      box-shadow: 0 0 28px rgba(0, 255, 102, 0.3) !important;
-    }
-    html[data-theme="matrix"] .connector-title,
-    html.theme-matrix .connector-title {
-      color: #00ff66 !important;
-    }
-    html[data-theme="matrix"] .hardware-full-card,
-    html.theme-matrix .hardware-full-card {
-      background: rgba(0, 18, 6, 0.92) !important;
-      border-color: rgba(0, 255, 102, 0.3) !important;
-      box-shadow: 0 0 30px rgba(0, 255, 102, 0.15) !important;
-    }
-    html[data-theme="matrix"] .hw-tab-bar,
-    html.theme-matrix .hw-tab-bar {
-      background: rgba(0, 12, 4, 0.88) !important;
-      border-color: rgba(0, 255, 102, 0.25) !important;
-    }
-    html[data-theme="matrix"] .hw-tab-btn,
-    html.theme-matrix .hw-tab-btn {
-      color: #117733 !important;
-    }
-    html[data-theme="matrix"] .hw-tab-btn.active,
-    html.theme-matrix .hw-tab-btn.active {
-      background: rgba(0, 255, 102, 0.18) !important;
-      border-color: #00ff66 !important;
-      color: #00ff66 !important;
-      box-shadow: 0 0 16px rgba(0, 255, 102, 0.35) !important;
-    }
-    html[data-theme="matrix"] .test-output,
-    html.theme-matrix .test-output,
-    html[data-theme="matrix"] .pkt-console,
-    html.theme-matrix .pkt-console {
-      background: #000a03 !important;
-      border-color: rgba(0, 255, 102, 0.25) !important;
-      color: #00ff66 !important;
-    }
-
-    /* ── GOLD THEME OVERRIDES ─────────────────────────────────────────────── */
-    html[data-theme="gold"],
-    html.theme-gold {
-      --bg: #080602;
-      --bg-surface: rgba(24, 18, 6, 0.92);
-      --bg-card: rgba(18, 14, 4, 0.85);
-      --border: rgba(251, 191, 36, 0.25);
-      --border-glow: rgba(251, 191, 36, 0.45);
-      --cyan: #fbbf24;
-      --magenta: #f59e0b;
-      --purple: #d97706;
-      --emerald: #34d399;
-      --amber: #fbbf24;
-      --text: #fef08a;
-      --text-dim: #d4b878;
-      --text-primary: #fef08a;
-      --text-secondary: #fde68a;
-      --muted: #b49b65;
-    }
-    html[data-theme="gold"] body,
-    html.theme-gold body {
-      background: #080602 !important;
-      color: #fef08a !important;
-    }
-    html[data-theme="gold"] .connector-card,
-    html.theme-gold .connector-card {
-      background: rgba(22, 17, 6, 0.92) !important;
-      border-color: rgba(251, 191, 36, 0.25) !important;
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.1) !important;
-    }
-    html[data-theme="gold"] .connector-card:hover,
-    html.theme-gold .connector-card:hover {
-      border-color: #fbbf24 !important;
-      box-shadow: 0 0 28px rgba(251, 191, 36, 0.25) !important;
-    }
-    html[data-theme="gold"] .connector-title,
-    html.theme-gold .connector-title {
-      color: #fef08a !important;
-    }
-    html[data-theme="gold"] .hardware-full-card,
-    html.theme-gold .hardware-full-card {
-      background: rgba(24, 18, 6, 0.92) !important;
-      border-color: rgba(251, 191, 36, 0.28) !important;
-      box-shadow: 0 0 30px rgba(251, 191, 36, 0.12) !important;
-    }
-    html[data-theme="gold"] .hw-tab-bar,
-    html.theme-gold .hw-tab-bar {
-      background: rgba(16, 12, 4, 0.88) !important;
-      border-color: rgba(251, 191, 36, 0.22) !important;
-    }
-    html[data-theme="gold"] .hw-tab-btn,
-    html.theme-gold .hw-tab-btn {
-      color: #b49b65 !important;
-    }
-    html[data-theme="gold"] .hw-tab-btn.active,
-    html.theme-gold .hw-tab-btn.active {
-      background: rgba(251, 191, 36, 0.16) !important;
-      border-color: #fbbf24 !important;
-      color: #ffffff !important;
-      box-shadow: 0 0 16px rgba(251, 191, 36, 0.3) !important;
-    }
-    html[data-theme="gold"] .test-output,
-    html.theme-gold .test-output,
-    html[data-theme="gold"] .pkt-console,
-    html.theme-gold .pkt-console {
-      background: #0d0a03 !important;
-      border-color: rgba(251, 191, 36, 0.22) !important;
-      color: #fde68a !important;
-    }
-  </style>
-<link href="/assets/zoth-tip.css" rel="stylesheet"/>
-<link href="/assets/zoth-mobile.css" rel="stylesheet"/>
-<link href="/assets/zoth-annotator.css" rel="stylesheet"/>
-<link href="/assets/brand/zoth-seal-hermetic-on-dark.svg" rel="icon" type="image/svg+xml"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&amp;family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&amp;family=Syne:wght@600;700;800;900&amp;display=swap" rel="stylesheet"/>
-<!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
-<!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
-<!-- Schema.org JSON-LD Structured Data for SEO & AEO Voice Search -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://zoth.nullai.tech/#organization",
-      "name": "NullAI Tech",
-      "url": "https://nullai.tech/",
-      "logo": "https://zoth.nullai.tech/assets/brand/zoth-seal-hermetic-on-dark.svg",
-      "sameAs": [
-        "https://github.com/NullAITech/zoth-studio"
-      ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://zoth.nullai.tech/#website",
-      "url": "https://zoth.nullai.tech/",
-      "name": "Zoth Studio",
-      "description": "Local-first autonomous AI multi-agent workstation, 3D swarm arena, and privacy-first application foundry.",
-      "publisher": {
-        "@id": "https://zoth.nullai.tech/#organization"
-      }
-    },
-    {
-      "@type": "CollectionPage",
-      "@id": "https://zoth.nullai.tech/studio/connectors.html#collectionpage",
-      "name": "Zoth Connectors & Tool Integration Ecosystem",
-      "description": "Integrate local tool harnesses: PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome.",
-      "url": "https://zoth.nullai.tech/studio/connectors.html",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Linux, macOS, Windows",
-      "inLanguage": "en-US",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://zoth.nullai.tech/studio/connectors.html",
-      "url": "https://zoth.nullai.tech/studio/connectors.html",
-      "name": "Zoth Connectors & Tool Integration Ecosystem",
-      "description": "Integrate local tool harnesses: PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome.",
-      "inLanguage": "en-US",
-      "isPartOf": {
-        "@id": "https://zoth.nullai.tech/#website"
-      },
-      "speakable": {
-        "@type": "SpeakableSpecification",
-        "cssSelector": [
-          "h1",
-          ".kicker",
-          ".connector-card h3",
-          ".connector-desc"
-        ]
-      },
-      "breadcrumb": {
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Home",
-            "item": "https://zoth.nullai.tech/"
-          },
-          {
-            "@type": "ListItem",
-            "position": 2,
-            "name": "Studio",
-            "item": "https://zoth.nullai.tech/studio"
-          },
-          {
-            "@type": "ListItem",
-            "position": 3,
-            "name": "Connectors",
-            "item": "https://zoth.nullai.tech/studio/connectors.html"
-          }
-        ]
-      }
-    }
-  ]
-}
-  </script>
-  <link href="/assets/zoth-theme.css?v=11" rel="stylesheet"/>
-  <link href="/studio/connectors-poster.css?v=20260915" rel="stylesheet"/>
-  <link href="/assets/zoth-tailwind-magic.css" rel="stylesheet"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zoth Connectors &amp; Tool Integration Ecosystem — Sovereign Gateways</title>
+  <meta name="description" content="Integrate local tool harnesses: ESP32-S3 Hardware Serial, PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, Ollama, MetaMask, Solana, and headless Chrome."/>
+  <meta name="keywords" content="zoth connectors, hardware serial, esp32-s3, web3 rpc, solana, metamask, ollama local ai, byok vault, netlify, github api"/>
+  <link rel="canonical" href="https://zoth.nullai.tech/studio/connectors.html"/>
+
+  <!-- OpenGraph / Facebook -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="Zoth Studio"/>
+  <meta property="og:url" content="https://zoth.nullai.tech/studio/connectors.html"/>
+  <meta property="og:title" content="Zoth Connectors &amp; Tool Integration Ecosystem"/>
+  <meta property="og:description" content="Integrate local tool harnesses: ESP32-S3 Hardware Serial, PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome."/>
+  <meta property="og:image" content="https://zoth.nullai.tech/assets/media/land/studio-hero.jpg"/>
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Zoth Connectors &amp; Tool Integration Ecosystem"/>
+  <meta name="twitter:description" content="Integrate local tool harnesses: ESP32-S3 Hardware Serial, PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome."/>
+  <meta name="twitter:image" content="https://zoth.nullai.tech/assets/media/land/studio-hero.jpg"/>
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
+  <meta name="theme-color" content="#030306"/>
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/zoth-seal-hermetic-on-dark.svg"/>
+  <link rel="apple-touch-icon" href="/assets/mascot/azoth-portrait.jpg"/>
+
+  <!-- Fonts & Core Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&amp;family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&amp;family=Syne:wght@600;700;800;900&amp;display=swap" rel="stylesheet"/>
+
+  <link rel="stylesheet" href="/assets/zoth-theme.css?v=12"/>
+  <link rel="stylesheet" href="/assets/zoth-hud-embedded.css"/>
+  <script src="/assets/zoth-hud-embedded.js"></script>
   <script src="/assets/zoth-theme.js?v=11"></script>
-  <link href="/assets/zoth-nav.css?v=11" rel="stylesheet"/>
-<meta content="1200" property="og:image:width"/><meta content="630" property="og:image:height"/><meta content="Zoth Studio Sovereign AI Workstation" property="og:image:alt"/><meta content="Zoth Studio Sovereign AI Workstation" name="twitter:image:alt"/><meta content="US-VA" name="geo.region"/><meta content="Virginia Beach, Virginia" name="geo.placename"/><meta content="36.8529;-75.9780" name="geo.position"/><meta content="36.8529, -75.9780" name="ICBM"/><meta content="#030306" name="theme-color"/><script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebPage",
-      "@id": "https://zoth.nullai.tech/studio/connectors.html#webpage",
-      "url": "https://zoth.nullai.tech/studio/connectors.html",
-      "name": "Zoth Connectors & Tool Integration Ecosystem",
-      "description": "Integrate local tool harnesses: PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome.",
-      "isPartOf": {
-        "@type": "WebSite",
-        "@id": "https://zoth.nullai.tech/#website",
-        "url": "https://zoth.nullai.tech/",
-        "name": "Zoth Studio",
-        "publisher": {
-          "@type": "Organization",
-          "name": "757tech / NullAI",
-          "url": "https://757tech.pro"
+  <link rel="stylesheet" href="/assets/zoth-nav.css?v=11"/>
+  <link rel="stylesheet" href="/assets/zoth-guide.css"/>
+  <link rel="stylesheet" href="/assets/zoth-mobile.css"/>
+  <link rel="stylesheet" href="/studio/connectors-poster.css"/>
+  <link rel="stylesheet" href="/assets/zoth-footer.css"/>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://zoth.nullai.tech/studio/connectors.html#webpage",
+        "url": "https://zoth.nullai.tech/studio/connectors.html",
+        "name": "Zoth Connectors & Tool Integration Ecosystem",
+        "description": "Integrate local tool harnesses: PostgreSQL, SQLite, GitHub API, Docker, Figma, Blender, and headless Chrome.",
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": "https://zoth.nullai.tech/#website",
+          "url": "https://zoth.nullai.tech/",
+          "name": "Zoth Studio"
         }
-      },
-      "primaryImageOfPage": {
-        "@type": "ImageObject",
-        "url": "https://zoth.nullai.tech/assets/media/land/studio-hero.jpg",
-        "caption": "Zoth Studio Sovereign AI Workstation"
       }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://zoth.nullai.tech/studio/connectors.html#breadcrumb",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://zoth.nullai.tech/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Studio",
-          "item": "https://zoth.nullai.tech/studio/connectors.html"
-        }
-      ]
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://zoth.nullai.tech/studio/connectors.html#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What is Zoth Studio?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Zoth Studio is a sovereign, local-first control surface for multi-agent AI orchestration, featuring a 298+ verified tool registry, 23+ modular studio suites, a 21-node sovereign agent pantheon, and an encrypted BYOK vault."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Where are my API keys stored?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "API keys are stored strictly in local operator memory or an encrypted local Rust daemon using Argon2id and XChaCha20-Poly1305. Plaintext keys are never sent to external servers."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does Zoth Studio require a cloud subscription?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. Zoth Studio is fully sovereign and free to run on your local hardware or private network over Tailscale."
-          }
-        }
-      ]
-    }
-  ]
-}</script>  <link rel="stylesheet" href="/assets/zoth-footer.css" />
-<link href="/assets/zoth-hud-embedded.css" rel="stylesheet"/>
-<script src="/assets/zoth-hud-embedded.js"></script>
+    ]
+  }
+  </script>
 </head>
-<body data-guide="Connectors stay in Connect.|They never open Generate.|Full adapters run after you install." data-kicker="Connect · preview" data-lede="This page is a look. Full adapters bind on the local deck." data-title="Connectors stay in Connect">
-<a class="skip-to-content" href="#main-content">Skip to content</a>
-                                                                    <header class="bar" id="topbar" role="banner">
+<body data-title="Connectors &amp; Gateways" data-kicker="Connect · preview" data-lede="Sovereign ecosystem connectors, local hardware bridges, and isolated API gateways." data-guide="Connectors stay in Connect.|They never open Generate.|Full adapters run after you install.">
+  <a class="skip skip-to-content" href="#main-content">Skip to main content</a>
+<header class="bar" id="topbar" role="banner">
       <a class="brand js-hub" href="/" aria-label="Zoth Studio Home">
         <div class="brand-emblem-wrap">
           <img src="/assets/brand/zoth-golden-z-192.png" alt="Zoth Golden Z Emblem" width="34" height="34" class="brand-emblem-img" />
@@ -1703,10 +318,37 @@
 
 <div class="ambient-mesh"></div>
 <div class="container">
+
+<div class="container">
+  <div class="connectors-hero">
+    <div class="connectors-hero-badge">
+      <span class="pulse-dot"></span>
+      <span>12 SOVEREIGN CONNECTORS &amp; LOCAL HARDWARE BRIDGES</span>
+    </div>
+    <h1>Sovereign Ecosystem <span style="color:var(--cyan);">Connectors</span> &amp; <span style="color:var(--gold);">Gateways</span></h1>
+    <p>Integrate local tool harnesses, hardware serial matrices, cryptographic vaults, Web3 RPCs, local LLMs, and cloud deploy hooks with zero-latency loopback containment.</p>
+  </div>
+
+  <div class="connectors-toolbar">
+    <div class="category-filter-chips" role="tablist">
+      <button type="button" class="category-filter-chip active" onclick="filterCategory('all', this)">✦ All (12)</button>
+      <button type="button" class="category-filter-chip" onclick="filterCategory('hardware', this)">⚡ Hardware &amp; IoT</button>
+      <button type="button" class="category-filter-chip" onclick="filterCategory('web3', this)">🪙 Web3 &amp; Crypto</button>
+      <button type="button" class="category-filter-chip" onclick="filterCategory('ai', this)">🧠 AI &amp; LLMs</button>
+      <button type="button" class="category-filter-chip" onclick="filterCategory('cloud', this)">☁️ Cloud &amp; CI/CD</button>
+      <button type="button" class="category-filter-chip" onclick="filterCategory('security', this)">🔐 Security &amp; Vault</button>
+      <button type="button" class="category-filter-chip" onclick="filterCategory('comms', this)">📡 Comms &amp; Swarm</button>
+      <button type="button" class="category-filter-chip" onclick="filterCategory('storage', this)">💾 Storage</button>
+    </div>
+    <div class="connector-search-wrap">
+      <span class="connector-search-icon">🔍</span>
+      <input type="text" id="connectorSearchBox" class="connector-search-input" placeholder="Search connectors (e.g. ESP32, Ollama, Stripe)..." oninput="handleConnectorSearch()" autocomplete="off" />
+    </div>
+  </div>
 <main class="connectors-grid" id="main-content" role="main">
 <h1 class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Zoth Tool Connectors &amp; Integrations Ecosystem</h1>
 <!-- 0. ESP32-S3 Hardware Serial Matrix & Protocol Laboratory -->
-<article class="connector-card hardware-full-card" id="hardware-serial-card">
+<article class="connector-card hardware-full-card" id="hardware-serial-card" data-category="hardware" data-title="Hardware Serial Matrix ESP32-S3 IoT UART Logic Oscilloscope">
 <div class="card-head">
 <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
 <div class="connector-icon" style="background:rgba(0,240,255,0.12); border-color:var(--cyan);">
@@ -1981,7 +623,7 @@
 </div>
 </article>
 <!-- 1. Stripe -->
-<article class="connector-card">
+<article class="connector-card" data-category="cloud" data-title="Stripe Billing Checkout Payments API Subscriptions">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
@@ -2006,7 +648,7 @@
 </div>
 </article>
 <!-- 2. Solana -->
-<article class="connector-card">
+<article class="connector-card" data-category="web3" data-title="Solana Web3 Phantom Solflare RPC SPL Token Faucet">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--purple);"><path d="M4 18h14l3-3H7l-3 3z"/><path d="M4 6h14l3 3H7L4 6z"/><path d="M20 12H6l-3 3h14l3-3z"/></svg>
@@ -2031,7 +673,7 @@
 </div>
 </article>
 <!-- 3. MetaMask -->
-<article class="connector-card">
+<article class="connector-card" data-category="web3" data-title="MetaMask EVM Web3 Ethereum Anvil Hardhat EIP-1193">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gold);"><polygon points="6 2 18 2 22 8 18 22 6 22 2 8 6 2"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
@@ -2081,7 +723,7 @@
 </div>
 </article>
 <!-- 5. Netlify -->
-<article class="connector-card">
+<article class="connector-card" data-category="cloud" data-title="Netlify Edge Functions Deploy Hooks Serverless">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -2106,7 +748,7 @@
 </div>
 </article>
 <!-- 6. GitHub -->
-<article class="connector-card">
+<article class="connector-card" data-category="cloud" data-title="GitHub API Actions CI CD Repository Workflows">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
@@ -2156,7 +798,7 @@
 </div>
 </article>
 <!-- 8. Cloudflare Tunnel -->
-<article class="connector-card">
+<article class="connector-card" data-category="cloud" data-title="Cloudflare Zero Trust Edge Tunnel WAF DDoS SSL TLS">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#38bdf8;"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
@@ -2181,7 +823,7 @@
 </div>
 </article>
 <!-- 9. Swarm Event Bus & Real-Time SSE Stream -->
-<article class="connector-card">
+<article class="connector-card" data-category="comms" data-title="Swarm Event Bus SSE Stream Dialogue Mesh :8989">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -2206,7 +848,7 @@
 </div>
 </article>
 <!-- 10. Google Drive Rclone -->
-<article class="connector-card">
+<article class="connector-card" data-category="storage" data-title="Google Drive Rclone Sync Cloud Backup 20 TiB">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#fbbf24;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -2231,7 +873,7 @@
 </div>
 </article>
 <!-- 11. Signal Swarm NOC Bridge -->
-<article class="connector-card">
+<article class="connector-card" data-category="comms" data-title="Signal Swarm NOC Bridge Mobile Phone SSE Alerts Commands">
 <div class="card-head">
 <div class="connector-icon">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--magenta);"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
@@ -2256,7 +898,9 @@
 </div>
 </article>
 </main>
-                                                            <footer class="site" role="contentinfo">
+                                                            
+</div>
+<footer class="site" role="contentinfo">
       <div class="foot-wrap">
         <div aria-hidden="true" class="foot-watermark">ZOTH</div>
         <div class="foot-grid">
@@ -2321,6 +965,39 @@
     </footer>
 </div>
 <script type="module">
+
+    // Category & Search Filtering
+    let currentCategory = 'all';
+    window.filterCategory = function(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.category-filter-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyConnectorFilters();
+      if (typeof playChime === 'function') playChime(700, 'triangle', 0.08, 0.05);
+    };
+
+    window.handleConnectorSearch = function() {
+      applyConnectorFilters();
+    };
+
+    function applyConnectorFilters() {
+      const query = (document.getElementById('connectorSearchBox')?.value || '').toLowerCase().trim();
+      const cards = document.querySelectorAll('.connector-card');
+
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category') || '';
+        const title = ((card.getAttribute('data-title') || '') + ' ' + card.textContent).toLowerCase();
+        const matchesCat = (currentCategory === 'all' || cat === currentCategory);
+        const matchesQuery = (!query || title.includes(query));
+
+        if (matchesCat && matchesQuery) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
     import { 
       StripeConnector, 
       SolanaConnector, 
@@ -3104,11 +1781,12 @@
       alert(`Copied ${name} adapter import snippet to clipboard!`);
     };
   </script>
-<script src="/assets/zoth-preview.js"></script>
-<script src="/assets/celestial-trail.js"></script>
-<script src="/assets/zoth-gate.js"></script>
-<script defer="" src="/assets/zoth-tip.js"></script>
-<script defer="" src="/assets/zoth-annotator.js"></script>
-<script defer="" src="/assets/zoth-nav.js?v=11"></script>
+
+  <script src="/assets/zoth-preview.js"></script>
+  <script src="/assets/celestial-trail.js"></script>
+  <script src="/assets/zoth-gate.js"></script>
+  <script defer="" src="/assets/zoth-tip.js"></script>
+  <script defer="" src="/assets/zoth-annotator.js"></script>
+  <script defer="" src="/assets/zoth-nav.js?v=11"></script>
 </body>
 </html>
