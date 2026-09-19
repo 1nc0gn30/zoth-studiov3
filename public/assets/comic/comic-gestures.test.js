@@ -318,7 +318,28 @@ global.CustomEvent = class CustomEvent {
   engine.resetZoom(false);
   check('resetZoom() resets scale to 1.0', engine.currentScale === 1.0);
 
-  // Test 11: Destroy cleans up resources
+  // Test 11: Tap Zone Navigation (Tap Left & Tap Right)
+  let tapZonePrevCalled = false;
+  let tapZoneNextCalled = false;
+  const tapEngine = new ComicGestures.Engine({
+    container: mockContainer,
+    enableTapZones: true,
+    tapZoneThreshold: 0.35,
+    onPagePrev: () => { tapZonePrevCalled = true; },
+    onPageNext: () => { tapZoneNextCalled = true; }
+  });
+
+  // Tap Left (clientX: 50px out of 800px width -> ratio ~ 0.06 < 0.35)
+  tapEngine.handleSingleTap(50, 400, mockImg);
+  check('Single tap on left zone (<35%) triggers onPagePrev', tapZonePrevCalled);
+
+  // Tap Right (clientX: 750px out of 800px width -> ratio ~ 0.93 > 0.65)
+  tapEngine.handleSingleTap(750, 400, mockImg);
+  check('Single tap on right zone (>65%) triggers onPageNext', tapZoneNextCalled);
+
+  tapEngine.destroy();
+
+  // Test 12: Destroy cleans up resources
   engine.destroy();
   check('destroy() successfully unbinds without errors', true);
 

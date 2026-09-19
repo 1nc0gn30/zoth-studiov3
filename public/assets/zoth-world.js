@@ -1012,7 +1012,7 @@
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-      // Orbit Controls with Smooth Damping (dampingFactor: 0.05)
+      // Orbit Controls with Smooth Damping & Multi-Device Touch Gestures (one-finger rotate/pan, two-finger pinch zoom)
       if (THREE.OrbitControls) {
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
@@ -1021,6 +1021,12 @@
         this.controls.minDistance = 2;
         this.controls.maxDistance = 180;
         this.controls.target.set(0, 2, 0);
+        if (THREE.TOUCH) {
+          this.controls.touches = {
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_PAN
+          };
+        }
       }
 
       // Studio-Grade Postprocessing Pipeline (UnrealBloomPass + Chromatic Aberration)
@@ -1817,7 +1823,15 @@
     // 6. EVENT LISTENERS, RAYCASTING & INTERACTION
     // =========================================================================
     initEventListeners() {
+      // Dynamic ResizeObserver scaling canvas with devicePixelRatio
+      if (window.ResizeObserver && this.container) {
+        this.resizeObserver = new ResizeObserver(() => this.onResize());
+        this.resizeObserver.observe(this.container);
+      }
       window.addEventListener('resize', () => this.onResize());
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => this.onResize(), 100);
+      });
 
       // Mouse tracking for raycaster & celestial star vortex interaction
       window.addEventListener('mousemove', (e) => {
@@ -1838,6 +1852,74 @@
 
       // Canvas click for selection
       this.canvas.addEventListener('click', (e) => this.onClick(e));
+
+      // Multi-device Touch Gestures: one-finger rotate/pan, two-finger pinch zoom, tap to inspect
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+      let isTouchDrag = false;
+
+      this.canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          const t = e.touches[0];
+          touchStartX = t.clientX;
+          touchStartY = t.clientY;
+          touchStartTime = performance.now();
+          isTouchDrag = false;
+
+          this.mouse.x = (t.clientX / window.innerWidth) * 2 - 1;
+          this.mouse.y = -(t.clientY / window.innerHeight) * 2 + 1;
+        } else {
+          isTouchDrag = true;
+        }
+      }, { passive: true });
+
+      this.canvas.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1) {
+          const t = e.touches[0];
+          const dx = t.clientX - touchStartX;
+          const dy = t.clientY - touchStartY;
+          if (Math.hypot(dx, dy) > 10) {
+            isTouchDrag = true;
+          }
+          this.mouse.x = (t.clientX / window.innerWidth) * 2 - 1;
+          this.mouse.y = -(t.clientY / window.innerHeight) * 2 + 1;
+
+          if (this.camera && this.raycaster) {
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -3.2);
+            const targetPoint = new THREE.Vector3();
+            if (this.raycaster.ray.intersectPlane(groundPlane, targetPoint)) {
+              this.mouseWorldPos.copy(targetPoint);
+            }
+          }
+        } else {
+          isTouchDrag = true;
+        }
+      }, { passive: true });
+
+      this.canvas.addEventListener('touchend', (e) => {
+        const touchDuration = performance.now() - touchStartTime;
+        // If single touch tap (< 10px movement, < 350ms), raycast to inspect orbital agent
+        if (!isTouchDrag && touchDuration < 350 && e.changedTouches.length === 1) {
+          const t = e.changedTouches[0];
+          const touchCoord = new THREE.Vector2(
+            (t.clientX / window.innerWidth) * 2 - 1,
+            -(t.clientY / window.innerHeight) * 2 + 1
+          );
+          if (this.camera && this.raycaster) {
+            this.raycaster.setFromCamera(touchCoord, this.camera);
+            const intersects = this.raycaster.intersectObjects(this.interactiveObjects);
+            if (intersects.length > 0) {
+              const pet = intersects[0].object.userData.petData;
+              if (pet) {
+                this.inspectPet(pet);
+                if (this.audio) this.audio.playChime(640, 'sine', 0.15);
+              }
+            }
+          }
+        }
+      }, { passive: true });
 
       // Free roam keyboard inputs
       window.addEventListener('keydown', (e) => {
@@ -1860,15 +1942,19 @@
 
     onResize() {
       if (!this.camera || !this.renderer) return;
-      this.camera.aspect = window.innerWidth / window.innerHeight;
+      const width = this.container ? (this.container.clientWidth || window.innerWidth) : window.innerWidth;
+      const height = this.container ? (this.container.clientHeight || window.innerHeight) : window.innerHeight;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
+      this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      this.renderer.setSize(width, height, false);
+      this.renderer.setPixelRatio(pixelRatio);
       if (this.composer) {
-        this.composer.setSize(window.innerWidth, window.innerHeight);
+        this.composer.setSize(width, height);
       }
       if (this.bloomPass) {
-        this.bloomPass.setSize(window.innerWidth, window.innerHeight);
+        this.bloomPass.setSize(width, height);
       }
     }
 

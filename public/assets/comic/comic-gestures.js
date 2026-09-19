@@ -44,11 +44,13 @@
     zoomSnapBackDuration: 280,  // ms for spring-back animation
     panBoundsPadding: 20,       // px overscroll elasticity
     
-    // Double-Tap Configuration
+    // Double-Tap & Tap Zones Configuration
     enableDoubleTap: true,
-    doubleTapDelay: 320,        // Max ms between taps
+    doubleTapDelay: 300,        // Max ms between taps
     doubleTapDistance: 24,      // Max px displacement between two taps
     smartDoubleTapZoom: true,   // If zoomed > 1.1x, double tap resets zoom; otherwise toggles HUD
+    enableTapZones: true,       // Tap left / right side of screen/stage to paginate panels
+    tapZoneThreshold: 0.35,     // Outer 35% on left/right triggers prev/next; center 30% toggles HUD
     
     // UI Feedback
     showHudToast: true,
@@ -59,6 +61,7 @@
     onPagePrev: null,
     onPageNext: null,
     onPageChange: null,
+    onSingleTap: null,
     onZoomChange: null,
     onZoomReset: null,
     onHudToggle: null,
@@ -613,15 +616,19 @@
           this.animateToTransform(this.currentScale, this.translateX, this.translateY);
         }
 
-        // Check for double tap
-        if (distance < this.opts.doubleTapDistance && duration < 250) {
+        // Check for double tap or single tap zone navigation
+        if (distance < this.opts.doubleTapDistance && duration < 320) {
           const now = Date.now();
           const timeSinceLastTap = now - this.lastTapTime;
           const distFromLastTap = Math.hypot(this.lastTouchX - this.lastTapX, this.lastTouchY - this.lastTapY);
 
+          if (this.tapTimeout) {
+            clearTimeout(this.tapTimeout);
+            this.tapTimeout = null;
+          }
+
           if (timeSinceLastTap < this.opts.doubleTapDelay && distFromLastTap < this.opts.doubleTapDistance) {
             // Double-Tap Triggered!
-            if (this.tapTimeout) clearTimeout(this.tapTimeout);
             this.handleDoubleTap(this.lastTouchX, this.lastTouchY, e);
             this.lastTapTime = 0;
             this.resetSwipePreview();
@@ -630,6 +637,16 @@
             this.lastTapTime = now;
             this.lastTapX = this.lastTouchX;
             this.lastTapY = this.lastTouchY;
+
+            if (this.opts.enableTapZones) {
+              const tapX = this.lastTouchX;
+              const tapY = this.lastTouchY;
+              const targetNode = e.target;
+              this.tapTimeout = setTimeout(() => {
+                this.handleSingleTap(tapX, tapY, targetNode);
+                this.tapTimeout = null;
+              }, this.opts.doubleTapDelay + 10);
+            }
           }
         }
 
@@ -655,6 +672,10 @@
     }
 
     onTouchCancel() {
+      if (this.tapTimeout) {
+        clearTimeout(this.tapTimeout);
+        this.tapTimeout = null;
+      }
       this.isSwiping = false;
       this.isZooming = false;
       this.isPanning = false;
@@ -666,7 +687,45 @@
       this.activeTouches.clear();
     }
 
-    // --- Double-Tap Handler (HUD Toggle & Smart Zoom) ---
+    // --- Single-Tap & Double-Tap Handlers ---
+
+    handleSingleTap(clientX, clientY, targetNode) {
+      if (this.currentScale > 1.1) return; // Do not paginate if zoomed in
+
+      // Do not intercept taps on interactive elements or audio controls
+      if (targetNode && targetNode.closest) {
+        const interactive = targetNode.closest(
+          'a, button, input, select, textarea, video, audio, [role="button"], #comic-audio-player-root, .cap-inner, .comic-control-dock, .slideshow-nav-dock, .site-header, .comic-header, .drawer-toggle, .skip-to-content, .nav-pane, .zoth-nav'
+        );
+        if (interactive) return;
+      }
+
+      const viewportWidth = (typeof window !== 'undefined' && window.innerWidth) || 360;
+      const xRatio = clientX / Math.max(viewportWidth, 1);
+      const threshold = this.opts.tapZoneThreshold || 0.35;
+
+      if (xRatio < threshold) {
+        // Tap Left: Previous Panel/Page
+        this.turnPage(-1, 'tap_left');
+        if (this.opts.showHudToast) {
+          this.showToast('◀ Previous Panel', '☿', 1200);
+        }
+      } else if (xRatio > (1 - threshold)) {
+        // Tap Right: Next Panel/Page
+        this.turnPage(1, 'tap_right');
+        if (this.opts.showHudToast) {
+          this.showToast('Next Panel ▶', '☿', 1200);
+        }
+      } else {
+        // Center Tap: Toggle HUD
+        this.toggleHUD();
+      }
+
+      this.dispatchEvent('comic:singletap', { clientX, clientY, xRatio });
+      if (typeof this.opts.onSingleTap === 'function') {
+        this.opts.onSingleTap({ clientX, clientY, xRatio });
+      }
+    }
 
     handleDoubleTap(clientX, clientY, originalEvent) {
       if (!this.opts.enableDoubleTap) return;
@@ -702,7 +761,7 @@
       if (this.isHudHidden) {
         document.body.classList.add('comic-hud-hidden');
         if (this.opts.showHudToast) {
-          this.showToast('⚡ Reader HUD Hidden — Double-tap anywhere to restore', '🕶️', 2000);
+          this.showToast('⚡ Reader HUD Hidden — Tap center to restore', '🕶️', 2000);
         }
       } else {
         document.body.classList.remove('comic-hud-hidden');
@@ -740,6 +799,12 @@
         if (typeof window.changePage === 'function') {
           window.changePage(direction);
           handled = true;
+        } else if (direction > 0 && typeof window.nextSlide === 'function' && (document.body.classList.contains('view-slideshow') || document.querySelector('.slideshow-active, #slideshowNavDock'))) {
+          window.nextSlide();
+          handled = true;
+        } else if (direction < 0 && typeof window.prevSlide === 'function' && (document.body.classList.contains('view-slideshow') || document.querySelector('.slideshow-active, #slideshowNavDock'))) {
+          window.prevSlide();
+          handled = true;
         } else if (typeof window.setPage === 'function' && typeof window.currentPageIdx === 'number') {
           window.setPage(window.currentPageIdx + direction);
           handled = true;
@@ -752,15 +817,37 @@
       // 3. Fallback: simulate clicking navigation buttons
       if (!handled && typeof document !== 'undefined') {
         if (direction > 0) {
-          const nextBtn = document.getElementById('btn-next') || document.getElementById('btnNextPage') || document.querySelector('.btn-next');
+          const nextBtn = document.getElementById('btn-next') || document.getElementById('btnNextPage') || document.getElementById('btnSlideNext') || document.querySelector('.btn-next');
           if (nextBtn && !nextBtn.disabled) {
             nextBtn.click();
             handled = true;
           }
         } else {
-          const prevBtn = document.getElementById('btn-prev') || document.getElementById('btnPrevPage') || document.querySelector('.btn-prev');
+          const prevBtn = document.getElementById('btn-prev') || document.getElementById('btnPrevPage') || document.getElementById('btnSlidePrev') || document.querySelector('.btn-prev');
           if (prevBtn && !prevBtn.disabled) {
             prevBtn.click();
+            handled = true;
+          }
+        }
+      }
+
+      // 4. In manga vertical panels mode: smooth scroll to next/prev panel card
+      if (!handled && typeof document !== 'undefined' && typeof window !== 'undefined' && typeof window.scrollBy === 'function') {
+        const panels = Array.from(document.querySelectorAll('.panel-card, .comic-page-wrapper'));
+        if (panels.length > 0) {
+          const scrollPos = window.scrollY + 100;
+          let currentIdx = 0;
+          for (let i = 0; i < panels.length; i++) {
+            const top = panels[i].offsetTop;
+            const bottom = top + panels[i].offsetHeight;
+            if (scrollPos >= top && scrollPos < bottom) {
+              currentIdx = i;
+              break;
+            }
+          }
+          const targetIdx = Math.max(0, Math.min(panels.length - 1, currentIdx + direction));
+          if (panels[targetIdx] && typeof panels[targetIdx].scrollIntoView === 'function') {
+            panels[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'start' });
             handled = true;
           }
         }

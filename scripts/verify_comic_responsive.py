@@ -20,6 +20,7 @@ PAGES = [
 ]
 
 VIEWPORTS = [
+    {"name": "Mobile Ultra-Compact (320x568)", "width": 320, "height": 568},
     {"name": "Mobile Small (360x640)", "width": 360, "height": 640},
     {"name": "Mobile Standard (390x844)", "width": 390, "height": 844},
     {"name": "Tablet Portrait (768x1024)", "width": 768, "height": 1024},
@@ -28,7 +29,7 @@ VIEWPORTS = [
 
 THEMES = ["dark", "light", "matrix", "gold"]
 
-PORT = 8089
+PORT = 8098
 
 def start_server():
     public_dir = os.path.join(os.getcwd(), "public")
