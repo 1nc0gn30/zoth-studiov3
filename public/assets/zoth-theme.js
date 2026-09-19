@@ -315,5 +315,17 @@
     pinLifeSheet();
     mountThemeUI();
   }
+
+  // Auto-load progressive disclosure engine if not loaded
+  try {
+    if (!window.ZothDisclosure && !document.querySelector('script[src*="zoth-disclosure.js"]')) {
+      var discScript = document.createElement("script");
+      discScript.src = "/assets/zoth-disclosure.js";
+      discScript.defer = true;
+      document.head.appendChild(discScript);
+    }
+  } catch (e) {}
 })();
+
+
 
