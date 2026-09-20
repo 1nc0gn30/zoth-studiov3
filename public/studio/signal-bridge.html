@@ -2,6 +2,13 @@
 
 <html lang="en">
 <head>
+<script>
+  if (window.location.protocol === 'file:') {
+    const b = document.createElement('base');
+    b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+    document.head.prepend(b);
+  }
+</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Zoth Signal Bridge Workstation Console</title>
@@ -31,7 +38,92 @@
 <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&amp;family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&amp;family=Syne:wght@600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="/styles.css" rel="stylesheet"/>
 <link href="/assets/zoth-mobile.css" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/zoth-disclosure.css" />
 <style>
+  .zoth-trigger-visual {
+    position: relative !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    max-width: 64px !important;
+  }
+  .zoth-visual-icon {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    pointer-events: none !important;
+  }
+  .zoth-disclosure-wrapper {
+    overflow-x: clip !important;
+    max-width: 100% !important;
+  }
+  .zoth-disclosure-trigger {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  @media (max-width: 600px) {
+    .zoth-disclosure-trigger {
+      flex-wrap: wrap !important;
+      gap: 12px !important;
+      padding: 14px 12px !important;
+    }
+    .zoth-disclosure-indicator {
+      width: 100% !important;
+      margin-left: 0 !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+    }
+  }
+  @media (max-width: 480px) {
+    .zoth-master-disclosure-bar {
+      padding: 10px 12px !important;
+      margin: 12px auto !important;
+      box-sizing: border-box !important;
+      max-width: 100% !important;
+    }
+    .zoth-master-disclosure-status {
+      font-size: 0.72rem !important;
+      flex-wrap: wrap !important;
+    }
+    .zoth-master-disclosure-actions {
+      width: 100% !important;
+      display: flex !important;
+      gap: 6px !important;
+    }
+    .zoth-master-disclosure-actions .zoth-hud-btn {
+      flex: 1 1 0 !important;
+      padding: 6px 8px !important;
+      font-size: 0.68rem !important;
+      justify-content: center !important;
+      min-width: 0 !important;
+    }
+    .zoth-disclosure-wrapper {
+      margin: 16px 0 !important;
+      border-radius: 14px !important;
+    }
+    .zoth-big-heading {
+      font-size: clamp(1.15rem, 5vw, 1.5rem) !important;
+      overflow-wrap: break-word !important;
+      word-break: break-word !important;
+    }
+    .zoth-disclosure-summary-line {
+      font-size: 0.82rem !important;
+    }
+    .zoth-disclosure-content {
+      padding: 0 12px !important;
+    }
+    .zoth-disclosure-wrapper.is-expanded .zoth-disclosure-content {
+      padding: 12px 12px 20px 12px !important;
+    }
+  }
+
         .skip-to-content, .skip-link, .skip {
       position: absolute;
       width: 1px;
@@ -268,18 +360,45 @@
         50% { opacity: 0.4; transform: scale(0.85); }
       }
 
-      /* 3-Column Layout */
+      /* Progressive Disclosure Workstation Layout */
       .sig-grid {
-        display: grid;
-        grid-template-columns: minmax(0, var(--phi-sidebar, 377px)) 1.618fr minmax(0, var(--phi-sidebar, 377px));
+        display: flex;
+        flex-direction: column;
         gap: var(--fib-21, 21px);
+        margin-bottom: 60px;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
       }
-      @media (max-width: 1200px) {
-        .sig-grid { grid-template-columns: 280px 1fr; }
-        .sig-sidebar-right { grid-column: 1 / -1; }
+      .sig-grid > #sig-pane-stream {
+        width: 100%;
+        min-height: 520px;
+        box-sizing: border-box;
       }
-      @media (max-width: 880px) {
-        .sig-grid { grid-template-columns: 1fr; }
+      .sig-grid > .zoth-disclosure-wrapper {
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .zoth-disclosure-content .sig-pane {
+        display: flex !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+      }
+      .zoth-disclosure-content .mascot-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+        max-height: none;
+      }
+      .zoth-disclosure-content .tel-box {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
       }
 
       /* Glass Panels */
@@ -555,8 +674,12 @@
         display: flex !important;
         flex-direction: column !important;
       }
-      .sig-pane {
-        display: none !important;
+      #sig-pane-stream.sig-pane {
+        display: flex !important;
+      }
+      .zoth-disclosure-content .sig-pane {
+        display: flex !important;
+        width: 100% !important;
       }
       .sig-pane.is-mobile-active {
         display: flex !important;
@@ -1103,6 +1226,19 @@ html, body {
 </div>
 <button aria-label="Dismiss insight" class="insight-close" onclick="this.parentElement.style.display='none'" type="button">✕</button>
 </div>
+<!-- Master Progressive Disclosure Toolbar -->
+<div class="zoth-master-disclosure-bar" style="margin: 20px 0 24px;">
+  <div class="zoth-master-disclosure-status">
+    <span class="pulse-dot"></span>
+    <span style="font-weight:700; font-family:var(--font-display); letter-spacing:0.04em;">ZOTH SIGNAL BRIDGE WORKSTATION CONSOLE</span>
+    <span style="opacity:0.5; margin: 0 6px;">//</span>
+    <span id="zoth-disclosure-active-counter">FOCUSED VIEW</span>
+  </div>
+  <div class="zoth-master-disclosure-actions">
+    <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all" onclick="window.ZothDisclosure && window.ZothDisclosure.expandAll()">⚡ Expand All</button>
+    <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all" onclick="window.ZothDisclosure && window.ZothDisclosure.collapseAll()">🌀 Focused View</button>
+  </div>
+</div>
 <!-- 3-Column Cockpit -->
 <!-- Mobile Segmented Switcher (Visible <=880px) -->
 <nav aria-label="Mobile Signal Bridge Views" class="mobile-segmented-bar" id="sig-mobile-tabs">
@@ -1123,72 +1259,8 @@ html, body {
 </nav>
 <main class="sig-grid" id="main-content" role="main">
 <h1 style="display:none;">Zoth Signal Bridge Workstation</h1>
-<!-- Left: 16 Mascot Spirit Roster -->
-<aside class="sig-card sig-pane" id="sig-pane-mascots">
-<div class="card-title">
-<span>Mascot Spirits</span>
-<span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-cyan);">16 Active</span>
-</div>
-<div class="mascot-list" id="mascotList">
-<div class="mascot-item selected" onclick="selectMascot('azoth', 'Azoth')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--sig-gold);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-<div class="mascot-info">
-<strong>@Azoth</strong>
-<span>Lead Antigravity Operator</span>
-</div>
-</div>
-<div class="mascot-item" onclick="selectMascot('lycan', 'Lycan')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#ef4444;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-<div class="mascot-info">
-<strong>@Lycan</strong>
-<span>Security &amp; AST Validator</span>
-</div>
-</div>
-<div class="mascot-item" onclick="selectMascot('grok', 'Kitsune')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#fbbf24;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-<div class="mascot-info">
-<strong>@Grok</strong>
-<span>High-Throughput Coder</span>
-</div>
-</div>
-<div class="mascot-item" onclick="selectMascot('hermes', 'Draco')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#a855f7;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-<div class="mascot-info">
-<strong>@Hermes</strong>
-<span>JSON Schemas &amp; Tools</span>
-</div>
-</div>
-<div class="mascot-item" onclick="selectMascot('ollama', 'Workbot')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981;"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
-<div class="mascot-info">
-<strong>@Ollama</strong>
-<span>Private Local Weights</span>
-</div>
-</div>
-<div class="mascot-item" onclick="selectMascot('kai', 'Kai')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--sig-cyan);"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-<div class="mascot-info">
-<strong>@Kai</strong>
-<span>Site Inspector &amp; A11y</span>
-</div>
-</div>
-<div class="mascot-item" onclick="selectMascot('athena', 'Athena')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#38bdf8;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-<div class="mascot-info">
-<strong>@Athena</strong>
-<span>Knowledge Graph &amp; AEO</span>
-</div>
-</div>
-<div class="mascot-item" onclick="selectMascot('ignis', 'Ignis')">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f97316;"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
-<div class="mascot-info">
-<strong>@Ignis</strong>
-<span>Refactoring Specialist</span>
-</div>
-</div>
-</div>
-</aside>
-<!-- Center: Live Signal Stream & Command Dispatcher -->
+
+<!-- Center: Live Signal Stream & Command Dispatcher (Primary Main Pane) -->
 <section class="sig-card sig-pane is-mobile-active" id="sig-pane-stream">
 <div class="card-title">
 <span>Live Signal Messenger Stream</span>
@@ -1216,45 +1288,150 @@ html, body {
 </div>
 </div>
 </section>
-<!-- Right: Telemetry & Port Monitor -->
-<aside class="sig-card sig-sidebar-right sig-pane" id="sig-pane-controls">
-<div class="card-title">
-<span>Swarm Telemetry</span>
-<span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-emerald);">Parrot OS</span>
+
+<!-- 01: Subsystem Mascot Bus Sync (Collapsible Disclosure) -->
+<div class="zoth-disclosure-wrapper" id="sig-mascots-section">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/mascot/azoth-antigravity.jpg" alt="Subsystem Mascot Bus Sync" loading="lazy" />
+      <span class="zoth-visual-icon">🦊</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 01 — SUBSYSTEM MASCOT BUS SYNC</div>
+      <h2 class="zoth-big-heading zoth-animated-text">MASCOT SPIRIT ROSTER</h2>
+      <div class="zoth-disclosure-summary-line">16 active autonomous mascot spirits, security &amp; AST validators, high-throughput coders, and local neural weights.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">16 MASCOTS · BUS SYNC</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <aside class="sig-card sig-pane" id="sig-pane-mascots">
+      <div class="card-title">
+        <span>Mascot Spirits</span>
+        <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-cyan);">16 Active</span>
+      </div>
+      <div class="mascot-list" id="mascotList">
+        <div class="mascot-item selected" onclick="selectMascot('azoth', 'Azoth')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--sig-gold);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="mascot-info">
+            <strong>@Azoth</strong>
+            <span>Lead Antigravity Operator</span>
+          </div>
+        </div>
+        <div class="mascot-item" onclick="selectMascot('lycan', 'Lycan')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#ef4444;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div class="mascot-info">
+            <strong>@Lycan</strong>
+            <span>Security &amp; AST Validator</span>
+          </div>
+        </div>
+        <div class="mascot-item" onclick="selectMascot('grok', 'Kitsune')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#fbbf24;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <div class="mascot-info">
+            <strong>@Grok</strong>
+            <span>High-Throughput Coder</span>
+          </div>
+        </div>
+        <div class="mascot-item" onclick="selectMascot('hermes', 'Draco')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#a855f7;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <div class="mascot-info">
+            <strong>@Hermes</strong>
+            <span>JSON Schemas &amp; Tools</span>
+          </div>
+        </div>
+        <div class="mascot-item" onclick="selectMascot('ollama', 'Workbot')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981;"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+          <div class="mascot-info">
+            <strong>@Ollama</strong>
+            <span>Private Local Weights</span>
+          </div>
+        </div>
+        <div class="mascot-item" onclick="selectMascot('kai', 'Kai')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--sig-cyan);"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <div class="mascot-info">
+            <strong>@Kai</strong>
+            <span>Site Inspector &amp; A11y</span>
+          </div>
+        </div>
+        <div class="mascot-item" onclick="selectMascot('athena', 'Athena')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#38bdf8;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <div class="mascot-info">
+            <strong>@Athena</strong>
+            <span>Knowledge Graph &amp; AEO</span>
+          </div>
+        </div>
+        <div class="mascot-item" onclick="selectMascot('ignis', 'Ignis')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f97316;"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
+          <div class="mascot-info">
+            <strong>@Ignis</strong>
+            <span>Refactoring Specialist</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
 </div>
-<div class="tel-box">
-<div class="tel-item">
-<span class="label">Signal Linked Account</span>
-<span class="status" id="telAccount" style="color:var(--sig-cyan);">+19482047987</span>
+
+<!-- 02: Frequency Synthesizer & Routing Controls (Collapsible Disclosure) -->
+<div class="zoth-disclosure-wrapper" id="sig-controls-section">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/command-deck.jpg" alt="Frequency Synthesizer &amp; Routing Controls" loading="lazy" />
+      <span class="zoth-visual-icon">📡</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 02 — FREQUENCY SYNTHESIZER &amp; ROUTING CONTROLS</div>
+      <h2 class="zoth-big-heading zoth-animated-text">SWARM TELEMETRY &amp; NOC</h2>
+      <div class="zoth-disclosure-summary-line">Parrot OS telemetry, Signal linked account, SSE bus ports, Ollama neural engine link, and heartbeat cadence.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">7 CHANNELS · PARROT OS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <aside class="sig-card sig-sidebar-right sig-pane" id="sig-pane-controls">
+      <div class="card-title">
+        <span>Swarm Telemetry</span>
+        <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--sig-emerald);">Parrot OS</span>
+      </div>
+      <div class="tel-box">
+        <div class="tel-item">
+          <span class="label">Signal Linked Account</span>
+          <span class="status" id="telAccount" style="color:var(--sig-cyan);">+19482047987</span>
+        </div>
+        <div class="tel-item">
+          <span class="label">Bridge HTTP/SSE API</span>
+          <span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:8765 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
+        </div>
+        <div class="tel-item">
+          <span class="label">Master Operator Deck</span>
+          <span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:8484 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
+        </div>
+        <div class="tel-item">
+          <span class="label">Static Web Hub</span>
+          <span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:8088 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
+        </div>
+        <div class="tel-item">
+          <span class="label">Ollama Neural Engine</span>
+          <span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:11434 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
+        </div>
+        <div class="tel-item">
+          <span class="label">Heartbeat Cadence</span>
+          <span class="status" style="color:var(--sig-gold);">300s (5-Min)</span>
+        </div>
+        <div class="tel-item">
+          <span class="label">Antigravity Execution Limit</span>
+          <span class="status" style="color:var(--sig-gold);">600s (10-Min)</span>
+        </div>
+      </div>
+    </aside>
+  </div>
 </div>
-<div class="tel-item">
-<span class="label">Bridge HTTP/SSE API</span>
-<span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:8765 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
-</div>
-<div class="tel-item">
-<span class="label">Master Operator Deck</span>
-<span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:8484 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
-</div>
-<div class="tel-item">
-<span class="label">Static Web Hub</span>
-<span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:8088 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
-</div>
-<div class="tel-item">
-<span class="label">Ollama Neural Engine</span>
-<span class="status" style="color:var(--sig-emerald); display:flex; align-items:center; gap:6px;">:11434 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span></span>
-</div>
-<div class="tel-item">
-<span class="label">Heartbeat Cadence</span>
-<span class="status" style="color:var(--sig-gold);">300s (5-Min)</span>
-</div>
-<div class="tel-item">
-<span class="label">Antigravity Execution Limit</span>
-<span class="status" style="color:var(--sig-gold);">600s (10-Min)</span>
-</div>
-</div>
-</aside>
+
 </main>
-                                                            
 </div>
 <script>
       let currentMascotPrefix = "@Azoth ";
@@ -1409,11 +1586,28 @@ html, body {
         }
       }
 
+      function setSigMobileTab(tabKey) {
+        document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-tab') === tabKey);
+        });
+        document.querySelectorAll('.sig-pane').forEach(p => p.classList.remove('is-mobile-active'));
+        const target = document.getElementById('sig-pane-' + tabKey);
+        if (target) {
+          target.classList.add('is-mobile-active');
+          const wrapper = target.closest('.zoth-disclosure-wrapper');
+          if (wrapper && window.ZothDisclosure) {
+            window.ZothDisclosure.expand(wrapper);
+          }
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
       window.addEventListener("DOMContentLoaded", () => {
         loadHistory();
         initSSE();
       });
     </script>
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>
+<script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>

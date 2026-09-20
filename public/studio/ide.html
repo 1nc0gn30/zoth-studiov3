@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      const b = document.createElement('base');
+      b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+      document.head.prepend(b);
+    }
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sovereign Operator IDE &amp; Code Foundry — Zoth Studio</title>
@@ -40,6 +47,7 @@
   <link rel="stylesheet" href="/assets/zoth-annotator.css" />
   <link rel="stylesheet" href="/assets/zoth-tailwind-magic.css" />
   <link rel="stylesheet" href="/assets/zoth-footer.css" />
+  <link rel="stylesheet" href="/assets/zoth-disclosure.css" />
   <script src="/assets/zoth-theme.js?v=11"></script>
   <script src="/assets/zoth-nav.js?v=11" defer></script>
 
@@ -1123,6 +1131,70 @@ html, body {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+
+/* Responsive Safeguards & Progressive Disclosure Rules */
+.zoth-trigger-visual {
+  position: relative !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 64px !important;
+}
+.zoth-visual-icon {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+.zoth-disclosure-wrapper {
+  overflow-x: clip !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+.zoth-disclosure-trigger {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+.zoth-disclosure-content .ide-panel,
+.zoth-disclosure-content .terminal-runner-pane {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 8px 0 0 0 !important;
+  border-radius: 0 !important;
+}
+.zoth-disclosure-content-inner {
+  width: 100%;
+  box-sizing: border-box;
+}
+.terminal-input-cmd {
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .zoth-big-heading {
+    font-size: clamp(1.4rem, 6vw, 2rem) !important;
+  }
+  .zoth-master-disclosure-bar {
+    padding: 12px 16px !important;
+  }
+  .zoth-disclosure-trigger {
+    padding: 16px !important;
+  }
+  .zoth-disclosure-content {
+    padding: 0 16px !important;
+  }
+  .zoth-disclosure-wrapper.is-expanded .zoth-disclosure-content {
+    padding: 12px 16px 24px 16px !important;
+  }
+}
 </style>
 </head>
 <body class="deck-page" data-kicker="IDE 2.0" data-title="Sovereign Operator IDE &amp; Code Foundry">
@@ -1173,101 +1245,66 @@ html, body {
       </div>
     </div>
 
-    <!-- IDE Multi-Pane Layout -->
-    <div class="ide-workspace-grid">
+    <!-- Master Progressive Disclosure Toolbar -->
+    <div class="zoth-master-disclosure-bar" style="margin: 20px auto 24px; max-width: 1720px; padding: 14px 28px;">
+      <div class="zoth-master-disclosure-status">
+        <span class="pulse-dot"></span>
+        <span style="letter-spacing:0.06em; font-weight:700;">SOVEREIGN OPERATOR IDE &amp; CODE FOUNDRY</span>
+        <span style="opacity:0.5;">//</span>
+        <span id="zoth-disclosure-active-counter">FOCUSED VIEW</span>
+      </div>
+      <div class="zoth-master-disclosure-actions">
+        <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all" onclick="window.ZothDisclosure && window.ZothDisclosure.expandAll()">⚡ Expand All</button>
+        <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all" onclick="window.ZothDisclosure && window.ZothDisclosure.collapseAll()">🌀 Collapse Secondary</button>
+      </div>
+    </div>
 
-      <!-- Left Pane: File Tree Navigator -->
-      <aside class="ide-panel file-explorer-pane" aria-label="File Explorer">
-        <div class="pane-header-title">
-          <span>Project Explorer</span>
-          <span class="file-badge-tag">5 Files</span>
-        </div>
-        <input type="text" class="file-search-input" id="fileSearchInput" placeholder="Filter workspace files..." oninput="filterFiles()" />
+    <!-- Center Pane: Multi-Tab Code Foundry & Editor (Primary Prominent Stage) -->
+    <section class="ide-panel editor-pane" id="editor" aria-label="Code Editor" style="margin-bottom: 24px;">
+      <div class="editor-tabs-bar" id="editorTabsBar">
+        <button class="editor-tab-btn active" id="tab-swarm-orchestrator" onclick="openFile('swarm-orchestrator', null)">
+          <span>⚡ swarm-orchestrator.ts</span>
+        </button>
+        <button class="editor-tab-btn" id="tab-invariant-verifier" onclick="openFile('invariant-verifier', null)">
+          <span>🦀 invariant-verifier.rs</span>
+        </button>
+        <button class="editor-tab-btn" id="tab-tool-runner" onclick="openFile('tool-runner', null)">
+          <span>🐍 tool-runner.py</span>
+        </button>
+        <button class="editor-tab-btn" id="tab-vault-signer" onclick="openFile('vault-signer', null)">
+          <span>🛡️ vault-signer.c</span>
+        </button>
+        <button class="editor-tab-btn" id="tab-studio-kernel" onclick="openFile('studio-kernel', null)">
+          <span>🌐 studio-kernel.js</span>
+        </button>
+      </div>
 
-        <div class="file-tree-list" id="fileTreeList">
-          <div class="file-folder-node">📂 contracts/</div>
-          <div class="file-item-node" onclick="openFile('invariant-verifier', this)">
-            <span>🦀 invariant-verifier.rs</span>
-            <span class="file-badge-tag">Rust</span>
-          </div>
-          <div class="file-item-node" onclick="openFile('vault-signer', this)">
-            <span>🛡️ vault-signer.c</span>
-            <span class="file-badge-tag">C</span>
-          </div>
-
-          <div class="file-folder-node" style="margin-top:6px;">📂 tasks/</div>
-          <div class="file-item-node active" onclick="openFile('swarm-orchestrator', this)">
-            <span>⚡ swarm-orchestrator.ts</span>
-            <span class="file-badge-tag">TS</span>
-          </div>
-
-          <div class="file-folder-node" style="margin-top:6px;">📂 scripts/</div>
-          <div class="file-item-node" onclick="openFile('tool-runner', this)">
-            <span>🐍 tool-runner.py</span>
-            <span class="file-badge-tag">Py</span>
-          </div>
-
-          <div class="file-folder-node" style="margin-top:6px;">📂 core-app/</div>
-          <div class="file-item-node" onclick="openFile('studio-kernel', this)">
-            <span>🌐 studio-kernel.js</span>
-            <span class="file-badge-tag">JS</span>
-          </div>
-        </div>
-
-        <div style="margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
-          <button type="button" class="editor-action-btn" style="width:100%; justify-content:center;" onclick="createNewMockFile()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>+ New Contract File</span>
+      <div class="editor-actions-strip">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="editor-action-btn primary" onclick="executeEditorAction('sanitize')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Sanitize AST</span>
+          </button>
+          <button class="editor-action-btn" onclick="executeEditorAction('invariants')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Check Invariants</span>
+          </button>
+          <button class="editor-action-btn" onclick="executeEditorAction('toolbench')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>Test in Tool Bench</span>
           </button>
         </div>
-      </aside>
-
-      <!-- Center Pane: Multi-Tab Code Foundry & Editor -->
-      <section class="ide-panel editor-pane" aria-label="Code Editor">
-        <div class="editor-tabs-bar" id="editorTabsBar">
-          <button class="editor-tab-btn active" id="tab-swarm-orchestrator" onclick="openFile('swarm-orchestrator', null)">
-            <span>⚡ swarm-orchestrator.ts</span>
-          </button>
-          <button class="editor-tab-btn" id="tab-invariant-verifier" onclick="openFile('invariant-verifier', null)">
-            <span>🦀 invariant-verifier.rs</span>
-          </button>
-          <button class="editor-tab-btn" id="tab-tool-runner" onclick="openFile('tool-runner', null)">
-            <span>🐍 tool-runner.py</span>
-          </button>
-          <button class="editor-tab-btn" id="tab-vault-signer" onclick="openFile('vault-signer', null)">
-            <span>🛡️ vault-signer.c</span>
-          </button>
-          <button class="editor-tab-btn" id="tab-studio-kernel" onclick="openFile('studio-kernel', null)">
-            <span>🌐 studio-kernel.js</span>
-          </button>
+        <div style="display:flex; gap:8px;">
+          <span id="editorCursorPosition" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--muted); align-self:center;">Ln 14, Col 28 · UTF-8</span>
+          <button class="editor-action-btn" onclick="copyEditorCode()">📋 Copy</button>
         </div>
+      </div>
 
-        <div class="editor-actions-strip">
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="editor-action-btn primary" onclick="executeEditorAction('sanitize')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>Sanitize AST</span>
-            </button>
-            <button class="editor-action-btn" onclick="executeEditorAction('invariants')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span>Check Invariants</span>
-            </button>
-            <button class="editor-action-btn" onclick="executeEditorAction('toolbench')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Test in Tool Bench</span>
-            </button>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <span id="editorCursorPosition" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--muted); align-self:center;">Ln 14, Col 28 · UTF-8</span>
-            <button class="editor-action-btn" onclick="copyEditorCode()">📋 Copy</button>
-          </div>
+      <div class="editor-viewport">
+        <div class="editor-gutters" id="editorGutters">
+          1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17<br/>18<br/>19<br/>20<br/>21<br/>22<br/>23<br/>24
         </div>
-
-        <div class="editor-viewport">
-          <div class="editor-gutters" id="editorGutters">
-            1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17<br/>18<br/>19<br/>20<br/>21<br/>22<br/>23<br/>24
-          </div>
-          <div class="editor-code-container" id="editorCodeContainer" contenteditable="true" spellcheck="false">
+        <div class="editor-code-container" id="editorCodeContainer" contenteditable="true" spellcheck="false">
 <span class="tok-comment">// Zoth Studio Sovereign Swarm Orchestrator v12.0</span>
 <span class="tok-kw">import</span> { <span class="tok-type">AgentMessage</span>, <span class="tok-type">DAGExecutionState</span> } <span class="tok-kw">from</span> <span class="tok-str">"@zoth/core"</span>;
 <span class="tok-kw">import</span> { <span class="tok-type">ShannonEntropy</span> } <span class="tok-kw">from</span> <span class="tok-str">"@zoth/crypto"</span>;
@@ -1292,38 +1329,124 @@ html, body {
     <span class="tok-kw">return await</span> response.json();
   }
 }
-          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Right Pane: Live AST & Invariant Inspector -->
-      <aside class="ide-panel ide-inspector-pane" aria-label="AST Inspector">
-        <div class="pane-header-title">
-          <span>AST &amp; Invariants</span>
-          <span class="invariant-badge pass">100% SECURE</span>
+    <!-- Auxiliary Section 01: Virtual File Tree & Project Explorer -->
+    <div class="zoth-disclosure-wrapper" id="sec-file-explorer" style="margin-bottom: 24px;">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Virtual File Tree &amp; Project Explorer" loading="lazy" />
+          <span class="zoth-visual-icon">📂</span>
         </div>
-
-        <div class="inspector-card">
-          <div class="inspector-card-title">
-            <span>Shannon Entropy H(X)</span>
-            <span style="color:var(--cyan); font-family:var(--mono);">4.12 bits</span>
-          </div>
-          <div style="background:rgba(255,255,255,0.06); height:6px; border-radius:3px; overflow:hidden;">
-            <div style="background:linear-gradient(90deg, var(--green), var(--cyan)); width:68%; height:100%;"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:var(--muted); margin-top:4px; font-family:var(--mono);">
-            <span>0.0 (Uniform)</span>
-            <span>Threshold: 5.2</span>
-            <span>8.0 (Random)</span>
-          </div>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 01 — VIRTUAL FILE TREE &amp; PROJECT EXPLORER</div>
+          <h2 class="zoth-big-heading zoth-animated-text">PROJECT EXPLORER</h2>
+          <div class="zoth-disclosure-summary-line">Virtual sovereign contract workspace, Rust verifiers, TypeScript swarm orchestrators, and local file buffer navigator.</div>
         </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">5 CONTRACT FILES · VIRTUAL FS</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
+        <div class="zoth-disclosure-content-inner">
+          <aside class="ide-panel file-explorer-pane" aria-label="File Explorer">
+            <div class="pane-header-title">
+              <span>Project Explorer</span>
+              <span class="file-badge-tag">5 Files</span>
+            </div>
+            <input type="text" class="file-search-input" id="fileSearchInput" placeholder="Filter workspace files..." oninput="filterFiles()" />
 
-        <div class="inspector-card">
-          <div class="inspector-card-title">
-            <span>Syntax Tree Outline</span>
-            <span style="font-size:0.68rem; color:var(--muted); font-family:var(--mono);">18 Nodes</span>
-          </div>
-          <div class="ast-tree-view" id="astTreeView">
+            <div class="file-tree-list" id="fileTreeList">
+              <div class="file-folder-node">📂 contracts/</div>
+              <div class="file-item-node" onclick="openFile('invariant-verifier', this)">
+                <span>🦀 invariant-verifier.rs</span>
+                <span class="file-badge-tag">Rust</span>
+              </div>
+              <div class="file-item-node" onclick="openFile('vault-signer', this)">
+                <span>🛡️ vault-signer.c</span>
+                <span class="file-badge-tag">C</span>
+              </div>
+
+              <div class="file-folder-node" style="margin-top:6px;">📂 tasks/</div>
+              <div class="file-item-node active" onclick="openFile('swarm-orchestrator', this)">
+                <span>⚡ swarm-orchestrator.ts</span>
+                <span class="file-badge-tag">TS</span>
+              </div>
+
+              <div class="file-folder-node" style="margin-top:6px;">📂 scripts/</div>
+              <div class="file-item-node" onclick="openFile('tool-runner', this)">
+                <span>🐍 tool-runner.py</span>
+                <span class="file-badge-tag">Py</span>
+              </div>
+
+              <div class="file-folder-node" style="margin-top:6px;">📂 core-app/</div>
+              <div class="file-item-node" onclick="openFile('studio-kernel', this)">
+                <span>🌐 studio-kernel.js</span>
+                <span class="file-badge-tag">JS</span>
+              </div>
+            </div>
+
+            <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+              <button type="button" class="editor-action-btn" style="width:100%; justify-content:center;" onclick="createNewMockFile()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>+ New Contract File</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auxiliary Section 02: AST Inspector & Symbol Hierarchy -->
+    <div class="zoth-disclosure-wrapper" id="sec-ast-inspector" style="margin-bottom: 24px;">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/dag-composer-hero.jpg" alt="AST Inspector &amp; Symbol Hierarchy" loading="lazy" />
+          <span class="zoth-visual-icon">⚡</span>
+        </div>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 02 — AST INSPECTOR &amp; SYMBOL HIERARCHY</div>
+          <h2 class="zoth-big-heading zoth-animated-text">AST &amp; INVARIANTS</h2>
+          <div class="zoth-disclosure-summary-line">Real-time Shannon entropy calculation, Tree-Sitter AST syntax outline, and Argon2id zero-cloud invariant checks.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">18 AST NODES · 100% INVARIANTS</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
+        <div class="zoth-disclosure-content-inner">
+          <aside class="ide-panel ide-inspector-pane" aria-label="AST Inspector">
+            <div class="pane-header-title">
+              <span>AST &amp; Invariants</span>
+              <span class="invariant-badge pass">100% SECURE</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+              <div class="inspector-card" style="margin-bottom:0;">
+                <div class="inspector-card-title">
+                  <span>Shannon Entropy H(X)</span>
+                  <span style="color:var(--cyan); font-family:var(--font-mono);">4.12 bits</span>
+                </div>
+                <div style="background:rgba(255,255,255,0.06); height:6px; border-radius:3px; overflow:hidden;">
+                  <div style="background:linear-gradient(90deg, var(--green), var(--cyan)); width:68%; height:100%;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:var(--muted); margin-top:4px; font-family:var(--font-mono);">
+                  <span>0.0 (Uniform)</span>
+                  <span>Threshold: 5.2</span>
+                  <span>8.0 (Random)</span>
+                </div>
+              </div>
+
+              <div class="inspector-card" style="margin-bottom:0;">
+                <div class="inspector-card-title">
+                  <span>Syntax Tree Outline</span>
+                  <span style="font-size:0.68rem; color:var(--muted); font-family:var(--font-mono);">18 Nodes</span>
+                </div>
+                <div class="ast-tree-view" id="astTreeView">
 Program
   ├── ImportDeclaration (@zoth/core)
   ├── ImportDeclaration (@zoth/crypto)
@@ -1334,61 +1457,85 @@ Program
           ├── BinaryExpression (entropy &gt; 5.2)
           ├── CallExpression (fetch local isolate)
           └── ReturnStatement (JSON response)
-          </div>
-        </div>
+                </div>
+              </div>
 
-        <div class="inspector-card">
-          <div class="inspector-card-title">
-            <span>Invariant Guardrails</span>
-          </div>
-          <div class="invariant-check-row">
-            <span>Zero-Cloud Isolate</span>
-            <span class="invariant-badge pass">PASS (0ms)</span>
-          </div>
-          <div class="invariant-check-row">
-            <span>No Unsafe Eval/Eval2</span>
-            <span class="invariant-badge pass">PASS</span>
-          </div>
-          <div class="invariant-check-row">
-            <span>Memory Leaks Guard</span>
-            <span class="invariant-badge pass">0.0 MB</span>
-          </div>
-          <div class="invariant-check-row">
-            <span>Argon2id Key Scope</span>
-            <span class="invariant-badge pass">ENCRYPTED</span>
-          </div>
-        </div>
-      </aside>
-    </div>
-
-    <!-- Bottom Pane: Integrated PTY Terminal Runner -->
-    <section class="terminal-runner-pane" aria-label="Terminal Console">
-      <div class="terminal-tabs-strip">
-        <div class="terminal-tab-group">
-          <button class="terminal-tab-btn active" onclick="switchTerminalTab('pty', this)">💻 Operator PTY (:8484)</button>
-          <button class="terminal-tab-btn" onclick="switchTerminalTab('compiler', this)">⚡ AST Compiler</button>
-          <button class="terminal-tab-btn" onclick="switchTerminalTab('invariants', this)">🛡️ Invariant Journal</button>
-        </div>
-        <div class="terminal-quick-cmds">
-          <button class="editor-action-btn" onclick="runTerminalQuick('zoth run')">▶ zoth run</button>
-          <button class="editor-action-btn" onclick="runTerminalQuick('zoth test')">🧪 zoth test</button>
-          <button class="editor-action-btn" onclick="runTerminalQuick('zoth lint')">🔍 zoth lint</button>
-          <button class="editor-action-btn" onclick="clearTerminal()">🧹 Clear</button>
+              <div class="inspector-card" style="margin-bottom:0;">
+                <div class="inspector-card-title">
+                  <span>Invariant Guardrails</span>
+                </div>
+                <div class="invariant-check-row">
+                  <span>Zero-Cloud Isolate</span>
+                  <span class="invariant-badge pass">PASS (0ms)</span>
+                </div>
+                <div class="invariant-check-row">
+                  <span>No Unsafe Eval/Eval2</span>
+                  <span class="invariant-badge pass">PASS</span>
+                </div>
+                <div class="invariant-check-row">
+                  <span>Memory Leaks Guard</span>
+                  <span class="invariant-badge pass">0.0 MB</span>
+                </div>
+                <div class="invariant-check-row">
+                  <span>Argon2id Key Scope</span>
+                  <span class="invariant-badge pass">ENCRYPTED</span>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
+    </div>
 
-      <div class="terminal-output-console" id="terminalOutput">
+    <!-- Auxiliary Section 03: Subprocess Terminal & Alchemical REPL Runner -->
+    <div class="zoth-disclosure-wrapper" id="sec-terminal-runner" style="margin-bottom: 24px;">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/land/command-deck.jpg" alt="Subprocess Terminal &amp; Alchemical REPL Runner" loading="lazy" />
+          <span class="zoth-visual-icon">💻</span>
+        </div>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 03 — SUBPROCESS TERMINAL &amp; ALCHEMICAL REPL RUNNER</div>
+          <h2 class="zoth-big-heading zoth-animated-text">TERMINAL &amp; REPL</h2>
+          <div class="zoth-disclosure-summary-line">Local loopback PTY terminal :8484, Tree-Sitter AST compiler bytecode executor, and live invariant audit journal.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">PTY :8484 · CLI HARNESS</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
+        <div class="zoth-disclosure-content-inner">
+          <section class="terminal-runner-pane" aria-label="Terminal Console">
+            <div class="terminal-tabs-strip">
+              <div class="terminal-tab-group">
+                <button class="terminal-tab-btn active" onclick="switchTerminalTab('pty', this)">💻 Operator PTY (:8484)</button>
+                <button class="terminal-tab-btn" onclick="switchTerminalTab('compiler', this)">⚡ AST Compiler</button>
+                <button class="terminal-tab-btn" onclick="switchTerminalTab('invariants', this)">🛡️ Invariant Journal</button>
+              </div>
+              <div class="terminal-quick-cmds">
+                <button class="editor-action-btn" onclick="runTerminalQuick('zoth run')">▶ zoth run</button>
+                <button class="editor-action-btn" onclick="runTerminalQuick('zoth test')">🧪 zoth test</button>
+                <button class="editor-action-btn" onclick="runTerminalQuick('zoth lint')">🔍 zoth lint</button>
+                <button class="editor-action-btn" onclick="clearTerminal()">🧹 Clear</button>
+              </div>
+            </div>
+
+            <div class="terminal-output-console" id="terminalOutput">
 [ZOTH FOUNDRY] Kernel initialized on loopback 127.0.0.1:8484
 [AST ENGINE] Loaded Tree-Sitter &amp; Babel Parser v7.24 (In-Memory Sandbox)
 [INVARIANTS] 298 Tool Contracts Loaded · 100% Invariant Verification PASS
 zoth-ide@operator:~$ _
-      </div>
+            </div>
 
-      <div class="terminal-command-bar">
-        <input type="text" class="terminal-input-cmd" id="terminalCmdInput" placeholder="Type a sovereign CLI command (e.g. zoth compile, zoth verify, zoth bench)..." onkeydown="handleTerminalEnter(event)" />
-        <button class="editor-action-btn primary" onclick="submitTerminalCmd()">Execute ↵</button>
+            <div class="terminal-command-bar">
+              <input type="text" class="terminal-input-cmd" id="terminalCmdInput" placeholder="Type a sovereign CLI command (e.g. zoth compile, zoth verify, zoth bench)..." onkeydown="handleTerminalEnter(event)" />
+              <button class="editor-action-btn primary" onclick="submitTerminalCmd()">Execute ↵</button>
+            </div>
+          </section>
+        </div>
       </div>
-    </section>
+    </div>
 
   </main>
 
@@ -1625,5 +1772,6 @@ window.ZothKernel = {
       });
     }
   </script>
+  <script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>
