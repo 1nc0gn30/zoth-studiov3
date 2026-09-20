@@ -2,6 +2,13 @@
 
 <html lang="en">
 <head>
+<script>
+  if (window.location.protocol === 'file:') {
+    const b = document.createElement('base');
+    b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+    document.head.prepend(b);
+  }
+</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Zoth Peer Bus — Decentralized Local Mesh Protocol</title>
@@ -31,9 +38,119 @@
 <link href="/studio/peer-bus-poster.css?v=20260915" rel="stylesheet"/>
 <link href="/styles.css?v=20260816s" rel="stylesheet"/>
 <link href="/studio/studio.css?v=20260816s" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/zoth-disclosure.css" />
 <script src="/assets/zoth-theme.js?v=11"></script>
 <script src="/assets/zoth-hud-embedded.js"></script>
 <style>
+  .zoth-trigger-visual {
+    position: relative !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    max-width: 64px !important;
+  }
+  .zoth-visual-icon {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    pointer-events: none !important;
+  }
+  .zoth-disclosure-wrapper {
+    overflow-x: clip !important;
+    max-width: 100% !important;
+  }
+  .zoth-disclosure-trigger {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  @media (max-width: 600px) {
+    .zoth-disclosure-trigger {
+      flex-wrap: wrap !important;
+      gap: 12px !important;
+      padding: 14px 12px !important;
+    }
+    .zoth-disclosure-indicator {
+      width: 100% !important;
+      margin-left: 0 !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+    }
+  }
+  @media (max-width: 480px) {
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow-x: clip !important;
+    }
+    .bus-deck {
+      width: 100% !important;
+      margin: 12px 0 !important;
+      padding: 0 8px !important;
+      box-sizing: border-box !important;
+    }
+    .zoth-master-disclosure-bar {
+      padding: 10px 12px !important;
+      margin: 12px auto !important;
+      box-sizing: border-box !important;
+      max-width: 100% !important;
+    }
+    .zoth-master-disclosure-status {
+      font-size: 0.72rem !important;
+      flex-wrap: wrap !important;
+    }
+    .zoth-master-disclosure-actions {
+      width: 100% !important;
+      display: flex !important;
+      gap: 6px !important;
+    }
+    .zoth-master-disclosure-actions .zoth-hud-btn {
+      flex: 1 1 0 !important;
+      padding: 6px 8px !important;
+      font-size: 0.68rem !important;
+      justify-content: center !important;
+      min-width: 0 !important;
+    }
+    .zoth-disclosure-wrapper {
+      margin: 16px 0 !important;
+      border-radius: 14px !important;
+    }
+    .zoth-big-heading {
+      font-size: clamp(1.15rem, 5vw, 1.5rem) !important;
+      overflow-wrap: break-word !important;
+      word-break: break-word !important;
+    }
+    .zoth-disclosure-summary-line {
+      font-size: 0.82rem !important;
+    }
+    .zoth-disclosure-content {
+      padding: 0 8px !important;
+    }
+    .zoth-disclosure-wrapper.is-expanded .zoth-disclosure-content {
+      padding: 12px 8px 20px 8px !important;
+    }
+    .peer-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .peer-card {
+      padding: 14px 12px !important;
+      border-radius: 12px !important;
+    }
+  }
+  .peer-tab-pane.is-active,
+  .zoth-disclosure-wrapper.is-expanded .peer-tab-pane {
+    display: flex !important;
+  }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
         .skip-to-content, .skip-link, .skip {
       position: absolute;
       width: 1px;
@@ -1011,6 +1128,21 @@ html, body {
 <span>Signal E2EE Handshake</span>
 </button>
 </nav>
+
+<!-- Master Progressive Disclosure Toolbar -->
+<div class="zoth-master-disclosure-bar" style="margin: 20px 0 24px;">
+  <div class="zoth-master-disclosure-status">
+    <span class="pulse-dot"></span>
+    <span style="font-weight:700; font-family:var(--font-display); letter-spacing:0.04em;">DECENTRALIZED LOCAL PEER BUS PROTOCOL</span>
+    <span style="opacity:0.5; margin: 0 6px;">//</span>
+    <span id="zoth-disclosure-active-counter">FOCUSED VIEW</span>
+  </div>
+  <div class="zoth-master-disclosure-actions">
+    <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all" onclick="window.ZothDisclosure && window.ZothDisclosure.expandAll()">⚡ Expand All</button>
+    <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all" onclick="window.ZothDisclosure && window.ZothDisclosure.collapseAll()">🌀 Focused View</button>
+  </div>
+</div>
+
 <!-- Peer Nodes Status Grid -->
 <div class="peer-grid">
 <!-- Antigravity Primary -->
@@ -1074,188 +1206,267 @@ html, body {
 </div>
 </div>
 </div>
-<!-- ===================================================================
-             PANE 1: PEER MESH & LIVE STREAM (Default)
-             =================================================================== -->
-<div class="peer-tab-pane is-active" id="pane-mesh">
-<!-- Bus Split: Live Message Feed + Dispatcher Form -->
-<div class="bus-split">
-<!-- Left: Live Activity Feed -->
-<div class="peer-card">
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
-  <span>Swarm Activity Stream</span>
-</h3>
-<span id="bus-event-count" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);">6 Events Active</span>
+<!-- =====================================================================
+     SECTION 1: MESH TOPOLOGY VISUALIZER & LIVE STREAM (Collapsible)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper is-expanded" id="peer-mesh-section" style="margin-top: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="true">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Mesh Topology Visualizer" loading="lazy" />
+      <span class="zoth-visual-icon">🕸️</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 01 — MESH TOPOLOGY &amp; LIVE STREAM</div>
+      <h2 class="zoth-big-heading zoth-animated-text">MESH TOPOLOGY VISUALIZER</h2>
+      <div class="zoth-disclosure-summary-line">Real-time peer mesh stream, inter-agent broadcast feed, and loopback message injector.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">MINIMIZE</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">4 PEERS · LIVE BUS FEED</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <div class="peer-tab-pane is-active" id="pane-mesh">
+      <!-- Bus Split: Live Message Feed + Dispatcher Form -->
+      <div class="bus-split">
+        <!-- Left: Live Activity Feed -->
+        <div class="peer-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+              <span>Swarm Activity Stream</span>
+            </h3>
+            <span id="bus-event-count" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);">6 Events Active</span>
+          </div>
+          <div class="feed-box" id="bus-feed-list">
+            <!-- Message items rendered by JS -->
+          </div>
+        </div>
+        <!-- Right: Interactive Message Dispatcher -->
+        <div class="peer-card">
+          <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span>Swarm Broadcast Dispatcher</span>
+          </h3>
+          <p style="font-size: 0.8rem; color: var(--muted); margin: 0;">Publish high-priority JSON messages to the local loopback agent bus.</p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Target Recipient:</label>
+            <select id="dispatch-target" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.8rem;">
+              <option value="all">@all (Broadcast Swarm)</option>
+              <option value="antigravity">@antigravity (Systems / 3D)</option>
+              <option value="grok">@grok (Tools / AST)</option>
+              <option value="hermes">@hermes (Reasoning / Logic)</option>
+              <option value="signal-bridge">@signal-bridge (Mobile E2EE)</option>
+            </select>
+            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+              <button class="btn btn-ghost" onclick="setPresetMsg('AST')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">AST Sync</button>
+              <button class="btn btn-ghost" onclick="setPresetMsg('CONSENSUS')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">Consensus Probe</button>
+              <button class="btn btn-ghost" onclick="setPresetMsg('SIGNAL')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">E2EE Directive</button>
+              <button class="btn btn-ghost" onclick="setPresetMsg('HEALTH')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">Health Ping</button>
+            </div>
+            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-top: 4px;">Message Payload:</label>
+            <textarea id="dispatch-msg" placeholder="Enter directive or sync message..." rows="4" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 10px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.8rem; resize: vertical;"></textarea>
+            <button class="btn" onclick="postSwarmMessage()" style="background: var(--cyan); color: #030408; font-weight: 800; padding: 10px; margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span>Post to Agent Bus</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="feed-box" id="bus-feed-list">
-<!-- Message items rendered by JS -->
+
+<!-- =====================================================================
+     SECTION 2: WATERFALL LATENCY & JITTER MATRIX (Collapsible)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper" id="peer-waterfall-section" style="margin-top: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/terminal-hero.jpg" alt="Waterfall Latency &amp; Jitter Matrix" loading="lazy" />
+      <span class="zoth-visual-icon">🌊</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 02 — EXECUTION SPANS &amp; CASCADE WATERFALL</div>
+      <h2 class="zoth-big-heading zoth-animated-text">WATERFALL LATENCY MATRIX</h2>
+      <div class="zoth-disclosure-summary-line">Multi-hop cascading event traces across the decentralized peer bus with jitter analysis.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">MULTI-HOP SPANS · TRACE MATRIX</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <div class="peer-tab-pane" id="pane-waterfall">
+      <div class="peer-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>
+              <span>Swarm Message Waterfall Spans</span>
+            </h3>
+            <p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Multi-hop cascading event traces across the decentralized peer bus.</p>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn btn-ghost" onclick="injectPeerWaterfall()" style="font-size: 0.72rem; padding: 4px 8px; display: inline-flex; align-items: center; gap: 5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Inject Synthetic Cascade</span>
+            </button>
+            <button class="btn btn-ghost" onclick="clearPeerWaterfall()" style="font-size: 0.72rem; padding: 4px 8px; display: inline-flex; align-items: center; gap: 5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Clear Waterfall</span>
+            </button>
+          </div>
+        </div>
+        <div class="waterfall-track-box" id="peer-waterfall-box">
+          <!-- Waterfall cards injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- =====================================================================
+     SECTION 3: PEER DISCOVERY RADAR & FREQUENCY SWEEP (Collapsible)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper" id="peer-radar-section" style="margin-top: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/brand/zoth-golden-z-192.png" alt="Peer Discovery Radar &amp; Frequency Sweep" loading="lazy" />
+      <span class="zoth-visual-icon">📡</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 03 — SPATIAL TELEMETRY &amp; TOPOLOGY RADAR</div>
+      <h2 class="zoth-big-heading zoth-animated-text">PEER DISCOVERY RADAR</h2>
+      <div class="zoth-disclosure-summary-line">Continuous rolling round-trip ping time-series, frequency sweep, and topology canvas.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">60 TICKS · 4 PEERS · SWEEP</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <div class="peer-tab-pane" id="pane-radar">
+      <div class="peer-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Swarm Latency &amp; Topology Radar</span>
+            </h3>
+            <p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Real-time rolling RTT ping time-series and instant pre-settled topological mesh.</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn" onclick="triggerPeerPingSweep()" style="background: var(--cyan); color: #030408; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;" title="Trigger Round-Trip Ping Sweep">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Ping Sweep</span>
+            </button>
+            <button class="btn btn-ghost" id="btn-peer-graph-mode" onclick="togglePeerRadarMode()" style="font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;" title="Toggle Topology vs Waveform">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              <span>Mode: Topology</span>
+            </button>
+            <button class="btn btn-ghost" id="btn-peer-chaos" onclick="togglePeerChaos()" style="color: #ef4444; border-color: rgba(239,68,68,0.4); font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;" title="Chaos Engineering: Simulate Bus Dropouts">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Chaos: OFF</span>
+            </button>
+          </div>
+        </div>
+        <!-- Chaos Engineering Control Tray -->
+        <div id="peer-chaos-tray" style="display:none; margin-top: 10px; padding: 8px 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-family: var(--font-mono); font-size: 0.72rem; color: #fca5a5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span><strong>CHAOS INJECTOR:</strong></span>
+            <span>Drop Rate: <strong id="peer-chaos-rate-val">30%</strong></span>
+            <input id="peer-chaos-slider" max="80" min="5" oninput="setPeerChaosRate(this.value)" style="width: 100px; accent-color: #ef4444;" type="range" value="30"/>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span>Dropped: <strong id="peer-chaos-counter" style="color: #ef4444;">0</strong> pkts</span>
+            <button class="btn" onclick="injectPeerChaosBurst(4)" style="background: rgba(239,68,68,0.25); border: 1px solid #ef4444; color: #fff; padding: 2px 8px; font-size: 0.68rem; cursor:pointer;">Drop 4 Packets</button>
+          </div>
+        </div>
+        <div class="radar-canvas-wrap" style="margin-top: 10px;">
+          <canvas id="peer-radar-canvas"></canvas>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+          <div style="display: flex; gap: 12px;">
+            <span style="color: var(--cyan);">■ @Antigravity</span>
+            <span style="color: #fbbf24;">■ @Grok</span>
+            <span style="color: #a855f7;">■ @Hermes</span>
+            <span style="color: #10b981;">■ @Local-Zoth</span>
+          </div>
+          <div>Sampling: 60 Ticks · Pre-Settled Topology Active</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<!-- Right: Interactive Message Dispatcher -->
-<div class="peer-card">
-<h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-  <span>Swarm Broadcast Dispatcher</span>
-</h3>
-<p style="font-size: 0.8rem; color: var(--muted); margin: 0;">Publish high-priority JSON messages to the local loopback agent bus.</p>
-<div style="display: flex; flex-direction: column; gap: 8px;">
-<label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Target Recipient:</label>
-<select id="dispatch-target" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.8rem;">
-<option value="all">@all (Broadcast Swarm)</option>
-<option value="antigravity">@antigravity (Systems / 3D)</option>
-<option value="grok">@grok (Tools / AST)</option>
-<option value="hermes">@hermes (Reasoning / Logic)</option>
-<option value="signal-bridge">@signal-bridge (Mobile E2EE)</option>
-</select>
-<div style="display: flex; gap: 4px; flex-wrap: wrap;">
-<button class="btn btn-ghost" onclick="setPresetMsg('AST')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">AST Sync</button>
-<button class="btn btn-ghost" onclick="setPresetMsg('CONSENSUS')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">Consensus Probe</button>
-<button class="btn btn-ghost" onclick="setPresetMsg('SIGNAL')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">E2EE Directive</button>
-<button class="btn btn-ghost" onclick="setPresetMsg('HEALTH')" style="font-size: 0.68rem; padding: 2px 6px; min-height: 28px;">Health Ping</button>
-</div>
-<label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-top: 4px;">Message Payload:</label>
-<textarea id="dispatch-msg" placeholder="Enter directive or sync message..." rows="4" style="background: #03050a; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 10px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.8rem; resize: vertical;"></textarea>
-<button class="btn" onclick="postSwarmMessage()" style="background: var(--cyan); color: #030408; font-weight: 800; padding: 10px; margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-  <span>Post to Agent Bus</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-<!-- ===================================================================
-             PANE 2: LIVE MESSAGE WATERFALL
-             =================================================================== -->
-<div class="peer-tab-pane" id="pane-waterfall">
-<div class="peer-card">
-<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-<div>
-<h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>
-  <span>Swarm Message Waterfall Spans</span>
-</h3>
-<p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Multi-hop cascading event traces across the decentralized peer bus.</p>
-</div>
-<div style="display: flex; gap: 6px; flex-wrap: wrap;">
-<button class="btn btn-ghost" onclick="injectPeerWaterfall()" style="font-size: 0.72rem; padding: 4px 8px; display: inline-flex; align-items: center; gap: 5px;">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-  <span>Inject Synthetic Cascade</span>
-</button>
-<button class="btn btn-ghost" onclick="clearPeerWaterfall()" style="font-size: 0.72rem; padding: 4px 8px; display: inline-flex; align-items: center; gap: 5px;">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-  <span>Clear Waterfall</span>
-</button>
-</div>
-</div>
-<div class="waterfall-track-box" id="peer-waterfall-box">
-<!-- Waterfall cards injected by JS -->
-</div>
-</div>
-</div>
-<!-- ===================================================================
-             PANE 3: PEER LATENCY WAVEFORM RADAR
-             =================================================================== -->
-<div class="peer-tab-pane" id="pane-radar">
-<div class="peer-card">
-<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-<div>
-<h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-  <span>Swarm Latency &amp; Topology Radar</span>
-</h3>
-<p style="font-size: 0.75rem; color: var(--muted); margin: 0;">Real-time rolling RTT ping time-series and instant pre-settled topological mesh.</p>
-</div>
-<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-<button class="btn" onclick="triggerPeerPingSweep()" style="background: var(--cyan); color: #030408; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;" title="Trigger Round-Trip Ping Sweep">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-  <span>Ping Sweep</span>
-</button>
-<button class="btn btn-ghost" id="btn-peer-graph-mode" onclick="togglePeerRadarMode()" style="font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;" title="Toggle Topology vs Waveform">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-  <span>Mode: Topology</span>
-</button>
-<button class="btn btn-ghost" id="btn-peer-chaos" onclick="togglePeerChaos()" style="color: #ef4444; border-color: rgba(239,68,68,0.4); font-size: 0.78rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 5px;" title="Chaos Engineering: Simulate Bus Dropouts">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-  <span>Chaos: OFF</span>
-</button>
-</div>
-</div>
-<!-- Chaos Engineering Control Tray -->
-<div id="peer-chaos-tray" style="display:none; margin-top: 10px; padding: 8px 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-family: var(--font-mono); font-size: 0.72rem; color: #fca5a5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-<div style="display: flex; align-items: center; gap: 10px;">
-<span><strong>CHAOS INJECTOR:</strong></span>
-<span>Drop Rate: <strong id="peer-chaos-rate-val">30%</strong></span>
-<input id="peer-chaos-slider" max="80" min="5" oninput="setPeerChaosRate(this.value)" style="width: 100px; accent-color: #ef4444;" type="range" value="30"/>
-</div>
-<div style="display: flex; gap: 8px; align-items: center;">
-<span>Dropped: <strong id="peer-chaos-counter" style="color: #ef4444;">0</strong> pkts</span>
-<button class="btn" onclick="injectPeerChaosBurst(4)" style="background: rgba(239,68,68,0.25); border: 1px solid #ef4444; color: #fff; padding: 2px 8px; font-size: 0.68rem; cursor:pointer;">Drop 4 Packets</button>
-</div>
-</div>
-<div class="radar-canvas-wrap" style="margin-top: 10px;">
-<canvas id="peer-radar-canvas"></canvas>
-</div>
-<div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-<div style="display: flex; gap: 12px;">
-<span style="color: var(--cyan);">■ @Antigravity</span>
-<span style="color: #fbbf24;">■ @Grok</span>
-<span style="color: #a855f7;">■ @Hermes</span>
-<span style="color: #10b981;">■ @Local-Zoth</span>
-</div>
-<div>Sampling: 60 Ticks · Pre-Settled Topology Active</div>
-</div>
-</div>
-</div>
-<!-- ===================================================================
-             PANE 4: SIGNAL E2EE HANDSHAKE SANDBOX
-             =================================================================== -->
-<div class="peer-tab-pane" id="pane-crypto">
-<div class="peer-card">
-<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-<div>
-<span class="pill pill-cyan" style="font-size: 0.68rem;">SIGNAL DOUBLE RATCHET</span>
-<h3 style="margin: 4px 0 0; font-size: 1.2rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-  <span>E2EE Cryptographic Handshake &amp; Ciphertext Verifier</span>
-</h3>
-<p style="font-size: 0.78rem; color: var(--muted); margin: 0;">Extended Triple Diffie-Hellman (X3DH) ephemeral key exchange simulation.</p>
-</div>
-<div>
-<button class="btn btn-ghost" onclick="generatePeerCryptoKeys()" style="font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px;">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-  <span>Re-roll Prekeys</span>
-</button>
-</div>
-</div>
-<div class="crypto-grid-layout" style="margin-top: 12px;">
-<!-- Transmitter -->
-<div style="display: flex; flex-direction: column; gap: 8px;">
-<label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Direct Message Plaintext:</label>
-<textarea id="peer-crypto-input" rows="3" style="background: #03050a; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 8px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.78rem;">{"action":"CLAIM_AST_LOCK","target":"studio/consensus.html","priority":"CRITICAL"}</textarea>
-<button class="btn" onclick="executePeerCryptoHandshake()" style="background: linear-gradient(135deg, var(--cyan), #d946ef); color: var(--text-primary); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-  <span>Execute Handshake &amp; Encrypt</span>
-</button>
-</div>
-<!-- Inspector -->
-<div style="display: flex; flex-direction: column; gap: 8px;">
-<div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);">
-<span>Safety Number: <strong id="peer-safety-num" style="color: #fbbf24;">48291 03921 59102 38491</strong></span>
-<span id="peer-crypto-badge" style="color: var(--emerald); font-weight: 700;">HMAC: PASS</span>
-</div>
-<div>
-<span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);">Transmitted Ciphertext:</span>
-<div class="crypto-chip" id="peer-ciphertext">U2lnbmFsVjRfRVhUX2VuY3J5cHRlZF83ZTBhNGQ... [IV: a1b2c3 | Tag: 88fa01]</div>
-</div>
-<div>
-<span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--emerald);">Decrypted Verified Plaintext:</span>
-<div class="crypto-chip" id="peer-decrypted" style="border-color: rgba(16,185,129,0.3); color: var(--emerald);">{"action":"CLAIM_AST_LOCK","target":"studio/consensus.html","priority":"CRITICAL"}</div>
-</div>
-</div>
-</div>
-</div>
+
+<!-- =====================================================================
+     SECTION 4: SIGNAL E2EE HANDSHAKE SANDBOX (Collapsible)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper" id="peer-crypto-section" style="margin-top: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/mascot/azoth-portrait.jpg" alt="Signal E2EE Handshake Sandbox" loading="lazy" />
+      <span class="zoth-visual-icon">🔐</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 04 — CRYPTOGRAPHIC PROTOCOL ENCLAVE</div>
+      <h2 class="zoth-big-heading zoth-animated-text">SIGNAL E2EE HANDSHAKE</h2>
+      <div class="zoth-disclosure-summary-line">Extended Triple Diffie-Hellman (X3DH) prekey exchange, Double Ratchet step simulator &amp; authenticated AEAD verification.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">X3DH · DOUBLE RATCHET · HMAC PASS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <div class="peer-tab-pane" id="pane-crypto">
+      <div class="peer-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <span class="pill pill-cyan" style="font-size: 0.68rem;">SIGNAL DOUBLE RATCHET</span>
+            <h3 style="margin: 4px 0 0; font-size: 1.2rem; color: var(--text-primary); display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--cyan);"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>E2EE Cryptographic Handshake &amp; Ciphertext Verifier</span>
+            </h3>
+            <p style="font-size: 0.78rem; color: var(--muted); margin: 0;">Extended Triple Diffie-Hellman (X3DH) ephemeral key exchange simulation.</p>
+          </div>
+          <div>
+            <button class="btn btn-ghost" onclick="generatePeerCryptoKeys()" style="font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Re-roll Prekeys</span>
+            </button>
+          </div>
+        </div>
+        <div class="crypto-grid-layout" style="margin-top: 12px;">
+          <!-- Transmitter -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">Direct Message Plaintext:</label>
+            <textarea id="peer-crypto-input" rows="3" style="background: #03050a; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 8px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.78rem;">{"action":"CLAIM_AST_LOCK","target":"studio/consensus.html","priority":"CRITICAL"}</textarea>
+            <button class="btn" onclick="executePeerCryptoHandshake()" style="background: linear-gradient(135deg, var(--cyan), #d946ef); color: var(--text-primary); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Execute Handshake &amp; Encrypt</span>
+            </button>
+          </div>
+          <!-- Inspector -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);">
+              <span>Safety Number: <strong id="peer-safety-num" style="color: #fbbf24;">48291 03921 59102 38491</strong></span>
+              <span id="peer-crypto-badge" style="color: var(--emerald); font-weight: 700;">HMAC: PASS</span>
+            </div>
+            <div>
+              <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);">Transmitted Ciphertext:</span>
+              <div class="crypto-chip" id="peer-ciphertext">U2lnbmFsVjRfRVhUX2VuY3J5cHRlZF83ZTBhNGQ... [IV: a1b2c3 | Tag: 88fa01]</div>
+            </div>
+            <div>
+              <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--emerald);">Decrypted Verified Plaintext:</span>
+              <div class="crypto-chip" id="peer-decrypted" style="border-color: rgba(16,185,129,0.3); color: var(--emerald);">{"action":"CLAIM_AST_LOCK","target":"studio/consensus.html","priority":"CRITICAL"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 </div>
 </main>
@@ -1271,14 +1482,24 @@ html, body {
       /* Pane Switching */
       window.switchPeerPane = function(paneId, btn) {
         document.querySelectorAll('.peer-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        if (btn) btn.classList.add('active');
 
         document.querySelectorAll('.peer-tab-pane').forEach(p => p.classList.remove('is-active'));
         const target = document.getElementById(`pane-${paneId}`);
-        if (target) target.classList.add('is-active');
+        if (target) {
+          target.classList.add('is-active');
+          const wrapper = target.closest('.zoth-disclosure-wrapper');
+          if (wrapper && window.ZothDisclosure) {
+            window.ZothDisclosure.expand(wrapper);
+            setTimeout(() => {
+              wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 60);
+          }
+        }
 
         if (paneId === 'radar') {
           resizePeerCanvas();
+          drawPeerRadar();
         }
       };
 

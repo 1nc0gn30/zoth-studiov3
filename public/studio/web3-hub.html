@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      const b = document.createElement('base');
+      b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+      document.head.prepend(b);
+    }
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Web3 Sovereign Bridge &amp; Live Solana Swarm Tracker — Zoth Studio</title>
@@ -11,6 +18,7 @@
   <link rel="stylesheet" href="/assets/zoth-theme.css?v=11">
   <link rel="stylesheet" href="/assets/zoth-pet-hud.css">
   <link rel="stylesheet" href="/assets/zoth-footer.css">
+  <link rel="stylesheet" href="/assets/zoth-disclosure.css" />
   <script src="/assets/zoth-theme.js?v=11"></script>
   <script src="/assets/zoth-nav.js?v=11" defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -1061,6 +1069,90 @@ html, body {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+
+.zoth-trigger-visual {
+  position: relative !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 64px !important;
+}
+.zoth-visual-icon {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+.zoth-disclosure-wrapper {
+  overflow-x: clip !important;
+  max-width: 100% !important;
+}
+.zoth-disclosure-trigger {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 600px) {
+  .zoth-disclosure-trigger {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    padding: 14px 12px !important;
+  }
+  .zoth-disclosure-indicator {
+    width: 100% !important;
+    margin-left: 0 !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+}
+@media (max-width: 480px) {
+  .zoth-master-disclosure-bar {
+    padding: 10px 12px !important;
+    margin: 12px auto !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+  .zoth-master-disclosure-status {
+    font-size: 0.72rem !important;
+    flex-wrap: wrap !important;
+  }
+  .zoth-master-disclosure-actions {
+    width: 100% !important;
+    display: flex !important;
+    gap: 6px !important;
+  }
+  .zoth-master-disclosure-actions .zoth-hud-btn {
+    flex: 1 1 0 !important;
+    padding: 6px 8px !important;
+    font-size: 0.68rem !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+  }
+  .zoth-disclosure-wrapper {
+    margin: 16px 0 !important;
+    border-radius: 14px !important;
+  }
+  .zoth-big-heading {
+    font-size: clamp(1.15rem, 5vw, 1.5rem) !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
+  .zoth-disclosure-summary-line {
+    font-size: 0.82rem !important;
+  }
+  .zoth-disclosure-content {
+    padding: 0 12px !important;
+  }
+  .zoth-disclosure-wrapper.is-expanded .zoth-disclosure-content {
+    padding: 12px 12px 20px 12px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1137,7 +1229,21 @@ html, body {
       </div>
     </div>
 
-    <!-- Main 2-Column Workstation Grid -->
+    <!-- Master Progressive Disclosure Toolbar -->
+    <div class="zoth-master-disclosure-bar" style="margin: 20px 0 24px;">
+      <div class="zoth-master-disclosure-status">
+        <span class="pulse-dot"></span>
+        <span style="font-weight:700; font-family:var(--font-display); letter-spacing:0.04em;">WEB3 SOVEREIGN BRIDGE &amp; SOLANA SWARM TRACKER</span>
+        <span style="opacity:0.5; margin: 0 6px;">//</span>
+        <span id="zoth-disclosure-active-counter">FOCUSED VIEW</span>
+      </div>
+      <div class="zoth-master-disclosure-actions">
+        <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all" onclick="window.ZothDisclosure &amp;&amp; window.ZothDisclosure.expandAll()">⚡ Expand All</button>
+        <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all" onclick="window.ZothDisclosure &amp;&amp; window.ZothDisclosure.collapseAll()">🌀 Focused View</button>
+      </div>
+    </div>
+
+    <!-- Main 2-Column Workstation Grid: Left Swarm Wallet Gateway | Right Live Solana Canvas Intelligence -->
     <div class="web3-main-grid">
       
       <!-- Left Column: Swarm Wallet Gateway & Permissions -->
@@ -1205,51 +1311,6 @@ html, body {
             <span style="color:#cbd5e1;">Live Balance:</span>
             <strong id="active-wallet-balance" style="color:#14f195; font-size:0.95rem;">0.00 SOL</strong>
           </div>
-        </div>
-
-        <!-- Multi-Chain Network Selector & Interactive Transaction Simulator -->
-        <div style="background:rgba(15, 23, 42, 0.6); border:1px solid rgba(153, 69, 255, 0.3); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-            <strong style="font-size:0.88rem; color:#fff; display:inline-flex; align-items:center; gap:6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-              Multi-Chain Swarm Bridge
-            </strong>
-            <span id="chain-badge-status" style="font-family:var(--font-mono); font-size:0.68rem; color:#14f195; background:rgba(20,241,149,0.15); padding:2px 8px; border-radius:999px; font-weight:700;">● SOLANA DEVNET</span>
-          </div>
-
-          <!-- Multi-Chain Segmented Switch -->
-          <div class="chain-selector-segmented" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; background:rgba(0,0,0,0.5); padding:4px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
-            <button type="button" class="chain-tab active" id="tab-chain-solana" onclick="switchNetwork('solana')" style="padding:6px 4px; font-size:0.72rem; font-family:var(--font-mono); border:none; background:rgba(153, 69, 255, 0.25); color:#fff; border-radius:6px; cursor:pointer; font-weight:700; transition:all 0.2s;">Solana Devnet</button>
-            <button type="button" class="chain-tab" id="tab-chain-evm" onclick="switchNetwork('evm')" style="padding:6px 4px; font-size:0.72rem; font-family:var(--font-mono); border:none; background:transparent; color:#94a3b8; border-radius:6px; cursor:pointer; font-weight:700; transition:all 0.2s;">Ethereum L2</button>
-            <button type="button" class="chain-tab" id="tab-chain-mesh" onclick="switchNetwork('mesh')" style="padding:6px 4px; font-size:0.72rem; font-family:var(--font-mono); border:none; background:transparent; color:#94a3b8; border-radius:6px; cursor:pointer; font-weight:700; transition:all 0.2s;">Sovereign Mesh</button>
-          </div>
-
-          <!-- Transaction Parameters & Payload Inspector -->
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-              <div>
-                <label style="font-family:var(--font-mono); font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:2px;">TX Target / Contract</label>
-                <input type="text" id="sim-tx-recipient" value="9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin" class="web3-input" style="padding:6px 8px; font-size:0.72rem;">
-              </div>
-              <div>
-                <label style="font-family:var(--font-mono); font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:2px;">Amount / Gas Limit</label>
-                <input type="text" id="sim-tx-amount" value="0.001 SOL (Gas: ~0.000005)" class="web3-input" style="padding:6px 8px; font-size:0.72rem;">
-              </div>
-            </div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:2px;">
-              <button type="button" id="btn-agent-sign-msg" class="web3-action-btn btn-sol" style="padding:8px 10px; font-size:0.72rem;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                Sign Allowance
-              </button>
-              <button type="button" id="btn-agent-send-sim" class="web3-action-btn btn-cyan" style="padding:8px 10px; font-size:0.72rem;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                Execute Sim TX
-              </button>
-            </div>
-          </div>
-          
-          <div id="agent-tx-log" style="display:none; padding:10px 12px; background:rgba(0,0,0,0.7); border-radius:8px; border:1px solid rgba(0,240,255,0.2); font-family:var(--font-mono); font-size:0.72rem; color:#38bdf8; word-break:break-all; max-height:120px; overflow-y:auto; line-height:1.5;"></div>
         </div>
 
         <!-- Swarm Agent Permission Delegations -->
@@ -1339,11 +1400,49 @@ html, body {
         <div class="card-head">
           <h2 class="card-head-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-            Live Crypto Market Matrix
+            Live Solana Market Matrix
           </h2>
           <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan); font-weight:700;">Real-Time 2.5s Pulse</span>
         </div>
 
+        <!-- Real-Time Interactive Canvas Chart -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <div class="chart-title-box">
+              <div style="width:36px; height:36px; border-radius:8px; background:rgba(20, 241, 149, 0.12); display:flex; align-items:center; justify-content:center; color:#14f195;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+              </div>
+              <div>
+                <h3 style="margin:0; font-size:1.1rem; color:#fff;" id="active-coin-title">Solana (SOL/USD) Live Candlestick &amp; Tick Flow</h3>
+                <small style="color:#94a3b8; font-family:var(--font-mono); font-size:0.72rem;">Hardware Accelerated Canvas Renderer</small>
+              </div>
+            </div>
+            <div class="chart-price-display" id="chart-hero-price">$204.80</div>
+          </div>
+          <canvas id="cryptoCanvas" width="800" height="280"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 01: Multi-Token Market Mesh & Price Tickers (Collapsible Disclosure) -->
+    <div class="zoth-disclosure-wrapper" id="token-mesh-section">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/land/terminal-hero.jpg" alt="Multi-Token Market Mesh" loading="lazy">
+          <span class="zoth-visual-icon">🪙</span>
+        </div>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 01 — MULTI-TOKEN MARKET MESH &amp; PRICING</div>
+          <h2 class="zoth-big-heading zoth-animated-text">MARKET MESH &amp; TICKERS</h2>
+          <div class="zoth-disclosure-summary-line">Real-time 2.5s price pulse, cross-chain DEX rate indices, and continuous volatility metrics for SOL, BTC, ETH, and AVAX.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">4 TOKENS · 2.5s PULSE</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
         <!-- Token Quick Switcher Grid -->
         <div class="token-grid" id="token-grid">
           <!-- Solana -->
@@ -1398,24 +1497,27 @@ html, body {
             <div class="token-name">Avalanche C-Chain</div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Real-Time Interactive Canvas Chart -->
-        <div class="chart-container">
-          <div class="chart-header">
-            <div class="chart-title-box">
-              <div style="width:36px; height:36px; border-radius:8px; background:rgba(20, 241, 149, 0.12); display:flex; align-items:center; justify-content:center; color:#14f195;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-              </div>
-              <div>
-                <h3 style="margin:0; font-size:1.1rem; color:#fff;" id="active-coin-title">Solana (SOL/USD) Live Candlestick &amp; Tick Flow</h3>
-                <small style="color:#94a3b8; font-family:var(--font-mono); font-size:0.72rem;">Hardware Accelerated Canvas Renderer</small>
-              </div>
-            </div>
-            <div class="chart-price-display" id="chart-hero-price">$204.80</div>
-          </div>
-          <canvas id="cryptoCanvas" width="800" height="280"></canvas>
+    <!-- 02: Whale Transaction Stream & On-Chain Feed (Collapsible Disclosure) -->
+    <div class="zoth-disclosure-wrapper" id="whale-stream-section">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/land/command-deck.jpg" alt="Whale Transaction Stream" loading="lazy">
+          <span class="zoth-visual-icon">🐋</span>
         </div>
-
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 02 — MEMPOOL FLOW &amp; HIGH-VALUE TELEMETRY</div>
+          <h2 class="zoth-big-heading zoth-animated-text">WHALE TRANSACTION STREAM</h2>
+          <div class="zoth-disclosure-summary-line">Real-time mempool telemetry tracking high-velocity block transfers, Raydium CPMM DEX swaps, and Jito MEV staking delegations.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">LIVE MEMPOOL · STREAMING</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
         <!-- Whale Transaction Radar -->
         <div class="whale-radar-box">
           <div class="whale-radar-head">
@@ -1440,9 +1542,128 @@ html, body {
             </div>
           </div>
         </div>
-
       </div>
+    </div>
 
+    <!-- 03: Autonomous Agent Transaction Ledger & Simulator (Collapsible Disclosure) -->
+    <div class="zoth-disclosure-wrapper" id="agent-ledger-section">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Autonomous Agent Transaction Ledger" loading="lazy">
+          <span class="zoth-visual-icon">⚡</span>
+        </div>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 03 — AUTONOMOUS AGENT SESSION KEYS &amp; TRANSACTIONS</div>
+          <h2 class="zoth-big-heading zoth-animated-text">AGENT TRANSACTION LEDGER</h2>
+          <div class="zoth-disclosure-summary-line">Multi-chain swarm bridge, cryptographic allowance signing, autonomous simulation execution, and live on-chain agent settlement records.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">SESSION KEYS · :8787 ENCLAVE</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
+        <!-- Multi-Chain Network Selector & Interactive Transaction Simulator -->
+        <div style="background:rgba(15, 23, 42, 0.6); border:1px solid rgba(153, 69, 255, 0.3); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:12px; margin-bottom: 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <strong style="font-size:0.88rem; color:#fff; display:inline-flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="21" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              Multi-Chain Swarm Bridge &amp; Transaction Simulator
+            </strong>
+            <span id="chain-badge-status" style="font-family:var(--font-mono); font-size:0.68rem; color:#14f195; background:rgba(20,241,149,0.15); padding:2px 8px; border-radius:999px; font-weight:700;">● SOLANA DEVNET</span>
+          </div>
+
+          <!-- Multi-Chain Segmented Switch -->
+          <div class="chain-selector-segmented" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; background:rgba(0,0,0,0.5); padding:4px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="chain-tab active" id="tab-chain-solana" onclick="switchNetwork('solana')" style="padding:6px 4px; font-size:0.72rem; font-family:var(--font-mono); border:none; background:rgba(153, 69, 255, 0.25); color:#fff; border-radius:6px; cursor:pointer; font-weight:700; transition:all 0.2s;">Solana Devnet</button>
+            <button type="button" class="chain-tab" id="tab-chain-evm" onclick="switchNetwork('evm')" style="padding:6px 4px; font-size:0.72rem; font-family:var(--font-mono); border:none; background:transparent; color:#94a3b8; border-radius:6px; cursor:pointer; font-weight:700; transition:all 0.2s;">Ethereum L2</button>
+            <button type="button" class="chain-tab" id="tab-chain-mesh" onclick="switchNetwork('mesh')" style="padding:6px 4px; font-size:0.72rem; font-family:var(--font-mono); border:none; background:transparent; color:#94a3b8; border-radius:6px; cursor:pointer; font-weight:700; transition:all 0.2s;">Sovereign Mesh</button>
+          </div>
+
+          <!-- Transaction Parameters & Payload Inspector -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <div>
+                <label style="font-family:var(--font-mono); font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:2px;">TX Target / Contract</label>
+                <input type="text" id="sim-tx-recipient" value="9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin" class="web3-input" style="padding:6px 8px; font-size:0.72rem;">
+              </div>
+              <div>
+                <label style="font-family:var(--font-mono); font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:2px;">Amount / Gas Limit</label>
+                <input type="text" id="sim-tx-amount" value="0.001 SOL (Gas: ~0.000005)" class="web3-input" style="padding:6px 8px; font-size:0.72rem;">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:2px;">
+              <button type="button" id="btn-agent-sign-msg" class="web3-action-btn btn-sol" style="padding:8px 10px; font-size:0.72rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                Sign Allowance
+              </button>
+              <button type="button" id="btn-agent-send-sim" class="web3-action-btn btn-cyan" style="padding:8px 10px; font-size:0.72rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                Execute Sim TX
+              </button>
+            </div>
+          </div>
+          
+          <div id="agent-tx-log" style="display:none; padding:10px 12px; background:rgba(0,0,0,0.7); border-radius:8px; border:1px solid rgba(0,240,255,0.2); font-family:var(--font-mono); font-size:0.72rem; color:#38bdf8; word-break:break-all; max-height:120px; overflow-y:auto; line-height:1.5;"></div>
+        </div>
+
+        <!-- Live Swarm Transaction Ledger -->
+        <div class="tx-table-wrap" style="background:rgba(8, 12, 24, 0.6); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="margin:0; font-family:var(--font-display); font-size:1.15rem; color:#fff; display:inline-flex; align-items:center; gap:8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Live Swarm Transaction Ledger
+              </h3>
+              <small style="color:#94a3b8; font-family:var(--font-mono); font-size:0.72rem; display:block; margin-top:2px;">Real-time on-chain transaction records from connected session keys &amp; agents</small>
+            </div>
+            <button type="button" id="btn-request-airdrop" class="web3-action-btn btn-gold" style="padding:8px 14px; font-size:0.75rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+              Request 1.0 SOL Devnet Airdrop
+            </button>
+          </div>
+
+          <table class="tx-table">
+            <thead>
+              <tr>
+                <th>Tx Signature</th>
+                <th>Agent Caller</th>
+                <th>Action Type</th>
+                <th>Payload Amount</th>
+                <th>Network Fee</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tx-ledger-body">
+              <tr>
+                <td><a href="https://solscan.io/tx/5K2d...87f" target="_blank" style="color:#00f0ff; text-decoration:none;">5K2d...87f ↗</a></td>
+                <td>@AZOTH (Prime)</td>
+                <td>Session Key Attestation</td>
+                <td>0.00 SOL</td>
+                <td>0.000005 SOL</td>
+                <td><span style="color:#14f195; font-weight:700;">● Finalized</span></td>
+              </tr>
+              <tr>
+                <td><a href="https://solscan.io/tx/4m9a...11b" target="_blank" style="color:#00f0ff; text-decoration:none;">4m9a...11b ↗</a></td>
+                <td>@DRACO (Compiler)</td>
+                <td>Anchor Bytecode Proof</td>
+                <td>0.001 SOL</td>
+                <td>0.000008 SOL</td>
+                <td><span style="color:#14f195; font-weight:700;">● Finalized</span></td>
+              </tr>
+              <tr>
+                <td><a href="https://solscan.io/tx/2p8c...64a" target="_blank" style="color:#00f0ff; text-decoration:none;">2p8c...64a ↗</a></td>
+                <td>@LYCAN (Sentinel)</td>
+                <td>Liquidity Health Check</td>
+                <td>0.00 SOL</td>
+                <td>0.000005 SOL</td>
+                <td><span style="color:#14f195; font-weight:700;">● Finalized</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- Advanced Web3 Tooling Suite Grid -->
@@ -1552,62 +1773,6 @@ html, body {
         </button>
       </div>
 
-    </div>
-
-    <!-- Live Swarm Transaction Ledger -->
-    <div class="tx-table-wrap">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-        <div>
-          <h3 style="margin:0; font-family:var(--font-display); font-size:1.15rem; color:#fff; display:inline-flex; align-items:center; gap:8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            Live Swarm Transaction Ledger
-          </h3>
-          <small style="color:#94a3b8; font-family:var(--font-mono); font-size:0.72rem; display:block; margin-top:2px;">Real-time on-chain transaction records from connected session keys &amp; agents</small>
-        </div>
-        <button type="button" id="btn-request-airdrop" class="web3-action-btn btn-gold" style="padding:8px 14px; font-size:0.75rem;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
-          Request 1.0 SOL Devnet Airdrop
-        </button>
-      </div>
-
-      <table class="tx-table">
-        <thead>
-          <tr>
-            <th>Tx Signature</th>
-            <th>Agent Caller</th>
-            <th>Action Type</th>
-            <th>Payload Amount</th>
-            <th>Network Fee</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="tx-ledger-body">
-          <tr>
-            <td><a href="https://solscan.io/tx/5K2d...87f" target="_blank" style="color:#00f0ff; text-decoration:none;">5K2d...87f ↗</a></td>
-            <td>@AZOTH (Prime)</td>
-            <td>Session Key Attestation</td>
-            <td>0.00 SOL</td>
-            <td>0.000005 SOL</td>
-            <td><span style="color:#14f195; font-weight:700;">● Finalized</span></td>
-          </tr>
-          <tr>
-            <td><a href="https://solscan.io/tx/4m9a...11b" target="_blank" style="color:#00f0ff; text-decoration:none;">4m9a...11b ↗</a></td>
-            <td>@DRACO (Compiler)</td>
-            <td>Anchor Bytecode Proof</td>
-            <td>0.001 SOL</td>
-            <td>0.000008 SOL</td>
-            <td><span style="color:#14f195; font-weight:700;">● Finalized</span></td>
-          </tr>
-          <tr>
-            <td><a href="https://solscan.io/tx/2p8c...64a" target="_blank" style="color:#00f0ff; text-decoration:none;">2p8c...64a ↗</a></td>
-            <td>@LYCAN (Sentinel)</td>
-            <td>Liquidity Health Check</td>
-            <td>0.00 SOL</td>
-            <td>0.000005 SOL</td>
-            <td><span style="color:#14f195; font-weight:700;">● Finalized</span></td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
   </main>
@@ -2362,5 +2527,6 @@ Timestamp: ${timestamp}`;
       }, 2200);
     });
   </script>
+  <script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>

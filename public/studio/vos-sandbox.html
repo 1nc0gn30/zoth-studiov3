@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      const b = document.createElement('base');
+      b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+      document.head.prepend(b);
+    }
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>vOS Sandbox & WebContainer — In-Browser WebAssembly IDE | Zoth Studio</title>
@@ -24,6 +31,7 @@
   <link rel="stylesheet" href="/assets/zoth-guide.css" />
   <link rel="stylesheet" href="/assets/vendor/xterm/xterm.css" />
   <link rel="stylesheet" href="/assets/zoth-interactive-dock.css?v=11" />
+  <link rel="stylesheet" href="/assets/zoth-disclosure.css" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -132,11 +140,11 @@
     html, body {
       margin: 0;
       padding: 0;
-      height: 100vh;
-      max-height: 100vh;
+      min-height: 100vh;
+      height: auto;
       max-width: 100vw;
-      overflow-x: hidden;
-      overflow-y: hidden;
+      overflow-x: clip;
+      overflow-y: auto;
       background: var(--vos-bg);
       color: var(--vos-text);
       font-family: var(--font-theme-body, "Figtree", sans-serif);
@@ -346,34 +354,103 @@
       color: var(--vos-red);
     }
 
-    /* Master Workspace Split Grid */
+    /* Master Workspace Progressive Disclosure Layout */
     .vos-workspace-main {
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-x: clip;
+      overflow-y: visible;
       position: relative;
       min-height: 0;
       width: 100%;
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 0 16px 40px;
+      box-sizing: border-box;
     }
 
     .vos-split-top {
-      flex: 1;
       display: flex;
-      min-height: 0;
-      border-bottom: 1px solid var(--vos-border);
+      flex-direction: column;
       width: 100%;
     }
 
-    /* Left Pane: Explorer & Editor */
+    /* Left Pane: Explorer & Editor (Primary Prominent Workstation) */
     .vos-pane-editor-wrap {
-      width: 50%;
-      min-width: 320px;
+      width: 100%;
+      min-width: 0;
+      height: 540px;
       display: flex;
-      border-right: 1px solid var(--vos-border);
+      border: 1px solid var(--vos-border);
+      border-radius: 14px;
       background: var(--vos-panel-bg);
       position: relative;
-      min-height: 0;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+      box-sizing: border-box;
+    }
+
+    /* Telemetry Deck inside Progressive Disclosure */
+    .vos-telemetry-deck {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .vos-telemetry-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px;
+      background: var(--vos-panel-bg);
+      border: 1px solid var(--vos-border);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      box-sizing: border-box;
+    }
+
+    .vos-telemetry-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .vos-telemetry-title {
+      font-family: var(--vos-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--vos-text);
+      letter-spacing: 0.04em;
+    }
+
+    .vos-telemetry-badge {
+      font-family: var(--vos-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--vos-cyan);
+      background: rgba(0, 240, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+    }
+
+    .vos-meter-bar-wrap.large {
+      width: 100%;
+      height: 8px;
+      background: rgba(125, 125, 125, 0.18);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .vos-telemetry-card-desc {
+      font-size: 0.7rem;
+      color: var(--vos-muted);
+      line-height: 1.4;
     }
 
     /* Explorer Sidebar */
@@ -613,13 +690,17 @@
 
     /* Right Pane: Live Browser Preview */
     .vos-pane-preview-wrap {
-      flex: 1;
+      width: 100%;
+      height: 560px;
       display: flex;
       flex-direction: column;
-      min-width: 320px;
+      min-width: 0;
       background: var(--vos-bg);
+      border: 1px solid var(--vos-border);
+      border-radius: 12px;
+      overflow: hidden;
       position: relative;
-      min-height: 0;
+      box-sizing: border-box;
     }
 
     .vos-preview-toolbar {
@@ -734,16 +815,27 @@
       display: block;
     }
 
-    /* Live Preview Console Logger Drawer */
+    /* Live Preview Console Logger Drawer & Terminal Stack */
+    .vos-console-terminal-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
     .vos-preview-console-drawer {
-      height: 120px;
+      height: 140px;
       background: var(--vos-panel-bg);
-      border-top: 1px solid var(--vos-border);
+      border: 1px solid var(--vos-border);
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
       font-family: var(--vos-mono);
       font-size: 0.7rem;
       flex-shrink: 0;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
     .vos-console-header {
@@ -784,14 +876,17 @@
 
     /* Bottom Pane: Interactive WebAssembly Terminal */
     .vos-split-bottom {
-      height: 220px;
-      min-height: 140px;
+      height: 280px;
+      min-height: 200px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       background: var(--vos-bg);
-      border-top: 1px solid var(--vos-border);
+      border: 1px solid var(--vos-border);
+      border-radius: 10px;
       position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
     .vos-terminal-toolbar {
@@ -1091,6 +1186,65 @@ html, body {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+
+/* Responsive Safeguards & Progressive Disclosure Rules */
+.zoth-trigger-visual {
+  position: relative !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 64px !important;
+}
+.zoth-visual-icon {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+.zoth-disclosure-wrapper {
+  overflow-x: clip !important;
+  max-width: 100% !important;
+}
+.zoth-disclosure-trigger {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+.zoth-disclosure-content {
+  overflow-x: clip !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+.zoth-disclosure-content-inner {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+.vos-device-frame {
+  max-width: 100% !important;
+}
+@media (max-width: 600px) {
+  .zoth-big-heading {
+    font-size: clamp(1.2rem, 5vw, 1.8rem) !important;
+  }
+  .zoth-master-disclosure-bar {
+    padding: 12px 16px !important;
+  }
+  .zoth-disclosure-trigger {
+    padding: 16px !important;
+  }
+  .zoth-disclosure-content {
+    padding: 0 16px !important;
+  }
+  .zoth-disclosure-wrapper.is-expanded .zoth-disclosure-content {
+    padding: 12px 16px 24px 16px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1138,21 +1292,6 @@ html, body {
       </button>
     </div>
 
-    <div class="vos-telemetry-cluster" aria-label="Hardware Resource Emulation">
-      <div class="vos-meter-item" title="Simulated CPU Allocation">
-        <div class="vos-meter-label"><span>CPU</span><span id="meter-cpu-val">0.0%</span></div>
-        <div class="vos-meter-bar-wrap"><div class="vos-meter-fill" id="meter-cpu-fill" style="width:0%;"></div></div>
-      </div>
-      <div class="vos-meter-item" title="In-Memory VFS & WASM Heap">
-        <div class="vos-meter-label"><span>RAM</span><span id="meter-ram-val">0.0 MB</span></div>
-        <div class="vos-meter-bar-wrap"><div class="vos-meter-fill" id="meter-ram-fill" style="width:0%;"></div></div>
-      </div>
-      <div class="vos-meter-item" title="POSIX Virtual File System Inodes">
-        <div class="vos-meter-label"><span>VFS</span><span id="meter-vfs-val">0 files</span></div>
-        <div class="vos-meter-bar-wrap"><div class="vos-meter-fill" id="meter-vfs-fill" style="width:0%;"></div></div>
-      </div>
-    </div>
-
     <div class="vos-actions-group">
       <button type="button" class="vos-btn primary" id="btn-run" title="Run &amp; Compile Live Preview (Ctrl+Enter)">
         <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
@@ -1177,123 +1316,226 @@ html, body {
     </div>
   </div>
 
+  <!-- Master Progressive Disclosure Toolbar -->
+  <div class="zoth-master-disclosure-bar" style="margin: 16px auto 20px; max-width: 1680px; padding: 14px 24px;">
+    <div class="zoth-master-disclosure-status">
+      <span class="pulse-dot"></span>
+      <span style="letter-spacing:0.06em; font-weight:700;">VOS WEBCONTAINER &amp; IN-BROWSER WASM IDE</span>
+      <span style="opacity:0.5;">//</span>
+      <span id="zoth-disclosure-active-counter">FOCUSED VIEW</span>
+    </div>
+    <div class="zoth-master-disclosure-actions">
+      <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all" onclick="window.ZothDisclosure &amp;&amp; window.ZothDisclosure.expandAll()">⚡ Expand All</button>
+      <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all" onclick="window.ZothDisclosure &amp;&amp; window.ZothDisclosure.collapseAll()">🌀 Focused View</button>
+    </div>
+  </div>
+
   <!-- Master Split Workstation -->
   <main class="vos-workspace-main">
     
-    <!-- Split Top: Editor & Live Preview -->
-    <div class="vos-split-top">
-      
-      <!-- Left Pane: File Explorer & Code Editor -->
-      <section class="vos-pane-editor-wrap">
-        
-        <!-- File Explorer -->
-        <div class="vos-file-tree-pane">
-          <div class="vos-pane-header">
-            <span>Explorer</span>
-            <div class="vos-tree-actions">
-              <button class="vos-icon-btn" id="btn-new-file" title="New File">
-                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              </button>
-              <button class="vos-icon-btn" id="btn-refresh-tree" title="Refresh Tree">
-                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-              </button>
-            </div>
-          </div>
-          <ul class="vos-file-list" id="file-tree-list">
-            <!-- Dynamically populated by VFS tree -->
-          </ul>
-        </div>
-
-        <!-- Code Editor -->
-        <div class="vos-code-editor-pane">
-          <div class="vos-tabs-bar" id="editor-tabs">
-            <div class="vos-tab active" data-file="/project/index.html">
-              <span>index.html</span>
-            </div>
-          </div>
-          <div class="vos-editor-body">
-            <div class="vos-line-numbers" id="line-numbers">1</div>
-            <textarea class="vos-code-textarea" id="code-editor" spellcheck="false" autocomplete="off"></textarea>
-          </div>
-        </div>
-      </section>
-
-      <!-- Right Pane: Live Browser Preview -->
-      <section class="vos-pane-preview-wrap">
-        <div class="vos-preview-toolbar">
-          <div class="vos-url-bar">
-            <span class="ssl-icon">🔒</span>
-            <span id="preview-url-text">http://localhost:5173/</span>
-          </div>
-
-          <div class="vos-device-toggles">
-            <button class="vos-device-btn active" data-mode="desktop" title="Desktop Viewport">
-              <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-              Desktop
+    <!-- Primary Workspace: Sovereign Code Editor & File Tree -->
+    <section class="vos-pane-editor-wrap" aria-label="In-Browser Code Editor">
+      <!-- File Explorer -->
+      <div class="vos-file-tree-pane">
+        <div class="vos-pane-header">
+          <span>Explorer</span>
+          <div class="vos-tree-actions">
+            <button type="button" class="vos-icon-btn" id="btn-new-file" title="New File">
+              <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
-            <button class="vos-device-btn" data-mode="tablet" title="Tablet (768px)">
-              <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-              Tablet
-            </button>
-            <button class="vos-device-btn" data-mode="mobile" title="Mobile Phone (390px)">
-              <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-              Mobile
-            </button>
-          </div>
-
-          <div style="display: flex; gap: 4px;">
-            <button class="vos-icon-btn" id="btn-refresh-preview" title="Hot Reload Viewport">
+            <button type="button" class="vos-icon-btn" id="btn-refresh-tree" title="Refresh Tree">
               <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             </button>
-            <button class="vos-icon-btn" id="btn-popout" title="Pop-out Preview in New Tab">
-              <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-            </button>
           </div>
         </div>
+        <ul class="vos-file-list" id="file-tree-list">
+          <!-- Dynamically populated by VFS tree -->
+        </ul>
+      </div>
 
-        <!-- Preview Viewport Frame -->
-        <div class="vos-preview-stage">
-          <div class="vos-device-frame" id="device-frame">
-            <iframe id="preview-iframe" class="vos-preview-iframe" sandbox="allow-scripts allow-modals allow-same-origin allow-forms"></iframe>
+      <!-- Code Editor -->
+      <div class="vos-code-editor-pane">
+        <div class="vos-tabs-bar" id="editor-tabs">
+          <div class="vos-tab active" data-file="/project/index.html">
+            <span>index.html</span>
           </div>
         </div>
+        <div class="vos-editor-body">
+          <div class="vos-line-numbers" id="line-numbers">1</div>
+          <textarea class="vos-code-textarea" id="code-editor" spellcheck="false" autocomplete="off"></textarea>
+        </div>
+      </div>
+    </section>
 
-        <!-- Live Console Logs Drawer -->
-        <div class="vos-preview-console-drawer">
-          <div class="vos-console-header">
-            <span>⚡ Sandbox Console Stream</span>
-            <button class="vos-icon-btn" id="btn-clear-console" title="Clear Console" style="font-size:0.65rem;">
-              <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </button>
-          </div>
-          <div class="vos-console-logs" id="console-log-stream">
-            <div class="vos-log-row">
-              <span class="vos-log-time">00:00:00</span>
-              <span class="vos-log-level info">[vOS]</span>
-              <span class="vos-log-msg">WebContainer process sandbox initialized. Ready for evaluation.</span>
+    <!-- Auxiliary Section 01: Virtual Hardware Telemetry -->
+    <div class="zoth-disclosure-wrapper" id="sec-hardware-telemetry" style="margin-bottom: 24px;">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/land/command-deck.jpg" alt="Virtual Hardware Telemetry &amp; Resource Gauges" loading="lazy" />
+          <span class="zoth-visual-icon">📊</span>
+        </div>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 01 — VIRTUAL HARDWARE TELEMETRY</div>
+          <h2 class="zoth-big-heading zoth-animated-text">HARDWARE TELEMETRY &amp; VFS ALLOCATION</h2>
+          <div class="zoth-disclosure-summary-line">Simulated CPU allocation, in-memory VFS &amp; WebAssembly heap allocation meters, and POSIX virtual filesystem inodes.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">CPU · RAM · VFS METERS</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
+        <div class="zoth-disclosure-content-inner">
+          <div class="vos-telemetry-deck" aria-label="Hardware Resource Emulation">
+            <div class="vos-telemetry-card" title="Simulated CPU Allocation">
+              <div class="vos-telemetry-card-header">
+                <span class="vos-telemetry-title">⚡ SIMULATED CPU LOAD</span>
+                <span class="vos-telemetry-badge" id="meter-cpu-val">0.0%</span>
+              </div>
+              <div class="vos-meter-bar-wrap large"><div class="vos-meter-fill" id="meter-cpu-fill" style="width:0%;"></div></div>
+              <div class="vos-telemetry-card-desc">Zero-cloud isolate execution cycle monitor and scale-to-zero governor.</div>
+            </div>
+            <div class="vos-telemetry-card" title="In-Memory VFS &amp; WASM Heap">
+              <div class="vos-telemetry-card-header">
+                <span class="vos-telemetry-title">🧠 WASM HEAP &amp; RAM</span>
+                <span class="vos-telemetry-badge" id="meter-ram-val">0.0 MB</span>
+              </div>
+              <div class="vos-meter-bar-wrap large"><div class="vos-meter-fill" id="meter-ram-fill" style="width:0%;"></div></div>
+              <div class="vos-telemetry-card-desc">Client browser memory heap allocation for virtual container isolate.</div>
+            </div>
+            <div class="vos-telemetry-card" title="POSIX Virtual File System Inodes">
+              <div class="vos-telemetry-card-header">
+                <span class="vos-telemetry-title">📁 POSIX VFS ALLOCATION</span>
+                <span class="vos-telemetry-badge" id="meter-vfs-val">0 files</span>
+              </div>
+              <div class="vos-meter-bar-wrap large"><div class="vos-meter-fill" id="meter-vfs-fill" style="width:0%;"></div></div>
+              <div class="vos-telemetry-card-desc">Active in-memory virtual inodes tracked across workspace mount points.</div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
 
-    <!-- Split Bottom: Interactive WebAssembly Terminal (xterm.js) -->
-    <section class="vos-split-bottom">
-      <div class="vos-terminal-toolbar">
-        <div class="vos-terminal-title">
-          <span>⚡ WebAssembly Terminal (xterm.js)</span>
-          <span style="color:var(--vos-muted);font-weight:400;">operator@zoth-vos:~/project</span>
+    <!-- Auxiliary Section 02: Live Device Frame & Responsive Preview -->
+    <div class="zoth-disclosure-wrapper" id="sec-device-preview" style="margin-bottom: 24px;">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Live Device Frame &amp; Responsive Preview" loading="lazy" />
+          <span class="zoth-visual-icon">📱</span>
         </div>
-        <div class="vos-quick-chips">
-          <span class="vos-chip" data-cmd="npm run dev">npm run dev</span>
-          <span class="vos-chip" data-cmd="bench">bench</span>
-          <span class="vos-chip" data-cmd="tree">tree</span>
-          <span class="vos-chip" data-cmd="top">top</span>
-          <span class="vos-chip" data-cmd="clear">clear</span>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 02 — LIVE DEVICE FRAME &amp; RESPONSIVE PREVIEW</div>
+          <h2 class="zoth-big-heading zoth-animated-text">DEVICE FRAME &amp; PREVIEW</h2>
+          <div class="zoth-disclosure-summary-line">Multi-viewport live hot-reload browser frame (Desktop, Tablet 768px, Mobile 390px) with popout and SSL sandbox isolate.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">RESPONSIVE VIEWPORT · HOT RELOAD</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
+        <div class="zoth-disclosure-content-inner">
+          <section class="vos-pane-preview-wrap">
+            <div class="vos-preview-toolbar">
+              <div class="vos-url-bar">
+                <span class="ssl-icon">🔒</span>
+                <span id="preview-url-text">http://localhost:5173/</span>
+              </div>
+
+              <div class="vos-device-toggles">
+                <button type="button" class="vos-device-btn active" data-mode="desktop" title="Desktop Viewport">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                  Desktop
+                </button>
+                <button type="button" class="vos-device-btn" data-mode="tablet" title="Tablet (768px)">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                  Tablet
+                </button>
+                <button type="button" class="vos-device-btn" data-mode="mobile" title="Mobile Phone (390px)">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                  Mobile
+                </button>
+              </div>
+
+              <div style="display: flex; gap: 4px;">
+                <button type="button" class="vos-icon-btn" id="btn-refresh-preview" title="Hot Reload Viewport">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                </button>
+                <button type="button" class="vos-icon-btn" id="btn-popout" title="Pop-out Preview in New Tab">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Preview Viewport Frame -->
+            <div class="vos-preview-stage">
+              <div class="vos-device-frame" id="device-frame">
+                <iframe id="preview-iframe" class="vos-preview-iframe" sandbox="allow-scripts allow-modals allow-same-origin allow-forms"></iframe>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
-      <div class="vos-terminal-container" id="terminal-container"></div>
-    </section>
+    </div>
+
+    <!-- Auxiliary Section 03: Subsystem Console Log Stream & Shell Terminal -->
+    <div class="zoth-disclosure-wrapper" id="sec-console-terminal" style="margin-bottom: 24px;">
+      <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+        <div class="zoth-trigger-visual">
+          <img class="zoth-trigger-img" src="/assets/media/cyber-nexus-3d-photoreal.jpg" alt="Subsystem Console Log Stream &amp; Shell Terminal" loading="lazy" />
+          <span class="zoth-visual-icon">💻</span>
+        </div>
+        <div class="zoth-disclosure-heading-group">
+          <div class="zoth-disclosure-kicker">// 03 — SUBSYSTEM CONSOLE LOG STREAM &amp; SHELL TERMINAL</div>
+          <h2 class="zoth-big-heading zoth-animated-text">CONSOLE LOGS &amp; POSIX TERMINAL</h2>
+          <div class="zoth-disclosure-summary-line">Client-side WebAssembly xterm.js PTY shell, in-browser npm runner, and real-time sandbox execution log stream.</div>
+        </div>
+        <div class="zoth-disclosure-indicator">
+          <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span class="zoth-item-count-chip">xterm.js · PTY REPL</span>
+        </div>
+      </button>
+      <div class="zoth-disclosure-content">
+        <div class="zoth-disclosure-content-inner">
+          <div class="vos-console-terminal-stack">
+            <!-- Live Console Logs Drawer -->
+            <div class="vos-preview-console-drawer">
+              <div class="vos-console-header">
+                <span>⚡ Sandbox Console Stream</span>
+                <button type="button" class="vos-icon-btn" id="btn-clear-console" title="Clear Console" style="font-size:0.65rem;">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+              <div class="vos-console-logs" id="console-log-stream">
+                <div class="vos-log-row">
+                  <span class="vos-log-time">00:00:00</span>
+                  <span class="vos-log-level info">[vOS]</span>
+                  <span class="vos-log-msg">WebContainer process sandbox initialized. Ready for evaluation.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Split Bottom: Interactive WebAssembly Terminal (xterm.js) -->
+            <section class="vos-split-bottom">
+              <div class="vos-terminal-toolbar">
+                <div class="vos-terminal-title">
+                  <span>⚡ WebAssembly Terminal (xterm.js)</span>
+                  <span style="color:var(--vos-muted);font-weight:400;">operator@zoth-vos:~/project</span>
+                </div>
+                <div class="vos-quick-chips">
+                  <span class="vos-chip" data-cmd="npm run dev">npm run dev</span>
+                  <span class="vos-chip" data-cmd="bench">bench</span>
+                  <span class="vos-chip" data-cmd="tree">tree</span>
+                  <span class="vos-chip" data-cmd="top">top</span>
+                  <span class="vos-chip" data-cmd="clear">clear</span>
+                </div>
+              </div>
+              <div class="vos-terminal-container" id="terminal-container"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- New File Modal Dialog -->
@@ -1980,5 +2222,6 @@ html, body {
 
     })();
   </script>
+  <script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>
