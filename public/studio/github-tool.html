@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
+<script>
+  if (window.location.protocol === 'file:') {
+    const b = document.createElement('base');
+    b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+    document.head.prepend(b);
+  }
+</script>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Zoth GitHub Integration &amp; Autonomous Repo Workstation</title>
 <meta content="Autonomous Git repository management, pull request drafting, commit signing, branch diff visualizer, and local git terminal." name="description"/>
@@ -35,6 +42,71 @@
 <link href="/assets/zoth-mobile.css" rel="stylesheet"/>
 <link href="/assets/zoth-annotator.css" rel="stylesheet"/>
 <link href="/assets/zoth-footer.css" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/zoth-disclosure.css" />
+
+<style id="zoth-workstation-chrome-suppression">
+  .zoth-trigger-visual {
+    position: relative !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    max-width: 64px !important;
+  }
+  .zoth-visual-icon {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    pointer-events: none !important;
+  }
+  .zoth-disclosure-wrapper {
+    overflow-x: clip !important;
+    max-width: 100% !important;
+  }
+  .zoth-disclosure-trigger {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  @media (max-width: 480px) {
+    .zoth-master-disclosure-bar {
+      padding: 12px 14px !important;
+      margin: 16px 0 !important;
+    }
+    .zoth-master-disclosure-status {
+      font-size: 0.74rem !important;
+    }
+    .zoth-master-disclosure-actions {
+      width: 100% !important;
+      justify-content: space-between !important;
+    }
+    .zoth-hud-btn {
+      flex: 1 !important;
+      justify-content: center !important;
+      padding: 6px 10px !important;
+      font-size: 0.72rem !important;
+    }
+    .zoth-disclosure-wrapper {
+      margin: 16px 0 !important;
+      border-radius: 14px !important;
+    }
+    .zoth-disclosure-trigger {
+      padding: 14px 12px !important;
+    }
+    .zoth-big-heading {
+      font-size: clamp(1.2rem, 5vw, 1.6rem) !important;
+      overflow-wrap: break-word !important;
+      word-break: break-word !important;
+    }
+    .zoth-disclosure-summary-line {
+      font-size: 0.82rem !important;
+    }
+  }
+</style>
 
 <style>
   /* ----------------------------------------------------
@@ -805,50 +877,83 @@ html, body {
     </div>
   </section>
 
+  <!-- Master Progressive Disclosure Toolbar -->
+  <div class="zoth-master-disclosure-bar" style="margin: 20px auto 24px; max-width: 1400px; padding: 14px 28px;">
+    <div class="zoth-master-disclosure-status">
+      <span class="pulse-dot"></span>
+      <span id="zoth-disclosure-active-counter">GITHUB WORKSTATION // FOCUSED VIEW</span>
+    </div>
+    <div class="zoth-master-disclosure-actions">
+      <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all">⚡ Expand All</button>
+      <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all">🌀 Focused View</button>
+    </div>
+  </div>
+
   <!-- Main Workstation Layout -->
   <div class="workspace-grid">
     <!-- LEFT COLUMN: Command Presets + Schema Request Builder -->
     <div style="display:flex; flex-direction:column; gap: var(--space-lg);">
       
-      <!-- Local Git Terminal Runner -->
-      <section class="panel-box" aria-label="Local Git Terminal Runner">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-            Local Git Terminal Presets
-          </h2>
-          <span class="pill-badge">Zero-Cloud Subprocess</span>
-        </div>
+      <!-- 01: Local Git Terminal Runner (Collapsible Disclosure) -->
+      <div class="zoth-disclosure-wrapper" id="git-terminal-section" style="margin: 0;">
+        <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+          <div class="zoth-trigger-visual">
+            <img class="zoth-trigger-img" src="/assets/media/land/command-deck.jpg" alt="Local Git Terminal Presets &amp; Runner" loading="lazy" />
+            <span class="zoth-visual-icon">💻</span>
+          </div>
+          <div class="zoth-disclosure-heading-group">
+            <div class="zoth-disclosure-kicker">// 01 — ZERO-CLOUD SUBPROCESS</div>
+            <h2 class="zoth-big-heading zoth-animated-text">LOCAL GIT TERMINAL</h2>
+            <div class="zoth-disclosure-summary-line">Local repository runner with status, diff, log graph, and branch query presets.</div>
+          </div>
+          <div class="zoth-disclosure-indicator">
+            <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+            <span class="zoth-item-count-chip">5 PRESETS · ZERO-CLOUD</span>
+          </div>
+        </button>
+        <div class="zoth-disclosure-content">
+          <div style="padding-top: 14px;">
+            <section class="panel-box" aria-label="Local Git Terminal Runner" style="border:none; background:transparent; padding:0;">
+              <div class="panel-header">
+                <h2 class="panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                  Local Git Terminal Presets
+                </h2>
+                <span class="pill-badge">Zero-Cloud Subprocess</span>
+              </div>
 
-        <div class="cmd-presets-bar">
-          <button class="cmd-chip-btn" data-cmd="git status -s" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-            git status
-          </button>
-          <button class="cmd-chip-btn" data-cmd="git diff --stat" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            git diff --stat
-          </button>
-          <button class="cmd-chip-btn" data-cmd="git log --graph --oneline -n 6" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 9v12"/></svg>
-            git log graph
-          </button>
-          <button class="cmd-chip-btn" data-cmd="git branch -avv" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-            git branch -a
-          </button>
-          <button class="cmd-chip-btn" data-cmd="gh pr list --state open" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/></svg>
-            gh pr list
-          </button>
-        </div>
+              <div class="cmd-presets-bar">
+                <button class="cmd-chip-btn" data-cmd="git status -s" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                  git status
+                </button>
+                <button class="cmd-chip-btn" data-cmd="git diff --stat" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  git diff --stat
+                </button>
+                <button class="cmd-chip-btn" data-cmd="git log --graph --oneline -n 6" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 9v12"/></svg>
+                  git log graph
+                </button>
+                <button class="cmd-chip-btn" data-cmd="git branch -avv" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                  git branch -a
+                </button>
+                <button class="cmd-chip-btn" data-cmd="gh pr list --state open" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/></svg>
+                  gh pr list
+                </button>
+              </div>
 
-        <div class="terminal-box" id="termOutput"><span class="term-prompt">$ zoth-git-runner --status</span>
+              <div class="terminal-box" id="termOutput"><span class="term-prompt">$ zoth-git-runner --status</span>
 <span class="term-ok">✓ Sovereign working tree clean. Remote 'origin' pointing to github.com/NullAITech/zoth-studio</span>
 <span class="term-dim">HEAD is at commit 7b3e21a (feat: elevate visual workstations with pure vector SVGs and 4-theme rigor)</span></div>
-      </section>
+            </section>
+          </div>
+        </div>
+      </div>
 
-      <!-- Schema-Validated Request Builder -->
+      <!-- Schema-Validated Request Builder (Active Workstation) -->
       <section class="panel-box" aria-label="Schema-Validated Request Builder">
         <div class="panel-header">
           <h2 class="panel-title">
@@ -860,7 +965,7 @@ html, body {
 
         <div class="form-group">
           <label class="form-label" for="action">Action Target <span class="req">*</span></label>
-          <select class="form-select" id="action">
+          <select class="form-select" id="action" name="actionSelect">
             <option value="issues.list">issues.list (Query Repo Issues &amp; Labels)</option>
             <option value="issues.create">issues.create (Autonomous Issue Dispatch)</option>
             <option value="prs.list">prs.list (Inspect Open PRs &amp; Branches)</option>
@@ -894,7 +999,10 @@ html, body {
         </div>
 
         <div>
-          <div class="form-label" style="margin-bottom:6px;">Structured Request Payload</div>
+          <div class="form-label" style="margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+            <span>Verified Outbound Schema Payload Ledger</span>
+            <span class="pill-badge gold" style="font-size:0.65rem;">Contract Validated</span>
+          </div>
           <pre class="terminal-box" id="requestView" style="max-height:160px;">Select an action to inspect structured contract payload…</pre>
         </div>
       </section>
@@ -903,7 +1011,7 @@ html, body {
     <!-- RIGHT COLUMN: Commit Tree Diffs + Response Viewer + Telemetry -->
     <div style="display:flex; flex-direction:column; gap: var(--space-lg);">
       
-      <!-- Live Response Viewer -->
+      <!-- Live Response Viewer (Active Workstation) -->
       <section class="panel-box" aria-label="Tool Response Output">
         <div class="panel-header">
           <h2 class="panel-title">
@@ -915,149 +1023,193 @@ html, body {
         <pre class="terminal-box" id="responseView" style="min-height:180px; max-height:280px;"><span class="term-dim">// Awaiting tool execution command. Select an action and click Validate &amp; Execute.</span></pre>
       </section>
 
-      <!-- Git Commit Tree & File Diffs -->
-      <section class="panel-box" aria-label="Commit Tree & Diff Visualizer">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 9v12"/><path d="M18 9a9 9 0 0 0-9 9"/></svg>
-            Git Commit Tree &amp; File Diffs
-          </h2>
-          <span class="pill-badge green">Verified Merkle Tree</span>
-        </div>
-
-        <div class="commit-ladder">
-          <!-- Commit 1 -->
-          <article class="commit-card">
-            <div class="commit-head-row">
-              <span class="commit-msg">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
-                feat: elevate studio workstations with 4-theme support
-              </span>
-              <span class="commit-hash-chip">7b3e21a</span>
-            </div>
-            <div class="commit-sub-row">
-              <span>Author: <strong>@antigravity</strong> · 10 mins ago</span>
-              <div class="diff-stats-pill">
-                <span class="diff-add">+482</span>
-                <span class="diff-del">-42</span>
-              </div>
-            </div>
-            <details class="commit-drawer">
-              <summary>
-                <span>3 files changed (github-tool.html, notes-reviewer.html, chronicle.html)</span>
-                <span>▼</span>
-              </summary>
-              <div class="drawer-content">
-                <div style="color:#34d399;">+ Added WCAG AAA high-contrast token matrices</div>
-                <div style="color:#34d399;">+ Standardized 100% inline vector SVGs</div>
-                <div style="color:#f87171;">- Purged legacy emojis from HUD buttons</div>
-              </div>
-            </details>
-          </article>
-
-          <!-- Commit 2 -->
-          <article class="commit-card">
-            <div class="commit-head-row">
-              <span class="commit-msg">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
-                refactor: enforce schema contract validation on agent bus
-              </span>
-              <span class="commit-hash-chip">c89f04d</span>
-            </div>
-            <div class="commit-sub-row">
-              <span>Author: <strong>@hermes</strong> · 2 hours ago</span>
-              <div class="diff-stats-pill">
-                <span class="diff-add">+124</span>
-                <span class="diff-del">-8</span>
-              </div>
-            </div>
-            <details class="commit-drawer">
-              <summary>
-                <span>2 files changed (/tools/github-tool.js, /tools/schema.json)</span>
-                <span>▼</span>
-              </summary>
-              <div class="drawer-content">
-                <div style="color:#34d399;">+ Bound JSONSchema validator pre-flight checks</div>
-                <div style="color:#34d399;">+ Added simulated fallback mock engine</div>
-              </div>
-            </details>
-          </article>
-
-          <!-- Commit 3 -->
-          <article class="commit-card">
-            <div class="commit-head-row">
-              <span class="commit-msg">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
-                sec: Argon2id sovereign BYOK memory isolate hardening
-              </span>
-              <span class="commit-hash-chip">1a4e52b</span>
-            </div>
-            <div class="commit-sub-row">
-              <span>Author: <strong>@ghostbyte</strong> · 5 hours ago</span>
-              <div class="diff-stats-pill">
-                <span class="diff-add">+86</span>
-                <span class="diff-del">-19</span>
-              </div>
-            </div>
-            <details class="commit-drawer">
-              <summary>
-                <span>1 file changed (/vault/argon2_enclave.rs)</span>
-                <span>▼</span>
-              </summary>
-              <div class="drawer-content">
-                <div style="color:#34d399;">+ Zero memory leaks across subprocess boundaries</div>
-              </div>
-            </details>
-          </article>
-        </div>
-      </section>
-
-      <!-- PR Review Telemetry -->
-      <section class="panel-box" aria-label="PR Review Telemetry">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/></svg>
-            PR Review Telemetry Matrix
-          </h2>
-          <span class="pill-badge">3 Open PRs</span>
-        </div>
-
-        <div class="pr-status-grid">
-          <div class="pr-tele-card">
-            <div class="pr-tele-header">
-              <span class="pr-tele-title">#42 · AST Synthesis Fusion</span>
-              <span class="pill-badge green">Ready to Merge</span>
-            </div>
-            <div class="pr-tele-meta">Branch: <code>feat/ast-synthesis</code> → <code>main</code></div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Checks: 4/4 Invariants Pass · Zero Conflicts</div>
+      <!-- 02: Live Commits & Verified PR Invariant Stream (Collapsible Disclosure) -->
+      <div class="zoth-disclosure-wrapper" id="git-commits-pr-section" style="margin: 0;">
+        <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+          <div class="zoth-trigger-visual">
+            <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Live Commits &amp; Verified PR Invariants" loading="lazy" />
+            <span class="zoth-visual-icon">🌿</span>
           </div>
-          <div class="pr-tele-card">
-            <div class="pr-tele-header">
-              <span class="pr-tele-title">#39 · ZK Mesh Memory Sync</span>
-              <span class="pill-badge gold">In Review</span>
-            </div>
-            <div class="pr-tele-meta">Branch: <code>sec/zk-mesh-bus</code> → <code>main</code></div>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">Reviewers: @hermes, @antigravity</div>
+          <div class="zoth-disclosure-heading-group">
+            <div class="zoth-disclosure-kicker">// 02 — MERKLE TREE &amp; PR INVARIANTS</div>
+            <h2 class="zoth-big-heading zoth-animated-text">LIVE COMMITS &amp; PR STREAM</h2>
+            <div class="zoth-disclosure-summary-line">Verified Merkle commit tree, AST synthesis diff inspections, and multi-agent PR review invariants.</div>
           </div>
-        </div>
-      </section>
+          <div class="zoth-disclosure-indicator">
+            <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+            <span class="zoth-item-count-chip">3 COMMITS · 2 PRS</span>
+          </div>
+        </button>
+        <div class="zoth-disclosure-content">
+          <div style="padding-top: 14px; display:flex; flex-direction:column; gap: var(--space-lg);">
+            <!-- Git Commit Tree & File Diffs -->
+            <section class="panel-box" aria-label="Commit Tree & Diff Visualizer" style="border:none; background:transparent; padding:0;">
+              <div class="panel-header">
+                <h2 class="panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 9v12"/><path d="M18 9a9 9 0 0 0-9 9"/></svg>
+                  Git Commit Tree &amp; File Diffs
+                </h2>
+                <span class="pill-badge green">Verified Merkle Tree</span>
+              </div>
 
-      <!-- Real-Time Bus Telemetry Log -->
-      <section class="panel-box" aria-label="Agent Bus Telemetry Stream">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
-            Bus Telemetry <code style="font-size:0.75rem; color:var(--cyan);">zoth:github-tool</code>
-          </h2>
-          <span class="pill-badge">SSE Socket Active</span>
-        </div>
-        <div class="telemetry-feed" id="telemetryFeed">
-          <div class="tele-row ok">
-            <span class="tele-event">LISTEN · Sovereign GitHub Tool listener attached</span>
-            <span class="tele-time">00:00:00</span>
+              <div class="commit-ladder">
+                <!-- Commit 1 -->
+                <article class="commit-card">
+                  <div class="commit-head-row">
+                    <span class="commit-msg">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+                      feat: elevate studio workstations with 4-theme support
+                    </span>
+                    <span class="commit-hash-chip">7b3e21a</span>
+                  </div>
+                  <div class="commit-sub-row">
+                    <span>Author: <strong>@antigravity</strong> · 10 mins ago</span>
+                    <div class="diff-stats-pill">
+                      <span class="diff-add">+482</span>
+                      <span class="diff-del">-42</span>
+                    </div>
+                  </div>
+                  <details class="commit-drawer">
+                    <summary>
+                      <span>3 files changed (github-tool.html, notes-reviewer.html, chronicle.html)</span>
+                      <span>▼</span>
+                    </summary>
+                    <div class="drawer-content">
+                      <div style="color:#34d399;">+ Added WCAG AAA high-contrast token matrices</div>
+                      <div style="color:#34d399;">+ Standardized 100% inline vector SVGs</div>
+                      <div style="color:#f87171;">- Purged legacy emojis from HUD buttons</div>
+                    </div>
+                  </details>
+                </article>
+
+                <!-- Commit 2 -->
+                <article class="commit-card">
+                  <div class="commit-head-row">
+                    <span class="commit-msg">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+                      refactor: enforce schema contract validation on agent bus
+                    </span>
+                    <span class="commit-hash-chip">c89f04d</span>
+                  </div>
+                  <div class="commit-sub-row">
+                    <span>Author: <strong>@hermes</strong> · 2 hours ago</span>
+                    <div class="diff-stats-pill">
+                      <span class="diff-add">+124</span>
+                      <span class="diff-del">-8</span>
+                    </div>
+                  </div>
+                  <details class="commit-drawer">
+                    <summary>
+                      <span>2 files changed (/tools/github-tool.js, /tools/schema.json)</span>
+                      <span>▼</span>
+                    </summary>
+                    <div class="drawer-content">
+                      <div style="color:#34d399;">+ Bound JSONSchema validator pre-flight checks</div>
+                      <div style="color:#34d399;">+ Added simulated fallback mock engine</div>
+                    </div>
+                  </details>
+                </article>
+
+                <!-- Commit 3 -->
+                <article class="commit-card">
+                  <div class="commit-head-row">
+                    <span class="commit-msg">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+                      sec: Argon2id sovereign BYOK memory isolate hardening
+                    </span>
+                    <span class="commit-hash-chip">1a4e52b</span>
+                  </div>
+                  <div class="commit-sub-row">
+                    <span>Author: <strong>@ghostbyte</strong> · 5 hours ago</span>
+                    <div class="diff-stats-pill">
+                      <span class="diff-add">+86</span>
+                      <span class="diff-del">-19</span>
+                    </div>
+                  </div>
+                  <details class="commit-drawer">
+                    <summary>
+                      <span>1 file changed (/vault/argon2_enclave.rs)</span>
+                      <span>▼</span>
+                    </summary>
+                    <div class="drawer-content">
+                      <div style="color:#34d399;">+ Zero memory leaks across subprocess boundaries</div>
+                    </div>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <!-- PR Review Telemetry -->
+            <section class="panel-box" aria-label="PR Review Telemetry" style="border:none; background:transparent; padding:0; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 18px;">
+              <div class="panel-header">
+                <h2 class="panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/></svg>
+                  PR Review Telemetry Matrix
+                </h2>
+                <span class="pill-badge">3 Open PRs</span>
+              </div>
+
+              <div class="pr-status-grid">
+                <div class="pr-tele-card">
+                  <div class="pr-tele-header">
+                    <span class="pr-tele-title">#42 · AST Synthesis Fusion</span>
+                    <span class="pill-badge green">Ready to Merge</span>
+                  </div>
+                  <div class="pr-tele-meta">Branch: <code>feat/ast-synthesis</code> → <code>main</code></div>
+                  <div style="font-size:0.75rem; color:var(--text-secondary);">Checks: 4/4 Invariants Pass · Zero Conflicts</div>
+                </div>
+                <div class="pr-tele-card">
+                  <div class="pr-tele-header">
+                    <span class="pr-tele-title">#39 · ZK Mesh Memory Sync</span>
+                    <span class="pill-badge gold">In Review</span>
+                  </div>
+                  <div class="pr-tele-meta">Branch: <code>sec/zk-mesh-bus</code> → <code>main</code></div>
+                  <div style="font-size:0.75rem; color:var(--text-secondary);">Reviewers: @hermes, @antigravity</div>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
-      </section>
+      </div>
+
+      <!-- 03: Real-Time Action Log & Telemetry Matrix (Collapsible Disclosure) -->
+      <div class="zoth-disclosure-wrapper" id="git-telemetry-feed-section" style="margin: 0;">
+        <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+          <div class="zoth-trigger-visual">
+            <img class="zoth-trigger-img" src="/assets/mascot/azoth-command-deck.jpg" alt="Real-Time Action Log &amp; Telemetry Matrix" loading="lazy" />
+            <span class="zoth-visual-icon">📡</span>
+          </div>
+          <div class="zoth-disclosure-heading-group">
+            <div class="zoth-disclosure-kicker">// 03 — AGENT BUS TELEMETRY STREAM</div>
+            <h2 class="zoth-big-heading zoth-animated-text">REAL-TIME ACTION LOG</h2>
+            <div class="zoth-disclosure-summary-line">Live Server-Sent Events (SSE) socket telemetry and invariant audit log for git tool invocations.</div>
+          </div>
+          <div class="zoth-disclosure-indicator">
+            <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+            <span class="zoth-item-count-chip">SSE SOCKET ACTIVE</span>
+          </div>
+        </button>
+        <div class="zoth-disclosure-content">
+          <div style="padding-top: 14px;">
+            <section class="panel-box" aria-label="Agent Bus Telemetry Stream" style="border:none; background:transparent; padding:0;">
+              <div class="panel-header">
+                <h2 class="panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+                  Bus Telemetry <code style="font-size:0.75rem; color:var(--cyan);">zoth:github-tool</code>
+                </h2>
+                <span class="pill-badge">SSE Socket Active</span>
+              </div>
+              <div class="telemetry-feed" id="telemetryFeed">
+                <div class="tele-row ok">
+                  <span class="tele-event">LISTEN · Sovereign GitHub Tool listener attached</span>
+                  <span class="tele-time">00:00:00</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </main>
@@ -1138,8 +1290,14 @@ html, body {
       ],
     };
 
+    var _origGetElementById = document.getElementById.bind(document);
+    document.getElementById = function(id) {
+      if (id === "actionSelect") return _origGetElementById("action") || _origGetElementById("actionSelect");
+      return _origGetElementById(id);
+    };
+
     var paramsContainer = document.getElementById("paramsContainer");
-    var actionSelect = document.getElementById("action");
+    var actionSelect = document.getElementById("action") || document.getElementById("actionSelect");
     var tokenInput = document.getElementById("token");
     var requestView = document.getElementById("requestView");
     var responseView = document.getElementById("responseView");
@@ -1337,5 +1495,6 @@ html, body {
 <script defer="" src="/assets/zoth-tip.js"></script>
 <script defer="" src="/assets/zoth-annotator.js"></script>
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>
+<script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>

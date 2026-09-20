@@ -2,10 +2,18 @@
 
 <html lang="en">
 <head>
+<script>
+  if (window.location.protocol === 'file:') {
+    const b = document.createElement('base');
+    b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+    document.head.prepend(b);
+  }
+</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Zoth Fusion Swarm Arena 3D Viewport</title>
 <meta content="3D battle viewport visualizing real-time multi-agent code competition, AST score comparisons, and fusion merges." name="description"/>
+<link rel="stylesheet" href="/assets/zoth-disclosure.css"/>
 <link href="https://zoth.nullai.tech/studio/fusion-arena.html" rel="canonical"/>
 <!-- OpenGraph / Facebook -->
 <meta content="website" property="og:type"/>
@@ -141,33 +149,46 @@
       }
 
       .arena-layout {
-        display: grid;
-        grid-template-columns: minmax(0, var(--phi-sidebar, 377px)) 1.618fr minmax(0, var(--phi-sidebar, 377px));
+        display: flex;
+        flex-direction: column;
         gap: var(--fib-21, 21px);
-        height: calc(100vh - 70px);
+        height: auto;
+        min-height: 0;
         padding: var(--fib-13, 13px) var(--fib-21, 21px);
         background: #020306;
         box-sizing: border-box;
         min-width: 0;
-        max-width: 100%;
+        max-width: 1680px;
+        margin: 0 auto 60px;
         overflow-x: hidden;
       }
-      @media (max-width: 1200px) {
-        .arena-layout { grid-template-columns: 320px 1fr; }
-        .arena-layout > aside:last-child { display: none; }
+      .arena-layout > #pane-stage {
+        height: 65vh;
+        min-height: 480px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .arena-layout > .zoth-disclosure-wrapper {
+        margin: 0;
+        width: 100%;
+      }
+      .zoth-disclosure-content .arena-pane {
+        display: flex !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
       }
       @media (max-width: 900px) {
         .arena-layout {
-          grid-template-columns: 1fr;
-          height: auto;
-          min-height: 0;
-          padding: var(--fib-13, 13px);
+          padding: var(--fib-13, 13px) 10px;
           gap: var(--fib-13, 13px);
         }
-        .arena-layout > aside { display: block !important; }
-        .arena-layout > section {
-          min-height: 280px;
-          height: 46vh;
+        .arena-layout > #pane-stage {
+          min-height: 380px;
+          height: 50vh;
         }
       }
       .panel-glass {
@@ -433,13 +454,16 @@
         height: auto !important;
         min-height: 0 !important;
       }
-      .arena-pane {
-        display: none !important;
+      #pane-stage.arena-pane {
+        display: flex !important;
+      }
+      .zoth-disclosure-content .arena-pane {
+        display: flex !important;
+        width: 100% !important;
       }
       .arena-pane.is-mobile-active {
         display: flex !important;
         width: 100% !important;
-        min-height: 520px;
       }
     }
     @media (min-width: 881px) {
@@ -947,6 +971,57 @@ html, body {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+
+.zoth-trigger-visual {
+  position: relative !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 64px !important;
+}
+.zoth-visual-icon {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+.zoth-disclosure-wrapper {
+  overflow-x: clip !important;
+  max-width: 100% !important;
+}
+.zoth-disclosure-trigger {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 480px) {
+  .zoth-master-disclosure-bar {
+    padding: 10px 12px !important;
+    margin: 12px auto !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+  .zoth-master-disclosure-status {
+    font-size: 0.72rem !important;
+  }
+  .zoth-master-disclosure-actions {
+    width: 100% !important;
+    display: flex !important;
+    gap: 6px !important;
+  }
+  .zoth-master-disclosure-actions .zoth-hud-btn {
+    flex: 1 1 0 !important;
+    padding: 6px 8px !important;
+    font-size: 0.68rem !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+  }
+}
 </style>
 </head>
 <body class="deck-page" data-guide="Synthesis, not a dashboard.|The arena runs on the local deck.|This web view is the door." data-kicker="Arena · sovereign" data-lede="Sovereign multi-agent workstation."  data-title="Synthesis, not a dashboard">
@@ -1014,13 +1089,13 @@ html, body {
 <!-- Mobile Segmented Switcher (Visible <=880px) -->
 <nav aria-label="Mobile Arena Navigation" class="mobile-segmented-bar" id="arena-mobile-tabs">
 <div class="mobile-tabs-track">
-<button class="mobile-tab-btn active" data-tab="combatants" onclick="setArenaMobileTab('combatants')">
-<svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path><path d="M19 21l2-2"></path></svg>
-<span class="tab-label">Combatants</span>
-</button>
-<button class="mobile-tab-btn" data-tab="stage" onclick="setArenaMobileTab('stage')">
+<button class="mobile-tab-btn active" data-tab="stage" onclick="setArenaMobileTab('stage')">
 <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
 <span class="tab-label">3D Arena</span>
+</button>
+<button class="mobile-tab-btn" data-tab="combatants" onclick="setArenaMobileTab('combatants')">
+<svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path><path d="M19 21l2-2"></path></svg>
+<span class="tab-label">Combatants</span>
 </button>
 <button class="mobile-tab-btn" data-tab="telemetry" onclick="setArenaMobileTab('telemetry')">
 <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
@@ -1028,114 +1103,22 @@ html, body {
 </button>
 </div>
 </nav>
-<div class="arena-layout">
-<!-- Left: Agent Roster, Combat Meter & Triggers -->
-<aside class="panel-glass arena-pane is-mobile-active" id="pane-combatants">
-<div>
-<span class="hud-pill">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path><path d="M19 21l2-2"></path></svg>
-  SWARM COMBATANTS
-</span>
-<h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Neural Node Matrix</h3>
-</div>
-<div id="agent-roster-list" style="display: flex; flex-direction: column; gap: 8px;">
-<!-- Combatant 1 -->
-<div class="agent-card selected" id="card-antigravity" onclick="selectFighter('antigravity')">
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<div style="display: flex; align-items: center; gap: 8px;">
-<img alt="Antigravity Primary" class="avatar-live-antigravity" height="28" loading="lazy" src="/assets/mascot/azoth-antigravity.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
-<div>
-  <strong style="color: var(--cyan);">@Antigravity</strong>
-  <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">40% STAKE · PRIMARY</small>
-</div>
-</div>
-<span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px;">LEADER</span>
-</div>
-<small style="color: var(--muted);">Specialty: 3D CAD Synthesis &amp; WebGL Shaders</small>
-<div class="meter-bar"><div class="meter-fill" id="hp-antigravity" style="width: 100%; background: var(--cyan);"></div></div>
-</div>
-<!-- Combatant 2 -->
-<div class="agent-card" id="card-grok" onclick="selectFighter('grok')">
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<div style="display: flex; align-items: center; gap: 8px;">
-<img alt="Grok-2 Speed" class="avatar-live-grok" height="28" loading="lazy" src="/assets/mascot/azoth-grok.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
-<div>
-  <strong style="color: var(--gold, #fbbf24);">@Grok-2 Speed</strong>
-  <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">30% STAKE · FUZZER</small>
-</div>
-</div>
-<span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px; border-color: var(--gold); color: var(--gold);">DISPATCH</span>
-</div>
-<small style="color: var(--muted);">Specialty: AST Parsing &amp; Tool Automation</small>
-<div class="meter-bar"><div class="meter-fill" id="hp-grok" style="width: 92%; background: var(--gold, #fbbf24);"></div></div>
-</div>
-<!-- Combatant 3 -->
-<div class="agent-card" id="card-hermes" onclick="selectFighter('hermes')">
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<div style="display: flex; align-items: center; gap: 8px;">
-<img alt="Hermes 3 Tool Caller" class="avatar-live-hermes" height="28" loading="lazy" src="/assets/mascot/azoth-hermes.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
-<div>
-  <strong style="color: var(--magenta);">@Hermes 3</strong>
-  <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">20% STAKE · LOGIC</small>
-</div>
-</div>
-<span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px; border-color: var(--magenta); color: var(--magenta);">REASONING</span>
-</div>
-<small style="color: var(--muted);">Specialty: DPO Alignment &amp; Multi-Step Logic</small>
-<div class="meter-bar"><div class="meter-fill" id="hp-hermes" style="width: 95%; background: var(--magenta);"></div></div>
-</div>
-<!-- Combatant 4 -->
-<div class="agent-card" id="card-ghostbyte" onclick="selectFighter('ghostbyte')">
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<div style="display: flex; align-items: center; gap: 8px;">
-<img alt="GhostByte Swarm Spirit" class="avatar-live-ghostbyte" height="28" loading="lazy" src="/assets/mascot/azoth-ghostbyte.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
-<div>
-  <strong style="color: #38bdf8;">@GhostByte</strong>
-  <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">10% STAKE · SPECTRAL</small>
-</div>
-</div>
-<span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px; border-color: #38bdf8; color: #38bdf8;">HOLOGRAPHIC</span>
-</div>
-<small style="color: var(--muted);">Specialty: Quantum Space Liquid Shaders</small>
-<div class="meter-bar"><div class="meter-fill" id="hp-ghostbyte" style="width: 88%; background: #38bdf8;"></div></div>
-</div>
-</div>
-<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
-<button class="btn-action" onclick="triggerNeuralStrike()">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-  Neural Beam Clash
-</button>
-<button class="btn-action" onclick="triggerFusionBattle()" style="background: rgba(217, 70, 239, 0.2); border: 1px solid var(--magenta); color: var(--text-primary);">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 19 6 22 13 17 20 7 20 2 13 5 6"></polygon></svg>
-  Synergistic Fusion
-</button>
-<button class="hud-pill" onclick="spawnSwarmParticleTornado()" style="justify-content: center; width: 100%; box-sizing: border-box;">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H3"></path><path d="M18 8H6"></path><path d="M19 12H9"></path><path d="M16 16h-6"></path><path d="M14 20h-4"></path></svg>
-  Respawn Quantum Vortex
-</button>
+
+<!-- Master Progressive Disclosure Toolbar -->
+<div class="zoth-master-disclosure-bar" style="margin: 20px auto; max-width: 1680px; padding: 14px 28px;">
+  <div class="zoth-master-disclosure-status">
+    <span class="pulse-dot"></span>
+    <span id="zoth-disclosure-active-counter">FUSION ARENA // FOCUSED VIEW</span>
+  </div>
+  <div class="zoth-master-disclosure-actions">
+    <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all">⚡ Expand All</button>
+    <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all">🌀 Focused View</button>
+  </div>
 </div>
 
-<!-- Adaptive Particle LOD Controls -->
-<div style="margin-top: 8px; background: rgba(4,6,14,0.85); border: 1px solid var(--edge-border, rgba(0,240,255,0.2)); border-radius: var(--fib-radius-sm, 8px); padding: 8px;">
-  <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.7rem; color:#94a3b8; margin-bottom:4px;">
-    <span style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:4px;">
-      <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
-      Adaptive Particle LOD
-    </span>
-    <span id="lod-status-label" style="color:var(--emerald);">Auto 60 FPS</span>
-  </div>
-  <div class="lod-control-strip">
-    <button type="button" class="lod-tier-btn auto-active" id="btn-lod-auto" onclick="toggleAutoLOD()" title="Lock to 60 FPS via real-time adaptive particle scaling">Auto 60FPS</button>
-    <button type="button" class="lod-tier-btn" data-tier="1" onclick="setManualLOD(1)" title="Tier 1: Eco (610 pts)">Eco 610</button>
-    <button type="button" class="lod-tier-btn" data-tier="2" onclick="setManualLOD(2)" title="Tier 2: Perf (987 pts)">Perf 987</button>
-    <button type="button" class="lod-tier-btn" data-tier="3" onclick="setManualLOD(3)" title="Tier 3: Balanced (1597 pts)">Bal 1597</button>
-    <button type="button" class="lod-tier-btn active" data-tier="4" onclick="setManualLOD(4)" title="Tier 4: High (2584 pts)">High 2584</button>
-    <button type="button" class="lod-tier-btn" data-tier="5" onclick="setManualLOD(5)" title="Tier 5: Ultra (4181 pts)">Ultra 4181</button>
-  </div>
-</div>
-</aside>
-<!-- Center: 3D Arena WebGL Viewport -->
-<section class="viewport-stage arena-pane" id="pane-stage">
+<div class="arena-layout" id="arena-main-layout">
+<!-- Center: 3D Arena WebGL Viewport (Primary Prominent Stage) -->
+<section class="viewport-stage arena-pane is-mobile-active" id="pane-stage">
 <div class="top-hud-bar">
 <span class="hud-pill">
   <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
@@ -1166,75 +1149,243 @@ html, body {
 </div>
 <div id="arena-canvas"></div>
 </section>
-<!-- Right: Real-Time Telemetry & Synthesis Terminal -->
-<aside class="panel-glass arena-pane" id="pane-telemetry">
-<div>
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<span class="hud-pill">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path></svg>
-  REAL-TIME TELEMETRY
-</span>
-<button class="hud-pill" onclick="downloadBattleChronicle()" style="font-size: 0.65rem; padding: 2px 8px;">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-  Export .md
-</button>
+
+<!-- 1. Auxiliary Section: Adaptive Particle LOD / Swarm Configurator -->
+<div class="zoth-disclosure-wrapper" id="arena-controls-wrapper" data-section="controls">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/mascot/azoth-antigravity.jpg" alt="Adaptive Particle LOD &amp; Swarm Configurator" loading="lazy" />
+      <span class="zoth-visual-icon">⚙️</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 01 — SWARM CONFIGURATOR &amp; PARTICLE LOD</div>
+      <h2 class="zoth-big-heading zoth-animated-text">SWARM NODE MATRIX</h2>
+      <div class="zoth-disclosure-summary-line">Adaptive Particle LOD scaling (610 to 4181 pts), 4-agent combatant roster with live health meters, and real-time neural beam trigger controls.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">4 AGENTS · AUTO-60FPS LOD · 3 TRIGGERS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <div class="zoth-disclosure-content-inner">
+      <aside class="panel-glass arena-pane" id="pane-controls">
+        <div id="pane-combatants" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: start;">
+          <div>
+            <div>
+              <span class="hud-pill">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6"></path><path d="M16 16l4 4"></path><path d="M19 21l2-2"></path></svg>
+                SWARM COMBATANTS
+              </span>
+              <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Neural Node Matrix</h3>
+            </div>
+            <div id="agent-roster-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Combatant 1 -->
+              <div class="agent-card selected" id="card-antigravity" onclick="selectFighter('antigravity')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <img alt="Antigravity Primary" class="avatar-live-antigravity" height="28" loading="lazy" src="/assets/mascot/azoth-antigravity.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
+                    <div>
+                      <strong style="color: var(--cyan);">@Antigravity</strong>
+                      <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">40% STAKE · PRIMARY</small>
+                    </div>
+                  </div>
+                  <span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px;">LEADER</span>
+                </div>
+                <small style="color: var(--muted);">Specialty: 3D CAD Synthesis &amp; WebGL Shaders</small>
+                <div class="meter-bar"><div class="meter-fill" id="hp-antigravity" style="width: 100%; background: var(--cyan);"></div></div>
+              </div>
+              <!-- Combatant 2 -->
+              <div class="agent-card" id="card-grok" onclick="selectFighter('grok')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <img alt="Grok-2 Speed" class="avatar-live-grok" height="28" loading="lazy" src="/assets/mascot/azoth-grok.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
+                    <div>
+                      <strong style="color: var(--gold, #fbbf24);">@Grok-2 Speed</strong>
+                      <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">30% STAKE · FUZZER</small>
+                    </div>
+                  </div>
+                  <span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px; border-color: var(--gold); color: var(--gold);">DISPATCH</span>
+                </div>
+                <small style="color: var(--muted);">Specialty: AST Parsing &amp; Tool Automation</small>
+                <div class="meter-bar"><div class="meter-fill" id="hp-grok" style="width: 92%; background: var(--gold, #fbbf24);"></div></div>
+              </div>
+              <!-- Combatant 3 -->
+              <div class="agent-card" id="card-hermes" onclick="selectFighter('hermes')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <img alt="Hermes 3 Tool Caller" class="avatar-live-hermes" height="28" loading="lazy" src="/assets/mascot/azoth-hermes.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
+                    <div>
+                      <strong style="color: var(--magenta);">@Hermes 3</strong>
+                      <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">20% STAKE · LOGIC</small>
+                    </div>
+                  </div>
+                  <span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px; border-color: var(--magenta); color: var(--magenta);">REASONING</span>
+                </div>
+                <small style="color: var(--muted);">Specialty: DPO Alignment &amp; Multi-Step Logic</small>
+                <div class="meter-bar"><div class="meter-fill" id="hp-hermes" style="width: 95%; background: var(--magenta);"></div></div>
+              </div>
+              <!-- Combatant 4 -->
+              <div class="agent-card" id="card-ghostbyte" onclick="selectFighter('ghostbyte')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <img alt="GhostByte Swarm Spirit" class="avatar-live-ghostbyte" height="28" loading="lazy" src="/assets/mascot/azoth-ghostbyte.jpg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" width="28"/>
+                    <div>
+                      <strong style="color: #38bdf8;">@GhostByte</strong>
+                      <small style="display:block; font-size:0.62rem; color:var(--text-dim); font-family:var(--font-mono);">10% STAKE · SPECTRAL</small>
+                    </div>
+                  </div>
+                  <span class="hud-pill" style="font-size: 0.65rem; padding: 2px 6px; border-color: #38bdf8; color: #38bdf8;">HOLOGRAPHIC</span>
+                </div>
+                <small style="color: var(--muted);">Specialty: Quantum Space Liquid Shaders</small>
+                <div class="meter-bar"><div class="meter-fill" id="hp-ghostbyte" style="width: 88%; background: #38bdf8;"></div></div>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+              <span class="hud-pill" style="font-size: 0.72rem;">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                SYNTHESIS STRIKE CONTROLS
+              </span>
+              <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Neural Beams &amp; Vortex</h3>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+              <button class="btn-action" onclick="triggerNeuralStrike()">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                Neural Beam Clash
+              </button>
+              <button class="btn-action" onclick="triggerFusionBattle()" style="background: rgba(217, 70, 239, 0.2); border: 1px solid var(--magenta); color: var(--text-primary);">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 19 6 22 13 17 20 7 20 2 13 5 6"></polygon></svg>
+                Synergistic Fusion
+              </button>
+              <button class="hud-pill" onclick="spawnSwarmParticleTornado()" style="justify-content: center; width: 100%; box-sizing: border-box;">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H3"></path><path d="M18 8H6"></path><path d="M19 12H9"></path><path d="M16 16h-6"></path><path d="M14 20h-4"></path></svg>
+                Respawn Quantum Vortex
+              </button>
+            </div>
+
+            <!-- Adaptive Particle LOD Controls -->
+            <div style="margin-top: 4px; background: rgba(4,6,14,0.85); border: 1px solid var(--edge-border, rgba(0,240,255,0.2)); border-radius: var(--fib-radius-sm, 8px); padding: 12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.7rem; color:#94a3b8; margin-bottom:6px;">
+                <span style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:4px;">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                  Adaptive Particle LOD
+                </span>
+                <span id="lod-status-label" style="color:var(--emerald);">Auto 60 FPS</span>
+              </div>
+              <div class="lod-control-strip">
+                <button type="button" class="lod-tier-btn auto-active" id="btn-lod-auto" onclick="toggleAutoLOD()" title="Lock to 60 FPS via real-time adaptive particle scaling">Auto 60FPS</button>
+                <button type="button" class="lod-tier-btn" data-tier="1" onclick="setManualLOD(1)" title="Tier 1: Eco (610 pts)">Eco 610</button>
+                <button type="button" class="lod-tier-btn" data-tier="2" onclick="setManualLOD(2)" title="Tier 2: Perf (987 pts)">Perf 987</button>
+                <button type="button" class="lod-tier-btn" data-tier="3" onclick="setManualLOD(3)" title="Tier 3: Balanced (1597 pts)">Bal 1597</button>
+                <button type="button" class="lod-tier-btn active" data-tier="4" onclick="setManualLOD(4)" title="Tier 4: High (2584 pts)">High 2584</button>
+                <button type="button" class="lod-tier-btn" data-tier="5" onclick="setManualLOD(5)" title="Tier 5: Ultra (4181 pts)">Ultra 4181</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
 </div>
-<h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Live Swarm Stream</h3>
+
+<!-- 2. Auxiliary Section: Real-Time Telemetry & Synthesis Terminal -->
+<div class="zoth-disclosure-wrapper" id="arena-telemetry-wrapper" data-section="telemetry">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/hero-fusion-arena.jpg" alt="Real-Time Telemetry &amp; Synthesis Terminal" loading="lazy" />
+      <span class="zoth-visual-icon">📊</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 02 — REAL-TIME TELEMETRY &amp; SYNTHESIS</div>
+      <h2 class="zoth-big-heading zoth-animated-text">TELEMETRY &amp; AST</h2>
+      <div class="zoth-disclosure-summary-line">Live swarm event log, AST consensus metrics, Shannon entropy loss calculation, and zero-leakage security invariant proofs.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">AST CONSENSUS · ENTROPY TRACKER · PROOFS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
+    <div class="zoth-disclosure-content-inner">
+      <aside class="panel-glass arena-pane" id="pane-telemetry">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: start;">
+          <div>
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="hud-pill">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path></svg>
+                  REAL-TIME TELEMETRY
+                </span>
+                <button class="hud-pill" onclick="downloadBattleChronicle()" style="font-size: 0.65rem; padding: 2px 8px;">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Export .md
+                </button>
+              </div>
+              <h3 style="margin: 6px 0; font-family: var(--font-display); font-size: 1.15rem;">Live Swarm Stream</h3>
+            </div>
+            <div class="telemetry-feed" id="telemetry-feed" style="height: 280px;">
+              <div class="tele-line"><span class="tele-time">[00:01]</span> <span class="tele-agent">@Antigravity</span> <span class="tele-action">Initialized 3D Fusion Stage</span></div>
+              <div class="tele-line"><span class="tele-time">[00:02]</span> <span class="tele-agent">@GhostByte</span> <span class="tele-action">Injected Simplex 3D liquid shaders</span></div>
+              <div class="tele-line"><span class="tele-time">[00:03]</span> <span class="tele-agent">@Hermes</span> <span class="tele-action">298+ tools indexed in registry</span></div>
+              <div class="tele-line"><span class="tele-time">[00:04]</span> <span class="tele-agent">@Grok</span> <span class="tele-action">Verified Hostinger deployment pipeline</span></div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- AST Score Comparison & Consensus Box -->
+            <div class="ast-score-box" style="background: rgba(0, 0, 0, 0.65); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 10px; padding: 12px; font-family: var(--font-mono); font-size: 0.75rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="color:var(--cyan); font-weight:700; display:flex; align-items:center; gap:5px;">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                  AST Consensus Metrics
+                </span>
+                <span id="ast-status-pill" style="color:var(--emerald); font-size:0.68rem; font-weight:700;">Invariants Preserved</span>
+              </div>
+              <div class="shannon-fusion-track" title="Shannon Entropy Meter (H = 1.48 bits)">
+                <div class="shannon-fusion-fill" id="shannon-fusion-bar" style="width: 48%;"></div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.7rem; margin-top:6px;">
+                <div>Shannon Entropy: <strong id="ast-shannon-val" style="color:var(--gold,#fbbf24);">1.48 bits</strong></div>
+                <div>AST Jaccard: <strong id="ast-jaccard-val" style="color:var(--cyan);">98.2%</strong></div>
+                <div>Complexity: <strong id="ast-cyclo-val" style="color:var(--emerald);">M = 5</strong></div>
+                <div>Security Invariant: <strong id="ast-sec-val" style="color:#a7f3d0;">Zero-Leak</strong></div>
+              </div>
+              <div style="display:flex; gap:6px; margin-top:8px;">
+                <button class="hud-pill" onclick="compareASTScores()" style="font-size:0.65rem; padding:4px 8px; flex:1; justify-content:center;">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+                  Triangulate AST
+                </button>
+                <button class="hud-pill" onclick="verifySecurityInvariants()" style="font-size:0.65rem; padding:4px 8px; flex:1; justify-content:center;">
+                  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  Verify Proof
+                </button>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem;">
+                <span style="color: var(--muted);">Synergy Score:</span>
+                <span id="stat-synergy" style="color: var(--cyan);">98.4%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem;">
+                <span style="color: var(--muted);">Shannon Entropy Loss:</span>
+                <span id="stat-entropy" style="color: var(--emerald, #10b981);">0.84 bits</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem;">
+                <span style="color: var(--muted);">Active Particles:</span>
+                <span id="stat-active-particles" style="color: var(--gold, #fbbf24);">2,584 Nodes (High)</span>
+              </div>
+              <a class="hud-pill" href="/studio/nexus-3d.html" style="text-align: center; text-decoration: none; padding: 8px; margin-top: 6px; justify-content: center; width: 100%; box-sizing: border-box;">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                Open Nexus 3D Studio
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
 </div>
-<div class="telemetry-feed" id="telemetry-feed">
-<div class="tele-line"><span class="tele-time">[00:01]</span> <span class="tele-agent">@Antigravity</span> <span class="tele-action">Initialized 3D Fusion Stage</span></div>
-<div class="tele-line"><span class="tele-time">[00:02]</span> <span class="tele-agent">@GhostByte</span> <span class="tele-action">Injected Simplex 3D liquid shaders</span></div>
-<div class="tele-line"><span class="tele-time">[00:03]</span> <span class="tele-agent">@Hermes</span> <span class="tele-action">298+ tools indexed in registry</span></div>
-<div class="tele-line"><span class="tele-time">[00:04]</span> <span class="tele-agent">@Grok</span> <span class="tele-action">Verified Hostinger deployment pipeline</span></div>
-</div>
-<!-- AST Score Comparison & Consensus Box -->
-<div class="ast-score-box" style="background: rgba(0, 0, 0, 0.65); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 10px; padding: 12px; font-family: var(--font-mono); font-size: 0.75rem;">
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-<span style="color:var(--cyan); font-weight:700; display:flex; align-items:center; gap:5px;">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-  AST Consensus Metrics
-</span>
-<span id="ast-status-pill" style="color:var(--emerald); font-size:0.68rem; font-weight:700;">Invariants Preserved</span>
-</div>
-<div class="shannon-fusion-track" title="Shannon Entropy Meter (H = 1.48 bits)">
-  <div class="shannon-fusion-fill" id="shannon-fusion-bar" style="width: 48%;"></div>
-</div>
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.7rem; margin-top:6px;">
-<div>Shannon Entropy: <strong id="ast-shannon-val" style="color:var(--gold,#fbbf24);">1.48 bits</strong></div>
-<div>AST Jaccard: <strong id="ast-jaccard-val" style="color:var(--cyan);">98.2%</strong></div>
-<div>Complexity: <strong id="ast-cyclo-val" style="color:var(--emerald);">M = 5</strong></div>
-<div>Security Invariant: <strong id="ast-sec-val" style="color:#a7f3d0;">Zero-Leak</strong></div>
-</div>
-<div style="display:flex; gap:6px; margin-top:8px;">
-<button class="hud-pill" onclick="compareASTScores()" style="font-size:0.65rem; padding:4px 8px; flex:1; justify-content:center;">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
-  Triangulate AST
-</button>
-<button class="hud-pill" onclick="verifySecurityInvariants()" style="font-size:0.65rem; padding:4px 8px; flex:1; justify-content:center;">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-  Verify Proof
-</button>
-</div>
-</div>
-<div style="display: flex; flex-direction: column; gap: 6px; margin-top: auto;">
-<div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem;">
-<span style="color: var(--muted);">Synergy Score:</span>
-<span id="stat-synergy" style="color: var(--cyan);">98.4%</span>
-</div>
-<div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem;">
-<span style="color: var(--muted);">Shannon Entropy Loss:</span>
-<span id="stat-entropy" style="color: var(--emerald, #10b981);">0.84 bits</span>
-</div>
-<div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem;">
-<span style="color: var(--muted);">Active Particles:</span>
-<span id="stat-active-particles" style="color: var(--gold, #fbbf24);">2,584 Nodes (High)</span>
-</div>
-<a class="hud-pill" href="/studio/nexus-3d.html" style="text-align: center; text-decoration: none; padding: 8px; margin-top: 6px; justify-content: center; width: 100%; box-sizing: border-box;">
-  <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-  Open Nexus 3D Studio
-</a>
-</div>
-</aside>
 </div>
 </main>
                                                             
@@ -1408,9 +1559,13 @@ html, body {
         });
 
         document.querySelectorAll('.arena-pane').forEach(p => p.classList.remove('is-mobile-active'));
-        const target = document.getElementById('pane-' + tabKey);
+        const target = document.getElementById('pane-' + tabKey) || (tabKey === 'combatants' ? document.getElementById('pane-controls') : null);
         if (target) {
           target.classList.add('is-mobile-active');
+          const wrapper = target.closest('.zoth-disclosure-wrapper');
+          if (wrapper && window.ZothDisclosure) {
+            window.ZothDisclosure.expand(wrapper);
+          }
         }
         if (tabKey === 'stage') {
           setTimeout(onResize, 50);
@@ -1883,5 +2038,6 @@ html, body {
 <script defer="" src="/assets/zoth-tip.js"></script>
 <script defer="" src="/assets/zoth-annotator.js"></script>
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>
+<script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>

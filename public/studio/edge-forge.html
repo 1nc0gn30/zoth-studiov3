@@ -2,6 +2,14 @@
 
 <html lang="en">
 <head>
+<script>
+  if (window.location.protocol === 'file:') {
+    const b = document.createElement('base');
+    b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+    document.head.prepend(b);
+  }
+</script>
+<link rel="stylesheet" href="/assets/zoth-disclosure.css" />
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Zoth Edge Forge — Serverless V8 Isolate Microservice Studio</title>
@@ -1191,6 +1199,81 @@ html, body {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+
+.zoth-trigger-visual {
+  position: relative !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 64px !important;
+}
+.zoth-visual-icon {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+.zoth-disclosure-wrapper {
+  overflow-x: clip !important;
+  max-width: 100% !important;
+}
+.zoth-disclosure-trigger {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 880px) {
+  .forge-panel {
+    display: flex !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .zoth-master-disclosure-bar {
+    padding: 12px 14px !important;
+    margin: 16px 0 !important;
+  }
+  .zoth-master-disclosure-status {
+    font-size: 0.74rem !important;
+  }
+  .zoth-master-disclosure-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  .zoth-hud-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 6px 10px !important;
+    font-size: 0.72rem !important;
+  }
+  .zoth-disclosure-wrapper {
+    margin: 16px 0 !important;
+    border-radius: 14px !important;
+  }
+  .zoth-disclosure-trigger {
+    padding: 14px 12px !important;
+  }
+  .zoth-big-heading {
+    font-size: 1.35rem !important;
+    word-break: break-word !important;
+  }
+  .zoth-disclosure-summary-line {
+    font-size: 0.82rem !important;
+  }
+  .zoth-disclosure-content {
+    padding: 0 8px !important;
+  }
+  .zoth-disclosure-wrapper.is-expanded .zoth-disclosure-content {
+    padding: 10px 8px 18px 8px !important;
+  }
+}
 </style>
 </head>
 <body class="edge-page" data-guide="Isolate handlers run locally.|Low latency V8 engine.|Watch the live 60 FPS demo below." data-kicker="Edge Forge · Preview" data-lede="Build and simulate ultra-low latency V8 isolate handlers with zero cloud lag. Watch the 60 FPS live demo below or install Zoth Studio to run it on your machine." data-title="Edge Function Forge &amp; V8 Studio">
@@ -1273,8 +1356,36 @@ html, body {
   Waterfall Latency
 </button>
 </nav>
-<!-- Main Workspace -->
-<div class="forge-grid">
+<!-- Master Progressive Disclosure Toolbar -->
+<div class="zoth-master-disclosure-bar" style="margin: 20px 0 24px;">
+  <div class="zoth-master-disclosure-status">
+    <span class="pulse-dot"></span>
+    <span id="zoth-disclosure-active-counter">EDGE FORGE // 4 SECTORS</span>
+  </div>
+  <div class="zoth-master-disclosure-actions">
+    <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all">⚡ Expand All</button>
+    <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all">🌀 Focused View</button>
+  </div>
+</div>
+
+<!-- 01: V8 Isolate Code Editor & Execution Sandbox (Default Expanded) -->
+<div class="zoth-disclosure-wrapper is-expanded" id="forge-editor-section" style="margin-bottom: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="true">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="V8 Isolate Code Editor &amp; Execution Sandbox" loading="lazy" />
+      <span class="zoth-visual-icon">⚡</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 01 — V8 ISOLATE RUNTIME &amp; SANDBOX</div>
+      <h2 class="zoth-big-heading zoth-animated-text">CODE EDITOR &amp; EXECUTION SANDBOX</h2>
+      <div class="zoth-disclosure-summary-line">Real-time TypeScript compiler, sliding window rate limiter, AEO schema injector, Solana RPC proxy, and streaming SSE/WebSocket duplex test harness.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">COLLAPSE</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">6 TEMPLATES · V8 2026</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <!-- Left: Code Editor & Execution -->
 <section class="forge-card forge-panel mobile-active" id="pane-forge-editor">
 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -1449,8 +1560,27 @@ html, body {
 </div>
 
 </section>
-<!-- Right: Global Clusters & Waterflow Telemetry -->
-<aside class="forge-right-col">
+  </div>
+</div>
+
+<!-- 02: V8 Isolate Virtual Memory Allocation Panel (Collapsible) -->
+<div class="zoth-disclosure-wrapper" id="forge-memory-section" style="margin-bottom: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/terminal-hero.jpg" alt="V8 Isolate Virtual Memory Allocation" loading="lazy" />
+      <span class="zoth-visual-icon">🧠</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 02 — V8 ISOLATE HEAP ALLOCATION</div>
+      <h2 class="zoth-big-heading zoth-animated-text">V8 MEMORY ALLOCATION</h2>
+      <div class="zoth-disclosure-summary-line">Linear heap allocation visualizer, zero-leak garbage collection status, JIT baseline latency, and cold start telemetry.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">148 KB / 128 MB · ZERO-LEAK</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <!-- V8 Isolate Virtual Memory Allocation Panel -->
 <div class="forge-card forge-panel v8-memory-card" id="pane-forge-memory">
   <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1469,7 +1599,27 @@ html, body {
     <span>Cold Start: <strong style="color:var(--edge-cyan);">0.12ms</strong></span>
   </div>
 </div>
+  </div>
+</div>
 
+<!-- 03: Waterfall Latency Inspector (Collapsible) -->
+<div class="zoth-disclosure-wrapper" id="forge-waterfall-section" style="margin-bottom: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/brand/zoth-golden-z-192.png" alt="Cascade Execution Waterfall" loading="lazy" />
+      <span class="zoth-visual-icon">🌊</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 03 — CASCADE LATENCY &amp; SPANS</div>
+      <h2 class="zoth-big-heading zoth-animated-text">EXECUTION WATERFALL</h2>
+      <div class="zoth-disclosure-summary-line">High-resolution breakdown across DNS resolution, TLS handshakes, and V8 isolate bytecode execution duration.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">TTFB 1.42MS · 3 SPANS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <!-- Waterfall Panel -->
 <div class="forge-card forge-panel" id="pane-forge-waterfall">
 <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Execution Waterfall (TTFB: <span id="waterfall-ttfb">1.42ms</span>)</span>
@@ -1491,6 +1641,27 @@ html, body {
 </div>
 </div>
 </div>
+  </div>
+</div>
+
+<!-- 04: Active Global Edge Clusters & Mesh Nodes (Collapsible) -->
+<div class="zoth-disclosure-wrapper" id="forge-nodes-section" style="margin-bottom: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/mascot/azoth-portrait.jpg" alt="Active Global Edge Clusters" loading="lazy" />
+      <span class="zoth-visual-icon">🌐</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 04 — GLOBAL EDGE CLUSTERS &amp; TOPOLOGY</div>
+      <h2 class="zoth-big-heading zoth-animated-text">EDGE NODES MESH</h2>
+      <div class="zoth-disclosure-summary-line">Distributed PoP presence across US-East, US-West, London, Frankfurt, Tokyo, Singapore, Sydney, and São Paulo with zero persistent storage leakage.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">8 NODES · ACTIVE MESH</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <!-- Nodes List Panel -->
 <div class="forge-card forge-panel" id="pane-forge-nodes">
 <span style="font-family:var(--font-mono); font-size:0.78rem; color:#94a3b8; text-transform:uppercase;">Active Global Edge Clusters (8 Nodes)</span>
@@ -1508,7 +1679,7 @@ html, body {
               Security Invariant: <span style="color: var(--text-primary);">Strict zero-trust V8 isolate sandboxing. Zero persistent storage leakage across tenant invocations.</span>
 </div>
 </div>
-</aside>
+  </div>
 </div>
 </div>
 </main>
@@ -2041,7 +2212,24 @@ html, body {
 
         document.querySelectorAll('.forge-panel').forEach(function (p) { p.classList.remove('mobile-active'); });
         var target = document.getElementById('pane-forge-' + viewKey);
-        if (target) target.classList.add('mobile-active');
+        if (target) {
+          target.classList.add('mobile-active');
+          var wrapper = target.closest('.zoth-disclosure-wrapper');
+          if (wrapper) {
+            if (window.ZothDisclosure && typeof window.ZothDisclosure.expand === 'function') {
+              window.ZothDisclosure.expand(wrapper);
+            } else {
+              wrapper.classList.add('is-expanded');
+              var trigger = wrapper.querySelector('.zoth-disclosure-trigger');
+              if (trigger) trigger.setAttribute('aria-expanded', 'true');
+              var badgeText = wrapper.querySelector('.badge-text');
+              if (badgeText) badgeText.textContent = 'COLLAPSE';
+            }
+            setTimeout(function () {
+              wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 60);
+          }
+        }
       }
 
       window.addEventListener('DOMContentLoaded', function () {
@@ -2055,5 +2243,6 @@ html, body {
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>
 <script src="/assets/celestial-trail.js"></script>
 <script src="/assets/zoth-guide.js"></script>
+<script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>
