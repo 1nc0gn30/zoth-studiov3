@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    if (window.location.protocol === 'file:') {
+      const b = document.createElement('base');
+      b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+      document.head.prepend(b);
+    }
+  </script>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zoth Mission Control — Master System Operations &amp; Fleet Health</title>
@@ -39,7 +46,7 @@
   <link rel="stylesheet" href="/assets/zoth-guide.css"/>
   <link rel="stylesheet" href="/assets/zoth-mobile.css"/>
   <link rel="stylesheet" href="/studio/mission-control-poster.css"/>
-  <link rel="stylesheet" href="/assets/zoth-disclosure.css"/>
+  <link rel="stylesheet" href="/assets/zoth-disclosure.css" />
   <link rel="stylesheet" href="/assets/zoth-footer.css"/>
 
   <script type="application/ld+json">
@@ -129,6 +136,49 @@ html, body {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+.zoth-trigger-visual {
+  position: relative !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 64px !important;
+}
+.zoth-visual-icon {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+.zoth-disclosure-wrapper {
+  overflow-x: clip !important;
+  max-width: 100% !important;
+}
+.zoth-disclosure-trigger {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 480px) {
+  .zoth-master-disclosure-bar {
+    padding: 12px 14px !important;
+    margin: 16px 0 !important;
+  }
+  .zoth-master-disclosure-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  .zoth-hud-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 6px 10px !important;
+    font-size: 0.72rem !important;
+  }
+}
 </style>
 </head>
 <body class="deck-page mission-page" data-title="Fleet Mission Control" data-kicker="Deck · ops" data-lede="Master system operations, hardware telemetry, and daemon fleet control surface." data-guide="Sovereign multi-agent operating system.|Live telemetry and local execution." >
@@ -216,6 +266,19 @@ html, body {
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg> Live Telemetry &amp; Custom Widget Matrix
         </button>
 </nav>
+
+<!-- Master Progressive Disclosure Toolbar -->
+<div class="zoth-master-disclosure-bar" style="margin: 24px auto 32px; max-width: 1400px; padding: 14px 28px;">
+  <div class="zoth-master-disclosure-status">
+    <span class="pulse-dot"></span>
+    <span id="zoth-disclosure-active-counter">MISSION CONTROL // FOCUSED VIEW</span>
+  </div>
+  <div class="zoth-master-disclosure-actions">
+    <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all">⚡ Expand All</button>
+    <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all">🌀 Focused View</button>
+  </div>
+</div>
+
 <!-- SECTION 1: What We Have Shipped -->
 <section class="mc-section active" id="tab-have">
 <div class="zoth-disclosure-wrapper" id="suites-core-section">
@@ -734,6 +797,23 @@ html, body {
 </section>
 <!-- SECTION 3: Live Telemetry & Dynamic Widget Matrix -->
 <section class="mc-section" id="tab-telemetry">
+<div class="zoth-disclosure-wrapper" id="telemetry-matrix-section">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Real-Time Telemetry &amp; Custom Widget Matrix" loading="lazy" />
+      <span class="zoth-visual-icon" style="position:absolute;">📊</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 04 — HARDWARE &amp; FLEET TELEMETRY</div>
+      <h2 class="zoth-big-heading zoth-animated-text">REAL-TIME TELEMETRY MATRIX</h2>
+      <div class="zoth-disclosure-summary-line">Host CPU allocation, WebGPU VRAM allocation, daemon loopback latencies, and 21-agent swarm health.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">6 WIDGETS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
   <div class="telemetry-controls-bar">
     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
       <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--mc-cyan); font-weight:700;">ACTIVE WIDGETS:</span>
@@ -996,6 +1076,8 @@ html, body {
       </div>
     </article>
   </div>
+  </div>
+</div>
 </section>
 </div>
 </main>
@@ -1346,7 +1428,7 @@ html, body {
 <script src="/assets/celestial-trail.js"></script>
 <script src="/assets/zoth-gate.js"></script>
 <script src="/assets/zoth-guide.js"></script>
-<script src="/assets/zoth-disclosure.js" defer></script>
+<script defer="" src="/assets/zoth-disclosure.js"></script>
 <script defer="" src="/assets/zoth-tip.js"></script>
 <script defer="" src="/assets/zoth-annotator.js"></script>
 <script defer="" src="/assets/zoth-nav.js?v=11"></script>
