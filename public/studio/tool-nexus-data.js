@@ -6575,6 +6575,7 @@ if (typeof window !== 'undefined') {
   window.TOOL_NEXUS_DATA = TOOL_DETAILS;
   window.CATEGORY_META = CATEGORY_META;
   window.RUNTIME_META = RUNTIME_META;
+  window.NAMES = NAMES;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

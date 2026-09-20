@@ -870,7 +870,22 @@ def validate_sovereign_invariants(ast_node, security_context):
     (function () {
       "use strict";
 
-      var Bench = window.ZothToolBench;
+      var fallbackTools = [
+        { id: "github.tool", owner: "NullAITech", category: "deploy", actions: ["issues.list", "prs.list", "repos.list", "workflow.dispatch"] },
+        { id: "blueprint.validator", owner: "NullAITech", category: "code", actions: ["blueprint.validate", "blueprint.lint"] },
+        { id: "netlify.deploy", owner: "NullAITech", category: "deploy", actions: ["deploy.preview", "deploy.production", "deploy.status"] },
+        { id: "header.audit", owner: "NullAITech", category: "security", actions: ["headers.scan", "headers.enforce_csp"] },
+        { id: "ast.sanitizer", owner: "NullAITech", category: "code", actions: ["ast.sanitize", "ast.strip_eval"] },
+        { id: "subsweep.recon", owner: "NullAITech", category: "security", actions: ["recon.subdomains", "recon.ports"] },
+        { id: "vault.crypto", owner: "NullAITech", category: "crypto", actions: ["vault.derive", "vault.encrypt_mock"] }
+      ];
+      var Bench = window.ZothToolBench || {
+        list: function() { return fallbackTools; },
+        get: function(id) { return fallbackTools.find(function(t){ return t.id === id; }); },
+        register: function() {},
+        run: function(id, action, params) { return Promise.resolve({ success: true, simulated: true, action: action }); },
+        validate: function() { return { valid: true }; }
+      };
       var listEl = document.getElementById("toolList");
       var consoleArea = document.getElementById("consoleArea");
       var telEl = document.getElementById("telemetry");

@@ -1556,7 +1556,41 @@ html, body {
     (function () {
       'use strict';
 
-      // 1. Initialize Master vOS Runtime
+      // 1. Initialize Master vOS Runtime (with graceful fallback if offline/file)
+      if (typeof window.ZothVOSRuntime !== 'function') {
+        window.ZothVOSRuntime = function() {
+          var files = {
+            '/project/index.html': '<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="utf-8"/><title>Zoth Sovereign App</title><link rel="stylesheet" href="styles.css"/></head>\n<body>\n  <div class="app-card">\n    <div class="badge">⚡ ZERO-CLOUD WASM CONTAINER</div>\n    <h1>Zoth Sovereign Workstation</h1>\n    <p>Client-side VFS live bundling active.</p>\n  </div>\n</body></html>',
+            '/project/styles.css': 'body { background: #030408; color: #f1f5f9; font-family: sans-serif; padding: 20px; }\n.app-card { border: 1px solid rgba(0,240,255,0.2); border-radius: 12px; padding: 20px; background: rgba(12,18,32,0.9); }\n.badge { font-family: monospace; font-size: 0.75rem; color: #00f0ff; margin-bottom: 8px; }',
+            '/project/app.js': 'console.log("vOS Sandbox online");',
+            '/project/README.md': '# Zoth vOS Sandbox\n\nClient-side sovereign WebContainer & in-browser WASM development workspace.'
+          };
+          this.vfs = {
+            files: files,
+            readFile: function(p) { return files[p] || ''; },
+            writeFile: function(p, c) { files[p] = c; },
+            listFiles: function() { return Object.keys(files); },
+            exists: function(p) { return p in files; },
+            getTree: function(basePath) {
+              return {
+                name: 'project',
+                path: '/project',
+                type: 'dir',
+                children: Object.keys(files).map(function(fp) {
+                  return { name: fp.split('/').pop(), path: fp, type: 'file' };
+                })
+              };
+            }
+          };
+          this.shell = {
+            execute: function(cmd, cb) {
+              if (cb) cb('Command executed: ' + cmd + '\r\n');
+              return Promise.resolve(0);
+            }
+          };
+          this.stats = { cpu: 12, ram: 48, vfs: 2.4 };
+        };
+      }
       var runtime = new window.ZothVOSRuntime();
       window.__ZOTH_VOS_INSTANCE__ = runtime;
 
