@@ -2,6 +2,13 @@
 
 <html lang="en">
 <head>
+<script>
+  if (window.location.protocol === 'file:') {
+    const b = document.createElement('base');
+    b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+    document.head.prepend(b);
+  }
+</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Zoth Swarm NOC &amp; Multi-Agent Communication Bus Monitor</title>
@@ -30,6 +37,7 @@
 <link href="/styles.css?v=20260816a" rel="stylesheet"/>
 <link href="/assets/zoth-preview.css" rel="stylesheet"/>
 <link href="/assets/zoth-hud-embedded.css" rel="stylesheet"/>
+<link rel="stylesheet" href="/assets/zoth-disclosure.css"/>
 <script src="/assets/zoth-hud-embedded.js"></script>
 <style>
         .skip-to-content, .skip-link, .skip {
@@ -295,8 +303,45 @@
         gap: 1.25rem;
       }
 
-      .noc-section-view.is-active {
-        display: flex;
+      .noc-section-view.is-active,
+      .zoth-disclosure-wrapper.is-expanded .noc-section-view {
+        display: flex !important;
+      }
+
+      @media (max-width: 480px) {
+        .zoth-master-disclosure-bar {
+          padding: 12px 14px;
+          margin: 16px 0;
+        }
+        .zoth-master-disclosure-status {
+          font-size: 0.74rem;
+        }
+        .zoth-master-disclosure-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .zoth-hud-btn {
+          flex: 1;
+          justify-content: center;
+          padding: 6px 10px;
+          font-size: 0.72rem;
+        }
+        .zoth-disclosure-wrapper {
+          margin: 16px 0;
+          border-radius: 14px;
+        }
+        .zoth-disclosure-trigger {
+          padding: 14px 12px;
+        }
+        .zoth-big-heading {
+          font-size: 1.35rem !important;
+        }
+        .zoth-disclosure-content {
+          padding: 0 8px;
+        }
+        .zoth-disclosure-wrapper.is-expanded .zoth-disclosure-content {
+          padding: 10px 8px 18px 8px;
+        }
       }
 
       /* Waterfall Styles */
@@ -1769,9 +1814,39 @@ E2EE Signal Security
 <span>Signal E2EE Handshake Bridge</span>
 </button>
 </nav>
+
+<!-- Master Progressive Disclosure Engine -->
+<div class="zoth-master-disclosure-bar" style="margin: 20px 0 24px;">
+  <div class="zoth-master-disclosure-status">
+    <span class="pulse-dot"></span>
+    <span id="zoth-disclosure-active-counter">NOC BUS TELEMETRY // 4 DOMAINS</span>
+  </div>
+  <div class="zoth-master-disclosure-actions">
+    <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all">⚡ Expand All</button>
+    <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all">🌀 Focused View</button>
+  </div>
+</div>
+
 <!-- =====================================================================
-           VIEW 1: SWARM DIALOGUE & STREAM (Default NOC View)
-           ===================================================================== -->
+     VIEW 1: SWARM DIALOGUE & STREAM (Default NOC View)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper is-expanded" id="bus-stream-section">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="true">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Swarm Dialogue & Live Bus" loading="lazy" />
+      <span class="zoth-visual-icon">💬</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 01 — MULTI-AGENT SWARM DIALOGUE &amp; LIVE BUS</div>
+      <h2 class="zoth-big-heading zoth-animated-text">SWARM DIALOGUE &amp; FEED</h2>
+      <div class="zoth-disclosure-summary-line">Real-time multi-agent message stream, agent node heartbeats, active locks, and live dispatch transmitter.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">MINIMIZE</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">5 NODES · 1 ACTIVE CLAIM · LIVE BUS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <section class="noc-section-view is-active" id="view-stream">
 <!-- Mobile Segmented Switcher (Visible <=880px) -->
 <nav aria-label="Mobile NOC Navigation" class="mobile-segmented-bar" id="noc-mobile-tabs">
@@ -1936,9 +2011,29 @@ E2EE Signal Security
 </aside>
 </div>
 </section>
+  </div>
+</div>
+
 <!-- =====================================================================
-           VIEW 2: LIVE MESSAGE WATERFALL
-           ===================================================================== -->
+     VIEW 2: LIVE MESSAGE WATERFALL & EXECUTION SPANS (Collapsible)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper" id="bus-waterfall-section" style="margin-top: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/media/land/terminal-hero.jpg" alt="Live Message Waterfall & Spans" loading="lazy" />
+      <span class="zoth-visual-icon">🌊</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 02 — EXECUTION SPANS &amp; CASCADE WATERFALL</div>
+      <h2 class="zoth-big-heading zoth-animated-text">LIVE MESSAGE WATERFALL</h2>
+      <div class="zoth-disclosure-summary-line">Multi-hop swarm traces, packet propagation latencies, execution span analyzer, and secondary capture ledger.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">MULTI-HOP SPANS · AUTO-CAPTURE</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <section class="noc-section-view" id="view-waterfall">
 <div class="waterfall-container">
 <!-- Waterfall Controls Toolbar -->
@@ -1976,9 +2071,29 @@ Swarm Execution Spans
 </div>
 </div>
 </section>
+  </div>
+</div>
+
 <!-- =====================================================================
-           VIEW 3: PEER LATENCY PING RADAR
-           ===================================================================== -->
+     VIEW 3: PEER LATENCY PING RADAR & OSCILLOSCOPE (Collapsible)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper" id="bus-radar-section" style="margin-top: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/brand/zoth-golden-z-192.png" alt="Peer Latency Ping Radar" loading="lazy" />
+      <span class="zoth-visual-icon">📡</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 03 — SPATIAL TELEMETRY &amp; RTT OSCILLOSCOPE</div>
+      <h2 class="zoth-big-heading zoth-animated-text">PEER LATENCY RADAR</h2>
+      <div class="zoth-disclosure-summary-line">Continuous rolling round-trip ping time-series, loopback IPC mesh analysis, and chaos packet drop injection.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">60 TICKS · 5 PEERS · &lt;2MS IPC</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <section class="noc-section-view" id="view-radar">
 <div class="ping-radar-grid">
 <!-- Left: Real-time Multi-Line Oscilloscope Canvas -->
@@ -2053,9 +2168,29 @@ Swarm Execution Spans
 </div>
 </div>
 </section>
+  </div>
+</div>
+
 <!-- =====================================================================
-           VIEW 4: SIGNAL E2EE HANDSHAKE SIMULATOR
-           ===================================================================== -->
+     VIEW 4: SIGNAL E2EE HANDSHAKE SIMULATOR (Collapsible)
+     ===================================================================== -->
+<div class="zoth-disclosure-wrapper" id="bus-signal-section" style="margin-top: 24px;">
+  <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+    <div class="zoth-trigger-visual">
+      <img class="zoth-trigger-img" src="/assets/mascot/azoth-portrait.jpg" alt="Signal E2EE Handshake Bridge" loading="lazy" />
+      <span class="zoth-visual-icon">🔐</span>
+    </div>
+    <div class="zoth-disclosure-heading-group">
+      <div class="zoth-disclosure-kicker">// 04 — CRYPTOGRAPHIC PROTOCOL ENCLAVE</div>
+      <h2 class="zoth-big-heading zoth-animated-text">SIGNAL E2EE BRIDGE</h2>
+      <div class="zoth-disclosure-summary-line">Extended Triple Diffie-Hellman (X3DH) prekey exchange, Double Ratchet step simulator &amp; authenticated AEAD verification.</div>
+    </div>
+    <div class="zoth-disclosure-indicator">
+      <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <span class="zoth-item-count-chip">X3DH · DOUBLE RATCHET · HMAC PASS</span>
+    </div>
+  </button>
+  <div class="zoth-disclosure-content">
 <section class="noc-section-view" id="view-signal">
 <div class="signal-handshake-panel">
 <div>
@@ -2191,6 +2326,8 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
 </div>
 </div>
 </section>
+  </div>
+</div>
 <!-- Waterfall Inspector Modal -->
 <div class="waterfall-inspector-modal" id="wf-inspector-modal" onclick="if(event.target===this) closeWfInspector()">
 <div class="waterfall-inspector-box">
@@ -2267,18 +2404,36 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
           probeAndConnect();
         };
 
-        /* View Mode Switching */
+        /* Progressive Disclosure & View Mode Switching */
+        function autoExpandSection(sectionId) {
+          const w = document.getElementById(sectionId);
+          if (w && !w.classList.contains('is-expanded') && window.ZothDisclosure) {
+            window.ZothDisclosure.expand(w);
+          }
+        }
+
         window.switchNocView = function(viewId, btn) {
           document.querySelectorAll('.noc-view-tab').forEach(b => b.classList.remove('active'));
           if (btn) btn.classList.add('active');
 
           document.querySelectorAll('.noc-section-view').forEach(sec => sec.classList.remove('is-active'));
           const target = document.getElementById(`view-${viewId}`);
-          if (target) target.classList.add('is-active');
+          if (target) {
+            target.classList.add('is-active');
+            const wrapper = target.closest('.zoth-disclosure-wrapper');
+            if (wrapper && window.ZothDisclosure) {
+              window.ZothDisclosure.expand(wrapper);
+              setTimeout(() => {
+                wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 60);
+            }
+          }
 
           if (viewId === 'radar') {
             resizeRadarCanvas();
             drawRadarCanvas();
+          } else if (viewId === 'waterfall') {
+            renderWaterfall();
           }
         };
 
@@ -2380,6 +2535,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         }
 
         window.filterFeed = function(agent, btn) {
+          autoExpandSection('bus-stream-section');
           currentFilter = agent;
           document.querySelectorAll('.feed-filter-bar .btn-pill').forEach(b => b.classList.remove('active'));
           if (btn) btn.classList.add('active');
@@ -2387,6 +2543,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         };
 
         window.handleSearch = function(val) {
+          if (val && val.trim()) autoExpandSection('bus-stream-section');
           searchQuery = (val || '').trim();
           renderMessages();
         };
@@ -2906,6 +3063,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         }
 
         window.toggleWaterfallLive = function() {
+          autoExpandSection('bus-waterfall-section');
           waterfallLive = !waterfallLive;
           const dot = document.getElementById('wf-live-dot');
           const btn = document.getElementById('btn-wf-live');
@@ -2914,6 +3072,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         };
 
         window.filterWaterfall = function(type, btn) {
+          autoExpandSection('bus-waterfall-section');
           waterfallFilter = type;
           document.querySelectorAll('.waterfall-toolbar .btn-pill').forEach(b => {
             if (b.onclick && b.onclick.toString().includes('filterWaterfall')) b.classList.remove('active');
@@ -2928,6 +3087,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         };
 
         window.injectSyntheticWaterfall = function() {
+          autoExpandSection('bus-waterfall-section');
           const types = ["DIRECTIVE", "CONSENSUS", "E2EE_SIGNAL", "AST_SYNC"];
           const selectedType = types[Math.floor(Math.random() * types.length)];
           const newId = `casc-${Date.now().toString().slice(-4)}`;
@@ -3122,6 +3282,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         };
 
         window.toggleChaosInjector = function() {
+          autoExpandSection('bus-radar-section');
           chaosInjectorActive = !chaosInjectorActive;
           const label = document.getElementById('chaos-btn-label');
           const btn = document.getElementById('btn-chaos-inject');
@@ -3340,6 +3501,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         }
 
         window.triggerPingSweep = function() {
+          autoExpandSection('bus-radar-section');
           playChime(1046.50);
           peers.forEach(p => {
             p.currentRtt = p.baseRtt * (0.8 + Math.random() * 0.4);
@@ -3382,6 +3544,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         };
 
         window.generateFreshPrekeys = function() {
+          autoExpandSection('bus-signal-section');
           const randHex = (len) => Array.from({length: len}, () => Math.floor(Math.random()*16).toString(16)).join('');
           const aIk = document.getElementById('alice-ik');
           const bIk = document.getElementById('bob-ik');
@@ -3398,6 +3561,7 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
         };
 
         window.executeE2EEHandshake = function() {
+          autoExpandSection('bus-signal-section');
           const plainEl = document.getElementById('crypto-plaintext');
           const recipientEl = document.getElementById('crypto-recipient');
           const plaintext = plainEl ? plainEl.value : '{}';
@@ -3474,5 +3638,6 @@ U2lnbmFsVjRfRVhUX0VOQ1JZUFRFRF9QQVlMT0FEXzcwOWI3ZmEwZDM0ZDY... [IV: 9f2a01bc | T
 <script defer="" src="/assets/zoth-annotator.js"></script>
 <script src="/assets/zoth-theme.js?v=11"></script>
 <script src="/assets/zoth-nav.js?v=11"></script>
+<script defer="" src="/assets/zoth-disclosure.js"></script>
 </body>
 </html>
