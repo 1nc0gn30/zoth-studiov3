@@ -976,34 +976,39 @@ html, body {
 
         <div id="paramsContainer" style="display:flex; flex-direction:column; gap: var(--space-sm);"></div>
 
-        <div class="form-group">
-          <label class="form-label" for="token">
-            <span>GitHub Personal Access Token (Memory-Only)</span>
-            <span style="font-size:0.7rem; color:var(--text-muted);">Optional for simulation</span>
-          </label>
-          <div style="display:flex; gap: var(--space-xs);">
-            <input class="form-input" id="token" type="password" placeholder="ghp_… or github_pat_… (never written to disk)" autocomplete="off" />
-            <button class="action-btn btn-ghost" id="clearToken" type="button" style="min-height:44px; padding:0 14px;">Clear</button>
-          </div>
-        </div>
-
-        <div class="btn-group">
-          <button class="action-btn btn-primary" id="runBtn" type="button">
+        <div class="btn-group" style="margin-top: 14px;">
+          <button class="action-btn btn-primary" id="runBtn" type="button" style="flex:1;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             Validate &amp; Execute
           </button>
-          <button class="action-btn btn-ghost" id="copyEnvelopeBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy JSON Envelope
+          <button class="action-btn btn-ghost" id="btnToggleGithubSettings" type="button" onclick="toggleGithubSettingsDrawer()" style="border-color:rgba(0,240,255,0.4);color:var(--cyan);" title="Toggle authorization key and wire payload ledger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span id="githubSettingsBtnLabel">⚙️ Settings</span>
           </button>
         </div>
 
-        <div>
-          <div class="form-label" style="margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
-            <span>Verified Outbound Schema Payload Ledger</span>
-            <span class="pill-badge gold" style="font-size:0.65rem;">Contract Validated</span>
+        <!-- Rick Rubin Settings & Payload Drawer -->
+        <div id="githubSettingsDrawer" style="display:none; margin-top: 14px; padding: 14px; background: rgba(5,9,18,0.95); border: 1px solid rgba(0,240,255,0.25); border-radius: var(--radius-sm);">
+          <div class="form-group">
+            <label class="form-label" for="token">
+              <span>GitHub Personal Access Token (Memory-Only)</span>
+              <span style="font-size:0.7rem; color:var(--text-muted);">Optional for simulation</span>
+            </label>
+            <div style="display:flex; gap: var(--space-xs);">
+              <input class="form-input" id="token" type="password" placeholder="ghp_… or github_pat_… (never written to disk)" autocomplete="off" />
+              <button class="action-btn btn-ghost" id="clearToken" type="button" style="min-height:44px; padding:0 14px;">Clear</button>
+            </div>
           </div>
-          <pre class="terminal-box" id="requestView" style="max-height:160px;">Select an action to inspect structured contract payload…</pre>
+
+          <div style="margin-top:12px;">
+            <div class="form-label" style="margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+              <span>Verified Outbound Schema Payload Ledger</span>
+              <button class="action-btn btn-ghost" id="copyEnvelopeBtn" type="button" style="min-height:30px; padding:2px 10px; font-size:0.7rem;">
+                Copy Envelope
+              </button>
+            </div>
+            <pre class="terminal-box" id="requestView" style="max-height:140px;">Select an action to inspect structured contract payload…</pre>
+          </div>
         </div>
       </section>
     </div>
@@ -1487,6 +1492,15 @@ html, body {
     window.addEventListener("zoth:github-tool", function (e) {
       logTelemetry(e.detail.event || "bus_event", e.detail || {});
     });
+
+    window.toggleGithubSettingsDrawer = function() {
+      var drawer = document.getElementById("githubSettingsDrawer");
+      var lbl = document.getElementById("githubSettingsBtnLabel");
+      if (!drawer) return;
+      var isHidden = drawer.style.display === "none";
+      drawer.style.display = isHidden ? "block" : "none";
+      if (lbl) lbl.textContent = isHidden ? "Hide Settings" : "⚙️ Settings";
+    };
 
     renderFieldInputs();
   })();

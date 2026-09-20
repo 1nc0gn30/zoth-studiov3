@@ -1048,29 +1048,54 @@ def validate_sovereign_invariants(ast_node, security_context):
         
         var t = Bench.get(id);
         if (!t) return;
-        var html = '<div class="meta-line" style="margin-bottom:.8rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
-          '<div>Owner: <strong style="color:var(--cyan)">@' + (t.owner || "hermes") + '</strong> · Schema: ' + (t.schemaHref ? '<a href="' + t.schemaHref + '" target="_blank" rel="noopener">' + t.schemaHref + '</a>' : '<span style="color:var(--green)">Strict Contract Enforced</span>') + '</div>' +
-          '<div style="font-family:var(--mono);font-size:0.72rem;color:var(--gold);">⚡ Loopback Bus: :8484</div>' +
-          '</div>';
-        html += '<label for="benchAction">Selected Action</label><select id="benchAction"></select>';
-        html += '<div id="benchParams"></div>';
-        html += '<label for="benchToken">Authorization Token (optional in-memory key)</label><input id="benchToken" type="password" placeholder="ghp_… or bearer token (never persisted)" autocomplete="off" />';
         
-        html += '<div class="actions-bar" style="margin-top:1.2rem;display:flex;gap:8px;flex-wrap:wrap;">' +
-          '<button class="btn btn-primary" id="benchRun">⚡ Validate &amp; Execute</button>' +
-          '<button class="btn btn-ghost" id="benchPreset" style="border-color:var(--gold);color:var(--gold);">💡 Load Sample Input</button>' +
-          '<button class="btn btn-ghost" id="benchCurl">📋 Copy cURL</button>' +
-          '<button class="btn btn-ghost" id="benchShow">Show JSON Envelope</button>' +
+        // Rick Rubin Reduced Tool Hero & Primary Action Interface
+        var html = '<div class="tool-rubin-hero" style="background:rgba(8,12,22,0.6);border:1px solid rgba(0,229,255,0.18);border-radius:12px;padding:14px;margin-bottom:14px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+          '<span style="font-family:var(--font-display);font-weight:800;font-size:1.05rem;color:#fff;">' + (t.name || t.id) + '</span>' +
+          '<span class="chip" style="font-size:0.65rem;border-color:var(--cyan);color:var(--cyan);">v' + (t.version || "1.0.0") + '</span>' +
+          '<span class="chip" style="font-size:0.65rem;color:var(--muted)">@' + (t.owner || "hermes") + '</span>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<span class="chip" style="font-size:0.65rem;border-color:var(--green);color:var(--green);">● CONTRACT VALIDATED</span>' +
+          '<span style="font-family:var(--mono);font-size:0.7rem;color:var(--gold);">:8484</span>' +
+          '</div>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;">' +
+          '<div><label for="benchAction" style="font-size:0.75rem;margin-bottom:4px;display:block;color:var(--text-secondary);">Action Endpoint</label><select id="benchAction" style="margin-bottom:0;"></select></div>' +
+          '<button class="btn btn-ghost" id="benchPreset" style="border-color:var(--gold);color:var(--gold);min-height:42px;" title="Fill with verified test payload">💡 Sample</button>' +
+          '<button class="btn btn-ghost" id="benchToggleSettings" onclick="toggleBenchSettingsDrawer()" style="border-color:rgba(0,229,255,0.4);color:var(--cyan);min-height:42px;display:inline-flex;align-items:center;gap:6px;" title="Toggle fine-grained parameters and wire envelope"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span id="benchSettingsBtnLabel">⚙️ Settings</span></button>' +
+          '</div>' +
+          '<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">' +
+          '<button class="btn btn-primary" id="benchRun" style="flex:1;min-height:44px;font-size:0.92rem;letter-spacing:0.02em;">⚡ Validate &amp; Execute</button>' +
+          '</div>' +
           '</div>';
-        
-        html += '<div style="margin-top:1.2rem;display:flex;gap:12px;align-items:center;background:rgba(4,6,14,0.7);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);font-family:var(--mono);font-size:0.72rem;">' +
+
+        // Rick Rubin Expandable Settings & Schema Contract Drawer
+        html += '<div id="benchSettingsDrawer" style="display:none;margin-bottom:14px;background:rgba(5,9,18,0.95);border:1px solid rgba(0,229,255,0.25);border-radius:12px;padding:16px;animation:fadeIn 0.2s ease;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:8px;">' +
+          '<div style="font-family:var(--font-display);font-weight:700;font-size:0.85rem;color:var(--cyan);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Tool Parameters &amp; Schema Invariants</div>' +
+          '<div style="font-size:0.72rem;color:var(--muted);">' + (t.schemaHref ? '<a href="' + t.schemaHref + '" target="_blank" rel="noopener" style="color:var(--cyan)">Contract JSON ↗</a>' : 'Strict Local Schema') + '</div>' +
+          '</div>' +
+          '<div id="benchParams"></div>' +
+          '<label for="benchToken" style="margin-top:10px;font-size:0.75rem;color:var(--text-secondary);display:block;">Authorization Token (optional in-memory key)</label><input id="benchToken" type="password" placeholder="ghp_… or bearer token (never persisted)" autocomplete="off" />' +
+          '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">' +
+          '<button class="btn btn-ghost" id="benchCurl" style="font-size:0.78rem;">📋 Copy cURL</button>' +
+          '<button class="btn btn-ghost" id="benchShow" style="font-size:0.78rem;">Show JSON Envelope</button>' +
+          '</div>' +
+          '<div style="margin-top:12px;"><div class="section-title" style="font-size:0.8rem;"><span>Wire Request Envelope</span><button class="chip" onclick="copyConsoleContent(\'benchEnvelope\')" style="cursor:pointer;font-size:0.65rem;">Copy</button></div><pre class="console dim" id="benchEnvelope" style="max-height:120px;font-size:0.75rem;">—</pre></div>' +
+          '</div>';
+
+        // Primary Status & Telemetry Ribbon
+        html += '<div style="margin-bottom:12px;display:flex;gap:12px;align-items:center;background:rgba(4,6,14,0.7);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);font-family:var(--mono);font-size:0.72rem;">' +
           '<div>Status: <span id="benchStatusBadge" style="color:var(--muted)">READY</span></div>' +
           '<div>Latency: <span id="benchLatencyBadge" style="color:var(--cyan)">0.0 ms</span></div>' +
           '<div>Contract: <span style="color:var(--green)">● VALIDATED</span></div>' +
           '</div>';
 
-        html += '<div style="margin-top:1rem"><div class="section-title"><span>Request Envelope</span><button class="chip" onclick="copyConsoleContent(\'benchEnvelope\')" style="cursor:pointer">Copy</button></div><pre class="console dim" id="benchEnvelope">—</pre></div>';
-        html += '<div style="margin-top:1rem"><div class="section-title"><span>Execution Response &amp; Telemetry</span><button class="chip" onclick="copyConsoleContent(\'benchResponse\')" style="cursor:pointer">Copy</button></div><pre class="console dim" id="benchResponse">—</pre></div>';
+        // Primary Result Surface
+        html += '<div style="margin-top:0"><div class="section-title"><span>Execution Response &amp; Telemetry</span><button class="chip" onclick="copyConsoleContent(\'benchResponse\')" style="cursor:pointer">Copy</button></div><pre class="console dim" id="benchResponse" style="min-height:140px;">—</pre></div>';
         consoleArea.innerHTML = html;
 
         var actSel = document.getElementById("benchAction");
@@ -1083,6 +1108,16 @@ def validate_sovereign_invariants(ast_node, security_context):
         document.getElementById("benchPreset").addEventListener("click", loadSamplePreset);
         document.getElementById("benchCurl").addEventListener("click", copyCurlCommand);
       }
+
+      window.toggleBenchSettingsDrawer = function() {
+        playBeep("click");
+        var drawer = document.getElementById("benchSettingsDrawer");
+        var lbl = document.getElementById("benchSettingsBtnLabel");
+        if (!drawer) return;
+        var isHidden = drawer.style.display === "none";
+        drawer.style.display = isHidden ? "block" : "none";
+        if (lbl) lbl.textContent = isHidden ? "Hide Settings" : "⚙️ Settings";
+      };
 
       window.copyConsoleContent = function(id) {
         playBeep("click");
