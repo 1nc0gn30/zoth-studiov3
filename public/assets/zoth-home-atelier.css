@@ -962,36 +962,137 @@ html[data-theme="light"] .eco-lead .eco-mark {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 24px;
-  padding: 16px 20px;
-  background: color-mix(in srgb, var(--panel, #0d1222) 75%, transparent);
-  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
-  border-radius: 16px;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  margin-top: 28px;
+  padding: 18px 24px;
+  position: relative;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(15, 23, 42, 0.85) 0%, rgba(5, 8, 20, 0.92) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.hero-metric-counters-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.08), transparent);
+  transform: skewX(-20deg);
+  animation: metricShimmer 6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.hero-metric-counters-bar:hover {
+  border-color: rgba(0, 242, 254, 0.35);
+  box-shadow: 0 20px 48px -12px rgba(0, 242, 254, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
 }
 
 .metric-counter-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: transform 0.25s ease, background 0.25s ease;
 }
 
+.metric-counter-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.metric-num-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-num,
 .hero-metric-num {
-  font-family: var(--font-mono, monospace);
-  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
   font-weight: 800;
-  color: var(--home-gold);
+  color: var(--home-gold, #fbbf24);
   line-height: 1.1;
   letter-spacing: -0.02em;
+  text-shadow: 0 0 16px rgba(251, 191, 36, 0.3);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
+.metric-counter-item:hover .metric-num {
+  color: #38bdf8;
+  text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+}
+
+.metric-label,
 .hero-metric-label {
-  font-size: 0.72rem;
+  font-size: 0.73rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   color: var(--text-subhead, #94a3b8);
   font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Pulsing Status Badges & Kinetic Icons */
+.metric-live-badge {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.metric-live-badge.pulse-cyan {
+  background: #00f2fe;
+  box-shadow: 0 0 10px #00f2fe;
+  animation: metricPulseCyan 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.metric-live-badge.pulse-emerald {
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: metricPulseEmerald 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.metric-icon-shield,
+.metric-icon-bolt {
+  font-size: 0.85rem;
+  line-height: 1;
+  animation: metricFloat 3s infinite ease-in-out;
+  display: inline-block;
+}
+
+.metric-counter-delimiter {
+  width: 1px;
+  height: 70%;
+  align-self: center;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+@keyframes metricPulseCyan {
+  0%, 100% { transform: scale(1); opacity: 0.9; box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7); }
+  50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 0 6px rgba(0, 242, 254, 0); }
+}
+
+@keyframes metricPulseEmerald {
+  0%, 100% { transform: scale(1); opacity: 0.9; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+}
+
+@keyframes metricFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes metricShimmer {
+  0% { left: -100%; }
+  35%, 100% { left: 200%; }
 }
 
 .alchemical-section-divider {
@@ -1021,15 +1122,18 @@ html[data-theme="light"] .eco-lead .eco-mark {
 }
 
 html[data-theme="light"] .hero-metric-counters-bar {
-  background: rgba(255, 255, 255, 0.88);
-  border-color: rgba(17, 24, 39, 0.12);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(17, 24, 39, 0.14);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
 }
 
+html[data-theme="light"] .metric-num,
 html[data-theme="light"] .hero-metric-num {
   color: #b45309;
+  text-shadow: none;
 }
 
+html[data-theme="light"] .metric-label,
 html[data-theme="light"] .hero-metric-label {
   color: #4b5563;
 }
@@ -1038,6 +1142,10 @@ html[data-theme="light"] .hero-metric-label {
   .hero-metric-counters-bar {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    padding: 12px 14px;
+    padding: 14px 16px;
+  }
+  .metric-counter-delimiter {
+    display: none;
   }
 }
+
