@@ -31,16 +31,16 @@
   };
 
   var DOCK_TOOLS = [
-    { id: 'home', iconSvg: ICONS.home, hotkey: '0', label: 'Zoth Hub', desc: 'Sovereign AI Gateway', href: '/' },
-    { id: 'zoth', iconSvg: ICONS.zoth, hotkey: '1', label: 'Master Azoth', desc: 'Core Synthesis & Alchemical Engine', href: '/zoth/' },
-    { id: 'memory', iconSvg: ICONS.memory, hotkey: '2', label: 'Memory Whitespace', desc: 'Vector Recall & Lucy Graph', href: '/memory/' },
-    { id: 'math', iconSvg: ICONS.math, hotkey: '3', label: 'Math Pillars', desc: 'Neural Theory & STDP Calculus', href: '/studio/math-pillars.html' },
-    { id: 'cockpit', iconSvg: ICONS.cockpit, hotkey: '4', label: 'The Cockpit', desc: '21-Agent Autonomous Swarm', href: '/studio/cockpit.html' },
-    { id: 'consensus', iconSvg: ICONS.consensus, hotkey: '5', label: 'Consensus Arena', desc: '3-Agent Debate & AST Tiebreaker', href: '/studio/consensus.html' },
-    { id: 'adytum', iconSvg: ICONS.adytum, hotkey: '6', label: 'Adytum Sanctum', desc: 'Keys 0-21 Hermetic Planning Rite', href: '/adytum/' },
-    { id: 'webgpu', iconSvg: ICONS.webgpu, hotkey: '7', label: 'WebGPU Engine', desc: 'Local Neural Tensor Shaders', href: '/ai-webgpu.html' },
-    { id: 'vos', iconSvg: ICONS.vos, hotkey: '8', label: 'vOS Sandbox', desc: 'Wasm WebContainer & Terminal', href: '/studio/vos-sandbox.html' },
-    { id: 'webgen', iconSvg: ICONS.webgen, hotkey: '9', label: 'WebGen Studio', desc: 'PTY Terminal & Website Foundry', href: '/studio/webgen.html' },
+    { id: 'home', iconSvg: ICONS.home, label: 'Zoth Hub', desc: 'Sovereign AI Gateway', href: '/' },
+    { id: 'zoth', iconSvg: ICONS.zoth, label: 'Master Azoth', desc: 'Core Synthesis & Alchemical Engine', href: '/zoth/' },
+    { id: 'memory', iconSvg: ICONS.memory, label: 'Memory Whitespace', desc: 'Vector Recall & Lucy Graph', href: '/memory/' },
+    { id: 'math', iconSvg: ICONS.math, label: 'Math Pillars', desc: 'Neural Theory & STDP Calculus', href: '/studio/math-pillars.html' },
+    { id: 'cockpit', iconSvg: ICONS.cockpit, label: 'The Cockpit', desc: '21-Agent Autonomous Swarm', href: '/studio/cockpit.html' },
+    { id: 'consensus', iconSvg: ICONS.consensus, label: 'Consensus Arena', desc: '3-Agent Debate & AST Tiebreaker', href: '/studio/consensus.html' },
+    { id: 'adytum', iconSvg: ICONS.adytum, label: 'Adytum Sanctum', desc: 'Keys 0-21 Hermetic Planning Rite', href: '/adytum/' },
+    { id: 'webgpu', iconSvg: ICONS.webgpu, label: 'WebGPU Engine', desc: 'Local Neural Tensor Shaders', href: '/ai-webgpu.html' },
+    { id: 'vos', iconSvg: ICONS.vos, label: 'vOS Sandbox', desc: 'Wasm WebContainer & Terminal', href: '/studio/vos-sandbox.html' },
+    { id: 'webgen', iconSvg: ICONS.webgen, label: 'WebGen Studio', desc: 'PTY Terminal & Website Foundry', href: '/studio/webgen.html' },
     { id: 'nexus3d', iconSvg: ICONS.nexus3d, label: 'Nexus 3D', desc: 'CAD Mesh & 3D Omniverse', href: '/studio/nexus-3d.html' },
     { id: 'omnipost', iconSvg: ICONS.omnipost, label: 'OmniPost Video', desc: '60 FPS Social Motion Studio', href: '/studio/omnipost.html' },
     { id: 'swarm', iconSvg: ICONS.swarm, label: '3D Swarm Arena', desc: 'WebGL Kinetic Arena', href: '/studio/swarm.html' },
@@ -119,7 +119,6 @@
 
       return [
         '<button type="button" class="dock-item' + (isActive ? ' active' : '') + '" data-dock-id="' + item.id + '"' + (item.href ? ' data-href="' + item.href + '"' : '') + ' aria-label="' + item.label + '">',
-        item.hotkey ? '  <span class="dock-hotkey">&lt;' + item.hotkey + '&gt;</span>' : '',
         '  <span class="dock-icon-box">' + item.iconSvg + '</span>',
         '  <span class="dock-tooltip">',
         '    <strong>' + item.label + '</strong>',
@@ -205,13 +204,16 @@
           var rect = item.getBoundingClientRect();
           var itemCenter = rect.left + rect.width / 2;
           var distance = Math.abs(mouseX - itemCenter);
-          var maxDist = 130;
+          var maxDist = 140;
 
           if (distance < maxDist) {
-            var scale = 1 + 0.32 * Math.cos((distance / maxDist) * (Math.PI / 2));
-            item.style.transform = 'scale(' + scale.toFixed(3) + ') translateY(-' + ((scale - 1) * 14).toFixed(1) + 'px)';
+            var scale = 1 + 0.38 * Math.cos((distance / maxDist) * (Math.PI / 2));
+            var lift = (scale - 1) * 26;
+            item.style.transform = 'scale(' + scale.toFixed(3) + ') translateY(-' + lift.toFixed(1) + 'px)';
+            item.style.zIndex = String(Math.round(20 + (scale - 1) * 120));
           } else {
             item.style.transform = 'scale(1) translateY(0)';
+            item.style.zIndex = '5';
           }
         });
       });
@@ -219,6 +221,7 @@
       dockInner.addEventListener('mouseleave', function () {
         dockInner.querySelectorAll('.dock-item').forEach(function (item) {
           item.style.transform = 'scale(1) translateY(0)';
+          item.style.zIndex = '5';
         });
       });
     }

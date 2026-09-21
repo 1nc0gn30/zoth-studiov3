@@ -357,6 +357,7 @@
         '      <span class="pet-hud-title">Master Narrator &amp; Companion</span>',
         '    </div>',
         '    <div class="pet-hud-header-actions">',
+        '      <button type="button" class="pet-hud-icon-btn" id="pet-hud-mute-btn" title="Toggle Narration">' + (localStorage.getItem("zoth_pet_narrator_muted") === "true" ? '🔇' : '🔊') + '</button>',
         '      <button type="button" class="pet-hud-icon-btn" id="pet-hud-dock-btn" title="Toggle Compact Mode">' + SVG_MIN + '</button>',
         '      <button type="button" class="pet-hud-icon-btn" id="pet-hud-close-btn" title="Close Panel">' + SVG_CLOSE + '</button>',
         '    </div>',
@@ -801,6 +802,23 @@
         });
       }
 
+      var muteBtn = document.getElementById("pet-hud-mute-btn");
+      if (muteBtn) {
+        muteBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var isMuted = localStorage.getItem("zoth_pet_narrator_muted") === "true";
+          var newMuted = !isMuted;
+          localStorage.setItem("zoth_pet_narrator_muted", String(newMuted));
+          muteBtn.textContent = newMuted ? "🔇" : "🔊";
+          var speech = document.getElementById("pet-hud-speech");
+          if (newMuted && speech) {
+            speech.classList.remove("active");
+          }
+          PetHUD.say(newMuted ? "Companion narration silenced." : "Companion narration activated!");
+        });
+      }
+
       if (dockBtn) {
         dockBtn.addEventListener("click", function (e) {
           e.preventDefault();
@@ -1219,6 +1237,7 @@
           e.stopPropagation();
           speech.classList.remove("active");
           speech.setAttribute("data-hold", "1");
+          localStorage.setItem("zoth_pet_narrator_dismissed", "1");
         });
       }
 
@@ -1332,8 +1351,22 @@
       function checkSectionInView() {
         var speech = document.getElementById("pet-hud-speech");
         if (speech && speech.getAttribute("data-hold") === "1") return;
+        if (localStorage.getItem("zoth_pet_narrator_muted") === "true") return;
+        if (localStorage.getItem("zoth_pet_narrator_dismissed") === "1") return;
 
         var vh = window.innerHeight || 800;
+        var isMobile = (window.innerWidth || 375) <= 768;
+        if (isMobile) {
+          // On mobile, never obstruct reading with unsolicited speech balloons.
+          // Instead, pulse the avatar ring softly as an unobtrusive cue.
+          var ring = document.querySelector(".pet-hud-pulse-ring");
+          if (ring) {
+            ring.classList.add("pulse-alert");
+            setTimeout(function () { ring.classList.remove("pulse-alert"); }, 2000);
+          }
+          return;
+        }
+
         var best = null;
         var bestScore = 0;
 
