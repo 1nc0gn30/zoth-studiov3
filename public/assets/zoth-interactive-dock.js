@@ -25,6 +25,7 @@
     adytum: '<svg viewBox="0 0 24 24" fill="none" class="dock-svg-icon"><path d="M12 2L2 22H22L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="14" r="3.5" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.6" fill="rgba(251, 191, 36, 0.2)"/><circle cx="12" cy="14" r="1.2" fill="var(--dock-cyan, #00f0ff)"/><line x1="12" y1="7" x2="12" y2="9" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.5"/></svg>',
     webgpu: '<svg viewBox="0 0 24 24" fill="none" class="dock-svg-icon"><rect x="4" y="4" width="16" height="16" rx="2.5" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="8" width="8" height="8" rx="1" fill="rgba(0, 240, 255, 0.2)" stroke="var(--dock-cyan, #00f0ff)" stroke-width="1.5"/><line x1="2" y1="8" x2="4" y2="8" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.5"/><line x1="2" y1="12" x2="4" y2="12" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.5"/><line x1="2" y1="16" x2="4" y2="16" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.5"/><line x1="20" y1="8" x2="22" y2="8" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.5"/><line x1="20" y1="12" x2="22" y2="12" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.5"/><line x1="20" y1="16" x2="22" y2="16" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.5"/></svg>',
     logo3d: '<svg viewBox="0 0 24 24" fill="none" class="dock-svg-icon"><polygon points="6,4 18,4 18,7.5 10,16.5 18,16.5 18,20 6,20 6,16.5 14,7.5 6,7.5" fill="var(--dock-gold, #fbbf24)" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.2" stroke-linejoin="round"/></svg>',
+    companion: '<svg viewBox="0 0 24 24" fill="none" class="dock-svg-icon"><circle cx="12" cy="12" r="9" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.6"/><circle cx="12" cy="12" r="3.5" fill="var(--dock-cyan, #00f0ff)"/><polygon points="12,4 14,8 19,8.5 15,12 16,17 12,14.5 8,17 9,12 5,8.5 10,8" fill="rgba(251, 191, 36, 0.25)" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.2"/></svg>',
     annotate: '<svg viewBox="0 0 24 24" fill="none" class="dock-svg-icon"><path d="M12 20H21M16.5 3.5L20.5 7.5L7 21L3 21L3 17L16.5 3.5Z" stroke="var(--dock-gold, #fbbf24)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     palette: '<svg viewBox="0 0 24 24" fill="none" class="dock-svg-icon"><circle cx="11" cy="11" r="7" stroke="var(--dock-cyan, #00f0ff)" stroke-width="1.8"/><path d="M16 16L21 21" stroke="var(--dock-gold, #fbbf24)" stroke-width="2" stroke-linecap="round"/><circle cx="11" cy="11" r="2.5" fill="rgba(0, 240, 255, 0.4)"/></svg>',
     theme: '<svg viewBox="0 0 24 24" fill="none" class="dock-svg-icon"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 3V21C16.97 21 21 16.97 21 12C21 7.03 16.97 3 12 3Z" fill="var(--dock-cyan, #00f0ff)"/><circle cx="12" cy="12" r="3" fill="var(--dock-gold, #fbbf24)"/></svg>'
@@ -47,6 +48,7 @@
     { id: 'vault', iconSvg: ICONS.vault, label: 'Sovereign Vault', desc: 'Argon2id BYOK Keyrings', href: '/vault/' },
     { id: 'logo3d', iconSvg: ICONS.logo3d, label: '3D Emblem Engine', desc: 'Interactive Golden Z WebGL', href: '/3d-logo-showcase.html' },
     { id: 'divider', isDivider: true },
+    { id: 'companion', iconSvg: ICONS.companion, label: 'Azoth Narrator', desc: 'Master AI Companion & Voice HUD (Toggle)', action: 'companion' },
     { id: 'annotate', iconSvg: ICONS.annotate, label: 'Annotator', desc: 'On-Screen Feedback (Shift+A)', action: 'annotate' },
     { id: 'palette', iconSvg: ICONS.palette, label: 'Command Palette', desc: 'Global Launcher (Ctrl+K)', action: 'palette' },
     { id: 'theme', iconSvg: ICONS.theme, label: 'Theme Matrix', desc: 'Cycle 4 Themes (Shift+T)', action: 'theme' }
@@ -157,6 +159,14 @@
 
       if (href) {
         window.location.href = href;
+      } else if (dockId === 'companion') {
+        if (window.ZothPetHUD && typeof window.ZothPetHUD.toggle === 'function') {
+          window.ZothPetHUD.toggle();
+        } else if (window.location.protocol === 'file:') {
+          window.location.href = './pets/';
+        } else {
+          window.location.href = '/pets/';
+        }
       } else if (dockId === 'annotate') {
         if (window.ZothAnnotator && typeof window.ZothAnnotator.toggle === 'function') {
           window.ZothAnnotator.toggle();

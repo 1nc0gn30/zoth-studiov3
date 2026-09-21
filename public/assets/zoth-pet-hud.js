@@ -246,7 +246,7 @@
         var base = (window.location.protocol === "file:") ? "./" : "/assets/";
         var link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = base + "zoth-pet-hud.css";
+        link.href = base + "zoth-pet-hud.css?v=20260921c";
         document.head.appendChild(link);
       }
     },
@@ -302,11 +302,16 @@
       if (existing) existing.remove();
 
       var isDockedPref = localStorage.getItem("zoth_pet_hud_docked") === "true";
+      var isStashedPref = localStorage.getItem("zoth_pet_stashed") === "true";
+      var isMutedPref = localStorage.getItem("zoth_pet_narrator_muted") === "true";
       this.isDocked = isDockedPref;
 
       var hud = document.createElement("div");
       hud.id = "zoth-pet-hud";
-      hud.className = this.isDocked ? "docked" : "";
+      var cls = [];
+      if (this.isDocked) cls.push("docked");
+      if (isStashedPref) cls.push("is-stashed");
+      hud.className = cls.join(" ");
 
       var pet = this.activePet;
       var base = this.getAssetsBase();
@@ -318,7 +323,7 @@
         return '<option value="' + p.id + '" ' + selected + '>' + p.emoji + ' ' + p.name + ' — ' + p.domain + '</option>';
       }).join('');
 
-            var SVG_CLOSE = '<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      var SVG_CLOSE = '<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
       var SVG_MIN = '<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"><path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
       var SVG_COPY = '<svg viewBox="0 0 24 24" fill="none" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.6"/></svg>';
       var SVG_EYE = '<svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"><circle cx="12" cy="12" r="3" fill="var(--pet-hud-cyan,#00f0ff)"/><path d="M2 12C5 6 19 6 22 12C19 18 5 18 2 12Z" stroke="var(--pet-hud-cyan,#00f0ff)" stroke-width="1.6"/></svg>';
@@ -327,17 +332,32 @@
       var SVG_CUBE = '<svg viewBox="0 0 24 24" fill="none" style="width:13px;height:13px;display:inline-block;vertical-align:middle;"><path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" stroke-width="1.5"/></svg>';
 
       hud.innerHTML = [
-        '<!-- Floating Master Narrator & Companion Trigger Button -->',
-        '<button type="button" class="pet-hud-trigger" id="pet-hud-trigger" aria-expanded="false" aria-label="Toggle Master Narrator & Companion Panel">',
-        '  <div class="pet-hud-orb">',
-        '    <img src="' + avatarUrl + '" alt="' + pet.name + '" id="pet-hud-orb-img" loading="lazy" decoding="async" onerror="this.src=\'' + fallbackMask + '\'" />',
-        '    <div class="pet-hud-pulse-ring"></div>',
-        '    <div class="pet-hud-orb-status"></div>',
+        '<!-- Cyber Satellite Companion Capsule -->',
+        '<div class="pet-hud-cockpit-capsule" id="pet-hud-capsule">',
+        '  <button type="button" class="pet-hud-trigger" id="pet-hud-trigger" aria-expanded="false" aria-label="Toggle Master Narrator & Companion Panel">',
+        '    <div class="pet-hud-orb">',
+        '      <img src="' + avatarUrl + '" alt="' + pet.name + '" id="pet-hud-orb-img" loading="lazy" decoding="async" onerror="this.src=\'' + fallbackMask + '\'" />',
+        '      <div class="pet-hud-pulse-ring"></div>',
+        '      <div class="pet-hud-orb-status"></div>',
+        '    </div>',
+        '    <div class="pet-hud-trigger-info">',
+        '      <span class="pet-hud-trigger-name" id="pet-hud-trigger-name">' + pet.name + '</span>',
+        '      <span class="pet-hud-trigger-state">',
+        '        <span class="pet-live-bars"><span class="bar b1"></span><span class="bar b2"></span><span class="bar b3"></span></span>',
+        '        <span class="pet-state-text">NARRATOR</span>',
+        '      </span>',
+        '    </div>',
+        '  </button>',
+        '  <div class="pet-hud-capsule-actions">',
+        '    <button type="button" class="pet-capsule-action-btn" id="pet-capsule-mute" title="Toggle Voice Mute" aria-label="Toggle Voice Mute">' + (isMutedPref ? '🔇' : '🔊') + '</button>',
+        '    <button type="button" class="pet-capsule-action-btn" id="pet-capsule-stash" title="Dock to Screen Edge" aria-label="Dock to Screen Edge">⇥</button>',
         '  </div>',
-        '  <div class="pet-hud-trigger-info">',
-        '    <span class="pet-hud-trigger-name" id="pet-hud-trigger-name">' + pet.name + '</span>',
-        '    <span class="pet-hud-trigger-state">' + SVG_SPARK + ' <span>Narrator</span></span>',
-        '  </div>',
+        '</div>',
+        '',
+        '<!-- Stashed Edge Tab (Visible when stashed to edge) -->',
+        '<button type="button" class="pet-hud-edge-tab" id="pet-hud-edge-tab" title="Expand ' + pet.name + ' Companion" aria-label="Expand ' + pet.name + ' Companion">',
+        '  <span class="edge-tab-avatar"><img src="' + avatarUrl + '" alt="' + pet.name + '" onerror="this.src=\'' + fallbackMask + '\'" /></span>',
+        '  <span class="edge-tab-arrow">⇤</span>',
         '</button>',
 
         '<!-- Exact Digest Speech Bubble (Resting Snugly Above Button) -->',
@@ -816,6 +836,46 @@
             speech.classList.remove("active");
           }
           PetHUD.say(newMuted ? "Companion narration silenced." : "Companion narration activated!");
+          var capMute = document.getElementById("pet-capsule-mute");
+          if (capMute) capMute.textContent = newMuted ? "🔇" : "🔊";
+        });
+      }
+
+      var capMuteBtn = document.getElementById("pet-capsule-mute");
+      if (capMuteBtn) {
+        capMuteBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var isMuted = localStorage.getItem("zoth_pet_narrator_muted") === "true";
+          var newMuted = !isMuted;
+          localStorage.setItem("zoth_pet_narrator_muted", String(newMuted));
+          capMuteBtn.textContent = newMuted ? "🔇" : "🔊";
+          var headerMute = document.getElementById("pet-hud-mute-btn");
+          if (headerMute) headerMute.textContent = newMuted ? "🔇" : "🔊";
+          var speech = document.getElementById("pet-hud-speech");
+          if (newMuted && speech) speech.classList.remove("active");
+          PetHUD.say(newMuted ? "Companion narration silenced." : "Companion narration activated!");
+        });
+      }
+
+      var stashBtn = document.getElementById("pet-capsule-stash");
+      if (stashBtn) {
+        stashBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (hud) hud.classList.add("is-stashed");
+          localStorage.setItem("zoth_pet_stashed", "true");
+        });
+      }
+
+      var edgeTab = document.getElementById("pet-hud-edge-tab");
+      if (edgeTab) {
+        edgeTab.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (hud) hud.classList.remove("is-stashed");
+          localStorage.setItem("zoth_pet_stashed", "false");
+          PetHUD.toggle();
         });
       }
 
@@ -1125,6 +1185,11 @@
     },
 
     toggle: function () {
+      var hud = document.getElementById("zoth-pet-hud");
+      if (hud && hud.classList.contains("is-stashed")) {
+        hud.classList.remove("is-stashed");
+        localStorage.setItem("zoth_pet_stashed", "false");
+      }
       if (this.isOpen) {
         this.close();
       } else {
@@ -1135,7 +1200,11 @@
     open: function () {
       var hud = document.getElementById("zoth-pet-hud");
       var trigger = document.getElementById("pet-hud-trigger");
-      if (hud) hud.classList.add("open");
+      if (hud) {
+        hud.classList.remove("is-stashed");
+        localStorage.setItem("zoth_pet_stashed", "false");
+        hud.classList.add("open");
+      }
       if (trigger) trigger.setAttribute("aria-expanded", "true");
       this.isOpen = true;
       playPetSFX('open');
