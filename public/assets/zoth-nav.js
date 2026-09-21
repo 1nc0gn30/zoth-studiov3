@@ -71,8 +71,8 @@
   ensureStylesheet("zoth-theme-life-css", "/assets/zoth-theme-life.css?v=2");
   var lifeSheet = document.getElementById("zoth-theme-life-css");
   if (lifeSheet && lifeSheet.parentNode) lifeSheet.parentNode.appendChild(lifeSheet);
-  ensureStylesheet("zoth-interactive-dock-css", "/assets/zoth-interactive-dock.css?v=20260921c");
-  ensureStylesheet("zoth-pet-hud-css", "/assets/zoth-pet-hud.css?v=20260921c");
+  ensureStylesheet("zoth-interactive-dock-css", "/assets/zoth-interactive-dock.css?v=20260921d");
+  ensureStylesheet("zoth-pet-hud-css", "/assets/zoth-pet-hud.css?v=20260921d");
   ensureStylesheet("zoth-footer-css", "/assets/zoth-footer.css?v=20260913c");
 
   var footerCss = document.getElementById("zoth-footer-css");
@@ -86,7 +86,7 @@
 
   if (!window.ZothPetHUD && !document.querySelector('script[src*="zoth-pet-hud.js"]')) {
     var petHudScript = document.createElement("script");
-    petHudScript.src = ASSETS_BASE + "zoth-pet-hud.js?v=20260921c";
+    petHudScript.src = ASSETS_BASE + "zoth-pet-hud.js?v=20260921d";
     document.head.appendChild(petHudScript);
   }
 
@@ -99,7 +99,7 @@
 
   if (!document.querySelector('script[src*="zoth-interactive-dock.js"]')) {
     var dockScript = document.createElement("script");
-    dockScript.src = ASSETS_BASE + "zoth-interactive-dock.js?v=20260921c";
+    dockScript.src = ASSETS_BASE + "zoth-interactive-dock.js?v=20260921d";
     dockScript.defer = true;
     document.head.appendChild(dockScript);
   }

@@ -246,7 +246,7 @@
         var base = (window.location.protocol === "file:") ? "./" : "/assets/";
         var link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = base + "zoth-pet-hud.css?v=20260921c";
+        link.href = base + "zoth-pet-hud.css?v=20260921d";
         document.head.appendChild(link);
       }
     },
@@ -360,17 +360,21 @@
         '  <span class="edge-tab-arrow">⇤</span>',
         '</button>',
 
+        '<!-- Backdrop Scrim for mobile bottom sheet modals -->',
+        '<div class="pet-hud-backdrop" id="pet-hud-backdrop"></div>',
+        '',
         '<!-- Exact Digest Speech Bubble (Resting Snugly Above Button) -->',
-        '<div class="pet-hud-speech-bubble" id="pet-hud-speech">',
+        '<div class="pet-hud-speech-bubble" id="pet-hud-speech" role="status" aria-live="polite">',
         '  <div class="pet-hud-speech-header">',
         '    <span class="pet-hud-speech-title">' + SVG_SPARK + ' ' + (pet.name || "Azoth") + '</span>',
         '    <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">' + SVG_CLOSE + '</button>',
         '  </div>',
         '  <span class="pet-hud-speech-text">Companion online &amp; watching over session.</span>',
         '</div>',
-
+        '',
         '<!-- Expanded Companion Dossier Panel (Opens on Click) -->',
-        '<div class="pet-hud-card" id="pet-hud-card" role="region" aria-label="Pet Companion Panel">',
+        '<div class="pet-hud-card" id="pet-hud-card" role="dialog" aria-modal="true" aria-label="Master Narrator & Companion Panel">',
+        '  <div class="pet-hud-sheet-notch" aria-hidden="true"></div>',
         '  <div class="pet-hud-header">',
         '    <div class="pet-hud-title-group">',
         '      <span class="pet-hud-badge-icon">' + SVG_SPARK + '</span>',
@@ -814,6 +818,15 @@
         });
       }
 
+      var backdrop = document.getElementById("pet-hud-backdrop");
+      if (backdrop) {
+        backdrop.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          PetHUD.close();
+        });
+      }
+
       if (closeBtn) {
         closeBtn.addEventListener("click", function (e) {
           e.preventDefault();
@@ -1208,7 +1221,10 @@
       if (trigger) trigger.setAttribute("aria-expanded", "true");
       this.isOpen = true;
       playPetSFX('open');
-      this.say("Observing workspace telemetry...");
+      var speech = document.getElementById("pet-hud-speech");
+      if (speech) speech.classList.remove("active");
+      var body = document.querySelector(".pet-hud-body");
+      if (body) body.scrollTop = 0;
     },
 
     close: function () {
@@ -1271,42 +1287,88 @@
       var speech = document.getElementById("pet-hud-speech");
       if (!speech) return;
 
+      var hud = document.getElementById("zoth-pet-hud");
+      // If companion cockpit card is already open, do not obstruct with a speech balloon
+      if (hud && hud.classList.contains("open")) return;
+
       var pet = this.activePet || PETS_ROSTER[0];
       var headerTitle = titleOverride || (pet.name + " · " + (pet.domain || "Companion"));
+      var avatarUrl = pet.avatar || "/assets/media/home/mascot-azoth.jpg";
+      var fallbackMask = "/assets/media/home/azoth-mask.jpg";
+      var isMutedPref = localStorage.getItem("zoth_pet_narrator_muted") === "true";
 
+      var bodyHtml = "";
       if (Array.isArray(content)) {
-        // Multi-line digest list
+        // Multi-line digestible list
         var listHtml = content.map(function (item) {
-          return '<li>' + item + '</li>';
+          var cleanItem = String(item).replace(/^([✦•▸\-\*]\s*)+/, '');
+          return '<li class="pet-speech-item"><span class="pet-speech-pip" aria-hidden="true">✦</span><span class="pet-speech-item-text">' + cleanItem + '</span></li>';
         }).join('');
 
-        speech.innerHTML = [
-          '<div class="pet-hud-speech-header">',
-          '  <span class="pet-hud-speech-title">' + pet.emoji + ' ' + headerTitle + '</span>',
-          '  <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">✕</button>',
-          '</div>',
-          '<ol class="pet-hud-speech-list">',
-          listHtml,
-          '</ol>'
-        ].join('');
+        bodyHtml = '<ul class="pet-hud-speech-list">' + listHtml + '</ul>';
       } else {
         // Single text string
-        speech.innerHTML = [
-          '<div class="pet-hud-speech-header">',
-          '  <span class="pet-hud-speech-title">' + pet.emoji + ' ' + headerTitle + '</span>',
-          '  <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">✕</button>',
-          '</div>',
-          '<span class="pet-hud-speech-text">' + content + '</span>'
-        ].join('');
+        bodyHtml = '<div class="pet-speech-single"><span class="pet-hud-speech-text">' + content + '</span></div>';
       }
 
+      speech.innerHTML = [
+        '<div class="pet-hud-speech-header">',
+        '  <div class="pet-speech-header-left">',
+        '    <div class="pet-speech-avatar-ring">',
+        '      <img src="' + avatarUrl + '" alt="' + pet.name + '" onerror="this.src=\'' + fallbackMask + '\'" />',
+        '    </div>',
+        '    <div class="pet-speech-header-meta">',
+        '      <span class="pet-hud-speech-title">' + (pet.name || "Azoth") + '</span>',
+        '      <span class="pet-speech-badge">LIVE INTEL</span>',
+        '    </div>',
+        '  </div>',
+        '  <div class="pet-speech-header-actions">',
+        '    <button type="button" class="pet-speech-icon-btn" id="pet-speech-toggle-mute" title="Toggle Voice Mute" aria-label="Toggle Voice Mute">' + (isMutedPref ? '🔇' : '🔊') + '</button>',
+        '    <button type="button" class="pet-hud-speech-close" aria-label="Dismiss">✕</button>',
+        '  </div>',
+        '</div>',
+        bodyHtml,
+        '<div class="pet-speech-actions">',
+        '  <button type="button" class="pet-speech-cta-btn" id="pet-speech-dossier-btn">Explore Dossier ↗</button>',
+        '  <button type="button" class="pet-speech-dismiss-btn" id="pet-speech-gotit-btn">Got it</button>',
+        '</div>'
+      ].join('');
+
       var closeBtn = speech.querySelector(".pet-hud-speech-close");
-      if (closeBtn) {
-        closeBtn.addEventListener("click", function (e) {
+      var gotItBtn = speech.querySelector("#pet-speech-gotit-btn");
+      function dismissBubble(e) {
+        if (e) e.stopPropagation();
+        speech.classList.remove("active");
+        speech.setAttribute("data-hold", "1");
+        localStorage.setItem("zoth_pet_narrator_dismissed", "1");
+      }
+      if (closeBtn) closeBtn.addEventListener("click", dismissBubble);
+      if (gotItBtn) gotItBtn.addEventListener("click", dismissBubble);
+
+      var dossierBtn = speech.querySelector("#pet-speech-dossier-btn");
+      if (dossierBtn) {
+        dossierBtn.addEventListener("click", function (e) {
           e.stopPropagation();
           speech.classList.remove("active");
-          speech.setAttribute("data-hold", "1");
-          localStorage.setItem("zoth_pet_narrator_dismissed", "1");
+          PetHUD.open();
+        });
+      }
+
+      var muteToggle = speech.querySelector("#pet-speech-toggle-mute");
+      if (muteToggle) {
+        muteToggle.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var isMuted = localStorage.getItem("zoth_pet_narrator_muted") === "true";
+          var newMuted = !isMuted;
+          localStorage.setItem("zoth_pet_narrator_muted", String(newMuted));
+          muteToggle.textContent = newMuted ? "🔇" : "🔊";
+          var headerMute = document.getElementById("pet-hud-mute-btn");
+          if (headerMute) headerMute.textContent = newMuted ? "🔇" : "🔊";
+          var capMute = document.getElementById("pet-capsule-mute");
+          if (capMute) capMute.textContent = newMuted ? "🔇" : "🔊";
+          if (newMuted) {
+            speech.classList.remove("active");
+          }
         });
       }
 
@@ -1314,7 +1376,7 @@
       playPetSFX('chirp');
       if (this.bubbleTimeout) clearTimeout(this.bubbleTimeout);
 
-      var effectiveDuration = durationMs || (Array.isArray(content) ? 9000 : 4500);
+      var effectiveDuration = durationMs || (Array.isArray(content) ? 10000 : 5000);
       this.bubbleTimeout = setTimeout(function () {
         speech.classList.remove("active");
       }, effectiveDuration);
