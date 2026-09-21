@@ -7005,7 +7005,7 @@
         if (breadcrumbEl) breadcrumbEl.textContent = 'COMMAND // ⌂ DASHBOARD';
 
         var mobileWs = document.getElementById('hudMobileWsName') || document.getElementById('hud-mobile-ws-name');
-        if (mobileWs) mobileWs.textContent = '⌂ DASHBOARD';
+        if (mobileWs) mobileWs.textContent = '⌂ DSH';
 
         STATE.activeMobileTab = 'stage';
         MobileSheets.updateTabHighlight('stage');
@@ -7196,7 +7196,8 @@
 
       var mobileWs = document.getElementById('hudMobileWsName') || document.getElementById('hud-mobile-ws-name');
       if (mobileWs) {
-        mobileWs.textContent = catIcon + ' ' + (tool.shortName || tool.name || tool.id).toUpperCase();
+        var shortCode = (tool.shortName || tool.id || 'WS').substring(0, 3).toUpperCase();
+        mobileWs.textContent = catIcon + ' ' + shortCode;
       }
 
       STATE.activeMobileTab = 'stage';
