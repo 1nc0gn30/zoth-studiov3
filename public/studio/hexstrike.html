@@ -4,9 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HEXSTRIKE // Security Terminal</title>
+    <script>
+      if (window.location.protocol === 'file:') {
+        const b = document.createElement('base');
+        b.href = window.location.pathname.replace(/\/public\/studio\/.*$/, '/public/');
+        document.head.prepend(b);
+      }
+    </script>
     <link rel="stylesheet" href="/assets/zoth-theme.css">
     <link rel="stylesheet" href="/assets/zoth-nav.css">
     <link rel="stylesheet" href="/assets/zoth-hud-embedded.css">
+    <link rel="stylesheet" href="/assets/zoth-disclosure.css" />
+    <link rel="stylesheet" href="/assets/zoth-3d-viewport-guard.css" />
+    <link rel="stylesheet" href="/assets/zoth-ascii-pixel.css" />
     <script>
       (function(){
         try {
@@ -33,8 +43,10 @@
             color: var(--hex-red) !important;
             font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace !important;
             margin: 0;
-            overflow: hidden;
-            height: 100vh;
+            padding: 0;
+            overflow-x: clip;
+            overflow-y: auto;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
@@ -120,12 +132,22 @@
             cursor: not-allowed;
         }
 
+        .hex-container {
+            padding: 0 25px 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
         .hex-main {
             display: flex;
-            flex: 1;
+            height: 480px;
             overflow: hidden;
             gap: 1px;
             background-color: var(--hex-border);
+            border: 1px solid var(--hex-border);
+            border-radius: 8px;
         }
 
         .hex-pane {
@@ -184,6 +206,198 @@
             border-radius: 999px;
             color: var(--hex-red);
         }
+
+        /* Cyberpunk Module Cards & Layout */
+        .hex-module-card {
+            background: rgba(15, 0, 0, 0.85);
+            border: 1px solid var(--hex-border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.05);
+        }
+
+        .hex-module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+        }
+
+        .hex-module-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 1.5px;
+        }
+
+        .hex-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .hex-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .hex-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .hex-label {
+            font-size: 0.72rem;
+            color: #888;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .hex-select-full, .hex-input-full {
+            background: #000;
+            border: 1px solid var(--hex-border);
+            color: var(--hex-red);
+            padding: 9px 12px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            outline: none;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .hex-select-full:focus, .hex-input-full:focus {
+            border-color: var(--hex-red);
+            box-shadow: 0 0 10px var(--hex-red-glow);
+        }
+
+        .hex-output-box {
+            background: #000;
+            border: 1px solid var(--hex-border);
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-top: 10px;
+        }
+
+        .hex-output-head {
+            font-size: 0.7rem;
+            color: #666;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .hex-code-block {
+            margin: 0;
+            color: #ffaaaa;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.82rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .hex-stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .hex-stat-card {
+            background: #000;
+            border: 1px solid var(--hex-border);
+            border-radius: 6px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hex-stat-label {
+            font-size: 0.68rem;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        .hex-stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .hex-stat-value.danger { color: #ff3333; text-shadow: 0 0 8px rgba(255, 51, 51, 0.4); }
+        .hex-stat-value.warning { color: #ffaa00; text-shadow: 0 0 8px rgba(255, 170, 0, 0.4); }
+        .hex-stat-value.success { color: #00ffaa; text-shadow: 0 0 8px rgba(0, 255, 170, 0.4); }
+
+        .hex-stat-sub {
+            font-size: 0.65rem;
+            color: #666;
+            letter-spacing: 0.5px;
+        }
+
+        .hex-table-wrap {
+            overflow-x: auto;
+        }
+
+        .hex-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            text-align: left;
+        }
+
+        .hex-table th {
+            background: #110000;
+            color: #888;
+            padding: 10px 14px;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--hex-border);
+        }
+
+        .hex-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #1a0000;
+            color: #ccc;
+        }
+
+        .hex-code {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--hex-red);
+            font-weight: 700;
+        }
+
+        .hex-tag {
+            font-size: 0.68rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+
+        .tag-red { background: rgba(255, 0, 0, 0.2); color: #ff4d4d; border: 1px solid #ff0000; }
+        .tag-orange { background: rgba(255, 170, 0, 0.2); color: #ffaa00; border: 1px solid #ffaa00; }
+        .tag-green { background: rgba(0, 255, 170, 0.2); color: #00ffaa; border: 1px solid #00ffaa; }
+        .tag-cyan { background: rgba(0, 240, 255, 0.2); color: #00f0ff; border: 1px solid #00f0ff; }
+
+        .hex-status-badge {
+            font-size: 0.68rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .status-crit { background: #ff0000; color: #000; }
+        .status-high { background: #ff5500; color: #000; }
+        .status-warn { background: #ffaa00; color: #000; }
+        .status-open { background: rgba(0, 255, 170, 0.15); color: #00ffaa; border: 1px solid #00ffaa; }
+        .status-filtered { background: rgba(255, 170, 0, 0.15); color: #ffaa00; border: 1px solid #ffaa00; }
     </style>
 <style>
 /* Embedded HUD suppression */
@@ -256,22 +470,311 @@ body.in-hud .footer {
         <div class="status-pill">SECURITY_TIER: HACKER</div>
     </header>
 
-    <main class="hex-main">
-        <div class="hex-pane">
-            <div class="pane-header">
-                <span>RAW_OUTPUT.LOG</span>
-                <span>UTF-8</span>
-            </div>
-            <div id="toolLogs" class="pane-content"></div>
+    <!-- Master Progressive Disclosure Toolbar -->
+    <div class="zoth-master-disclosure-bar" style="margin: 20px 25px 24px; padding: 14px 24px;">
+        <div class="zoth-master-disclosure-status">
+            <span class="pulse-dot"></span>
+            <span style="letter-spacing:0.06em; font-weight:700;">HEXSTRIKE ARSENAL &amp; PENETRATION SUITE</span>
+            <span style="opacity:0.5; margin: 0 6px;">//</span>
+            <span id="zoth-disclosure-active-counter">FOCUSED VIEW</span>
         </div>
-        <div class="hex-pane">
-            <div class="pane-header">
-                <span>NEURAL_INTELLIGENCE.EXE</span>
-                <span>LOCAL_AI_CORE</span>
-            </div>
-            <div id="aiLogs" class="pane-content"></div>
+        <div class="zoth-master-disclosure-actions">
+            <button type="button" class="zoth-hud-btn" data-zoth-action="expand-all" onclick="window.ZothDisclosure &amp;&amp; window.ZothDisclosure.expandAll()">⚡ Expand All</button>
+            <button type="button" class="zoth-hud-btn active" data-zoth-action="collapse-all" onclick="window.ZothDisclosure &amp;&amp; window.ZothDisclosure.collapseAll()">🌀 Focused View</button>
         </div>
-    </main>
+    </div>
+
+    <div class="hex-container">
+        <!-- Section 01: Terminal Stream & Neural Intelligence -->
+        <div class="zoth-disclosure-wrapper is-expanded" id="sec-terminal-stream" style="margin-bottom: 24px;">
+            <button type="button" class="zoth-disclosure-trigger" aria-expanded="true">
+                <div class="zoth-trigger-visual">
+                    <img class="zoth-trigger-img" src="/assets/media/land/terminal-hero.jpg" alt="Strike Execution Terminal &amp; Deep Neural Feed" loading="lazy" />
+                    <span class="zoth-visual-icon">🖥️</span>
+                </div>
+                <div class="zoth-disclosure-heading-group">
+                    <div class="zoth-disclosure-kicker">// 01 — REAL-TIME TERMINAL STREAM &amp; NEURAL INTELLIGENCE</div>
+                    <h2 class="zoth-big-heading zoth-animated-text">STRIKE EXECUTION TERMINAL &amp; DEEP NEURAL FEED</h2>
+                    <div class="zoth-disclosure-summary-line">Live stdout/stderr stream from raw security tool execution paired with local neural AI vulnerability analysis.</div>
+                </div>
+                <div class="zoth-disclosure-indicator">
+                    <span class="zoth-toggle-badge"><span class="badge-text">MINIMIZE</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    <span class="zoth-item-count-chip">RAW_OUTPUT.LOG · NEURAL_AI</span>
+                </div>
+            </button>
+            <div class="zoth-disclosure-content">
+                <div class="zoth-disclosure-content-inner">
+                    <main class="hex-main">
+                        <div class="hex-pane">
+                            <div class="pane-header">
+                                <span>RAW_OUTPUT.LOG</span>
+                                <span>UTF-8</span>
+                            </div>
+                            <div id="toolLogs" class="pane-content"></div>
+                        </div>
+                        <div class="hex-pane">
+                            <div class="pane-header">
+                                <span>NEURAL_INTELLIGENCE.EXE</span>
+                                <span>LOCAL_AI_CORE</span>
+                            </div>
+                            <div id="aiLogs" class="pane-content"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 02: Exploit Payload Configurator -->
+        <div class="zoth-disclosure-wrapper" id="sec-exploit-configurator" style="margin-bottom: 24px;">
+            <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+                <div class="zoth-trigger-visual">
+                    <img class="zoth-trigger-img" src="/assets/media/land/command-deck.jpg" alt="Weaponized Shellcode &amp; Reverse Payload Engine" loading="lazy" />
+                    <span class="zoth-visual-icon">⚡</span>
+                </div>
+                <div class="zoth-disclosure-heading-group">
+                    <div class="zoth-disclosure-kicker">// 02 — EXPLOIT PAYLOAD CONFIGURATOR</div>
+                    <h2 class="zoth-big-heading zoth-animated-text">WEAPONIZED SHELLCODE &amp; REVERSE PAYLOAD ENGINE</h2>
+                    <div class="zoth-disclosure-summary-line">Configure custom shellcode vectors, encoder chains (XOR / Shikata Ga Nai), LHOST/LPORT listeners, and multi-stage stagers.</div>
+                </div>
+                <div class="zoth-disclosure-indicator">
+                    <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    <span class="zoth-item-count-chip">SHELLCODE · ENCODERS · LISTENERS</span>
+                </div>
+            </button>
+            <div class="zoth-disclosure-content">
+                <div class="zoth-disclosure-content-inner">
+                    <div class="hex-module-card">
+                        <div class="hex-module-header">
+                            <span class="hex-module-title">⚡ EXPLOIT PAYLOAD ARCHITECT &amp; STAGING MATRIX</span>
+                            <span class="status-pill">PAYLOAD_BUILDER_v4.2</span>
+                        </div>
+                        <div class="hex-grid-2">
+                            <div class="hex-form-group">
+                                <label class="hex-label">PAYLOAD TARGET VECTOR</label>
+                                <select id="payloadType" class="hex-select-full">
+                                    <option value="linux_x64_rev">linux/x64/shell_reverse_tcp</option>
+                                    <option value="win_x64_meter">windows/x64/meterpreter/reverse_tcp</option>
+                                    <option value="osx_x64_rev">osx/x64/shell_reverse_tcp</option>
+                                    <option value="web_php_rev">web/php/reverse_shell</option>
+                                </select>
+                            </div>
+                            <div class="hex-form-group">
+                                <label class="hex-label">ENCODER CHAIN</label>
+                                <select id="encoderChain" class="hex-select-full">
+                                    <option value="none">Raw Unencoded (0 Iterations)</option>
+                                    <option value="xor">Dynamic XOR Key Mask</option>
+                                    <option value="shikata">x86/shikata_ga_nai (Poly 3-Pass)</option>
+                                    <option value="aes">AES-256 Stream Cipher</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="hex-grid-3">
+                            <div class="hex-form-group">
+                                <label class="hex-label">LISTEN LHOST</label>
+                                <input type="text" id="payloadLhost" class="hex-input-full" value="10.13.37.1">
+                            </div>
+                            <div class="hex-form-group">
+                                <label class="hex-label">LISTEN LPORT</label>
+                                <input type="text" id="payloadLport" class="hex-input-full" value="4444">
+                            </div>
+                            <div class="hex-form-group">
+                                <label class="hex-label">OUTPUT FORMAT</label>
+                                <select id="payloadFormat" class="hex-select-full">
+                                    <option value="c">C-Array (\x00\xeb...)</option>
+                                    <option value="python">Python ByteString</option>
+                                    <option value="ps1">PowerShell Encoded</option>
+                                    <option value="raw">Raw Base64 Stream</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="hex-output-box">
+                            <div class="hex-output-head">GENERATED STAGER SHELLCODE PREVIEW</div>
+                            <pre class="hex-code-block" id="payloadPreview">\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41\x50\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x48\x8b\x52\x18\x48\x8b\x52\x20\x48\x8b\x72\x50\x48\x0f\xb7\x4a\x4a\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02\x2c\x20\x41\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x48\x8b\x52\x20\x8b\x42\x3c\x48\x01\xd0\x66\x81\x78\x18\x0b\x02\x75\x6b\x8b\x80\x88\x00\x00\x00\x48\x85\xc0</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 03: CVE Telemetry Matrix -->
+        <div class="zoth-disclosure-wrapper" id="sec-cve-telemetry" style="margin-bottom: 24px;">
+            <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+                <div class="zoth-trigger-visual">
+                    <img class="zoth-trigger-img" src="/assets/media/section-arsenal.jpg" alt="Vulnerability Index &amp; Real-Time Threat Scoring" loading="lazy" />
+                    <span class="zoth-visual-icon">🛡️</span>
+                </div>
+                <div class="zoth-disclosure-heading-group">
+                    <div class="zoth-disclosure-kicker">// 03 — CVE TELEMETRY &amp; ZERO-DAY INTELLIGENCE MATRIX</div>
+                    <h2 class="zoth-big-heading zoth-animated-text">VULNERABILITY INDEX &amp; REAL-TIME THREAT SCORING</h2>
+                    <div class="zoth-disclosure-summary-line">Correlate active target fingerprints against EPSS severity scores, NVD advisory databases, and active exploit PoCs.</div>
+                </div>
+                <div class="zoth-disclosure-indicator">
+                    <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    <span class="zoth-item-count-chip">EPSS 0.94 · 12 CRITICAL CVEs</span>
+                </div>
+            </button>
+            <div class="zoth-disclosure-content">
+                <div class="zoth-disclosure-content-inner">
+                    <div class="hex-module-card">
+                        <div class="hex-stats-row">
+                            <div class="hex-stat-card">
+                                <span class="hex-stat-label">MAX CVSS SCORE</span>
+                                <span class="hex-stat-value danger">9.8</span>
+                                <span class="hex-stat-sub">CRITICAL SEVERITY</span>
+                            </div>
+                            <div class="hex-stat-card">
+                                <span class="hex-stat-label">EPSS THREAT PROBABILITY</span>
+                                <span class="hex-stat-value warning">94.2%</span>
+                                <span class="hex-stat-sub">ACTIVE IN THE WILD</span>
+                            </div>
+                            <div class="hex-stat-card">
+                                <span class="hex-stat-label">EXPLOIT READY PoCs</span>
+                                <span class="hex-stat-value success">14 VERIFIED</span>
+                                <span class="hex-stat-sub">METASPLOIT / SEARCHSPLOIT</span>
+                            </div>
+                        </div>
+                        <div class="hex-table-wrap">
+                            <table class="hex-table">
+                                <thead>
+                                    <tr>
+                                        <th>CVE IDENTIFIER</th>
+                                        <th>CVSS v3</th>
+                                        <th>EPSS SCORE</th>
+                                        <th>AFFECTED SUBSYSTEM</th>
+                                        <th>VECTOR CLASSIFICATION</th>
+                                        <th>STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="hex-code">CVE-2024-3094</td>
+                                        <td><span class="hex-tag tag-red">10.0</span></td>
+                                        <td>0.974</td>
+                                        <td>XZ Utils / liblzma SSHd</td>
+                                        <td>Remote Code Execution</td>
+                                        <td><span class="hex-status-badge status-crit">ACTIVE PoC</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">CVE-2024-21626</td>
+                                        <td><span class="hex-tag tag-red">8.6</span></td>
+                                        <td>0.892</td>
+                                        <td>runc Container Breakout</td>
+                                        <td>Privilege Escalation</td>
+                                        <td><span class="hex-status-badge status-high">EXPLOITABLE</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">CVE-2023-44487</td>
+                                        <td><span class="hex-tag tag-orange">7.5</span></td>
+                                        <td>0.941</td>
+                                        <td>HTTP/2 Rapid Reset</td>
+                                        <td>Denial of Service</td>
+                                        <td><span class="hex-status-badge status-warn">PATCHED</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">CVE-2023-38606</td>
+                                        <td><span class="hex-tag tag-red">9.8</span></td>
+                                        <td>0.915</td>
+                                        <td>Kernel Memory Corruption</td>
+                                        <td>Local Root Escalation</td>
+                                        <td><span class="hex-status-badge status-crit">ARMED</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 04: Port Audit Ledgers -->
+        <div class="zoth-disclosure-wrapper" id="sec-port-audit" style="margin-bottom: 24px;">
+            <button type="button" class="zoth-disclosure-trigger" aria-expanded="false">
+                <div class="zoth-trigger-visual">
+                    <img class="zoth-trigger-img" src="/assets/media/land/studio-hero.jpg" alt="Infrastructure Port Ledger &amp; Service Fingerprints" loading="lazy" />
+                    <span class="zoth-visual-icon">📡</span>
+                </div>
+                <div class="zoth-disclosure-heading-group">
+                    <div class="zoth-disclosure-kicker">// 04 — PORT AUDIT LEDGERS &amp; NETWORK RECON</div>
+                    <h2 class="zoth-big-heading zoth-animated-text">INFRASTRUCTURE PORT LEDGER &amp; SERVICE FINGERPRINTS</h2>
+                    <div class="zoth-disclosure-summary-line">Real-time port mapping, banner grabbing status, active protocol probes, and TLS handshake security audits.</div>
+                </div>
+                <div class="zoth-disclosure-indicator">
+                    <span class="zoth-toggle-badge"><span class="badge-text">EXPAND</span> <svg class="zoth-toggle-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    <span class="zoth-item-count-chip">6 OPEN PORTS · TLS 1.3 ACTIVE</span>
+                </div>
+            </button>
+            <div class="zoth-disclosure-content">
+                <div class="zoth-disclosure-content-inner">
+                    <div class="hex-module-card">
+                        <div class="hex-table-wrap">
+                            <table class="hex-table">
+                                <thead>
+                                    <tr>
+                                        <th>PORT / PROTOCOL</th>
+                                        <th>STATE</th>
+                                        <th>DETECTED SERVICE</th>
+                                        <th>VERSION / BANNER</th>
+                                        <th>LATENCY</th>
+                                        <th>SECURITY RATING</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="hex-code">22 / tcp</td>
+                                        <td><span class="hex-status-badge status-open">OPEN</span></td>
+                                        <td>SSH</td>
+                                        <td>OpenSSH 8.9p1 Ubuntu 3ubuntu0.6</td>
+                                        <td>12.4 ms</td>
+                                        <td><span class="hex-tag tag-green">HARDENED</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">80 / tcp</td>
+                                        <td><span class="hex-status-badge status-open">OPEN</span></td>
+                                        <td>HTTP</td>
+                                        <td>nginx 1.18.0 (Ubuntu)</td>
+                                        <td>14.1 ms</td>
+                                        <td><span class="hex-tag tag-orange">NO TLS</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">443 / tcp</td>
+                                        <td><span class="hex-status-badge status-open">OPEN</span></td>
+                                        <td>HTTPS</td>
+                                        <td>TLS 1.3 / OpenSSL 3.0.2</td>
+                                        <td>15.8 ms</td>
+                                        <td><span class="hex-tag tag-green">SECURE</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">3306 / tcp</td>
+                                        <td><span class="hex-status-badge status-filtered">FILTERED</span></td>
+                                        <td>MySQL</td>
+                                        <td>Oracle MySQL Server 8.0.35</td>
+                                        <td>45.2 ms</td>
+                                        <td><span class="hex-tag tag-red">EXPOSED</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">6379 / tcp</td>
+                                        <td><span class="hex-status-badge status-open">OPEN</span></td>
+                                        <td>Redis</td>
+                                        <td>Redis Key-Value Store 7.2.4</td>
+                                        <td>8.9 ms</td>
+                                        <td><span class="hex-tag tag-red">UNAUTHENTICATED</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="hex-code">8000 / tcp</td>
+                                        <td><span class="hex-status-badge status-open">OPEN</span></td>
+                                        <td>HTTP API</td>
+                                        <td>HexStrike Engine v1.4 (FastAPI)</td>
+                                        <td>5.1 ms</td>
+                                        <td><span class="hex-tag tag-cyan">ACTIVE CORE</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const toolSelect = document.getElementById('toolSelect');
@@ -330,6 +833,9 @@ body.in-hud .footer {
 
         executeBtn.addEventListener('click', executeStrike);
     </script>
+<script defer="" src="/assets/zoth-disclosure.js"></script>
+<script src="/assets/zoth-3d-viewport-guard.js"></script>
+<script src="/assets/zoth-ascii-pixel.js"></script>
 <script src="/assets/zoth-hud-embedded.js" defer></script>
 <script src="/assets/zoth-theme.js" defer></script>
 </body>
