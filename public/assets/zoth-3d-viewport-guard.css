@@ -1,0 +1,275 @@
+/* =============================================================================
+   🌌 ZOTH STUDIO — THREE.JS & WEBGL MOBILE SAFEGUARD & OVERLAY SUITE (v2.0)
+   Zero Broken Screens · Graceful WebGL Fallbacks · Mobile Fullscreen 3D HUD
+   ============================================================================= */
+
+:root {
+  --zoth-3d-bg: rgba(6, 9, 20, 0.96);
+  --zoth-3d-border: rgba(0, 240, 255, 0.4);
+  --zoth-3d-cyan: #00f0ff;
+  --zoth-3d-gold: #fbbf24;
+  --zoth-3d-emerald: #10b981;
+  --zoth-3d-text: #f8fafc;
+  --zoth-3d-muted: #94a3b8;
+}
+
+/* ── WebGL Fallback Card (Replaces Broken Blank Canvases) ── */
+.zoth-3d-fallback-box {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  background: radial-gradient(circle at center, rgba(12, 18, 38, 0.95) 0%, rgba(4, 7, 16, 0.98) 100%);
+  border: 1.5px dashed var(--zoth-3d-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: inset 0 0 40px rgba(0, 240, 255, 0.08);
+  font-family: var(--font-theme-mono, "IBM Plex Mono", monospace);
+}
+
+.zoth-3d-fallback-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid var(--zoth-3d-gold);
+  color: var(--zoth-3d-gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.zoth-3d-fallback-title {
+  color: var(--zoth-3d-text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.zoth-3d-fallback-desc {
+  color: var(--zoth-3d-muted);
+  font-size: 0.82rem;
+  max-width: 420px;
+  line-height: 1.45;
+}
+
+/* ── Mobile 3D Launch Trigger Card (Replaces Heavy Inline 3D Viewports on Mobile) ── */
+.zoth-3d-mobile-launch-card {
+  width: 100%;
+  padding: 16px;
+  background: rgba(10, 15, 30, 0.92);
+  border: 1.5px solid var(--zoth-3d-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.12);
+}
+
+.zoth-3d-mobile-launch-title {
+  font-family: var(--font-theme-mono, monospace);
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--zoth-3d-cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.zoth-3d-mobile-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 48px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(16, 185, 129, 0.25) 100%);
+  border: 1.5px solid var(--zoth-3d-cyan);
+  border-radius: 12px;
+  color: #ffffff;
+  font-family: var(--font-theme-mono, monospace);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 240, 255, 0.3);
+  transition: all 0.22s ease;
+}
+
+.zoth-3d-mobile-launch-btn:hover,
+.zoth-3d-mobile-launch-btn:active {
+  background: var(--zoth-3d-cyan);
+  color: #040710;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 36px rgba(0, 240, 255, 0.5);
+}
+
+/* ── Fullscreen Mobile & Desktop 3D Viewport Overlay ── */
+.zoth-3d-fullscreen-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  background: #03050c !important;
+  z-index: 2147483646 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+}
+
+.zoth-3d-fullscreen-overlay.is-active {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* ── Fullscreen HUD Top Bar ── */
+.zoth-3d-hud-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  padding: 0 16px;
+  background: linear-gradient(180deg, rgba(4, 7, 18, 0.95) 0%, transparent 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.zoth-3d-hud-title {
+  font-family: var(--font-theme-mono, monospace);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--zoth-3d-cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.05em;
+}
+
+.zoth-3d-hud-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoth-3d-hud-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--zoth-3d-emerald);
+  color: var(--zoth-3d-emerald);
+  font-family: var(--font-theme-mono, monospace);
+  font-size: 0.70rem;
+  font-weight: 700;
+}
+
+/* Exit / Close Button */
+.zoth-3d-exit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  min-height: 38px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1.5px solid #ef4444;
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: var(--font-theme-mono, monospace);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zoth-3d-exit-btn:hover,
+.zoth-3d-exit-btn:active {
+  background: #ef4444;
+  color: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+}
+
+/* ── Canvas Layer inside Fullscreen Overlay ── */
+.zoth-3d-fullscreen-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.zoth-3d-fullscreen-viewport canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+/* ── Fullscreen HUD Bottom Controls ── */
+.zoth-3d-hud-controls {
+  position: absolute;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(8, 12, 26, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--zoth-3d-border);
+  border-radius: 9999px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9), 0 0 24px rgba(0, 240, 255, 0.2);
+  z-index: 10;
+  pointer-events: auto;
+  max-width: calc(100vw - 24px);
+  overflow-x: auto;
+}
+
+.zoth-3d-ctrl-btn {
+  padding: 6px 12px;
+  min-height: 34px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  color: var(--zoth-3d-text);
+  font-family: var(--font-theme-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.zoth-3d-ctrl-btn:hover {
+  background: var(--zoth-3d-cyan);
+  color: #040710;
+  border-color: var(--zoth-3d-cyan);
+}

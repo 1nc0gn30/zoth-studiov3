@@ -14,6 +14,10 @@
 <title>Zoth Fusion Swarm Arena 3D Viewport</title>
 <meta content="3D battle viewport visualizing real-time multi-agent code competition, AST score comparisons, and fusion merges." name="description"/>
 <link rel="stylesheet" href="/assets/zoth-disclosure.css"/>
+<link rel="stylesheet" href="/assets/zoth-3d-viewport-guard.css"/>
+<link rel="stylesheet" href="/assets/zoth-ascii-pixel.css"/>
+<script src="/assets/zoth-3d-viewport-guard.js"></script>
+<script src="/assets/zoth-ascii-pixel.js"></script>
 <link href="https://zoth.nullai.tech/studio/fusion-arena.html" rel="canonical"/>
 <!-- OpenGraph / Facebook -->
 <meta content="website" property="og:type"/>
@@ -1613,13 +1617,32 @@ html, body {
         camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
         camera.position.set(0, 6, 14);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        try {
+          renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        } catch (err) {
+          if (window.Zoth3DGuard) {
+            window.Zoth3DGuard.renderFallback(host, 'WebGL Renderer Init Error: ' + (err.message || err));
+          }
+          return;
+        }
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.12;
         if (window.ZothStudio3D) window.ZothStudio3D.dressRenderer(renderer);
         host.appendChild(renderer.domElement);
+
+        if (window.Zoth3DGuard) {
+          window.Zoth3DGuard.attachContextLossHandler(renderer.domElement, function () {
+            initArena();
+          });
+          window.Zoth3DGuard.setupMobileOverlay({
+            container: host.parentElement || host,
+            canvas: renderer.domElement,
+            title: 'Zoth Fusion Swarm 3D Arena',
+            onResize: onResize
+          });
+        }
 
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
